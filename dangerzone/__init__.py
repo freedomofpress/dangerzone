@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtWidgets
+import os
 import sys
 import signal
 import click
@@ -39,6 +40,17 @@ def main(filename):
             return
 
         filename = filename[0]
+    else:
+        # Validate filename
+        filename = os.path.abspath(os.path.expanduser(filename))
+        try:
+            open(filename, "rb")
+        except FileNotFoundError:
+            print("File not found")
+            return
+        except PermissionError:
+            print("Permission denied")
+            return
 
     main_window.start(filename)
     sys.exit(app.exec_())

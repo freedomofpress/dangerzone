@@ -54,9 +54,9 @@ class BuildContainerTask(TaskBase):
         self.common = common
 
     def run(self):
-        containerfile = self.common.get_resource_path("Containerfile")
+        container_path = self.common.get_resource_path("container")
         self.update_label.emit("Building container")
         self.update_details.emit("")
-        args = ["podman", "build", "-t", "dangerzone", "-f", containerfile]
+        args = ["podman", "build", "-t", "dangerzone", container_path]
         self.execute_podman(args)
         self.thread_finished.emit()

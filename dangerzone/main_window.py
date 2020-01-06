@@ -10,8 +10,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.common = common
 
         self.setWindowTitle("dangerzone")
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(500)
+        self.setMinimumWidth(500)
+        self.setMinimumHeight(400)
 
         self.task_label = QtWidgets.QLabel()
         self.task_label.setAlignment(QtCore.Qt.AlignCenter)

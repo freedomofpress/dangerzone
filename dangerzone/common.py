@@ -22,13 +22,22 @@ class Common(object):
             f"Temporary directories created, dangerous={self.pixel_dir.name}, safe={self.safe_dir.name}"
         )
 
+        # Name of input file
         self.document_filename = None
+
+        # Name of output file
+        self.save_filename = None
+
+        # Preload font
         self.fixed_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
 
+        # App data folder
         self.appdata_path = appdirs.user_config_dir("dangerzone")
 
+        # Preload list of PDF viewers on computer
         self.pdf_viewers = self._find_pdf_viewers()
 
+        # Languages supported by tesseract
         self.ocr_languages = {
             "Afrikaans": "ar",
             "Amharic": "amh",
@@ -192,6 +201,7 @@ class Common(object):
             "Vietnamese script": "Vietnamese",
         }
 
+        # Load settings
         self.settings = Settings(self)
 
     def set_document_filename(self, filename):

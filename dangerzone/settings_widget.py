@@ -19,12 +19,12 @@ class SettingsWidget(QtWidgets.QWidget):
         self.save_lineedit = QtWidgets.QLineEdit()
         self.save_lineedit.setReadOnly(True)
         self.save_browse_button = QtWidgets.QPushButton("Save as...")
+        self.save_browse_button.clicked.connect(self.save_browse_button_clicked)
         save_layout = QtWidgets.QHBoxLayout()
         save_layout.addWidget(self.save_checkbox)
         save_layout.addWidget(self.save_lineedit)
         save_layout.addWidget(self.save_browse_button)
         save_layout.addStretch()
-        self.save_location = None
 
         # OCR document
         self.ocr_checkbox = QtWidgets.QCheckBox("OCR document, language")
@@ -109,7 +109,18 @@ class SettingsWidget(QtWidgets.QWidget):
         )
 
         # Update the save location
-        self.save_location = (
+        self.common.save_filename = (
             f"{os.path.splitext(self.common.document_filename)[0]}-safe.pdf"
         )
-        self.save_lineedit.setText(os.path.basename(self.save_location))
+        self.save_lineedit.setText(os.path.basename(self.common.save_filename))
+
+    def save_browse_button_clicked(self):
+        filename = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Save safe PDF as...",
+            self.common.save_filename,
+            filter="Documents (*.pdf)",
+        )
+        if filename[0] != "":
+            self.common.save_filename = filename[0]
+            self.save_lineedit.setText(os.path.basename(self.common.save_filename))

@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
 RUN apt-get update && \
-    apt-get install -y file poppler-utils imagemagick ghostscript tesseract-ocr
+    apt-get install -y file poppler-utils imagemagick ghostscript tesseract-ocr libreoffice
 
 # TODO: when we support OCR in other languages, we need tesseract-ocr-all
 

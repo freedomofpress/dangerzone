@@ -95,6 +95,12 @@ class ConvertToPixels(TaskBase):
         ]
         output = self.execute_podman(args)
 
+        # Did we hit an error?
+        for line in output.split("\n"):
+            if "conversion failed" in line or "The document format is not supported" in line:
+                self.task_failed.emit(output)
+                return
+
         # How many pages was that?
         num_pages = None
         for line in output.split("\n"):

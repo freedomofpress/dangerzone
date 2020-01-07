@@ -10,12 +10,21 @@ MIME_TYPE=$(file -b --mime-type /tmp/input_file)
 echo "Documet MIME type is $MIME_TYPE"
 echo
 
-# .docx
+# .pdf
 if [ $MIME_TYPE = "application/pdf" ]; then
     ORIGINAL_PDF=/tmp/input_file
+# .docx
 elif [ $MIME_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ]; then
-    echo "Converting document to PDF"
+    echo "Converting DOCX to PDF"
     CONVERT_MSGS=$(libreoffice --headless --convert-to pdf:writer_pdf_Export --outdir /tmp /tmp/input_file 2>&1)
+    if [ $? -ne 0 ]; then
+        die "Page $PAGE conversion failed: $CONVERT_MSGS"
+    fi
+    ORIGINAL_PDF=/tmp/input_file.pdf
+# .xlsx
+elif [ $MIME_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ]; then
+    echo "Converting XLSX to PDF"
+    CONVERT_MSGS=$(libreoffice --headless --convert-to pdf:calc_pdf_Export --outdir /tmp /tmp/input_file 2>&1)
     if [ $? -ne 0 ]; then
         die "Page $PAGE conversion failed: $CONVERT_MSGS"
     fi
@@ -25,16 +34,19 @@ else
 fi
 
 echo "Separating document into pages"
-pdfseparate $ORIGINAL_PDF /tmp/page-%d.pdf
+CONVERT_MSGS=$(pdfseparate $ORIGINAL_PDF /tmp/page-%d.pdf 2>&1)
+if [ $? -ne 0 ]; then
+    die "Separating document into pages failed: $CONVERT_MSGS"
+fi
 
 IMG_DEPTH=8
 NUM_PAGES=$(find /tmp/page-*.pdf |wc -l)
 echo "Document has $NUM_PAGES pages"
 echo
 
-for FILENAME in $(find /tmp/page-*.pdf); do
-    FILENAME_BASE=${FILENAME%.pdf}
-    PAGE=$(basename $FILENAME_BASE |cut -d"-" -f2)
+for PAGE in $(seq 1 $NUM_PAGES); do
+    FILENAME=/tmp/page-$PAGE.pdf
+    FILENAME_BASE=/tmp/page-$PAGE
 
     echo "Converting page $PAGE to pixels"
 

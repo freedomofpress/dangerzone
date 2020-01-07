@@ -97,7 +97,7 @@ class ConvertToPixels(TaskBase):
 
         # Did we hit an error?
         for line in output.split("\n"):
-            if "conversion failed" in line or "The document format is not supported" in line:
+            if "failed:" in line or "The document format is not supported" in line:
                 self.task_failed.emit(output)
                 return
 

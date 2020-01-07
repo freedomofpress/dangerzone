@@ -12,15 +12,14 @@ echo "Document has $NUM_PAGES pages"
 echo
 
 # Convert rgb files to png files
-for RGB_FILENAME in $(find /dangerzone/page-*.rgb); do
-    FILENAME_BASE=${RGB_FILENAME%.rgb}
-    PAGE=$(basename $FILENAME_BASE |cut -d"-" -f2)
-
+for PAGE in $(seq 1 $NUM_PAGES); do
+    FILENAME_BASE=/dangerzone/page-$PAGE
+    RGB_FILENAME=${FILENAME_BASE}.rgb
     WIDTH_FILENAME=${FILENAME_BASE}.width
     HEIGHT_FILENAME=${FILENAME_BASE}.height
-    PNG_FILENAME=/tmp/$(basename $FILENAME_BASE).png
-    OCR_FILENAME=/tmp/$(basename $FILENAME_BASE)
-    PDF_FILENAME=/tmp/$(basename $FILENAME_BASE).pdf
+    PNG_FILENAME=/tmp/page-$PAGE.png
+    OCR_FILENAME=/tmp/page-$PAGE
+    PDF_FILENAME=/tmp/page-$PAGE.pdf
 
     echo "Converting page $PAGE from pixels to PNG"
     

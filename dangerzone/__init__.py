@@ -25,22 +25,7 @@ def main(filename):
     # Common object
     common = Common()
 
-    # Main window
-    main_window = MainWindow(app, common)
-
-    # If a filename wasn't passed in, get with with a dialog
-    if filename == "":
-        filename = QtWidgets.QFileDialog.getOpenFileName(
-            main_window,
-            "Open document",
-            filter="Documents (*.pdf *.docx *.doc *.xlsx *.xls *.pptx *.ppt *.odt *.fodt *.ods *.fods *.odp *.fodp *.odg *.fodg *.odf)",
-        )
-        if filename[0] == "":
-            print("No document was not selected")
-            return
-
-        filename = filename[0]
-    else:
+    if filename != "":
         # Validate filename
         filename = os.path.abspath(os.path.expanduser(filename))
         try:
@@ -51,6 +36,8 @@ def main(filename):
         except PermissionError:
             print("Permission denied")
             return
+        common.set_document_filename(filename)
 
-    main_window.start(filename)
+    # Main window
+    main_window = MainWindow(app, common)
     sys.exit(app.exec_())

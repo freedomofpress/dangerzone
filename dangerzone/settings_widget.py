@@ -102,7 +102,7 @@ class SettingsWidget(QtWidgets.QWidget):
         else:
             self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-    def document_selected(self, filename):
+    def document_selected(self):
         # Update the danger doc label
         self.dangerous_doc_label.setText(
             f"Dangerous: {os.path.basename(self.common.document_filename)}"

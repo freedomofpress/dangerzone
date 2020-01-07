@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class DocSelectionWidget(QtWidgets.QWidget):
-    document_selected = QtCore.pyqtSignal(str)
+    document_selected = QtCore.pyqtSignal()
 
     def __init__(self, common):
         super(DocSelectionWidget, self).__init__()
@@ -38,4 +38,4 @@ class DocSelectionWidget(QtWidgets.QWidget):
         if filename[0] != "":
             filename = filename[0]
             self.common.set_document_filename(filename)
-            self.document_selected.emit(filename)
+            self.document_selected.emit()

@@ -25,6 +25,9 @@ def main(filename):
     # Common object
     common = Common()
 
+    # Main window
+    main_window = MainWindow(app, common)
+
     if filename != "":
         # Validate filename
         filename = os.path.abspath(os.path.expanduser(filename))
@@ -37,7 +40,6 @@ def main(filename):
             print("Permission denied")
             return
         common.set_document_filename(filename)
+        main_window.doc_selection_widget.document_selected.emit()
 
-    # Main window
-    main_window = MainWindow(app, common)
     sys.exit(app.exec_())

@@ -14,8 +14,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.common = common
 
         self.setWindowTitle("dangerzone")
-        self.setMinimumWidth(500)
-        self.setMinimumHeight(400)
+        self.setMinimumWidth(600)
+        self.setMinimumHeight(350)
 
         # Header
         logo = QtWidgets.QLabel()
@@ -63,7 +63,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.show()
 
-    def document_selected(self, filename):
+    def document_selected(self):
         self.doc_selection_widget.hide()
         self.settings_widget.show()
 

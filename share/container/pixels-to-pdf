@@ -19,6 +19,7 @@ for RGB_FILENAME in $(find /dangerzone/page-*.rgb); do
     WIDTH_FILENAME=${FILENAME_BASE}.width
     HEIGHT_FILENAME=${FILENAME_BASE}.height
     PNG_FILENAME=/tmp/$(basename $FILENAME_BASE).png
+    OCR_FILENAME=/tmp/$(basename $FILENAME_BASE)
     PDF_FILENAME=/tmp/$(basename $FILENAME_BASE).pdf
 
     echo "Converting page $PAGE from pixels to PNG"
@@ -31,13 +32,16 @@ for RGB_FILENAME in $(find /dangerzone/page-*.rgb); do
         die "Page $PAGE conversion failed: $CONVERT_MSGS"
     fi
 
-    echo "Converting page $PAGE from PNG to PDF"
-    CONVERT_MSGS=$(convert "$PNG_FILENAME" "$PDF_FILENAME" 2>&1)
+    echo "Converting page $PAGE from PNG to searchable PDF"
+    CONVERT_MSGS=$(tesseract $PNG_FILENAME $OCR_FILENAME pdf 2>&1)
     if [ $? -ne 0 ]; then
         die "Page $PAGE conversion failed: $CONVERT_MSGS"
     fi
+
+    echo
 done
 
+echo
 echo "Merging $NUM_PAGES pages into a single PDF"
 
 # Put PDF filenames into an array

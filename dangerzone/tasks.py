@@ -34,7 +34,10 @@ class TaskBase(QtCore.QThread):
                 output += line
                 self.update_details.emit(output)
 
-            output += p.stdout.read()
+            if watch == "stdout":
+                output += p.stderr.read()
+            else:
+                output += p.stdout.read()
             self.update_details.emit(output)
 
         return output
@@ -86,9 +89,9 @@ class ConvertToPixels(TaskBase):
             "-v",
             f"{self.common.document_filename}:/tmp/input_file",
             "-v",
-            f"{self.common.tmpdir.name}:/dangerzone",
+            f"{self.common.pixel_dir.name}:/dangerzone",
             "dangerzone",
-            "/tmp/convert_to_pixels",
+            "convert_to_pixels",
         ]
         output = self.execute_podman(args)
 
@@ -112,7 +115,7 @@ class ConvertToPixels(TaskBase):
                 f"page-{i}.height",
             ]
         expected_filenames.sort()
-        actual_filenames = os.listdir(self.common.tmpdir.name)
+        actual_filenames = os.listdir(self.common.pixel_dir.name)
         actual_filenames.sort()
 
         if expected_filenames != actual_filenames:
@@ -123,9 +126,9 @@ class ConvertToPixels(TaskBase):
 
         # Make sure the files are the correct sizes
         for i in range(1, num_pages + 1):
-            with open(f"{self.common.tmpdir.name}/page-{i}.width") as f:
+            with open(f"{self.common.pixel_dir.name}/page-{i}.width") as f:
                 w_str = f.read().strip()
-            with open(f"{self.common.tmpdir.name}/page-{i}.height") as f:
+            with open(f"{self.common.pixel_dir.name}/page-{i}.height") as f:
                 h_str = f.read().strip()
             w = int(w_str)
             h = int(h_str)
@@ -141,8 +144,34 @@ class ConvertToPixels(TaskBase):
                 return
 
             # Make sure the RGB file is the correct size
-            if os.path.getsize(f"{self.common.tmpdir.name}/page-{i}.rgb") != w * h * 3:
+            if (
+                os.path.getsize(f"{self.common.pixel_dir.name}/page-{i}.rgb")
+                != w * h * 3
+            ):
                 self.task_failed.emit(f"Page {i} has an invalid RGB file size")
                 return
 
+        self.task_finished.emit()
+
+
+class ConvertToPDF(TaskBase):
+    def __init__(self, common):
+        super(ConvertToPDF, self).__init__()
+        self.common = common
+
+    def run(self):
+        self.update_label.emit("Converting pixels to safe PDF")
+        args = [
+            "podman",
+            "run",
+            "--network",
+            "none",
+            "-v",
+            f"{self.common.pixel_dir.name}:/dangerzone",
+            "-v",
+            f"{self.common.safe_dir.name}:/safezone",
+            "dangerzone",
+            "convert_to_pdf",
+        ]
+        self.execute_podman(args)
         self.task_finished.emit()

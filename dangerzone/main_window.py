@@ -1,6 +1,8 @@
+import shutil
+import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from .tasks import PullImageTask, BuildContainerTask, ConvertToPixels
+from .tasks import PullImageTask, BuildContainerTask, ConvertToPixels, ConvertToPDF
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -40,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
-        self.tasks = [PullImageTask, BuildContainerTask, ConvertToPixels]
+        self.tasks = [PullImageTask, BuildContainerTask, ConvertToPixels, ConvertToPDF]
 
     def start(self, filename):
         print(f"Input document: {filename}")
@@ -51,8 +53,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def next_task(self):
         if len(self.tasks) == 0:
-            print("Tasks finished")
-            self.task_label.setText("Tasks finished")
+            self.save_safe_pdf()
             return
 
         self.task_details.setText("")
@@ -74,8 +75,30 @@ class MainWindow(QtWidgets.QMainWindow):
         self.task_label.setText("Task failed :(")
         self.task_details.setWordWrap(True)
         self.task_details.setText(
-            f"Temporary directory: {self.common.tmpdir.name}\n\n{err}"
+            f"Directory with pixel data: {self.common.pixel_dir.name}\n\n{err}"
         )
+
+    def save_safe_pdf(self):
+        suggested_filename = (
+            f"{os.path.splitext(self.common.document_filename)[0]}-safe.pdf"
+        )
+
+        filename = QtWidgets.QFileDialog.getSaveFileName(
+            self, "Save safe PDF", suggested_filename, filter="Documents (*.pdf)"
+        )
+        if filename[0] == "":
+            print("Save file dialog canceled")
+        else:
+            source_filename = f"{self.common.safe_dir.name}/safe-output-compressed.pdf"
+            dest_filename = filename[0]
+            shutil.move(source_filename, dest_filename)
+
+            # Clean up
+            self.common.pixel_dir.cleanup()
+            self.common.safe_dir.cleanup()
+
+            # Quit
+            self.app.quit()
 
     def scroll_to_bottom(self, minimum, maximum):
         self.details_scrollarea.verticalScrollBar().setValue(maximum)

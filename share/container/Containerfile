@@ -1,6 +1,10 @@
 FROM ubuntu:18.04
 
 RUN apt-get update && \
-    apt-get install -y file poppler-utils imagemagick
+    apt-get install -y file poppler-utils imagemagick ghostscript
 
-COPY convert_to_pixels /tmp/convert_to_pixels
+# Fix imagemagick policy to allow writing PDFs
+RUN sed -i '/rights="none" pattern="PDF"/c\<policy domain="coder" rights="read|write" pattern="PDF" />' /etc/ImageMagick-6/policy.xml
+
+COPY convert_to_pixels /usr/local/bin/convert_to_pixels
+COPY convert_to_pdf /usr/local/bin/convert_to_pdf

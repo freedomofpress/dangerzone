@@ -11,8 +11,10 @@ class Common(object):
 
     def __init__(self):
         # Temporary directory to store pixel data
-        self.tmpdir = tempfile.TemporaryDirectory()
-        print(f"tmpdir is: {self.tmpdir.name}")
+        self.pixel_dir = tempfile.TemporaryDirectory()
+        self.safe_dir = tempfile.TemporaryDirectory()
+        print(f"pixel_dir is: {self.pixel_dir.name}")
+        print(f"safe_dir is: {self.safe_dir.name}")
 
     def get_resource_path(self, filename):
         if getattr(sys, "dangerzone_dev", False):

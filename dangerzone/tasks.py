@@ -91,7 +91,7 @@ class ConvertToPixels(TaskBase):
             "-v",
             f"{self.common.pixel_dir.name}:/dangerzone",
             "dangerzone",
-            "convert_to_pixels",
+            "document-to-pixels",
         ]
         output = self.execute_podman(args)
 
@@ -171,7 +171,7 @@ class ConvertToPDF(TaskBase):
             "-v",
             f"{self.common.safe_dir.name}:/safezone",
             "dangerzone",
-            "convert_to_pdf",
+            "pixels-to-pdf",
         ]
         self.execute_podman(args)
         self.task_finished.emit()

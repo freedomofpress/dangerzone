@@ -1,10 +1,10 @@
 FROM ubuntu:18.04
 
 RUN apt-get update && \
-    apt-get install -y file poppler-utils imagemagick ghostscript
+    apt-get install -y file poppler-utils imagemagick ghostscript tesseract-ocr tesseract-ocr-all
 
 # Fix imagemagick policy to allow writing PDFs
 RUN sed -i '/rights="none" pattern="PDF"/c\<policy domain="coder" rights="read|write" pattern="PDF" />' /etc/ImageMagick-6/policy.xml
 
-COPY convert_to_pixels /usr/local/bin/convert_to_pixels
-COPY convert_to_pdf /usr/local/bin/convert_to_pdf
+COPY document-to-pixels /usr/local/bin/document-to-pixels
+COPY pixels-to-pdf /usr/local/bin/pixels-to-pdf

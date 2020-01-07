@@ -2,7 +2,11 @@ import sys
 import os
 import inspect
 import tempfile
+import appdirs
 from PyQt5 import QtGui
+from xdg.DesktopEntry import DesktopEntry
+
+from .settings import Settings
 
 
 class Common(object):
@@ -14,12 +18,16 @@ class Common(object):
         # Temporary directory to store pixel data
         self.pixel_dir = tempfile.TemporaryDirectory()
         self.safe_dir = tempfile.TemporaryDirectory()
-        print(f"pixel_dir is: {self.pixel_dir.name}")
-        print(f"safe_dir is: {self.safe_dir.name}")
+        print(
+            f"Temporary directories created, dangerous={self.pixel_dir.name}, safe={self.safe_dir.name}"
+        )
 
         self.document_filename = None
-
         self.fixed_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
+
+        self.appdata_path = appdirs.user_config_dir("dangerzone")
+
+        self.pdf_viewers = self._find_pdf_viewers()
 
         self.ocr_languages = {
             "Afrikaans": "ar",
@@ -184,6 +192,8 @@ class Common(object):
             "Vietnamese script": "Vietnamese",
         }
 
+        self.settings = Settings(self)
+
     def set_document_filename(self, filename):
         self.document_filename = filename
 
@@ -203,3 +213,27 @@ class Common(object):
 
         resource_path = os.path.join(prefix, filename)
         return resource_path
+
+    def _find_pdf_viewers(self):
+        pdf_viewers = {}
+
+        for search_path in [
+            "/usr/share/applications",
+            "/usr/local/share/applications",
+            os.path.expanduser("~/.local/share/applications"),
+        ]:
+            try:
+                for filename in os.listdir(search_path):
+                    full_filename = os.path.join(search_path, filename)
+                    if os.path.splitext(filename)[1] == ".desktop":
+
+                        desktop_entry = DesktopEntry(full_filename)
+                        if "application/pdf" in desktop_entry.getMimeTypes():
+                            pdf_viewers[
+                                desktop_entry.getName()
+                            ] = desktop_entry.getExec()
+
+            except FileNotFoundError:
+                pass
+
+        return pdf_viewers

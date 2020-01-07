@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 PyQt5 = "*"
 click = "*"
+appdirs = "*"
+pyxdg = "*"
 
 [dev-packages]
 black = "*"

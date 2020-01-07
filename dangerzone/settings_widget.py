@@ -1,3 +1,4 @@
+import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -6,37 +7,30 @@ class SettingsWidget(QtWidgets.QWidget):
         super(SettingsWidget, self).__init__()
         self.common = common
 
-        # Dangerous document selection
+        # Dangerous document
         self.dangerous_doc_label = QtWidgets.QLabel()
-        self.dangerous_doc_label.hide()
-        self.dangerous_doc_button = QtWidgets.QPushButton(
-            "Select dangerous document ..."
+        self.dangerous_doc_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.dangerous_doc_label.setStyleSheet(
+            "QLabel { font-size: 16px; font-weight: bold; color: #572606; padding: 10px; }"
         )
-        self.dangerous_doc_button.setStyleSheet("QPushButton { font-weight: bold }")
-
-        dangerous_doc_layout = QtWidgets.QHBoxLayout()
-        dangerous_doc_layout.addWidget(self.dangerous_doc_label)
-        dangerous_doc_layout.addWidget(self.dangerous_doc_button)
-        dangerous_doc_layout.addStretch()
 
         # Save safe version
         self.save_checkbox = QtWidgets.QCheckBox("Save safe PDF")
         self.save_lineedit = QtWidgets.QLineEdit()
         self.save_lineedit.setReadOnly(True)
         self.save_browse_button = QtWidgets.QPushButton("Save as...")
-
         save_layout = QtWidgets.QHBoxLayout()
         save_layout.addWidget(self.save_checkbox)
         save_layout.addWidget(self.save_lineedit)
         save_layout.addWidget(self.save_browse_button)
         save_layout.addStretch()
+        self.save_location = None
 
         # OCR document
         self.ocr_checkbox = QtWidgets.QCheckBox("OCR document, language")
         self.ocr_combobox = QtWidgets.QComboBox()
         for k in self.common.ocr_languages:
             self.ocr_combobox.addItem(k, QtCore.QVariant(self.common.ocr_languages[k]))
-
         ocr_layout = QtWidgets.QHBoxLayout()
         ocr_layout.addWidget(self.ocr_checkbox)
         ocr_layout.addWidget(self.ocr_combobox)
@@ -45,7 +39,8 @@ class SettingsWidget(QtWidgets.QWidget):
         # Open safe document
         self.open_checkbox = QtWidgets.QCheckBox("Open safe document")
         self.open_combobox = QtWidgets.QComboBox()
-
+        for k in self.common.pdf_viewers:
+            self.open_combobox.addItem(k, QtCore.QVariant(self.common.pdf_viewers[k]))
         open_layout = QtWidgets.QHBoxLayout()
         open_layout.addWidget(self.open_checkbox)
         open_layout.addWidget(self.open_combobox)
@@ -69,7 +64,7 @@ class SettingsWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(dangerous_doc_layout)
+        layout.addWidget(self.dangerous_doc_label)
         layout.addLayout(save_layout)
         layout.addLayout(ocr_layout)
         layout.addLayout(open_layout)
@@ -77,3 +72,44 @@ class SettingsWidget(QtWidgets.QWidget):
         layout.addLayout(button_layout)
         layout.addStretch()
         self.setLayout(layout)
+
+        # Load values from settings
+        if self.common.settings.get("save"):
+            self.save_checkbox.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.save_checkbox.setCheckState(QtCore.Qt.Unchecked)
+
+        if self.common.settings.get("ocr"):
+            self.ocr_checkbox.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.ocr_checkbox.setCheckState(QtCore.Qt.Unchecked)
+
+        index = self.ocr_combobox.findText(self.common.settings.get("ocr_language"))
+        if index != -1:
+            self.ocr_combobox.setCurrentIndex(index)
+
+        if self.common.settings.get("open"):
+            self.open_checkbox.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.open_checkbox.setCheckState(QtCore.Qt.Unchecked)
+
+        index = self.open_combobox.findText(self.common.settings.get("open_app"))
+        if index != -1:
+            self.open_combobox.setCurrentIndex(index)
+
+        if self.common.settings.get("update_container"):
+            self.update_checkbox.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
+
+    def document_selected(self, filename):
+        # Update the danger doc label
+        self.dangerous_doc_label.setText(
+            f"Dangerous: {os.path.basename(self.common.document_filename)}"
+        )
+
+        # Update the save location
+        self.save_location = (
+            f"{os.path.splitext(self.common.document_filename)[0]}-safe.pdf"
+        )
+        self.save_lineedit.setText(os.path.basename(self.save_location))

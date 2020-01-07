@@ -2,6 +2,7 @@ import shutil
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from .doc_selection_widget import DocSelectionWidget
 from .settings_widget import SettingsWidget
 from .tasks_widget import TasksWidget
 
@@ -33,9 +34,17 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(header_label)
         header_layout.addStretch()
 
+        # Doc selection widget
+        self.doc_selection_widget = DocSelectionWidget(self.common)
+        self.doc_selection_widget.document_selected.connect(self.document_selected)
+        self.doc_selection_widget.show()
+
         # Settings
         self.settings_widget = SettingsWidget(self.common)
-        self.settings_widget.show()
+        self.doc_selection_widget.document_selected.connect(
+            self.settings_widget.document_selected
+        )
+        self.settings_widget.hide()
 
         # Tasks
         self.tasks_widget = TasksWidget(self.common)
@@ -44,6 +53,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
+        layout.addWidget(self.doc_selection_widget, stretch=1)
         layout.addWidget(self.settings_widget, stretch=1)
         layout.addWidget(self.tasks_widget, stretch=1)
 
@@ -52,6 +62,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(central_widget)
 
         self.show()
+
+    def document_selected(self, filename):
+        self.doc_selection_widget.hide()
+        self.settings_widget.show()
 
     def closeEvent(self, e):
         e.accept()

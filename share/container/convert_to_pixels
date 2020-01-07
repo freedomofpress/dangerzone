@@ -1,0 +1,38 @@
+#!/bin/bash
+
+IMG_DEPTH=8
+
+echo "Separating document into pages"
+
+pdfseparate /tmp/input_file /tmp/page-%d.pdf
+
+NUM_PAGES=$(find /tmp/page-*.pdf |wc -l)
+echo "Document has $NUM_PAGES pages"
+echo
+
+for FILENAME in $(find /tmp/page-*.pdf); do
+    FILENAME_BASE=${FILENAME%.pdf}
+    PAGE=$(basename $FILENAME_BASE |cut -d"-" -f2)
+
+    echo "Converting page $PAGE to pixels"
+
+    # Convert to png
+    pdftocairo "$FILENAME" -png -singlefile "$FILENAME_BASE"
+    
+    # Get the width and height
+    IMG_WIDTH=$(identify -format "%w" "$FILENAME_BASE.png")
+    IMG_HEIGHT=$(identify -format "%h" "$FILENAME_BASE.png")
+    echo $IMG_WIDTH > $FILENAME_BASE.width
+    echo $IMG_HEIGHT > $FILENAME_BASE.height
+    
+    # Convert to rgb
+    convert "$FILENAME_BASE.png" -depth $IMG_DEPTH rgb:"$FILENAME_BASE.rgb"
+
+    # Delete the png
+    rm "$FILENAME_BASE.png"
+
+    # Move files needed for the next step to the mounted volume
+    mv "$FILENAME_BASE.rgb" /dangerzone
+    mv "$FILENAME_BASE.width" /dangerzone
+    mv "$FILENAME_BASE.height" /dangerzone
+done

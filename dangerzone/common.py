@@ -1,6 +1,7 @@
 import sys
 import os
 import inspect
+import tempfile
 
 
 class Common(object):
@@ -9,7 +10,9 @@ class Common(object):
     """
 
     def __init__(self):
-        pass
+        # Temporary directory to store pixel data
+        self.tmpdir = tempfile.TemporaryDirectory()
+        print(f"tmpdir is: {self.tmpdir.name}")
 
     def get_resource_path(self, filename):
         if getattr(sys, "dangerzone_dev", False):

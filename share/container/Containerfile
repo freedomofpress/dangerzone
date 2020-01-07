@@ -1,8 +1,6 @@
 FROM ubuntu:18.04
 
 RUN apt-get update && \
-    apt-get install -y poppler-utils imagemagick
+    apt-get install -y file poppler-utils imagemagick
 
-RUN useradd -ms /bin/bash user
-USER user:user
-
+COPY convert_to_pixels /tmp/convert_to_pixels

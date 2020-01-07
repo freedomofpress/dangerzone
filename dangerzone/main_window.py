@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from .tasks import PullImageTask, BuildContainerTask
+from .tasks import PullImageTask, BuildContainerTask, ConvertToPixels
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -40,11 +40,11 @@ class MainWindow(QtWidgets.QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
-        self.tasks = [PullImageTask, BuildContainerTask]
+        self.tasks = [PullImageTask, BuildContainerTask, ConvertToPixels]
 
     def start(self, filename):
         print(f"Input document: {filename}")
-        self.document_filename = filename
+        self.common.document_filename = filename
         self.show()
 
         self.next_task()
@@ -52,12 +52,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def next_task(self):
         if len(self.tasks) == 0:
             print("Tasks finished")
+            self.task_label.setText("Tasks finished")
             return
+
+        self.task_details.setText("")
 
         self.current_task = self.tasks.pop(0)(self.common)
         self.current_task.update_label.connect(self.update_label)
         self.current_task.update_details.connect(self.update_details)
-        self.current_task.thread_finished.connect(self.next_task)
+        self.current_task.task_finished.connect(self.next_task)
+        self.current_task.task_failed.connect(self.task_failed)
         self.current_task.start()
 
     def update_label(self, s):
@@ -66,10 +70,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def update_details(self, s):
         self.task_details.setText(s)
 
+    def task_failed(self, err):
+        self.task_label.setText("Task failed :(")
+        self.task_details.setWordWrap(True)
+        self.task_details.setText(
+            f"Temporary directory: {self.common.tmpdir.name}\n\n{err}"
+        )
+
     def scroll_to_bottom(self, minimum, maximum):
         self.details_scrollarea.verticalScrollBar().setValue(maximum)
 
     def closeEvent(self, e):
-        print("closing")
         e.accept()
         self.app.quit()

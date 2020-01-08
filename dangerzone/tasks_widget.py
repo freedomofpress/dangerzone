@@ -1,3 +1,4 @@
+import shutil
 import shlex
 import subprocess
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -91,7 +92,7 @@ class TasksWidget(QtWidgets.QWidget):
                         or args[i] == "%u"
                         or args[i] == "%U"
                     ):
-                        args[i] = self.save_filename
+                        args[i] = self.common.save_filename
 
                 # Open as a background process
                 subprocess.Popen(args)
@@ -101,7 +102,7 @@ class TasksWidget(QtWidgets.QWidget):
         self.common.safe_dir.cleanup()
 
         # Quit
-        self.app.quit()
+        self.common.app.quit()
 
     def scroll_to_bottom(self, minimum, maximum):
         self.details_scrollarea.verticalScrollBar().setValue(maximum)

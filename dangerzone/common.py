@@ -14,7 +14,10 @@ class Common(object):
     The Common class is a singleton of shared functionality throughout the app
     """
 
-    def __init__(self):
+    def __init__(self, app):
+        # Qt app
+        self.app = app
+
         # Temporary directory to store pixel data
         self.pixel_dir = tempfile.TemporaryDirectory()
         self.safe_dir = tempfile.TemporaryDirectory()

@@ -8,9 +8,8 @@ from .tasks_widget import TasksWidget
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, app, common):
+    def __init__(self, common):
         super(MainWindow, self).__init__()
-        self.app = app
         self.common = common
 
         self.setWindowTitle("dangerzone")

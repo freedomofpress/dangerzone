@@ -23,10 +23,10 @@ def main(filename):
     app.setQuitOnLastWindowClosed(False)
 
     # Common object
-    common = Common()
+    common = Common(app)
 
     # Main window
-    main_window = MainWindow(app, common)
+    main_window = MainWindow(common)
 
     if filename != "":
         # Validate filename

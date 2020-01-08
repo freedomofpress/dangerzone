@@ -1,4 +1,5 @@
 import os
+import subprocess
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -108,6 +109,12 @@ class SettingsWidget(QtWidgets.QWidget):
             self.update_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
             self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
+
+        # Is update containers required?
+        output = subprocess.check_output(["podman", "image", "ls", "dangerzone"])
+        if b"localhost/dangerzone" not in output:
+            self.update_checkbox.setCheckState(QtCore.Qt.Checked)
+            self.update_checkbox.setEnabled(False)
 
     def update_ui(self):
         # Either save or open must be checked

@@ -242,7 +242,10 @@ class Common(object):
                     if os.path.splitext(filename)[1] == ".desktop":
 
                         desktop_entry = DesktopEntry(full_filename)
-                        if "application/pdf" in desktop_entry.getMimeTypes():
+                        if (
+                            "application/pdf" in desktop_entry.getMimeTypes()
+                            and desktop_entry.getName() != "dangerzone"
+                        ):
                             pdf_viewers[
                                 desktop_entry.getName()
                             ] = desktop_entry.getExec()

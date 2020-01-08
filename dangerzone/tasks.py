@@ -2,6 +2,7 @@ import subprocess
 import time
 import tempfile
 import os
+import pipes
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 
@@ -15,8 +16,11 @@ class TaskBase(QtCore.QThread):
         super(TaskBase, self).__init__()
 
     def execute_podman(self, args, watch="stdout"):
-        print(f"Executing: {' '.join(args)}")
-        output = ""
+        args_str = " ".join(pipes.quote(s) for s in args)
+        print(f"Executing: {args_str}")
+        output = f"Executing: {args_str}\n\n"
+        self.update_details.emit(output)
+
         with subprocess.Popen(
             args,
             stdin=None,

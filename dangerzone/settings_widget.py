@@ -18,6 +18,7 @@ class SettingsWidget(QtWidgets.QWidget):
 
         # Save safe version
         self.save_checkbox = QtWidgets.QCheckBox("Save safe PDF")
+        self.save_checkbox.clicked.connect(self.update_ui)
         self.save_lineedit = QtWidgets.QLineEdit()
         self.save_lineedit.setReadOnly(True)
         self.save_browse_button = QtWidgets.QPushButton("Save as...")
@@ -27,6 +28,19 @@ class SettingsWidget(QtWidgets.QWidget):
         save_layout.addWidget(self.save_lineedit)
         save_layout.addWidget(self.save_browse_button)
         save_layout.addStretch()
+
+        # Open safe document
+        self.open_checkbox = QtWidgets.QCheckBox(
+            "Open safe document after converting, using"
+        )
+        self.open_checkbox.clicked.connect(self.update_ui)
+        self.open_combobox = QtWidgets.QComboBox()
+        for k in self.common.pdf_viewers:
+            self.open_combobox.addItem(k, QtCore.QVariant(self.common.pdf_viewers[k]))
+        open_layout = QtWidgets.QHBoxLayout()
+        open_layout.addWidget(self.open_checkbox)
+        open_layout.addWidget(self.open_combobox)
+        open_layout.addStretch()
 
         # OCR document
         self.ocr_checkbox = QtWidgets.QCheckBox("OCR document, language")
@@ -38,16 +52,6 @@ class SettingsWidget(QtWidgets.QWidget):
         ocr_layout.addWidget(self.ocr_combobox)
         ocr_layout.addStretch()
 
-        # Open safe document
-        self.open_checkbox = QtWidgets.QCheckBox("Open safe document")
-        self.open_combobox = QtWidgets.QComboBox()
-        for k in self.common.pdf_viewers:
-            self.open_combobox.addItem(k, QtCore.QVariant(self.common.pdf_viewers[k]))
-        open_layout = QtWidgets.QHBoxLayout()
-        open_layout.addWidget(self.open_checkbox)
-        open_layout.addWidget(self.open_combobox)
-        open_layout.addStretch()
-
         # Update container
         self.update_checkbox = QtWidgets.QCheckBox("Update container")
         update_layout = QtWidgets.QHBoxLayout()
@@ -55,7 +59,7 @@ class SettingsWidget(QtWidgets.QWidget):
         update_layout.addStretch()
 
         # Button
-        self.start_button = QtWidgets.QPushButton("Convert to Save Document")
+        self.start_button = QtWidgets.QPushButton("Convert to Safe Document")
         self.start_button.clicked.connect(self.start_button_clicked)
         self.start_button.setStyleSheet(
             "QPushButton { font-size: 16px; font-weight: bold; padding: 10px; }"
@@ -69,8 +73,8 @@ class SettingsWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.dangerous_doc_label)
         layout.addLayout(save_layout)
-        layout.addLayout(ocr_layout)
         layout.addLayout(open_layout)
+        layout.addLayout(ocr_layout)
         layout.addLayout(update_layout)
         layout.addLayout(button_layout)
         layout.addStretch()
@@ -104,6 +108,16 @@ class SettingsWidget(QtWidgets.QWidget):
             self.update_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
             self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
+
+    def update_ui(self):
+        # Either save or open must be checked
+        if (
+            self.save_checkbox.checkState() == QtCore.Qt.Checked
+            or self.open_checkbox.checkState() == QtCore.Qt.Checked
+        ):
+            self.start_button.setEnabled(True)
+        else:
+            self.start_button.setEnabled(False)
 
     def document_selected(self):
         # Update the danger doc label

@@ -95,6 +95,7 @@ class TasksWidget(QtWidgets.QWidget):
                         args[i] = self.common.save_filename
 
                 # Open as a background process
+                print(f"Executing: {' '.join(args)}")
                 subprocess.Popen(args)
 
         # Clean up

@@ -13,6 +13,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.common = common
 
         self.setWindowTitle("dangerzone")
+        self.setWindowIcon(QtGui.QIcon(self.common.get_resource_path("logo.png")))
+
         self.setMinimumWidth(600)
         self.setMinimumHeight(350)
 
@@ -74,4 +76,4 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, e):
         e.accept()
-        self.app.quit()
+        self.common.app.quit()

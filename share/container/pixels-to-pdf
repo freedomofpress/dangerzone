@@ -24,16 +24,34 @@ for PAGE in $(seq 1 $NUM_PAGES); do
     IMG_WIDTH=$(cat $WIDTH_FILENAME)
     IMG_HEIGHT=$(cat $HEIGHT_FILENAME)
 
-    echo "Converting page $PAGE from pixels to searchable PDF"
+    if [ $OCR = "1" ]; then
 
-    CONVERT_MSGS=$(convert -size "${IMG_WIDTH}x${IMG_HEIGHT}" -depth ${IMG_DEPTH} rgb:"$RGB_FILENAME" png:"$PNG_FILENAME" 2>&1)
-    if [ $? -ne 0 ]; then
-        die "Page $PAGE conversion failed: $CONVERT_MSGS"
-    fi
+        echo "Converting page $PAGE from pixels to searchable PDF"
 
-    CONVERT_MSGS=$(tesseract $PNG_FILENAME $OCR_FILENAME pdf 2>&1)
-    if [ $? -ne 0 ]; then
-        die "Page $PAGE conversion failed: $CONVERT_MSGS"
+        CONVERT_MSGS=$(convert -size "${IMG_WIDTH}x${IMG_HEIGHT}" -depth ${IMG_DEPTH} rgb:"$RGB_FILENAME" png:"$PNG_FILENAME" 2>&1)
+        if [ $? -ne 0 ]; then
+            die "Page $PAGE conversion failed: $CONVERT_MSGS"
+        fi
+
+        CONVERT_MSGS=$(tesseract $PNG_FILENAME $OCR_FILENAME pdf -l $OCR_LANGUAGE 2>&1)
+        if [ $? -ne 0 ]; then
+            die "Page $PAGE conversion failed: $CONVERT_MSGS"
+        fi
+
+    else
+
+        echo "Converting page $PAGE from pixels to PDF"
+
+        CONVERT_MSGS=$(convert -size "${IMG_WIDTH}x${IMG_HEIGHT}" -depth ${IMG_DEPTH} rgb:"$RGB_FILENAME" png:"$PNG_FILENAME" 2>&1)
+        if [ $? -ne 0 ]; then
+            die "Page $PAGE conversion failed: $CONVERT_MSGS"
+        fi
+
+        CONVERT_MSGS=$(convert $PNG_FILENAME $PDF_FILENAME 2>&1)
+        if [ $? -ne 0 ]; then
+            die "Page $PAGE conversion failed: $CONVERT_MSGS"
+        fi
+
     fi
 done
 

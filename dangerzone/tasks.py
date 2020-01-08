@@ -167,17 +167,31 @@ class ConvertToPDF(TaskBase):
 
     def run(self):
         self.update_label.emit("Converting pixels to safe PDF")
-        args = [
-            "podman",
-            "run",
-            "--network",
-            "none",
-            "-v",
-            f"{self.common.pixel_dir.name}:/dangerzone",
-            "-v",
-            f"{self.common.safe_dir.name}:/safezone",
-            "dangerzone",
-            "pixels-to-pdf",
+
+        # Build environment variables list
+        envs = []
+        if self.common.settings.get("ocr"):
+            envs += ["-e", "OCR=1"]
+        else:
+            envs += ["-e", "OCR=0"]
+        envs += [
+            "-e",
+            f"OCR_LANGUAGE={self.common.ocr_languages[self.common.settings.get('ocr_language')]}",
         ]
+
+        args = (
+            [
+                "podman",
+                "run",
+                "--network",
+                "none",
+                "-v",
+                f"{self.common.pixel_dir.name}:/dangerzone",
+                "-v",
+                f"{self.common.safe_dir.name}:/safezone",
+            ]
+            + envs
+            + ["dangerzone", "pixels-to-pdf",]
+        )
         self.execute_podman(args)
         self.task_finished.emit()

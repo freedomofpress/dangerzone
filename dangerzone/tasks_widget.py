@@ -1,6 +1,7 @@
 import shutil
 import shlex
 import subprocess
+import tempfile
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .tasks import PullImageTask, BuildContainerTask, ConvertToPixels, ConvertToPDF
@@ -72,10 +73,14 @@ class TasksWidget(QtWidgets.QWidget):
 
     def all_done(self):
         # Save safe PDF
+        source_filename = f"{self.common.safe_dir.name}/safe-output-compressed.pdf"
         if self.common.settings.get("save"):
-            source_filename = f"{self.common.safe_dir.name}/safe-output-compressed.pdf"
             dest_filename = self.common.save_filename
-            shutil.move(source_filename, dest_filename)
+        else:
+            # If not saving, then save it to a temp file instead
+            tmp = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
+            dest_filename = tmp[1]
+        shutil.move(source_filename, dest_filename)
 
         # Open
         if self.common.settings.get("open"):
@@ -92,7 +97,7 @@ class TasksWidget(QtWidgets.QWidget):
                         or args[i] == "%u"
                         or args[i] == "%U"
                     ):
-                        args[i] = self.common.save_filename
+                        args[i] = dest_filename
 
                 # Open as a background process
                 print(f"Executing: {' '.join(args)}")

@@ -24,7 +24,6 @@ class Settings:
 
     def set(self, key, val):
         self.settings[key] = val
-        self.settings.save()
 
     def load(self):
         if os.path.isfile(self.settings_filename):

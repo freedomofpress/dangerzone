@@ -44,10 +44,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.doc_selection_widget.document_selected.connect(
             self.settings_widget.document_selected
         )
+        self.settings_widget.start_clicked.connect(self.start_clicked)
         self.settings_widget.hide()
 
         # Tasks
         self.tasks_widget = TasksWidget(self.common)
+        self.settings_widget.start_clicked.connect(self.tasks_widget.start)
         self.tasks_widget.hide()
 
         # Layout
@@ -66,6 +68,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def document_selected(self):
         self.doc_selection_widget.hide()
         self.settings_widget.show()
+
+    def start_clicked(self):
+        self.settings_widget.hide()
+        self.tasks_widget.show()
 
     def closeEvent(self, e):
         e.accept()

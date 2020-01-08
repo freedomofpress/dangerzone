@@ -1,3 +1,5 @@
+import shlex
+import subprocess
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .tasks import PullImageTask, BuildContainerTask, ConvertToPixels, ConvertToPDF
@@ -26,18 +28,23 @@ class TasksWidget(QtWidgets.QWidget):
             self.scroll_to_bottom
         )
 
-        self.tasks = [PullImageTask, BuildContainerTask, ConvertToPixels, ConvertToPDF]
+        # Layout
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.task_label)
+        layout.addWidget(self.details_scrollarea)
+        self.setLayout(layout)
 
-    def start(self, filename):
-        print(f"Input document: {filename}")
-        self.common.set_document_filename(filename)
-        self.show()
+        self.tasks = []
 
+    def start(self):
+        if self.common.settings.get("update_container"):
+            self.tasks += [PullImageTask, BuildContainerTask]
+        self.tasks += [ConvertToPixels, ConvertToPDF]
         self.next_task()
 
     def next_task(self):
         if len(self.tasks) == 0:
-            self.save_safe_pdf()
+            self.all_done()
             return
 
         self.task_details.setText("")
@@ -62,27 +69,39 @@ class TasksWidget(QtWidgets.QWidget):
             f"Directory with pixel data: {self.common.pixel_dir.name}\n\n{err}"
         )
 
-    def save_safe_pdf(self):
-        suggested_filename = (
-            f"{os.path.splitext(self.common.document_filename)[0]}-safe.pdf"
-        )
-
-        filename = QtWidgets.QFileDialog.getSaveFileName(
-            self, "Save safe PDF", suggested_filename, filter="Documents (*.pdf)"
-        )
-        if filename[0] == "":
-            print("Save file dialog canceled")
-        else:
+    def all_done(self):
+        # Save safe PDF
+        if self.common.settings.get("save"):
             source_filename = f"{self.common.safe_dir.name}/safe-output-compressed.pdf"
-            dest_filename = filename[0]
+            dest_filename = self.common.save_filename
             shutil.move(source_filename, dest_filename)
 
-            # Clean up
-            self.common.pixel_dir.cleanup()
-            self.common.safe_dir.cleanup()
+        # Open
+        if self.common.settings.get("open"):
+            if self.common.settings.get("open_app") in self.common.pdf_viewers:
+                # Get the PDF reader command
+                args = shlex.split(
+                    self.common.pdf_viewers[self.common.settings.get("open_app")]
+                )
+                # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
+                for i in range(len(args)):
+                    if (
+                        args[i] == "%f"
+                        or args[i] == "%F"
+                        or args[i] == "%u"
+                        or args[i] == "%U"
+                    ):
+                        args[i] = self.save_filename
 
-            # Quit
-            self.app.quit()
+                # Open as a background process
+                subprocess.Popen(args)
+
+        # Clean up
+        self.common.pixel_dir.cleanup()
+        self.common.safe_dir.cleanup()
+
+        # Quit
+        self.app.quit()
 
     def scroll_to_bottom(self, minimum, maximum):
         self.details_scrollarea.verticalScrollBar().setValue(maximum)

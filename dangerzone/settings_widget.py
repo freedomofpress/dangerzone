@@ -3,6 +3,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class SettingsWidget(QtWidgets.QWidget):
+    start_clicked = QtCore.pyqtSignal()
+
     def __init__(self, common):
         super(SettingsWidget, self).__init__()
         self.common = common
@@ -53,13 +55,14 @@ class SettingsWidget(QtWidgets.QWidget):
         update_layout.addStretch()
 
         # Button
-        self.button_start = QtWidgets.QPushButton("Convert to Save Document")
-        self.button_start.setStyleSheet(
+        self.start_button = QtWidgets.QPushButton("Convert to Save Document")
+        self.start_button.clicked.connect(self.start_button_clicked)
+        self.start_button.setStyleSheet(
             "QPushButton { font-size: 16px; font-weight: bold; padding: 10px; }"
         )
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
-        button_layout.addWidget(self.button_start)
+        button_layout.addWidget(self.start_button)
         button_layout.addStretch()
 
         # Layout
@@ -124,3 +127,24 @@ class SettingsWidget(QtWidgets.QWidget):
         if filename[0] != "":
             self.common.save_filename = filename[0]
             self.save_lineedit.setText(os.path.basename(self.common.save_filename))
+
+    def start_button_clicked(self):
+        # Update settings
+        self.common.settings.set(
+            "save", self.save_checkbox.checkState() == QtCore.Qt.Checked
+        )
+        self.common.settings.set(
+            "ocr", self.ocr_checkbox.checkState() == QtCore.Qt.Checked
+        )
+        self.common.settings.set("ocr_language", self.ocr_combobox.currentText())
+        self.common.settings.set(
+            "open", self.open_checkbox.checkState() == QtCore.Qt.Checked
+        )
+        self.common.settings.set("open_app", self.open_combobox.currentText())
+        self.common.settings.set(
+            "update_container", self.update_checkbox.checkState() == QtCore.Qt.Checked
+        )
+        self.common.settings.save()
+
+        # Start!
+        self.start_clicked.emit()

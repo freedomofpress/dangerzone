@@ -11,7 +11,7 @@ dangerzone_version = "0.1.0"
 
 
 @click.command()
-@click.option("--filename", default="", help="Document filename")
+@click.argument("filename", required=False)
 def main(filename):
     print(f"dangerzone {dangerzone_version}")
 
@@ -28,7 +28,7 @@ def main(filename):
     # Main window
     main_window = MainWindow(common)
 
-    if filename != "":
+    if filename is not None:
         # Validate filename
         filename = os.path.abspath(os.path.expanduser(filename))
         try:

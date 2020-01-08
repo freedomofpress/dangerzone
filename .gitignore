@@ -130,3 +130,5 @@ dmypy.json
 
 # Other
 .vscode
+*.tar.gz
+deb_dist

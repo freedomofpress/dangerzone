@@ -5,17 +5,33 @@ import sys
 from dangerzone import dangerzone_version
 
 
+def file_list(path):
+    files = []
+    for filename in os.listdir(path):
+        if os.path.isfile(os.path.join(path, filename)):
+            files.append(os.path.join(path, filename))
+    return files
+
+
 setuptools.setup(
     name="dangerzone",
     version=dangerzone_version,
     author="Micah Lee",
     author_email="micah.lee@theintercept.com",
     license="MIT",
-    description="Take arbitrary untrusted PDFs, office documents, or images and convert them to a trusted PDF",
+    description="Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF",
     url="https://github.com/firstlookmedia/dangerzone",
     packages=["dangerzone"],
+    data_files=[
+        ("share/applications", ["install/linux/media.firstlook.dangerzone.desktop"],),
+        (
+            "share/icons/hicolor/64x64/apps",
+            ["install/linux/media.firstlook.dangerzone.png"],
+        ),
+        ("share/dangerzone", file_list("share")),
+        ("share/dangerzone/container", file_list("share/container")),
+    ],
     classifiers=(
-        "Development Status :: 4 - Beta",
         "Programming Language :: Python",
         "Intended Audience :: End Users/Desktop",
         "Operating System :: OS Independent",

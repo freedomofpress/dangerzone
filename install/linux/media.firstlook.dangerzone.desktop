@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=dangerzone
+GenericName=dangerzone
+Comment=Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF
+Exec=dangerzone %f
+Terminal=false
+Type=Application
+Icon=media.firstlook.dangerzone
+Categories=Office;Utility;OCR;Security
+MimeType=application/pdf;application/vnd.openxmlformats-officedocument.wordprocessingml.document;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet

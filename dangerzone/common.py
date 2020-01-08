@@ -222,7 +222,8 @@ class Common(object):
                 "share",
             )
         else:
-            print("Error, can only run in dev mode so far")
+            # In linux...
+            prefix = os.path.join(sys.prefix, "share/dangerzone")
 
         resource_path = os.path.join(prefix, filename)
         return resource_path

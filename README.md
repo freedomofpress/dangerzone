@@ -15,36 +15,6 @@ Some features:
 - Dangerzone compresses the safe PDF to reduce file size
 - After converting, dangerzone lets you open the safe PDF in the PDF viewer of your choice, which allows you to open PDFs and office docs in dangerzone by default so you never accidentally open a dangerous document
 
-Dangerzone was inspired by [Qubes trusted PDF](https://blog.invisiblethings.org/2013/02/21/converting-untrusted-pdfs-into-trusted.html), but it works in non-Qubes operating systems and sandboxes the document conversion in [podman](https://podman.io/) containers instead of virtual machines. Podman is like docker but more secure -- it doesn't require a privileged daemon, and containers can be launched without root.
+Dangerzone was inspired by [Qubes trusted PDF](https://blog.invisiblethings.org/2013/02/21/converting-untrusted-pdfs-into-trusted.html), but it works in non-Qubes operating systems and sandboxes the document conversion in containers instead of virtual machines (using [podman](https://podman.io/) for Linux, and Docker for macOS, for now). Podman is like docker but more secure -- it doesn't require a privileged daemon, and containers can be launched without root.
 
-Right now, dangerzone only works in Linux, but the goal is to [get it working in macOS](https://github.com/firstlookmedia/dangerzone/issues/1) so it can be more useful to journalists (who tend to <3 using Macs).
-
-## Development environment
-
-After cloning this git repo, make sure to checkout the git submodules.
-
-```
-git submodule init
-```
-
-### Debian/Ubuntu
-
-You need [podman](https://podman.io/getting-started/installation) ([these instructions](https://kushaldas.in/posts/podman-on-debian-buster.html) are useful for installing in Debian or Ubuntu).
-
-Install dependencies:
-
-```
-sudo apt install -y python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
-```
-
-Run locally:
-
-```
-./dev_script/dangerzone
-```
-
-Create a .deb:
-
-```
-./install/linux/build_deb.py
-```
+Set up a development environment by following [these instructions](/BUILD.md).

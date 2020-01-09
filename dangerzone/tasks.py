@@ -3,6 +3,7 @@ import time
 import tempfile
 import os
 import pipes
+import platform
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 
@@ -15,7 +16,8 @@ class TaskBase(QtCore.QThread):
     def __init__(self):
         super(TaskBase, self).__init__()
 
-    def execute_podman(self, args, watch="stdout"):
+    def exec_container(self, args, watch="stdout"):
+        args = [self.common.container_runtime] + args
         args_str = " ".join(pipes.quote(s) for s in args)
         print(f"Executing: {args_str}")
         output = f"Executing: {args_str}\n\n"
@@ -55,8 +57,8 @@ class PullImageTask(TaskBase):
     def run(self):
         self.update_label.emit("Pulling container image")
         self.update_details.emit("")
-        args = ["podman", "pull", "ubuntu:18.04"]
-        self.execute_podman(args, watch="stderr")
+        args = ["pull", "ubuntu:18.04"]
+        self.exec_container(args, watch="stderr")
         self.task_finished.emit()
 
 
@@ -69,8 +71,8 @@ class BuildContainerTask(TaskBase):
         container_path = self.common.get_resource_path("container")
         self.update_label.emit("Building container")
         self.update_details.emit("")
-        args = ["podman", "build", "-t", "dangerzone", container_path]
-        self.execute_podman(args)
+        args = ["build", "-t", "dangerzone", container_path]
+        self.exec_container(args)
         self.task_finished.emit()
 
 
@@ -86,7 +88,6 @@ class ConvertToPixels(TaskBase):
     def run(self):
         self.update_label.emit("Converting document to pixels")
         args = [
-            "podman",
             "run",
             "--network",
             "none",
@@ -97,7 +98,7 @@ class ConvertToPixels(TaskBase):
             "dangerzone",
             "document-to-pixels",
         ]
-        output = self.execute_podman(args)
+        output = self.exec_container(args)
 
         # Did we hit an error?
         for line in output.split("\n"):
@@ -185,7 +186,6 @@ class ConvertToPDF(TaskBase):
 
         args = (
             [
-                "podman",
                 "run",
                 "--network",
                 "none",
@@ -197,5 +197,5 @@ class ConvertToPDF(TaskBase):
             + envs
             + ["dangerzone", "pixels-to-pdf",]
         )
-        self.execute_podman(args)
+        self.exec_container(args)
         self.task_finished.emit()

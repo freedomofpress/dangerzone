@@ -3,8 +3,11 @@ import os
 import inspect
 import tempfile
 import appdirs
+import platform
 from PyQt5 import QtGui
-from xdg.DesktopEntry import DesktopEntry
+
+if platform.system() == "Linux":
+    from xdg.DesktopEntry import DesktopEntry
 
 from .settings import Settings
 
@@ -19,8 +22,9 @@ class Common(object):
         self.app = app
 
         # Temporary directory to store pixel data
-        self.pixel_dir = tempfile.TemporaryDirectory()
-        self.safe_dir = tempfile.TemporaryDirectory()
+        # Note in macOS, temp dirs must be in /tmp (or a few other paths) for Docker to mount them
+        self.pixel_dir = tempfile.TemporaryDirectory(prefix="/tmp/dangerzone-pixel-")
+        self.safe_dir = tempfile.TemporaryDirectory(prefix="/tmp/dangerzone-safe-")
         print(
             f"Temporary directories created, dangerous={self.pixel_dir.name}, safe={self.safe_dir.name}"
         )
@@ -36,6 +40,12 @@ class Common(object):
 
         # App data folder
         self.appdata_path = appdirs.user_config_dir("dangerzone")
+
+        # Container runtime
+        if platform.system() == "Darwin":
+            self.container_runtime = "docker"
+        else:
+            self.container_runtime = "podman"
 
         # Preload list of PDF viewers on computer
         self.pdf_viewers = self._find_pdf_viewers()
@@ -231,26 +241,27 @@ class Common(object):
     def _find_pdf_viewers(self):
         pdf_viewers = {}
 
-        for search_path in [
-            "/usr/share/applications",
-            "/usr/local/share/applications",
-            os.path.expanduser("~/.local/share/applications"),
-        ]:
-            try:
-                for filename in os.listdir(search_path):
-                    full_filename = os.path.join(search_path, filename)
-                    if os.path.splitext(filename)[1] == ".desktop":
+        if platform.system == "Linux":
+            for search_path in [
+                "/usr/share/applications",
+                "/usr/local/share/applications",
+                os.path.expanduser("~/.local/share/applications"),
+            ]:
+                try:
+                    for filename in os.listdir(search_path):
+                        full_filename = os.path.join(search_path, filename)
+                        if os.path.splitext(filename)[1] == ".desktop":
 
-                        desktop_entry = DesktopEntry(full_filename)
-                        if (
-                            "application/pdf" in desktop_entry.getMimeTypes()
-                            and desktop_entry.getName() != "dangerzone"
-                        ):
-                            pdf_viewers[
-                                desktop_entry.getName()
-                            ] = desktop_entry.getExec()
+                            desktop_entry = DesktopEntry(full_filename)
+                            if (
+                                "application/pdf" in desktop_entry.getMimeTypes()
+                                and desktop_entry.getName() != "dangerzone"
+                            ):
+                                pdf_viewers[
+                                    desktop_entry.getName()
+                                ] = desktop_entry.getExec()
 
-            except FileNotFoundError:
-                pass
+                except FileNotFoundError:
+                    pass
 
         return pdf_viewers

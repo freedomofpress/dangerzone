@@ -111,7 +111,9 @@ class SettingsWidget(QtWidgets.QWidget):
             self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
         # Is update containers required?
-        output = subprocess.check_output(["podman", "image", "ls", "dangerzone"])
+        output = subprocess.check_output(
+            [self.common.container_runtime, "image", "ls", "dangerzone"]
+        )
         if b"localhost/dangerzone" not in output:
             self.update_checkbox.setCheckState(QtCore.Qt.Checked)
             self.update_checkbox.setEnabled(False)

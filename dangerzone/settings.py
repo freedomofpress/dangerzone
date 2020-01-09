@@ -8,12 +8,17 @@ class Settings:
         self.common = common
         self.settings_filename = os.path.join(self.common.appdata_path, "settings.json")
 
+        if len(self.common.pdf_viewers) == 0:
+            default_pdf_viewer = None
+        else:
+            default_pdf_viewer = list(self.common.pdf_viewers)[0]
+
         self.default_settings = {
             "save": True,
             "ocr": True,
             "ocr_language": "English",
             "open": True,
-            "open_app": list(self.common.pdf_viewers)[0],
+            "open_app": default_pdf_viewer,
             "update_container": True,
         }
 

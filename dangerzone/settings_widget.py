@@ -73,10 +73,12 @@ class SettingsWidget(QtWidgets.QWidget):
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.dangerous_doc_label)
+        layout.addSpacing(20)
         layout.addLayout(save_layout)
         layout.addLayout(open_layout)
         layout.addLayout(ocr_layout)
         layout.addLayout(update_layout)
+        layout.addSpacing(20)
         layout.addLayout(button_layout)
         layout.addStretch()
         self.setLayout(layout)

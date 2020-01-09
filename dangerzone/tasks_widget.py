@@ -1,6 +1,4 @@
 import shutil
-import shlex
-import subprocess
 import tempfile
 from PyQt5 import QtCore, QtGui, QtWidgets
 

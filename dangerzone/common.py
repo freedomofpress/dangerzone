@@ -5,6 +5,7 @@ import tempfile
 import appdirs
 import platform
 import subprocess
+import shlex
 from PyQt5 import QtGui
 
 if platform.system() == "Darwin":

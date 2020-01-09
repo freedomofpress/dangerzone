@@ -1,0 +1,3 @@
+[submodule "share/container"]
+	path = share/container
+	url = git@github.com:firstlookmedia/dangerzone-converter.git

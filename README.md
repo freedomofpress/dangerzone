@@ -21,18 +21,30 @@ Right now, dangerzone only works in Linux, but the goal is to [get it working in
 
 ## Development environment
 
+After cloning this git repo, make sure to checkout the git submodules.
+
+```
+git submodule init
+```
+
+### Debian/Ubuntu
+
 You need [podman](https://podman.io/getting-started/installation) ([these instructions](https://kushaldas.in/posts/podman-on-debian-buster.html) are useful for installing in Debian or Ubuntu).
 
-You also need python3, pipenv, and Qt5.
+Install dependencies:
+
+```
+sudo apt install -y python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+```
 
 Run locally:
 
 ```
-pipenv run ./dev_script/dangerzone
+./dev_script/dangerzone
 ```
 
 Create a .deb:
 
 ```
-pipenv run ./install/linux/build_deb.py
+./install/linux/build_deb.py
 ```

@@ -84,24 +84,7 @@ class TasksWidget(QtWidgets.QWidget):
 
         # Open
         if self.common.settings.get("open"):
-            if self.common.settings.get("open_app") in self.common.pdf_viewers:
-                # Get the PDF reader command
-                args = shlex.split(
-                    self.common.pdf_viewers[self.common.settings.get("open_app")]
-                )
-                # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
-                for i in range(len(args)):
-                    if (
-                        args[i] == "%f"
-                        or args[i] == "%F"
-                        or args[i] == "%u"
-                        or args[i] == "%U"
-                    ):
-                        args[i] = dest_filename
-
-                # Open as a background process
-                print(f"Executing: {' '.join(args)}")
-                subprocess.Popen(args)
+            self.common.open_find_viewer(dest_filename)
 
         # Clean up
         self.common.pixel_dir.cleanup()

@@ -4,9 +4,15 @@ import inspect
 import tempfile
 import appdirs
 import platform
+import subprocess
 from PyQt5 import QtGui
 
-if platform.system() == "Linux":
+if platform.system() == "Darwin":
+    import CoreServices
+    import LaunchServices
+    import plistlib
+
+elif platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry
 
 from .settings import Settings
@@ -238,10 +244,62 @@ class Common(object):
         resource_path = os.path.join(prefix, filename)
         return resource_path
 
+    def open_find_viewer(self, filename):
+        if self.settings.get("open_app") in self.pdf_viewers:
+            if platform.system() == "Darwin":
+                # Get the PDF reader bundle command
+                bundle_identifier = self.pdf_viewers[self.settings.get("open_app")]
+                args = ["open", "-b", bundle_identifier, filename]
+
+                # Run
+                print(f"Executing: {' '.join(args)}")
+                subprocess.run(args)
+
+            elif platform.system() == "Linux":
+                # Get the PDF reader command
+                args = shlex.split(self.pdf_viewers[self.settings.get("open_app")])
+                # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
+                for i in range(len(args)):
+                    if (
+                        args[i] == "%f"
+                        or args[i] == "%F"
+                        or args[i] == "%u"
+                        or args[i] == "%U"
+                    ):
+                        args[i] = filename
+
+                # Open as a background process
+                print(f"Executing: {' '.join(args)}")
+                subprocess.Popen(args)
+
     def _find_pdf_viewers(self):
         pdf_viewers = {}
 
-        if platform.system == "Linux":
+        if platform.system() == "Darwin":
+            # Get all installed apps that can open PDFs
+            bundle_identifiers = LaunchServices.LSCopyAllRoleHandlersForContentType(
+                "com.adobe.pdf", CoreServices.kLSRolesAll
+            )
+            for bundle_identifier in bundle_identifiers:
+                # Get the filesystem path of the app
+                res = LaunchServices.LSCopyApplicationURLsForBundleIdentifier(
+                    bundle_identifier, None
+                )
+                if res[0] is None:
+                    continue
+                app_url = res[0][0]
+                app_path = str(app_url.path())
+
+                # Load its plist file
+                plist_path = os.path.join(app_path, "Contents/Info.plist")
+                with open(plist_path, "rb") as f:
+                    plist_data = f.read()
+                plist_dict = plistlib.loads(plist_data)
+
+                pdf_viewers[plist_dict["CFBundleName"]] = bundle_identifier
+
+        elif platform.system() == "Linux":
+            # Find all .desktop files
             for search_path in [
                 "/usr/share/applications",
                 "/usr/local/share/applications",
@@ -252,6 +310,7 @@ class Common(object):
                         full_filename = os.path.join(search_path, filename)
                         if os.path.splitext(filename)[1] == ".desktop":
 
+                            # See which ones can open PDFs
                             desktop_entry = DesktopEntry(full_filename)
                             if (
                                 "application/pdf" in desktop_entry.getMimeTypes()

@@ -57,7 +57,7 @@ class PullImageTask(TaskBase):
     def run(self):
         self.update_label.emit("Pulling container image")
         self.update_details.emit("")
-        args = ["pull", "ubuntu:18.04"]
+        args = ["pull", "ubuntu:20.04"]
         self.exec_container(args, watch="stderr")
         self.task_finished.emit()
 

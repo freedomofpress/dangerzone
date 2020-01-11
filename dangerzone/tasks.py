@@ -19,6 +19,8 @@ class TaskBase(QtCore.QThread):
     def exec_container(self, args, watch="stdout"):
         args = [self.common.container_runtime] + args
         args_str = " ".join(pipes.quote(s) for s in args)
+
+        print()
         print(f"Executing: {args_str}")
         output = f"Executing: {args_str}\n\n"
         self.update_details.emit(output)
@@ -38,6 +40,7 @@ class TaskBase(QtCore.QThread):
 
             for line in pipe:
                 output += line
+                print(line, end="")
                 self.update_details.emit(output)
 
             if watch == "stdout":

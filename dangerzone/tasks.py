@@ -46,7 +46,7 @@ class TaskBase(QtCore.QThread):
                 output += p.stdout.read()
             self.update_details.emit(output)
 
-        return output
+        return p.returncode, output
 
 
 class PullImageTask(TaskBase):
@@ -98,7 +98,11 @@ class ConvertToPixels(TaskBase):
             "dangerzone",
             "document-to-pixels",
         ]
-        output = self.exec_container(args)
+        returncode, output = self.exec_container(args)
+
+        if returncode != 0:
+            self.task_failed.emit(f"Return code: {returncode}")
+            return
 
         # Did we hit an error?
         for line in output.split("\n"):
@@ -197,5 +201,11 @@ class ConvertToPDF(TaskBase):
             + envs
             + ["dangerzone", "pixels-to-pdf",]
         )
-        self.exec_container(args)
+        returncode, output = self.exec_container(args)
+
+        if returncode != 0:
+            self.task_failed.emit(f"Return code: {returncode}")
+            return
+
         self.task_finished.emit()
+

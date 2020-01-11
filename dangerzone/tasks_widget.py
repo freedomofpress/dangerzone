@@ -63,10 +63,11 @@ class TasksWidget(QtWidgets.QWidget):
         self.task_details.setText(s)
 
     def task_failed(self, err):
-        self.task_label.setText("Task failed :(")
+        self.task_label.setText("Failed :(")
         self.task_details.setWordWrap(True)
+        text = self.task_details.text()
         self.task_details.setText(
-            f"Directory with pixel data: {self.common.pixel_dir.name}\n\n{err}"
+            f"{text}\n\n--\n\nDirectory with pixel data: {self.common.pixel_dir.name}\n\n{err}"
         )
 
     def all_done(self):

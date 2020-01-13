@@ -132,3 +132,4 @@ dmypy.json
 .vscode
 *.tar.gz
 deb_dist
+.DS_Store

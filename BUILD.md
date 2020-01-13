@@ -50,3 +50,20 @@ Run from source tree:
 ```
 pipenv run ./dev_scripts/dangerzone
 ```
+
+Create an app bundle:
+
+```sh
+pipenv run ./install/macos/build_app.py
+```
+
+This will create `dist/Dangerzone.app`.
+
+Once you have an app bundle, create a `.pkg` for distribution:
+
+```sh
+pipenv run install/macos/build_pkg.py # this requires codesigning certificates
+pipenv run install/macos/build_pkg.py --without-codesign # this doesn't
+```
+
+This will create `dist/Dangerzone-[version].pkg`.

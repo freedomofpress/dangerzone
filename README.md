@@ -15,6 +15,21 @@ Some features:
 - Dangerzone compresses the safe PDF to reduce file size
 - After converting, dangerzone lets you open the safe PDF in the PDF viewer of your choice, which allows you to open PDFs and office docs in dangerzone by default so you never accidentally open a dangerous document
 
+Dangerzone can convert these types of document into safe PDFs:
+
+- PDF (`.pdf`)
+- Microsoft Word (`.docx`, `.doc`)
+- Microsoft Excel (`.xlsx`, `.xls`)
+- Microsoft PowerPoint (`.pptx`, `.ppt`)
+- ODF Text (`.odt`)
+- ODF Spreadsheet (`.ods`)
+- ODF Presentation (`.odp`)
+- ODF Graphics (`.odg`)
+- Jpeg (`.jpg`, `.jpeg`)
+- GIF (`.gif`)
+- PNG (`.png`)
+- TIFF (`.tif`, `.tiff`)
+
 Dangerzone was inspired by [Qubes trusted PDF](https://blog.invisiblethings.org/2013/02/21/converting-untrusted-pdfs-into-trusted.html), but it works in non-Qubes operating systems and sandboxes the document conversion in containers instead of virtual machines (using [podman](https://podman.io/) for Linux, and Docker for macOS, for now). Podman is like docker but more secure -- it doesn't require a privileged daemon, and containers can be launched without root.
 
 Set up a development environment by following [these instructions](/BUILD.md).

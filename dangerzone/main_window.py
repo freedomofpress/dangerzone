@@ -16,7 +16,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowIcon(QtGui.QIcon(self.common.get_resource_path("logo.png")))
 
         self.setMinimumWidth(600)
-        self.setMinimumHeight(350)
+        self.setMinimumHeight(400)
 
         # Header
         logo = QtWidgets.QLabel()

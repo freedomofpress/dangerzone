@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .tasks import PullImageTask, BuildContainerTask, ConvertToPixels, ConvertToPDF
@@ -9,6 +10,13 @@ class TasksWidget(QtWidgets.QWidget):
     def __init__(self, common):
         super(TasksWidget, self).__init__()
         self.common = common
+
+        # Dangerous document label
+        self.dangerous_doc_label = QtWidgets.QLabel()
+        self.dangerous_doc_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.dangerous_doc_label.setStyleSheet(
+            "QLabel { font-size: 16px; font-weight: bold; color: #572606; }"
+        )
 
         self.task_label = QtWidgets.QLabel()
         self.task_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -30,11 +38,19 @@ class TasksWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.dangerous_doc_label)
+        layout.addSpacing(20)
         layout.addWidget(self.task_label)
         layout.addWidget(self.details_scrollarea)
         self.setLayout(layout)
 
         self.tasks = []
+
+    def document_selected(self):
+        # Update the danger doc label
+        self.dangerous_doc_label.setText(
+            f"Dangerous: {os.path.basename(self.common.document_filename)}"
+        )
 
     def start(self):
         if self.common.settings.get("update_container"):

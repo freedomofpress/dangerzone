@@ -10,7 +10,7 @@ class SettingsWidget(QtWidgets.QWidget):
         super(SettingsWidget, self).__init__()
         self.common = common
 
-        # Dangerous document
+        # Dangerous document label
         self.dangerous_doc_label = QtWidgets.QLabel()
         self.dangerous_doc_label.setAlignment(QtCore.Qt.AlignCenter)
         self.dangerous_doc_label.setStyleSheet(

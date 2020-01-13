@@ -50,6 +50,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Tasks
         self.tasks_widget = TasksWidget(self.common)
+        self.doc_selection_widget.document_selected.connect(
+            self.tasks_widget.document_selected
+        )
         self.settings_widget.start_clicked.connect(self.tasks_widget.start)
         self.tasks_widget.hide()
 

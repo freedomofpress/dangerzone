@@ -239,8 +239,14 @@ class Common(object):
                 "share",
             )
         else:
-            # In linux...
-            prefix = os.path.join(sys.prefix, "share/dangerzone")
+            if platform.system() == "Darwin":
+                # macOS
+                prefix = os.path.join(
+                    os.path.dirname(os.path.dirname(sys.executable)), "Resources/share"
+                )
+            else:
+                # Linux
+                prefix = os.path.join(sys.prefix, "share/dangerzone")
 
         resource_path = os.path.join(prefix, filename)
         return resource_path

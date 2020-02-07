@@ -123,10 +123,12 @@ class DockerInstaller(QtWidgets.QDialog):
         print(f"Install failed: {exception}")
         self.task_label.setText(f"Install failed: {exception}")
         self.install_t = None
+        self.progress.hide()
         self.cancel_button.setEnabled(True)
 
     def install_clicked(self):
         self.task_label.setText("Installing Docker")
+        self.progress.show()
         self.install_button.hide()
         self.cancel_button.setEnabled(False)
 

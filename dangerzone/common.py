@@ -50,7 +50,7 @@ class Common(object):
 
         # Container runtime
         if platform.system() == "Darwin":
-            self.container_runtime = "docker"
+            self.container_runtime = "/usr/local/bin/docker"
         else:
             self.container_runtime = "podman"
 

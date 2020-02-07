@@ -2,10 +2,12 @@ from PyQt5 import QtCore, QtWidgets
 import os
 import sys
 import signal
+import platform
 import click
 
 from .common import Common
 from .main_window import MainWindow
+from .docker_installer import is_docker_installed, DockerInstaller
 
 dangerzone_version = "0.1.0"
 
@@ -24,6 +26,14 @@ def main(filename):
 
     # Common object
     common = Common(app)
+
+    # See if we need to install Docker...
+    if platform.system() == "Darwin" and not is_docker_installed(common):
+        print("Docker is not installed!")
+        docker_installer = DockerInstaller(common)
+        if docker_installer.launch():
+            main(filename)
+        return
 
     # Main window
     main_window = MainWindow(common)

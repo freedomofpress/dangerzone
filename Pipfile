@@ -10,6 +10,7 @@ appdirs = "*"
 pyxdg = {version = "*",platform_system = "== 'Linux'"}
 pyobjc-core = {version = "*",platform_system = "== 'Darwin'"}
 pyobjc-framework-launchservices = {version = "*",platform_system = "== 'Darwin'"}
+requests = "*"
 
 [dev-packages]
 black = "*"

@@ -1,6 +1,5 @@
 import subprocess
 import time
-import tempfile
 import os
 import pipes
 import platform

@@ -4,10 +4,11 @@ import sys
 import signal
 import platform
 import click
+import time
 
 from .common import Common
 from .main_window import MainWindow
-from .docker_installer import is_docker_installed, DockerInstaller
+from .docker_installer import is_docker_installed, is_docker_ready, DockerInstaller
 
 dangerzone_version = "0.1.0"
 
@@ -31,8 +32,19 @@ def main(filename):
     if platform.system() == "Darwin" and not is_docker_installed(common):
         print("Docker is not installed!")
         docker_installer = DockerInstaller(common)
-        if docker_installer.launch():
-            main(filename)
+        if docker_installer.start():
+            # When installer finished, wait up to 20 minutes for the user to launch it
+            for i in range(120):
+                if is_docker_installed(common) and is_docker_ready(common):
+                    main(filename)
+                    return
+
+                print("Waiting for docker to be available ...")
+                time.sleep(1)
+
+            # Give up
+            print("Docker not available, giving up")
+
         return
 
     # Main window

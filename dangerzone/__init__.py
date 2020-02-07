@@ -29,8 +29,10 @@ def main(filename):
     common = Common(app)
 
     # See if we need to install Docker...
-    if platform.system() == "Darwin" and not is_docker_installed(common):
-        print("Docker is not installed!")
+    if platform.system() == "Darwin" and (
+        not is_docker_installed(common) or not is_docker_ready(common)
+    ):
+        print("Docker is either not installed or not running")
         docker_installer = DockerInstaller(common)
         if docker_installer.start():
             # When installer finished, wait up to 20 minutes for the user to launch it

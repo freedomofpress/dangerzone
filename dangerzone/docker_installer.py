@@ -153,11 +153,12 @@ class DockerInstaller(QtWidgets.QDialog):
         subprocess.Popen(["open", "-a", "Docker.app"])
 
     def cancel_clicked(self):
-        if self.download_t:
-            self.download_t.terminate()
-        if self.install_t:
-            self.install_t.terminate()
         self.reject()
+
+        if self.download_t:
+            self.download_t.quit()
+        if self.install_t:
+            self.install_t.quit()
 
     def start(self):
         if not os.path.isdir("/Applications/Docker.app"):

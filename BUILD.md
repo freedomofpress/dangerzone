@@ -51,19 +51,23 @@ Run from source tree:
 pipenv run ./dev_scripts/dangerzone
 ```
 
-Create an app bundle:
+To create an app bundle and DMG for distribution, use the `build_app.py` script
 
 ```sh
 pipenv run ./install/macos/build_app.py
 ```
 
-This will create `dist/Dangerzone.app`.
-
-Once you have an app bundle, create a `.pkg` for distribution:
+If you want to build for distribution, you'll need a codesigning certificate, and you'll also need to have [create-dmg](https://github.com/sindresorhus/create-dmg) installed:
 
 ```sh
-pipenv run install/macos/build_pkg.py # this requires codesigning certificates
-pipenv run install/macos/build_pkg.py --without-codesign # this doesn't
+npm install --global create-dmg
+brew install graphicsmagick imagemagick
 ```
 
-This will create `dist/Dangerzone-[version].pkg`.
+And then run `build_app.py --with-codesign`:
+
+```sh
+pipenv run ./install/macos/build_app.py --with-codesign
+```
+
+The output is in the `dist` folder.

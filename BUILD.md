@@ -31,8 +31,6 @@ Create a .deb:
 
 ## macOS
 
-## macOS
-
 Install Xcode from the Mac App Store. Once it's installed, run it for the first time to set it up. Also, run this to make sure command line tools are installed: `xcode-select --install`. And finally, open Xcode, go to Preferences > Locations, and make sure under Command Line Tools you select an installed version from the dropdown. (This is required for installing Qt5.)
 
 Download and install Python 3.7.4 from https://www.python.org/downloads/release/python-374/. I downloaded `python-3.7.4-macosx10.9.pkg`.
@@ -71,3 +69,21 @@ pipenv run ./install/macos/build_app.py --with-codesign
 ```
 
 The output is in the `dist` folder.
+
+## Windows
+
+Download Python 3.7.6, 32-bit (x86) from https://www.python.org/downloads/release/python-376/. I downloaded python-3.7.6.exe. When installing it, make sure to check the "Add Python 3.7 to PATH" checkbox on the first page of the installer.
+
+Open a command prompt and cd to the gpgsync folder. If you don't have it already, install pipenv (`pip install pipenv`). Then install dependencies:
+
+```
+python -m pipenv install --dev
+```
+
+Install the Qt 5.14.1 from https://www.qt.io/offline-installers. I downloaded qt-opensource-windows-x86-5.14.1.exe. In the installer, unfortunately you have login to an account. Then all you need `Qt` > `Qt 5.14.1` > `MSVC 2017 32-bit`.
+
+After that you can launch GPG Sync during development with:
+
+```
+python -m pipenv run python dev_scripts\dangerzone
+```

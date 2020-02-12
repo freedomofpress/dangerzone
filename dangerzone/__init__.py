@@ -8,7 +8,12 @@ import time
 
 from .common import Common
 from .main_window import MainWindow
-from .docker_installer import is_docker_installed, is_docker_ready, DockerInstaller
+from .docker_installer import (
+    is_docker_installed,
+    is_docker_ready,
+    launch_docker_windows,
+    DockerInstaller,
+)
 
 dangerzone_version = "0.1.0"
 
@@ -48,6 +53,30 @@ def main(filename):
             print("Docker not available, giving up")
 
         return
+
+    if platform.system() == "Windows":
+        if not is_docker_installed(common):
+            print("Docker is not installed")
+            docker_installer = DockerInstaller(common)
+            docker_installer.start()
+            # Quit after the installer runs, because it requires rebooting
+            return
+
+        if not is_docker_ready(common):
+            print("Docker is not running")
+            launch_docker_windows()
+
+            # Wait up to 20 minutes for docker to be ready
+            for i in range(120):
+                if is_docker_ready(common):
+                    main(filename)
+                    return
+
+                print("Waiting for docker to be available ...")
+                time.sleep(1)
+
+            # Give up
+            print("Docker not available, giving up")
 
     # Main window
     main_window = MainWindow(common)

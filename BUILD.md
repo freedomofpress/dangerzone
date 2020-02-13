@@ -87,3 +87,95 @@ After that you can launch GPG Sync during development with:
 ```
 python -m pipenv run python dev_scripts\dangerzone
 ```
+
+### If you want to build a .exe
+
+These instructions include adding folders to the path in Windows. To do this, go to Start and type "advanced system settings", and open "View advanced system settings" in the Control Panel. Click Environment Variables. Under "System variables" double-click on Path. From there you can add and remove folders that are available in the PATH.
+
+Download and install the [Windows 10 SDK](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk/).
+
+Add the following directories to the path:
+
+* `C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86`
+* `C:\Program Files (x86)\Windows Kits\10\Redist\10.0.18362.0\ucrt\DLLs\x86`
+
+### If you want the .exe to not get falsely flagged as malicious by anti-virus software
+
+Dangerzone uses PyInstaller to turn the python source code into Windows executable `.exe` file. Apparently, malware developers also use PyInstaller, and some anti-virus vendors have included snippets of PyInstaller code in their virus definitions. To avoid this, you have to compile the Windows PyInstaller bootloader yourself instead of using the pre-compiled one that comes with PyInstaller.
+
+Here's how to compile the PyInstaller bootloader:
+
+Download and install [Microsoft Build Tools for Visual Studio 2017](https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2019). I downloaded `vs_buildtools__1378184674.1581551596.exe`. In the installer, check the box next to "C++ build tools". Click "Individual components", and under "Compilers, build tools and runtimes", check "Windows Universal CRT SDK". Then click install. When installation is done, you may have to reboot your computer.
+
+Then, enable the 32-bit Visual C++ Toolset on the Command Line like this:
+
+```
+cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build"
+vcvars32.bat
+```
+
+Change to a folder where you keep source code, and clone the PyInstaller git repo and checkout the `v3.6` tag:
+
+```
+git clone https://github.com/pyinstaller/pyinstaller.git
+cd pyinstaller
+git tag -v v3.6
+```
+
+(Note that ideally you would verify the git tag, but the PGP key that has signed the v3.5 git tag for is not published anywhere, so this isn't possible. See [this issue](https://github.com/pyinstaller/pyinstaller/issues/4430).)
+
+The next step is to compile the bootloader. We should do this all in dangerzone's pipenv though:
+
+```
+cd dangerzone
+pipenv shell
+cd ..\pyinstaller
+```
+
+Then, compile the bootloader:
+
+```
+cd bootloader
+python waf distclean all --target-arch=32bit --msvc_targets=x86
+```
+
+Finally, install the PyInstaller module into your pipenv:
+
+```
+python setup.py install
+exit
+```
+
+Now the next time you use PyInstaller to build GPG Sync, the `.exe` file should not be flagged as malicious by anti-virus.
+
+### If you want to build the installer
+
+* Go to http://nsis.sourceforge.net/Download and download the latest NSIS. I downloaded `nsis-3.05-setup.exe`.
+* Add `C:\Program Files (x86)\NSIS` to the path.
+
+### If you want to sign binaries with Authenticode
+
+* You'll need a code signing certificate. I got an open source code signing certificate from [Certum](https://www.certum.eu/certum/cert,offer_en_open_source_cs.xml).
+* Once you get a code signing key and certificate and covert it to a pfx file, import it into your certificate store.
+
+## To make a .exe
+
+Open a command prompt, cd into the dangerzone directory, and run:
+
+```
+pipenv run pyinstaller install\pyinstaller\pyinstaller.spec
+```
+
+`dangerzone.exe` and all of their supporting files will get created inside the `dist` folder.
+
+### To build the installer
+
+Note that you must have a codesigning certificate installed in order to use the `install\windows\build_exe.bat` script, because it codesigns `dangerzone.exe`, `uninstall.exe`, and `dangerzone-setup.exe`.
+
+Open a command prompt, cd to the dangerzone directory, and run:
+
+```
+pipenv run install\build_exe.bat
+```
+
+This will prompt you to codesign three binaries and execute one unsigned binary. When you're done clicking through everything you will have `dist\dangerzone-setup.exe`.

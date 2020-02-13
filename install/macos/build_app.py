@@ -40,7 +40,7 @@ def main():
         shutil.rmtree(dist_path)
 
     print("○ Building app bundle")
-    run(["pyinstaller", "install/macos/pyinstaller.spec", "--clean"])
+    run(["pyinstaller", "install/pyinstaller/pyinstaller.spec", "--clean"])
     shutil.rmtree(os.path.join(dist_path, "dangerzone"))
 
     print(f"○ Finished build app: {app_path}")

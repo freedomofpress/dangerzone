@@ -7,14 +7,17 @@ name = "pypi"
 PyQt5 = "*"
 click = "*"
 appdirs = "*"
-pyxdg = {version = "*",platform_system = "== 'Linux'"}
-pyobjc-core = {version = "*",platform_system = "== 'Darwin'"}
-pyobjc-framework-launchservices = {version = "*",platform_system = "== 'Darwin'"}
 requests = "*"
+pyxdg = {version = "*",sys_platform = "== 'linux'"}
+pyobjc-core = {version = "*",sys_platform = "== 'darwin'"}
+pyobjc-framework-launchservices = {version = "*",sys_platform = "== 'darwin'"}
 
 [dev-packages]
 black = "*"
-pyinstaller = "*"
+# Windows pyinstaller we build from source
+pyinstaller = {version = "*",sys_platform = "== 'darwin'"}
+setuptools = {version = "*",sys_platform = "== 'win32'"}
+pywin32 = {version = "*",sys_platform = "== 'win32'"}
 
 [requires]
 python_version = "3.7"

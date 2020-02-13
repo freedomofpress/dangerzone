@@ -31,6 +31,7 @@ class TaskBase(QtCore.QThread):
             stderr=subprocess.PIPE,
             bufsize=1,
             universal_newlines=True,
+            startupinfo=self.common.get_subprocess_startupinfo(),
         ) as p:
             if watch == "stdout":
                 pipe = p.stdout

@@ -28,7 +28,11 @@ def is_docker_installed(common):
 def is_docker_ready(common):
     # Run `docker ps` without an error
     try:
-        subprocess.run([common.container_runtime, "ps"], check=True)
+        subprocess.run(
+            [common.container_runtime, "ps"],
+            check=True,
+            startupinfo=common.get_subprocess_startupinfo(),
+        )
         return True
     except subprocess.CalledProcessError:
         return False
@@ -36,7 +40,9 @@ def is_docker_ready(common):
 
 def launch_docker_windows():
     docker_desktop_path = "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"
-    subprocess.Popen([docker_desktop_path])
+    subprocess.Popen(
+        [docker_desktop_path], startupinfo=common.get_subprocess_startupinfo()
+    )
 
 
 class DockerInstaller(QtWidgets.QDialog):
@@ -278,7 +284,10 @@ class Installer(QtCore.QThread):
         elif platform.system() == "Windows":
             try:
                 # Run the installer
-                subprocess.run([self.installer_filename])
+                subprocess.run(
+                    [self.installer_filename],
+                    startupinfo=common.get_subprocess_startupinfo(),
+                )
                 self.install_finished.emit()
 
             except Exception as e:

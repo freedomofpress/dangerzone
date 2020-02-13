@@ -341,3 +341,11 @@ class Common(object):
                     pass
 
         return pdf_viewers
+
+    def get_subprocess_startupinfo(self):
+        if platform.system() == "Windows":
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            return startupinfo
+        else:
+            return None

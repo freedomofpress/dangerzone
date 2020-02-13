@@ -61,7 +61,12 @@ class PullImageTask(TaskBase):
         self.update_label.emit("Pulling container image")
         self.update_details.emit("")
         args = ["pull", "ubuntu:20.04"]
-        self.exec_container(args, watch="stderr")
+        returncode, _ = self.exec_container(args, watch="stderr")
+
+        if returncode != 0:
+            self.task_failed.emit(f"Return code: {returncode}")
+            return
+
         self.task_finished.emit()
 
 
@@ -75,7 +80,12 @@ class BuildContainerTask(TaskBase):
         self.update_label.emit("Building container")
         self.update_details.emit("")
         args = ["build", "-t", "dangerzone", container_path]
-        self.exec_container(args)
+        returncode, _ = self.exec_container(args)
+
+        if returncode != 0:
+            self.task_failed.emit(f"Return code: {returncode}")
+            return
+
         self.task_finished.emit()
 
 

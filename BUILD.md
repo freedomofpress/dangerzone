@@ -37,22 +37,22 @@ Download and install Python 3.7.4 from https://www.python.org/downloads/release/
 
 Install Qt 5.14.0 for macOS from https://www.qt.io/offline-installers. I downloaded `qt-opensource-mac-x64-5.14.0.dmg`. In the installer, you can skip making an account, and all you need is `Qt` > `Qt 5.14.0` > `macOS`.
 
-If you don't have it already, install pipenv (`pip3 install --user pipenv`). Then install dependencies:
+If you don't have it already, install poetry (`pip3 install --user poetry`). Then install dependencies:
 
 ```sh
-pipenv install --dev --pre
+poetry install
 ```
 
 Run from source tree:
 
 ```
-pipenv run ./dev_scripts/dangerzone
+poetry run ./dev_scripts/dangerzone
 ```
 
 To create an app bundle and DMG for distribution, use the `build_app.py` script
 
 ```sh
-pipenv run ./install/macos/build_app.py
+poetry run ./install/macos/build_app.py
 ```
 
 If you want to build for distribution, you'll need a codesigning certificate, and you'll also need to have [create-dmg](https://github.com/sindresorhus/create-dmg) installed:
@@ -65,32 +65,38 @@ brew install graphicsmagick imagemagick
 And then run `build_app.py --with-codesign`:
 
 ```sh
-pipenv run ./install/macos/build_app.py --with-codesign
+poetry run ./install/macos/build_app.py --with-codesign
 ```
 
 The output is in the `dist` folder.
 
 ## Windows
 
+These instructions include adding folders to the path in Windows. To do this, go to Start and type "advanced system settings", and open "View advanced system settings" in the Control Panel. Click Environment Variables. Under "System variables" double-click on Path. From there you can add and remove folders that are available in the PATH.
+
 Download Python 3.7.6, 32-bit (x86) from https://www.python.org/downloads/release/python-376/. I downloaded python-3.7.6.exe. When installing it, make sure to check the "Add Python 3.7 to PATH" checkbox on the first page of the installer.
-
-Open a command prompt and cd to the gpgsync folder. If you don't have it already, install pipenv (`pip install pipenv`). Then install dependencies:
-
-```
-python -m pipenv install --dev
-```
 
 Install the Qt 5.14.1 from https://www.qt.io/offline-installers. I downloaded qt-opensource-windows-x86-5.14.1.exe. In the installer, unfortunately you have login to an account. Then all you need `Qt` > `Qt 5.14.1` > `MSVC 2017 32-bit`.
 
-After that you can launch GPG Sync during development with:
+Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
 
 ```
-python -m pipenv run python dev_scripts\dangerzone
+(Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -UseBasicParsing).Content | python
+```
+
+And add `%USERPROFILE%\.poetry\bin` to your path. Then open a command prompt and cd to the `dangerzone` folder, and install the poetry dependencies:
+
+```
+poetry install
+```
+
+After that you can launch dangerzone during development with:
+
+```
+poetry run python dev_scripts\dangerzone
 ```
 
 ### If you want to build a .exe
-
-These instructions include adding folders to the path in Windows. To do this, go to Start and type "advanced system settings", and open "View advanced system settings" in the Control Panel. Click Environment Variables. Under "System variables" double-click on Path. From there you can add and remove folders that are available in the PATH.
 
 Download and install the [Windows 10 SDK](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk/).
 
@@ -124,11 +130,11 @@ git tag -v v3.6
 
 (Note that ideally you would verify the git tag, but the PGP key that has signed the v3.5 git tag for is not published anywhere, so this isn't possible. See [this issue](https://github.com/pyinstaller/pyinstaller/issues/4430).)
 
-The next step is to compile the bootloader. We should do this all in dangerzone's pipenv though:
+The next step is to compile the bootloader. We should do this all in dangerzone's poetry shell:
 
 ```
 cd dangerzone
-pipenv shell
+poetry shell
 cd ..\pyinstaller
 ```
 
@@ -139,14 +145,14 @@ cd bootloader
 python waf distclean all --target-arch=32bit --msvc_targets=x86
 ```
 
-Finally, install the PyInstaller module into your pipenv:
+Finally, install the PyInstaller module into your poetry environment:
 
 ```
 python setup.py install
 exit
 ```
 
-Now the next time you use PyInstaller to build GPG Sync, the `.exe` file should not be flagged as malicious by anti-virus.
+Now the next time you use PyInstaller to build dangerzone, the `.exe` file should not be flagged as malicious by anti-virus.
 
 ### If you want to build the installer
 
@@ -163,7 +169,7 @@ Now the next time you use PyInstaller to build GPG Sync, the `.exe` file should 
 Open a command prompt, cd into the dangerzone directory, and run:
 
 ```
-pipenv run pyinstaller install\pyinstaller\pyinstaller.spec
+poetry run pyinstaller install\pyinstaller\pyinstaller.spec
 ```
 
 `dangerzone.exe` and all of their supporting files will get created inside the `dist` folder.
@@ -175,7 +181,7 @@ Note that you must have a codesigning certificate installed in order to use the 
 Open a command prompt, cd to the dangerzone directory, and run:
 
 ```
-pipenv run install\build_exe.bat
+poetry run install\build_exe.bat
 ```
 
 This will prompt you to codesign three binaries and execute one unsigned binary. When you're done clicking through everything you will have `dist\dangerzone-setup.exe`.

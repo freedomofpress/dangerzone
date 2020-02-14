@@ -77,7 +77,7 @@ class BuildContainerTask(TaskBase):
 
     def run(self):
         container_path = self.common.get_resource_path("container")
-        self.update_label.emit("Building container")
+        self.update_label.emit("Building container (this might take a long time)")
         self.update_details.emit("")
         args = ["build", "-t", "dangerzone", container_path]
         returncode, _ = self.exec_container(args)

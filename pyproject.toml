@@ -16,6 +16,7 @@ pyobjc-core = {version = "^6.1", platform = "darwin"}
 pyobjc-framework-launchservices = {version = "^6.1", platform = "darwin"}
 macholib = "^1.14"
 pywin32 = {version = "^227", platform = "win32"}
+wmi = {version = "^1.4.9", platform = "windows"}
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"

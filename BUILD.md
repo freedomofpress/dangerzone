@@ -143,6 +143,7 @@ Then, compile the bootloader:
 ```
 cd bootloader
 python waf distclean all --target-arch=32bit --msvc_targets=x86
+cd ..
 ```
 
 Finally, install the PyInstaller module into your poetry environment:

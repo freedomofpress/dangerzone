@@ -132,6 +132,3 @@ dmypy.json
 *.tar.gz
 deb_dist
 .DS_Store
-install/windows/Dangerzone.msi
-install/windows/Dangerzone.wixobj
-install/windows/Dangerzone.wixpdb

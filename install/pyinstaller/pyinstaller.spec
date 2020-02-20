@@ -23,6 +23,11 @@ if p == "Darwin":
 else:
     datas = [("../../share", "share")]
 
+if p == "Windows":
+    icon = os.path.join(root, "install", "windows", "dangerzone.ico")
+else:
+    icon = None
+
 a = Analysis(
     ["dangerzone"],
     pathex=["."],
@@ -48,6 +53,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
+    icon=icon,
 )
 
 coll = COLLECT(

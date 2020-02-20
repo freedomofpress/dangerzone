@@ -99,7 +99,7 @@ class TasksWidget(QtWidgets.QWidget):
 
         # Open
         if self.common.settings.get("open"):
-            self.common.open_find_viewer(dest_filename)
+            self.common.open_pdf_viewer(dest_filename)
 
         # Clean up
         self.common.pixel_dir.cleanup()

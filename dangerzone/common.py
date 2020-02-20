@@ -269,7 +269,7 @@ class Common(object):
             path = self.get_resource_path("logo.png")
         return QtGui.QIcon(path)
 
-    def open_find_viewer(self, filename):
+    def open_pdf_viewer(self, filename):
         if self.settings.get("open_app") in self.pdf_viewers:
             if platform.system() == "Darwin":
                 # Get the PDF reader bundle command

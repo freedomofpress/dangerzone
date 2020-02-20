@@ -24,7 +24,7 @@ else:
     datas = [("../../share", "share")]
 
 if p == "Windows":
-    icon = os.path.join(root, "install", "windows", "dangerzone.ico")
+    icon = os.path.join(root, "share", "dangerzone.ico")
 else:
     icon = None
 

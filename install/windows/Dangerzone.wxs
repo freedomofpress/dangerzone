@@ -6,7 +6,7 @@
         <Package Id="*" Keywords="Installer" Description="Dangerzone $(var.ProductVersion) Installer" Manufacturer="First Look Media" InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
         <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
 
-        <Icon Id="ProductIcon" SourceFile="..\..\install\windows\dangerzone.ico"/>
+        <Icon Id="ProductIcon" SourceFile="..\..\share\dangerzone.ico"/>
         <Property Id="ARPPRODUCTICON" Value="ProductIcon"/>
         <Property Id="ARPHELPLINK" Value="https://github.com/firstlookmedia/dangerzone"/>
         <Property Id="ARPURLINFOABOUT" Value="https://tech.firstlook.media"/>

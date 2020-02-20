@@ -250,16 +250,24 @@ class Common(object):
             )
         else:
             if platform.system() == "Darwin":
-                # macOS
                 prefix = os.path.join(
                     os.path.dirname(os.path.dirname(sys.executable)), "Resources/share"
                 )
+            elif platform.system() == "Linux":
+                prefix = os.path.join(sys.prefix, "share", "dangerzone")
             else:
-                # Linux
-                prefix = os.path.join(sys.prefix, "share/dangerzone")
+                # Windows
+                prefix = os.path.join(os.path.dirname(sys.executable), "share")
 
         resource_path = os.path.join(prefix, filename)
         return resource_path
+
+    def get_window_icon(self):
+        if platform.system() == "Windows":
+            path = self.get_resource_path("dangerzone.ico")
+        else:
+            path = self.get_resource_path("logo.png")
+        return QtGui.QIcon(path)
 
     def open_find_viewer(self, filename):
         if self.settings.get("open_app") in self.pdf_viewers:

@@ -13,7 +13,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.common = common
 
         self.setWindowTitle("dangerzone")
-        self.setWindowIcon(QtGui.QIcon(self.common.get_resource_path("logo.png")))
+        self.setWindowIcon(self.common.get_window_icon())
 
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)

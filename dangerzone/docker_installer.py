@@ -51,7 +51,7 @@ class DockerInstaller(QtWidgets.QDialog):
         self.common = common
 
         self.setWindowTitle("dangerzone")
-        self.setWindowIcon(QtGui.QIcon(self.common.get_resource_path("logo.png")))
+        self.setWindowIcon(self.common.get_window_icon())
 
         label = QtWidgets.QLabel()
         if platform.system() == "Darwin":

@@ -31,6 +31,7 @@ class TaskBase(QtCore.QThread):
             stderr=subprocess.PIPE,
             bufsize=1,
             universal_newlines=True,
+            startupinfo=self.common.get_subprocess_startupinfo(),
         ) as p:
             if watch == "stdout":
                 pipe = p.stdout
@@ -60,7 +61,12 @@ class PullImageTask(TaskBase):
         self.update_label.emit("Pulling container image")
         self.update_details.emit("")
         args = ["pull", "ubuntu:20.04"]
-        self.exec_container(args, watch="stderr")
+        returncode, _ = self.exec_container(args, watch="stderr")
+
+        if returncode != 0:
+            self.task_failed.emit(f"Return code: {returncode}")
+            return
+
         self.task_finished.emit()
 
 
@@ -71,10 +77,15 @@ class BuildContainerTask(TaskBase):
 
     def run(self):
         container_path = self.common.get_resource_path("container")
-        self.update_label.emit("Building container")
+        self.update_label.emit("Building container (this might take a long time)")
         self.update_details.emit("")
         args = ["build", "-t", "dangerzone", container_path]
-        self.exec_container(args)
+        returncode, _ = self.exec_container(args)
+
+        if returncode != 0:
+            self.task_failed.emit(f"Return code: {returncode}")
+            return
+
         self.task_finished.emit()
 
 

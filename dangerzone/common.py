@@ -30,8 +30,14 @@ class Common(object):
 
         # Temporary directory to store pixel data
         # Note in macOS, temp dirs must be in /tmp (or a few other paths) for Docker to mount them
-        self.pixel_dir = tempfile.TemporaryDirectory(prefix="/tmp/dangerzone-pixel-")
-        self.safe_dir = tempfile.TemporaryDirectory(prefix="/tmp/dangerzone-safe-")
+        if platform.system() == "Windows":
+            self.pixel_dir = tempfile.TemporaryDirectory(prefix="dangerzone-pixel-")
+            self.safe_dir = tempfile.TemporaryDirectory(prefix="dangerzone-safe-")
+        else:
+            self.pixel_dir = tempfile.TemporaryDirectory(
+                prefix="/tmp/dangerzone-pixel-"
+            )
+            self.safe_dir = tempfile.TemporaryDirectory(prefix="/tmp/dangerzone-safe-")
         print(
             f"Temporary directories created, dangerous={self.pixel_dir.name}, safe={self.safe_dir.name}"
         )
@@ -51,6 +57,10 @@ class Common(object):
         # Container runtime
         if platform.system() == "Darwin":
             self.container_runtime = "/usr/local/bin/docker"
+        elif platform.system() == "Windows":
+            self.container_runtime = (
+                "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe"
+            )
         else:
             self.container_runtime = "podman"
 
@@ -331,3 +341,11 @@ class Common(object):
                     pass
 
         return pdf_viewers
+
+    def get_subprocess_startupinfo(self):
+        if platform.system() == "Windows":
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            return startupinfo
+        else:
+            return None

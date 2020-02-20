@@ -178,12 +178,12 @@ poetry run pyinstaller install\pyinstaller\pyinstaller.spec
 
 ### To build the installer
 
-Note that you must have a codesigning certificate installed in order to use the `install\windows\build_exe.bat` script, because it codesigns `dangerzone.exe`, `uninstall.exe`, and `dangerzone-setup.exe`.
+Note that you must have a codesigning certificate installed in order to use the `install\windows\build.bat` script, because it codesigns `dangerzone.exe` and `Dangerzone.msi`.
 
 Open a command prompt, cd to the dangerzone directory, and run:
 
 ```
-poetry run install\build_exe.bat
+poetry run install\windows\build.bat
 ```
 
-This will prompt you to codesign three binaries and execute one unsigned binary. When you're done clicking through everything you will have `dist\dangerzone-setup.exe`.
+When you're done you will have `dist\Dangerzone.msi`.

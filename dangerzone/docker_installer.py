@@ -38,7 +38,7 @@ def is_docker_ready(common):
         return False
 
 
-def launch_docker_windows():
+def launch_docker_windows(common):
     docker_desktop_path = "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"
     subprocess.Popen(
         [docker_desktop_path], startupinfo=common.get_subprocess_startupinfo()

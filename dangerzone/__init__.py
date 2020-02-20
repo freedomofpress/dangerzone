@@ -64,7 +64,7 @@ def main(filename):
 
         if not is_docker_ready(common):
             print("Docker is not running")
-            launch_docker_windows()
+            launch_docker_windows(common)
 
             # Wait up to 20 minutes for docker to be ready
             for i in range(120):

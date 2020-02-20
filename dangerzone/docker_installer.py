@@ -175,7 +175,7 @@ class DockerInstaller(QtWidgets.QDialog):
         self.timer.start(10)
 
     def start_installer(self):
-        self.install_t = Installer(self.installer_filename)
+        self.install_t = Installer(self.common, self.installer_filename)
         self.install_t.install_finished.connect(self.install_finished)
         self.install_t.install_failed.connect(self.install_failed)
         self.install_t.update_task_label.connect(self.update_task_label)
@@ -243,8 +243,9 @@ class Installer(QtCore.QThread):
     install_failed = QtCore.pyqtSignal(str)
     update_task_label = QtCore.pyqtSignal(str)
 
-    def __init__(self, installer_filename):
+    def __init__(self, common, installer_filename):
         super(Installer, self).__init__()
+        self.common = common
         self.installer_filename = installer_filename
 
     def run(self):
@@ -286,7 +287,7 @@ class Installer(QtCore.QThread):
                 # Run the installer
                 subprocess.run(
                     [self.installer_filename],
-                    startupinfo=common.get_subprocess_startupinfo(),
+                    startupinfo=self.common.get_subprocess_startupinfo(),
                 )
                 self.install_finished.emit()
 

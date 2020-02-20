@@ -157,8 +157,9 @@ Now the next time you use PyInstaller to build dangerzone, the `.exe` file shoul
 
 ### If you want to build the installer
 
-* Go to http://nsis.sourceforge.net/Download and download the latest NSIS. I downloaded `nsis-3.05-setup.exe`.
-* Add `C:\Program Files (x86)\NSIS` to the path.
+* Go to https://dotnet.microsoft.com/download/dotnet-framework and download and install .NET Framework 3.5 SP1 Runtime. I downloaded `dotnetfx35.exe`.
+* Go to https://wixtoolset.org/releases/ and download and install WiX toolset. I downloaded `wix311.exe`.
+* Add `C:\Program Files (x86)\WiX Toolset v3.1.1\bin` to the path.
 
 ### If you want to sign binaries with Authenticode
 

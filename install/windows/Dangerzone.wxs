@@ -1,0 +1,246 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<?define ProductVersion = "0.1.0"?>
+<?define ProductUpgradeCode = "12b9695c-965b-4be0-bc33-21274e809576"?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+    <Product Name="Dangerzone" Manufacturer="First Look Media" Id="f40ff0a9-ebf8-4e1e-9bce-6ab5c74fe119" UpgradeCode="$(var.ProductUpgradeCode)" Language="1033" Codepage="1252" Version="$(var.ProductVersion)">
+        <Package Id="*" Keywords="Installer" Description="Dangerzone $(var.ProductVersion) Installer" Manufacturer="First Look Media" InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
+        <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+
+        <Icon Id="ProductIcon" SourceFile="dangerzone.ico"/>
+        <Property Id="ARPPRODUCTICON" Value="ProductIcon"/>
+        <Property Id="ARPHELPLINK" Value="https://github.com/firstlookmedia/dangerzone"/>
+        <Property Id="ARPURLINFOABOUT" Value="https://tech.firstlook.media"/>
+        <Property Id="ARPNOREPAIR" Value="1"/>
+        <Property Id="ARPNOMODIFY" Value="1"/>
+
+        <Upgrade Id="$(var.ProductUpgradeCode)">
+            <UpgradeVersion Minimum="$(var.ProductVersion)" OnlyDetect="yes" Property="NEWERVERSIONDETECTED"/>
+            <UpgradeVersion Minimum="0.0.0" Maximum="$(var.ProductVersion)" IncludeMinimum="yes" IncludeMaximum="no" Property="OLDERVERSIONBEINGUPGRADED"/>
+        </Upgrade>
+        <Condition Message="A newer version of this software is already installed.">NOT NEWERVERSIONDETECTED</Condition>
+
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="INSTALLDIR" Name="Dangerzone">
+                    <Directory Id="FolderCertifi" Name="certifi" />
+                    <Directory Id="FolderInclude" Name="Include" />
+                    <Directory Id="FolderPyQt5" Name="PyQt5">
+                        <Directory Id="FolderPyQt5Qt" Name="Qt">
+                            <Directory Id="FolderPyQt5QtPlugins" Name="plugins">
+                                <Directory Id="FolderPyQt5QtPluginsIconengines" Name="iconengines" />
+                                <Directory Id="FolderPyQt5QtPluginsImageformats" Name="imageformats" />
+                                <Directory Id="FolderPyQt5QtPluginsPlatforms" Name="platforms" />
+                                <Directory Id="FolderPyQt5QtPluginsPlatformthemes" Name="platformthemes" />
+                                <Directory Id="FolderPyQt5QtPluginsStyles" Name="styles" />
+                            </Directory>
+                            <Directory Id="FolderPyQt5QtTranslations" Name="translations" />
+                        </Directory>
+                    </Directory>
+                    <Directory Id="FolderShare" Name="share">
+                        <Directory Id="FolderShareContainer" Name="container">
+                            <Directory Id="FolderShareContainerScripts" Name="scripts" />
+                        </Directory>
+                    </Directory>
+                    <Directory Id="FolderWin32com" Name="win32com">
+                        <Directory Id="FolderWin32comShell" Name="shell" />
+                    </Directory>
+                </Directory>
+            </Directory>
+
+            <Directory Id="ProgramMenuFolder">
+                <Directory Id="ProgramMenuSubfolder" Name="Dangerzone">
+                    <Component Id="ApplicationShortcuts" Guid="539e7de8-a124-4c09-aa55-0dd516aad7bc">
+                        <Shortcut Id="ApplicationShortcut1" Name="Dangerzone" Description="Dangerzone" Target="[INSTALLDIR]dangerzone.exe" WorkingDirectory="INSTALLDIR"/>
+                        <RegistryValue Root="HKCU" Key="Software\First Look Media\Dangerzone" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+                        <RemoveFolder Id="ProgramMenuSubfolder" On="uninstall"/>
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <DirectoryRef Id="INSTALLDIR">
+            <Component Id="ApplicationFiles" Guid="23577d98-707d-48c8-b11c-edd58fd0c742">
+                <File Source="..\..\dist\dangerzone\base_library.zip" />
+                <File Source="..\..\dist\dangerzone\d3dcompiler_47.dll" />
+                <File Source="..\..\dist\dangerzone\dangerzone.exe" />
+                <File Source="..\..\dist\dangerzone\dangerzone.exe.manifest" />
+                <File Source="..\..\dist\dangerzone\libcrypto-1_1.dll" />
+                <File Source="..\..\dist\dangerzone\libEGL.dll" />
+                <File Source="..\..\dist\dangerzone\libGLESv2.dll" />
+                <File Source="..\..\dist\dangerzone\libssl-1_1.dll" />
+                <File Source="..\..\dist\dangerzone\mfc140u.dll" />
+                <File Source="..\..\dist\dangerzone\opengl32sw.dll" />
+                <File Source="..\..\dist\dangerzone\pyexpat.pyd" />
+                <File Source="..\..\dist\dangerzone\python3.dll" />
+                <File Source="..\..\dist\dangerzone\python37.dll" />
+                <File Source="..\..\dist\dangerzone\pythoncom37.dll" />
+                <File Source="..\..\dist\dangerzone\pywintypes37.dll" />
+                <File Source="..\..\dist\dangerzone\Qt5Core.dll" />
+                <File Source="..\..\dist\dangerzone\Qt5DBus.dll" />
+                <File Source="..\..\dist\dangerzone\Qt5Gui.dll" />
+                <File Source="..\..\dist\dangerzone\Qt5Network.dll" />
+                <File Source="..\..\dist\dangerzone\Qt5Qml.dll" />
+                <File Source="..\..\dist\dangerzone\Qt5QmlModels.dll" />
+                <File Source="..\..\dist\dangerzone\Qt5Quick.dll" />
+                <File Source="..\..\dist\dangerzone\Qt5Svg.dll" />
+                <File Source="..\..\dist\dangerzone\Qt5WebSockets.dll" />
+                <File Source="..\..\dist\dangerzone\Qt5Widgets.dll" />
+                <File Source="..\..\dist\dangerzone\select.pyd" />
+                <File Source="..\..\dist\dangerzone\unicodedata.pyd" />
+                <File Source="..\..\dist\dangerzone\VCRUNTIME140.dll" />
+                <File Source="..\..\dist\dangerzone\win32api.pyd" />
+                <File Source="..\..\dist\dangerzone\win32trace.pyd" />
+                <File Source="..\..\dist\dangerzone\win32ui.pyd" />
+                <File Source="..\..\dist\dangerzone\win32wnet.pyd" />
+                <File Source="..\..\dist\dangerzone\_bz2.pyd" />
+                <File Source="..\..\dist\dangerzone\_ctypes.pyd" />
+                <File Source="..\..\dist\dangerzone\_hashlib.pyd" />
+                <File Source="..\..\dist\dangerzone\_lzma.pyd" />
+                <File Source="..\..\dist\dangerzone\_queue.pyd" />
+                <File Source="..\..\dist\dangerzone\_socket.pyd" />
+                <File Source="..\..\dist\dangerzone\_ssl.pyd" />
+                <File Source="..\..\dist\dangerzone\_win32sysloader.pyd" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderCertifi">
+            <Component Id="FolderComponentCertifi" Guid="f4adfd38-e0b0-4b2d-9e14-f6983ef61f76">
+                <File Source="..\..\dist\dangerzone\certifi\cacert.pem" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderInclude">
+            <Component Id="FolderComponentInclude" Guid="d8c037d1-b6b0-4d41-a135-cc32dd7199a4">
+                <File Source="..\..\dist\dangerzone\Include\pyconfig.h" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderPyQt5">
+            <Component Id="FolderComponentPyQt5" Guid="c91cd65a-60c0-40b9-8db7-e6a282daae39">
+                <File Source="..\..\dist\dangerzone\PyQt5\QtCore.pyd" />
+                <File Source="..\..\dist\dangerzone\PyQt5\QtGui.pyd" />
+                <File Source="..\..\dist\dangerzone\PyQt5\QtWidgets.pyd" />
+                <File Source="..\..\dist\dangerzone\PyQt5\sip.cp37-win32.pyd" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderPyQt5QtPluginsIconengines">
+            <Component Id="FolderComponentPyQt5QtPluginsIconengines" Guid="95c6a8f4-68b1-4ec4-93b3-939fdc8290f6">
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\iconengines\qsvgicon.dll" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderPyQt5QtPluginsImageformats">
+            <Component Id="FolderComponentPyQt5QtPluginsImageformats" Guid="e32063ed-6b60-4db2-a4ed-2b1b696c8faf">
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\imageformats\qgif.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\imageformats\qicns.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\imageformats\qico.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\imageformats\qjpeg.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\imageformats\qsvg.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\imageformats\qtga.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\imageformats\qtiff.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\imageformats\qwbmp.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\imageformats\qwebp.dll" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderPyQt5QtPluginsPlatforms">
+            <Component Id="FolderComponentPyQt5QtPluginsPlatforms" Guid="83be9e94-7667-4fc6-b507-3f6f0935fa3d">
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\platforms\qminimal.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\platforms\qoffscreen.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\platforms\qwebgl.dll" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\platforms\qwindows.dll" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderPyQt5QtPluginsPlatformthemes">
+            <Component Id="FolderComponentPyQt5QtPluginsPlatformthemes" Guid="82847ea1-6094-41be-b366-cb7215f06552">
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\platformthemes\qxdgdesktopportal.dll" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderPyQt5QtPluginsStyles">
+            <Component Id="FolderComponentPyQt5QtPluginsStyles" Guid="63f22a56-d6c6-4908-bce6-f02b8be2cb53">
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\plugins\styles\qwindowsvistastyle.dll" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderPyQt5QtTranslations">
+            <Component Id="FolderComponentPyQt5QtTranslations" Guid="bb438ebf-4195-4cc5-873e-70791163044e">
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_ar.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_bg.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_ca.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_cs.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_da.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_de.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_en.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_es.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_fi.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_fr.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_gd.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_he.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_hu.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_it.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_ja.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_ko.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_lv.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_pl.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_ru.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_sk.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_uk.qm" />
+                <File Source="..\..\dist\dangerzone\PyQt5\Qt\translations\qtbase_zh_TW.qm" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderShare">
+            <Component Id="FolderComponentShare" Guid="94ef9fae-990d-4dcb-bbf4-ca01b4debc20">
+                <File Source="..\..\dist\dangerzone\share\icon.png" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderShareContainer">
+            <Component Id="FolderComponentShareContainer" Guid="4a3e5a58-8804-40eb-8216-5f0d75e8afa2">
+                <File Source="..\..\dist\dangerzone\share\container\Dockerfile" />
+                <File Source="..\..\dist\dangerzone\share\container\LICENSE" />
+                <File Source="..\..\dist\dangerzone\share\container\README.md" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderShareContainerScripts">
+            <Component Id="FolderComponentShareContainerScripts" Guid="863a148f-b0cd-404f-ab59-fc29d5961786">
+                <File Source="..\..\dist\dangerzone\share\container\scripts\document-to-pixels" />
+                <File Source="..\..\dist\dangerzone\share\container\scripts\document-to-pixels-unpriv" />
+                <File Source="..\..\dist\dangerzone\share\container\scripts\pixels-to-pdf" />
+                <File Source="..\..\dist\dangerzone\share\container\scripts\pixels-to-pdf-unpriv" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="FolderWin32comShell">
+            <Component Id="FolderComponentWin32comShell" Guid="b51f7768-64f2-4666-a919-736a6ae6c332">
+                <File Source="..\..\dist\dangerzone\win32com\shell\shell.pyd" />
+            </Component>
+        </DirectoryRef>
+
+        <InstallExecuteSequence>
+            <RemoveExistingProducts After="InstallValidate"/>
+        </InstallExecuteSequence>
+
+        <Feature Id="DefaultFeature" Level="1">
+            <ComponentRef Id="ApplicationFiles" />
+            <ComponentRef Id="FolderComponentCertifi" />
+            <ComponentRef Id="FolderComponentInclude" />
+            <ComponentRef Id="FolderComponentPyQt5" />
+            <ComponentRef Id="FolderComponentPyQt5QtPluginsIconengines" />
+            <ComponentRef Id="FolderComponentPyQt5QtPluginsImageformats" />
+            <ComponentRef Id="FolderComponentPyQt5QtPluginsPlatforms" />
+            <ComponentRef Id="FolderComponentPyQt5QtPluginsPlatformthemes" />
+            <ComponentRef Id="FolderComponentPyQt5QtPluginsStyles" />
+            <ComponentRef Id="FolderComponentPyQt5QtTranslations" />
+            <ComponentRef Id="FolderComponentShare" />
+            <ComponentRef Id="FolderComponentShareContainer" />
+            <ComponentRef Id="FolderComponentShareContainerScripts" />
+            <ComponentRef Id="FolderComponentWin32comShell" />
+            <ComponentRef Id="ApplicationShortcuts" />
+        </Feature>
+    </Product>
+</Wix>

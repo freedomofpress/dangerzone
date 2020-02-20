@@ -157,8 +157,9 @@ Now the next time you use PyInstaller to build dangerzone, the `.exe` file shoul
 
 ### If you want to build the installer
 
-* Go to http://nsis.sourceforge.net/Download and download the latest NSIS. I downloaded `nsis-3.05-setup.exe`.
-* Add `C:\Program Files (x86)\NSIS` to the path.
+* Go to https://dotnet.microsoft.com/download/dotnet-framework and download and install .NET Framework 3.5 SP1 Runtime. I downloaded `dotnetfx35.exe`.
+* Go to https://wixtoolset.org/releases/ and download and install WiX toolset. I downloaded `wix311.exe`.
+* Add `C:\Program Files (x86)\WiX Toolset v3.1.1\bin` to the path.
 
 ### If you want to sign binaries with Authenticode
 
@@ -177,12 +178,12 @@ poetry run pyinstaller install\pyinstaller\pyinstaller.spec
 
 ### To build the installer
 
-Note that you must have a codesigning certificate installed in order to use the `install\windows\build_exe.bat` script, because it codesigns `dangerzone.exe`, `uninstall.exe`, and `dangerzone-setup.exe`.
+Note that you must have a codesigning certificate installed in order to use the `install\windows\build.bat` script, because it codesigns `dangerzone.exe` and `Dangerzone.msi`.
 
 Open a command prompt, cd to the dangerzone directory, and run:
 
 ```
-poetry run install\build_exe.bat
+poetry run install\windows\build.bat
 ```
 
-This will prompt you to codesign three binaries and execute one unsigned binary. When you're done clicking through everything you will have `dist\dangerzone-setup.exe`.
+When you're done you will have `dist\Dangerzone.msi`.

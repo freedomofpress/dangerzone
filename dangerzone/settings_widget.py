@@ -114,7 +114,8 @@ class SettingsWidget(QtWidgets.QWidget):
 
         # Is update containers required?
         output = subprocess.check_output(
-            [self.common.container_runtime, "image", "ls", "dangerzone"]
+            [self.common.container_runtime, "image", "ls", "dangerzone"],
+            startupinfo=self.common.get_subprocess_startupinfo(),
         )
         if b"dangerzone" not in output:
             self.update_checkbox.setCheckState(QtCore.Qt.Checked)

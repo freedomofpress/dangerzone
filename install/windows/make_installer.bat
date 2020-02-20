@@ -18,4 +18,4 @@ REM TODO: code sign dangerzone.msi
 
 REM moving dangerzone.msi to dist
 cd ..\..
-move build/wix/Dangerzone.msi dist
+move build\wix\Dangerzone.msi dist

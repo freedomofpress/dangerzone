@@ -10,8 +10,9 @@
         <Property Id="ARPPRODUCTICON" Value="ProductIcon"/>
         <Property Id="ARPHELPLINK" Value="https://github.com/firstlookmedia/dangerzone"/>
         <Property Id="ARPURLINFOABOUT" Value="https://tech.firstlook.media"/>
-        <Property Id="ARPNOREPAIR" Value="1"/>
-        <Property Id="ARPNOMODIFY" Value="1"/>
+
+        <UIRef Id="WixUI_Minimal" />
+        <UIRef Id="WixUI_ErrorProgressText" />
 
         <Upgrade Id="$(var.ProductUpgradeCode)">
             <UpgradeVersion Minimum="$(var.ProductVersion)" OnlyDetect="yes" Property="NEWERVERSIONDETECTED"/>

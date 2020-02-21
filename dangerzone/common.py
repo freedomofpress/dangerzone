@@ -6,7 +6,7 @@ import appdirs
 import platform
 import subprocess
 import shlex
-from PyQt5 import QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 if platform.system() == "Darwin":
     import CoreServices
@@ -14,6 +14,8 @@ if platform.system() == "Darwin":
     import plistlib
 
 elif platform.system() == "Linux":
+    import grp
+    import getpass
     from xdg.DesktopEntry import DesktopEntry
 
 from .settings import Settings
@@ -62,7 +64,14 @@ class Common(object):
                 "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe"
             )
         else:
-            self.container_runtime = "podman"
+            # Linux
+
+            # If this is fedora-like, use podman
+            if os.path.exists("/usr/bin/dnf"):
+                self.container_runtime = "podman"
+            # Otherwise, use docker
+            else:
+                self.container_runtime = "/usr/bin/docker"
 
         # Preload list of PDF viewers on computer
         self.pdf_viewers = self._find_pdf_viewers()
@@ -351,6 +360,39 @@ class Common(object):
 
         return pdf_viewers
 
+    def ensure_user_is_in_docker_group(self):
+        try:
+            groupinfo = grp.getgrnam("docker")
+        except:
+            # Ignore if group is not found
+            return True
+
+        username = getpass.getuser()
+        if username not in groupinfo.gr_mem:
+            # User is not in docker group, so prompt about adding the user to the docker group
+            message = "<b>Dangerzone requires Docker.</b><br><br>Click Ok to add your user to the 'docker' group. You will have to type your login password."
+            if Alert(self, message).launch():
+                p = subprocess.run(
+                    [
+                        "/usr/bin/pkexec",
+                        "/usr/sbin/usermod",
+                        "-a",
+                        "-G",
+                        "docker",
+                        username,
+                    ]
+                )
+                if p.returncode == 0:
+                    message = "Great! Now you must log out of your computer and log back in, and then you can use Dangerzone."
+                    Alert(self, message).launch()
+                else:
+                    message = "Failed to add your user to the 'docker' group, quitting."
+                    Alert(self, message).launch()
+
+            return False
+
+        return True
+
     def get_subprocess_startupinfo(self):
         if platform.system() == "Windows":
             startupinfo = subprocess.STARTUPINFO()
@@ -358,3 +400,55 @@ class Common(object):
             return startupinfo
         else:
             return None
+
+
+class Alert(QtWidgets.QDialog):
+    def __init__(self, common, message):
+        super(Alert, self).__init__()
+        self.common = common
+
+        self.setWindowTitle("dangerzone")
+        self.setWindowIcon(self.common.get_window_icon())
+        self.setModal(True)
+
+        flags = (
+            QtCore.Qt.CustomizeWindowHint
+            | QtCore.Qt.WindowTitleHint
+            | QtCore.Qt.WindowSystemMenuHint
+            | QtCore.Qt.WindowCloseButtonHint
+            | QtCore.Qt.WindowStaysOnTopHint
+        )
+        self.setWindowFlags(flags)
+
+        logo = QtWidgets.QLabel()
+        logo.setPixmap(
+            QtGui.QPixmap.fromImage(
+                QtGui.QImage(self.common.get_resource_path("icon.png"))
+            )
+        )
+
+        label = QtWidgets.QLabel()
+        label.setText(message)
+        label.setWordWrap(True)
+
+        message_layout = QtWidgets.QHBoxLayout()
+        message_layout.addWidget(logo)
+        message_layout.addWidget(label)
+
+        ok_button = QtWidgets.QPushButton("Ok")
+        ok_button.clicked.connect(self.accept)
+        cancel_button = QtWidgets.QPushButton("Cancel")
+        cancel_button.clicked.connect(self.reject)
+
+        buttons_layout = QtWidgets.QHBoxLayout()
+        buttons_layout.addStretch()
+        buttons_layout.addWidget(ok_button)
+        buttons_layout.addWidget(cancel_button)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addLayout(message_layout)
+        layout.addLayout(buttons_layout)
+        self.setLayout(layout)
+
+    def launch(self):
+        return self.exec_() == QtWidgets.QDialog.Accepted

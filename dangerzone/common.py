@@ -321,7 +321,8 @@ class Common(object):
                     plist_data = f.read()
                 plist_dict = plistlib.loads(plist_data)
 
-                pdf_viewers[plist_dict["CFBundleName"]] = bundle_identifier
+                if plist_dict["CFBundleName"] != "Dangerzone":
+                    pdf_viewers[plist_dict["CFBundleName"]] = bundle_identifier
 
         elif platform.system() == "Linux":
             # Find all .desktop files

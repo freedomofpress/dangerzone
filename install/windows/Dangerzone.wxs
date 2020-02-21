@@ -14,6 +14,9 @@
         <UIRef Id="WixUI_Minimal" />
         <UIRef Id="WixUI_ErrorProgressText" />
 
+        <WixVariable Id="WixUILicenseRtf" Value="..\..\install\windows\license.rtf" />
+        <WixVariable Id="WixUIDialogBmp" Value="..\..\install\windows\dialog.bmp" />
+
         <Upgrade Id="$(var.ProductUpgradeCode)">
             <UpgradeVersion Minimum="$(var.ProductVersion)" OnlyDetect="yes" Property="NEWERVERSIONDETECTED"/>
             <UpgradeVersion Minimum="0.0.0" Maximum="$(var.ProductVersion)" IncludeMinimum="yes" IncludeMaximum="no" Property="OLDERVERSIONBEINGUPGRADED"/>

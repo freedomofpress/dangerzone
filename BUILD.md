@@ -12,7 +12,7 @@ git submodule update
 Install dependencies:
 
 ```sh
-sudo apt install -y docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+sudo apt install -y python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
 ```
 
 Run from source tree:

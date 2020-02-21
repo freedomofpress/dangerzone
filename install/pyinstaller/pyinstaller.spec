@@ -19,7 +19,7 @@ version = dangerzone.dangerzone_version
 print("Flock Agent version: {}".format(version))
 
 if p == "Darwin":
-    datas = [("../../share", "share"), ("../macos/document.icns", ".")]
+    datas = [("../../share", "share"), ("../macos/../macos/document.icns", ".")]
 else:
     datas = [("../../share", "share")]
 
@@ -65,7 +65,7 @@ if p == "Darwin":
     app = BUNDLE(
         coll,
         name="Dangerzone.app",
-        icon="dangerzone.icns",
+        icon="../macos/dangerzone.icns",
         bundle_identifier="media.firstlook.dangerzone",
         info_plist={
             "NSHighResolutionCapable": True,
@@ -73,14 +73,14 @@ if p == "Darwin":
             "CFBundleDocumentTypes": [
                 {
                     "CFBundleTypeExtensions": ["pdf"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": ["application/pdf"],
                     "CFBundleTypeName": "PDF Document",
                     "CFBundleTypeRole": "Viewer",
                 },
                 {
                     "CFBundleTypeExtensions": ["docx", "doc"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
                         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         "application/msword",
@@ -90,7 +90,7 @@ if p == "Darwin":
                 },
                 {
                     "CFBundleTypeExtensions": ["xlsx", "xls"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         "application/vnd.ms-excel",
@@ -100,7 +100,7 @@ if p == "Darwin":
                 },
                 {
                     "CFBundleTypeExtensions": ["pptx", "ppt"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
                         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                         "application/vnd.ms-powerpoint",
@@ -110,7 +110,7 @@ if p == "Darwin":
                 },
                 {
                     "CFBundleTypeExtensions": ["odg"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
                         "application/vnd.oasis.opendocument.text"
                     ],
@@ -119,7 +119,7 @@ if p == "Darwin":
                 },
                 {
                     "CFBundleTypeExtensions": ["ops"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
                         "application/vnd.oasis.opendocument.spreadsheet"
                     ],
@@ -128,7 +128,7 @@ if p == "Darwin":
                 },
                 {
                     "CFBundleTypeExtensions": ["odp"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
                         "application/vnd.oasis.opendocument.presentation"
                     ],
@@ -137,7 +137,7 @@ if p == "Darwin":
                 },
                 {
                     "CFBundleTypeExtensions": ["odg"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
                         "application/vnd.oasis.opendocument.graphics"
                     ],
@@ -146,28 +146,28 @@ if p == "Darwin":
                 },
                 {
                     "CFBundleTypeExtensions": ["jpg", "jpeg"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": ["image/jpeg"],
                     "CFBundleTypeName": "JPEG Image",
                     "CFBundleTypeRole": "Viewer",
                 },
                 {
                     "CFBundleTypeExtensions": ["gif"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": ["image/gif"],
                     "CFBundleTypeName": "GIF Image",
                     "CFBundleTypeRole": "Viewer",
                 },
                 {
                     "CFBundleTypeExtensions": ["png"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": ["image/png"],
                     "CFBundleTypeName": "PNG Image",
                     "CFBundleTypeRole": "Viewer",
                 },
                 {
                     "CFBundleTypeExtensions": ["tif", "tiff"],
-                    "CFBundleTypeIconFile": "document.icns",
+                    "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": ["image/tiff", "image/x-tiff"],
                     "CFBundleTypeName": "TIFF Image",
                     "CFBundleTypeRole": "Viewer",

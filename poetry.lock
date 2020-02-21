@@ -204,7 +204,7 @@ version = "12.7.1"
 [[package]]
 category = "main"
 description = "Python for Window Extensions"
-marker = "sys_platform == \"win32\""
+marker = "sys_platform == \"windows\""
 name = "pywin32"
 optional = false
 python-versions = "*"
@@ -284,7 +284,7 @@ python-versions = "*"
 version = "1.4.9"
 
 [metadata]
-content-hash = "28c51f60ace8c8578c21279f8c46ba095d0ec1f1f86bb155c24cba67ac3291ee"
+content-hash = "8a375835b3ed53e46bb4aaf31cb5cca43d33ed03ac217cf247ed65724d3ee3a8"
 python-versions = "^3.7"
 
 [metadata.files]

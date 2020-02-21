@@ -1,6 +1,8 @@
 import shutil
 import tempfile
 import os
+import platform
+import subprocess
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .tasks import PullImageTask, BuildContainerTask, ConvertToPixels, ConvertToPDF
@@ -97,9 +99,16 @@ class TasksWidget(QtWidgets.QWidget):
             dest_filename = tmp[1]
         shutil.move(source_filename, dest_filename)
 
+        # In Windows, open Explorer with the safe PDF in focus
+        if platform.system() == "Windows":
+            dest_filename_windows = dest_filename.replace("/", "\\")
+            subprocess.Popen(
+                f'explorer.exe /select,"{dest_filename_windows}"', shell=True
+            )
+
         # Open
         if self.common.settings.get("open"):
-            self.common.open_find_viewer(dest_filename)
+            self.common.open_pdf_viewer(dest_filename)
 
         # Clean up
         self.common.pixel_dir.cleanup()

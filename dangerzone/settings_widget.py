@@ -1,5 +1,6 @@
 import os
 import subprocess
+import platform
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -20,28 +21,40 @@ class SettingsWidget(QtWidgets.QWidget):
         # Save safe version
         self.save_checkbox = QtWidgets.QCheckBox("Save safe PDF")
         self.save_checkbox.clicked.connect(self.update_ui)
+        self.save_label = QtWidgets.QLabel("Save safe PDF")  # For Windows
+        self.save_label.hide()
+        if platform.system() == "Windows":
+            # In Windows, users must save the PDF, since they can't open it
+            self.save_checkbox.setCheckState(QtCore.Qt.Checked)
+            self.save_checkbox.setEnabled(False)
+            self.save_checkbox.hide()
+            self.save_label.show()
         self.save_lineedit = QtWidgets.QLineEdit()
         self.save_lineedit.setReadOnly(True)
         self.save_browse_button = QtWidgets.QPushButton("Save as...")
         self.save_browse_button.clicked.connect(self.save_browse_button_clicked)
         save_layout = QtWidgets.QHBoxLayout()
         save_layout.addWidget(self.save_checkbox)
+        save_layout.addWidget(self.save_label)
         save_layout.addWidget(self.save_lineedit)
         save_layout.addWidget(self.save_browse_button)
         save_layout.addStretch()
 
-        # Open safe document
-        self.open_checkbox = QtWidgets.QCheckBox(
-            "Open safe document after converting, using"
-        )
-        self.open_checkbox.clicked.connect(self.update_ui)
-        self.open_combobox = QtWidgets.QComboBox()
-        for k in self.common.pdf_viewers:
-            self.open_combobox.addItem(k, QtCore.QVariant(self.common.pdf_viewers[k]))
-        open_layout = QtWidgets.QHBoxLayout()
-        open_layout.addWidget(self.open_checkbox)
-        open_layout.addWidget(self.open_combobox)
-        open_layout.addStretch()
+        if platform.system() != "Windows":
+            # Open safe document
+            self.open_checkbox = QtWidgets.QCheckBox(
+                "Open safe document after converting, using"
+            )
+            self.open_checkbox.clicked.connect(self.update_ui)
+            self.open_combobox = QtWidgets.QComboBox()
+            for k in self.common.pdf_viewers:
+                self.open_combobox.addItem(
+                    k, QtCore.QVariant(self.common.pdf_viewers[k])
+                )
+            open_layout = QtWidgets.QHBoxLayout()
+            open_layout.addWidget(self.open_checkbox)
+            open_layout.addWidget(self.open_combobox)
+            open_layout.addStretch()
 
         # OCR document
         self.ocr_checkbox = QtWidgets.QCheckBox("OCR document, language")
@@ -75,7 +88,8 @@ class SettingsWidget(QtWidgets.QWidget):
         layout.addWidget(self.dangerous_doc_label)
         layout.addSpacing(20)
         layout.addLayout(save_layout)
-        layout.addLayout(open_layout)
+        if platform.system() != "Windows":
+            layout.addLayout(open_layout)
         layout.addLayout(ocr_layout)
         layout.addLayout(update_layout)
         layout.addSpacing(20)
@@ -98,14 +112,15 @@ class SettingsWidget(QtWidgets.QWidget):
         if index != -1:
             self.ocr_combobox.setCurrentIndex(index)
 
-        if self.common.settings.get("open"):
-            self.open_checkbox.setCheckState(QtCore.Qt.Checked)
-        else:
-            self.open_checkbox.setCheckState(QtCore.Qt.Unchecked)
+        if platform.system() != "Windows":
+            if self.common.settings.get("open"):
+                self.open_checkbox.setCheckState(QtCore.Qt.Checked)
+            else:
+                self.open_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-        index = self.open_combobox.findText(self.common.settings.get("open_app"))
-        if index != -1:
-            self.open_combobox.setCurrentIndex(index)
+            index = self.open_combobox.findText(self.common.settings.get("open_app"))
+            if index != -1:
+                self.open_combobox.setCurrentIndex(index)
 
         if self.common.settings.get("update_container"):
             self.update_checkbox.setCheckState(QtCore.Qt.Checked)
@@ -122,14 +137,19 @@ class SettingsWidget(QtWidgets.QWidget):
             self.update_checkbox.setEnabled(False)
 
     def update_ui(self):
-        # Either save or open must be checked
-        if (
-            self.save_checkbox.checkState() == QtCore.Qt.Checked
-            or self.open_checkbox.checkState() == QtCore.Qt.Checked
-        ):
+        if platform.system() == "Windows":
+            # Because the save checkbox is always checked in Windows, the
+            # start button can be enabled
             self.start_button.setEnabled(True)
         else:
-            self.start_button.setEnabled(False)
+            # Either save or open must be checked
+            if (
+                self.save_checkbox.checkState() == QtCore.Qt.Checked
+                or self.open_checkbox.checkState() == QtCore.Qt.Checked
+            ):
+                self.start_button.setEnabled(True)
+            else:
+                self.start_button.setEnabled(False)
 
     def document_selected(self):
         # Update the danger doc label
@@ -163,10 +183,11 @@ class SettingsWidget(QtWidgets.QWidget):
             "ocr", self.ocr_checkbox.checkState() == QtCore.Qt.Checked
         )
         self.common.settings.set("ocr_language", self.ocr_combobox.currentText())
-        self.common.settings.set(
-            "open", self.open_checkbox.checkState() == QtCore.Qt.Checked
-        )
-        self.common.settings.set("open_app", self.open_combobox.currentText())
+        if platform.system() != "Windows":
+            self.common.settings.set(
+                "open", self.open_checkbox.checkState() == QtCore.Qt.Checked
+            )
+            self.common.settings.set("open_app", self.open_combobox.currentText())
         self.common.settings.set(
             "update_container", self.update_checkbox.checkState() == QtCore.Qt.Checked
         )

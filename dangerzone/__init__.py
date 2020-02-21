@@ -18,6 +18,21 @@ from .docker_installer import (
 dangerzone_version = "0.1.0"
 
 
+class Application(QtWidgets.QApplication):
+    document_selected = QtCore.pyqtSignal(str)
+
+    def __init__(self):
+        QtWidgets.QApplication.__init__(self, sys.argv)
+
+    def event(self, event):
+        # In macOS, handle the file open event
+        if event.type() == QtCore.QEvent.FileOpen:
+            self.document_selected.emit(event.file())
+            return True
+
+        return QtWidgets.QApplication.event(self, event)
+
+
 @click.command()
 @click.argument("filename", required=False)
 def main(filename):
@@ -27,7 +42,7 @@ def main(filename):
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # Create the Qt app
-    app = QtWidgets.QApplication(sys.argv)
+    app = Application()
     app.setQuitOnLastWindowClosed(False)
 
     # Common object
@@ -81,18 +96,27 @@ def main(filename):
     # Main window
     main_window = MainWindow(common)
 
-    if filename is not None:
+    def select_document(filename):
         # Validate filename
         filename = os.path.abspath(os.path.expanduser(filename))
         try:
             open(filename, "rb")
         except FileNotFoundError:
             print("File not found")
-            return
+            return False
         except PermissionError:
             print("Permission denied")
-            return
+            return False
         common.set_document_filename(filename)
         main_window.doc_selection_widget.document_selected.emit()
+        return True
+
+    # If filename is passed as an argument, open it
+    if filename is not None:
+        if not select_document(filename):
+            return False
+
+    # If we get a file open event, open it
+    app.document_selected.connect(select_document)
 
     sys.exit(app.exec_())

@@ -144,9 +144,6 @@ jobs:
 
 workflows:
   version: 2
-  tests:
-    jobs:
-      - test
   build-tags:
     jobs:
       - build-ubuntu-disco:

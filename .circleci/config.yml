@@ -1,0 +1,187 @@
+version: 2.1
+
+jobs:
+
+  build-ubuntu-disco:
+    docker:
+      - image: ubuntu:19.04
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update
+            apt-get install -y git ssh ruby-dev rubygems python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+            gem install --no-ri --no-rdoc rake
+            gem install --no-ri --no-rdoc package_cloud
+      - checkout
+      - run:
+          name: Create the .deb package
+          command: |
+            ./install/linux/build_deb.py
+            dpkg -i deb_dist/dangerzone_*-1_all.deb
+      - run:
+          name: Deploy to packagecloud.io
+          command: |
+            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            package_cloud push firstlookmedia/code/ubuntu/disco deb_dist/dangerzone_${VERSION}-1_all.deb
+            package_cloud push firstlookmedia/code/ubuntu/disco deb_dist/dangerzone_${VERSION}-1.dsc
+
+  build-ubuntu-eoan:
+    docker:
+      - image: ubuntu:19.10
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update
+            apt-get install -y git ssh ruby-dev rubygems python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+            gem install --no-ri --no-rdoc rake
+            gem install --no-ri --no-rdoc package_cloud
+      - checkout
+      - run:
+          name: Create the .deb package
+          command: |
+            ./install/linux/build_deb.py
+            dpkg -i deb_dist/dangerzone_*-1_all.deb
+      - run:
+          name: Deploy to packagecloud.io
+          command: |
+            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            package_cloud push firstlookmedia/code/ubuntu/eoan deb_dist/dangerzone_${VERSION}-1_all.deb
+            package_cloud push firstlookmedia/code/ubuntu/eoan deb_dist/dangerzone_${VERSION}-1.dsc
+
+  build-debian-buster:
+    docker:
+      - image: debian:buster
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update
+            apt-get install -y git ssh ruby-dev rubygems python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+            gem install --no-ri --no-rdoc rake
+            gem install --no-ri --no-rdoc package_cloud
+      - checkout
+      - run:
+          name: Create the .deb package
+          command: |
+            ./install/linux/build_deb.py
+            dpkg -i deb_dist/dangerzone_*-1_all.deb
+      - run:
+          name: Deploy to packagecloud.io
+          command: |
+            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            package_cloud push firstlookmedia/code/debian/buster deb_dist/dangerzone_${VERSION}-1_all.deb
+            package_cloud push firstlookmedia/code/debian/buster deb_dist/dangerzone_${VERSION}-1.dsc
+
+  build-debian-bullseye:
+    docker:
+      - image: debian:bullseye
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            apt-get update
+            apt-get install -y git ssh ruby-dev rubygems python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+            gem install --no-ri --no-rdoc rake
+            gem install --no-ri --no-rdoc package_cloud
+      - checkout
+      - run:
+          name: Create the .deb package
+          command: |
+            ./install/linux/build_deb.py
+            dpkg -i deb_dist/dangerzone_*-1_all.deb
+      - run:
+          name: Deploy to packagecloud.io
+          command: |
+            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1_all.deb
+            package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1.dsc
+
+  build-fedora-30:
+    docker:
+      - image: fedora:30
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click
+            gem install package_cloud
+      - checkout
+      - run:
+          name: Create the .rpm package
+          command: |
+            ./install/linux/build_rpm.py
+            dnf install -y dist/dangerzone-*-1.noarch.rpm
+      - run:
+          name: Deploy to packagecloud.io
+          command: |
+            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            package_cloud push firstlookmedia/code/fedora/30 dist/dangerzone-${VERSION}-1.noarch.rpm
+            package_cloud push firstlookmedia/code/fedora/30 dist/dangerzone-${VERSION}-1.src.rpm
+
+  build-fedora-31:
+    docker:
+      - image: fedora:31
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click
+            gem install package_cloud
+      - checkout
+      - run:
+          name: Create the .rpm package
+          command: |
+            ./install/linux/build_rpm.py
+            dnf install -y dist/dangerzone-*-1.noarch.rpm
+      - run:
+          name: Deploy to packagecloud.io
+          command: |
+            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            package_cloud push firstlookmedia/code/fedora/31 dist/dangerzone-${VERSION}-1.noarch.rpm
+            package_cloud push firstlookmedia/code/fedora/31 dist/dangerzone-${VERSION}-1.src.rpm
+
+workflows:
+  version: 2
+  tests:
+    jobs:
+      - test
+  build-tags:
+    jobs:
+      - build-ubuntu-disco:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-ubuntu-eoan:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-debian-buster:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-debian-bullseye:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-fedora-30:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-fedora-31:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/

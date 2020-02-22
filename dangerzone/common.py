@@ -68,7 +68,7 @@ class Common(object):
 
             # If this is fedora-like, use podman
             if os.path.exists("/usr/bin/dnf"):
-                self.container_runtime = "podman"
+                self.container_runtime = "/usr/bin/podman"
             # Otherwise, use docker
             else:
                 self.container_runtime = "/usr/bin/docker"

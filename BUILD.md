@@ -27,6 +27,26 @@ Create a .deb:
 ./install/linux/build_deb.py
 ```
 
+## Fedora
+
+Install dependencies:
+
+```sh
+sudo dnf install -y rpm-build python3 python3-qt5 python3-appdirs python3-click
+```
+
+Run from source tree:
+
+```sh
+./dev_script/dangerzone
+```
+
+Create a .rpm:
+
+```sh
+./install/linux/build_rpm.py
+```
+
 ## macOS
 
 Install Xcode from the Mac App Store. Once it's installed, run it for the first time to set it up. Also, run this to make sure command line tools are installed: `xcode-select --install`. And finally, open Xcode, go to Preferences > Locations, and make sure under Command Line Tools you select an installed version from the dropdown. (This is required for installing Qt5.)

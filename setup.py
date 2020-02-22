@@ -30,6 +30,7 @@ setuptools.setup(
         ),
         ("share/dangerzone", file_list("share")),
         ("share/dangerzone/container", file_list("share/container")),
+        ("share/dangerzone/container/scripts", file_list("share/container/scripts")),
     ],
     classifiers=(
         "Programming Language :: Python",

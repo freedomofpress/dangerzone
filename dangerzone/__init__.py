@@ -48,6 +48,12 @@ def main(filename):
     # Common object
     common = Common(app)
 
+    # If we're using Linux and docker, see if we need to add the user to the docker group
+    if platform.system() == "Linux" and common.container_runtime == "/usr/bin/docker":
+        if not common.ensure_user_is_in_docker_group():
+            print("Failed to add user to docker group")
+            return
+
     # See if we need to install Docker...
     if platform.system() == "Darwin" and (
         not is_docker_installed(common) or not is_docker_ready(common)

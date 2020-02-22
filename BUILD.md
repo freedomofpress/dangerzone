@@ -9,12 +9,10 @@ git submodule update
 
 ## Debian/Ubuntu
 
-You need [podman](https://podman.io/getting-started/installation) ([these instructions](https://kushaldas.in/posts/podman-on-debian-buster.html) are useful for installing in Debian or Ubuntu).
-
 Install dependencies:
 
 ```sh
-sudo apt install -y python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+sudo apt install -y python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
 ```
 
 Run from source tree:
@@ -27,6 +25,26 @@ Create a .deb:
 
 ```sh
 ./install/linux/build_deb.py
+```
+
+## Fedora
+
+Install dependencies:
+
+```sh
+sudo dnf install -y rpm-build python3 python3-qt5 python3-appdirs python3-click
+```
+
+Run from source tree:
+
+```sh
+./dev_script/dangerzone
+```
+
+Create a .rpm:
+
+```sh
+./install/linux/build_rpm.py
 ```
 
 ## macOS

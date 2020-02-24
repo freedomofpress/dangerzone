@@ -10,7 +10,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
             gem install --no-ri --no-rdoc rake
             gem install --no-ri --no-rdoc package_cloud
       - checkout
@@ -39,7 +39,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
             gem install --no-ri --no-rdoc rake
             gem install --no-ri --no-rdoc package_cloud
       - checkout
@@ -68,7 +68,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
             gem install --no-ri --no-rdoc rake
             gem install --no-ri --no-rdoc package_cloud
       - checkout
@@ -97,7 +97,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
             gem install --no-ri --no-rdoc rake
             gem install --no-ri --no-rdoc package_cloud
       - checkout
@@ -125,7 +125,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click python3-pyxdg
             gem install package_cloud
       - checkout
       - run:
@@ -152,7 +152,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click python3-pyxdg
             gem install package_cloud
       - checkout
       - run:

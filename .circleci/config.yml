@@ -15,6 +15,11 @@ jobs:
             gem install --no-ri --no-rdoc package_cloud
       - checkout
       - run:
+          name: "Pull submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
+      - run:
           name: Create the .deb package
           command: |
             ./install/linux/build_deb.py
@@ -38,6 +43,11 @@ jobs:
             gem install --no-ri --no-rdoc rake
             gem install --no-ri --no-rdoc package_cloud
       - checkout
+      - run:
+          name: "Pull submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - run:
           name: Create the .deb package
           command: |
@@ -63,6 +73,11 @@ jobs:
             gem install --no-ri --no-rdoc package_cloud
       - checkout
       - run:
+          name: "Pull submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
+      - run:
           name: Create the .deb package
           command: |
             ./install/linux/build_deb.py
@@ -87,6 +102,11 @@ jobs:
             gem install --no-ri --no-rdoc package_cloud
       - checkout
       - run:
+          name: "Pull submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
+      - run:
           name: Create the .deb package
           command: |
             ./install/linux/build_deb.py
@@ -109,6 +129,11 @@ jobs:
             gem install package_cloud
       - checkout
       - run:
+          name: "Pull submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
+      - run:
           name: Create the .rpm package
           command: |
             ./install/linux/build_rpm.py
@@ -130,6 +155,11 @@ jobs:
             dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click
             gem install package_cloud
       - checkout
+      - run:
+          name: "Pull submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - run:
           name: Create the .rpm package
           command: |

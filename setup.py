@@ -31,10 +31,10 @@ setuptools.setup(
         ("share/dangerzone", file_list("share")),
         ("share/dangerzone/container", file_list("share/container")),
     ],
-    classifiers=(
+    classifiers=[
         "Programming Language :: Python",
         "Intended Audience :: End Users/Desktop",
         "Operating System :: OS Independent",
-    ),
+    ],
     entry_points={"console_scripts": ["dangerzone = dangerzone:main"]},
 )

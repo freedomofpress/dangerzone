@@ -12,7 +12,7 @@ git submodule update
 Install dependencies:
 
 ```sh
-sudo apt install -y python-all python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg
+sudo apt install -y python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg python3-requests
 ```
 
 Run from source tree:
@@ -32,7 +32,7 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build python3 python3-qt5 python3-appdirs python3-click
+sudo dnf install -y rpm-build python3 python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests
 ```
 
 Run from source tree:

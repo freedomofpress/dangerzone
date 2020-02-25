@@ -2,11 +2,11 @@
 
 Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF.
 
-_This is a work in progress and is not quite ready for daily use yet._
-
 ![Screenshot](./assets/screenshot.png)
 
 Dangerzone works like this: You give it a document that you don't know if you can trust (for example, an email attachment). Inside of a sandbox, dangerzone converts the document to a PDF (if it isn't already one), and then converts the PDF into raw pixel data: a huge list of of RGB color values for each page. Then, in a separate sandbox, dangerzone takes this pixel data and converts it back into a PDF.
+
+**See [Installing Dangerzone](https://github.com/firstlookmedia/dangerzone/wiki/Installing-Dangerzone) to get started.**
 
 Some features:
 
@@ -30,6 +30,6 @@ Dangerzone can convert these types of document into safe PDFs:
 - PNG (`.png`)
 - TIFF (`.tif`, `.tiff`)
 
-Dangerzone was inspired by [Qubes trusted PDF](https://blog.invisiblethings.org/2013/02/21/converting-untrusted-pdfs-into-trusted.html), but it works in non-Qubes operating systems and sandboxes the document conversion in containers instead of virtual machines (using [podman](https://podman.io/) for Linux, and Docker for macOS, for now). Podman is like docker but more secure -- it doesn't require a privileged daemon, and containers can be launched without root.
+Dangerzone was inspired by [Qubes trusted PDF](https://blog.invisiblethings.org/2013/02/21/converting-untrusted-pdfs-into-trusted.html), but it works in non-Qubes operating systems and sandboxes the document conversion in containers instead of virtual machines (using Docker for macOS, Windows, and Debian/Ubuntu, and [podman](https://podman.io/) for Fedora).
 
 Set up a development environment by following [these instructions](/BUILD.md).

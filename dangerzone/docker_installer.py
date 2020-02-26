@@ -52,6 +52,7 @@ class DockerInstaller(QtWidgets.QDialog):
 
         self.setWindowTitle("dangerzone")
         self.setWindowIcon(self.common.get_window_icon())
+        self.setMinimumHeight(160)
 
         label = QtWidgets.QLabel()
         if platform.system() == "Darwin":
@@ -63,29 +64,26 @@ class DockerInstaller(QtWidgets.QDialog):
 
         self.task_label = QtWidgets.QLabel()
         self.task_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.task_label.setWordWrap(True)
 
         self.progress = QtWidgets.QProgressBar()
         self.progress.setMinimum(0)
 
-        self.install_button = QtWidgets.QPushButton("Install Docker")
-        self.install_button.setStyleSheet("QPushButton { font-weight: bold; }")
-        self.install_button.clicked.connect(self.install_clicked)
-        self.install_button.hide()
-
+        self.open_finder_button = QtWidgets.QPushButton()
         if platform.system() == "Darwin":
-            self.launch_button = QtWidgets.QPushButton("Launch Docker")
-            self.launch_button.setStyleSheet("QPushButton { font-weight: bold; }")
-            self.launch_button.clicked.connect(self.launch_clicked)
-            self.launch_button.hide()
+            self.open_finder_button.setText("Show in Finder")
+        else:
+            self.open_finder_button.setText("Show in Explorer")
+        self.open_finder_button.setStyleSheet("QPushButton { font-weight: bold; }")
+        self.open_finder_button.clicked.connect(self.open_finder_clicked)
+        self.open_finder_button.hide()
 
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.cancel_button.clicked.connect(self.cancel_clicked)
 
         buttons_layout = QtWidgets.QHBoxLayout()
         buttons_layout.addStretch()
-        buttons_layout.addWidget(self.install_button)
-        if platform.system() == "Darwin":
-            buttons_layout.addWidget(self.launch_button)
+        buttons_layout.addWidget(self.open_finder_button)
         buttons_layout.addWidget(self.cancel_button)
         buttons_layout.addStretch()
 
@@ -97,18 +95,17 @@ class DockerInstaller(QtWidgets.QDialog):
         layout.addStretch()
         self.setLayout(layout)
 
-        if platform.system == "Darwin":
-            self.tmp_dir = tempfile.TemporaryDirectory(prefix="/tmp/dangerzone-docker-")
-            self.installer_filename = os.path.join(self.tmp_dir.name, "Docker.dmg")
-        else:
-            self.tmp_dir = tempfile.TemporaryDirectory(prefix="dangerzone-docker-")
+        if platform.system() == "Darwin":
             self.installer_filename = os.path.join(
-                self.tmp_dir.name, "Docker for Windows Installer.exe"
+                os.path.expanduser("~/Downloads"), "Docker.dmg"
+            )
+        else:
+            self.installer_filename = os.path.join(
+                os.path.expanduser("~\\Downloads"), "Docker for Windows Installer.exe"
             )
 
         # Threads
         self.download_t = None
-        self.install_t = None
 
     def update_progress(self, value, maximum):
         self.progress.setMaximum(maximum)
@@ -118,10 +115,15 @@ class DockerInstaller(QtWidgets.QDialog):
         self.task_label.setText(s)
 
     def download_finished(self):
-        self.task_label.setText("Finished downloading Docker")
+        self.task_label.setText(
+            "Finished downloading Docker. Install it, make sure it's running, and then open Dangerzone again."
+        )
         self.download_t = None
         self.progress.hide()
-        self.install_button.show()
+        self.cancel_button.hide()
+
+        self.open_finder_path = self.installer_filename
+        self.open_finder_button.show()
 
     def download_failed(self, status_code):
         print(f"Download failed: status code {status_code}")
@@ -142,66 +144,38 @@ class DockerInstaller(QtWidgets.QDialog):
         self.download_t.update_progress.connect(self.update_progress)
         self.download_t.start()
 
-    def install_finished(self):
-        if platform.system() == "Darwin":
-            self.task_label.setText("Finished installing Docker")
-            self.launch_button.show()
-            self.cancel_button.setEnabled(True)
-        elif platform.system == "Windows":
-            self.task_label.setText("Reboot to finish installing Docker")
-        self.install_t = None
-        self.progress.hide()
-        self.install_button.hide()
-
-    def install_failed(self, exception):
-        print(f"Install failed: {exception}")
-        self.task_label.setText(f"Install failed: {exception}")
-        self.install_t = None
-        self.progress.hide()
-        self.cancel_button.setEnabled(True)
-
-    def install_clicked(self):
-        self.task_label.setText("Installing Docker")
-        self.progress.show()
-        self.install_button.hide()
-        self.cancel_button.setEnabled(False)
-
-        self.progress.setMinimum(0)
-        self.progress.setMaximum(0)
-
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.start_installer)
-        self.timer.setSingleShot(True)
-        self.timer.start(10)
-
-    def start_installer(self):
-        self.install_t = Installer(self.common, self.installer_filename)
-        self.install_t.install_finished.connect(self.install_finished)
-        self.install_t.install_failed.connect(self.install_failed)
-        self.install_t.update_task_label.connect(self.update_task_label)
-        self.install_t.start()
-
-    def launch_clicked(self):
-        if system.platform() == "Darwin":
-            print("Launching Docker")
-            self.accept()
-            subprocess.Popen(["open", "-a", "Docker.app"])
-
     def cancel_clicked(self):
         self.reject()
 
         if self.download_t:
+            try:
+                os.remove(self.installer_filename)
+            except:
+                pass
             self.download_t.quit()
-        if self.install_t:
-            self.install_t.quit()
+
+    def open_finder_clicked(self):
+        if platform.system() == "Darwin":
+            subprocess.call(["open", "-R", self.open_finder_path])
+        else:
+            subprocess.Popen(
+                f'explorer.exe /select,"{self.open_finder_path}"', shell=True
+            )
+        self.accept()
 
     def start(self):
         if not os.path.isdir("/Applications/Docker.app"):
             self.download()
         else:
-            self.task_label.setText("Docker is installed, but you must launch it first")
+            self.task_label.setText(
+                "Docker is installed, but you must launch it first. Open Docker, make sure it's running, and then open Dangerzone again."
+            )
             self.progress.hide()
-            self.launch_button.show()
+            self.cancel_button.hide()
+
+            self.open_finder_path = "/Applications/Docker.app"
+            self.open_finder_button.show()
+
         return self.exec_() == QtWidgets.QDialog.Accepted
 
 
@@ -236,62 +210,3 @@ class Downloader(QtCore.QThread):
                         self.update_progress.emit(downloaded_bytes, total_bytes)
 
         self.download_finished.emit()
-
-
-class Installer(QtCore.QThread):
-    install_finished = QtCore.pyqtSignal()
-    install_failed = QtCore.pyqtSignal(str)
-    update_task_label = QtCore.pyqtSignal(str)
-
-    def __init__(self, common, installer_filename):
-        super(Installer, self).__init__()
-        self.common = common
-        self.installer_filename = installer_filename
-
-    def run(self):
-        print(f"Installing Docker")
-
-        if platform.system() == "Darwin":
-            try:
-                # Mount the dmg
-                self.update_task_label.emit(f"Mounting Docker.dmg")
-                subprocess.run(
-                    ["hdiutil", "attach", "-nobrowse", self.installer_filename]
-                )
-
-                # Copy Docker.app to Applications
-                self.update_task_label.emit("Copying Docker into Applications")
-                shutil.copytree(
-                    "/Volumes/Docker/Docker.app", "/Applications/Docker.app"
-                )
-
-                # Sync
-                self.update_task_label.emit("Syncing filesystem")
-                subprocess.run(["sync"])
-
-                # Wait, to prevent early crash
-                time.sleep(1)
-
-                # Unmount the dmg
-                self.update_task_label.emit(f"Unmounting /Volumes/Docker")
-                subprocess.run(["hdiutil", "detach", "/Volumes/Docker"])
-
-                self.install_finished.emit()
-
-            except Exception as e:
-                self.install_failed.emit(str(e))
-                return
-
-        elif platform.system() == "Windows":
-            try:
-                # Run the installer
-                subprocess.run(
-                    [self.installer_filename],
-                    startupinfo=self.common.get_subprocess_startupinfo(),
-                )
-                self.install_finished.emit()
-
-            except Exception as e:
-                self.install_failed.emit(str(e))
-                return
-

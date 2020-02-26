@@ -60,19 +60,7 @@ def main(filename):
     ):
         print("Docker is either not installed or not running")
         docker_installer = DockerInstaller(common)
-        if docker_installer.start():
-            # When installer finished, wait up to 20 minutes for the user to launch it
-            for i in range(120):
-                if is_docker_installed(common) and is_docker_ready(common):
-                    main(filename)
-                    return
-
-                print("Waiting for docker to be available ...")
-                time.sleep(1)
-
-            # Give up
-            print("Docker not available, giving up")
-
+        docker_installer.start()
         return
 
     if platform.system() == "Windows":

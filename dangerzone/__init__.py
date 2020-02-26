@@ -55,49 +55,13 @@ def main(filename):
             return
 
     # See if we need to install Docker...
-    if platform.system() == "Darwin" and (
+    if (platform.system() == "Darwin" or platform.system() == "Windows") and (
         not is_docker_installed(common) or not is_docker_ready(common)
     ):
         print("Docker is either not installed or not running")
         docker_installer = DockerInstaller(common)
-        if docker_installer.start():
-            # When installer finished, wait up to 20 minutes for the user to launch it
-            for i in range(120):
-                if is_docker_installed(common) and is_docker_ready(common):
-                    main(filename)
-                    return
-
-                print("Waiting for docker to be available ...")
-                time.sleep(1)
-
-            # Give up
-            print("Docker not available, giving up")
-
+        docker_installer.start()
         return
-
-    if platform.system() == "Windows":
-        if not is_docker_installed(common):
-            print("Docker is not installed")
-            docker_installer = DockerInstaller(common)
-            docker_installer.start()
-            # Quit after the installer runs, because it requires rebooting
-            return
-
-        if not is_docker_ready(common):
-            print("Docker is not running")
-            launch_docker_windows(common)
-
-            # Wait up to 20 minutes for docker to be ready
-            for i in range(120):
-                if is_docker_ready(common):
-                    main(filename)
-                    return
-
-                print("Waiting for docker to be available ...")
-                time.sleep(1)
-
-            # Give up
-            print("Docker not available, giving up")
 
     # Main window
     main_window = MainWindow(common)

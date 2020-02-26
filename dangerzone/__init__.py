@@ -6,7 +6,7 @@ import platform
 import click
 import time
 
-from .common import Common
+from .global_common import GlobalCommon
 from .main_window import MainWindow
 from .docker_installer import (
     is_docker_installed,
@@ -45,31 +45,36 @@ def main(filename):
     app = Application()
     app.setQuitOnLastWindowClosed(False)
 
-    # Common object
-    common = Common(app)
+    # GlobalCommon object
+    global_common = GlobalCommon(app)
 
     # If we're using Linux and docker, see if we need to add the user to the docker group
-    if platform.system() == "Linux" and common.container_runtime == "/usr/bin/docker":
-        if not common.ensure_user_is_in_docker_group():
+    if (
+        platform.system() == "Linux"
+        and global_common.container_runtime == "/usr/bin/docker"
+    ):
+        if not global_common.ensure_user_is_in_docker_group():
             print("Failed to add user to docker group")
             return
 
     # See if we need to install Docker...
     if (platform.system() == "Darwin" or platform.system() == "Windows") and (
-        not is_docker_installed(common) or not is_docker_ready(common)
+        not is_docker_installed(global_common) or not is_docker_ready(global_common)
     ):
         print("Docker is either not installed or not running")
-        docker_installer = DockerInstaller(common)
+        docker_installer = DockerInstaller(global_common)
         docker_installer.start()
         return
 
     windows = []
-    doc_opened = False
 
     # Open a document in a window
     def select_document(filename=None):
-        print(f"select_document, filename={filename}")
-        new_window = MainWindow(common)
+        if len(windows) == 1 and windows[0].common.document_filename == None:
+            window = windows[0]
+        else:
+            window = MainWindow(global_common)
+            windows.append(window)
 
         if filename:
             # Validate filename
@@ -82,33 +87,18 @@ def main(filename):
             except PermissionError:
                 print("Permission denied")
                 return False
-            common.set_document_filename(filename)
-            new_window.doc_selection_widget.document_selected.emit()
+            window.common.document_filename = filename
+            window.doc_selection_widget.document_selected.emit()
 
-        windows.append(new_window)
-        doc_opened = True
         return True
 
-    # If filename is passed as an argument, open it
+    # Open a new window if not filename is passed
     if filename is None:
-        if platform.system() == "Darwin":
-            # Wait 0.5 seconds to see if we can an open document event, and if not open a new window without a document
-            def open_window_if_not_already_open():
-                if not doc_opened:
-                    select_document()
-
-            timer = QtCore.QTimer()
-            timer.setSingleShot(True)
-            timer.setInterval(500)
-            timer.timeout.connect(open_window_if_not_already_open)
-            timer.start()
-        else:
-            # Open a new window without a document
-            select_document()
+        select_document()
     else:
-        # Try opening a window with the docoument selected
+        # If filename is passed as an argument, open it
         if not select_document(filename):
-            return False
+            return True
 
     # If we get a file open event, open it
     app.document_selected.connect(select_document)

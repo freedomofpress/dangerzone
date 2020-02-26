@@ -9,8 +9,11 @@ from .tasks import PullImageTask, BuildContainerTask, ConvertToPixels, ConvertTo
 
 
 class TasksWidget(QtWidgets.QWidget):
-    def __init__(self, common):
+    close_window = QtCore.pyqtSignal()
+
+    def __init__(self, global_common, common):
         super(TasksWidget, self).__init__()
+        self.global_common = global_common
         self.common = common
 
         # Dangerous document label
@@ -28,7 +31,7 @@ class TasksWidget(QtWidgets.QWidget):
         self.task_details.setStyleSheet(
             "QLabel { background-color: #ffffff; font-size: 12px; padding: 10px; }"
         )
-        self.task_details.setFont(self.common.fixed_font)
+        self.task_details.setFont(self.global_common.fixed_font)
         self.task_details.setAlignment(QtCore.Qt.AlignTop)
 
         self.details_scrollarea = QtWidgets.QScrollArea()
@@ -55,7 +58,7 @@ class TasksWidget(QtWidgets.QWidget):
         )
 
     def start(self):
-        if self.common.settings.get("update_container"):
+        if self.global_common.settings.get("update_container"):
             self.tasks += [PullImageTask, BuildContainerTask]
         self.tasks += [ConvertToPixels, ConvertToPDF]
         self.next_task()
@@ -67,7 +70,7 @@ class TasksWidget(QtWidgets.QWidget):
 
         self.task_details.setText("")
 
-        self.current_task = self.tasks.pop(0)(self.common)
+        self.current_task = self.tasks.pop(0)(self.global_common, self.common)
         self.current_task.update_label.connect(self.update_label)
         self.current_task.update_details.connect(self.update_details)
         self.current_task.task_finished.connect(self.next_task)
@@ -91,7 +94,7 @@ class TasksWidget(QtWidgets.QWidget):
     def all_done(self):
         # Save safe PDF
         source_filename = f"{self.common.safe_dir.name}/safe-output-compressed.pdf"
-        if self.common.settings.get("save"):
+        if self.global_common.settings.get("save"):
             dest_filename = self.common.save_filename
         else:
             # If not saving, then save it to a temp file instead
@@ -107,15 +110,19 @@ class TasksWidget(QtWidgets.QWidget):
             )
 
         # Open
-        if self.common.settings.get("open"):
-            self.common.open_pdf_viewer(dest_filename)
+        if self.global_common.settings.get("open"):
+            self.global_common.open_pdf_viewer(dest_filename)
 
         # Clean up
         self.common.pixel_dir.cleanup()
         self.common.safe_dir.cleanup()
 
         # Quit
-        self.common.app.quit()
+        if platform.system() == "Darwin":
+            # In macOS, just close the window
+            self.close_window.emit()
+        else:
+            self.global_common.app.quit()
 
     def scroll_to_bottom(self, minimum, maximum):
         self.details_scrollarea.verticalScrollBar().setValue(maximum)

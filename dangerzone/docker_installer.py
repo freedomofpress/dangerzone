@@ -9,49 +9,49 @@ import platform
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-def is_docker_installed(common):
+def is_docker_installed(global_common):
     if platform.system() == "Darwin":
         # Does the docker binary exist?
         if os.path.isdir("/Applications/Docker.app") and os.path.exists(
-            common.container_runtime
+            global_common.container_runtime
         ):
             # Is it executable?
-            st = os.stat(common.container_runtime)
+            st = os.stat(global_common.container_runtime)
             return bool(st.st_mode & stat.S_IXOTH)
 
     if platform.system() == "Windows":
-        return os.path.exists(common.container_runtime)
+        return os.path.exists(global_common.container_runtime)
 
     return False
 
 
-def is_docker_ready(common):
+def is_docker_ready(global_common):
     # Run `docker ps` without an error
     try:
         subprocess.run(
-            [common.container_runtime, "ps"],
+            [global_common.container_runtime, "ps"],
             check=True,
-            startupinfo=common.get_subprocess_startupinfo(),
+            startupinfo=global_common.get_subprocess_startupinfo(),
         )
         return True
     except subprocess.CalledProcessError:
         return False
 
 
-def launch_docker_windows(common):
+def launch_docker_windows(global_common):
     docker_desktop_path = "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"
     subprocess.Popen(
-        [docker_desktop_path], startupinfo=common.get_subprocess_startupinfo()
+        [docker_desktop_path], startupinfo=global_common.get_subprocess_startupinfo()
     )
 
 
 class DockerInstaller(QtWidgets.QDialog):
-    def __init__(self, common):
+    def __init__(self, global_common):
         super(DockerInstaller, self).__init__()
-        self.common = common
+        self.global_common = global_common
 
         self.setWindowTitle("dangerzone")
-        self.setWindowIcon(self.common.get_window_icon())
+        self.setWindowIcon(self.global_common.get_window_icon())
         self.setMinimumHeight(170)
 
         label = QtWidgets.QLabel()

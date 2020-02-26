@@ -1,19 +1,22 @@
 import shutil
 import os
+import platform
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .doc_selection_widget import DocSelectionWidget
 from .settings_widget import SettingsWidget
 from .tasks_widget import TasksWidget
+from .common import Common
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, common):
+    def __init__(self, global_common):
         super(MainWindow, self).__init__()
-        self.common = common
+        self.global_common = global_common
+        self.common = Common()
 
         self.setWindowTitle("dangerzone")
-        self.setWindowIcon(self.common.get_window_icon())
+        self.setWindowIcon(self.global_common.get_window_icon())
 
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
@@ -22,11 +25,11 @@ class MainWindow(QtWidgets.QMainWindow):
         logo = QtWidgets.QLabel()
         logo.setPixmap(
             QtGui.QPixmap.fromImage(
-                QtGui.QImage(self.common.get_resource_path("icon.png"))
+                QtGui.QImage(self.global_common.get_resource_path("icon.png"))
             )
         )
         header_label = QtWidgets.QLabel("dangerzone")
-        header_label.setFont(self.common.fixed_font)
+        header_label.setFont(self.global_common.fixed_font)
         header_label.setStyleSheet("QLabel { font-weight: bold; font-size: 50px; }")
         header_layout = QtWidgets.QHBoxLayout()
         header_layout.addStretch()
@@ -41,7 +44,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.doc_selection_widget.show()
 
         # Settings
-        self.settings_widget = SettingsWidget(self.common)
+        self.settings_widget = SettingsWidget(self.global_common, self.common)
         self.doc_selection_widget.document_selected.connect(
             self.settings_widget.document_selected
         )
@@ -49,7 +52,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_widget.hide()
 
         # Tasks
-        self.tasks_widget = TasksWidget(self.common)
+        self.tasks_widget = TasksWidget(self.global_common, self.common)
+        self.tasks_widget.close_window.connect(self.close)
         self.doc_selection_widget.document_selected.connect(
             self.tasks_widget.document_selected
         )
@@ -79,3 +83,5 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, e):
         e.accept()
+        if platform.system() != "Darwin":
+            self.global_common.app.quit()

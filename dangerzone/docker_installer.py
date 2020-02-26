@@ -52,7 +52,7 @@ class DockerInstaller(QtWidgets.QDialog):
 
         self.setWindowTitle("dangerzone")
         self.setWindowIcon(self.common.get_window_icon())
-        self.setMinimumHeight(160)
+        self.setMinimumHeight(170)
 
         label = QtWidgets.QLabel()
         if platform.system() == "Darwin":
@@ -148,11 +148,11 @@ class DockerInstaller(QtWidgets.QDialog):
         self.reject()
 
         if self.download_t:
+            self.download_t.quit()
             try:
                 os.remove(self.installer_filename)
             except:
                 pass
-            self.download_t.quit()
 
     def open_finder_clicked(self):
         if platform.system() == "Darwin":
@@ -164,7 +164,12 @@ class DockerInstaller(QtWidgets.QDialog):
         self.accept()
 
     def start(self):
-        if not os.path.isdir("/Applications/Docker.app"):
+        if platform.system() == "Darwin":
+            docker_app_path = "/Applications/Docker.app"
+        else:
+            docker_app_path = "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"
+
+        if not os.path.exists(docker_app_path):
             self.download()
         else:
             self.task_label.setText(
@@ -173,7 +178,7 @@ class DockerInstaller(QtWidgets.QDialog):
             self.progress.hide()
             self.cancel_button.hide()
 
-            self.open_finder_path = "/Applications/Docker.app"
+            self.open_finder_path = docker_app_path
             self.open_finder_button.show()
 
         return self.exec_() == QtWidgets.QDialog.Accepted

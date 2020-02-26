@@ -79,4 +79,3 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, e):
         e.accept()
-        self.common.app.quit()

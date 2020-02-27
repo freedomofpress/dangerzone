@@ -18,12 +18,10 @@ git fetch
 git tag -v v$VERSION
 ```
 
-If the tag verifies successfully, check it out, and also its submodules:
+If the tag verifies successfully and check it out:
 
 ```
 git checkout v$VERSION
-git submodule init
-git submodule update
 ```
 
 ## macOS release

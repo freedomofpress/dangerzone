@@ -40,11 +40,7 @@
                             <Directory Id="FolderPyQt5QtTranslations" Name="translations" />
                         </Directory>
                     </Directory>
-                    <Directory Id="FolderShare" Name="share">
-                        <Directory Id="FolderShareContainer" Name="container">
-                            <Directory Id="FolderShareContainerScripts" Name="scripts" />
-                        </Directory>
-                    </Directory>
+                    <Directory Id="FolderShare" Name="share" />
                     <Directory Id="FolderWin32com" Name="win32com">
                         <Directory Id="FolderWin32comShell" Name="shell" />
                     </Directory>
@@ -199,23 +195,6 @@
         <DirectoryRef Id="FolderShare">
             <Component Id="FolderComponentShare" Guid="94ef9fae-990d-4dcb-bbf4-ca01b4debc20">
                 <File Source="..\..\dist\dangerzone\share\icon.png" />
-            </Component>
-        </DirectoryRef>
-
-        <DirectoryRef Id="FolderShareContainer">
-            <Component Id="FolderComponentShareContainer" Guid="4a3e5a58-8804-40eb-8216-5f0d75e8afa2">
-                <File Source="..\..\dist\dangerzone\share\container\Dockerfile" />
-                <File Source="..\..\dist\dangerzone\share\container\LICENSE" />
-                <File Source="..\..\dist\dangerzone\share\container\README.md" />
-            </Component>
-        </DirectoryRef>
-
-        <DirectoryRef Id="FolderShareContainerScripts">
-            <Component Id="FolderComponentShareContainerScripts" Guid="863a148f-b0cd-404f-ab59-fc29d5961786">
-                <File Source="..\..\dist\dangerzone\share\container\scripts\document-to-pixels" />
-                <File Source="..\..\dist\dangerzone\share\container\scripts\document-to-pixels-unpriv" />
-                <File Source="..\..\dist\dangerzone\share\container\scripts\pixels-to-pdf" />
-                <File Source="..\..\dist\dangerzone\share\container\scripts\pixels-to-pdf-unpriv" />
             </Component>
         </DirectoryRef>
 

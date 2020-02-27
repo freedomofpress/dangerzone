@@ -16,7 +16,7 @@ sys.path.insert(0, root)
 import dangerzone
 
 version = dangerzone.dangerzone_version
-print("Flock Agent version: {}".format(version))
+print("Dangerzone version: {}".format(version))
 
 if p == "Darwin":
     datas = [("../../share", "share"), ("../macos/../macos/document.icns", ".")]

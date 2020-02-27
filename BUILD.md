@@ -1,12 +1,5 @@
 # Development environment
 
-After cloning this git repo, make sure to checkout the git submodules.
-
-```
-git submodule init
-git submodule update
-```
-
 ## Debian/Ubuntu
 
 Install dependencies:

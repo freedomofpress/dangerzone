@@ -36,18 +36,16 @@ To make a macOS release, go to macOS build machine:
   - An app-specific Apple ID password saved in the login keychain called `flockagent-notarize`
 - Verify and checkout the git tag for this release
 - Run `poetry run ./install/macos/build_app.py --with-codesign`; this will make `dist/Dangerzone.dmg`
-- Notarize it: `xcrun altool --notarize-app --primary-bundle-id "media.firstlook.dangerzone" -u "micah@firstlook.org" -p "@keychain:dangerzone-notarize" --file dist/Dangerzone.dmg`
+- Notarize it: `xcrun altool --notarize-app --primary-bundle-id "media.firstlook.dangerzone" -u "micah@firstlook.org" -p "@keychain:dangerzone-notarize" --file dist/Dangerzone $VERSION.dmg`
 - Wait for it to get approved, check status with: `xcrun altool --notarization-history 0 -u "micah@firstlook.org" -p "@keychain:dangerzone-notarize"`
 - (If it gets rejected, you can see why with: `xcrun altool --notarization-info [RequestUUID] -u "micah@firstlook.org" -p "@keychain:dangerzone-notarize"`)
-- After it's approved, staple the ticket: `xcrun stapler staple dist/Dangerzone.dmg`
+- After it's approved, staple the ticket: `xcrun stapler staple dist/Dangerzone $VERSION.dmg`
 
 This process ends up with the final file:
 
 ```
-dist/Dangerzone.dmg
+dist/Dangerzone $VERSION.dmg
 ```
-
-Rename it `Dangerzone-$VERSION.dmg` before publishing.
 
 ## Windows release
 

@@ -136,7 +136,7 @@ class SettingsWidget(QtWidgets.QWidget):
 
         # Is update containers required?
         output = subprocess.check_output(
-            [self.global_common.container_runtime, "image", "ls", "dangerzone"],
+            [self.global_common.container_runtime, "image", "ls", "flmcode/dangerzone"],
             startupinfo=self.global_common.get_subprocess_startupinfo(),
         )
         if b"dangerzone" not in output:

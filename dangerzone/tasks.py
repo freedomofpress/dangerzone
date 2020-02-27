@@ -15,7 +15,7 @@ class TaskBase(QtCore.QThread):
     def __init__(self):
         super(TaskBase, self).__init__()
 
-    def exec_container(self, args, watch="stdout"):
+    def exec_container(self, args):
         args = [self.global_common.container_runtime] + args
         args_str = " ".join(pipes.quote(s) for s in args)
 
@@ -33,20 +33,12 @@ class TaskBase(QtCore.QThread):
             universal_newlines=True,
             startupinfo=self.global_common.get_subprocess_startupinfo(),
         ) as p:
-            if watch == "stdout":
-                pipe = p.stdout
-            else:
-                pipe = p.stderr
-
-            for line in pipe:
+            for line in p.stdout:
                 output += line
                 print(line, end="")
                 self.update_details.emit(output)
 
-            if watch == "stdout":
-                output += p.stderr.read()
-            else:
-                output += p.stdout.read()
+            output += p.stderr.read()
             self.update_details.emit(output)
 
         return p.returncode, output
@@ -59,10 +51,12 @@ class PullImageTask(TaskBase):
         self.common = common
 
     def run(self):
-        self.update_label.emit("Pulling container image")
+        self.update_label.emit(
+            "Pulling container image (this might take a few minutes)"
+        )
         self.update_details.emit("")
         args = ["pull", "flmcode/dangerzone"]
-        returncode, _ = self.exec_container(args, watch="stderr")
+        returncode, _ = self.exec_container(args)
 
         if returncode != 0:
             self.task_failed.emit(f"Return code: {returncode}")

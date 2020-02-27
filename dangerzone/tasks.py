@@ -61,28 +61,8 @@ class PullImageTask(TaskBase):
     def run(self):
         self.update_label.emit("Pulling container image")
         self.update_details.emit("")
-        args = ["pull", "debian:buster"]
+        args = ["pull", "flmcode/dangerzone"]
         returncode, _ = self.exec_container(args, watch="stderr")
-
-        if returncode != 0:
-            self.task_failed.emit(f"Return code: {returncode}")
-            return
-
-        self.task_finished.emit()
-
-
-class BuildContainerTask(TaskBase):
-    def __init__(self, global_common, common):
-        super(BuildContainerTask, self).__init__()
-        self.global_common = global_common
-        self.common = common
-
-    def run(self):
-        container_path = self.global_common.get_resource_path("container")
-        self.update_label.emit("Building container (this might take a long time)")
-        self.update_details.emit("")
-        args = ["build", "-t", "dangerzone", container_path]
-        returncode, _ = self.exec_container(args)
 
         if returncode != 0:
             self.task_failed.emit(f"Return code: {returncode}")
@@ -111,7 +91,7 @@ class ConvertToPixels(TaskBase):
             f"{self.common.document_filename}:/tmp/input_file",
             "-v",
             f"{self.common.pixel_dir.name}:/dangerzone",
-            "dangerzone",
+            "flmcode/dangerzone",
             "document-to-pixels",
         ]
         returncode, output = self.exec_container(args)
@@ -220,7 +200,7 @@ class ConvertToPDF(TaskBase):
                 f"{self.common.safe_dir.name}:/safezone",
             ]
             + envs
-            + ["dangerzone", "pixels-to-pdf",]
+            + ["flmcode/dangerzone", "pixels-to-pdf",]
         )
         returncode, output = self.exec_container(args)
 
@@ -229,4 +209,3 @@ class ConvertToPDF(TaskBase):
             return
 
         self.task_finished.emit()
-

@@ -61,7 +61,7 @@ class PullImageTask(TaskBase):
     def run(self):
         self.update_label.emit("Pulling container image")
         self.update_details.emit("")
-        args = ["pull", "ubuntu:20.04"]
+        args = ["pull", "debian:buster"]
         returncode, _ = self.exec_container(args, watch="stderr")
 
         if returncode != 0:
@@ -122,7 +122,11 @@ class ConvertToPixels(TaskBase):
 
         # Did we hit an error?
         for line in output.split("\n"):
-            if "failed:" in line or "The document format is not supported" in line:
+            if (
+                "failed:" in line
+                or "The document format is not supported" in line
+                or "Error" in line
+            ):
                 self.task_failed.emit(output)
                 return
 

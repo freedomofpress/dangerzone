@@ -7,8 +7,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.pyqtSignal()
 
-    def __init__(self, common):
+    def __init__(self, global_common, common):
         super(SettingsWidget, self).__init__()
+        self.global_common = global_common
         self.common = common
 
         # Dangerous document label
@@ -47,9 +48,9 @@ class SettingsWidget(QtWidgets.QWidget):
             )
             self.open_checkbox.clicked.connect(self.update_ui)
             self.open_combobox = QtWidgets.QComboBox()
-            for k in self.common.pdf_viewers:
+            for k in self.global_common.pdf_viewers:
                 self.open_combobox.addItem(
-                    k, QtCore.QVariant(self.common.pdf_viewers[k])
+                    k, QtCore.QVariant(self.global_common.pdf_viewers[k])
                 )
             open_layout = QtWidgets.QHBoxLayout()
             open_layout.addWidget(self.open_checkbox)
@@ -59,8 +60,10 @@ class SettingsWidget(QtWidgets.QWidget):
         # OCR document
         self.ocr_checkbox = QtWidgets.QCheckBox("OCR document, language")
         self.ocr_combobox = QtWidgets.QComboBox()
-        for k in self.common.ocr_languages:
-            self.ocr_combobox.addItem(k, QtCore.QVariant(self.common.ocr_languages[k]))
+        for k in self.global_common.ocr_languages:
+            self.ocr_combobox.addItem(
+                k, QtCore.QVariant(self.global_common.ocr_languages[k])
+            )
         ocr_layout = QtWidgets.QHBoxLayout()
         ocr_layout.addWidget(self.ocr_checkbox)
         ocr_layout.addWidget(self.ocr_combobox)
@@ -98,39 +101,43 @@ class SettingsWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
         # Load values from settings
-        if self.common.settings.get("save"):
+        if self.global_common.settings.get("save"):
             self.save_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
             self.save_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-        if self.common.settings.get("ocr"):
+        if self.global_common.settings.get("ocr"):
             self.ocr_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
             self.ocr_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-        index = self.ocr_combobox.findText(self.common.settings.get("ocr_language"))
+        index = self.ocr_combobox.findText(
+            self.global_common.settings.get("ocr_language")
+        )
         if index != -1:
             self.ocr_combobox.setCurrentIndex(index)
 
         if platform.system() != "Windows":
-            if self.common.settings.get("open"):
+            if self.global_common.settings.get("open"):
                 self.open_checkbox.setCheckState(QtCore.Qt.Checked)
             else:
                 self.open_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-            index = self.open_combobox.findText(self.common.settings.get("open_app"))
+            index = self.open_combobox.findText(
+                self.global_common.settings.get("open_app")
+            )
             if index != -1:
                 self.open_combobox.setCurrentIndex(index)
 
-        if self.common.settings.get("update_container"):
+        if self.global_common.settings.get("update_container"):
             self.update_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
             self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
         # Is update containers required?
         output = subprocess.check_output(
-            [self.common.container_runtime, "image", "ls", "dangerzone"],
-            startupinfo=self.common.get_subprocess_startupinfo(),
+            [self.global_common.container_runtime, "image", "ls", "dangerzone"],
+            startupinfo=self.global_common.get_subprocess_startupinfo(),
         )
         if b"dangerzone" not in output:
             self.update_checkbox.setCheckState(QtCore.Qt.Checked)
@@ -158,10 +165,9 @@ class SettingsWidget(QtWidgets.QWidget):
         )
 
         # Update the save location
-        self.common.save_filename = (
-            f"{os.path.splitext(self.common.document_filename)[0]}-safe.pdf"
-        )
-        self.save_lineedit.setText(os.path.basename(self.common.save_filename))
+        save_filename = f"{os.path.splitext(self.common.document_filename)[0]}-safe.pdf"
+        self.common.save_filename = save_filename
+        self.save_lineedit.setText(os.path.basename(save_filename))
 
     def save_browse_button_clicked(self):
         filename = QtWidgets.QFileDialog.getSaveFileName(
@@ -176,22 +182,24 @@ class SettingsWidget(QtWidgets.QWidget):
 
     def start_button_clicked(self):
         # Update settings
-        self.common.settings.set(
+        self.global_common.settings.set(
             "save", self.save_checkbox.checkState() == QtCore.Qt.Checked
         )
-        self.common.settings.set(
+        self.global_common.settings.set(
             "ocr", self.ocr_checkbox.checkState() == QtCore.Qt.Checked
         )
-        self.common.settings.set("ocr_language", self.ocr_combobox.currentText())
+        self.global_common.settings.set("ocr_language", self.ocr_combobox.currentText())
         if platform.system() != "Windows":
-            self.common.settings.set(
+            self.global_common.settings.set(
                 "open", self.open_checkbox.checkState() == QtCore.Qt.Checked
             )
-            self.common.settings.set("open_app", self.open_combobox.currentText())
-        self.common.settings.set(
+            self.global_common.settings.set(
+                "open_app", self.open_combobox.currentText()
+            )
+        self.global_common.settings.set(
             "update_container", self.update_checkbox.checkState() == QtCore.Qt.Checked
         )
-        self.common.settings.save()
+        self.global_common.settings.save()
 
         # Start!
         self.start_clicked.emit()

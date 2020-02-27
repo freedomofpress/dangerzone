@@ -16,7 +16,7 @@ class TaskBase(QtCore.QThread):
         super(TaskBase, self).__init__()
 
     def exec_container(self, args, watch="stdout"):
-        args = [self.common.container_runtime] + args
+        args = [self.global_common.container_runtime] + args
         args_str = " ".join(pipes.quote(s) for s in args)
 
         print()
@@ -31,7 +31,7 @@ class TaskBase(QtCore.QThread):
             stderr=subprocess.PIPE,
             bufsize=1,
             universal_newlines=True,
-            startupinfo=self.common.get_subprocess_startupinfo(),
+            startupinfo=self.global_common.get_subprocess_startupinfo(),
         ) as p:
             if watch == "stdout":
                 pipe = p.stdout
@@ -53,14 +53,15 @@ class TaskBase(QtCore.QThread):
 
 
 class PullImageTask(TaskBase):
-    def __init__(self, common):
+    def __init__(self, global_common, common):
         super(PullImageTask, self).__init__()
+        self.global_common = global_common
         self.common = common
 
     def run(self):
         self.update_label.emit("Pulling container image")
         self.update_details.emit("")
-        args = ["pull", "ubuntu:20.04"]
+        args = ["pull", "debian:buster"]
         returncode, _ = self.exec_container(args, watch="stderr")
 
         if returncode != 0:
@@ -71,12 +72,13 @@ class PullImageTask(TaskBase):
 
 
 class BuildContainerTask(TaskBase):
-    def __init__(self, common):
+    def __init__(self, global_common, common):
         super(BuildContainerTask, self).__init__()
+        self.global_common = global_common
         self.common = common
 
     def run(self):
-        container_path = self.common.get_resource_path("container")
+        container_path = self.global_common.get_resource_path("container")
         self.update_label.emit("Building container (this might take a long time)")
         self.update_details.emit("")
         args = ["build", "-t", "dangerzone", container_path]
@@ -90,8 +92,9 @@ class BuildContainerTask(TaskBase):
 
 
 class ConvertToPixels(TaskBase):
-    def __init__(self, common):
+    def __init__(self, global_common, common):
         super(ConvertToPixels, self).__init__()
+        self.global_common = global_common
         self.common = common
 
         self.max_image_width = 10000
@@ -119,7 +122,11 @@ class ConvertToPixels(TaskBase):
 
         # Did we hit an error?
         for line in output.split("\n"):
-            if "failed:" in line or "The document format is not supported" in line:
+            if (
+                "failed:" in line
+                or "The document format is not supported" in line
+                or "Error" in line
+            ):
                 self.task_failed.emit(output)
                 return
 
@@ -183,8 +190,9 @@ class ConvertToPixels(TaskBase):
 
 
 class ConvertToPDF(TaskBase):
-    def __init__(self, common):
+    def __init__(self, global_common, common):
         super(ConvertToPDF, self).__init__()
+        self.global_common = global_common
         self.common = common
 
     def run(self):
@@ -192,13 +200,13 @@ class ConvertToPDF(TaskBase):
 
         # Build environment variables list
         envs = []
-        if self.common.settings.get("ocr"):
+        if self.global_common.settings.get("ocr"):
             envs += ["-e", "OCR=1"]
         else:
             envs += ["-e", "OCR=0"]
         envs += [
             "-e",
-            f"OCR_LANGUAGE={self.common.ocr_languages[self.common.settings.get('ocr_language')]}",
+            f"OCR_LANGUAGE={self.global_common.ocr_languages[self.global_common.settings.get('ocr_language')]}",
         ]
 
         args = (

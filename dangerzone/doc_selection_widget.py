@@ -39,5 +39,5 @@ class DocSelectionWidget(QtWidgets.QWidget):
         )
         if filename[0] != "":
             filename = filename[0]
-            self.common.set_document_filename(filename)
+            self.common.document_filename = filename
             self.document_selected.emit()

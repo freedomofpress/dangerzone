@@ -220,8 +220,6 @@
             <ComponentRef Id="FolderComponentPyQt5QtPluginsStyles" />
             <ComponentRef Id="FolderComponentPyQt5QtTranslations" />
             <ComponentRef Id="FolderComponentShare" />
-            <ComponentRef Id="FolderComponentShareContainer" />
-            <ComponentRef Id="FolderComponentShareContainerScripts" />
             <ComponentRef Id="FolderComponentWin32comShell" />
             <ComponentRef Id="ApplicationShortcuts" />
         </Feature>

@@ -6,6 +6,7 @@ This section documents the release process. Unless you're a dangerzone developer
 
 Before making a release, all of these should be complete:
 
+* Update `version` in `pyproject.toml`
 * Update `dangerzone_version` in `dangerzone/__init__.py`
 * Update `ProductVersion` in `install/windows/Dangerzone.wxs`
 * CHANGELOG.md should be updated to include a list of all major changes since the last release
@@ -33,6 +34,7 @@ To make a macOS release, go to macOS build machine:
   - Apple-trusted `Developer ID Application: FIRST LOOK PRODUCTIONS, INC.` and `Developer ID Installer: FIRST LOOK PRODUCTIONS, INC.` code-signing certificates installed
   - An app-specific Apple ID password saved in the login keychain called `flockagent-notarize`
 - Verify and checkout the git tag for this release
+- Run `poetry install`
 - Run `poetry run ./install/macos/build_app.py --with-codesign`; this will make `dist/Dangerzone.dmg`
 - Notarize it: `xcrun altool --notarize-app --primary-bundle-id "media.firstlook.dangerzone" -u "micah@firstlook.org" -p "@keychain:dangerzone-notarize" --file dist/Dangerzone $VERSION.dmg`
 - Wait for it to get approved, check status with: `xcrun altool --notarization-history 0 -u "micah@firstlook.org" -p "@keychain:dangerzone-notarize"`
@@ -51,7 +53,11 @@ To make a Windows release, go to the Windows build machine:
 
 - Build machine should be running Windows 10, and have the Windows codesigning certificate installed
 - Verify and checkout the git tag for this release
-- Run `install\windows\build.bat`; this will make a codesigned installer package called `dist\Dangerzone-$VERSION.msi`
+- Run `poetry install`
+- Run `poetry shell`, then `cd ..\pyinstaller`, `python setup.py install`, `exit`
+- Run `poetry run install\windows\build.bat`; this will make a codesigned installer package called `dist\Dangerzone.msi`
+
+Rename `Dangerzone.msi` to `Dangerzone $VERSION.msi`.
 
 ## Linux release
 

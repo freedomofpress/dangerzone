@@ -16,7 +16,7 @@ from .docker_installer import (
     DockerInstaller,
 )
 
-dangerzone_version = "0.0.3"
+dangerzone_version = "0.1"
 
 
 class Application(QtWidgets.QApplication):

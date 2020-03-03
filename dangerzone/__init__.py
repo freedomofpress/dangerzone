@@ -5,6 +5,7 @@ import signal
 import platform
 import click
 import time
+import uuid
 
 from .global_common import GlobalCommon
 from .main_window import MainWindow
@@ -15,11 +16,12 @@ from .docker_installer import (
     DockerInstaller,
 )
 
-dangerzone_version = "0.0.3"
+dangerzone_version = "0.1"
 
 
 class Application(QtWidgets.QApplication):
     document_selected = QtCore.pyqtSignal(str)
+    application_activated = QtCore.pyqtSignal()
 
     def __init__(self):
         QtWidgets.QApplication.__init__(self, sys.argv)
@@ -28,6 +30,9 @@ class Application(QtWidgets.QApplication):
         # In macOS, handle the file open event
         if event.type() == QtCore.QEvent.FileOpen:
             self.document_selected.emit(event.file())
+            return True
+        elif event.type() == QtCore.QEvent.ApplicationActivate:
+            self.application_activated.emit()
             return True
 
         return QtWidgets.QApplication.event(self, event)
@@ -66,15 +71,25 @@ def main(filename):
         docker_installer.start()
         return
 
-    windows = []
+    closed_windows = {}
+    windows = {}
+
+    def delete_window(window_id):
+        closed_windows[window_id] = windows[window_id]
+        del windows[window_id]
 
     # Open a document in a window
     def select_document(filename=None):
-        if len(windows) == 1 and windows[0].common.document_filename == None:
-            window = windows[0]
+        if (
+            len(windows) == 1
+            and windows[list(windows.keys())[0]].common.document_filename == None
+        ):
+            window = windows[list(windows.keys())[0]]
         else:
-            window = MainWindow(global_common)
-            windows.append(window)
+            window_id = uuid.uuid4().hex
+            window = MainWindow(global_common, window_id)
+            window.delete_window.connect(delete_window)
+            windows[window_id] = window
 
         if filename:
             # Validate filename
@@ -100,7 +115,15 @@ def main(filename):
         if not select_document(filename):
             return True
 
+    # Open a new window, if all windows are closed
+    def application_activated():
+        if len(windows) == 0:
+            select_document()
+
     # If we get a file open event, open it
     app.document_selected.connect(select_document)
+
+    # If the application is activated and all windows are closed, open a new one
+    app.application_activated.connect(application_activated)
 
     sys.exit(app.exec_())

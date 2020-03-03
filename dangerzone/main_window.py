@@ -10,9 +10,12 @@ from .common import Common
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, global_common):
+    delete_window = QtCore.pyqtSignal(str)
+
+    def __init__(self, global_common, window_id):
         super(MainWindow, self).__init__()
         self.global_common = global_common
+        self.window_id = window_id
         self.common = Common()
 
         self.setWindowTitle("dangerzone")
@@ -83,5 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, e):
         e.accept()
+        self.delete_window.emit(self.window_id)
+
         if platform.system() != "Darwin":
             self.global_common.app.quit()

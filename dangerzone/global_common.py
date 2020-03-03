@@ -272,7 +272,7 @@ class GlobalCommon(object):
         if platform.system() == "Windows":
             path = self.get_resource_path("dangerzone.ico")
         else:
-            path = self.get_resource_path("logo.png")
+            path = self.get_resource_path("icon.png")
         return QtGui.QIcon(path)
 
     def open_pdf_viewer(self, filename):

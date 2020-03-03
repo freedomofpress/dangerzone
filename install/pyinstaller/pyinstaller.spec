@@ -79,11 +79,12 @@ if p == "Darwin":
                     "CFBundleTypeRole": "Viewer",
                 },
                 {
-                    "CFBundleTypeExtensions": ["docx", "doc"],
+                    "CFBundleTypeExtensions": ["docx", "doc", "docm"],
                     "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
                         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         "application/msword",
+                        "application/vnd.ms-word.document.macroEnabled.12",
                     ],
                     "CFBundleTypeName": "Microsoft Word Document",
                     "CFBundleTypeRole": "Viewer",

@@ -73,6 +73,9 @@ class GlobalCommon(object):
             else:
                 self.container_runtime = "/usr/bin/docker"
 
+        # In case we have a custom container
+        self.custom_container = None
+
         # Preload list of PDF viewers on computer
         self.pdf_viewers = self._find_pdf_viewers()
 
@@ -242,6 +245,12 @@ class GlobalCommon(object):
 
         # Load settings
         self.settings = Settings(self)
+
+    def get_container_name(self):
+        if self.custom_container:
+            return self.custom_container
+        else:
+            return "flmcode/dangerzone"
 
     def get_resource_path(self, filename):
         if getattr(sys, "dangerzone_dev", False):

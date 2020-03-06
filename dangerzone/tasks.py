@@ -85,7 +85,7 @@ class ConvertToPixels(TaskBase):
             f"{self.common.document_filename}:/tmp/input_file",
             "-v",
             f"{self.common.pixel_dir.name}:/dangerzone",
-            "flmcode/dangerzone",
+            self.global_common.get_container_name(),
             "document-to-pixels",
         ]
         returncode, output = self.exec_container(args)
@@ -194,7 +194,7 @@ class ConvertToPDF(TaskBase):
                 f"{self.common.safe_dir.name}:/safezone",
             ]
             + envs
-            + ["flmcode/dangerzone", "pixels-to-pdf",]
+            + [self.global_common.get_container_name(), "pixels-to-pdf",]
         )
         returncode, output = self.exec_container(args)
 

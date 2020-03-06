@@ -135,13 +135,18 @@ class SettingsWidget(QtWidgets.QWidget):
             self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
         # Is update containers required?
-        output = subprocess.check_output(
-            [self.global_common.container_runtime, "image", "ls", "flmcode/dangerzone"],
-            startupinfo=self.global_common.get_subprocess_startupinfo(),
-        )
-        if b"dangerzone" not in output:
-            self.update_checkbox.setCheckState(QtCore.Qt.Checked)
+        if self.global_common.custom_container:
+            self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
             self.update_checkbox.setEnabled(False)
+            self.update_checkbox.hide()
+        else:
+            output = subprocess.check_output(
+                [self.global_common.container_runtime, "image", "ls", self.global_common.get_container_name()],
+                startupinfo=self.global_common.get_subprocess_startupinfo(),
+            )
+            if b"dangerzone" not in output:
+                self.update_checkbox.setCheckState(QtCore.Qt.Checked)
+                self.update_checkbox.setEnabled(False)
 
     def update_ui(self):
         if platform.system() == "Windows":

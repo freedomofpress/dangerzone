@@ -6,6 +6,7 @@ import platform
 import click
 import time
 import uuid
+import subprocess
 
 from .global_common import GlobalCommon
 from .main_window import MainWindow
@@ -39,12 +40,10 @@ class Application(QtWidgets.QApplication):
 
 
 @click.command()
+@click.option("--custom-container") # Use this container instead of flmcode/dangerzone
 @click.argument("filename", required=False)
-def main(filename):
-    print(f"dangerzone {dangerzone_version}")
-
-    # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+def main(custom_container, filename):
+    click.echo(f"dangerzone {dangerzone_version}")
 
     # Create the Qt app
     app = Application()
@@ -53,20 +52,35 @@ def main(filename):
     # GlobalCommon object
     global_common = GlobalCommon(app)
 
+    if custom_container:
+        # Do we have this container?
+        output = subprocess.check_output(
+            [global_common.container_runtime, "image", "ls", custom_container],
+            startupinfo=global_common.get_subprocess_startupinfo(),
+        )
+        if custom_container.encode() not in output:
+            click.echo(f"Container '{container}' not found")
+            return
+
+        global_common.custom_container = custom_container
+
+    # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     # If we're using Linux and docker, see if we need to add the user to the docker group
     if (
         platform.system() == "Linux"
         and global_common.container_runtime == "/usr/bin/docker"
     ):
         if not global_common.ensure_user_is_in_docker_group():
-            print("Failed to add user to docker group")
+            click.echo("Failed to add user to docker group")
             return
 
     # See if we need to install Docker...
     if (platform.system() == "Darwin" or platform.system() == "Windows") and (
         not is_docker_installed(global_common) or not is_docker_ready(global_common)
     ):
-        print("Docker is either not installed or not running")
+        click.echo("Docker is either not installed or not running")
         docker_installer = DockerInstaller(global_common)
         docker_installer.start()
         return
@@ -97,10 +111,10 @@ def main(filename):
             try:
                 open(filename, "rb")
             except FileNotFoundError:
-                print("File not found")
+                click.echo("File not found")
                 return False
             except PermissionError:
-                print("Permission denied")
+                click.echo("Permission denied")
                 return False
             window.common.document_filename = filename
             window.doc_selection_widget.document_selected.emit()

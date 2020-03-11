@@ -110,7 +110,7 @@ if p == "Darwin":
                     "CFBundleTypeRole": "Viewer",
                 },
                 {
-                    "CFBundleTypeExtensions": ["odg"],
+                    "CFBundleTypeExtensions": ["odt"],
                     "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
                         "application/vnd.oasis.opendocument.text"
@@ -119,7 +119,7 @@ if p == "Darwin":
                     "CFBundleTypeRole": "Viewer",
                 },
                 {
-                    "CFBundleTypeExtensions": ["ops"],
+                    "CFBundleTypeExtensions": ["ods"],
                     "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
                         "application/vnd.oasis.opendocument.spreadsheet"

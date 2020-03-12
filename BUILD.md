@@ -25,7 +25,7 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build python3 python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests
+sudo dnf install -y rpm-build python3 python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests podman
 ```
 
 Run from source tree:

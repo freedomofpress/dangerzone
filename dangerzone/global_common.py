@@ -332,6 +332,11 @@ class GlobalCommon(object):
 
                 # Load its plist file
                 plist_path = os.path.join(app_path, "Contents/Info.plist")
+
+                # Skip if there's not an Info.plist
+                if not os.path.exists(plist_path):
+                    continue
+
                 with open(plist_path, "rb") as f:
                     plist_data = f.read()
                 plist_dict = plistlib.loads(plist_data)

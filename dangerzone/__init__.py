@@ -40,7 +40,7 @@ class Application(QtWidgets.QApplication):
 
 
 @click.command()
-@click.option("--custom-container") # Use this container instead of flmcode/dangerzone
+@click.option("--custom-container")  # Use this container instead of flmcode/dangerzone
 @click.argument("filename", required=False)
 def main(custom_container, filename):
     click.echo(f"dangerzone {dangerzone_version}")
@@ -74,6 +74,9 @@ def main(custom_container, filename):
     ):
         if not global_common.ensure_user_is_in_docker_group():
             click.echo("Failed to add user to docker group")
+            return
+        if not global_common.ensure_docker_service_is_started():
+            click.echo("Failed to start docker service")
             return
 
     # See if we need to install Docker...

@@ -19,6 +19,7 @@ elif platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry
 
 from .settings import Settings
+from .docker_installer import is_docker_ready
 
 
 class GlobalCommon(object):
@@ -398,6 +399,31 @@ class GlobalCommon(object):
                     Alert(self, message).launch()
                 else:
                     message = "Failed to add your user to the 'docker' group, quitting."
+                    Alert(self, message).launch()
+
+            return False
+
+        return True
+
+    def ensure_docker_service_is_started(self):
+        if not is_docker_ready(self):
+            message = "<b>Dangerzone requires Docker.</b><br><br>Docker should be installed, but it looks like it's not running in the background.<br><br>Click Ok to try starting the docker service. You will have to type your login password."
+            if Alert(self, message).launch():
+                p = subprocess.run(
+                    [
+                        "/usr/bin/pkexec",
+                        self.get_resource_path("enable_docker_service.sh"),
+                    ]
+                )
+                if p.returncode == 0:
+                    # Make sure docker is now ready
+                    if is_docker_ready(self):
+                        return True
+                    else:
+                        message = "Restarting docker appeared to work, but the service still isn't responding, quitting."
+                        Alert(self, message).launch()
+                else:
+                    message = "Failed to start the docker service, quitting."
                     Alert(self, message).launch()
 
             return False

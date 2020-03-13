@@ -29,11 +29,20 @@ setuptools.setup(
             ["install/linux/media.firstlook.dangerzone.png"],
         ),
         ("share/dangerzone", file_list("share")),
+        (
+            "share/polkit-1/actions",
+            ["install/linux/media.firstlook.dangerzone-container.policy"],
+        ),
     ],
     classifiers=[
         "Programming Language :: Python",
         "Intended Audience :: End Users/Desktop",
         "Operating System :: OS Independent",
     ],
-    entry_points={"console_scripts": ["dangerzone = dangerzone:main"]},
+    entry_points={
+        "console_scripts": [
+            "dangerzone = dangerzone:main",
+            "dangerzone-container = dangerzone:container_main",
+        ]
+    },
 )

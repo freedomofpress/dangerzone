@@ -57,25 +57,11 @@ class GlobalCommon(object):
         # App data folder
         self.appdata_path = appdirs.user_config_dir("dangerzone")
 
-        # Container runtime
-        if platform.system() == "Darwin":
-            self.container_runtime = "/usr/local/bin/docker"
-        elif platform.system() == "Windows":
-            self.container_runtime = (
-                "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe"
-            )
-        else:
-            # Linux
-
-            # If this is fedora-like, use podman
-            if os.path.exists("/usr/bin/dnf"):
-                self.container_runtime = "/usr/bin/podman"
-            # Otherwise, use docker
-            else:
-                self.container_runtime = "/usr/bin/docker"
-
         # In case we have a custom container
         self.custom_container = None
+
+        # dangerzone-container path
+        self.dz_container_path = self.get_dangerzone_container_path()
 
         # Preload list of PDF viewers on computer
         self.pdf_viewers = self._find_pdf_viewers()
@@ -278,6 +264,35 @@ class GlobalCommon(object):
         resource_path = os.path.join(prefix, filename)
         return resource_path
 
+    def get_dangerzone_container_path(self):
+        if getattr(sys, "dangerzone_dev", False):
+            # Look for resources directory relative to python file
+            return os.path.join(
+                os.path.dirname(
+                    os.path.dirname(
+                        os.path.abspath(inspect.getfile(inspect.currentframe()))
+                    )
+                ),
+                "dev_scripts",
+                "dangerzone-container",
+            )
+        else:
+            if platform.system() == "Darwin":
+                return os.path.join(os.path.dirname(sys.executable), "dangerzone-container")
+            elif platform.system() == "Windows":
+                return os.path.join(os.path.dirname(sys.executable), "dangerzone-container.exe")
+            else:
+                return "/usr/bin/dangerzone-container"
+
+    def get_dangerzone_container_args(self):
+        if platform.system() == "Linux":
+            if self.settings.get("linux_prefers_typing_password"):
+                return ["/usr/bin/pkexec", self.dz_container_path]
+            else:
+                return [self.dz_container_path]
+        else:
+            return [self.dz_container_path]
+
     def get_window_icon(self):
         if platform.system() == "Windows":
             path = self.get_resource_path("dangerzone.ico")
@@ -372,18 +387,40 @@ class GlobalCommon(object):
 
         return pdf_viewers
 
-    def ensure_user_is_in_docker_group(self):
+    def ensure_docker_group_preference(self):
+        # If the user prefers typing their password
+        if self.settings.get("linux_prefers_typing_password") == True:
+            return True
+
+        # Get the docker group
         try:
             groupinfo = grp.getgrnam("docker")
         except:
             # Ignore if group is not found
             return True
 
+        # See if the user is in the group
         username = getpass.getuser()
         if username not in groupinfo.gr_mem:
-            # User is not in docker group, so prompt about adding the user to the docker group
-            message = "<b>Dangerzone requires Docker.</b><br><br>Click Ok to add your user to the 'docker' group. You will have to type your login password."
-            if Alert(self, message).launch():
+            # User is not in the docker group, ask if they prefer typing their password
+            message = "<b>Dangerzone requires Docker</b><br><br>In order to use Docker, your user must be in the 'docker' group or you'll need to type your password each time you run dangerzone.<br><br><b>Adding your user to the 'docker' group is more convenient but less secure</b>, and will require just typing your password once. Which do you prefer?"
+            return_code = Alert(
+                self,
+                message,
+                ok_text="I'll type my password each time",
+                extra_button_text="Add my user to the 'docker' group",
+            ).launch()
+            if return_code == QtWidgets.QDialog.Accepted:
+                # Prefers typing password
+                self.settings.set("linux_prefers_typing_password", True)
+                self.settings.save()
+                return True
+            elif return_code == 2:
+                # Prefers being in the docker group
+                self.settings.set("linux_prefers_typing_password", False)
+                self.settings.save()
+
+                # Add user to the docker group
                 p = subprocess.run(
                     [
                         "/usr/bin/pkexec",
@@ -401,14 +438,17 @@ class GlobalCommon(object):
                     message = "Failed to add your user to the 'docker' group, quitting."
                     Alert(self, message).launch()
 
-            return False
+                return False
+            else:
+                # Cancel
+                return False
 
         return True
 
     def ensure_docker_service_is_started(self):
         if not is_docker_ready(self):
-            message = "<b>Dangerzone requires Docker.</b><br><br>Docker should be installed, but it looks like it's not running in the background.<br><br>Click Ok to try starting the docker service. You will have to type your login password."
-            if Alert(self, message).launch():
+            message = "<b>Dangerzone requires Docker</b><br><br>Docker should be installed, but it looks like it's not running in the background.<br><br>Click Ok to try starting the docker service. You will have to type your login password."
+            if Alert(self, message).launch() == QtWidgets.QDialog.Accepted:
                 p = subprocess.run(
                     [
                         "/usr/bin/pkexec",
@@ -440,7 +480,7 @@ class GlobalCommon(object):
 
 
 class Alert(QtWidgets.QDialog):
-    def __init__(self, common, message):
+    def __init__(self, common, message, ok_text="Ok", extra_button_text=None):
         super(Alert, self).__init__()
         self.common = common
 
@@ -470,22 +510,38 @@ class Alert(QtWidgets.QDialog):
 
         message_layout = QtWidgets.QHBoxLayout()
         message_layout.addWidget(logo)
-        message_layout.addWidget(label)
+        message_layout.addSpacing(10)
+        message_layout.addWidget(label, stretch=1)
 
-        ok_button = QtWidgets.QPushButton("Ok")
-        ok_button.clicked.connect(self.accept)
+        ok_button = QtWidgets.QPushButton(ok_text)
+        ok_button.clicked.connect(self.clicked_ok)
+        if extra_button_text:
+            extra_button = QtWidgets.QPushButton(extra_button_text)
+            extra_button.clicked.connect(self.clicked_extra)
         cancel_button = QtWidgets.QPushButton("Cancel")
-        cancel_button.clicked.connect(self.reject)
+        cancel_button.clicked.connect(self.clicked_cancel)
 
         buttons_layout = QtWidgets.QHBoxLayout()
         buttons_layout.addStretch()
         buttons_layout.addWidget(ok_button)
+        if extra_button_text:
+            buttons_layout.addWidget(extra_button)
         buttons_layout.addWidget(cancel_button)
 
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(message_layout)
+        layout.addSpacing(10)
         layout.addLayout(buttons_layout)
         self.setLayout(layout)
 
+    def clicked_ok(self):
+        self.done(QtWidgets.QDialog.Accepted)
+
+    def clicked_extra(self):
+        self.done(2)
+
+    def clicked_cancel(self):
+        self.done(QtWidgets.QDialog.Rejected)
+
     def launch(self):
-        return self.exec_() == QtWidgets.QDialog.Accepted
+        return self.exec_()

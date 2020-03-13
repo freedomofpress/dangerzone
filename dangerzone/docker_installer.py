@@ -8,29 +8,31 @@ import time
 import platform
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from .container import container_runtime
+
 
 def is_docker_installed(global_common):
     if platform.system() == "Darwin":
         # Does the docker binary exist?
         if os.path.isdir("/Applications/Docker.app") and os.path.exists(
-            global_common.container_runtime
+            container_runtime
         ):
             # Is it executable?
-            st = os.stat(global_common.container_runtime)
+            st = os.stat(container_runtime)
             return bool(st.st_mode & stat.S_IXOTH)
 
     if platform.system() == "Windows":
-        return os.path.exists(global_common.container_runtime)
+        return os.path.exists(container_runtime)
 
     return False
 
 
 def is_docker_ready(global_common):
-    # Run `docker ps` without an error
+    # Run `docker image ls` without an error
     try:
+        print(global_common.get_dangerzone_container_args())
         subprocess.run(
-            [global_common.container_runtime, "ps"],
-            check=True,
+            global_common.get_dangerzone_container_args() + ["image-ls"],
             startupinfo=global_common.get_subprocess_startupinfo(),
         )
         return True

@@ -141,7 +141,12 @@ class SettingsWidget(QtWidgets.QWidget):
             self.update_checkbox.hide()
         else:
             output = subprocess.check_output(
-                [self.global_common.container_runtime, "image", "ls", self.global_common.get_container_name()],
+                self.global_common.get_dangerzone_container_args()
+                + [
+                    "image-ls",
+                    "--container-name",
+                    self.global_common.get_container_name(),
+                ],
                 startupinfo=self.global_common.get_subprocess_startupinfo(),
             )
             if b"dangerzone" not in output:

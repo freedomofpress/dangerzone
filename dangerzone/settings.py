@@ -20,6 +20,7 @@ class Settings:
             "open": True,
             "open_app": default_pdf_viewer,
             "update_container": True,
+            "linux_prefers_typing_password": None,
         }
 
         self.load()

@@ -16,12 +16,8 @@ class TaskBase(QtCore.QThread):
         super(TaskBase, self).__init__()
 
     def exec_container(self, args):
-        args = [self.global_common.container_runtime] + args
-        args_str = " ".join(pipes.quote(s) for s in args)
-
-        print()
-        print(f"Executing: {args_str}")
-        output = f"Executing: {args_str}\n\n"
+        args = self.global_common.get_dangerzone_container_args() + args
+        output = ""
         self.update_details.emit(output)
 
         with subprocess.Popen(
@@ -38,9 +34,12 @@ class TaskBase(QtCore.QThread):
                 print(line, end="")
                 self.update_details.emit(output)
 
-            output += p.stderr.read()
+            stderr = p.stderr.read()
+            output += stderr
+            print(stderr)
             self.update_details.emit(output)
 
+        print("")
         return p.returncode, output
 
 
@@ -55,7 +54,7 @@ class PullImageTask(TaskBase):
             "Pulling container image (this might take a few minutes)"
         )
         self.update_details.emit("")
-        args = ["pull", "flmcode/dangerzone"]
+        args = ["pull"]
         returncode, _ = self.exec_container(args)
 
         if returncode != 0:
@@ -78,15 +77,13 @@ class ConvertToPixels(TaskBase):
     def run(self):
         self.update_label.emit("Converting document to pixels")
         args = [
-            "run",
-            "--network",
-            "none",
-            "-v",
-            f"{self.common.document_filename}:/tmp/input_file",
-            "-v",
-            f"{self.common.pixel_dir.name}:/dangerzone",
-            self.global_common.get_container_name(),
             "document-to-pixels",
+            "--document-filename",
+            self.common.document_filename,
+            "--pixel-dir",
+            self.common.pixel_dir.name,
+            "--container-name",
+            self.global_common.get_container_name(),
         ]
         returncode, output = self.exec_container(args)
 
@@ -173,29 +170,27 @@ class ConvertToPDF(TaskBase):
         self.update_label.emit("Converting pixels to safe PDF")
 
         # Build environment variables list
-        envs = []
         if self.global_common.settings.get("ocr"):
-            envs += ["-e", "OCR=1"]
+            ocr = "1"
         else:
-            envs += ["-e", "OCR=0"]
-        envs += [
-            "-e",
-            f"OCR_LANGUAGE={self.global_common.ocr_languages[self.global_common.settings.get('ocr_language')]}",
+            ocr = "0"
+        ocr_lang = self.global_common.ocr_languages[
+            self.global_common.settings.get("ocr_language")
         ]
 
-        args = (
-            [
-                "run",
-                "--network",
-                "none",
-                "-v",
-                f"{self.common.pixel_dir.name}:/dangerzone",
-                "-v",
-                f"{self.common.safe_dir.name}:/safezone",
-            ]
-            + envs
-            + [self.global_common.get_container_name(), "pixels-to-pdf",]
-        )
+        args = [
+            "pixels-to-pdf",
+            "--pixel-dir",
+            self.common.pixel_dir.name,
+            "--safe-dir",
+            self.common.safe_dir.name,
+            "--container-name",
+            self.global_common.get_container_name(),
+            "--ocr",
+            ocr,
+            "--ocr-lang",
+            ocr_lang,
+        ]
         returncode, output = self.exec_container(args)
 
         if returncode != 0:

@@ -187,6 +187,13 @@ poetry run pyinstaller install\pyinstaller\pyinstaller.spec
 
 `dangerzone.exe` and all of their supporting files will get created inside the `dist` folder.
 
+You then must create a symbolic link for dangerzone to run. To do this, open a command prompt _as an administrator_, cd to the dangerzone folder, and run:
+
+```
+cd dist\dangerzone
+mklink dangerzone-container.exe dangerzone.exe
+```
+
 ### To build the installer
 
 Note that you must have a codesigning certificate installed in order to use the `install\windows\build.bat` script, because it codesigns `dangerzone.exe` and `Dangerzone.msi`.
@@ -194,7 +201,20 @@ Note that you must have a codesigning certificate installed in order to use the 
 Open a command prompt, cd to the dangerzone directory, and run:
 
 ```
-poetry run install\windows\build.bat
+poetry run install\windows\step1-build-exe.bat
 ```
+
+Open a second command prompt _as an administratror_, cd to the dangerzone directory, and run:
+
+```
+install\windows\step2-make-symlink.bat
+```
+
+Then back in the first command prompt, run:
+
+```
+poetry run install\windows\step3-build-installer.bat
+```
+
 
 When you're done you will have `dist\Dangerzone.msi`.

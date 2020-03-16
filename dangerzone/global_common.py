@@ -6,6 +6,7 @@ import appdirs
 import platform
 import subprocess
 import shlex
+import pipes
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 if platform.system() == "Darwin":
@@ -284,14 +285,25 @@ class GlobalCommon(object):
             else:
                 return "/usr/bin/dangerzone-container"
 
-    def get_dangerzone_container_args(self):
+    def exec_dangerzone_container(self, args):
+        # Prefix the args with the retainer runtime, and in the case linux when the user isn't in the docker group, pkexec
         if platform.system() == "Linux":
             if self.settings.get("linux_prefers_typing_password"):
-                return ["/usr/bin/pkexec", self.dz_container_path]
+                args = ["/usr/bin/pkexec", self.dz_container_path] + args
             else:
-                return [self.dz_container_path]
+                args = [self.dz_container_path] + args
         else:
-            return [self.dz_container_path]
+            args = [self.dz_container_path] + args
+
+        # Execute dangerzone-container
+        args_str = " ".join(pipes.quote(s) for s in args)
+        print(f"Executing: {args_str}")
+        return subprocess.Popen(
+            args,
+            startupinfo=self.get_subprocess_startupinfo(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
 
     def get_window_icon(self):
         if platform.system() == "Windows":

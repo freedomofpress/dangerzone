@@ -15,6 +15,7 @@ from .docker_installer import (
     is_docker_ready,
     launch_docker_windows,
     DockerInstaller,
+    AuthorizationFailed,
 )
 from .container import container_runtime
 
@@ -51,14 +52,23 @@ def gui_main(custom_container, filename):
 
     if custom_container:
         # Do we have this container?
-        output = subprocess.check_output(
-            global_common.get_dangerzone_container_args()
-            + ["image-ls", custom_container],
-            startupinfo=global_common.get_subprocess_startupinfo(),
-        )
-        if custom_container.encode() not in output:
-            click.echo(f"Container '{container}' not found")
-            return
+        with global_common.exec_dangerzone_container(
+            ["image-ls", "--container-name", custom_container]
+        ) as p:
+            stdout_data, stderr_data = p.communicate()
+
+            # The user canceled, or permission denied
+            if p.returncode == 126 or p.returncode == 127:
+                click.echo("Authorization failed")
+                return
+            elif p.returncode != 0:
+                click.echo("Container error")
+                return
+
+            # Check the output
+            if custom_container.encode() not in stdout_data:
+                click.echo(f"Container '{container}' not found")
+                return
 
         global_common.custom_container = custom_container
 
@@ -69,8 +79,12 @@ def gui_main(custom_container, filename):
     if platform.system() == "Linux" and container_runtime == "/usr/bin/docker":
         if not global_common.ensure_docker_group_preference():
             return
-        if not global_common.ensure_docker_service_is_started():
-            click.echo("Failed to start docker service")
+        try:
+            if not global_common.ensure_docker_service_is_started():
+                click.echo("Failed to start docker service")
+                return
+        except AuthorizationFailed:
+            click.echo("Authorization failed")
             return
 
     # See if we need to install Docker...

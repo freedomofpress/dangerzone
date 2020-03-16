@@ -6,6 +6,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.pyqtSignal()
+    close_window = QtCore.pyqtSignal()
 
     def __init__(self, global_common, common):
         super(SettingsWidget, self).__init__()
@@ -134,24 +135,31 @@ class SettingsWidget(QtWidgets.QWidget):
         else:
             self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
+    def check_update_container_default_state(self):
         # Is update containers required?
         if self.global_common.custom_container:
             self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
             self.update_checkbox.setEnabled(False)
             self.update_checkbox.hide()
         else:
-            output = subprocess.check_output(
-                self.global_common.get_dangerzone_container_args()
-                + [
+            with self.global_common.exec_dangerzone_container(
+                [
                     "image-ls",
                     "--container-name",
                     self.global_common.get_container_name(),
-                ],
-                startupinfo=self.global_common.get_subprocess_startupinfo(),
-            )
-            if b"dangerzone" not in output:
-                self.update_checkbox.setCheckState(QtCore.Qt.Checked)
-                self.update_checkbox.setEnabled(False)
+                ]
+            ) as p:
+                stdout_data, stderror_data = p.communicate()
+
+                # The user canceled, or permission denied
+                if p.returncode == 126 or p.returncode == 127:
+                    self.close_window.emit()
+                    return
+
+                # Check the output
+                if b"dangerzone" not in stdout_data:
+                    self.update_checkbox.setCheckState(QtCore.Qt.Checked)
+                    self.update_checkbox.setEnabled(False)
 
     def update_ui(self):
         if platform.system() == "Windows":

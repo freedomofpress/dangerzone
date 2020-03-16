@@ -52,7 +52,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings_widget.document_selected
         )
         self.settings_widget.start_clicked.connect(self.start_clicked)
+        self.settings_widget.close_window.connect(self.close)
         self.settings_widget.hide()
+        QtCore.QTimer.singleShot(
+            1, self.settings_widget.check_update_container_default_state
+        )
 
         # Tasks
         self.tasks_widget = TasksWidget(self.global_common, self.common)

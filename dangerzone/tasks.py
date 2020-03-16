@@ -16,28 +16,24 @@ class TaskBase(QtCore.QThread):
         super(TaskBase, self).__init__()
 
     def exec_container(self, args):
-        args = self.global_common.get_dangerzone_container_args() + args
         output = ""
         self.update_details.emit(output)
 
-        with subprocess.Popen(
-            args,
-            stdin=None,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            bufsize=1,
-            universal_newlines=True,
-            startupinfo=self.global_common.get_subprocess_startupinfo(),
-        ) as p:
+        with self.global_common.exec_dangerzone_container(args) as p:
             for line in p.stdout:
-                output += line
-                print(line, end="")
+                output += line.decode()
+                print(line.decode(), end="")
                 self.update_details.emit(output)
 
             stderr = p.stderr.read()
-            output += stderr
-            print(stderr)
+            output += stderr.decode()
+            print(stderr.decode())
             self.update_details.emit(output)
+
+        if p.returncode == 126 or p.returncode == 127:
+            self.task_failed.emit(f"Authorization failed")
+        elif p.returncode == 0:
+            self.task_failed.emit(f"Return code: {p.returncode}")
 
         print("")
         return p.returncode, output
@@ -58,7 +54,6 @@ class PullImageTask(TaskBase):
         returncode, _ = self.exec_container(args)
 
         if returncode != 0:
-            self.task_failed.emit(f"Return code: {returncode}")
             return
 
         self.task_finished.emit()
@@ -88,7 +83,6 @@ class ConvertToPixels(TaskBase):
         returncode, output = self.exec_container(args)
 
         if returncode != 0:
-            self.task_failed.emit(f"Return code: {returncode}")
             return
 
         # Did we hit an error?
@@ -194,7 +188,6 @@ class ConvertToPDF(TaskBase):
         returncode, output = self.exec_container(args)
 
         if returncode != 0:
-            self.task_failed.emit(f"Return code: {returncode}")
             return
 
         self.task_finished.emit()

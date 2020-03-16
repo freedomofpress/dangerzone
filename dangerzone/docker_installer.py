@@ -11,6 +11,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from .container import container_runtime
 
 
+class AuthorizationFailed(Exception):
+    pass
+
+
 def is_docker_installed(global_common):
     if platform.system() == "Darwin":
         # Does the docker binary exist?
@@ -29,15 +33,18 @@ def is_docker_installed(global_common):
 
 def is_docker_ready(global_common):
     # Run `docker image ls` without an error
-    try:
-        print(global_common.get_dangerzone_container_args())
-        subprocess.run(
-            global_common.get_dangerzone_container_args() + ["image-ls"],
-            startupinfo=global_common.get_subprocess_startupinfo(),
-        )
-        return True
-    except subprocess.CalledProcessError:
-        return False
+    with global_common.exec_dangerzone_container(["image-ls"]) as p:
+        p.communicate()
+
+        # The user canceled, or permission denied
+        if p.returncode == 126 or p.returncode == 127:
+            raise AuthorizationFailed
+
+        # Return true if it succeeds
+        if p.returncode == 0:
+            return True
+        else:
+            return False
 
 
 def launch_docker_windows(global_common):

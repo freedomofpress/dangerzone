@@ -105,7 +105,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests docker
             gem install package_cloud
       - checkout
       - run:
@@ -127,7 +127,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests docker
             gem install package_cloud
       - checkout
       - run:

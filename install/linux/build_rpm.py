@@ -39,7 +39,7 @@ def main():
             "python3",
             "setup.py",
             "bdist_rpm",
-            "--requires=python3-qt5,python3-appdirs,python3-click,python3-pyxdg,python3-requests,podman",
+            '--requires="python3-qt5,python3-appdirs,python3-click,python3-pyxdg,python3-requests,(docker or docker-ce)"',
         ]
     )
 

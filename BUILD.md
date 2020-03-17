@@ -5,8 +5,10 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg python3-requests
+sudo apt install -y python-all dh-python python3-stdeb python3 python3-pyqt5 python3-appdirs python3-click python3-xdg python3-requests
 ```
+
+You also need docker, either by installing the `docker.io` package, or by installing `docker-ce` by following [these instructions for Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/) or [for Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 
 Run from source tree:
 
@@ -25,8 +27,10 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build python3 python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests podman
+sudo dnf install -y rpm-build python3 python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests
 ```
+
+You also need docker, either by installing the `docker` package, or by installing `docker-ce` by following [these instructions](https://docs.docker.com/install/linux/docker-ce/fedora/).
 
 Run from source tree:
 

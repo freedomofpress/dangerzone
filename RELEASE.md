@@ -55,7 +55,10 @@ To make a Windows release, go to the Windows build machine:
 - Verify and checkout the git tag for this release
 - Run `poetry install`
 - Run `poetry shell`, then `cd ..\pyinstaller`, `python setup.py install`, `exit`
-- Run `poetry run install\windows\build.bat`; this will make a codesigned installer package called `dist\Dangerzone.msi`
+- Run `poetry run install\windows\step1-build-exe.bat`
+- Open a second command prompt _as an administratror_, cd to the dangerzone directory, and run: `install\windows\step2-make-symlink.bat`
+- Back in the first command prompt, run: `poetry run install\windows\step3-build-installer.bat`
+- When you're done you will have `dist\Dangerzone.msi`
 
 Rename `Dangerzone.msi` to `Dangerzone $VERSION.msi`.
 

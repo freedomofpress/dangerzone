@@ -44,8 +44,7 @@ def main():
     shutil.rmtree(os.path.join(dist_path, "dangerzone"))
 
     os.symlink(
-        os.path.join(app_path, "Contents/MacOS/dangerzone"),
-        os.path.join(app_path, "Contents/MacOS/dangerzone-container"),
+        "dangerzone", os.path.join(app_path, "Contents/MacOS/dangerzone-container"),
     )
 
     print(f"○ Finished build app: {app_path}")

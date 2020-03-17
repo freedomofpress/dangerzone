@@ -19,10 +19,6 @@ root = os.path.dirname(
 )
 
 
-def run(cmd):
-    subprocess.run(cmd, cwd=root, check=True)
-
-
 def main():
     build_path = os.path.join(root, "build")
     dist_path = os.path.join(root, "dist")
@@ -34,13 +30,11 @@ def main():
         shutil.rmtree(dist_path)
 
     print("* Building RPM package")
-    run(
-        [
-            "python3",
-            "setup.py",
-            "bdist_rpm",
-            '--requires="python3-qt5,python3-appdirs,python3-click,python3-pyxdg,python3-requests,(docker or docker-ce)"',
-        ]
+    subprocess.run(
+        "python3 setup.py bdist_rpm --requires='python3-qt5,python3-appdirs,python3-click,python3-pyxdg,python3-requests,(docker or docker-ce)'",
+        shell=True,
+        cwd=root,
+        check=True,
     )
 
     print("")

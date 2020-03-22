@@ -13,7 +13,7 @@ You also need docker, either by installing the `docker.io` package, or by instal
 Run from source tree:
 
 ```sh
-./dev_script/dangerzone
+./dev_scripts/dangerzone
 ```
 
 Create a .deb:
@@ -35,7 +35,7 @@ You also need docker, either by installing the `docker` package, or by installin
 Run from source tree:
 
 ```sh
-./dev_script/dangerzone
+./dev_scripts/dangerzone
 ```
 
 Create a .rpm:

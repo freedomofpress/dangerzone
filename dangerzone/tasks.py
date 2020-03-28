@@ -72,7 +72,7 @@ class ConvertToPixels(TaskBase):
     def run(self):
         self.update_label.emit("Converting document to pixels")
         args = [
-            "document-to-pixels",
+            "document_to_pixels",
             "--document-filename",
             self.common.document_filename,
             "--pixel-dir",
@@ -173,7 +173,7 @@ class ConvertToPDF(TaskBase):
         ]
 
         args = [
-            "pixels-to-pdf",
+            "pixels_to_pdf",
             "--pixel-dir",
             self.common.pixel_dir.name,
             "--safe-dir",

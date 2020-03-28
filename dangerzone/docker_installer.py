@@ -33,7 +33,7 @@ def is_docker_installed(global_common):
 
 def is_docker_ready(global_common):
     # Run `docker image ls` without an error
-    with global_common.exec_dangerzone_container(["image-ls"]) as p:
+    with global_common.exec_dangerzone_container(["image_ls"]) as p:
         p.communicate()
 
         # The user canceled, or permission denied

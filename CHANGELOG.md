@@ -1,5 +1,9 @@
 # Change Log
 
+## dangerzone 0.1.2 (Linux only)
+
+- Add support for Ubuntu 18.04 LTS
+
 ## dangerzone 0.1.1
 
 - Fix macOS bug that caused a crash on versions earlier than Catalina

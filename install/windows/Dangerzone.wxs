@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='windows-1252'?>
-<?define ProductVersion = "0.1.1"?>
+<?define ProductVersion = "0.1.2"?>
 <?define ProductUpgradeCode = "12b9695c-965b-4be0-bc33-21274e809576"?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
     <Product Name="Dangerzone" Manufacturer="First Look Media" Id="f40ff0a9-ebf8-4e1e-9bce-6ab5c74fe119" UpgradeCode="$(var.ProductUpgradeCode)" Language="1033" Codepage="1252" Version="$(var.ProductVersion)">

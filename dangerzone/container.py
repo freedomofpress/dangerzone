@@ -52,7 +52,7 @@ def container_main():
 
 @container_main.command()
 @click.option("--container-name", default="flmcode/dangerzone")
-def image_ls(container_name):
+def ls(container_name):
     """docker image ls [container_name]"""
     sys.exit(exec_container(["image", "ls", container_name]))
 
@@ -67,7 +67,7 @@ def pull():
 @click.option("--document-filename", required=True)
 @click.option("--pixel-dir", required=True)
 @click.option("--container-name", default="flmcode/dangerzone")
-def document_to_pixels(document_filename, pixel_dir, container_name):
+def documenttopixels(document_filename, pixel_dir, container_name):
     """docker run --network none -v [document_filename]:/tmp/input_file -v [pixel_dir]:/dangerzone [container_name] document-to-pixels"""
     sys.exit(
         exec_container(
@@ -92,7 +92,7 @@ def document_to_pixels(document_filename, pixel_dir, container_name):
 @click.option("--container-name", default="flmcode/dangerzone")
 @click.option("--ocr", required=True)
 @click.option("--ocr-lang", required=True)
-def pixels_to_pdf(pixel_dir, safe_dir, container_name, ocr, ocr_lang):
+def pixelstopdf(pixel_dir, safe_dir, container_name, ocr, ocr_lang):
     """docker run --network none -v [pixel_dir]:/dangerzone -v [safe_dir]:/safezone [container_name] -e OCR=[ocr] -e OCR_LANGUAGE=[ocr_lang] pixels-to-pdf"""
     sys.exit(
         exec_container(

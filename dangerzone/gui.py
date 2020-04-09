@@ -52,9 +52,7 @@ def gui_main(custom_container, filename):
 
     if custom_container:
         # Do we have this container?
-        with global_common.exec_dangerzone_container(
-            ["image-ls", "--container-name", custom_container]
-        ) as p:
+        with global_common.exec_dangerzone_container(["ls", custom_container]) as p:
             stdout_data, stderr_data = p.communicate()
 
             # The user canceled, or permission denied

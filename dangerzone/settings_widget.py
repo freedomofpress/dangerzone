@@ -143,11 +143,7 @@ class SettingsWidget(QtWidgets.QWidget):
             self.update_checkbox.hide()
         else:
             with self.global_common.exec_dangerzone_container(
-                [
-                    "image-ls",
-                    "--container-name",
-                    self.global_common.get_container_name(),
-                ]
+                ["ls", self.global_common.get_container_name(),]
             ) as p:
                 stdout_data, stderror_data = p.communicate()
 

@@ -369,7 +369,7 @@ class GlobalCommon(object):
                     plist_data = f.read()
                 plist_dict = plistlib.loads(plist_data)
 
-                if plist_dict["CFBundleName"] != "Dangerzone":
+                if plist_dict.get("CFBundleName") and plist_dict["CFBundleName"] != "Dangerzone":
                     pdf_viewers[plist_dict["CFBundleName"]] = bundle_identifier
 
         elif platform.system() == "Linux":

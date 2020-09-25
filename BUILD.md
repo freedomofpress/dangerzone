@@ -222,3 +222,12 @@ poetry run install\windows\step3-build-installer.bat
 
 
 When you're done you will have `dist\Dangerzone.msi`.
+
+
+# Release instructions
+
+Before each release:
+
+- Update `CHANGELOG.md`
+- Update the version in `pyproject.toml`
+- Update the version in `dangerzone/__init__.py`

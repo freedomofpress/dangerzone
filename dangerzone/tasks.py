@@ -4,6 +4,7 @@ import os
 import pipes
 import platform
 from PyQt5 import QtCore, QtWidgets, QtGui
+from termcolor import cprint
 
 
 class TaskBase(QtCore.QThread):
@@ -25,9 +26,8 @@ class TaskBase(QtCore.QThread):
                 print(line.decode(), end="")
                 self.update_details.emit(output)
 
-            stderr = p.stderr.read()
-            output += stderr.decode()
-            print(stderr.decode())
+            stderr = p.stderr.read().decode()
+            cprint(stderr, attrs=["dark"])
             self.update_details.emit(output)
 
         if p.returncode == 126 or p.returncode == 127:
@@ -36,7 +36,7 @@ class TaskBase(QtCore.QThread):
             self.task_failed.emit(f"Return code: {p.returncode}")
 
         print("")
-        return p.returncode, output
+        return p.returncode, output, stderr
 
 
 class PullImageTask(TaskBase):
@@ -51,7 +51,7 @@ class PullImageTask(TaskBase):
         )
         self.update_details.emit("")
         args = ["pull"]
-        returncode, _ = self.exec_container(args)
+        returncode, _, _ = self.exec_container(args)
 
         if returncode != 0:
             return
@@ -80,7 +80,7 @@ class ConvertToPixels(TaskBase):
             "--container-name",
             self.global_common.get_container_name(),
         ]
-        returncode, output = self.exec_container(args)
+        returncode, output, stderr = self.exec_container(args)
 
         if returncode != 0:
             return
@@ -185,7 +185,7 @@ class ConvertToPDF(TaskBase):
             "--ocr-lang",
             ocr_lang,
         ]
-        returncode, output = self.exec_container(args)
+        returncode, _, _ = self.exec_container(args)
 
         if returncode != 0:
             return

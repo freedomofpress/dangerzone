@@ -17,11 +17,15 @@ pyobjc-framework-launchservices = {version = "^6.1", platform = "darwin"}
 macholib = "^1.14"
 pywin32 = {version = "^227", platform = "windows"}
 wmi = {version = "^1.4.9", platform = "windows"}
+termcolor = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
 pyinstaller = {version = "^3.6", platform = "darwin"}
 setuptools = {version = "^45.2.0", platform = "windows"}
+
+[tool.poetry.scripts]
+dangerzone = 'dangerzone:main'
 
 [build-system]
 requires = ["poetry>=0.12"]

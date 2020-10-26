@@ -4,6 +4,7 @@ import subprocess
 import sys
 import pipes
 import getpass
+import shutil
 
 # What is the container runtime for this platform?
 if platform.system() == "Darwin":
@@ -11,7 +12,7 @@ if platform.system() == "Darwin":
 elif platform.system() == "Windows":
     container_runtime = "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe"
 else:
-    container_runtime = "/usr/bin/docker"
+    container_runtime = shutil.which("docker")
 
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":

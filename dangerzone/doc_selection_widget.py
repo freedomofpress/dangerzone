@@ -1,8 +1,8 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class DocSelectionWidget(QtWidgets.QWidget):
-    document_selected = QtCore.pyqtSignal()
+    document_selected = QtCore.Signal()
 
     def __init__(self, common):
         super(DocSelectionWidget, self).__init__()

@@ -1,4 +1,3 @@
-from PyQt5 import QtCore, QtWidgets
 import os
 import sys
 import signal
@@ -7,6 +6,7 @@ import click
 import time
 import uuid
 import subprocess
+from PySide2 import QtCore, QtWidgets
 
 from .global_common import GlobalCommon
 from .main_window import MainWindow
@@ -21,8 +21,8 @@ from .container import container_runtime
 
 
 class Application(QtWidgets.QApplication):
-    document_selected = QtCore.pyqtSignal(str)
-    application_activated = QtCore.pyqtSignal()
+    document_selected = QtCore.Signal(str)
+    application_activated = QtCore.Signal()
 
     def __init__(self):
         QtWidgets.QApplication.__init__(self, sys.argv)

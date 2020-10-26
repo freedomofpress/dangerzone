@@ -6,7 +6,7 @@ import subprocess
 import shutil
 import time
 import platform
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 from .container import container_runtime
 
@@ -194,9 +194,9 @@ class DockerInstaller(QtWidgets.QDialog):
 
 
 class Downloader(QtCore.QThread):
-    download_finished = QtCore.pyqtSignal()
-    download_failed = QtCore.pyqtSignal(int)
-    update_progress = QtCore.pyqtSignal(int, int)
+    download_finished = QtCore.Signal()
+    download_failed = QtCore.Signal(int)
+    update_progress = QtCore.Signal(int, int)
 
     def __init__(self, installer_filename):
         super(Downloader, self).__init__()

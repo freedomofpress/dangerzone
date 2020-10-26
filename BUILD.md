@@ -5,10 +5,10 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y python-all dh-python python3-stdeb python3 python3-pyqt5 python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
+sudo apt install -y python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
 ```
 
-You also need docker, either by installing the `docker.io` package, or by installing `docker-ce` by following [these instructions for Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/) or [for Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
+You also need docker, either by installing the `docker.io` package, or by installing `docker-ce` by following [these instructions for Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/) or [for Debian](https://docs.docker.com/install/linux/docker-ce/debian/), or installing the [Docker snap package](https://snapcraft.io/docker).
 
 Run from source tree:
 

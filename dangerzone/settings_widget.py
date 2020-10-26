@@ -1,12 +1,12 @@
 import os
 import subprocess
 import platform
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class SettingsWidget(QtWidgets.QWidget):
-    start_clicked = QtCore.pyqtSignal()
-    close_window = QtCore.pyqtSignal()
+    start_clicked = QtCore.Signal()
+    close_window = QtCore.Signal()
 
     def __init__(self, global_common, common):
         super(SettingsWidget, self).__init__()

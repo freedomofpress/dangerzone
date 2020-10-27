@@ -59,7 +59,7 @@ poetry install
 Run from source tree:
 
 ```
-poetry run ./dev_scripts/dangerzone
+poetry run dangerzone
 ```
 
 To create an app bundle and DMG for distribution, use the `build_app.py` script
@@ -87,9 +87,7 @@ The output is in the `dist` folder.
 
 These instructions include adding folders to the path in Windows. To do this, go to Start and type "advanced system settings", and open "View advanced system settings" in the Control Panel. Click Environment Variables. Under "System variables" double-click on Path. From there you can add and remove folders that are available in the PATH.
 
-Download Python 3.7.6, 32-bit (x86) from https://www.python.org/downloads/release/python-376/. I downloaded python-3.7.6.exe. When installing it, make sure to check the "Add Python 3.7 to PATH" checkbox on the first page of the installer.
-
-Install the Qt 5.14.1 from https://www.qt.io/offline-installers. I downloaded qt-opensource-windows-x86-5.14.1.exe. In the installer, unfortunately you have login to an account. Then all you need `Qt` > `Qt 5.14.1` > `MSVC 2017 32-bit`.
+Download Python 3.9.0, 32-bit (x86) from https://www.python.org/downloads/release/python-390/. I downloaded python-3.9.0.exe. When installing it, make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
 
 Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
 
@@ -97,7 +95,7 @@ Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
 (Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -UseBasicParsing).Content | python
 ```
 
-And add `%USERPROFILE%\.poetry\bin` to your path. Then open a command prompt and cd to the `dangerzone` folder, and install the poetry dependencies:
+Change to the `dangerzone` folder, and install the poetry dependencies:
 
 ```
 poetry install
@@ -106,7 +104,7 @@ poetry install
 After that you can launch dangerzone during development with:
 
 ```
-poetry run python dev_scripts\dangerzone
+poetry run dangerzone
 ```
 
 ### If you want to build a .exe

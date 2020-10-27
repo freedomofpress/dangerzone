@@ -61,7 +61,7 @@ class DockerInstaller(QtWidgets.QDialog):
 
         self.setWindowTitle("dangerzone")
         self.setWindowIcon(self.global_common.get_window_icon())
-        self.setMinimumHeight(170)
+        # self.setMinimumHeight(170)
 
         label = QtWidgets.QLabel()
         if platform.system() == "Darwin":
@@ -90,9 +90,13 @@ class DockerInstaller(QtWidgets.QDialog):
         self.cancel_button = QtWidgets.QPushButton("Cancel")
         self.cancel_button.clicked.connect(self.cancel_clicked)
 
+        self.ok_button = QtWidgets.QPushButton("OK")
+        self.ok_button.clicked.connect(self.ok_clicked)
+
         buttons_layout = QtWidgets.QHBoxLayout()
         buttons_layout.addStretch()
         buttons_layout.addWidget(self.open_finder_button)
+        buttons_layout.addWidget(self.ok_button)
         buttons_layout.addWidget(self.cancel_button)
         buttons_layout.addStretch()
 
@@ -163,6 +167,16 @@ class DockerInstaller(QtWidgets.QDialog):
             except:
                 pass
 
+    def ok_clicked(self):
+        self.accept()
+
+        if self.download_t:
+            self.download_t.quit()
+            try:
+                os.remove(self.installer_filename)
+            except:
+                pass
+
     def open_finder_clicked(self):
         if platform.system() == "Darwin":
             subprocess.call(["open", "-R", self.open_finder_path])
@@ -179,12 +193,22 @@ class DockerInstaller(QtWidgets.QDialog):
             docker_app_path = "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"
 
         if not os.path.exists(docker_app_path):
-            self.download()
+            if platform.system() == "Windows":
+                self.task_label.setText(
+                    "<a href='https://docs.docker.com/docker-for-windows/install/'>Download Docker</a>, install it, and then run Dangerzone again."
+                )
+                self.task_label.setTextFormat(QtCore.Qt.RichText)
+                self.progress.hide()
+                self.cancel_button.hide()
+            else:
+                self.ok_button.hide()
+                self.download()
         else:
             self.task_label.setText(
                 "Docker is installed, but you must launch it first. Open Docker, make sure it's running, and then open Dangerzone again."
             )
             self.progress.hide()
+            self.ok_button.hide()
             self.cancel_button.hide()
 
             self.open_finder_path = docker_app_path

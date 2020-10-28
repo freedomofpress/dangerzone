@@ -1,7 +1,7 @@
 import shutil
 import os
 import platform
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 from .doc_selection_widget import DocSelectionWidget
 from .settings_widget import SettingsWidget
@@ -10,7 +10,7 @@ from .common import Common
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    delete_window = QtCore.pyqtSignal(str)
+    delete_window = QtCore.Signal(str)
 
     def __init__(self, global_common, window_id):
         super(MainWindow, self).__init__()

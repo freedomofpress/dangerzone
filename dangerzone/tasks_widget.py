@@ -3,13 +3,13 @@ import tempfile
 import os
 import platform
 import subprocess
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 from .tasks import PullImageTask, ConvertToPixels, ConvertToPDF
 
 
 class TasksWidget(QtWidgets.QWidget):
-    close_window = QtCore.pyqtSignal()
+    close_window = QtCore.Signal()
 
     def __init__(self, global_common, common):
         super(TasksWidget, self).__init__()

@@ -8,7 +8,6 @@ Before making a release, all of these should be complete:
 
 * Update `version` in `pyproject.toml`
 * Update `dangerzone_version` in `dangerzone/__init__.py`
-* Update `ProductVersion` in `install/windows/Dangerzone.wxs`
 * Update version and download links in `README.md`
 * CHANGELOG.md should be updated to include a list of all major changes since the last release
 * There must be a PGP-signed git tag for the version, e.g. for dangerzone 0.1.0, the tag must be `v0.1.0`

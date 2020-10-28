@@ -74,6 +74,7 @@ class DockerInstaller(QtWidgets.QDialog):
         self.task_label = QtWidgets.QLabel()
         self.task_label.setAlignment(QtCore.Qt.AlignCenter)
         self.task_label.setWordWrap(True)
+        self.task_label.setOpenExternalLinks(True)
 
         self.progress = QtWidgets.QProgressBar()
         self.progress.setMinimum(0)

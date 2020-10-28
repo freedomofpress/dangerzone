@@ -51,6 +51,37 @@ def build_dir_xml(root, data):
     for subdata in data["dirs"]:
         build_dir_xml(el, subdata)
 
+    # If this is the ProgramMenuSubfolder, add the menu component
+    if "id" in data and data["id"] == "ProgramMenuSubfolder":
+        component_el = ET.SubElement(
+            el,
+            "Component",
+            Id="ApplicationShortcuts",
+            Guid="539e7de8-a124-4c09-aa55-0dd516aad7bc",
+        )
+        ET.SubElement(
+            component_el,
+            "Shortcut",
+            Id="ApplicationShortcut1",
+            Name="Dangerzone",
+            Description="Dangerzone",
+            Target="[INSTALLDIR]dangerzone.exe",
+            WorkingDirectory="INSTALLDIR",
+        )
+        ET.SubElement(
+            component_el,
+            "RegistryValue",
+            Root="HKCU",
+            Key="Software\First Look Media\Dangerzone",
+            Name="installed",
+            Type="integer",
+            Value="1",
+            KeyPath="yes",
+        )
+        ET.SubElement(
+            component_el, "RemoveFolder", Id="ProgramMenuSubfolder", On="uninstall"
+        )
+
 
 def build_components_xml(root, data):
     component_ids = []
@@ -106,7 +137,13 @@ def main():
             {
                 "id": "ProgramFilesFolder",
                 "dirs": [],
-            }
+            },
+            {
+                "id": "ProgramMenuFolder",
+                "dirs": [
+                    {"id": "ProgramMenuSubfolder", "name": "Dangerzone", "dirs": []}
+                ],
+            },
         ],
     }
 
@@ -212,6 +249,7 @@ def main():
     feature_el = ET.SubElement(product_el, "Feature", Id="DefaultFeature", Level="1")
     for component_id in component_ids:
         ET.SubElement(feature_el, "ComponentRef", Id=component_id)
+    ET.SubElement(feature_el, "ComponentRef", Id="ApplicationShortcuts")
 
     print('<?xml version="1.0" encoding="windows-1252"?>')
     print(f'<?define ProductVersion = "{version}"?>')

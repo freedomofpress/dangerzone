@@ -48,8 +48,6 @@ Create a .rpm:
 
 Download and install Python 3.9.0 from https://www.python.org/downloads/release/python-390/. I downloaded `python-3.9.0-macosx10.9.pkg`.
 
-Install Qt 5.14.0 for macOS from https://www.qt.io/offline-installers. I downloaded `qt-opensource-mac-x64-5.14.0.dmg`. In the installer, you can skip making an account, and all you need is `Qt` > `Qt 5.14.0` > `macOS`.
-
 If you don't have it already, install poetry (`pip3 install --user poetry`). Then install dependencies:
 
 ```sh

@@ -3,15 +3,15 @@ import time
 import os
 import pipes
 import platform
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PySide2 import QtCore, QtWidgets, QtGui
 from termcolor import cprint
 
 
 class TaskBase(QtCore.QThread):
-    task_finished = QtCore.pyqtSignal()
-    task_failed = QtCore.pyqtSignal(str)
-    update_label = QtCore.pyqtSignal(str)
-    update_details = QtCore.pyqtSignal(str)
+    task_finished = QtCore.Signal()
+    task_failed = QtCore.Signal(str)
+    update_label = QtCore.Signal(str)
+    update_details = QtCore.Signal(str)
 
     def __init__(self):
         super(TaskBase, self).__init__()

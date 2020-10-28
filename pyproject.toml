@@ -6,27 +6,26 @@ authors = ["Micah Lee <micah.lee@theintercept.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-PyQt5 = "^5.14.1"
-click = "^7.0"
-appdirs = "^1.4.3"
-requests = "^2.22.0"
-pyxdg = {version = "^0.26", platform = "linux"}
-pyobjc-core = {version = "^6.1", platform = "darwin"}
-pyobjc-framework-launchservices = {version = "^6.1", platform = "darwin"}
-macholib = "^1.14"
-pywin32 = {version = "^227", platform = "windows"}
-wmi = {version = "^1.4.9", platform = "windows"}
-termcolor = "^1.1.0"
+python = ">=3.7,<3.10"
+click = "*"
+appdirs = "*"
+requests = "*"
+macholib = "*"
+termcolor = "*"
+PySide2 = "^5.15.1"
+pywin32 = {version = "*", platform = "win32"}
+wmi = {version = "*", platform = "win32"}
+pyxdg = {version = "*", platform = "linux"}
+pyobjc-core = {version = "*", platform = "darwin"}
+pyobjc-framework-launchservices = {version = "*", platform = "darwin"}
 
 [tool.poetry.dev-dependencies]
-black = "^19.10b0"
-pyinstaller = {version = "^3.6", platform = "darwin"}
-setuptools = {version = "^45.2.0", platform = "windows"}
+pyinstaller = {version = "*", platform = "darwin"}
+setuptools = {version = "*", platform = "win32"}
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
 
 [build-system]
-requires = ["poetry>=0.12"]
+requires = ["poetry>=1.1.4"]
 build-backend = "poetry.masonry.api"

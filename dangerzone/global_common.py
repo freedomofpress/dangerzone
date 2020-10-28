@@ -7,7 +7,7 @@ import platform
 import subprocess
 import shlex
 import pipes
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 if platform.system() == "Darwin":
     import CoreServices

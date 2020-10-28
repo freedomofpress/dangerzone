@@ -1,12 +1,12 @@
 import os
 import subprocess
 import platform
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class SettingsWidget(QtWidgets.QWidget):
-    start_clicked = QtCore.pyqtSignal()
-    close_window = QtCore.pyqtSignal()
+    start_clicked = QtCore.Signal()
+    close_window = QtCore.Signal()
 
     def __init__(self, global_common, common):
         super(SettingsWidget, self).__init__()
@@ -50,9 +50,7 @@ class SettingsWidget(QtWidgets.QWidget):
             self.open_checkbox.clicked.connect(self.update_ui)
             self.open_combobox = QtWidgets.QComboBox()
             for k in self.global_common.pdf_viewers:
-                self.open_combobox.addItem(
-                    k, QtCore.QVariant(self.global_common.pdf_viewers[k])
-                )
+                self.open_combobox.addItem(k, self.global_common.pdf_viewers[k])
             open_layout = QtWidgets.QHBoxLayout()
             open_layout.addWidget(self.open_checkbox)
             open_layout.addWidget(self.open_combobox)
@@ -62,9 +60,7 @@ class SettingsWidget(QtWidgets.QWidget):
         self.ocr_checkbox = QtWidgets.QCheckBox("OCR document, language")
         self.ocr_combobox = QtWidgets.QComboBox()
         for k in self.global_common.ocr_languages:
-            self.ocr_combobox.addItem(
-                k, QtCore.QVariant(self.global_common.ocr_languages[k])
-            )
+            self.ocr_combobox.addItem(k, self.global_common.ocr_languages[k])
         ocr_layout = QtWidgets.QHBoxLayout()
         ocr_layout.addWidget(self.ocr_checkbox)
         ocr_layout.addWidget(self.ocr_combobox)
@@ -143,7 +139,10 @@ class SettingsWidget(QtWidgets.QWidget):
             self.update_checkbox.hide()
         else:
             with self.global_common.exec_dangerzone_container(
-                ["ls", self.global_common.get_container_name(),]
+                [
+                    "ls",
+                    self.global_common.get_container_name(),
+                ]
             ) as p:
                 stdout_data, stderror_data = p.communicate()
 

@@ -113,8 +113,8 @@ Download and install the [Windows 10 SDK](https://developer.microsoft.com/en-US/
 
 Add the following directories to the path:
 
-* `C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x86`
-* `C:\Program Files (x86)\Windows Kits\10\Redist\10.0.18362.0\ucrt\DLLs\x86`
+* `C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86`
+* `C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x86`
 
 ### If you want the .exe to not get falsely flagged as malicious by anti-virus software
 
@@ -122,7 +122,7 @@ Dangerzone uses PyInstaller to turn the python source code into Windows executab
 
 Here's how to compile the PyInstaller bootloader:
 
-Download and install [Microsoft Build Tools for Visual Studio 2017](https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2019). I downloaded `vs_buildtools__1378184674.1581551596.exe`. In the installer, check the box next to "C++ build tools". Click "Individual components", and under "Compilers, build tools and runtimes", check "Windows Universal CRT SDK". Then click install. When installation is done, you may have to reboot your computer.
+Download and install [Microsoft Build Tools for Visual Studio 2019](https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2019). I downloaded `vs_buildtools__719988613.1603831511.exe`. In the installer, check the box next to "C++ build tools". Click "Individual components", and under "Compilers, build tools and runtimes", check "Windows Universal CRT SDK". Then click install. When installation is done, you may have to reboot your computer.
 
 Then, enable the 32-bit Visual C++ Toolset on the Command Line like this:
 
@@ -136,7 +136,7 @@ Change to a folder where you keep source code, and clone the PyInstaller git rep
 ```
 git clone https://github.com/pyinstaller/pyinstaller.git
 cd pyinstaller
-git tag -v v3.6
+git tag -v v4.0
 ```
 
 (Note that ideally you would verify the git tag, but the PGP key that has signed the v3.5 git tag for is not published anywhere, so this isn't possible. See [this issue](https://github.com/pyinstaller/pyinstaller/issues/4430).)
@@ -170,7 +170,7 @@ Now the next time you use PyInstaller to build dangerzone, the `.exe` file shoul
 
 * Go to https://dotnet.microsoft.com/download/dotnet-framework and download and install .NET Framework 3.5 SP1 Runtime. I downloaded `dotnetfx35.exe`.
 * Go to https://wixtoolset.org/releases/ and download and install WiX toolset. I downloaded `wix311.exe`.
-* Add `C:\Program Files (x86)\WiX Toolset v3.1.1\bin` to the path.
+* Add `C:\Program Files (x86)\WiX Toolset v3.11\bin` to the path.
 
 ### If you want to sign binaries with Authenticode
 

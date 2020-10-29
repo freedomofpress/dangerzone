@@ -46,7 +46,13 @@ Create a .rpm:
 
 ## macOS
 
-Download and install Python 3.9.0 from https://www.python.org/downloads/release/python-390/. I downloaded `python-3.9.0-macosx10.9.pkg`.
+Install python@3.7 (PyInstaller doesn't support newer versions yet) and other dependencies from Homebrew:
+
+```
+brew install python@3.7 create-dmg graphicsmagick imagemagick
+```
+
+Download and install Python 3.9.0 from https://www.python.org/downloads/release/python-379/. I downloaded `python-3.7.9-macosx10.9.pkg`. (PyInstaller does not support the latest version of Python yet.)
 
 If you don't have it already, install poetry (`pip3 install --user poetry`). Then install dependencies:
 
@@ -60,19 +66,13 @@ Run from source tree:
 poetry run dangerzone
 ```
 
-To create an app bundle and DMG for distribution, use the `build_app.py` script
+To create an app bundle, use the `build_app.py` script:
 
 ```sh
 poetry run ./install/macos/build_app.py
 ```
 
-If you want to build for distribution, you'll need a codesigning certificate, and you'll also need to have [create-dmg](https://github.com/sindresorhus/create-dmg) installed:
-
-```sh
-brew install create-dmg graphicsmagick imagemagick
-```
-
-And then run `build_app.py --with-codesign`:
+If you want to build for distribution, you'll need a codesigning certificate, and then run:
 
 ```sh
 poetry run ./install/macos/build_app.py --with-codesign

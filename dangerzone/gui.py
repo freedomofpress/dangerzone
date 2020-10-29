@@ -74,7 +74,7 @@ def gui_main(custom_container, filename):
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # If we're using Linux and docker, see if we need to add the user to the docker group or if the user prefers typing their password
-    if platform.system() == "Linux" and container_runtime == "/usr/bin/docker":
+    if platform.system() == "Linux":
         if not global_common.ensure_docker_group_preference():
             return
         try:

@@ -51,8 +51,8 @@ def build_dir_xml(root, data):
     for subdata in data["dirs"]:
         build_dir_xml(el, subdata)
 
-    # If this is the ProgramMenuSubfolder, add the menu component
-    if "id" in data and data["id"] == "ProgramMenuSubfolder":
+    # If this is the ProgramMenuFolder, add the menu component
+    if "id" in data and data["id"] == "ProgramMenuFolder":
         component_el = ET.SubElement(
             el,
             "Component",
@@ -77,9 +77,6 @@ def build_dir_xml(root, data):
             Type="integer",
             Value="1",
             KeyPath="yes",
-        )
-        ET.SubElement(
-            component_el, "RemoveFolder", Id="ProgramMenuSubfolder", On="uninstall"
         )
 
 
@@ -140,9 +137,7 @@ def main():
             },
             {
                 "id": "ProgramMenuFolder",
-                "dirs": [
-                    {"id": "ProgramMenuSubfolder", "name": "Dangerzone", "dirs": []}
-                ],
+                "dirs": [],
             },
         ],
     }

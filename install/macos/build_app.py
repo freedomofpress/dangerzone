@@ -32,6 +32,8 @@ def main():
     build_path = os.path.join(root, "build")
     dist_path = os.path.join(root, "dist")
     app_path = os.path.join(dist_path, "Dangerzone.app")
+    dmg_path = os.path.join(dist_path, "Dangerzone.dmg")
+    icon_path = os.path.join(root, "install", "macos", "dangerzone.icns")
 
     print("○ Deleting old build and dist")
     if os.path.exists(build_path):
@@ -76,12 +78,22 @@ def main():
             return
 
         print("○ Creating DMG")
-        run(["create-dmg", app_path, "--identity", identity_name_application])
-        dmg_filename = glob.glob(f"{root}/*.dmg")[0]
-        shutil.move(dmg_filename, dist_path)
-        dmg_filename = glob.glob(f"{dist_path}/*.dmg")[0]
+        run([
+            "create-dmg",
+            "--volname", "Dangerzone",
+            "--volicon", icon_path,
+            "--window-size", "400", "200",
+            "--icon-size", "100",
+            "--icon", "Dangerzone.app", "100", "70",
+            "--hide-extension", "Dangerzone.app",
+            "--app-drop-link", "300", "70",
+            dmg_path,
+            app_path,
+            "--identity",
+            identity_name_application
+        ])
 
-        print(f"○ Finished building DMG: {dmg_filename}")
+        print(f"○ Finished building DMG: {dmg_path}")
 
     else:
         print("○ Skipping code signing")

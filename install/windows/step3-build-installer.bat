@@ -1,3 +1,6 @@
+REM build the wix file
+python install\windows\build-wxs.py > install\windows\Dangerzone.wxs
+
 REM build the msi package
 cd build
 mkdir wix

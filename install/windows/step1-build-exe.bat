@@ -7,6 +7,3 @@ pyinstaller install\pyinstaller\pyinstaller.spec
 
 REM code sign dangerzone.exe
 signtool.exe sign /v /d "Dangerzone" /a /tr http://time.certum.pl/ dist\dangerzone\dangerzone.exe
-
-REM build the wix file
-python install\windows\build-wxs.py > install\windows\Dangerzone.wxs

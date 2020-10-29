@@ -10,7 +10,7 @@ import shutil
 if platform.system() == "Darwin":
     container_runtime = "/usr/local/bin/docker"
 elif platform.system() == "Windows":
-    container_runtime = "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe"
+    container_runtime = "C:\\Program Files\\Docker\\Docker\\resources\\docker.exe"
 else:
     container_runtime = shutil.which("docker")
 

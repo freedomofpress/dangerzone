@@ -69,8 +69,7 @@ poetry run ./install/macos/build_app.py
 If you want to build for distribution, you'll need a codesigning certificate, and you'll also need to have [create-dmg](https://github.com/sindresorhus/create-dmg) installed:
 
 ```sh
-npm install --global create-dmg
-brew install graphicsmagick imagemagick
+brew install create-dmg graphicsmagick imagemagick
 ```
 
 And then run `build_app.py --with-codesign`:

@@ -9,7 +9,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg python3-termcolor
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
             gem install --no-ri --no-rdoc rake
             gem install --no-ri --no-rdoc package_cloud
       - checkout
@@ -33,7 +33,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg python3-termcolor
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
             gem install --no-ri --no-rdoc rake
             gem install --no-ri --no-rdoc package_cloud
       - checkout
@@ -58,7 +58,7 @@ jobs:
           command: |
             export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg python3-termcolor
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
             gem install -N rake
             gem install -N package_cloud
       - checkout
@@ -83,7 +83,7 @@ jobs:
           command: |
             export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg python3-termcolor
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
             gem install -N rake
             gem install -N package_cloud
       - checkout
@@ -107,7 +107,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg python3-termcolor
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
             gem install --no-ri --no-rdoc rake
             gem install --no-ri --no-rdoc package_cloud
       - checkout
@@ -131,7 +131,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3-stdeb docker.io python3 python3-pyqt5 python3-appdirs python3-click python3-xdg python3-termcolor
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
             gem install -N rake
             gem install -N package_cloud
       - checkout
@@ -147,28 +147,6 @@ jobs:
             package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1.dsc
 
-  build-fedora-30:
-    docker:
-      - image: fedora:30
-    steps:
-      - run:
-          name: Install dependencies
-          command: |
-            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests docker python3-termcolor
-            gem install package_cloud
-      - checkout
-      - run:
-          name: Create the .rpm package
-          command: |
-            ./install/linux/build_rpm.py
-            dnf install -y dist/dangerzone-*-1.noarch.rpm
-      - run:
-          name: Deploy to packagecloud.io
-          command: |
-            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
-            package_cloud push firstlookmedia/code/fedora/30 dist/dangerzone-${VERSION}-1.noarch.rpm
-            package_cloud push firstlookmedia/code/fedora/30 dist/dangerzone-${VERSION}-1.src.rpm
-
   build-fedora-31:
     docker:
       - image: fedora:31
@@ -176,7 +154,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests docker python3-termcolor
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-termcolor
             gem install package_cloud
       - checkout
       - run:
@@ -198,7 +176,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build qt5-devel python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests docker python3-termcolor
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-termcolor
             gem install package_cloud
       - checkout
       - run:
@@ -212,6 +190,28 @@ jobs:
             VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
             package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.noarch.rpm
             package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.src.rpm
+
+  build-fedora-33:
+    docker:
+      - image: fedora:33
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-termcolor
+            gem install package_cloud
+      - checkout
+      - run:
+          name: Create the .rpm package
+          command: |
+            ./install/linux/build_rpm.py
+            dnf install -y dist/dangerzone-*-1.noarch.rpm
+      - run:
+          name: Deploy to packagecloud.io
+          command: |
+            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            package_cloud push firstlookmedia/code/fedora/33 dist/dangerzone-${VERSION}-1.noarch.rpm
+            package_cloud push firstlookmedia/code/fedora/33 dist/dangerzone-${VERSION}-1.src.rpm
 
 workflows:
   version: 2
@@ -253,12 +253,6 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-fedora-30:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
       - build-fedora-31:
           filters:
             tags:
@@ -266,6 +260,12 @@ workflows:
             branches:
               ignore: /.*/
       - build-fedora-32:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-fedora-33:
           filters:
             tags:
               only: /^v.*/

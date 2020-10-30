@@ -27,7 +27,7 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build python3 python3-qt5 python3-appdirs python3-click python3-pyxdg python3-requests, python3-termcolor
+sudo dnf install -y rpm-build python3 python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-termcolor
 ```
 
 You also need docker, either by installing the `docker` package, or by installing `docker-ce` by following [these instructions](https://docs.docker.com/install/linux/docker-ce/fedora/).
@@ -51,8 +51,6 @@ Install python@3.7 (PyInstaller doesn't support newer versions yet) and other de
 ```
 brew install python@3.7 create-dmg graphicsmagick imagemagick
 ```
-
-Download and install Python 3.9.0 from https://www.python.org/downloads/release/python-379/. I downloaded `python-3.7.9-macosx10.9.pkg`. (PyInstaller does not support the latest version of Python yet.)
 
 If you don't have it already, install poetry (`pip3 install --user poetry`). Then install dependencies:
 

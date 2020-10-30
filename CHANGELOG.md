@@ -3,8 +3,9 @@
 ## dangerzone 0.1.4
 
 - Suppress confusing stderr output, and fix bug when converting specific documents
-- Add support for Ubuntu 20.10, Fedora 32
+- Add support for Ubuntu 20.10, Fedora 32, Fedora 33
 - Switch from PyQt5 to PySide2
+- Improve Windows and Mac packaging
 
 ## dangerzone 0.1.3
 

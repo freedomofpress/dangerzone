@@ -205,12 +205,12 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-ubuntu-groovy:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+      # - build-ubuntu-groovy:
+      #     filters:
+      #       tags:
+      #         only: /^v.*/
+      #       branches:
+      #         ignore: /.*/
       - build-debian-buster:
           filters:
             tags:

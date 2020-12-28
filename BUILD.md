@@ -46,10 +46,10 @@ Create a .rpm:
 
 ## macOS
 
-Install python@3.7 (PyInstaller doesn't support newer versions yet) and other dependencies from Homebrew:
+Install python@3.9 from Homebrew:
 
 ```
-brew install python@3.7 create-dmg graphicsmagick imagemagick
+brew install python@3.9 create-dmg graphicsmagick imagemagick
 ```
 
 If you don't have it already, install poetry (`pip3 install --user poetry`). Then install dependencies:

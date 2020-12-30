@@ -6,6 +6,7 @@ import subprocess
 import shutil
 import argparse
 import glob
+import itertools
 
 root = os.path.dirname(
     os.path.dirname(
@@ -16,6 +17,24 @@ root = os.path.dirname(
 
 def run(cmd):
     subprocess.run(cmd, cwd=root, check=True)
+
+
+def codesign(path, entitlements, identity):
+    run(
+        [
+            "codesign",
+            "--sign",
+            identity,
+            "--entitlements",
+            str(entitlements),
+            "--timestamp",
+            "--deep",
+            str(path),
+            "--force",
+            "--options",
+            "runtime",
+        ]
+    )
 
 
 def main():
@@ -58,19 +77,14 @@ def main():
         )
         entitlements_plist_path = os.path.join(root, "install/macos/entitlements.plist")
 
-        run(
-            [
-                "codesign",
-                "--deep",
-                "-s",
-                identity_name_application,
-                "-o",
-                "runtime",
-                "--entitlements",
-                entitlements_plist_path,
-                app_path,
-            ]
-        )
+        for path in itertools.chain(
+            glob.glob(f"{app_path}/**/*.so", recursive=True),
+            glob.glob(f"{app_path}/**/*.dylib", recursive=True),
+            glob.glob(f"{app_path}/**/Python3", recursive=True),
+            [app_path],
+        ):
+            codesign(path, entitlements_plist_path, identity_name_application)
+        print(f"○ Signed app bundle: {app_path}")
 
         # Detect if create-dmg is installed
         if not os.path.exists("/usr/local/bin/create-dmg"):

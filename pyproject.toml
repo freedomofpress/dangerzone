@@ -25,6 +25,7 @@ setuptools = {version = "*", platform = "win32"}
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
+dangerzone-container = 'dangerzone:main'
 
 [build-system]
 requires = ["poetry>=1.1.4"]

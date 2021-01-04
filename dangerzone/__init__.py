@@ -2,7 +2,7 @@ import os
 import sys
 from .container import container_main
 
-dangerzone_version = "0.1.4"
+dangerzone_version = "0.1.5"
 
 # This is a hack for Windows and Mac to be able to run dangerzone-container, even though
 # PyInstaller builds a single binary

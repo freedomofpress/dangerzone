@@ -175,12 +175,12 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-ubuntu-groovy:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+      # - build-ubuntu-groovy:
+      #     filters:
+      #       tags:
+      #         only: /^v.*/
+      #       branches:
+      #         ignore: /.*/
       - build-debian-buster:
           filters:
             tags:
@@ -205,9 +205,9 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-fedora-33:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+      # - build-fedora-33:
+      #     filters:
+      #       tags:
+      #         only: /^v.*/
+      #       branches:
+      #         ignore: /.*/

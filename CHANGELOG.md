@@ -3,6 +3,7 @@
 ## Dangerzone 0.1.5
 
 - Add support for macOS Big Sur
+- Drop support for Ubuntu 19.10, add support for Fedora 33
 
 ## Dangerzone 0.1.4
 

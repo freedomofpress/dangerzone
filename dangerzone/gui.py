@@ -43,6 +43,10 @@ class Application(QtWidgets.QApplication):
 @click.option("--custom-container")  # Use this container instead of flmcode/dangerzone
 @click.argument("filename", required=False)
 def gui_main(custom_container, filename):
+    # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
+    if platform.system() == "Darwin":
+        os.environ["QT_MAC_WANTS_LAYER"] = "1"
+
     # Create the Qt app
     app = Application()
     app.setQuitOnLastWindowClosed(False)

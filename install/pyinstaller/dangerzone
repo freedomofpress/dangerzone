@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# After much terrible troubleshooting, turns out this is required to allow Dangerzone
+# to open in macOS when double-clicking, not just when running from the terminal or opening
+# with a file.
+import os
+os.environ["LANG"] = "en_US.UTF-8"
+
 import dangerzone
 dangerzone.main()

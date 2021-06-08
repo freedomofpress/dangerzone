@@ -30,10 +30,6 @@ class Common(object):
                 prefix=os.path.join(cache_dir, "safe-")
             )
 
-        print(
-            f"Temporary directories created, dangerous={self.pixel_dir.name}, safe={self.safe_dir.name}"
-        )
-
         # Name of input and out files
         self.document_filename = None
         self.save_filename = None

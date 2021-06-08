@@ -71,7 +71,7 @@ def gui_main(custom_container, filename):
 
             # Check the output
             if custom_container.encode() not in stdout_data:
-                click.echo(f"Container '{container}' not found")
+                click.echo(f"Container '{custom_container}' not found")
                 return
 
         global_common.custom_container = custom_container

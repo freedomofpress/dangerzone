@@ -133,3 +133,4 @@ dmypy.json
 deb_dist
 .DS_Store
 install/windows/Dangerzone.wxs
+test-docs/sample-safe.pdf

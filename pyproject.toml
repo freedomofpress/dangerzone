@@ -22,6 +22,7 @@ pyobjc-framework-launchservices = {version = "*", platform = "darwin"}
 [tool.poetry.dev-dependencies]
 pyinstaller = {version = "*", platform = "darwin"}
 setuptools = {version = "*", platform = "win32"}
+black = "^21.5b2"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

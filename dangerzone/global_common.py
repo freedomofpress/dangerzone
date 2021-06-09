@@ -32,20 +32,6 @@ class GlobalCommon(object):
         # Qt app
         self.app = app
 
-        # Temporary directory to store pixel data
-        # Note in macOS, temp dirs must be in /tmp (or a few other paths) for Docker to mount them
-        if platform.system() == "Windows":
-            self.pixel_dir = tempfile.TemporaryDirectory(prefix="dangerzone-pixel-")
-            self.safe_dir = tempfile.TemporaryDirectory(prefix="dangerzone-safe-")
-        else:
-            self.pixel_dir = tempfile.TemporaryDirectory(
-                prefix="/tmp/dangerzone-pixel-"
-            )
-            self.safe_dir = tempfile.TemporaryDirectory(prefix="/tmp/dangerzone-safe-")
-        print(
-            f"Temporary directories created, dangerous={self.pixel_dir.name}, safe={self.safe_dir.name}"
-        )
-
         # Name of input file
         self.document_filename = None
 
@@ -279,9 +265,13 @@ class GlobalCommon(object):
             )
         else:
             if platform.system() == "Darwin":
-                return os.path.join(os.path.dirname(sys.executable), "dangerzone-container")
+                return os.path.join(
+                    os.path.dirname(sys.executable), "dangerzone-container"
+                )
             elif platform.system() == "Windows":
-                return os.path.join(os.path.dirname(sys.executable), "dangerzone-container.exe")
+                return os.path.join(
+                    os.path.dirname(sys.executable), "dangerzone-container.exe"
+                )
             else:
                 return "/usr/bin/dangerzone-container"
 
@@ -367,9 +357,13 @@ class GlobalCommon(object):
 
                 with open(plist_path, "rb") as f:
                     plist_data = f.read()
+
                 plist_dict = plistlib.loads(plist_data)
 
-                if plist_dict.get("CFBundleName") and plist_dict["CFBundleName"] != "Dangerzone":
+                if (
+                    plist_dict.get("CFBundleName")
+                    and plist_dict["CFBundleName"] != "Dangerzone"
+                ):
                     pdf_viewers[plist_dict["CFBundleName"]] = bundle_identifier
 
         elif platform.system() == "Linux":

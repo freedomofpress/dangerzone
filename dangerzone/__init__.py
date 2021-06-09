@@ -1,6 +1,5 @@
 import os
 import sys
-from .container import container_main
 
 dangerzone_version = "0.1.5"
 
@@ -8,7 +7,7 @@ dangerzone_version = "0.1.5"
 # PyInstaller builds a single binary
 basename = os.path.basename(sys.argv[0])
 if basename == "dangerzone-container" or basename == "dangerzone-container.exe":
-    main = container_main
+    from .container import container_main as main
 else:
     # If the binary isn't "dangerzone-contatiner", then launch the GUI
     from .gui import gui_main as main

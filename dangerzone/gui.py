@@ -20,23 +20,31 @@ from .docker_installer import (
 from .container import container_runtime
 
 
-class Application(QtWidgets.QApplication):
+# For some reason, Dangerzone segfaults if I inherit from QApplication directly, so instead
+# this is a class whose job is to hold a QApplication object and customize it
+class ApplicationWrapper(QtCore.QObject):
     document_selected = QtCore.Signal(str)
     application_activated = QtCore.Signal()
 
     def __init__(self):
-        QtWidgets.QApplication.__init__(self, sys.argv)
+        super(ApplicationWrapper, self).__init__()
+        self.app = QtWidgets.QApplication()
+        self.app.setQuitOnLastWindowClosed(False)
 
-    def event(self, event):
-        # In macOS, handle the file open event
-        if event.type() == QtCore.QEvent.FileOpen:
-            self.document_selected.emit(event.file())
-            return True
-        elif event.type() == QtCore.QEvent.ApplicationActivate:
-            self.application_activated.emit()
-            return True
+        self.original_event = self.app.event
 
-        return QtWidgets.QApplication.event(self, event)
+        def monkeypatch_event(event):
+            # In macOS, handle the file open event
+            if event.type() == QtCore.QEvent.FileOpen:
+                self.document_selected.emit(event.file())
+                return True
+            elif event.type() == QtCore.QEvent.ApplicationActivate:
+                self.application_activated.emit()
+                return True
+
+            return self.original_event(event)
+
+        self.app.event = monkeypatch_event
 
 
 @click.command()
@@ -48,8 +56,8 @@ def gui_main(custom_container, filename):
         os.environ["QT_MAC_WANTS_LAYER"] = "1"
 
     # Create the Qt app
-    app = Application()
-    app.setQuitOnLastWindowClosed(False)
+    app_wrapper = ApplicationWrapper()
+    app = app_wrapper.app
 
     # GlobalCommon object
     global_common = GlobalCommon(app)
@@ -150,9 +158,9 @@ def gui_main(custom_container, filename):
             select_document()
 
     # If we get a file open event, open it
-    app.document_selected.connect(select_document)
+    app_wrapper.document_selected.connect(select_document)
 
     # If the application is activated and all windows are closed, open a new one
-    app.application_activated.connect(application_activated)
+    app_wrapper.application_activated.connect(application_activated)
 
     sys.exit(app.exec_())

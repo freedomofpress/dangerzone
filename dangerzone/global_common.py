@@ -51,7 +51,8 @@ class GlobalCommon(object):
         self.dz_container_path = self.get_dangerzone_container_path()
 
         # Preload list of PDF viewers on computer
-        self.pdf_viewers = self._find_pdf_viewers()
+        # self.pdf_viewers = self._find_pdf_viewers()
+        self.pdf_viewers = {"Preview": "com.apple.Preview"}
 
         # Languages supported by tesseract
         self.ocr_languages = {

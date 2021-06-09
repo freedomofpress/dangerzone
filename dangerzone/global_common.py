@@ -32,17 +32,6 @@ class GlobalCommon(object):
         # Qt app
         self.app = app
 
-        # Temporary directory to store pixel data
-        # Note in macOS, temp dirs must be in /tmp (or a few other paths) for Docker to mount them
-        if platform.system() == "Windows":
-            self.pixel_dir = tempfile.TemporaryDirectory(prefix="dangerzone-pixel-")
-            self.safe_dir = tempfile.TemporaryDirectory(prefix="dangerzone-safe-")
-        else:
-            self.pixel_dir = tempfile.TemporaryDirectory(
-                prefix="/tmp/dangerzone-pixel-"
-            )
-            self.safe_dir = tempfile.TemporaryDirectory(prefix="/tmp/dangerzone-safe-")
-
         # Name of input file
         self.document_filename = None
 
@@ -367,7 +356,9 @@ class GlobalCommon(object):
                     continue
 
                 with open(plist_path, "rb") as f:
-                    plist_dict = plistlib.load(plist_path)
+                    plist_data = f.read()
+
+                plist_dict = plistlib.loads(plist_data)
 
                 if (
                     plist_dict.get("CFBundleName")

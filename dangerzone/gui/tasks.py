@@ -65,10 +65,6 @@ class ConvertToPixels(TaskBase):
         self.global_common = global_common
         self.common = common
 
-        self.max_image_width = 10000
-        self.max_image_height = 10000
-        self.max_image_size = self.max_image_width * self.max_image_height * 3
-
     def run(self):
         self.update_label.emit("Converting document to pixels")
         args = [
@@ -80,76 +76,17 @@ class ConvertToPixels(TaskBase):
             "--container-name",
             self.global_common.get_container_name(),
         ]
-        returncode, output, stderr = self.exec_container(args)
+        returncode, output, _ = self.exec_container(args)
 
         if returncode != 0:
             return
 
-        # Did we hit an error?
-        for line in output.split("\n"):
-            if (
-                "failed:" in line
-                or "The document format is not supported" in line
-                or "Error" in line
-            ):
-                self.task_failed.emit(output)
-                return
-
-        # How many pages was that?
-        num_pages = None
-        for line in output.split("\n"):
-            if line.startswith("Document has "):
-                num_pages = line.split(" ")[2]
-                break
-        if not num_pages or not num_pages.isdigit() or int(num_pages) <= 0:
-            self.task_failed.emit("Invalid number of pages returned")
+        success, error_message = self.global_common.validate_convert_to_pixel_output(
+            self.common, output
+        )
+        if not success:
+            self.task_failed.emit(error_message)
             return
-        num_pages = int(num_pages)
-
-        # Make sure we have the files we expect
-        expected_filenames = []
-        for i in range(1, num_pages + 1):
-            expected_filenames += [
-                f"page-{i}.rgb",
-                f"page-{i}.width",
-                f"page-{i}.height",
-            ]
-        expected_filenames.sort()
-        actual_filenames = os.listdir(self.common.pixel_dir.name)
-        actual_filenames.sort()
-
-        if expected_filenames != actual_filenames:
-            self.task_failed.emit(
-                f"We expected these files:\n{expected_filenames}\n\nBut we got these files:\n{actual_filenames}"
-            )
-            return
-
-        # Make sure the files are the correct sizes
-        for i in range(1, num_pages + 1):
-            with open(f"{self.common.pixel_dir.name}/page-{i}.width") as f:
-                w_str = f.read().strip()
-            with open(f"{self.common.pixel_dir.name}/page-{i}.height") as f:
-                h_str = f.read().strip()
-            w = int(w_str)
-            h = int(h_str)
-            if (
-                not w_str.isdigit()
-                or not h_str.isdigit()
-                or w <= 0
-                or w > self.max_image_width
-                or h <= 0
-                or h > self.max_image_height
-            ):
-                self.task_failed.emit(f"Page {i} has invalid geometry")
-                return
-
-            # Make sure the RGB file is the correct size
-            if (
-                os.path.getsize(f"{self.common.pixel_dir.name}/page-{i}.rgb")
-                != w * h * 3
-            ):
-                self.task_failed.emit(f"Page {i} has an invalid RGB file size")
-                return
 
         self.task_finished.emit()
 

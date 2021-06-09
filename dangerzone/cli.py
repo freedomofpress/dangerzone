@@ -1,6 +1,7 @@
 import click
 
 from .global_common import GlobalCommon
+from .common import Common
 
 
 def exec_container(global_common, args):
@@ -35,6 +36,7 @@ def exec_container(global_common, args):
 @click.argument("filename", required=True)
 def cli_main(custom_container, safe_pdf_filename, ocr_lang, skip_update, filename):
     global_common = GlobalCommon()
+    common = Common()
 
     # Make sure custom container exists
     if custom_container:
@@ -56,8 +58,34 @@ def cli_main(custom_container, safe_pdf_filename, ocr_lang, skip_update, filenam
                 )
                 return
 
+    # Pull the latest image
     if not skip_update:
         click.echo("Pulling container image (this might take a few minutes)")
         returncode, _, _ = exec_container(global_common, ["pull"])
         if returncode != 0:
             return
+
+    # Document to pixels
+    click.echo("Converting document to pixels")
+    returncode, output, _ = exec_container(
+        global_common,
+        [
+            "documenttopixels",
+            "--document-filename",
+            common.document_filename,
+            "--pixel-dir",
+            common.pixel_dir.name,
+            "--container-name",
+            global_common.get_container_name(),
+        ],
+    )
+
+    if returncode != 0:
+        return
+
+    success, error_message = global_common.validate_convert_to_pixel_output(
+        common, output
+    )
+    if not success:
+        click.echo(error_message)
+        return

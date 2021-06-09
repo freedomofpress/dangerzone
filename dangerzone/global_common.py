@@ -274,3 +274,26 @@ class GlobalCommon(object):
             return startupinfo
         else:
             return None
+
+    def container_exists(self, container_name):
+        # Do we have this container?
+        with self.exec_dangerzone_container(
+            ["ls", "--container-name", container_name]
+        ) as p:
+            stdout_data, _ = p.communicate()
+            if stdout_data.startswith(b"Executing: "):
+                stdout_data = b"\n".join(stdout_data.split(b"\n")[1:])
+
+            # The user canceled, or permission denied
+            if p.returncode == 126 or p.returncode == 127:
+                return False, "Authorization failed"
+                return
+            elif p.returncode != 0:
+                return False, "Container error"
+                return
+
+            # Check the output
+            if container_name.encode() not in stdout_data:
+                return False, f"Container '{container_name}' not found"
+
+        return True, True

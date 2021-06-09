@@ -15,7 +15,6 @@ from .docker_installer import (
     AuthorizationFailed,
 )
 from ..global_common import GlobalCommon
-from ..container import container_runtime
 
 
 # For some reason, Dangerzone segfaults if I inherit from QApplication directly, so instead
@@ -62,24 +61,10 @@ def gui_main(custom_container, filename):
     gui_common = GuiCommon(app, global_common)
 
     if custom_container:
-        # Do we have this container?
-        with global_common.exec_dangerzone_container(
-            ["ls", "--container-name", custom_container]
-        ) as p:
-            stdout_data, stderr_data = p.communicate()
-
-            # The user canceled, or permission denied
-            if p.returncode == 126 or p.returncode == 127:
-                click.echo("Authorization failed")
-                return
-            elif p.returncode != 0:
-                click.echo("Container error")
-                return
-
-            # Check the output
-            if custom_container.encode() not in stdout_data:
-                click.echo(f"Container '{custom_container}' not found")
-                return
+        success, error_message = global_common.container_exists(custom_container)
+        if not success:
+            click.echo(error_message)
+            return
 
         global_common.custom_container = custom_container
 

@@ -5,7 +5,7 @@ import platform
 import subprocess
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from ..tasks import PullImageTask, ConvertToPixels, ConvertToPDF
+from .tasks import PullImageTask, ConvertToPixels, ConvertToPDF
 
 
 class TasksWidget(QtWidgets.QWidget):

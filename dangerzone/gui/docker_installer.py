@@ -8,14 +8,14 @@ import time
 import platform
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from .container import container_runtime
+from ..container import container_runtime
 
 
 class AuthorizationFailed(Exception):
     pass
 
 
-def is_docker_installed(global_common):
+def is_docker_installed():
     if platform.system() == "Darwin":
         # Does the docker binary exist?
         if os.path.isdir("/Applications/Docker.app") and os.path.exists(
@@ -55,12 +55,11 @@ def launch_docker_windows(global_common):
 
 
 class DockerInstaller(QtWidgets.QDialog):
-    def __init__(self, global_common):
+    def __init__(self, gui_common):
         super(DockerInstaller, self).__init__()
-        self.global_common = global_common
 
         self.setWindowTitle("dangerzone")
-        self.setWindowIcon(self.global_common.get_window_icon())
+        self.setWindowIcon(gui_common.get_window_icon())
         # self.setMinimumHeight(170)
 
         label = QtWidgets.QLabel()

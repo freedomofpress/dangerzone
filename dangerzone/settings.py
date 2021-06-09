@@ -7,18 +7,12 @@ class Settings:
     def __init__(self, common):
         self.common = common
         self.settings_filename = os.path.join(self.common.appdata_path, "settings.json")
-
-        if len(self.common.pdf_viewers) == 0:
-            default_pdf_viewer = None
-        else:
-            default_pdf_viewer = list(self.common.pdf_viewers)[0]
-
         self.default_settings = {
             "save": True,
             "ocr": True,
             "ocr_language": "English",
             "open": True,
-            "open_app": default_pdf_viewer,
+            "open_app": None,
             "update_container": True,
             "linux_prefers_typing_password": None,
         }

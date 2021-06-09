@@ -3,11 +3,14 @@ import sys
 
 dangerzone_version = "0.1.5"
 
-# This is a hack for Windows and Mac to be able to run dangerzone-container, even though
-# PyInstaller builds a single binary
+# Depending on the filename, decide if we want to run:
+# dangerzone, dangerzone-cli, or dangerzone-container
+
 basename = os.path.basename(sys.argv[0])
+
 if basename == "dangerzone-container" or basename == "dangerzone-container.exe":
     from .container import container_main as main
+elif basename == "dangerzone-cli" or basename == "dangerzone-cli.exe":
+    from .cli import cli_main as main
 else:
-    # If the binary isn't "dangerzone-contatiner", then launch the GUI
     from .gui import gui_main as main

@@ -1,5 +1,4 @@
 import os
-import subprocess
 import platform
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -8,9 +7,10 @@ class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.Signal()
     close_window = QtCore.Signal()
 
-    def __init__(self, global_common, common):
+    def __init__(self, global_common, gui_common, common):
         super(SettingsWidget, self).__init__()
         self.global_common = global_common
+        self.gui_common = gui_common
         self.common = common
 
         # Dangerous document label
@@ -49,8 +49,8 @@ class SettingsWidget(QtWidgets.QWidget):
             )
             self.open_checkbox.clicked.connect(self.update_ui)
             self.open_combobox = QtWidgets.QComboBox()
-            for k in self.global_common.pdf_viewers:
-                self.open_combobox.addItem(k, self.global_common.pdf_viewers[k])
+            for k in self.gui_common.pdf_viewers:
+                self.open_combobox.addItem(k, self.gui_common.pdf_viewers[k])
             open_layout = QtWidgets.QHBoxLayout()
             open_layout.addWidget(self.open_checkbox)
             open_layout.addWidget(self.open_combobox)

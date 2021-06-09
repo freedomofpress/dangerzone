@@ -27,6 +27,7 @@ black = "^21.5b2"
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
 dangerzone-container = 'dangerzone:main'
+dangerzone-cli = 'dangerzone:main'
 
 [build-system]
 requires = ["poetry>=1.1.4"]

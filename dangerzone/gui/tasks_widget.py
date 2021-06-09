@@ -5,15 +5,16 @@ import platform
 import subprocess
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from .tasks import PullImageTask, ConvertToPixels, ConvertToPDF
+from ..tasks import PullImageTask, ConvertToPixels, ConvertToPDF
 
 
 class TasksWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
-    def __init__(self, global_common, common):
+    def __init__(self, global_common, gui_common, common):
         super(TasksWidget, self).__init__()
         self.global_common = global_common
+        self.gui_common = gui_common
         self.common = common
 
         # Dangerous document label
@@ -31,7 +32,7 @@ class TasksWidget(QtWidgets.QWidget):
         self.task_details.setStyleSheet(
             "QLabel { background-color: #ffffff; font-size: 12px; padding: 10px; }"
         )
-        self.task_details.setFont(self.global_common.fixed_font)
+        self.task_details.setFont(self.gui_common.fixed_font)
         self.task_details.setAlignment(QtCore.Qt.AlignTop)
 
         self.details_scrollarea = QtWidgets.QScrollArea()
@@ -111,7 +112,7 @@ class TasksWidget(QtWidgets.QWidget):
 
         # Open
         if self.global_common.settings.get("open"):
-            self.global_common.open_pdf_viewer(dest_filename)
+            self.gui_common.open_pdf_viewer(dest_filename)
 
         # Clean up
         self.common.pixel_dir.cleanup()
@@ -122,7 +123,7 @@ class TasksWidget(QtWidgets.QWidget):
             # In macOS, just close the window
             self.close_window.emit()
         else:
-            self.global_common.app.quit()
+            self.gui_common.app.quit()
 
     def scroll_to_bottom(self, minimum, maximum):
         self.details_scrollarea.verticalScrollBar().setValue(maximum)

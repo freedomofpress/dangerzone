@@ -3,21 +3,18 @@ import sys
 import signal
 import platform
 import click
-import time
 import uuid
-import subprocess
 from PySide2 import QtCore, QtWidgets
 
-from .global_common import GlobalCommon
+from .common import GuiCommon
 from .main_window import MainWindow
 from .docker_installer import (
     is_docker_installed,
     is_docker_ready,
-    launch_docker_windows,
     DockerInstaller,
     AuthorizationFailed,
 )
-from .container import container_runtime
+from ..global_common import GlobalCommon
 
 
 # For some reason, Dangerzone segfaults if I inherit from QApplication directly, so instead
@@ -59,28 +56,17 @@ def gui_main(custom_container, filename):
     app_wrapper = ApplicationWrapper()
     app = app_wrapper.app
 
-    # GlobalCommon object
-    global_common = GlobalCommon(app)
+    # Common objects
+    global_common = GlobalCommon()
+    gui_common = GuiCommon(app, global_common)
+
+    global_common.display_banner()
 
     if custom_container:
-        # Do we have this container?
-        with global_common.exec_dangerzone_container(
-            ["ls", "--container-name", custom_container]
-        ) as p:
-            stdout_data, stderr_data = p.communicate()
-
-            # The user canceled, or permission denied
-            if p.returncode == 126 or p.returncode == 127:
-                click.echo("Authorization failed")
-                return
-            elif p.returncode != 0:
-                click.echo("Container error")
-                return
-
-            # Check the output
-            if custom_container.encode() not in stdout_data:
-                click.echo(f"Container '{custom_container}' not found")
-                return
+        success, error_message = global_common.container_exists(custom_container)
+        if not success:
+            click.echo(error_message)
+            return
 
         global_common.custom_container = custom_container
 
@@ -89,10 +75,10 @@ def gui_main(custom_container, filename):
 
     # If we're using Linux and docker, see if we need to add the user to the docker group or if the user prefers typing their password
     if platform.system() == "Linux":
-        if not global_common.ensure_docker_group_preference():
+        if not gui_common.ensure_docker_group_preference():
             return
         try:
-            if not global_common.ensure_docker_service_is_started():
+            if not gui_common.ensure_docker_service_is_started():
                 click.echo("Failed to start docker service")
                 return
         except AuthorizationFailed:
@@ -101,10 +87,10 @@ def gui_main(custom_container, filename):
 
     # See if we need to install Docker...
     if (platform.system() == "Darwin" or platform.system() == "Windows") and (
-        not is_docker_installed(global_common) or not is_docker_ready(global_common)
+        not is_docker_installed() or not is_docker_ready(global_common)
     ):
         click.echo("Docker is either not installed or not running")
-        docker_installer = DockerInstaller(global_common)
+        docker_installer = DockerInstaller(gui_common)
         docker_installer.start()
         return
 
@@ -124,7 +110,7 @@ def gui_main(custom_container, filename):
             window = windows[list(windows.keys())[0]]
         else:
             window_id = uuid.uuid4().hex
-            window = MainWindow(global_common, window_id)
+            window = MainWindow(global_common, gui_common, window_id)
             window.delete_window.connect(delete_window)
             windows[window_id] = window
 

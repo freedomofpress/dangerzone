@@ -1,26 +1,14 @@
 import sys
 import os
 import inspect
-import tempfile
 import appdirs
 import platform
 import subprocess
-import shlex
 import pipes
-from PySide2 import QtCore, QtGui, QtWidgets
-
-if platform.system() == "Darwin":
-    import CoreServices
-    import LaunchServices
-    import plistlib
-
-elif platform.system() == "Linux":
-    import grp
-    import getpass
-    from xdg.DesktopEntry import DesktopEntry
+import colorama
+from colorama import Fore, Back, Style
 
 from .settings import Settings
-from .docker_installer import is_docker_ready
 
 
 class GlobalCommon(object):
@@ -28,18 +16,13 @@ class GlobalCommon(object):
     The GlobalCommon class is a singleton of shared functionality throughout the app
     """
 
-    def __init__(self, app):
-        # Qt app
-        self.app = app
+    def __init__(self):
+        # Version
+        with open(self.get_resource_path("version.txt")) as f:
+            self.version = f.read().strip()
 
-        # Name of input file
-        self.document_filename = None
-
-        # Name of output file
-        self.save_filename = None
-
-        # Preload font
-        self.fixed_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
+        # Initialize terminal colors
+        colorama.init(autoreset=True)
 
         # App data folder
         self.appdata_path = appdirs.user_config_dir("dangerzone")
@@ -49,9 +32,6 @@ class GlobalCommon(object):
 
         # dangerzone-container path
         self.dz_container_path = self.get_dangerzone_container_path()
-
-        # Preload list of PDF viewers on computer
-        self.pdf_viewers = self._find_pdf_viewers()
 
         # Languages supported by tesseract
         self.ocr_languages = {
@@ -220,6 +200,181 @@ class GlobalCommon(object):
         # Load settings
         self.settings = Settings(self)
 
+    def display_banner(self):
+        """
+        Raw ASCII art example:
+        ╭──────────────────────────╮
+        │           ▄██▄           │
+        │          ██████          │
+        │         ███▀▀▀██         │
+        │        ███   ████        │
+        │       ███   ██████       │
+        │      ███   ▀▀▀▀████      │
+        │     ███████  ▄██████     │
+        │    ███████ ▄█████████    │
+        │   ████████████████████   │
+        │    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    │
+        │                          │
+        │    Dangerzone v0.1.5     │
+        │ https://dangerzone.rocks │
+        ╰──────────────────────────╯
+        """
+
+        print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Fore.LIGHTYELLOW_EX
+            + Style.NORMAL
+            + "           ▄██▄           "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Fore.LIGHTYELLOW_EX
+            + Style.NORMAL
+            + "          ██████          "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Fore.LIGHTYELLOW_EX
+            + Style.NORMAL
+            + "         ███▀▀▀██         "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Fore.LIGHTYELLOW_EX
+            + Style.NORMAL
+            + "        ███   ████        "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Fore.LIGHTYELLOW_EX
+            + Style.NORMAL
+            + "       ███   ██████       "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Fore.LIGHTYELLOW_EX
+            + Style.NORMAL
+            + "      ███   ▀▀▀▀████      "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Fore.LIGHTYELLOW_EX
+            + Style.NORMAL
+            + "     ███████  ▄██████     "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Fore.LIGHTYELLOW_EX
+            + Style.NORMAL
+            + "    ███████ ▄█████████    "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Fore.LIGHTYELLOW_EX
+            + Style.NORMAL
+            + "   ████████████████████   "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Fore.LIGHTYELLOW_EX
+            + Style.NORMAL
+            + "    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │")
+        left_spaces = (15 - len(self.version) - 1) // 2
+        right_spaces = left_spaces
+        if left_spaces + len(self.version) + 1 + right_spaces < 15:
+            right_spaces += 1
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Style.RESET_ALL
+            + Back.BLACK
+            + Fore.LIGHTWHITE_EX
+            + Style.BRIGHT
+            + f"{' '*left_spaces}Dangerzone v{self.version}{' '*right_spaces}"
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(
+            Back.BLACK
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+            + Style.RESET_ALL
+            + Back.BLACK
+            + Fore.LIGHTWHITE_EX
+            + " https://dangerzone.rocks "
+            + Fore.YELLOW
+            + Style.DIM
+            + "│"
+        )
+        print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
+
     def get_container_name(self):
         if self.custom_container:
             return self.custom_container
@@ -287,194 +442,13 @@ class GlobalCommon(object):
 
         # Execute dangerzone-container
         args_str = " ".join(pipes.quote(s) for s in args)
-        print(f"Executing: {args_str}")
+        print(Fore.YELLOW + "\u2023 " + Fore.CYAN + args_str)  # ‣
         return subprocess.Popen(
             args,
             startupinfo=self.get_subprocess_startupinfo(),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-
-    def get_window_icon(self):
-        if platform.system() == "Windows":
-            path = self.get_resource_path("dangerzone.ico")
-        else:
-            path = self.get_resource_path("icon.png")
-        return QtGui.QIcon(path)
-
-    def open_pdf_viewer(self, filename):
-        if self.settings.get("open_app") in self.pdf_viewers:
-            if platform.system() == "Darwin":
-                # Get the PDF reader bundle command
-                bundle_identifier = self.pdf_viewers[self.settings.get("open_app")]
-                args = ["open", "-b", bundle_identifier, filename]
-
-                # Run
-                print(f"Executing: {' '.join(args)}")
-                subprocess.run(args)
-
-            elif platform.system() == "Linux":
-                # Get the PDF reader command
-                args = shlex.split(self.pdf_viewers[self.settings.get("open_app")])
-                # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
-                for i in range(len(args)):
-                    if (
-                        args[i] == "%f"
-                        or args[i] == "%F"
-                        or args[i] == "%u"
-                        or args[i] == "%U"
-                    ):
-                        args[i] = filename
-
-                # Open as a background process
-                print(f"Executing: {' '.join(args)}")
-                subprocess.Popen(args)
-
-    def _find_pdf_viewers(self):
-        pdf_viewers = {}
-
-        if platform.system() == "Darwin":
-            # Get all installed apps that can open PDFs
-            bundle_identifiers = LaunchServices.LSCopyAllRoleHandlersForContentType(
-                "com.adobe.pdf", CoreServices.kLSRolesAll
-            )
-            for bundle_identifier in bundle_identifiers:
-                # Get the filesystem path of the app
-                res = LaunchServices.LSCopyApplicationURLsForBundleIdentifier(
-                    bundle_identifier, None
-                )
-                if res[0] is None:
-                    continue
-                app_url = res[0][0]
-                app_path = str(app_url.path())
-
-                # Load its plist file
-                plist_path = os.path.join(app_path, "Contents/Info.plist")
-
-                # Skip if there's not an Info.plist
-                if not os.path.exists(plist_path):
-                    continue
-
-                with open(plist_path, "rb") as f:
-                    plist_data = f.read()
-
-                plist_dict = plistlib.loads(plist_data)
-
-                if (
-                    plist_dict.get("CFBundleName")
-                    and plist_dict["CFBundleName"] != "Dangerzone"
-                ):
-                    pdf_viewers[plist_dict["CFBundleName"]] = bundle_identifier
-
-        elif platform.system() == "Linux":
-            # Find all .desktop files
-            for search_path in [
-                "/usr/share/applications",
-                "/usr/local/share/applications",
-                os.path.expanduser("~/.local/share/applications"),
-            ]:
-                try:
-                    for filename in os.listdir(search_path):
-                        full_filename = os.path.join(search_path, filename)
-                        if os.path.splitext(filename)[1] == ".desktop":
-
-                            # See which ones can open PDFs
-                            desktop_entry = DesktopEntry(full_filename)
-                            if (
-                                "application/pdf" in desktop_entry.getMimeTypes()
-                                and desktop_entry.getName() != "dangerzone"
-                            ):
-                                pdf_viewers[
-                                    desktop_entry.getName()
-                                ] = desktop_entry.getExec()
-
-                except FileNotFoundError:
-                    pass
-
-        return pdf_viewers
-
-    def ensure_docker_group_preference(self):
-        # If the user prefers typing their password
-        if self.settings.get("linux_prefers_typing_password") == True:
-            return True
-
-        # Get the docker group
-        try:
-            groupinfo = grp.getgrnam("docker")
-        except:
-            # Ignore if group is not found
-            return True
-
-        # See if the user is in the group
-        username = getpass.getuser()
-        if username not in groupinfo.gr_mem:
-            # User is not in the docker group, ask if they prefer typing their password
-            message = "<b>Dangerzone requires Docker</b><br><br>In order to use Docker, your user must be in the 'docker' group or you'll need to type your password each time you run dangerzone.<br><br><b>Adding your user to the 'docker' group is more convenient but less secure</b>, and will require just typing your password once. Which do you prefer?"
-            return_code = Alert(
-                self,
-                message,
-                ok_text="I'll type my password each time",
-                extra_button_text="Add my user to the 'docker' group",
-            ).launch()
-            if return_code == QtWidgets.QDialog.Accepted:
-                # Prefers typing password
-                self.settings.set("linux_prefers_typing_password", True)
-                self.settings.save()
-                return True
-            elif return_code == 2:
-                # Prefers being in the docker group
-                self.settings.set("linux_prefers_typing_password", False)
-                self.settings.save()
-
-                # Add user to the docker group
-                p = subprocess.run(
-                    [
-                        "/usr/bin/pkexec",
-                        "/usr/sbin/usermod",
-                        "-a",
-                        "-G",
-                        "docker",
-                        username,
-                    ]
-                )
-                if p.returncode == 0:
-                    message = "Great! Now you must log out of your computer and log back in, and then you can use Dangerzone."
-                    Alert(self, message).launch()
-                else:
-                    message = "Failed to add your user to the 'docker' group, quitting."
-                    Alert(self, message).launch()
-
-                return False
-            else:
-                # Cancel
-                return False
-
-        return True
-
-    def ensure_docker_service_is_started(self):
-        if not is_docker_ready(self):
-            message = "<b>Dangerzone requires Docker</b><br><br>Docker should be installed, but it looks like it's not running in the background.<br><br>Click Ok to try starting the docker service. You will have to type your login password."
-            if Alert(self, message).launch() == QtWidgets.QDialog.Accepted:
-                p = subprocess.run(
-                    [
-                        "/usr/bin/pkexec",
-                        self.get_resource_path("enable_docker_service.sh"),
-                    ]
-                )
-                if p.returncode == 0:
-                    # Make sure docker is now ready
-                    if is_docker_ready(self):
-                        return True
-                    else:
-                        message = "Restarting docker appeared to work, but the service still isn't responding, quitting."
-                        Alert(self, message).launch()
-                else:
-                    message = "Failed to start the docker service, quitting."
-                    Alert(self, message).launch()
-
-            return False
-
-        return True
 
     def get_subprocess_startupinfo(self):
         if platform.system() == "Windows":
@@ -484,70 +458,99 @@ class GlobalCommon(object):
         else:
             return None
 
+    def container_exists(self, container_name):
+        """
+        Check if container_name is a valid container. Returns a tuple like:
+        (success (boolean), error_message (str))
+        """
+        # Do we have this container?
+        with self.exec_dangerzone_container(
+            ["ls", "--container-name", container_name]
+        ) as p:
+            stdout_data, _ = p.communicate()
+            lines = stdout_data.split(b"\n")
+            if b"\u2023 " in lines[0]:  # ‣
+                stdout_data = b"\n".join(lines[1:])
 
-class Alert(QtWidgets.QDialog):
-    def __init__(self, common, message, ok_text="Ok", extra_button_text=None):
-        super(Alert, self).__init__()
-        self.common = common
+            # The user canceled, or permission denied
+            if p.returncode == 126 or p.returncode == 127:
+                return False, "Authorization failed"
+                return
+            elif p.returncode != 0:
+                return False, "Container error"
+                return
 
-        self.setWindowTitle("dangerzone")
-        self.setWindowIcon(self.common.get_window_icon())
-        self.setModal(True)
+            # Check the output
+            if container_name.encode() not in stdout_data:
+                return False, f"Container '{container_name}' not found"
 
-        flags = (
-            QtCore.Qt.CustomizeWindowHint
-            | QtCore.Qt.WindowTitleHint
-            | QtCore.Qt.WindowSystemMenuHint
-            | QtCore.Qt.WindowCloseButtonHint
-            | QtCore.Qt.WindowStaysOnTopHint
-        )
-        self.setWindowFlags(flags)
+        return True, True
 
-        logo = QtWidgets.QLabel()
-        logo.setPixmap(
-            QtGui.QPixmap.fromImage(
-                QtGui.QImage(self.common.get_resource_path("icon.png"))
+    def validate_convert_to_pixel_output(self, common, output):
+        """
+        Take the output from the convert to pixels tasks and validate it. Returns
+        a tuple like: (success (boolean), error_message (str))
+        """
+        max_image_width = 10000
+        max_image_height = 10000
+
+        # Did we hit an error?
+        for line in output.split("\n"):
+            if (
+                "failed:" in line
+                or "The document format is not supported" in line
+                or "Error" in line
+            ):
+                return False, output
+
+        # How many pages was that?
+        num_pages = None
+        for line in output.split("\n"):
+            if line.startswith("Document has "):
+                num_pages = line.split(" ")[2]
+                break
+        if not num_pages or not num_pages.isdigit() or int(num_pages) <= 0:
+            return False, "Invalid number of pages returned"
+        num_pages = int(num_pages)
+
+        # Make sure we have the files we expect
+        expected_filenames = []
+        for i in range(1, num_pages + 1):
+            expected_filenames += [
+                f"page-{i}.rgb",
+                f"page-{i}.width",
+                f"page-{i}.height",
+            ]
+        expected_filenames.sort()
+        actual_filenames = os.listdir(common.pixel_dir.name)
+        actual_filenames.sort()
+
+        if expected_filenames != actual_filenames:
+            return (
+                False,
+                f"We expected these files:\n{expected_filenames}\n\nBut we got these files:\n{actual_filenames}",
             )
-        )
 
-        label = QtWidgets.QLabel()
-        label.setText(message)
-        label.setWordWrap(True)
+        # Make sure the files are the correct sizes
+        for i in range(1, num_pages + 1):
+            with open(f"{common.pixel_dir.name}/page-{i}.width") as f:
+                w_str = f.read().strip()
+            with open(f"{common.pixel_dir.name}/page-{i}.height") as f:
+                h_str = f.read().strip()
+            w = int(w_str)
+            h = int(h_str)
+            if (
+                not w_str.isdigit()
+                or not h_str.isdigit()
+                or w <= 0
+                or w > max_image_width
+                or h <= 0
+                or h > max_image_height
+            ):
+                return False, f"Page {i} has invalid geometry"
 
-        message_layout = QtWidgets.QHBoxLayout()
-        message_layout.addWidget(logo)
-        message_layout.addSpacing(10)
-        message_layout.addWidget(label, stretch=1)
+            # Make sure the RGB file is the correct size
+            if os.path.getsize(f"{common.pixel_dir.name}/page-{i}.rgb") != w * h * 3:
+                return False, f"Page {i} has an invalid RGB file size"
 
-        ok_button = QtWidgets.QPushButton(ok_text)
-        ok_button.clicked.connect(self.clicked_ok)
-        if extra_button_text:
-            extra_button = QtWidgets.QPushButton(extra_button_text)
-            extra_button.clicked.connect(self.clicked_extra)
-        cancel_button = QtWidgets.QPushButton("Cancel")
-        cancel_button.clicked.connect(self.clicked_cancel)
-
-        buttons_layout = QtWidgets.QHBoxLayout()
-        buttons_layout.addStretch()
-        buttons_layout.addWidget(ok_button)
-        if extra_button_text:
-            buttons_layout.addWidget(extra_button)
-        buttons_layout.addWidget(cancel_button)
-
-        layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(message_layout)
-        layout.addSpacing(10)
-        layout.addLayout(buttons_layout)
-        self.setLayout(layout)
-
-    def clicked_ok(self):
-        self.done(QtWidgets.QDialog.Accepted)
-
-    def clicked_extra(self):
-        self.done(2)
-
-    def clicked_cancel(self):
-        self.done(QtWidgets.QDialog.Rejected)
-
-    def launch(self):
-        return self.exec_()
+        return True, True

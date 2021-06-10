@@ -18,6 +18,7 @@ wmi = {version = "*", platform = "win32"}
 pyxdg = {version = "*", platform = "linux"}
 pyobjc-core = {version = "*", platform = "darwin"}
 pyobjc-framework-launchservices = {version = "*", platform = "darwin"}
+colorama = "^0.4.4"
 
 [tool.poetry.dev-dependencies]
 pyinstaller = {version = "*", platform = "darwin"}
@@ -27,6 +28,7 @@ black = "^21.5b2"
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
 dangerzone-container = 'dangerzone:main'
+dangerzone-cli = 'dangerzone:main'
 
 [build-system]
 requires = ["poetry>=1.1.4"]

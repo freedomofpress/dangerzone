@@ -5,7 +5,7 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
+sudo apt install -y dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
 ```
 
 You also need docker, either by installing the [Docker snap package](https://snapcraft.io/docker), installing the `docker.io` package, or by installing `docker-ce` by following [these instructions for Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/) or [for Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
@@ -27,7 +27,7 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build python3 python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-termcolor
+sudo dnf install -y rpm-build python3 python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
 ```
 
 You also need docker, either by installing the `docker` package, or by installing `docker-ce` by following [these instructions](https://docs.docker.com/install/linux/docker-ce/fedora/).
@@ -61,7 +61,14 @@ poetry install
 Run from source tree:
 
 ```
-poetry run dangerzone
+# start a shell in the virtual environment
+poetry shell
+
+# run the CLI
+./dev_scripts/dangerzone-cli --help
+
+# run the GUI
+./dev_scripts/dangerzone
 ```
 
 To create an app bundle, use the `build_app.py` script:

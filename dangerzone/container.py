@@ -3,7 +3,6 @@ import platform
 import subprocess
 import sys
 import pipes
-import getpass
 import shutil
 
 # What is the container runtime for this platform?
@@ -26,7 +25,7 @@ def exec_container(args):
     args = [container_runtime] + args
 
     args_str = " ".join(pipes.quote(s) for s in args)
-    sys.stdout.write(f"Executing: {args_str}\n\n")
+    print("\u2023 " + args_str)  # ‣
     sys.stdout.flush()
 
     with subprocess.Popen(

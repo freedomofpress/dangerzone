@@ -182,7 +182,7 @@ def display_banner(global_common):
         + Style.DIM
         + "│"
     )
-    print(Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
+    print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
 
 
 def exec_container(global_common, args):

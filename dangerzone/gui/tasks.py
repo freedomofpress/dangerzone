@@ -4,7 +4,7 @@ import os
 import pipes
 import platform
 from PySide2 import QtCore, QtWidgets, QtGui
-from termcolor import cprint
+from colorama import Style
 
 
 class TaskBase(QtCore.QThread):
@@ -27,7 +27,7 @@ class TaskBase(QtCore.QThread):
                 self.update_details.emit(output)
 
             stderr = p.stderr.read().decode()
-            cprint(stderr, attrs=["dark"])
+            print(Style.DIM + stderr + Style.RESET_ALL)
             self.update_details.emit(output)
 
         if p.returncode == 126 or p.returncode == 127:

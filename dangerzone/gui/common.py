@@ -202,7 +202,7 @@ class GuiCommon(object):
         return True
 
     def ensure_docker_service_is_started(self):
-        if not is_docker_ready(self):
+        if not is_docker_ready(self.global_common):
             message = "<b>Dangerzone requires Docker</b><br><br>Docker should be installed, but it looks like it's not running in the background.<br><br>Click Ok to try starting the docker service. You will have to type your login password."
             if (
                 Alert(self, self.global_common, message).launch()
@@ -218,7 +218,7 @@ class GuiCommon(object):
                 )
                 if p.returncode == 0:
                     # Make sure docker is now ready
-                    if is_docker_ready(self):
+                    if is_docker_ready(self.global_common):
                         return True
                     else:
                         message = "Restarting docker appeared to work, but the service still isn't responding, quitting."
@@ -234,7 +234,7 @@ class GuiCommon(object):
 
 class Alert(QtWidgets.QDialog):
     def __init__(
-        self, global_common, gui_common, message, ok_text="Ok", extra_button_text=None
+        self, gui_common, global_common, message, ok_text="Ok", extra_button_text=None
     ):
         super(Alert, self).__init__()
         self.global_common = global_common

@@ -1,8 +1,3 @@
-import subprocess
-import time
-import os
-import pipes
-import platform
 from PySide2 import QtCore, QtWidgets, QtGui
 from colorama import Style
 

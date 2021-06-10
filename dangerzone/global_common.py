@@ -5,7 +5,7 @@ import appdirs
 import platform
 import subprocess
 import pipes
-from PySide2 import QtCore, QtGui, QtWidgets
+from colorama import Fore, Style
 
 from .settings import Settings
 
@@ -263,7 +263,7 @@ class GlobalCommon(object):
 
         # Execute dangerzone-container
         args_str = " ".join(pipes.quote(s) for s in args)
-        print(f"Executing: {args_str}")
+        print(Fore.YELLOW + "\u2023 " + Fore.CYAN + args_str)  # ‣
         return subprocess.Popen(
             args,
             startupinfo=self.get_subprocess_startupinfo(),
@@ -289,8 +289,9 @@ class GlobalCommon(object):
             ["ls", "--container-name", container_name]
         ) as p:
             stdout_data, _ = p.communicate()
-            if stdout_data.startswith(b"Executing: "):
-                stdout_data = b"\n".join(stdout_data.split(b"\n")[1:])
+            lines = stdout_data.split(b"\n")
+            if b"\u2023 " in lines[0]:  # ‣
+                stdout_data = b"\n".join(lines[1:])
 
             # The user canceled, or permission denied
             if p.returncode == 126 or p.returncode == 127:

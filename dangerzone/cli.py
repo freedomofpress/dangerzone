@@ -28,7 +28,6 @@ def display_banner(global_common):
     │ https://dangerzone.rocks │
     ╰──────────────────────────╯
     """
-    colorama.init(autoreset=True)
     print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
     print(
         Back.BLACK
@@ -185,23 +184,38 @@ def display_banner(global_common):
     print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
 
 
+def print_header(s):
+    click.echo("")
+    click.echo(Style.BRIGHT + Fore.LIGHTWHITE_EX + s)
+
+
 def exec_container(global_common, args):
     output = ""
 
     with global_common.exec_dangerzone_container(args) as p:
         for line in p.stdout:
             output += line.decode()
-            print(line.decode(), end="")
+
+            # Hack to add colors to the command executing
+            if line.startswith(b"\xe2\x80\xa3 "):
+                print(
+                    Fore.WHITE + "\u2023 " + Fore.LIGHTCYAN_EX + line.decode()[2:],
+                    end="",
+                )
+            else:
+                print("  " + line.decode(), end="")
 
         stderr = p.stderr.read().decode()
-        print(stderr)
+        if len(stderr) > 0:
+            print("")
+            for line in stderr.strip().split("\n"):
+                print("  " + Style.DIM + line)
 
-    if p.returncode == 126 or p.returncode == 127:
-        click.echo(f"Authorization failed")
-    elif p.returncode == 0:
+    if p.returncode != 0:
         click.echo(f"Return code: {p.returncode}")
+        if p.returncode == 126 or p.returncode == 127:
+            click.echo(f"Authorization failed")
 
-    print("")
     return p.returncode, output, stderr
 
 
@@ -302,13 +316,13 @@ def cli_main(custom_container, safe_pdf_filename, ocr_lang, skip_update, filenam
 
     # Pull the latest image
     if not skip_update:
-        click.echo("Pulling container image (this might take a few minutes)")
+        print_header("Pulling container image (this might take a few minutes)")
         returncode, _, _ = exec_container(global_common, ["pull"])
         if returncode != 0:
             return
 
     # Convert to pixels
-    click.echo("Converting document to pixels")
+    print_header("Converting document to pixels")
     returncode, output, _ = exec_container(
         global_common,
         [
@@ -333,7 +347,7 @@ def cli_main(custom_container, safe_pdf_filename, ocr_lang, skip_update, filenam
         return
 
     # Convert to PDF
-    click.echo("Converting pixels to safe PDF")
+    print_header("Converting pixels to safe PDF")
 
     if ocr_lang:
         ocr = "1"
@@ -364,4 +378,5 @@ def cli_main(custom_container, safe_pdf_filename, ocr_lang, skip_update, filenam
     # Save the safe PDF
     source_filename = f"{common.safe_dir.name}/safe-output-compressed.pdf"
     shutil.move(source_filename, common.save_filename)
-    print(f"Success! {common.save_filename}")
+    print_header("Safe PDF created successfully")
+    click.echo(common.save_filename)

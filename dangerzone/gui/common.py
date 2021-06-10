@@ -2,7 +2,9 @@ import os
 import platform
 import subprocess
 import shlex
+import pipes
 from PySide2 import QtCore, QtGui, QtWidgets
+from colorama import Fore
 
 if platform.system() == "Darwin":
     import CoreServices
@@ -47,16 +49,21 @@ class GuiCommon(object):
         if self.global_common.settings.get("open_app") in self.pdf_viewers:
             if platform.system() == "Darwin":
                 # Get the PDF reader bundle command
-                bundle_identifier = self.pdf_viewers[self.global_common.settings.get("open_app")]
+                bundle_identifier = self.pdf_viewers[
+                    self.global_common.settings.get("open_app")
+                ]
                 args = ["open", "-b", bundle_identifier, filename]
 
                 # Run
-                print(f"Executing: {' '.join(args)}")
+                args_str = " ".join(pipes.quote(s) for s in args)
+                print(Fore.YELLOW + "\u2023 " + Fore.CYAN + args_str)  # ‣
                 subprocess.run(args)
 
             elif platform.system() == "Linux":
                 # Get the PDF reader command
-                args = shlex.split(self.pdf_viewers[self.global_common.settings.get("open_app")])
+                args = shlex.split(
+                    self.pdf_viewers[self.global_common.settings.get("open_app")]
+                )
                 # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
                 for i in range(len(args)):
                     if (
@@ -68,7 +75,8 @@ class GuiCommon(object):
                         args[i] = filename
 
                 # Open as a background process
-                print(f"Executing: {' '.join(args)}")
+                args_str = " ".join(pipes.quote(s) for s in args)
+                print(Fore.YELLOW + "\u2023 " + Fore.CYAN + args_str)  # ‣
                 subprocess.Popen(args)
 
     def _find_pdf_viewers(self):

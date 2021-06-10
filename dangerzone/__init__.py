@@ -1,8 +1,5 @@
 import os
 import sys
-import colorama
-
-colorama.init(autoreset=True)
 
 # Depending on the filename, decide if we want to run:
 # dangerzone, dangerzone-cli, or dangerzone-container

@@ -1,5 +1,5 @@
 from PySide2 import QtCore, QtWidgets, QtGui
-from colorama import Style
+from colorama import Style, Fore
 
 
 class TaskBase(QtCore.QThread):
@@ -18,11 +18,23 @@ class TaskBase(QtCore.QThread):
         with self.global_common.exec_dangerzone_container(args) as p:
             for line in p.stdout:
                 output += line.decode()
-                print(line.decode(), end="")
+
+                if line.startswith(b"\xe2\x80\xa3 "):
+                    print(
+                        Fore.WHITE + "\u2023 " + Fore.LIGHTCYAN_EX + line.decode()[2:],
+                        end="",
+                    )
+                else:
+                    print("  " + line.decode(), end="")
+
                 self.update_details.emit(output)
 
             stderr = p.stderr.read().decode()
-            print(Style.DIM + stderr + Style.RESET_ALL)
+            if len(stderr) > 0:
+                print("")
+                for line in stderr.strip().split("\n"):
+                    print("  " + Style.DIM + line)
+
             self.update_details.emit(output)
 
         if p.returncode == 126 or p.returncode == 127:

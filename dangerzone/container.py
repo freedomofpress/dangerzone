@@ -26,6 +26,7 @@ def exec_container(args):
 
     args_str = " ".join(pipes.quote(s) for s in args)
     print("\u2023 " + args_str)  # ‣
+    sys.stdout.flush()
 
     with subprocess.Popen(
         args,

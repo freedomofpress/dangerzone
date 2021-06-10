@@ -1,9 +1,174 @@
 import os
 import shutil
 import click
+import colorama
+from colorama import Fore, Back, Style
 
 from .global_common import GlobalCommon
 from .common import Common
+from dangerzone import global_common
+
+
+def display_banner(global_common):
+    """
+    Raw ASCII art example:
+    ╭──────────────────────────╮
+    │           ▄██▄           │
+    │          ██████          │
+    │         ███▀▀▀██         │
+    │        ███   ████        │
+    │       ███   ██████       │
+    │      ███   ▀▀▀▀████      │
+    │     ███████  ▄██████     │
+    │    ███████ ▄█████████    │
+    │   ████████████████████   │
+    │    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    │
+    │                          │
+    │    Dangerzone v0.1.5     │
+    │ https://dangerzone.rocks │
+    ╰──────────────────────────╯
+    """
+    colorama.init(autoreset=True)
+    print(Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "           ▄██▄           "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "          ██████          "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "         ███▀▀▀██         "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "        ███   ████        "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "       ███   ██████       "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "      ███   ▀▀▀▀████      "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "     ███████  ▄██████     "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "    ███████ ▄█████████    "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "   ████████████████████   "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(Fore.YELLOW + Style.DIM + "│                          │")
+    left_spaces = (15 - len(global_common.version) - 1) // 2
+    right_spaces = left_spaces
+    if left_spaces + len(global_common.version) + 1 + right_spaces < 15:
+        right_spaces += 1
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTWHITE_EX
+        + Style.RESET_ALL
+        + Style.BRIGHT
+        + f"{' '*left_spaces}Dangerzone v{global_common.version}{' '*right_spaces}"
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTWHITE_EX
+        + Style.RESET_ALL
+        + " https://dangerzone.rocks "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
 
 
 def exec_container(global_common, args):
@@ -39,6 +204,8 @@ def exec_container(global_common, args):
 def cli_main(custom_container, safe_pdf_filename, ocr_lang, skip_update, filename):
     global_common = GlobalCommon()
     common = Common()
+
+    display_banner(global_common)
 
     # Validate filename
     valid = True

@@ -2,7 +2,9 @@
 import setuptools
 import os
 import sys
-from dangerzone import dangerzone_version
+
+with open("share/version.txt") as f:
+    version = f.read().strip()
 
 
 def file_list(path):
@@ -15,7 +17,7 @@ def file_list(path):
 
 setuptools.setup(
     name="dangerzone",
-    version=dangerzone_version,
+    version=version,
     author="Micah Lee",
     author_email="micah.lee@theintercept.com",
     license="MIT",
@@ -23,7 +25,10 @@ setuptools.setup(
     url="https://github.com/firstlookmedia/dangerzone",
     packages=["dangerzone"],
     data_files=[
-        ("share/applications", ["install/linux/media.firstlook.dangerzone.desktop"],),
+        (
+            "share/applications",
+            ["install/linux/media.firstlook.dangerzone.desktop"],
+        ),
         (
             "share/icons/hicolor/64x64/apps",
             ["install/linux/media.firstlook.dangerzone.png"],

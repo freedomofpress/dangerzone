@@ -1,8 +1,6 @@
 import os
 import sys
 
-dangerzone_version = "0.1.5"
-
 # Depending on the filename, decide if we want to run:
 # dangerzone, dangerzone-cli, or dangerzone-container
 

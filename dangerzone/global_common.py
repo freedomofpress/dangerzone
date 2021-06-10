@@ -16,6 +16,10 @@ class GlobalCommon(object):
     """
 
     def __init__(self):
+        # Version
+        with open(self.get_resource_path("version.txt")) as f:
+            self.version = f.read().strip()
+
         # App data folder
         self.appdata_path = appdirs.user_config_dir("dangerzone")
 

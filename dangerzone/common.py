@@ -1,4 +1,5 @@
 import os
+import stat
 import platform
 import tempfile
 
@@ -29,6 +30,20 @@ class Common(object):
             self.safe_dir = tempfile.TemporaryDirectory(
                 prefix=os.path.join(cache_dir, "safe-")
             )
+
+            # Make the folders world-readable to ensure that the container has permission
+            # to access it even if it's owned by root or someone else
+            permissions = (
+                stat.S_IRUSR
+                | stat.S_IWUSR
+                | stat.S_IXUSR
+                | stat.S_IRGRP
+                | stat.S_IXGRP
+                | stat.S_IROTH
+                | stat.S_IXOTH
+            )
+            os.chmod(self.pixel_dir.name, permissions)
+            os.chmod(self.safe_dir.name, permissions)
 
         # Name of input and out files
         self.document_filename = None

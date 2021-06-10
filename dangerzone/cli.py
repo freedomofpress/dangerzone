@@ -29,9 +29,10 @@ def display_banner(global_common):
     ╰──────────────────────────╯
     """
     colorama.init(autoreset=True)
-    print(Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
+    print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
         + Fore.LIGHTYELLOW_EX
@@ -42,7 +43,8 @@ def display_banner(global_common):
         + "│"
     )
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
         + Fore.LIGHTYELLOW_EX
@@ -53,7 +55,8 @@ def display_banner(global_common):
         + "│"
     )
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
         + Fore.LIGHTYELLOW_EX
@@ -64,7 +67,8 @@ def display_banner(global_common):
         + "│"
     )
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
         + Fore.LIGHTYELLOW_EX
@@ -75,7 +79,8 @@ def display_banner(global_common):
         + "│"
     )
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
         + Fore.LIGHTYELLOW_EX
@@ -86,7 +91,8 @@ def display_banner(global_common):
         + "│"
     )
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
         + Fore.LIGHTYELLOW_EX
@@ -97,7 +103,8 @@ def display_banner(global_common):
         + "│"
     )
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
         + Fore.LIGHTYELLOW_EX
@@ -108,7 +115,8 @@ def display_banner(global_common):
         + "│"
     )
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
         + Fore.LIGHTYELLOW_EX
@@ -119,7 +127,8 @@ def display_banner(global_common):
         + "│"
     )
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
         + Fore.LIGHTYELLOW_EX
@@ -130,7 +139,8 @@ def display_banner(global_common):
         + "│"
     )
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
         + Fore.LIGHTYELLOW_EX
@@ -140,17 +150,19 @@ def display_banner(global_common):
         + Style.DIM
         + "│"
     )
-    print(Fore.YELLOW + Style.DIM + "│                          │")
+    print(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │")
     left_spaces = (15 - len(global_common.version) - 1) // 2
     right_spaces = left_spaces
     if left_spaces + len(global_common.version) + 1 + right_spaces < 15:
         right_spaces += 1
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
-        + Fore.LIGHTWHITE_EX
         + Style.RESET_ALL
+        + Back.BLACK
+        + Fore.LIGHTWHITE_EX
         + Style.BRIGHT
         + f"{' '*left_spaces}Dangerzone v{global_common.version}{' '*right_spaces}"
         + Fore.YELLOW
@@ -158,11 +170,13 @@ def display_banner(global_common):
         + "│"
     )
     print(
-        Fore.YELLOW
+        Back.BLACK
+        + Fore.YELLOW
         + Style.DIM
         + "│"
-        + Fore.LIGHTWHITE_EX
         + Style.RESET_ALL
+        + Back.BLACK
+        + Fore.LIGHTWHITE_EX
         + " https://dangerzone.rocks "
         + Fore.YELLOW
         + Style.DIM

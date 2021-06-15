@@ -30,16 +30,26 @@ cp /Applications/Docker.app/Contents/Resources/bin/com.docker.cli bin/docker
 
 ### Build the dangerzone VM image and see if it works
 
-```sh
-./bin/linuxkit build -format kernel+initrd dangerzone.yml
+When building the image, use `linuxkit` from homebrew to avoid a problem with expired certificates:
+
+```
+brew tap linuxkit/linuxkit
+brew install --HEAD linuxkit
 ```
 
-And then try running it:
+Then use it:
+
+```sh
+/usr/local/bin/linuxkit build -format kernel+initrd dangerzone.yml
+```
+
+And then try running it (using `linuxkit` from bin):
 
 ```sh
 ./bin/linuxkit run hyperkit \
     -hyperkit ./bin/hyperkit \
     -vpnkit ./bin/vpnkit \
+    -cpus 2 \
     -data-file ./metadata.json \
     -networking=vpnkit \
     -vsock-ports=2376 \

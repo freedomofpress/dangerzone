@@ -2,7 +2,7 @@
     "docker": {
         "entries": {
             "daemon.json": {
-                "content": "{\n  \"debug\" : true,\n  \"experimental\" : true\n}\n"
+                "content": "{\"debug\": true, \"experimental\": false, \"live-restore\": true}"
             }
         }
     }

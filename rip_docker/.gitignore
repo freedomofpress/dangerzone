@@ -1,4 +1,6 @@
+bin
 dangerzone-cmdline
 dangerzone-initrd.img
 dangerzone-kernel
 dangerzone-state
+stdout.log

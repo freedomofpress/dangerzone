@@ -75,6 +75,7 @@ def documenttopixels(document_filename, pixel_dir, container_name):
                 "run",
                 "--network",
                 "none",
+                "--security-opt=no-new-privileges:true",
                 "-v",
                 f"{document_filename}:/tmp/input_file",
                 "-v",

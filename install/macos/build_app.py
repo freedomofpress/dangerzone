@@ -67,6 +67,9 @@ def main():
     os.symlink(
         "dangerzone", os.path.join(app_path, "Contents/MacOS/dangerzone-container"),
     )
+    os.symlink(
+        "dangerzone", os.path.join(app_path, "Contents/MacOS/dangerzone-cli"),
+    )
 
     print(f"○ Finished build app: {app_path}")
 

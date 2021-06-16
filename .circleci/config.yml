@@ -28,7 +28,12 @@ jobs:
 
   build-ubuntu-hirsute:
     docker:
-      - image: ubuntu:21.04
+      # The ubuntu:21.04 container doesn't work in CircleCI until they update
+      # their docker runtime due to this bug:
+      # https://stackoverflow.com/questions/66319610/gpg-error-in-ubuntu-21-04-after-second-apt-get-update-during-docker-build
+      # So for now, we'll build the 21.04 package in a 20.10 container
+      # - image: ubuntu:21.04
+      - image: ubuntu:20.10
     steps:
       - run:
           name: Install dependencies

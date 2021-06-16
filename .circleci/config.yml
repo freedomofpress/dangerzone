@@ -22,7 +22,7 @@ jobs:
       - run:
           name: Deploy to packagecloud.io
           command: |
-            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            VERSION=$(cat share/version.txt)
             package_cloud push firstlookmedia/code/ubuntu/impish deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/ubuntu/impish deb_dist/dangerzone_${VERSION}-1.dsc
 
@@ -47,7 +47,7 @@ jobs:
       - run:
           name: Deploy to packagecloud.io
           command: |
-            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            VERSION=$(cat share/version.txt)
             package_cloud push firstlookmedia/code/ubuntu/hirsute deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/ubuntu/hirsute deb_dist/dangerzone_${VERSION}-1.dsc
 
@@ -72,7 +72,7 @@ jobs:
       - run:
           name: Deploy to packagecloud.io
           command: |
-            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            VERSION=$(cat share/version.txt)
             package_cloud push firstlookmedia/code/ubuntu/groovy deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/ubuntu/groovy deb_dist/dangerzone_${VERSION}-1.dsc
 
@@ -97,7 +97,7 @@ jobs:
       - run:
           name: Deploy to packagecloud.io
           command: |
-            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            VERSION=$(cat share/version.txt)
             package_cloud push firstlookmedia/code/ubuntu/focal deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/ubuntu/focal deb_dist/dangerzone_${VERSION}-1.dsc
 
@@ -121,7 +121,7 @@ jobs:
       - run:
           name: Deploy to packagecloud.io
           command: |
-            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            VERSION=$(cat share/version.txt)
             package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1.dsc
 
@@ -145,7 +145,7 @@ jobs:
       - run:
           name: Deploy to packagecloud.io
           command: |
-            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            VERSION=$(cat share/version.txt)
             package_cloud push firstlookmedia/code/debian/buster deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/debian/buster deb_dist/dangerzone_${VERSION}-1.dsc
 
@@ -167,7 +167,7 @@ jobs:
       - run:
           name: Deploy to packagecloud.io
           command: |
-            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            VERSION=$(cat share/version.txt)
             package_cloud push firstlookmedia/code/fedora/34 dist/dangerzone-${VERSION}-1.noarch.rpm
             package_cloud push firstlookmedia/code/fedora/34 dist/dangerzone-${VERSION}-1.src.rpm
 
@@ -189,7 +189,7 @@ jobs:
       - run:
           name: Deploy to packagecloud.io
           command: |
-            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            VERSION=$(cat share/version.txt)
             package_cloud push firstlookmedia/code/fedora/33 dist/dangerzone-${VERSION}-1.noarch.rpm
             package_cloud push firstlookmedia/code/fedora/33 dist/dangerzone-${VERSION}-1.src.rpm
 
@@ -211,7 +211,7 @@ jobs:
       - run:
           name: Deploy to packagecloud.io
           command: |
-            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            VERSION=$(cat share/version.txt)
             package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.noarch.rpm
             package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.src.rpm
 

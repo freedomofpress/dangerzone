@@ -156,7 +156,10 @@ jobs:
 
   build-fedora-34:
     docker:
-      - image: fedora:34
+      # The package_cloud ruby gem doesn't work properly when installed in fedora 34,
+      # so for now we'll built the fedora 34 package in a fedora:33 container
+      # - image: fedora:34
+      - image: fedora:33
     steps:
       - run:
           name: Install dependencies

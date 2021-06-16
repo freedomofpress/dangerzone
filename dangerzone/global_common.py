@@ -18,8 +18,13 @@ class GlobalCommon(object):
 
     def __init__(self):
         # Version
-        with open(self.get_resource_path("version.txt")) as f:
-            self.version = f.read().strip()
+        try:
+            with open(self.get_resource_path("version.txt")) as f:
+                self.version = f.read().strip()
+        except FileNotFoundError:
+            # In dev mode, in Windows, get_resource_path doesn't work properly for dangerzone-container, but luckily
+            # it doesn't need to know the version
+            self.version = "unknown"
 
         # Initialize terminal colors
         colorama.init(autoreset=True)
@@ -409,7 +414,7 @@ class GlobalCommon(object):
     def get_dangerzone_container_path(self):
         if getattr(sys, "dangerzone_dev", False):
             # Look for resources directory relative to python file
-            return os.path.join(
+            path = os.path.join(
                 os.path.dirname(
                     os.path.dirname(
                         os.path.abspath(inspect.getfile(inspect.currentframe()))
@@ -418,6 +423,9 @@ class GlobalCommon(object):
                 "dev_scripts",
                 "dangerzone-container",
             )
+            if platform.system() == "Windows":
+                path = f"{path}.bat"
+            return path
         else:
             if platform.system() == "Darwin":
                 return os.path.join(
@@ -442,7 +450,7 @@ class GlobalCommon(object):
 
         # Execute dangerzone-container
         args_str = " ".join(pipes.quote(s) for s in args)
-        print(Fore.YELLOW + "\u2023 " + Fore.CYAN + args_str)  # ‣
+        print(Fore.YELLOW + "\x10 " + Fore.CYAN + args_str)
         return subprocess.Popen(
             args,
             startupinfo=self.get_subprocess_startupinfo(),
@@ -469,7 +477,7 @@ class GlobalCommon(object):
         ) as p:
             stdout_data, _ = p.communicate()
             lines = stdout_data.split(b"\n")
-            if b"\u2023 " in lines[0]:  # ‣
+            if b"\x10 " in lines[0]:
                 stdout_data = b"\n".join(lines[1:])
 
             # The user canceled, or permission denied

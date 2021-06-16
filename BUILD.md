@@ -106,7 +106,8 @@ poetry install
 After that you can launch dangerzone during development with:
 
 ```
-poetry run dangerzone
+.\dev_scripts\dangerzone.bat
+.\dev_scripts\dangerzone-cli.bat --help
 ```
 
 ### If you want to build a .exe

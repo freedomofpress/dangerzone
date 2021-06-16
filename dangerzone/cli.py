@@ -22,7 +22,7 @@ def exec_container(global_common, args):
             # Hack to add colors to the command executing
             if line.startswith(b"\xe2\x80\xa3 "):
                 print(
-                    Fore.WHITE + "\u2023 " + Fore.LIGHTCYAN_EX + line.decode()[2:],
+                    Fore.WHITE + "\x10 " + Fore.LIGHTCYAN_EX + line.decode()[2:],
                     end="",
                 )
             else:

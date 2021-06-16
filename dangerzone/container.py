@@ -9,7 +9,7 @@ import shutil
 if platform.system() == "Darwin":
     container_runtime = "/usr/local/bin/docker"
 elif platform.system() == "Windows":
-    container_runtime = "C:\\Program Files\\Docker\\Docker\\resources\\docker.exe"
+    container_runtime = "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe"
 else:
     container_runtime = shutil.which("docker")
 
@@ -25,7 +25,7 @@ def exec_container(args):
     args = [container_runtime] + args
 
     args_str = " ".join(pipes.quote(s) for s in args)
-    print("\u2023 " + args_str)  # ‣
+    print("\x10 " + args_str)
     sys.stdout.flush()
 
     with subprocess.Popen(

@@ -1,16 +1,16 @@
 version: 2.1
 
 jobs:
-  build-ubuntu-focal:
+  build-ubuntu-21.10:
     docker:
-      - image: ubuntu:20.04
+      - image: ubuntu:21.10
     steps:
       - run:
           name: Install dependencies
           command: |
             export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
             gem install -N rake
             gem install -N package_cloud
       - checkout
@@ -23,10 +23,35 @@ jobs:
           name: Deploy to packagecloud.io
           command: |
             VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
-            package_cloud push firstlookmedia/code/ubuntu/focal deb_dist/dangerzone_${VERSION}-1_all.deb
-            package_cloud push firstlookmedia/code/ubuntu/focal deb_dist/dangerzone_${VERSION}-1.dsc
+            package_cloud push firstlookmedia/code/ubuntu/impish deb_dist/dangerzone_${VERSION}-1_all.deb
+            package_cloud push firstlookmedia/code/ubuntu/impish deb_dist/dangerzone_${VERSION}-1.dsc
 
-  build-ubuntu-groovy:
+  build-ubuntu-21.04:
+    docker:
+      - image: ubuntu:21.04
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+            apt-get update
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
+            gem install -N rake
+            gem install -N package_cloud
+      - checkout
+      - run:
+          name: Create the .deb package
+          command: |
+            ./install/linux/build_deb.py
+            dpkg -i deb_dist/dangerzone_*-1_all.deb
+      - run:
+          name: Deploy to packagecloud.io
+          command: |
+            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            package_cloud push firstlookmedia/code/ubuntu/hirsute deb_dist/dangerzone_${VERSION}-1_all.deb
+            package_cloud push firstlookmedia/code/ubuntu/hirsute deb_dist/dangerzone_${VERSION}-1.dsc
+
+  build-ubuntu-20.10:
     docker:
       - image: ubuntu:20.10
     steps:
@@ -35,7 +60,7 @@ jobs:
           command: |
             export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
             gem install -N rake
             gem install -N package_cloud
       - checkout
@@ -51,17 +76,18 @@ jobs:
             package_cloud push firstlookmedia/code/ubuntu/groovy deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/ubuntu/groovy deb_dist/dangerzone_${VERSION}-1.dsc
 
-  build-debian-buster:
+  build-ubuntu-20.04:
     docker:
-      - image: debian:buster
+      - image: ubuntu:20.04
     steps:
       - run:
           name: Install dependencies
           command: |
+            export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
-            gem install --no-ri --no-rdoc rake
-            gem install --no-ri --no-rdoc package_cloud
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
+            gem install -N rake
+            gem install -N package_cloud
       - checkout
       - run:
           name: Create the .deb package
@@ -72,8 +98,8 @@ jobs:
           name: Deploy to packagecloud.io
           command: |
             VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
-            package_cloud push firstlookmedia/code/debian/buster deb_dist/dangerzone_${VERSION}-1_all.deb
-            package_cloud push firstlookmedia/code/debian/buster deb_dist/dangerzone_${VERSION}-1.dsc
+            package_cloud push firstlookmedia/code/ubuntu/focal deb_dist/dangerzone_${VERSION}-1_all.deb
+            package_cloud push firstlookmedia/code/ubuntu/focal deb_dist/dangerzone_${VERSION}-1.dsc
 
   build-debian-bullseye:
     docker:
@@ -83,7 +109,7 @@ jobs:
           name: Install dependencies
           command: |
             apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-termcolor
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
             gem install -N rake
             gem install -N package_cloud
       - checkout
@@ -99,36 +125,38 @@ jobs:
             package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1.dsc
 
-  build-fedora-31:
+  build-debian-buster:
     docker:
-      - image: fedora:31
+      - image: debian:buster
     steps:
       - run:
           name: Install dependencies
           command: |
-            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-termcolor
-            gem install package_cloud
+            apt-get update
+            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
+            gem install --no-ri --no-rdoc rake
+            gem install --no-ri --no-rdoc package_cloud
       - checkout
       - run:
-          name: Create the .rpm package
+          name: Create the .deb package
           command: |
-            ./install/linux/build_rpm.py
-            dnf install -y dist/dangerzone-*-1.noarch.rpm
+            ./install/linux/build_deb.py
+            dpkg -i deb_dist/dangerzone_*-1_all.deb
       - run:
           name: Deploy to packagecloud.io
           command: |
             VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
-            package_cloud push firstlookmedia/code/fedora/31 dist/dangerzone-${VERSION}-1.noarch.rpm
-            package_cloud push firstlookmedia/code/fedora/31 dist/dangerzone-${VERSION}-1.src.rpm
+            package_cloud push firstlookmedia/code/debian/buster deb_dist/dangerzone_${VERSION}-1_all.deb
+            package_cloud push firstlookmedia/code/debian/buster deb_dist/dangerzone_${VERSION}-1.dsc
 
-  build-fedora-32:
+  build-fedora-34:
     docker:
-      - image: fedora:32
+      - image: fedora:34
     steps:
       - run:
           name: Install dependencies
           command: |
-            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-termcolor
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
             gem install package_cloud
       - checkout
       - run:
@@ -140,8 +168,8 @@ jobs:
           name: Deploy to packagecloud.io
           command: |
             VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
-            package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.noarch.rpm
-            package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.src.rpm
+            package_cloud push firstlookmedia/code/fedora/34 dist/dangerzone-${VERSION}-1.noarch.rpm
+            package_cloud push firstlookmedia/code/fedora/34 dist/dangerzone-${VERSION}-1.src.rpm
 
   build-fedora-33:
     docker:
@@ -150,7 +178,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-termcolor
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
             gem install package_cloud
       - checkout
       - run:
@@ -165,23 +193,52 @@ jobs:
             package_cloud push firstlookmedia/code/fedora/33 dist/dangerzone-${VERSION}-1.noarch.rpm
             package_cloud push firstlookmedia/code/fedora/33 dist/dangerzone-${VERSION}-1.src.rpm
 
+  build-fedora-32:
+    docker:
+      - image: fedora:32
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            dnf install -y git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
+            gem install package_cloud
+      - checkout
+      - run:
+          name: Create the .rpm package
+          command: |
+            ./install/linux/build_rpm.py
+            dnf install -y dist/dangerzone-*-1.noarch.rpm
+      - run:
+          name: Deploy to packagecloud.io
+          command: |
+            VERSION=$(cat dangerzone/__init__.py |grep "dangerzone_version = " |cut -d '"' -f2)
+            package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.noarch.rpm
+            package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.src.rpm
+
 workflows:
   version: 2
   build-tags:
     jobs:
-      - build-ubuntu-focal:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      # - build-ubuntu-groovy:
+      # Ubuntu 21.10 (impish) not yet supported by packagecloud.io
+      # - build-ubuntu-21.10: 
       #     filters:
       #       tags:
       #         only: /^v.*/
       #       branches:
       #         ignore: /.*/
-      - build-debian-buster:
+      - build-ubuntu-21.04:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-ubuntu-20.10:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-ubuntu-20.04:
           filters:
             tags:
               only: /^v.*/
@@ -193,7 +250,19 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-fedora-31:
+      - build-debian-buster:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-fedora-34:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - build-fedora-33:
           filters:
             tags:
               only: /^v.*/
@@ -205,9 +274,3 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      # - build-fedora-33:
-      #     filters:
-      #       tags:
-      #         only: /^v.*/
-      #       branches:
-      #         ignore: /.*/

@@ -27,7 +27,7 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build python3 python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
+sudo dnf install -y rpm-build python3 python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
 ```
 
 You also need docker, either by installing the `docker` package, or by installing `docker-ce` by following [these instructions](https://docs.docker.com/install/linux/docker-ce/fedora/).

@@ -23,7 +23,7 @@ setuptools.setup(
     license="MIT",
     description="Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF",
     url="https://github.com/firstlookmedia/dangerzone",
-    packages=["dangerzone"],
+    packages=["dangerzone", "dangerzone.gui"],
     data_files=[
         (
             "share/applications",

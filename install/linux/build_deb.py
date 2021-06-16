@@ -6,17 +6,14 @@ import inspect
 import subprocess
 import shutil
 
-sys.path.insert(
-    0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-)
-import dangerzone
-
-version = dangerzone.dangerzone_version
 root = os.path.dirname(
     os.path.dirname(
         os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     )
 )
+
+with open(os.path.join(root, "share", "version.txt")) as f:
+    version = f.read().strip()
 
 
 def run(cmd):

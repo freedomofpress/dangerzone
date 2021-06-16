@@ -10,6 +10,7 @@ Before making a release, all of these should be complete:
 * Update in `share/version.txt`
 * Update version and download links in `README.md`
 * CHANGELOG.md should be updated to include a list of all major changes since the last release
+* Test CircleCI builds: Look in `.circleci/config.yml`, manually try each build in docker, and add new platforms and remove obsolete platforms
 * There must be a PGP-signed git tag for the version, e.g. for dangerzone 0.1.0, the tag must be `v0.1.0`
 
 Before making a release, verify the release git tag:

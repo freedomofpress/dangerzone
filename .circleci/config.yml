@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build-ubuntu-21.10:
+  build-ubuntu-impish:
     docker:
       - image: ubuntu:21.10
     steps:
@@ -26,7 +26,7 @@ jobs:
             package_cloud push firstlookmedia/code/ubuntu/impish deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/ubuntu/impish deb_dist/dangerzone_${VERSION}-1.dsc
 
-  build-ubuntu-21.04:
+  build-ubuntu-hirsute:
     docker:
       - image: ubuntu:21.04
     steps:
@@ -51,7 +51,7 @@ jobs:
             package_cloud push firstlookmedia/code/ubuntu/hirsute deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/ubuntu/hirsute deb_dist/dangerzone_${VERSION}-1.dsc
 
-  build-ubuntu-20.10:
+  build-ubuntu-groovy:
     docker:
       - image: ubuntu:20.10
     steps:
@@ -76,7 +76,7 @@ jobs:
             package_cloud push firstlookmedia/code/ubuntu/groovy deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/ubuntu/groovy deb_dist/dangerzone_${VERSION}-1.dsc
 
-  build-ubuntu-20.04:
+  build-ubuntu-focal:
     docker:
       - image: ubuntu:20.04
     steps:
@@ -220,25 +220,25 @@ workflows:
   build-tags:
     jobs:
       # Ubuntu 21.10 (impish) not yet supported by packagecloud.io
-      # - build-ubuntu-21.10: 
+      # - build-ubuntu-impish: 
       #     filters:
       #       tags:
       #         only: /^v.*/
       #       branches:
       #         ignore: /.*/
-      - build-ubuntu-21.04:
+      - build-ubuntu-hirsute:
           filters:
             tags:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-ubuntu-20.10:
+      - build-ubuntu-groovy:
           filters:
             tags:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-ubuntu-20.04:
+      - build-ubuntu-focal:
           filters:
             tags:
               only: /^v.*/

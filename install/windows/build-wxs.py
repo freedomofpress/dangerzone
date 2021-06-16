@@ -107,14 +107,11 @@ def build_components_xml(root, data):
 def main():
     version_filename = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        "dangerzone",
-        "__init__.py",
+        "share",
+        "version.txt",
     )
     with open(version_filename) as f:
-        for line in f.readlines():
-            if line.startswith("dangerzone_version ="):
-                version = line.split('"')[1]
-                break
+        version = f.read().strip()
 
     dist_dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),

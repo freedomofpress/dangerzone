@@ -60,8 +60,6 @@ def gui_main(custom_container, filename):
     global_common = GlobalCommon()
     gui_common = GuiCommon(app, global_common)
 
-    global_common.display_banner()
-
     if custom_container:
         success, error_message = global_common.container_exists(custom_container)
         if not success:

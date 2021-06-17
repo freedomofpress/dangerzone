@@ -450,7 +450,7 @@ class GlobalCommon(object):
 
         # Execute dangerzone-container
         args_str = " ".join(pipes.quote(s) for s in args)
-        print(Fore.YELLOW + "\xbb " + Fore.CYAN + args_str)
+        print(Fore.YELLOW + "> " + Fore.CYAN + args_str))
         return subprocess.Popen(
             args,
             startupinfo=self.get_subprocess_startupinfo(),
@@ -477,7 +477,7 @@ class GlobalCommon(object):
         ) as p:
             stdout_data, _ = p.communicate()
             lines = stdout_data.split(b"\n")
-            if b"\xbb " in lines[0]:
+            if b"> " in lines[0]:
                 stdout_data = b"\n".join(lines[1:])
 
             # The user canceled, or permission denied

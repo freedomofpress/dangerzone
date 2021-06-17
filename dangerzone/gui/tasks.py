@@ -19,9 +19,9 @@ class TaskBase(QtCore.QThread):
             for line in p.stdout:
                 output += line.decode()
 
-                if line.startswith(b"\xe2\x80\xa3 "):
+                if line.startswith(b"\xc2\xbb "):
                     print(
-                        Fore.WHITE + "\u2023 " + Fore.LIGHTCYAN_EX + line.decode()[2:],
+                        Fore.YELLOW + "\xbb " + Fore.LIGHTCYAN_EX + line.decode()[2:],
                         end="",
                     )
                 else:

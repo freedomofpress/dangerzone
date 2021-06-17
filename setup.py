@@ -34,10 +34,6 @@ setuptools.setup(
             ["install/linux/media.firstlook.dangerzone.png"],
         ),
         ("share/dangerzone", file_list("share")),
-        (
-            "share/polkit-1/actions",
-            ["install/linux/media.firstlook.dangerzone-container.policy"],
-        ),
     ],
     classifiers=[
         "Programming Language :: Python",

@@ -71,18 +71,6 @@ def gui_main(custom_container, filename):
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    # If we're using Linux and docker, see if we need to add the user to the docker group or if the user prefers typing their password
-    if platform.system() == "Linux":
-        if not gui_common.ensure_docker_group_preference():
-            return
-        try:
-            if not gui_common.ensure_docker_service_is_started():
-                click.echo("Failed to start docker service")
-                return
-        except AuthorizationFailed:
-            click.echo("Authorization failed")
-            return
-
     # See if we need to install Docker...
     if (platform.system() == "Darwin" or platform.system() == "Windows") and (
         not is_docker_installed() or not is_docker_ready(global_common)

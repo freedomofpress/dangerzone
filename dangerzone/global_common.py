@@ -450,7 +450,7 @@ class GlobalCommon(object):
 
         # Execute dangerzone-container
         args_str = " ".join(pipes.quote(s) for s in args)
-        print(Fore.YELLOW + "> " + Fore.CYAN + args_str))
+        print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
         return subprocess.Popen(
             args,
             startupinfo=self.get_subprocess_startupinfo(),

@@ -25,7 +25,7 @@ def exec_container(args):
     args = [container_runtime] + args
 
     args_str = " ".join(pipes.quote(s) for s in args)
-    print("\x10 " + args_str)
+    print("\xbb " + args_str)
     sys.stdout.flush()
 
     with subprocess.Popen(

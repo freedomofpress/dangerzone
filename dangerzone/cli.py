@@ -20,9 +20,9 @@ def exec_container(global_common, args):
             output += line.decode()
 
             # Hack to add colors to the command executing
-            if line.startswith(b"\xe2\x80\xa3 "):
+            if line.startswith(b"\xc2\xbb "):
                 print(
-                    Fore.WHITE + "\x10 " + Fore.LIGHTCYAN_EX + line.decode()[2:],
+                    Fore.YELLOW + "\xbb " + Fore.LIGHTCYAN_EX + line.decode()[2:],
                     end="",
                 )
             else:

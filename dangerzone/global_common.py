@@ -384,7 +384,7 @@ class GlobalCommon(object):
         if self.custom_container:
             return self.custom_container
         else:
-            return "flmcode/dangerzone"
+            return "docker.io/flmcode/dangerzone"
 
     def get_resource_path(self, filename):
         if getattr(sys, "dangerzone_dev", False):
@@ -439,18 +439,11 @@ class GlobalCommon(object):
                 return "/usr/bin/dangerzone-container"
 
     def exec_dangerzone_container(self, args):
-        # Prefix the args with the retainer runtime, and in the case linux when the user isn't in the docker group, pkexec
-        if platform.system() == "Linux":
-            if self.settings.get("linux_prefers_typing_password"):
-                args = ["/usr/bin/pkexec", self.dz_container_path] + args
-            else:
-                args = [self.dz_container_path] + args
-        else:
-            args = [self.dz_container_path] + args
-
-        # Execute dangerzone-container
+        args = [self.dz_container_path] + args
         args_str = " ".join(pipes.quote(s) for s in args)
         print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
+
+        # Execute dangerzone-container
         return subprocess.Popen(
             args,
             startupinfo=self.get_subprocess_startupinfo(),

@@ -11,7 +11,7 @@ if platform.system() == "Darwin":
 elif platform.system() == "Windows":
     container_runtime = shutil.which("docker.exe")
 else:
-    container_runtime = shutil.which("docker")
+    container_runtime = shutil.which("podman")
 
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
@@ -51,7 +51,7 @@ def container_main():
 
 
 @container_main.command()
-@click.option("--container-name", default="flmcode/dangerzone")
+@click.option("--container-name", default="docker.io/flmcode/dangerzone")
 def ls(container_name):
     """docker image ls [container_name]"""
     sys.exit(exec_container(["image", "ls", container_name]))
@@ -60,37 +60,36 @@ def ls(container_name):
 @container_main.command()
 def pull():
     """docker pull flmcode/dangerzone"""
-    sys.exit(exec_container(["pull", "flmcode/dangerzone"]))
+    sys.exit(exec_container(["pull", "docker.io/flmcode/dangerzone"]))
 
 
 @container_main.command()
 @click.option("--document-filename", required=True)
 @click.option("--pixel-dir", required=True)
-@click.option("--container-name", default="flmcode/dangerzone")
+@click.option("--container-name", default="docker.io/flmcode/dangerzone")
 def documenttopixels(document_filename, pixel_dir, container_name):
     """docker run --network none -v [document_filename]:/tmp/input_file -v [pixel_dir]:/dangerzone [container_name] document-to-pixels"""
-    sys.exit(
-        exec_container(
-            [
-                "run",
-                "--network",
-                "none",
-                "--security-opt=no-new-privileges:true",
-                "-v",
-                f"{document_filename}:/tmp/input_file",
-                "-v",
-                f"{pixel_dir}:/dangerzone",
-                container_name,
-                "document-to-pixels",
-            ]
-        )
-    )
+    args = ["run", "--network", "none"]
+
+    # Linux uses podman instead of docker, and only docker uses --security-opt
+    if platform.system() != "Linux":
+        args += ["--security-opt=no-new-privileges:true"]
+
+    args += [
+        "-v",
+        f"{document_filename}:/tmp/input_file",
+        "-v",
+        f"{pixel_dir}:/dangerzone",
+        container_name,
+        "document-to-pixels",
+    ]
+    sys.exit(exec_container(args))
 
 
 @container_main.command()
 @click.option("--pixel-dir", required=True)
 @click.option("--safe-dir", required=True)
-@click.option("--container-name", default="flmcode/dangerzone")
+@click.option("--container-name", default="docker.io/flmcode/dangerzone")
 @click.option("--ocr", required=True)
 @click.option("--ocr-lang", required=True)
 def pixelstopdf(pixel_dir, safe_dir, container_name, ocr, ocr_lang):

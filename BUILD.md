@@ -134,15 +134,13 @@ cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\
 vcvars32.bat
 ```
 
-Change to a folder where you keep source code, and clone the PyInstaller git repo and checkout the `v3.6` tag:
+Change to a folder where you keep source code, and clone the PyInstaller git repo and checkout the `v4.3` tag:
 
 ```
 git clone https://github.com/pyinstaller/pyinstaller.git
 cd pyinstaller
-git tag -v v4.0
+git checkout v4.3
 ```
-
-(Note that ideally you would verify the git tag, but the PGP key that has signed the v3.5 git tag for is not published anywhere, so this isn't possible. See [this issue](https://github.com/pyinstaller/pyinstaller/issues/4430).)
 
 The next step is to compile the bootloader. We should do this all in dangerzone's poetry shell:
 
@@ -219,14 +217,4 @@ Then back in the first command prompt, run:
 poetry run install\windows\step3-build-installer.bat
 ```
 
-
 When you're done you will have `dist\Dangerzone.msi`.
-
-
-# Release instructions
-
-Before each release:
-
-- Update `CHANGELOG.md`
-- Update the version in `pyproject.toml`
-- Update the version in `dangerzone/__init__.py`

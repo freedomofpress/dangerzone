@@ -47,7 +47,8 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "dangerzone = dangerzone:main",
-            "dangerzone-container = dangerzone:container_main",
+            "dangerzone-container = dangerzone:main",
+            "dangerzone-cli = dangerzone:main",
         ]
     },
 )

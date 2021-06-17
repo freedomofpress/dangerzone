@@ -56,7 +56,7 @@ class GuiCommon(object):
 
                 # Run
                 args_str = " ".join(pipes.quote(s) for s in args)
-                print(Fore.YELLOW + "\u2023 " + Fore.CYAN + args_str)  # ‣
+                print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
                 subprocess.run(args)
 
             elif platform.system() == "Linux":
@@ -76,7 +76,7 @@ class GuiCommon(object):
 
                 # Open as a background process
                 args_str = " ".join(pipes.quote(s) for s in args)
-                print(Fore.YELLOW + "\u2023 " + Fore.CYAN + args_str)  # ‣
+                print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
                 subprocess.Popen(args)
 
     def _find_pdf_viewers(self):

@@ -42,6 +42,8 @@ Create a .rpm:
 
 ## macOS
 
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
+
 Install python@3.9 from Homebrew:
 
 ```
@@ -82,6 +84,8 @@ poetry run ./install/macos/build_app.py --with-codesign
 The output is in the `dist` folder.
 
 ## Windows
+
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
 These instructions include adding folders to the path in Windows. To do this, go to Start and type "advanced system settings", and open "View advanced system settings" in the Control Panel. Click Environment Variables. Under "System variables" double-click on Path. From there you can add and remove folders that are available in the PATH.
 

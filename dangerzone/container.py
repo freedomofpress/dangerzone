@@ -8,11 +8,18 @@ import os
 
 # What is the container runtime for this platform?
 if platform.system() == "Darwin":
-    container_runtime = "/usr/local/bin/docker"
+    container_tech = "docker"
+    container_runtime = shutil.which("docker")
 elif platform.system() == "Windows":
+    container_tech = "docker"
     container_runtime = shutil.which("docker.exe")
-else:
+elif platform.system() == "Linux":
+    container_tech = "podman"
     container_runtime = shutil.which("podman")
+else:
+    print("Unknown operating system, defaulting to Docker")
+    container_tech = "docker"
+    container_runtime = shutil.which("docker")
 
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
@@ -84,8 +91,8 @@ def documenttopixels(document_filename, pixel_dir, container_name):
     """docker run --network none -v [document_filename]:/tmp/input_file -v [pixel_dir]:/dangerzone [container_name] document-to-pixels"""
     args = ["run", "--network", "none"]
 
-    # Linux uses podman instead of docker, and only docker uses --security-opt
-    if platform.system() != "Linux":
+    # docker uses --security-opt, podman doesn't
+    if container_tech == "docker":
         args += ["--security-opt=no-new-privileges:true"]
 
     args += [

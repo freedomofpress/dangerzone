@@ -4,6 +4,7 @@ import subprocess
 import sys
 import pipes
 import shutil
+import os
 
 # What is the container runtime for this platform?
 if platform.system() == "Darwin":
@@ -28,6 +29,17 @@ def exec_container(args):
     print("> " + args_str)
     sys.stdout.flush()
 
+    # In Tails, tell the container runtime to download over Tor
+    if (
+        platform.system() == "Linux"
+        and os.getlogin() == "amnesia"
+        and os.getuid() == 1000
+    ):
+        env = os.environ.copy()
+        env["HTTP_PROXY"] = "socks5://127.0.0.1:9050"
+    else:
+        env = None
+
     with subprocess.Popen(
         args,
         stdin=None,
@@ -36,6 +48,7 @@ def exec_container(args):
         bufsize=1,
         universal_newlines=True,
         startupinfo=startupinfo,
+        env=env,
     ) as p:
         p.communicate()
         return p.returncode

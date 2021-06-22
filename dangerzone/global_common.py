@@ -441,7 +441,7 @@ class GlobalCommon(object):
     def exec_dangerzone_container(self, args):
         args = [self.dz_container_path] + args
         args_str = " ".join(pipes.quote(s) for s in args)
-        print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
+        print(Style.DIM + "> " + Style.NORMAL + Fore.CYAN + args_str)
 
         # Execute dangerzone-container
         return subprocess.Popen(

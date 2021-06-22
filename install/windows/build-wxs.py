@@ -213,14 +213,6 @@ def main():
     build_dir_xml(product_el, data)
     component_ids = build_components_xml(product_el, data)
 
-    install_exec_seq_el = ET.SubElement(
-        product_el,
-        "InstallExecuteSequence",
-    )
-    ET.SubElement(
-        install_exec_seq_el, "RemoveExistingProducts", After="InstallValidate"
-    )
-
     feature_el = ET.SubElement(product_el, "Feature", Id="DefaultFeature", Level="1")
     for component_id in component_ids:
         ET.SubElement(feature_el, "ComponentRef", Id=component_id)

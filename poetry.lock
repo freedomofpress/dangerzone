@@ -297,6 +297,14 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <3.10"
 
 [[package]]
+name = "strip-ansi"
+version = "0.1.1"
+description = "Strip ANSI escape sequences from a string"
+category = "main"
+optional = false
+python-versions = ">=3.6,<4.0"
+
+[[package]]
 name = "termcolor"
 version = "1.1.0"
 description = "ANSII Color formatting for output in terminal."
@@ -374,7 +382,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "72592722794667cf7cb6bea727b31eb60d710c90d488be9d10a13bbbcaa56688"
+content-hash = "6db74c36125b2d3ad4d04c864c24ecbcf376d5ac75ee7402d950010cade5de96"
 
 [metadata.files]
 altgraph = [
@@ -550,6 +558,10 @@ shiboken2 = [
     {file = "shiboken2-5.15.2-5.15.2-cp35.cp36.cp37.cp38.cp39-abi3-manylinux1_x86_64.whl", hash = "sha256:4aee1b91e339578f9831e824ce2a1ec3ba3a463f41fda8946b4547c7eb3cba86"},
     {file = "shiboken2-5.15.2-5.15.2-cp35.cp36.cp37.cp38.cp39-none-win32.whl", hash = "sha256:89c157a0e2271909330e1655892e7039249f7b79a64a443d52c512337065cde0"},
     {file = "shiboken2-5.15.2-5.15.2-cp35.cp36.cp37.cp38.cp39-none-win_amd64.whl", hash = "sha256:14a33169cf1bd919e4c4c4408fffbcd424c919a3f702df412b8d72b694e4c1d5"},
+]
+strip-ansi = [
+    {file = "strip-ansi-0.1.1.tar.gz", hash = "sha256:5d60f239cc8a37fdd52b43c3e66e893d45ba0423115db59eca0d2eef83b07729"},
+    {file = "strip_ansi-0.1.1-py3-none-any.whl", hash = "sha256:9f55280e1b0ba84dac49d4f18aa6b51b90ff766b22e4918ffc01cc87b394ecd1"},
 ]
 termcolor = [
     {file = "termcolor-1.1.0.tar.gz", hash = "sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"},

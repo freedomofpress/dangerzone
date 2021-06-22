@@ -5,6 +5,7 @@ import platform
 import click
 import uuid
 from PySide2 import QtCore, QtWidgets
+from strip_ansi import strip_ansi
 
 from .common import GuiCommon
 from .main_window import MainWindow
@@ -48,9 +49,27 @@ class ApplicationWrapper(QtCore.QObject):
 @click.option("--custom-container")  # Use this container instead of flmcode/dangerzone
 @click.argument("filename", required=False)
 def gui_main(custom_container, filename):
-    # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
     if platform.system() == "Darwin":
+        # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
         os.environ["QT_MAC_WANTS_LAYER"] = "1"
+
+        # Strip ANSI colors from stdout output, to prevent terminal colors from breaking
+        # the macOS GUI app
+        class StdoutFilter:
+            def __init__(self, stream):
+                self.stream = stream
+
+            def __getattr__(self, attr_name):
+                return getattr(self.stream, attr_name)
+
+            def write(self, data):
+                self.stream.write(strip_ansi(data))
+
+            def flush(self):
+                self.stream.flush()
+
+        sys.stdout = StdoutFilter(sys.stdout)
+        sys.stderr = StdoutFilter(sys.stderr)
 
     # Create the Qt app
     app_wrapper = ApplicationWrapper()

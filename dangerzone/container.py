@@ -9,7 +9,7 @@ import os
 # What is the container runtime for this platform?
 if platform.system() == "Darwin":
     container_tech = "docker"
-    container_runtime = shutil.which("docker")
+    container_runtime = "/usr/local/bin/docker"
 elif platform.system() == "Windows":
     container_tech = "docker"
     container_runtime = shutil.which("docker.exe")

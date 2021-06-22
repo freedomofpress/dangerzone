@@ -19,6 +19,7 @@ pyxdg = {version = "*", platform = "linux"}
 pyobjc-core = {version = "*", platform = "darwin"}
 pyobjc-framework-launchservices = {version = "*", platform = "darwin"}
 colorama = "^0.4.4"
+strip-ansi = "^0.1.1"
 
 [tool.poetry.dev-dependencies]
 pyinstaller = {version = "*", platform = "darwin"}

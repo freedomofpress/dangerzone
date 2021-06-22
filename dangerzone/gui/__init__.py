@@ -5,7 +5,6 @@ import platform
 import click
 import uuid
 from PySide2 import QtCore, QtWidgets
-from strip_ansi import strip_ansi
 
 from .common import GuiCommon
 from .main_window import MainWindow
@@ -55,6 +54,8 @@ def gui_main(custom_container, filename):
 
         # Strip ANSI colors from stdout output, to prevent terminal colors from breaking
         # the macOS GUI app
+        from strip_ansi import strip_ansi
+
         class StdoutFilter:
             def __init__(self, stream):
                 self.stream = stream

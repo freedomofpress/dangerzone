@@ -1,5 +1,10 @@
 # Change Log
 
+## Dangerzone 0.2.1
+
+- Switch from Docker to Podman for Linux
+- Improve CLI colors
+
 ## Dangerzone 0.2
 
 - Command line support and improved terminal output

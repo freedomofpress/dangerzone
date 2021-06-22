@@ -154,7 +154,7 @@ def main():
         "Product",
         Name="Dangerzone",
         Manufacturer="First Look Media",
-        Id="f40ff0a9-ebf8-4e1e-9bce-6ab5c74fe119",
+        Id="*",
         UpgradeCode="$(var.ProductUpgradeCode)",
         Language="1033",
         Codepage="1252",
@@ -203,40 +203,15 @@ def main():
         Id="WixUIDialogBmp",
         Value="..\\..\\install\\windows\\dialog.bmp",
     )
-    upgrade_el = ET.SubElement(product_el, "Upgrade", Id="$(var.ProductUpgradeCode)")
     ET.SubElement(
-        upgrade_el,
-        "UpgradeVersion",
-        Minimum="$(var.ProductVersion)",
-        OnlyDetect="yes",
-        Property="NEWERVERSIONDETECTED",
-    )
-    ET.SubElement(
-        upgrade_el,
-        "UpgradeVersion",
-        Minimum="0.0.0",
-        Maximum="$(var.ProductVersion)",
-        IncludeMinimum="yes",
-        IncludeMaximum="no",
-        Property="OLDERVERSIONBEINGUPGRADED",
-    )
-    condition_el = ET.SubElement(
         product_el,
-        "Condition",
-        Message="A newer version of this software is already installed.",
+        "MajorUpgrade",
+        AllowSameVersionUpgrades="yes",
+        DowngradeErrorMessage="A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.",
     )
-    condition_el.text = "NOT NEWERVERSIONDETECTED"
 
     build_dir_xml(product_el, data)
     component_ids = build_components_xml(product_el, data)
-
-    install_exec_seq_el = ET.SubElement(
-        product_el,
-        "InstallExecuteSequence",
-    )
-    ET.SubElement(
-        install_exec_seq_el, "RemoveExistingProducts", After="InstallValidate"
-    )
 
     feature_el = ET.SubElement(product_el, "Feature", Id="DefaultFeature", Level="1")
     for component_id in component_ids:

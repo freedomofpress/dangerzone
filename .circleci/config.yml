@@ -81,37 +81,6 @@ jobs:
             package_cloud push firstlookmedia/code/ubuntu/groovy deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/ubuntu/groovy deb_dist/dangerzone_${VERSION}-1.dsc
 
-  build-ubuntu-focal:
-    docker:
-      - image: ubuntu:20.04
-    steps:
-      - run:
-          name: Install dependencies
-          command: |
-            export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
-            apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
-            gem install -N rake
-            gem install -N package_cloud
-      - checkout
-      - run:
-          name: Create the .deb package
-          command: |
-            ./install/linux/build_deb.py
-            dpkg -i deb_dist/dangerzone_*-1_all.deb
-      - run:
-          name: Deploy to packagecloud.io
-          # Linux Mint 20 (ulyana) and 20.1 (ulyssa) are based on Ubuntu 20.04 LTS
-          # https://en.wikipedia.org/wiki/Linux_Mint_version_history
-          command: |
-            VERSION=$(cat share/version.txt)
-            package_cloud push firstlookmedia/code/ubuntu/focal deb_dist/dangerzone_${VERSION}-1_all.deb
-            package_cloud push firstlookmedia/code/ubuntu/focal deb_dist/dangerzone_${VERSION}-1.dsc
-            package_cloud push firstlookmedia/code/linuxmint/ulyana deb_dist/dangerzone_${VERSION}-1_all.deb
-            package_cloud push firstlookmedia/code/linuxmint/ulyana deb_dist/dangerzone_${VERSION}-1.dsc
-            package_cloud push firstlookmedia/code/linuxmint/ulyssa deb_dist/dangerzone_${VERSION}-1_all.deb
-            package_cloud push firstlookmedia/code/linuxmint/ulyssa deb_dist/dangerzone_${VERSION}-1.dsc
-
   build-debian-bullseye:
     docker:
       - image: debian:bullseye
@@ -135,30 +104,6 @@ jobs:
             VERSION=$(cat share/version.txt)
             package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1_all.deb
             package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1.dsc
-
-  build-debian-buster:
-    docker:
-      - image: debian:buster
-    steps:
-      - run:
-          name: Install dependencies
-          command: |
-            apt-get update
-            apt-get install -y git ssh ruby-dev rubygems python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
-            gem install --no-ri --no-rdoc rake
-            gem install --no-ri --no-rdoc package_cloud
-      - checkout
-      - run:
-          name: Create the .deb package
-          command: |
-            ./install/linux/build_deb.py
-            dpkg -i deb_dist/dangerzone_*-1_all.deb
-      - run:
-          name: Deploy to packagecloud.io
-          command: |
-            VERSION=$(cat share/version.txt)
-            package_cloud push firstlookmedia/code/debian/buster deb_dist/dangerzone_${VERSION}-1_all.deb
-            package_cloud push firstlookmedia/code/debian/buster deb_dist/dangerzone_${VERSION}-1.dsc
 
   build-fedora-34:
     docker:
@@ -252,19 +197,7 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-ubuntu-focal:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
       - build-debian-bullseye:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      - build-debian-buster:
           filters:
             tags:
               only: /^v.*/

@@ -21,7 +21,7 @@ class TaskBase(QtCore.QThread):
 
                 if line.startswith(b"> "):
                     print(
-                        Fore.YELLOW + "> " + Fore.LIGHTCYAN_EX + line.decode()[2:],
+                        Style.DIM + "> " + Style.NORMAL + Fore.CYAN + line.decode()[2:],
                         end="",
                     )
                 else:

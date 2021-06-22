@@ -2,6 +2,7 @@ import os
 import stat
 import platform
 import tempfile
+import appdirs
 
 
 class Common(object):
@@ -11,26 +12,16 @@ class Common(object):
 
     def __init__(self):
         # Temporary directory to store pixel data and safe PDFs
-        if platform.system() == "Windows":
-            self.pixel_dir = tempfile.TemporaryDirectory(prefix="dangerzone-pixel-")
-            self.safe_dir = tempfile.TemporaryDirectory(prefix="dangerzone-safe-")
-        elif platform.system() == "Darwin":
-            # In macOS, temp dirs must be in /tmp (or a few other paths) for Docker to mount them
-            self.pixel_dir = tempfile.TemporaryDirectory(
-                prefix="/tmp/dangerzone-pixel-"
-            )
-            self.safe_dir = tempfile.TemporaryDirectory(prefix="/tmp/dangerzone-safe-")
-        else:
-            # In Linux, temp dirs must be in the homedir for the snap package version of Docker to mount them
-            cache_dir = os.path.expanduser("~/.cache/dangerzone")
-            os.makedirs(cache_dir, exist_ok=True)
-            self.pixel_dir = tempfile.TemporaryDirectory(
-                prefix=os.path.join(cache_dir, "pixel-")
-            )
-            self.safe_dir = tempfile.TemporaryDirectory(
-                prefix=os.path.join(cache_dir, "safe-")
-            )
+        cache_dir = appdirs.user_cache_dir("dangerzone")
+        os.makedirs(cache_dir, exist_ok=True)
+        self.pixel_dir = tempfile.TemporaryDirectory(
+            prefix=os.path.join(cache_dir, "pixel-")
+        )
+        self.safe_dir = tempfile.TemporaryDirectory(
+            prefix=os.path.join(cache_dir, "safe-")
+        )
 
+        try:
             # Make the folders world-readable to ensure that the container has permission
             # to access it even if it's owned by root or someone else
             permissions = (
@@ -44,6 +35,8 @@ class Common(object):
             )
             os.chmod(self.pixel_dir.name, permissions)
             os.chmod(self.safe_dir.name, permissions)
+        except:
+            pass
 
         # Name of input and out files
         self.document_filename = None

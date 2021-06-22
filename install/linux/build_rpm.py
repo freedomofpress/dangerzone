@@ -29,7 +29,7 @@ def main():
 
     print("* Building RPM package")
     subprocess.run(
-        "python3 setup.py bdist_rpm --requires='python3-pyside2,python3-appdirs,python3-click,python3-pyxdg,python3-requests,python3-colorama,(docker or docker-ce)'",
+        "python3 setup.py bdist_rpm --requires='podman,python3-pyside2,python3-appdirs,python3-click,python3-pyxdg,python3-requests,python3-colorama'",
         shell=True,
         cwd=root,
         check=True,

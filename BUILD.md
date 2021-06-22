@@ -5,10 +5,8 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
+sudo apt install -y podman dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
 ```
-
-You also need docker, either by installing the [Docker snap package](https://snapcraft.io/docker), installing the `docker.io` package, or by installing `docker-ce` by following [these instructions for Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/) or [for Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 
 Run from source tree:
 
@@ -27,10 +25,8 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build python3 python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
+sudo dnf install -y rpm-build podman python3 python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
 ```
-
-You also need docker, either by installing the `docker` package, or by installing `docker-ce` by following [these instructions](https://docs.docker.com/install/linux/docker-ce/fedora/).
 
 Run from source tree:
 
@@ -45,6 +41,8 @@ Create a .rpm:
 ```
 
 ## macOS
+
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
 Install python@3.9 from Homebrew:
 
@@ -86,6 +84,8 @@ poetry run ./install/macos/build_app.py --with-codesign
 The output is in the `dist` folder.
 
 ## Windows
+
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
 These instructions include adding folders to the path in Windows. To do this, go to Start and type "advanced system settings", and open "View advanced system settings" in the Control Panel. Click Environment Variables. Under "System variables" double-click on Path. From there you can add and remove folders that are available in the PATH.
 

@@ -9,7 +9,7 @@ from .common import Common
 
 def print_header(s):
     click.echo("")
-    click.echo(Style.BRIGHT + Fore.LIGHTWHITE_EX + s)
+    click.echo(Style.BRIGHT + s)
 
 
 def exec_container(global_common, args):
@@ -22,7 +22,7 @@ def exec_container(global_common, args):
             # Hack to add colors to the command executing
             if line.startswith(b"> "):
                 print(
-                    Fore.YELLOW + "> " + Fore.LIGHTCYAN_EX + line.decode()[2:],
+                    Style.DIM + "> " + Style.NORMAL + Fore.CYAN + line.decode()[2:],
                     end="",
                 )
             else:

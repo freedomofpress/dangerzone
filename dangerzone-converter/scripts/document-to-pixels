@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Remove this warning by setting the host in /etc/hosts:
+# sudo: unable to resolve host 8160b021d811: Temporary failure in name resolution
+echo 127.0.0.1 $(hostname) >> /etc/hosts
+
+# Record original permissions, and make document readable
+START_PERMISSIONS=$(stat /tmp/input_file | grep Access | grep Uid | cut -d"(" -f2 |cut -d"/" -f1)
+/bin/chmod 0644 /tmp/input_file
+
+# Do the conversion without root
+/usr/bin/sudo -u user /usr/local/bin/document-to-pixels-unpriv
+RETURN_CODE=$?
+
+# Restore original permissions
+/bin/chmod $START_PERMISSIONS /tmp/input_file
+
+# Check for failure
+if [ $RETURN_CODE -ne 0 ]; then
+    echo ""
+    exit $RETURN_CODE
+fi
+
+# Move converted files into /dangerzone
+/bin/mv /tmp/page-*.rgb /dangerzone
+/bin/mv /tmp/page-*.width /dangerzone
+/bin/mv /tmp/page-*.height /dangerzone

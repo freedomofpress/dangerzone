@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+import sys
+import subprocess
+import glob
+import shutil
+import os
+
+import magic
+from PIL import Image
+
+
+def print_flush(s):
+    print(s)
+    sys.stdout.flush()
+
+
+def main():
+    conversions = {
+        # .pdf
+        "application/pdf": {"type": None},
+        # .docx
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "writer_pdf_Export",
+        },
+        # .doc
+        "application/msword": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "writer_pdf_Export",
+        },
+        # .docm
+        "application/vnd.ms-word.document.macroEnabled.12": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "writer_pdf_Export",
+        },
+        # .xlsx
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "calc_pdf_Export",
+        },
+        # .xls
+        "application/vnd.ms-excel": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "calc_pdf_Export",
+        },
+        # .pptx
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "impress_pdf_Export",
+        },
+        # .ppt
+        "application/vnd.ms-powerpoint": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "impress_pdf_Export",
+        },
+        # .odt
+        "application/vnd.oasis.opendocument.text": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "writer_pdf_Export",
+        },
+        # .odg
+        "application/vnd.oasis.opendocument.graphics": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "impress_pdf_Export",
+        },
+        # .odp
+        "application/vnd.oasis.opendocument.presentation": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "impress_pdf_Export",
+        },
+        # .ops
+        "application/vnd.oasis.opendocument.spreadsheet": {
+            "type": "libreoffice",
+            "libreoffice_output_filter": "calc_pdf_Export",
+        },
+        # .jpg
+        "image/jpeg": {"type": "convert"},
+        # .gif
+        "image/gif": {"type": "convert"},
+        # .png
+        "image/png": {"type": "convert"},
+        # .tif
+        "image/tiff": {"type": "convert"},
+        "image/x-tiff": {"type": "convert"},
+    }
+
+    # Detect MIME type
+    mime = magic.Magic(mime=True)
+    mime_type = mime.from_file("/tmp/input_file")
+
+    # Validate MIME type
+    if mime_type not in conversions:
+        print_flush("The document format is not supported")
+        sys.exit(1)
+
+    # Convert input document to PDF
+    conversion = conversions[mime_type]
+    if conversion["type"] is None:
+        pdf_filename = "/tmp/input_file"
+    elif conversion["type"] == "libreoffice":
+        print_flush(f"Converting to PDF using LibreOffice")
+        args = [
+            "libreoffice",
+            "--headless",
+            "--convert-to",
+            f"pdf:{conversion['libreoffice_output_filter']}",
+            "--outdir",
+            "/tmp",
+            "/tmp/input_file",
+        ]
+        try:
+            p = subprocess.run(args, timeout=60)
+        except subprocess.TimeoutExpired:
+            print_flush(
+                "Error converting document to PDF, LibreOffice timed out after 60 seconds"
+            )
+            sys.exit(1)
+
+        if p.returncode != 0:
+            print_flush(f"Conversion to PDF failed: {p.stdout}")
+            sys.exit(1)
+        pdf_filename = "/tmp/input_file.pdf"
+    elif conversion["type"] == "convert":
+        print_flush(f"Converting to PDF using GraphicsMagick")
+        args = [
+            "gm",
+            "convert",
+            "/tmp/input_file",
+            "/tmp/input_file.pdf",
+        ]
+        try:
+            p = subprocess.run(args, timeout=60)
+        except subprocess.TimeoutExpired:
+            print_flush(
+                "Error converting document to PDF, GraphicsMagick timed out after 60 seconds"
+            )
+            sys.exit(1)
+        if p.returncode != 0:
+            print_flush(f"Conversion to PDF failed: {p.stdout}")
+            sys.exit(1)
+        pdf_filename = "/tmp/input_file.pdf"
+    else:
+        print_flush("Invalid conversion type")
+        sys.exit(1)
+
+    # Separate PDF into pages
+    print_flush("")
+    print_flush(f"Separating document into pages")
+    args = ["pdftk", pdf_filename, "burst", "output", "/tmp/page-%d.pdf"]
+    try:
+        p = subprocess.run(args, timeout=60)
+    except subprocess.TimeoutExpired:
+        print_flush(
+            "Error separating document into pages, pdfseparate timed out after 60 seconds"
+        )
+        sys.exit(1)
+    if p.returncode != 0:
+        print_flush(f"Separating document into pages failed: {p.stdout}")
+        sys.exit(1)
+
+    page_filenames = glob.glob("/tmp/page-*.pdf")
+    print_flush(f"Document has {len(page_filenames)} pages")
+    print_flush("")
+
+    # Convert to RGB pixel data
+    for page in range(1, len(page_filenames) + 1):
+        pdf_filename = f"/tmp/page-{page}.pdf"
+        png_filename = f"/tmp/page-{page}.png"
+        rgb_filename = f"/tmp/page-{page}.rgb"
+        width_filename = f"/tmp/page-{page}.width"
+        height_filename = f"/tmp/page-{page}.height"
+        filename_base = f"/tmp/page-{page}"
+
+        print_flush(f"Converting page {page} to pixels")
+
+        # Convert to png
+        try:
+            p = subprocess.run(
+                ["pdftocairo", pdf_filename, "-png", "-singlefile", filename_base],
+                timeout=60,
+            )
+        except subprocess.TimeoutExpired:
+            print_flush(
+                "Error converting from PDF to PNG, pdftocairo timed out after 60 seconds"
+            )
+            sys.exit(1)
+        if p.returncode != 0:
+            print_flush(f"Conversion from PDF to PNG failed: {p.stdout}")
+            sys.exit(1)
+
+        # Save the width and height
+        im = Image.open(png_filename)
+        width, height = im.size
+        with open(width_filename, "w") as f:
+            f.write(str(width))
+        with open(height_filename, "w") as f:
+            f.write(str(height))
+
+        # Convert to RGB pixels
+        try:
+            p = subprocess.run(
+                ["gm", "convert", png_filename, "-depth", "8", f"rgb:{rgb_filename}"],
+                timeout=60,
+            )
+        except subprocess.TimeoutExpired:
+            print_flush(
+                "Error converting from PNG to pixels, convert timed out after 60 seconds"
+            )
+            sys.exit(1)
+        if p.returncode != 0:
+            print_flush(f"Conversion from PNG to RGB failed: {p.stdout}")
+            sys.exit(1)
+
+        # Delete the png
+        os.remove(png_filename)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+import glob
+import os
+import sys
+import subprocess
+
+
+def print_flush(s=""):
+    print(s)
+    sys.stdout.flush()
+
+
+def main():
+    num_pages = len(glob.glob("/dangerzone/page-*.rgb"))
+    print_flush(f"Document has {num_pages} pages")
+
+    # Convert RGB files to PDF files
+    for page in range(1, num_pages + 1):
+        filename_base = f"/dangerzone/page-{page}"
+        rgb_filename = f"{filename_base}.rgb"
+        width_filename = f"{filename_base}.width"
+        height_filename = f"{filename_base}.height"
+        png_filename = f"/tmp/page-{page}.png"
+        ocr_filename = f"/tmp/page-{page}"
+        pdf_filename = f"/tmp/page-{page}.pdf"
+
+        with open(width_filename) as f:
+            width = f.read().strip()
+        with open(height_filename) as f:
+            height = f.read().strip()
+
+        if os.environ.get("OCR") == "1":
+            # OCR the document
+            print_flush(f"Converting page {page} from pixels to searchable PDF")
+
+            args = [
+                "gm",
+                "convert",
+                "-size",
+                f"{width}x{height}",
+                "-depth",
+                "8",
+                f"rgb:{rgb_filename}",
+                f"png:{png_filename}",
+            ]
+            try:
+                p = subprocess.run(args, timeout=60)
+            except subprocess.TimeoutExpired:
+                print_flush(
+                    "Error converting pixels to PNG, convert timed out after 60 seconds"
+                )
+                sys.exit(1)
+            if p.returncode != 0:
+                print_flush(f"Page {page} conversion failed: {p.stdout}")
+                sys.exit(1)
+
+            args = [
+                "tesseract",
+                png_filename,
+                ocr_filename,
+                "-l",
+                os.environ.get("OCR_LANGUAGE"),
+                "--dpi",
+                "70",
+                "pdf"
+            ]
+            try:
+                p = subprocess.run(args, timeout=60)
+            except subprocess.TimeoutExpired:
+                print_flush(
+                    "Error converting PNG to searchable PDF, tesseract timed out after 60 seconds"
+                )
+                sys.exit(1)
+            if p.returncode != 0:
+                print_flush(f"Page {page} conversion failed: {p.stdout}")
+                sys.exit(1)
+
+        else:
+            # Don't OCR
+            print_flush(f"Converting page {page} from pixels to PDF")
+
+            args = [
+                "gm",
+                "convert",
+                "-size",
+                f"{width}x{height}",
+                "-depth",
+                "8",
+                f"rgb:{rgb_filename}",
+                f"pdf:{pdf_filename}",
+            ]
+            try:
+                p = subprocess.run(args, timeout=60)
+            except subprocess.TimeoutExpired:
+                print_flush(
+                    "Error converting RGB to PDF, convert timed out after 60 seconds"
+                )
+                sys.exit(1)
+            if p.returncode != 0:
+                print_flush(f"Page {page} conversion failed: {p.stdout}")
+                sys.exit(1)
+
+    print_flush()
+
+    # Merge pages into a single PDF
+    print_flush(f"Merging {num_pages} pages into a single PDF")
+    args = ["pdfunite"]
+    for page in range(1, num_pages + 1):
+        args.append(f"/tmp/page-{page}.pdf")
+    args.append(f"/tmp/safe-output.pdf")
+    try:
+        p = subprocess.run(args, timeout=60)
+    except subprocess.TimeoutExpired:
+        print_flush(
+            "Error merging pages into a single PDF, pdfunite timed out after 60 seconds"
+        )
+        sys.exit(1)
+    if p.returncode != 0:
+        print_flush(f"Merge failed: {p.stdout}")
+        sys.exit(1)
+
+    # Compress
+    print_flush("Compressing PDF")
+    compress_timeout = num_pages * 3
+    try:
+        p = subprocess.run(
+            ["ps2pdf", "/tmp/safe-output.pdf", "/tmp/safe-output-compressed.pdf"],
+            timeout=compress_timeout,
+        )
+    except subprocess.TimeoutExpired:
+        print_flush(f"Error compressing PDF, ps2pdf timed out after {compress_timeout} seconds")
+        sys.exit(1)
+    if p.returncode != 0:
+        print_flush(f"Compression failed: {p.stdout}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

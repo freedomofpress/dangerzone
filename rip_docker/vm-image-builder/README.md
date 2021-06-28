@@ -11,3 +11,9 @@ docker run \
 ```
 
 This will create a VM image file called `vm/dangerzone.qcow2`.
+
+To build an ISO image:
+
+```sh
+docker run -v $(pwd):/build alpine:latest /build/build-iso.sh
+```

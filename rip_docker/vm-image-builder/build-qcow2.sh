@@ -10,9 +10,9 @@ cd /build
 rm -r /build/vm
 mkdir -p /build/vm
 ./alpine-make-vm-image \
-    --image-format qcow2 \
+    --image-format raw \
     --image-size 2G \
-    --packages "$(cat packages)" \
+    --packages "podman openssh" \
     --script-chroot \
     /build/vm/dangerzone.qcow2 -- ./configure.sh
 

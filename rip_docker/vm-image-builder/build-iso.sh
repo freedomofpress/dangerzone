@@ -25,7 +25,9 @@ wget https://gitlab.alpinelinux.org/alpine/aports/-/archive/master/aports-master
 tar -xf aports-master.tar.gz
 mv aports-master aports
 cp /build/mkimg.dangerzone.sh aports/scripts/
+cp /build/genapkovl-dangerzone.sh aports/scripts/
 chmod +x aports/scripts/mkimg.dangerzone.sh
+chmod +x aports/scripts/genapkovl-dangerzone.sh
 
 # Make the iso
 cd aports/scripts

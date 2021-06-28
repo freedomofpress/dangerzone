@@ -47,8 +47,7 @@ PasswordAuthentication no
 EOF
 
 # Dangerzone alpine setup
-mkdir -p "$tmp"/root
-makefile root:root 0644 "$tmp"/root/answers.txt <<EOF
+makefile root:root 0644 "$tmp"/etc/answers.txt <<EOF
 KEYMAPOPTS="us us"
 HOSTNAMEOPTS="-n dangerzone"
 INTERFACESOPTS="auto lo
@@ -64,11 +63,20 @@ SSHDOPTS="-c openssh"
 EOF
 
 mkdir -p "$tmp"/etc/init.d
-makefile root:root 0644 "$tmp"/etc/init.d/dangerzone <<EOF
+makefile root:root 0755 "$tmp"/etc/init.d/dangerzone <<EOF
 #!/sbin/openrc-run
 name="Dangerzone init script"
 start_pre() {
-	/sbin/setup-alpine -f /root/answers.txt -e -q
+    # Setup Alpine
+	/sbin/setup-alpine -f /etc/answers.txt -e -q
+
+    # Create user, give the dangerzone-vm-key ssh access
+    /usr/sbin/adduser -D user
+    mkdir -p /home/user/.ssh
+    echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILmxIw2etg2IxY77GOFe/6tuMH/K5c1gsz3qPY/s7rZF dangerzone-vm-key" > /home/user/.ssh/authorized_keys
+    chown -R user:user /home/user/.ssh
+    chmod 700 /home/user/.ssh
+    chmod 600 /home/user/.ssh/authorized_keys
 }
 EOF
 

@@ -134,3 +134,4 @@ deb_dist
 .DS_Store
 install/windows/Dangerzone.wxs
 test_docs/sample-safe.pdf
+share/bin

@@ -8,6 +8,7 @@ from PySide2 import QtCore, QtWidgets
 
 from .common import GuiCommon
 from .main_window import MainWindow
+from .systray import SysTray
 from .docker_installer import (
     is_docker_installed,
     is_docker_ready,
@@ -148,5 +149,8 @@ def gui_main(custom_container, filename):
 
     # If the application is activated and all windows are closed, open a new one
     app_wrapper.application_activated.connect(application_activated)
+
+    # Create a system tray, which also handles the VM subprocess
+    systray = SysTray(global_common, gui_common, app)
 
     sys.exit(app.exec_())

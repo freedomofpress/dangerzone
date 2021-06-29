@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-    <!-- Required for binaries built with PyInstaller -->
-    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
-    <true/>
-</dict>
+    <dict>
+        <!-- Required for binaries built with PyInstaller -->
+        <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+        <true/>
+
+        <key>com.apple.vm.networking</key>
+        <true/>
+    </dict>
 </plist>

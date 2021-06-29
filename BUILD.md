@@ -58,6 +58,12 @@ If you don't have it already, install poetry (`pip3 install --user poetry`). The
 poetry install
 ```
 
+Make sure Docker Desktop is installed (Dangerzone copies hyperkit and vpnkit binaries from it) and run this to collect the binaries:
+
+```
+./install/macos/collect-bins.sh
+```
+
 Run from source tree:
 
 ```

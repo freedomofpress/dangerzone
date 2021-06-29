@@ -69,6 +69,7 @@ name="Dangerzone init script"
 start_pre() {
     # Setup Alpine
 	/sbin/setup-alpine -f /etc/answers.txt -e -q
+	rm /etc/answers.txt
 
     # Create user, give the dangerzone-vm-key ssh access
     /usr/sbin/adduser -D -u 1001 user
@@ -89,7 +90,10 @@ start_pre() {
 }
 EOF
 
-# Add the containers to /etc/container-data, temporarily
+# Fix permissions and add containers to /etc/container-data, temporarily
+for WEIRD_FILE in $(find /home/user/.local/share/containers -perm 000); do
+	chmod 600 $WEIRD_FILE
+done
 cp -r /home/user/.local/share/containers "$tmp"/etc/container-data
 
 # Start cgroups, required by podman

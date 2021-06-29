@@ -22,10 +22,18 @@ This takes awhile to run. It:
 ./run-vm.sh
 ```
 
-You can ssh in as the unprivileged user like this:
+You can ssh in as the unprivileged user like this (you need to `brew install socat`):
 
 ```sh
-ssh -i ./ssh-key/id_ed25519 -o StrictHostKeyChecking=no user@192.168.65.3
+ssh -i ./ssh-key/id_ed25519 \
+    -o LogLevel=FATAL \
+    -o Compression=yes \
+    -o IdentitiesOnly=yes \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    -o "ProxyCommand nc -U /Users/user/code/dangerzone/rip_docker/vm/connect" \
+    -v \
+    user@localhost
 ```
 
 (doesn't work yet)

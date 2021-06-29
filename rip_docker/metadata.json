@@ -1,9 +1,0 @@
-{
-    "docker": {
-        "entries": {
-            "daemon.json": {
-                "content": "{\"debug\": true, \"experimental\": false, \"live-restore\": true}"
-            }
-        }
-    }
-}

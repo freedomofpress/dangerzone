@@ -17,7 +17,7 @@ with open(os.path.join(root, "share", "version.txt")) as f:
 print("Dangerzone version: {}".format(version))
 
 if p == "Darwin":
-    datas = [("../../share", "share"), ("../macos/../macos/document.icns", ".")]
+    datas = [("../../share", "share"), ("../macos/document.icns", ".")]
 else:
     datas = [("../../share", "share")]
 

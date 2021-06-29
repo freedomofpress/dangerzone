@@ -49,9 +49,29 @@ class ApplicationWrapper(QtCore.QObject):
 @click.option("--custom-container")  # Use this container instead of flmcode/dangerzone
 @click.argument("filename", required=False)
 def gui_main(custom_container, filename):
-    # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
     if platform.system() == "Darwin":
+        # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
         os.environ["QT_MAC_WANTS_LAYER"] = "1"
+
+        # Strip ANSI colors from stdout output, to prevent terminal colors from breaking
+        # the macOS GUI app
+        from strip_ansi import strip_ansi
+
+        class StdoutFilter:
+            def __init__(self, stream):
+                self.stream = stream
+
+            def __getattr__(self, attr_name):
+                return getattr(self.stream, attr_name)
+
+            def write(self, data):
+                self.stream.write(strip_ansi(data))
+
+            def flush(self):
+                self.stream.flush()
+
+        sys.stdout = StdoutFilter(sys.stdout)
+        sys.stderr = StdoutFilter(sys.stderr)
 
     # Create the Qt app
     app_wrapper = ApplicationWrapper()
@@ -60,8 +80,6 @@ def gui_main(custom_container, filename):
     # Common objects
     global_common = GlobalCommon()
     gui_common = GuiCommon(app, global_common)
-
-    global_common.display_banner()
 
     if custom_container:
         success, error_message = global_common.container_exists(custom_container)
@@ -73,18 +91,6 @@ def gui_main(custom_container, filename):
 
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    # If we're using Linux and docker, see if we need to add the user to the docker group or if the user prefers typing their password
-    if platform.system() == "Linux":
-        if not gui_common.ensure_docker_group_preference():
-            return
-        try:
-            if not gui_common.ensure_docker_service_is_started():
-                click.echo("Failed to start docker service")
-                return
-        except AuthorizationFailed:
-            click.echo("Authorization failed")
-            return
 
     # See if we need to install Docker...
     if (platform.system() == "Darwin" or platform.system() == "Windows") and (

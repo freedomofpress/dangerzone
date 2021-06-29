@@ -34,7 +34,7 @@ def is_docker_installed():
 def is_docker_ready(global_common):
     # Run `docker image ls` without an error
     with global_common.exec_dangerzone_container(["ls"]) as p:
-        p.communicate()
+        outs, errs = p.communicate()
 
         # The user canceled, or permission denied
         if p.returncode == 126 or p.returncode == 127:
@@ -44,6 +44,8 @@ def is_docker_ready(global_common):
         if p.returncode == 0:
             return True
         else:
+            print(outs.decode())
+            print(errs.decode())
             return False
 
 

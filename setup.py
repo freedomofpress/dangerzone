@@ -23,7 +23,7 @@ setuptools.setup(
     license="MIT",
     description="Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF",
     url="https://github.com/firstlookmedia/dangerzone",
-    packages=["dangerzone"],
+    packages=["dangerzone", "dangerzone.gui"],
     data_files=[
         (
             "share/applications",
@@ -34,10 +34,6 @@ setuptools.setup(
             ["install/linux/media.firstlook.dangerzone.png"],
         ),
         ("share/dangerzone", file_list("share")),
-        (
-            "share/polkit-1/actions",
-            ["install/linux/media.firstlook.dangerzone-container.policy"],
-        ),
     ],
     classifiers=[
         "Programming Language :: Python",
@@ -47,7 +43,8 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "dangerzone = dangerzone:main",
-            "dangerzone-container = dangerzone:container_main",
+            "dangerzone-container = dangerzone:main",
+            "dangerzone-cli = dangerzone:main",
         ]
     },
 )

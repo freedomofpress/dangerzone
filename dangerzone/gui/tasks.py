@@ -19,9 +19,9 @@ class TaskBase(QtCore.QThread):
             for line in p.stdout:
                 output += line.decode()
 
-                if line.startswith(b"\xe2\x80\xa3 "):
+                if line.startswith(b"> "):
                     print(
-                        Fore.WHITE + "\u2023 " + Fore.LIGHTCYAN_EX + line.decode()[2:],
+                        Style.DIM + "> " + Style.NORMAL + Fore.CYAN + line.decode()[2:],
                         end="",
                     )
                 else:
@@ -39,7 +39,7 @@ class TaskBase(QtCore.QThread):
 
         if p.returncode == 126 or p.returncode == 127:
             self.task_failed.emit(f"Authorization failed")
-        elif p.returncode == 0:
+        elif p.returncode != 0:
             self.task_failed.emit(f"Return code: {p.returncode}")
 
         print("")

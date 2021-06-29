@@ -1,5 +1,4 @@
 # -*- mode: python -*-
-import sys
 import os
 import inspect
 import platform
@@ -12,10 +11,9 @@ root = os.path.dirname(
         os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     )
 )
-sys.path.insert(0, root)
-import dangerzone
+with open(os.path.join(root, "share", "version.txt")) as f:
+    version = f.read().strip()
 
-version = dangerzone.dangerzone_version
 print("Dangerzone version: {}".format(version))
 
 if p == "Darwin":

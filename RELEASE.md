@@ -6,11 +6,14 @@ This section documents the release process. Unless you're a dangerzone developer
 
 Before making a release, all of these should be complete:
 
-* Update `version` in `pyproject.toml`
-* Update in `share/version.txt`
-* Update version and download links in `README.md`
-* CHANGELOG.md should be updated to include a list of all major changes since the last release
-* There must be a PGP-signed git tag for the version, e.g. for dangerzone 0.1.0, the tag must be `v0.1.0`
+- [ ] Update `version` in `pyproject.toml`
+- [ ] Update `share/version.txt`
+- [ ] Update version and download links in `README.md`
+- [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
+- [ ] Test CircleCI Linux builds: Look in `.circleci/config.yml`, manually try each build in docker, and add new platforms and remove obsolete platforms
+- [ ] Create a test build in Windows and make sure it works
+- [ ] Create a test build in mcaOS and make sure it works
+- [ ] There must be a PGP-signed git tag for the version, e.g. for dangerzone 0.1.0, the tag must be `v0.1.0`
 
 Before making a release, verify the release git tag:
 
@@ -47,7 +50,7 @@ This process ends up with the final file:
 dist/Dangerzone.dmg
 ```
 
-Rename `Dangerzone.dmg` to `Dangerzone $VERSION.dmg`.
+Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
 
 ## Windows release
 
@@ -62,7 +65,7 @@ To make a Windows release, go to the Windows build machine:
 - Back in the first command prompt, run: `poetry run install\windows\step3-build-installer.bat`
 - When you're done you will have `dist\Dangerzone.msi`
 
-Rename `Dangerzone.msi` to `Dangerzone $VERSION.msi`.
+Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
 
 ## Linux release
 
@@ -73,3 +76,5 @@ Linux binaries are automatically built and deployed to repositories when a new t
 To publish the release:
 
 - Create a new release on GitHub, put the changelog in the description of the release, and upload the macOS and Windows installers
+- Update the [Installing Dangerzone](https://github.com/firstlookmedia/dangerzone/wiki/Installing-Dangerzone) wiki page
+- Update the [Dangerzone website](https://github.com/firstlookmedia/dangerzone.rocks) to link to the new installers

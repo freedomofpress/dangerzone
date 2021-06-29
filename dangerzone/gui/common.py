@@ -56,7 +56,7 @@ class GuiCommon(object):
 
                 # Run
                 args_str = " ".join(pipes.quote(s) for s in args)
-                print(Fore.YELLOW + "\u2023 " + Fore.CYAN + args_str)  # ‣
+                print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
                 subprocess.run(args)
 
             elif platform.system() == "Linux":
@@ -76,7 +76,7 @@ class GuiCommon(object):
 
                 # Open as a background process
                 args_str = " ".join(pipes.quote(s) for s in args)
-                print(Fore.YELLOW + "\u2023 " + Fore.CYAN + args_str)  # ‣
+                print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
                 subprocess.Popen(args)
 
     def _find_pdf_viewers(self):
@@ -141,95 +141,6 @@ class GuiCommon(object):
                     pass
 
         return pdf_viewers
-
-    def ensure_docker_group_preference(self):
-        # If the user prefers typing their password
-        if self.global_common.settings.get("linux_prefers_typing_password") == True:
-            return True
-
-        # Get the docker group
-        try:
-            groupinfo = grp.getgrnam("docker")
-        except:
-            # Ignore if group is not found
-            return True
-
-        # See if the user is in the group
-        username = getpass.getuser()
-        if username not in groupinfo.gr_mem:
-            # User is not in the docker group, ask if they prefer typing their password
-            message = "<b>Dangerzone requires Docker</b><br><br>In order to use Docker, your user must be in the 'docker' group or you'll need to type your password each time you run dangerzone.<br><br><b>Adding your user to the 'docker' group is more convenient but less secure</b>, and will require just typing your password once. Which do you prefer?"
-            return_code = Alert(
-                self,
-                self.global_common,
-                message,
-                ok_text="I'll type my password each time",
-                extra_button_text="Add my user to the 'docker' group",
-            ).launch()
-            if return_code == QtWidgets.QDialog.Accepted:
-                # Prefers typing password
-                self.global_common.settings.set("linux_prefers_typing_password", True)
-                self.global_common.settings.save()
-                return True
-            elif return_code == 2:
-                # Prefers being in the docker group
-                self.global_common.settings.set("linux_prefers_typing_password", False)
-                self.global_common.settings.save()
-
-                # Add user to the docker group
-                p = subprocess.run(
-                    [
-                        "/usr/bin/pkexec",
-                        "/usr/sbin/usermod",
-                        "-a",
-                        "-G",
-                        "docker",
-                        username,
-                    ]
-                )
-                if p.returncode == 0:
-                    message = "Great! Now you must log out of your computer and log back in, and then you can use Dangerzone."
-                    Alert(self, self.global_common, message).launch()
-                else:
-                    message = "Failed to add your user to the 'docker' group, quitting."
-                    Alert(self, self.global_common, message).launch()
-
-                return False
-            else:
-                # Cancel
-                return False
-
-        return True
-
-    def ensure_docker_service_is_started(self):
-        if not is_docker_ready(self.global_common):
-            message = "<b>Dangerzone requires Docker</b><br><br>Docker should be installed, but it looks like it's not running in the background.<br><br>Click Ok to try starting the docker service. You will have to type your login password."
-            if (
-                Alert(self, self.global_common, message).launch()
-                == QtWidgets.QDialog.Accepted
-            ):
-                p = subprocess.run(
-                    [
-                        "/usr/bin/pkexec",
-                        self.global_common.get_resource_path(
-                            "enable_docker_service.sh"
-                        ),
-                    ]
-                )
-                if p.returncode == 0:
-                    # Make sure docker is now ready
-                    if is_docker_ready(self.global_common):
-                        return True
-                    else:
-                        message = "Restarting docker appeared to work, but the service still isn't responding, quitting."
-                        Alert(self, self.global_common, message).launch()
-                else:
-                    message = "Failed to start the docker service, quitting."
-                    Alert(self, self.global_common, message).launch()
-
-            return False
-
-        return True
 
 
 class Alert(QtWidgets.QDialog):

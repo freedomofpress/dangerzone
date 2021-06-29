@@ -1,5 +1,17 @@
 # Change Log
 
+## Dangerzone 0.2.1
+
+- Switch from Docker to Podman for Linux
+- Improve CLI colors
+
+## Dangerzone 0.2
+
+- Command line support and improved terminal output
+- Additional container hardening
+- Fix macOS crash on quit
+- Fix --custom-container CLI argument
+
 ## Dangerzone 0.1.5
 
 - Add support for macOS Big Sur

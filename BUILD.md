@@ -5,10 +5,8 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
+sudo apt install -y podman dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
 ```
-
-You also need docker, either by installing the [Docker snap package](https://snapcraft.io/docker), installing the `docker.io` package, or by installing `docker-ce` by following [these instructions for Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/) or [for Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 
 Run from source tree:
 
@@ -27,10 +25,8 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build python3 python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
+sudo dnf install -y rpm-build podman python3 python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
 ```
-
-You also need docker, either by installing the `docker` package, or by installing `docker-ce` by following [these instructions](https://docs.docker.com/install/linux/docker-ce/fedora/).
 
 Run from source tree:
 
@@ -45,6 +41,8 @@ Create a .rpm:
 ```
 
 ## macOS
+
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
 Install python@3.9 from Homebrew:
 
@@ -93,6 +91,8 @@ The output is in the `dist` folder.
 
 ## Windows
 
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
+
 These instructions include adding folders to the path in Windows. To do this, go to Start and type "advanced system settings", and open "View advanced system settings" in the Control Panel. Click Environment Variables. Under "System variables" double-click on Path. From there you can add and remove folders that are available in the PATH.
 
 Download Python 3.9.0, 32-bit (x86) from https://www.python.org/downloads/release/python-390/. I downloaded python-3.9.0.exe. When installing it, make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
@@ -112,7 +112,8 @@ poetry install
 After that you can launch dangerzone during development with:
 
 ```
-poetry run dangerzone
+.\dev_scripts\dangerzone.bat
+.\dev_scripts\dangerzone-cli.bat --help
 ```
 
 ### If you want to build a .exe
@@ -139,15 +140,13 @@ cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\
 vcvars32.bat
 ```
 
-Change to a folder where you keep source code, and clone the PyInstaller git repo and checkout the `v3.6` tag:
+Change to a folder where you keep source code, and clone the PyInstaller git repo and checkout the `v4.3` tag:
 
 ```
 git clone https://github.com/pyinstaller/pyinstaller.git
 cd pyinstaller
-git tag -v v4.0
+git checkout v4.3
 ```
-
-(Note that ideally you would verify the git tag, but the PGP key that has signed the v3.5 git tag for is not published anywhere, so this isn't possible. See [this issue](https://github.com/pyinstaller/pyinstaller/issues/4430).)
 
 The next step is to compile the bootloader. We should do this all in dangerzone's poetry shell:
 
@@ -224,14 +223,4 @@ Then back in the first command prompt, run:
 poetry run install\windows\step3-build-installer.bat
 ```
 
-
 When you're done you will have `dist\Dangerzone.msi`.
-
-
-# Release instructions
-
-Before each release:
-
-- Update `CHANGELOG.md`
-- Update the version in `pyproject.toml`
-- Update the version in `dangerzone/__init__.py`

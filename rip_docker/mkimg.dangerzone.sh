@@ -2,7 +2,7 @@ profile_dangerzone() {
 	profile_standard
 	profile_abbrev="dangerzone"
 	title="Dangerzone"
-	desc="Copied from virt but with extra apks"
+	desc="Copied from virt but with extra apks and an apkovl"
 	arch="aarch64 armv7 x86 x86_64"
 	kernel_addons=
 	kernel_flavors="virt"

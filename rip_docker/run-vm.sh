@@ -12,7 +12,7 @@ trap 'test -f $PIDFILE && kill `cat $PIDFILE` && rm $PIDFILE' EXIT
 
 $HYPERKIT \
     -A -u \
-    -m 2G \
+    -m 4G \
     -c 2 \
     -s 0:0,hostbridge -s 31,lpc \
     -l com1,stdio \

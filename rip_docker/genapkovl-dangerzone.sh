@@ -71,14 +71,26 @@ start_pre() {
 	/sbin/setup-alpine -f /etc/answers.txt -e -q
 
     # Create user, give the dangerzone-vm-key ssh access
-    /usr/sbin/adduser -D user
+    /usr/sbin/adduser -D -u 1001 user
     mkdir -p /home/user/.ssh
     echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILmxIw2etg2IxY77GOFe/6tuMH/K5c1gsz3qPY/s7rZF dangerzone-vm-key" > /home/user/.ssh/authorized_keys
     chown -R user:user /home/user/.ssh
     chmod 700 /home/user/.ssh
     chmod 600 /home/user/.ssh/authorized_keys
+
+	# Move containers into home dir
+	mkdir -p /home/user/.local/share
+	mv /etc/container-data /home/user/.local/share/containers
+	chown -R user:user /home/user/.local
+
+	# Allow podman containers to run
+	echo "user:100000:65536" >> /etc/subuid
+    echo "user:100000:65536" >> /etc/subgid
 }
 EOF
+
+# Add the containers to /etc/container-data, temporarily
+cp -r /home/user/.local/share/containers "$tmp"/etc/container-data
 
 # Start cgroups, required by podman
 rc_add cgroups boot

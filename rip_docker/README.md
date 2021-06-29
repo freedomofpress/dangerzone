@@ -1,13 +1,12 @@
 # Build the Dangerzone VM for running podman
 
-## Build the podman container storage (with vagrant)
+## Build the ISO
 
 You need vagrant: `brew install vagrant`
 
-## Build the ISO image (with docker)
-
 ```sh
-docker run -v $(pwd):/build alpine:latest /build/build-iso.sh
+vagrant up
+vagrant ssh -- /vagrant/build-iso.sh 
 ```
 
 ## Run the VM
@@ -21,3 +20,5 @@ You can ssh in as the unprivileged user like this:
 ```sh
 ssh -i ./ssh-key/id_ed25519 -o StrictHostKeyChecking=no user@192.168.65.3
 ```
+
+(doesn't work yet)

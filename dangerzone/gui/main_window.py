@@ -3,6 +3,7 @@ import os
 import platform
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from .waiting_widget import WaitingWidget
 from .doc_selection_widget import DocSelectionWidget
 from .settings_widget import SettingsWidget
 from .tasks_widget import TasksWidget
@@ -12,10 +13,11 @@ from ..common import Common
 class MainWindow(QtWidgets.QMainWindow):
     delete_window = QtCore.Signal(str)
 
-    def __init__(self, global_common, gui_common, window_id):
+    def __init__(self, global_common, gui_common, vm, window_id):
         super(MainWindow, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
+        self.vm = vm
         self.window_id = window_id
         self.common = Common()
 
@@ -42,10 +44,21 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(header_label)
         header_layout.addStretch()
 
+        # Waiting widget
+        self.waiting_widget = WaitingWidget(self.gui_common, self.vm)
+        self.waiting_widget.vm_started.connect(self.vm_started)
+
         # Doc selection widget
         self.doc_selection_widget = DocSelectionWidget(self.common)
         self.doc_selection_widget.document_selected.connect(self.document_selected)
-        self.doc_selection_widget.show()
+
+        # Only use the waiting widget if we have a VM
+        if self.vm:
+            self.waiting_widget.show()
+            self.doc_selection_widget.hide()
+        else:
+            self.waiting_widget.hide()
+            self.doc_selection_widget.show()
 
         # Settings
         self.settings_widget = SettingsWidget(
@@ -75,6 +88,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
+        layout.addWidget(self.waiting_widget, stretch=1)
         layout.addWidget(self.doc_selection_widget, stretch=1)
         layout.addWidget(self.settings_widget, stretch=1)
         layout.addWidget(self.tasks_widget, stretch=1)
@@ -84,6 +98,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(central_widget)
 
         self.show()
+
+    def vm_started(self):
+        self.waiting_widget.hide()
+        self.doc_selection_widget.show
 
     def document_selected(self):
         self.doc_selection_widget.hide()

@@ -42,15 +42,14 @@ class SettingsWidget(QtWidgets.QWidget):
         save_layout.addWidget(self.save_browse_button)
         save_layout.addStretch()
 
+        # Open safe document
         if platform.system() == "Darwin":
-            # Open safe document
             self.open_checkbox = QtWidgets.QCheckBox(
                 "Open safe document after converting"
             )
             self.open_checkbox.clicked.connect(self.update_ui)
 
         elif platform.system() != "Linux":
-            # Open safe document
             self.open_checkbox = QtWidgets.QCheckBox(
                 "Open safe document after converting, using"
             )
@@ -58,9 +57,12 @@ class SettingsWidget(QtWidgets.QWidget):
             self.open_combobox = QtWidgets.QComboBox()
             for k in self.gui_common.pdf_viewers:
                 self.open_combobox.addItem(k, self.gui_common.pdf_viewers[k])
+
+        if platform.system() == "Darwin" or platform.system() == "Linux":
             open_layout = QtWidgets.QHBoxLayout()
             open_layout.addWidget(self.open_checkbox)
-            open_layout.addWidget(self.open_combobox)
+            if platform.system() == "Linux":
+                open_layout.addWidget(self.open_combobox)
             open_layout.addStretch()
 
         # OCR document

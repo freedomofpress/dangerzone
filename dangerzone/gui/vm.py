@@ -81,7 +81,7 @@ class Vm(QtCore.QObject):
         self.hyperkit_p = subprocess.Popen(
             args,
             stdout=sys.stdout,
-            stderr=sys.stderr,
+            stderr=subprocess.STDOUT,
         )
 
     def restart(self):

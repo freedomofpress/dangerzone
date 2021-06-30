@@ -93,8 +93,8 @@ def gui_main(custom_container, filename):
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    # See if we need to install Docker...
-    if (platform.system() == "Darwin" or platform.system() == "Windows") and (
+    # See if we need to install Docker (Windows-only)
+    if platform.system() == "Windows" and (
         not is_docker_installed() or not is_docker_ready(global_common)
     ):
         click.echo("Docker is either not installed or not running")
@@ -102,7 +102,7 @@ def gui_main(custom_container, filename):
         docker_installer.start()
         return
 
-    # The dangerzone VM, for non-Linux platforms
+    # The dangerzone VM (Mac-only)
     if platform.system() == "Darwin":
         vm = Vm(global_common)
     else:
@@ -110,8 +110,10 @@ def gui_main(custom_container, filename):
 
     # Create the system tray
     systray = SysTray(global_common, gui_common, app, vm)
-    if vm:
-        vm.start()
+
+    # Start the VM
+    # if vm:
+    #     vm.start()
 
     closed_windows = {}
     windows = {}
@@ -129,7 +131,7 @@ def gui_main(custom_container, filename):
             window = windows[list(windows.keys())[0]]
         else:
             window_id = uuid.uuid4().hex
-            window = MainWindow(global_common, gui_common, window_id)
+            window = MainWindow(global_common, gui_common, vm, window_id)
             window.delete_window.connect(delete_window)
             windows[window_id] = window
 

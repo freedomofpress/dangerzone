@@ -38,6 +38,7 @@ sudo -u user sh mkimage.sh --tag v3.14 \
     --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/main \
     --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/community \
     --profile dangerzone
+mv alpine-dangerzone-v3.14-x86_64.iso dangerzone.iso
 
 # Fix permissions
 chmod 755 /vagrant/vm
@@ -45,7 +46,9 @@ chmod 644 /vagrant/vm/*
 
 # Extract vmlinuz and initramfs
 cd /vagrant/vm
-7z x alpine-dangerzone-v3.14-x86_64.iso boot/vmlinuz-virt
-7z x alpine-dangerzone-v3.14-x86_64.iso boot/initramfs-virt
+7z x dangerzone.iso boot/vmlinuz-virt
+7z x dangerzone.iso boot/initramfs-virt
 mv boot/* .
 rm -r boot
+mv vmlinuz-virt kernel
+mv initramfs-virt initramfs.img

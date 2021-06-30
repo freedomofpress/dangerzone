@@ -8,6 +8,7 @@ from PySide2 import QtCore, QtWidgets
 
 from .common import GuiCommon
 from .main_window import MainWindow
+from .vm import Vm
 from .systray import SysTray
 from .docker_installer import (
     is_docker_installed,
@@ -101,6 +102,17 @@ def gui_main(custom_container, filename):
         docker_installer.start()
         return
 
+    # The dangerzone VM, for non-Linux platforms
+    if platform.system() == "Darwin":
+        vm = Vm(global_common)
+    else:
+        vm = None
+
+    # Create the system tray
+    systray = SysTray(global_common, gui_common, app, vm)
+    if vm:
+        vm.start()
+
     closed_windows = {}
     windows = {}
 
@@ -155,8 +167,5 @@ def gui_main(custom_container, filename):
 
     # If the application is activated and all windows are closed, open a new one
     app_wrapper.application_activated.connect(application_activated)
-
-    # Create a system tray, which also handles the VM subprocess
-    systray = SysTray(global_common, gui_common, app)
 
     sys.exit(app.exec_())

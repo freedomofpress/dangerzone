@@ -22,10 +22,10 @@ $HYPERKIT \
     -c 2 \
     -s 0:0,hostbridge -s 31,lpc \
     -l com1,stdio \
-    -s 1:0,ahci-cd,$ROOT/alpine-dangerzone-v3.14-x86_64.iso \
+    -s 1:0,ahci-cd,$ROOT/dangerzone.iso \
     -s 2:0,virtio-net \
     -U 9efa82d7-ebd5-4287-b1cc-ac4160a39fa7 \
-    -f kexec,$ROOT/vmlinuz-virt,$ROOT/initramfs-virt,"earlyprintk=serial console=ttyS0 modules=loop,squashfs,sd-mod,usb-storage vpnkit.connect=connect://2/1999"
+    -f kexec,$ROOT/kernel,$ROOT/initramfs.img,"earlyprintk=serial console=ttyS0 modules=loop,squashfs,sd-mod,usb-storage vpnkit.connect=connect://2/1999"
 
 # hyperkit 
 #     -c 1 -m 1024M 

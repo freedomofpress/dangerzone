@@ -1,59 +1,51 @@
-import os
+import platform
 from PySide2 import QtWidgets
 
 
 class SysTray(QtWidgets.QSystemTrayIcon):
-    def __init__(self, global_common, gui_common, app):
+    def __init__(self, global_common, gui_common, app, vm):
         super(SysTray, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
         self.app = app
+        self.vm = vm
 
         self.setIcon(self.gui_common.get_window_icon())
 
         menu = QtWidgets.QMenu()
-        self.status_action = menu.addAction("...")
-        self.status_action.setEnabled(False)
-        menu.addSeparator()
-        self.restart_action = menu.addAction("Restart")
-        self.restart_action.triggered.connect(self.restart_clicked)
+
+        if platform.system() == "Darwin":
+            self.status_action = menu.addAction("...")
+            self.status_action.setEnabled(False)
+            menu.addSeparator()
+            self.restart_action = menu.addAction("Restart")
+            self.restart_action.triggered.connect(self.restart_clicked)
+
         self.quit_action = menu.addAction("Quit")
         self.quit_action.triggered.connect(self.quit_clicked)
 
         self.setContextMenu(menu)
         self.show()
 
-        # Dangerzone VM
-        self.vpnkit_p = None
-        self.hyperkit_p = None
-        self.hyperkit_path = self.global_common.get_resource_path("bin/hyperkit")
-        self.vpnkit_path = self.global_common.get_resource_path("bin/vpnkit")
-        self.vm_iso_path = self.global_common.get_resource_path(
-            "vm/alpine-dangerzone-v3.14-x86_64.iso"
-        )
-        self.vm_kernel_path = self.global_common.get_resource_path("vm/vmlinuz-virt")
-        self.vm_initramfs_path = self.global_common.get_resource_path(
-            "vm/initramfs-virt"
-        )
-        self.vm_state_dir = os.path.join(self.global_common.appdata_path, "vm-state")
-        os.makedirs(self.vm_state_dir, exist_ok=True)
-        self.vm_start()
+        if self.vm:
+            self.vm.vm_state_change.connect(self.vm_state_change)
 
-    def vm_start(self):
-        self.status_action.setText("Starting Dangerzone ...")
-
-        # Kill existing processes
-        if self.vpnkit_p is not None:
-            self.vpnkit_p.terminate()
-        if self.hyperkit_p is not None:
-            self.hyperkit_p.terminate()
-
-        # Run VPNKit
-
-        # Run Hyperkit
+    def vm_state_change(self, state):
+        if state == self.vm.STATE_OFF:
+            self.status_action.setText("Dangerzone VM is off")
+            self.restart_action.setEnabled(True)
+        elif state == self.vm.STATE_STARTING:
+            self.status_action.setText("Dangerzone VM is starting...")
+            self.restart_action.setEnabled(False)
+        elif state == self.vm.STATE_ON:
+            self.status_action.setText("Dangerzone VM is running")
+            self.restart_action.setEnabled(True)
+        elif state == self.vm.STATE_STOPPING:
+            self.status_action.setText("Dangerzone VM is stopping...")
+            self.restart_action.setEnabled(False)
 
     def restart_clicked(self):
-        self.status_action.setText("Restarting Dangerzone ...")
+        self.vm.restart()
 
     def quit_clicked(self):
         self.app.quit()

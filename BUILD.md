@@ -56,7 +56,7 @@ If you don't have it already, install poetry (`pip3 install --user poetry`). The
 poetry install
 ```
 
-Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop) and vagrant (`brew install vagrant`) are installed and run this to collect the binaries:
+Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop) and vagrant (`brew install vagrant`) are installed and run this to collect the binaries from Docker Desktop and then build a custom Alpine Linux ISO for Dangerzone, and copy them into the `share` folder:
 
 ```
 ./install/macos/get-vm.sh

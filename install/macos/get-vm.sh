@@ -9,7 +9,7 @@ cp /Applications/Docker.app/Contents/Resources/bin/com.docker.vpnkit share/bin/v
 cd install/vm-builder
 vagrant up
 vagrant ssh -- /vagrant/build-iso.sh
-vagrant down
+vagrant halt
 cd ../..
 
 # Copy the ISO to resources

@@ -1,4 +1,5 @@
-from PySide2 import QtCore, QtGui, QtWidgets
+import os
+from PySide2 import QtWidgets
 
 
 class SysTray(QtWidgets.QSystemTrayIcon):
@@ -22,11 +23,20 @@ class SysTray(QtWidgets.QSystemTrayIcon):
         self.setContextMenu(menu)
         self.show()
 
-        # Processes for the Dangerzone VM
+        # Dangerzone VM
         self.vpnkit_p = None
         self.hyperkit_p = None
-
-        # Start the VM
+        self.hyperkit_path = self.global_common.get_resource_path("bin/hyperkit")
+        self.vpnkit_path = self.global_common.get_resource_path("bin/vpnkit")
+        self.vm_iso_path = self.global_common.get_resource_path(
+            "vm/alpine-dangerzone-v3.14-x86_64.iso"
+        )
+        self.vm_kernel_path = self.global_common.get_resource_path("vm/vmlinuz-virt")
+        self.vm_initramfs_path = self.global_common.get_resource_path(
+            "vm/initramfs-virt"
+        )
+        self.vm_state_dir = os.path.join(self.global_common.appdata_path, "vm-state")
+        os.makedirs(self.vm_state_dir, exist_ok=True)
         self.vm_start()
 
     def vm_start(self):
@@ -37,6 +47,10 @@ class SysTray(QtWidgets.QSystemTrayIcon):
             self.vpnkit_p.terminate()
         if self.hyperkit_p is not None:
             self.hyperkit_p.terminate()
+
+        # Run VPNKit
+
+        # Run Hyperkit
 
     def restart_clicked(self):
         self.status_action.setText("Restarting Dangerzone ...")

@@ -135,3 +135,5 @@ deb_dist
 install/windows/Dangerzone.wxs
 test_docs/sample-safe.pdf
 share/bin
+install/vm-builder/vm
+install/vm-builder/.vagrant

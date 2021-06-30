@@ -11,7 +11,7 @@ class SysTray(QtWidgets.QSystemTrayIcon):
         self.setIcon(self.gui_common.get_window_icon())
 
         menu = QtWidgets.QMenu()
-        self.status_action = menu.addAction("Dangerzone is starting ...")
+        self.status_action = menu.addAction("...")
         self.status_action.setEnabled(False)
         menu.addSeparator()
         self.restart_action = menu.addAction("Restart")
@@ -21,6 +21,22 @@ class SysTray(QtWidgets.QSystemTrayIcon):
 
         self.setContextMenu(menu)
         self.show()
+
+        # Processes for the Dangerzone VM
+        self.vpnkit_p = None
+        self.hyperkit_p = None
+
+        # Start the VM
+        self.vm_start()
+
+    def vm_start(self):
+        self.status_action.setText("Starting Dangerzone ...")
+
+        # Kill existing processes
+        if self.vpnkit_p is not None:
+            self.vpnkit_p.terminate()
+        if self.hyperkit_p is not None:
+            self.hyperkit_p.terminate()
 
     def restart_clicked(self):
         self.status_action.setText("Restarting Dangerzone ...")

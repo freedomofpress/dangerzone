@@ -65,10 +65,12 @@ def main():
     shutil.rmtree(os.path.join(dist_path, "dangerzone"))
 
     os.symlink(
-        "dangerzone", os.path.join(app_path, "Contents/MacOS/dangerzone-container"),
+        "dangerzone",
+        os.path.join(app_path, "Contents/MacOS/dangerzone-container"),
     )
     os.symlink(
-        "dangerzone", os.path.join(app_path, "Contents/MacOS/dangerzone-cli"),
+        "dangerzone",
+        os.path.join(app_path, "Contents/MacOS/dangerzone-cli"),
     )
 
     print(f"○ Finished build app: {app_path}")
@@ -91,24 +93,37 @@ def main():
 
         # Detect if create-dmg is installed
         if not os.path.exists("/usr/local/bin/create-dmg"):
-            print("Error: create-dmg is not installed")
+            print("create-dmg is not installed, skipping creating a DMG")
             return
 
         print("○ Creating DMG")
-        run([
-            "create-dmg",
-            "--volname", "Dangerzone",
-            "--volicon", icon_path,
-            "--window-size", "400", "200",
-            "--icon-size", "100",
-            "--icon", "Dangerzone.app", "100", "70",
-            "--hide-extension", "Dangerzone.app",
-            "--app-drop-link", "300", "70",
-            dmg_path,
-            app_path,
-            "--identity",
-            identity_name_application
-        ])
+        run(
+            [
+                "create-dmg",
+                "--volname",
+                "Dangerzone",
+                "--volicon",
+                icon_path,
+                "--window-size",
+                "400",
+                "200",
+                "--icon-size",
+                "100",
+                "--icon",
+                "Dangerzone.app",
+                "100",
+                "70",
+                "--hide-extension",
+                "Dangerzone.app",
+                "--app-drop-link",
+                "300",
+                "70",
+                dmg_path,
+                app_path,
+                "--identity",
+                identity_name_application,
+            ]
+        )
 
         print(f"○ Finished building DMG: {dmg_path}")
 

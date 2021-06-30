@@ -15,6 +15,9 @@ $VPNKIT \
 echo $! > $PIDFILE
 trap 'test -f $PIDFILE && kill `cat $PIDFILE` && rm $PIDFILE' EXIT
 
+cd $ROOT
+python3 -c 's="this is a test"; open("disk.img", "wb").write(s.encode()+b"\x00"*(512*1024-len(s)))'
+
 $HYPERKIT \
     -F $ROOT/hyperkit.pid \
     -A -u \
@@ -24,5 +27,6 @@ $HYPERKIT \
     -l com1,stdio \
     -s 1:0,ahci-cd,$ROOT/dangerzone.iso \
     -s 2:0,virtio-vpnkit,path=$VPNKIT_SOCK \
+    -s 3:0,virtio-blk,$ROOT/disk.img \
     -U 9efa82d7-ebd5-4287-b1cc-ac4160a39fa7 \
     -f kexec,$ROOT/kernel,$ROOT/initramfs.img,"earlyprintk=serial console=ttyS0 modules=loop,squashfs,sd-mod"

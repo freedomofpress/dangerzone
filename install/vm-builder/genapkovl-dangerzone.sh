@@ -46,6 +46,39 @@ UseDNS no
 PasswordAuthentication no
 EOF
 
+# Script to read info from host
+makefile root:root 0755 "$tmp"/etc/read-info-from-host <<EOF
+#!/usr/bin/env python3
+import json
+
+# Read data
+with open("/dev/vda", "rb") as f:
+    s = f.read()
+
+info = json.loads(s[0:s.find(b"\0")])
+
+# Create SSH files
+os.makedirs("/home/user/.ssh", exist_ok=True)
+
+with open("/home/user/.ssh/id_ed25519") as f:
+    f.write(info["id_ed25519"])
+
+with open("/home/user/.ssh/id_ed25519.pub") as f:
+    f.write(info["id_ed25519.pub"])
+
+with open("/home/user/.ssh/authorized_keys") as f:
+    f.write(info["id_ed25519.pub"])
+
+with open("/home/user/.ssh/env_ssh_target") as f:
+    f.write(info['ssh_target'])
+
+with open("/home/user/.ssh/env_sshd_port") as f:
+    f.write(info['sshd_port'])
+
+with open("/home/user/.ssh/env_sshd_tunnel_port") as f:
+    f.write(info['sshd_tunnel_port'])
+EOF
+
 # Dangerzone alpine setup
 makefile root:root 0644 "$tmp"/etc/answers.txt <<EOF
 KEYMAPOPTS="us us"
@@ -71,13 +104,8 @@ start_pre() {
 	/sbin/setup-alpine -f /etc/answers.txt -e -q
 	rm /etc/answers.txt
 
-    # Create user, give the dangerzone-vm-key ssh access
+    # Create user
     /usr/sbin/adduser -D -u 1001 user
-    mkdir -p /home/user/.ssh
-    echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILmxIw2etg2IxY77GOFe/6tuMH/K5c1gsz3qPY/s7rZF dangerzone-vm-key" > /home/user/.ssh/authorized_keys
-    chown -R user:user /home/user/.ssh
-    chmod 700 /home/user/.ssh
-    chmod 600 /home/user/.ssh/authorized_keys
 
 	# Move containers into home dir
 	mkdir -p /home/user/.local/share
@@ -87,6 +115,17 @@ start_pre() {
 	# Allow podman containers to run
 	echo "user:100000:65536" >> /etc/subuid
     echo "user:100000:65536" >> /etc/subgid
+
+	# Get info from the host
+	/etc/read-info-from-host
+	chmod 700 /home/user/.ssh
+	chmod 600 /home/user/.ssh/*
+
+	# Start the ssh reverse tunnel
+	SSH_TARGET=$(cat /home/user/.ssh/env_ssh_target)
+	SSHD_PORT=$(cat /home/user/.ssh/env_sshd_port)
+	SSHD_TUNNEL_PORT=$(cat /home/user/.ssh/sshd_tunnel_port)
+	/usr/bin/ssh -o StrictHostKeyChecking=no -N -R $SSHD_TUNNEL_PORT:127.0.0.1:22 -p $SSHD_PORT $SSH_TARGET &
 }
 EOF
 

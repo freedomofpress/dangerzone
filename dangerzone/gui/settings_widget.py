@@ -42,7 +42,14 @@ class SettingsWidget(QtWidgets.QWidget):
         save_layout.addWidget(self.save_browse_button)
         save_layout.addStretch()
 
-        if platform.system() != "Windows":
+        if platform.system() == "Darwin":
+            # Open safe document
+            self.open_checkbox = QtWidgets.QCheckBox(
+                "Open safe document after converting"
+            )
+            self.open_checkbox.clicked.connect(self.update_ui)
+
+        elif platform.system() != "Linux":
             # Open safe document
             self.open_checkbox = QtWidgets.QCheckBox(
                 "Open safe document after converting, using"
@@ -114,17 +121,18 @@ class SettingsWidget(QtWidgets.QWidget):
         if index != -1:
             self.ocr_combobox.setCurrentIndex(index)
 
-        if platform.system() != "Windows":
+        if platform.system() == "Darwin" or platform.system() == "Linux":
             if self.global_common.settings.get("open"):
                 self.open_checkbox.setCheckState(QtCore.Qt.Checked)
             else:
                 self.open_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-            index = self.open_combobox.findText(
-                self.global_common.settings.get("open_app")
-            )
-            if index != -1:
-                self.open_combobox.setCurrentIndex(index)
+            if platform.system() == "Linux":
+                index = self.open_combobox.findText(
+                    self.global_common.settings.get("open_app")
+                )
+                if index != -1:
+                    self.open_combobox.setCurrentIndex(index)
 
         if self.global_common.settings.get("update_container"):
             self.update_checkbox.setCheckState(QtCore.Qt.Checked)

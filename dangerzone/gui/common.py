@@ -48,11 +48,8 @@ class GuiCommon(object):
     def open_pdf_viewer(self, filename):
         if self.global_common.settings.get("open_app") in self.pdf_viewers:
             if platform.system() == "Darwin":
-                # Get the PDF reader bundle command
-                bundle_identifier = self.pdf_viewers[
-                    self.global_common.settings.get("open_app")
-                ]
-                args = ["open", "-b", bundle_identifier, filename]
+                # Open in Preview
+                args = ["open", "-a", "Preview.app", filename]
 
                 # Run
                 args_str = " ".join(pipes.quote(s) for s in args)
@@ -81,41 +78,7 @@ class GuiCommon(object):
 
     def _find_pdf_viewers(self):
         pdf_viewers = {}
-
-        if platform.system() == "Darwin":
-            # Get all installed apps that can open PDFs
-            bundle_identifiers = LaunchServices.LSCopyAllRoleHandlersForContentType(
-                "com.adobe.pdf", CoreServices.kLSRolesAll
-            )
-            for bundle_identifier in bundle_identifiers:
-                # Get the filesystem path of the app
-                res = LaunchServices.LSCopyApplicationURLsForBundleIdentifier(
-                    bundle_identifier, None
-                )
-                if res[0] is None:
-                    continue
-                app_url = res[0][0]
-                app_path = str(app_url.path())
-
-                # Load its plist file
-                plist_path = os.path.join(app_path, "Contents/Info.plist")
-
-                # Skip if there's not an Info.plist
-                if not os.path.exists(plist_path):
-                    continue
-
-                with open(plist_path, "rb") as f:
-                    plist_data = f.read()
-
-                plist_dict = plistlib.loads(plist_data)
-
-                if (
-                    plist_dict.get("CFBundleName")
-                    and plist_dict["CFBundleName"] != "Dangerzone"
-                ):
-                    pdf_viewers[plist_dict["CFBundleName"]] = bundle_identifier
-
-        elif platform.system() == "Linux":
+        if platform.system() == "Linux":
             # Find all .desktop files
             for search_path in [
                 "/usr/share/applications",

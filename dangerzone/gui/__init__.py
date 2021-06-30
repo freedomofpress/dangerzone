@@ -112,8 +112,8 @@ def gui_main(custom_container, filename):
     systray = SysTray(global_common, gui_common, app, vm)
 
     # Start the VM
-    # if vm:
-    #     vm.start()
+    if vm:
+        vm.start()
 
     closed_windows = {}
     windows = {}

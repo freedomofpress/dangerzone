@@ -40,9 +40,6 @@ class SysTray(QtWidgets.QSystemTrayIcon):
         elif state == self.vm.STATE_ON:
             self.status_action.setText("Dangerzone VM is running")
             self.restart_action.setEnabled(True)
-        elif state == self.vm.STATE_STOPPING:
-            self.status_action.setText("Dangerzone VM is stopping...")
-            self.restart_action.setEnabled(False)
 
     def restart_clicked(self):
         self.vm.restart()

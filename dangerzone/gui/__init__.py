@@ -105,11 +105,12 @@ def gui_main(custom_container, filename):
     # The dangerzone VM (Mac-only)
     if platform.system() == "Darwin":
         vm = Vm(global_common)
+        global_common.vm = vm
     else:
         vm = None
 
     # Create the system tray
-    systray = SysTray(global_common, gui_common, app, vm)
+    systray = SysTray(global_common, gui_common, app)
 
     # Start the VM
     if vm:
@@ -131,7 +132,7 @@ def gui_main(custom_container, filename):
             window = windows[list(windows.keys())[0]]
         else:
             window_id = uuid.uuid4().hex
-            window = MainWindow(global_common, gui_common, vm, window_id)
+            window = MainWindow(global_common, gui_common, window_id)
             window.delete_window.connect(delete_window)
             windows[window_id] = window
 

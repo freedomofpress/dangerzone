@@ -3,12 +3,11 @@ from PySide2 import QtWidgets
 
 
 class SysTray(QtWidgets.QSystemTrayIcon):
-    def __init__(self, global_common, gui_common, app, vm):
+    def __init__(self, global_common, gui_common, app):
         super(SysTray, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
         self.app = app
-        self.vm = vm
 
         self.setIcon(self.gui_common.get_window_icon())
 
@@ -27,22 +26,22 @@ class SysTray(QtWidgets.QSystemTrayIcon):
         self.setContextMenu(menu)
         self.show()
 
-        if self.vm:
-            self.vm.vm_state_change.connect(self.vm_state_change)
+        if self.global_common.vm:
+            self.global_common.vm.vm_state_change.connect(self.vm_state_change)
 
     def vm_state_change(self, state):
-        if state == self.vm.STATE_OFF:
+        if state == self.global_common.vm.STATE_OFF:
             self.status_action.setText("Dangerzone VM is off")
             self.restart_action.setEnabled(True)
-        elif state == self.vm.STATE_STARTING:
+        elif state == self.global_common.vm.STATE_STARTING:
             self.status_action.setText("Dangerzone VM is starting...")
             self.restart_action.setEnabled(False)
-        elif state == self.vm.STATE_ON:
+        elif state == self.global_common.vm.STATE_ON:
             self.status_action.setText("Dangerzone VM is running")
             self.restart_action.setEnabled(True)
 
     def restart_clicked(self):
-        self.vm.restart()
+        self.global_common.vm.restart()
 
     def quit_clicked(self):
         self.app.quit()

@@ -38,6 +38,9 @@ class GlobalCommon(object):
         # dangerzone-container path
         self.dz_container_path = self.get_dangerzone_container_path()
 
+        # VM object, if available
+        self.vm = None
+
         # Languages supported by tesseract
         self.ocr_languages = {
             "Afrikaans": "ar",

@@ -8,6 +8,8 @@ import socket
 import random
 import getpass
 import json
+import psutil
+import time
 from PySide2 import QtCore
 
 
@@ -15,6 +17,7 @@ class Vm(QtCore.QObject):
     STATE_OFF = 0
     STATE_STARTING = 1
     STATE_ON = 2
+    STATE_FAIL = 3
 
     vm_state_change = QtCore.Signal(int)
 
@@ -25,9 +28,14 @@ class Vm(QtCore.QObject):
         # VM starts off
         self.state = self.STATE_OFF
 
+        # Ports for ssh services
+        self.sshd_port = None
+        self.sshd_tunnel_port = None
+
         # Processes
         self.vpnkit_p = None
         self.hyperkit_p = None
+        self.sshd_pid = None
 
         # Relevant paths
         self.vpnkit_path = self.global_common.get_resource_path("bin/vpnkit")
@@ -50,6 +58,8 @@ class Vm(QtCore.QObject):
         self.ssh_client_pubkey_path = os.path.join(
             self.state_dir.name, "client_ed25519.pub"
         )
+        self.sshd_pid_path = os.path.join(self.state_dir.name, "sshd.pid")
+        self.sshd_log_path = os.path.join(self.state_dir.name, "sshd.log")
         self.vm_disk_img_path = os.path.join(self.state_dir.name, "disk.img")
 
         # UDID for VM
@@ -57,6 +67,12 @@ class Vm(QtCore.QObject):
         self.vm_cmdline = (
             "earlyprintk=serial console=ttyS0 modules=loop,squashfs,sd-mod"
         )
+
+        # Threads
+        self.wait_t = None
+
+    def __del__(self):
+        self.stop()
 
     def start(self):
         self.state = self.STATE_STARTING
@@ -105,35 +121,39 @@ class Vm(QtCore.QObject):
             ssh_client_pubkey = f.read()
 
         # Find an open port
-        sshd_port = self.find_open_port()
-        sshd_tunnel_port = self.find_open_port()
+        self.sshd_port = self.find_open_port()
+        self.sshd_tunnel_port = self.find_open_port()
 
         # Start an sshd service on this port
-        subprocess.run(
-            [
-                "/usr/sbin/sshd",
-                "-4",
-                "-o",
-                f"HostKey={self.ssh_host_key_path}",
-                "-o",
-                f"ListenAddress=127.0.0.1:{sshd_port}",
-                "-o",
-                f"AllowUsers={getpass.getuser()}",
-                "-o",
-                "PasswordAuthentication=no",
-                "-o",
-                "PubkeyAuthentication=yes",
-                "-o",
-                "Compression=yes",
-                "-o",
-                "ForceCommand=/usr/bin/whoami",
-                "-o",
-                "UseDNS=no",
-                "-o",
-                f"AuthorizedKeysFile={self.ssh_client_pubkey_path}",
-            ]
-        )
-        # TODO: keep track of the sshd process so we can kill it on close
+        args = [
+            "/usr/sbin/sshd",
+            "-4",
+            "-E",
+            self.sshd_log_path,
+            "-o",
+            f"PidFile={self.sshd_pid_path}",
+            "-o",
+            f"HostKey={self.ssh_host_key_path}",
+            "-o",
+            f"ListenAddress=127.0.0.1:{self.sshd_port}",
+            "-o",
+            f"AllowUsers={getpass.getuser()}",
+            "-o",
+            "PasswordAuthentication=no",
+            "-o",
+            "PubkeyAuthentication=yes",
+            "-o",
+            "Compression=yes",
+            "-o",
+            "ForceCommand=/usr/bin/whoami",
+            "-o",
+            "UseDNS=no",
+            "-o",
+            f"AuthorizedKeysFile={self.ssh_client_pubkey_path}",
+        ]
+        args_str = " ".join(pipes.quote(s) for s in args)
+        print("> " + args_str)
+        subprocess.run(args)
 
         # Create a JSON object to pass into the VM
         # This is a 512kb file that starts with a JSON object, followed by null bytes
@@ -142,8 +162,8 @@ class Vm(QtCore.QObject):
             "id_ed25519.pub": ssh_client_pubkey,
             "user": getpass.getuser(),
             "ip": "192.168.65.2",
-            "port": sshd_port,
-            "tunnel_port": sshd_tunnel_port,
+            "port": self.sshd_port,
+            "tunnel_port": self.sshd_tunnel_port,
         }
         with open(self.vm_disk_img_path, "wb") as f:
             vm_info_bytes = json.dumps(vm_info).encode()
@@ -200,9 +220,31 @@ class Vm(QtCore.QObject):
         print("> " + args_str)
         self.hyperkit_p = subprocess.Popen(
             args,
-            stdout=sys.stdout,
-            stderr=subprocess.STDOUT,
+            # stdout=sys.stdout,
+            # stderr=subprocess.STDOUT,
         )
+
+        # Get the sshd PID
+        with open(self.sshd_pid_path) as f:
+            self.sshd_pid = int(f.read())
+
+        print(f"sshd PID: {self.sshd_pid}")
+        print(f"vpnkit PID: {self.vpnkit_p.pid}")
+        print(f"hyperkit PID: {self.hyperkit_p.pid}")
+
+        # Wait for SSH thread
+        self.wait_t = WaitForSsh(self.sshd_tunnel_port)
+        self.wait_t.connected.connect(self.vm_connected)
+        self.wait_t.timeout.connect(self.vm_timeout)
+        self.wait_t.start()
+
+    def vm_connected(self):
+        self.state = self.STATE_ON
+        self.vm_state_change.emit()
+
+    def vm_timeout(self):
+        self.state = self.STATE_FAIL
+        self.vm_state_change.emit()
 
     def restart(self):
         self.stop()
@@ -210,6 +252,7 @@ class Vm(QtCore.QObject):
 
     def stop(self):
         # Kill existing processes
+        self.kill_sshd()
         if self.vpnkit_p is not None:
             self.vpnkit_p.terminate()
             self.vpnkit_p = None
@@ -228,3 +271,34 @@ class Vm(QtCore.QObject):
             _, port = tmpsock.getsockname()
 
         return port
+
+    def kill_sshd(self):
+        if self.sshd_pid and psutil.pid_exists(self.sshd_pid):
+            try:
+                proc = psutil.Process(self.sshd_pid)
+                proc.kill()
+            except Exception:
+                pass
+
+        self.sshd_pid = None
+
+
+class WaitForSsh(QtCore.QThread):
+    connected = QtCore.Signal()
+    timeout = QtCore.Signal()
+
+    def __init__(self, ssh_port):
+        super(WaitForSsh, self).__init__()
+        self.ssh_port = ssh_port
+
+    def run(self):
+        # Wait for the SSH port to be open
+        timeout_seconds = 45
+        sock = socket.socket()
+        sock.settimeout(timeout_seconds)
+        try:
+            sock.connect(("127.0.0.1", int(self.ssh_port)))
+            self.connected.emit()
+            sock.close()
+        except socket.timeout:
+            self.timeout.emit()

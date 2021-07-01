@@ -1,6 +1,6 @@
 #!/sbin/openrc-run
 name="Dangerzone init script"
-start_pre() {
+start() {
     # Setup Alpine
 	/sbin/setup-alpine -f /etc/answers.txt -e -q
 	rm /etc/answers.txt

@@ -170,4 +170,10 @@ def gui_main(custom_container, filename):
     # If the application is activated and all windows are closed, open a new one
     app_wrapper.application_activated.connect(application_activated)
 
-    sys.exit(app.exec_())
+    # Launch the GUI
+    ret = app.exec_()
+
+    if vm:
+        vm.stop()
+
+    sys.exit(ret)

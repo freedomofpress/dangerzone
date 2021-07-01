@@ -31,8 +31,8 @@ cp -r /home/user/.local/share/containers "$tmp"/etc/container-data
 # Start cgroups, required by podman
 rc_add cgroups boot
 
-# Start sshd
-rc_add sshd boot
+# Start dropbear (ssh server)
+rc_add dropbear boot
 
 # Run setup-alpine
 rc_add dangerzone boot

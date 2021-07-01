@@ -9,5 +9,5 @@ profile_dangerzone() {
 	kernel_cmdline="console=tty0 console=ttyS0,115200"
 	syslinux_serial="0 115200"
 	apkovl="genapkovl-dangerzone.sh"
-    apks="$apks podman openssh sshfs python3"
+    apks="$apks podman dropbear sshfs python3 sudo"
 }

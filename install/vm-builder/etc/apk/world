@@ -1,3 +1,6 @@
 alpine-base
-openssh
 podman
+dropbear
+sshfs
+python3
+sudo

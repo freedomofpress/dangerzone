@@ -13,8 +13,6 @@ class Settings:
             "ocr_language": "English",
             "open": True,
             "open_app": None,
-            "update_container": True,
-            "linux_prefers_typing_password": None,
         }
 
         self.load()

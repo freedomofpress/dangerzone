@@ -46,26 +46,6 @@ class TaskBase(QtCore.QThread):
         return p.returncode, output, stderr
 
 
-class PullImageTask(TaskBase):
-    def __init__(self, global_common, common):
-        super(PullImageTask, self).__init__()
-        self.global_common = global_common
-        self.common = common
-
-    def run(self):
-        self.update_label.emit(
-            "Pulling container image (this might take a few minutes)"
-        )
-        self.update_details.emit("")
-        args = ["pull"]
-        returncode, _, _ = self.exec_container(args)
-
-        if returncode != 0:
-            return
-
-        self.task_finished.emit()
-
-
 class ConvertToPixels(TaskBase):
     def __init__(self, global_common, common):
         super(ConvertToPixels, self).__init__()

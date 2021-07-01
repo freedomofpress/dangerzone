@@ -5,7 +5,7 @@ import platform
 import subprocess
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from .tasks import PullImageTask, ConvertToPixels, ConvertToPDF
+from .tasks import ConvertToPixels, ConvertToPDF
 
 
 class TasksWidget(QtWidgets.QWidget):
@@ -59,8 +59,6 @@ class TasksWidget(QtWidgets.QWidget):
         )
 
     def start(self):
-        if self.global_common.settings.get("update_container"):
-            self.tasks += [PullImageTask]
         self.tasks += [ConvertToPixels, ConvertToPDF]
         self.next_task()
 

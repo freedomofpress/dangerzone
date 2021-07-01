@@ -75,12 +75,6 @@ class SettingsWidget(QtWidgets.QWidget):
         ocr_layout.addWidget(self.ocr_combobox)
         ocr_layout.addStretch()
 
-        # Update container
-        self.update_checkbox = QtWidgets.QCheckBox("Update container")
-        update_layout = QtWidgets.QHBoxLayout()
-        update_layout.addWidget(self.update_checkbox)
-        update_layout.addStretch()
-
         # Button
         self.start_button = QtWidgets.QPushButton("Convert to Safe Document")
         self.start_button.clicked.connect(self.start_button_clicked)
@@ -100,7 +94,6 @@ class SettingsWidget(QtWidgets.QWidget):
         if platform.system() != "Windows":
             layout.addLayout(open_layout)
         layout.addLayout(ocr_layout)
-        layout.addLayout(update_layout)
         layout.addSpacing(20)
         layout.addLayout(button_layout)
         layout.addStretch()
@@ -135,36 +128,6 @@ class SettingsWidget(QtWidgets.QWidget):
                 )
                 if index != -1:
                     self.open_combobox.setCurrentIndex(index)
-
-        if self.global_common.settings.get("update_container"):
-            self.update_checkbox.setCheckState(QtCore.Qt.Checked)
-        else:
-            self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
-
-    def check_update_container_default_state(self):
-        # Is update containers required?
-        if self.global_common.custom_container:
-            self.update_checkbox.setCheckState(QtCore.Qt.Unchecked)
-            self.update_checkbox.setEnabled(False)
-            self.update_checkbox.hide()
-        else:
-            with self.global_common.exec_dangerzone_container(
-                [
-                    "ls",
-                    self.global_common.get_container_name(),
-                ]
-            ) as p:
-                stdout_data, stderror_data = p.communicate()
-
-                # The user canceled, or permission denied
-                if p.returncode == 126 or p.returncode == 127:
-                    self.close_window.emit()
-                    return
-
-                # Check the output
-                if b"dangerzone" not in stdout_data:
-                    self.update_checkbox.setCheckState(QtCore.Qt.Checked)
-                    self.update_checkbox.setEnabled(False)
 
     def update_ui(self):
         if platform.system() == "Windows":
@@ -220,9 +183,6 @@ class SettingsWidget(QtWidgets.QWidget):
                 self.global_common.settings.set(
                     "open_app", self.open_combobox.currentText()
                 )
-        self.global_common.settings.set(
-            "update_container", self.update_checkbox.checkState() == QtCore.Qt.Checked
-        )
         self.global_common.settings.save()
 
         # Start!

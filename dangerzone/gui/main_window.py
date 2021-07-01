@@ -1,9 +1,11 @@
-from dangerzone import global_common
 import shutil
 import os
 import platform
+import tempfile
+import subprocess
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from .tasks import ConvertToPixels, ConvertToPDF
 from ..common import Common
 
 

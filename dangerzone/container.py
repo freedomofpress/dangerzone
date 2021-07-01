@@ -4,12 +4,12 @@ import subprocess
 import sys
 import pipes
 import shutil
-import os
+import json
 
 # What is the container runtime for this platform?
 if platform.system() == "Darwin":
-    container_tech = "docker"
-    container_runtime = "/usr/local/bin/docker"
+    container_tech = "dangerzone-vm"
+    container_runtime = shutil.which("docker")
 elif platform.system() == "Windows":
     container_tech = "docker"
     container_runtime = shutil.which("docker.exe")
@@ -29,23 +29,10 @@ else:
     startupinfo = None
 
 
-def exec_container(args):
-    args = [container_runtime] + args
-
+def exec(args):
     args_str = " ".join(pipes.quote(s) for s in args)
     print("> " + args_str)
     sys.stdout.flush()
-
-    # In Tails, tell the container runtime to download over Tor
-    if (
-        platform.system() == "Linux"
-        and os.getlogin() == "amnesia"
-        and os.getuid() == 1000
-    ):
-        env = os.environ.copy()
-        env["HTTP_PROXY"] = "socks5://127.0.0.1:9050"
-    else:
-        env = None
 
     with subprocess.Popen(
         args,
@@ -55,10 +42,49 @@ def exec_container(args):
         bufsize=1,
         universal_newlines=True,
         startupinfo=startupinfo,
-        env=env,
     ) as p:
         p.communicate()
         return p.returncode
+
+
+def exec_vm(args, vm_info):
+    if container_tech == "dangerzone-vm" and vm_info is None:
+        print("--vm-info-path required on this platform")
+        return
+
+    args = [
+        "/usr/bin/ssh",
+        "-q",
+        "-i",
+        vm_info["client_key_path"],
+        "-p",
+        vm_info["tunnel_port"],
+        "-o",
+        "StrictHostKeyChecking=no",
+        "user@127.0.0.1",
+    ] + args
+    return exec(args)
+
+
+def exec_container(args, vm_info):
+    if container_tech == "dangerzone-vm" and vm_info is None:
+        print("--vm-info-path required on this platform")
+        return
+
+    if container_tech == "dangerzone-vm":
+        args = ["podman"] + args
+        return exec_vm(args, vm_info)
+
+    args = [container_runtime] + args
+    return exec(args)
+
+
+def load_vm_info(vm_info_path):
+    if not vm_info_path:
+        return None
+
+    with open(vm_info_path) as f:
+        return json.loads(f.read())
 
 
 @click.group()
@@ -71,23 +97,21 @@ def container_main():
 
 
 @container_main.command()
+@click.option("--vm-info-path", default=None)
 @click.option("--container-name", default="docker.io/flmcode/dangerzone")
-def ls(container_name):
+def ls(vm_info_path, container_name):
     """docker image ls [container_name]"""
-    sys.exit(exec_container(["image", "ls", container_name]))
+    sys.exit(
+        exec_container(["image", "ls", container_name]), load_vm_info(vm_info_path)
+    )
 
 
 @container_main.command()
-def pull():
-    """docker pull flmcode/dangerzone"""
-    sys.exit(exec_container(["pull", "docker.io/flmcode/dangerzone"]))
-
-
-@container_main.command()
+@click.option("--vm-info-path", default=None)
 @click.option("--document-filename", required=True)
 @click.option("--pixel-dir", required=True)
 @click.option("--container-name", default="docker.io/flmcode/dangerzone")
-def documenttopixels(document_filename, pixel_dir, container_name):
+def documenttopixels(vm_info_path, document_filename, pixel_dir, container_name):
     """docker run --network none -v [document_filename]:/tmp/input_file -v [pixel_dir]:/dangerzone [container_name] document-to-pixels"""
     args = ["run", "--network", "none"]
 
@@ -103,16 +127,17 @@ def documenttopixels(document_filename, pixel_dir, container_name):
         container_name,
         "document-to-pixels",
     ]
-    sys.exit(exec_container(args))
+    sys.exit(exec_container(args, load_vm_info(vm_info_path)))
 
 
 @container_main.command()
+@click.option("--vm-info-path", default=None)
 @click.option("--pixel-dir", required=True)
 @click.option("--safe-dir", required=True)
 @click.option("--container-name", default="docker.io/flmcode/dangerzone")
 @click.option("--ocr", required=True)
 @click.option("--ocr-lang", required=True)
-def pixelstopdf(pixel_dir, safe_dir, container_name, ocr, ocr_lang):
+def pixelstopdf(vm_info_path, pixel_dir, safe_dir, container_name, ocr, ocr_lang):
     """docker run --network none -v [pixel_dir]:/dangerzone -v [safe_dir]:/safezone [container_name] -e OCR=[ocr] -e OCR_LANGUAGE=[ocr_lang] pixels-to-pdf"""
     sys.exit(
         exec_container(
@@ -130,6 +155,7 @@ def pixelstopdf(pixel_dir, safe_dir, container_name, ocr, ocr_lang):
                 f"OCR_LANGUAGE={ocr_lang}",
                 container_name,
                 "pixels-to-pdf",
-            ]
+            ],
+            load_vm_info(vm_info_path),
         )
     )

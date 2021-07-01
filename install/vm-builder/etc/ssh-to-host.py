@@ -31,15 +31,25 @@ def main():
         f.write(info["id_ed25519.pub"])
         f.write("\n")
 
+    with open("/home/user/.ssh/config", "w") as f:
+        f.write("Host hostbox\n")
+        f.write(f"  Hostname {info['ip']}\n")
+        f.write(f"  Port {info['port']}\n")
+        f.write(f"  User {info['user']}\n")
+        f.write("  IdentityFile /home/user/.ssh/id_ed25519\n")
+        f.write("\n")
+
     os.chmod("/home/user/.ssh", 0o700)
     os.chmod("/home/user/.ssh/id_ed25519", 0o600)
     os.chmod("/home/user/.ssh/id_ed25519.pub", 0o644)
     os.chmod("/home/user/.ssh/authorized_keys", 0o600)
+    os.chmod("/home/user/.ssh/config", 0o600)
 
     shutil.chown("/home/user/.ssh", "user", "user")
     shutil.chown("/home/user/.ssh/id_ed25519", "user", "user")
     shutil.chown("/home/user/.ssh/id_ed25519.pub", "user", "user")
     shutil.chown("/home/user/.ssh/authorized_keys", "user", "user")
+    shutil.chown("/home/user/.ssh/config", "user", "user")
 
     # Start SSH reverse port forward
     subprocess.run(
@@ -50,14 +60,10 @@ def main():
             "/usr/bin/ssh",
             "-o",
             "StrictHostKeyChecking=no",
-            "-i",
-            "/home/user/.ssh/id_ed25519",
             "-N",
             "-R",
             f"{info['tunnel_port']}:127.0.0.1:22",
-            "-p",
-            str(info["port"]),
-            f"{info['user']}@{info['ip']}",
+            "hostbox",
         ]
     )
 

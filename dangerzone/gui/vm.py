@@ -60,6 +60,7 @@ class Vm(QtCore.QObject):
         )
         self.sshd_pid_path = os.path.join(self.state_dir.name, "sshd.pid")
         self.sshd_log_path = os.path.join(self.state_dir.name, "sshd.log")
+        self.vm_info_path = os.path.join(self.state_dir.name, "info.json")
         self.vm_disk_img_path = os.path.join(self.state_dir.name, "disk.img")
 
         # UDID for VM
@@ -145,8 +146,6 @@ class Vm(QtCore.QObject):
             "-o",
             "Compression=yes",
             "-o",
-            "ForceCommand=/usr/bin/whoami",
-            "-o",
             "UseDNS=no",
             "-o",
             f"AuthorizedKeysFile={self.ssh_client_pubkey_path}",
@@ -157,7 +156,7 @@ class Vm(QtCore.QObject):
 
         # Create a JSON object to pass into the VM
         # This is a 512kb file that starts with a JSON object, followed by null bytes
-        vm_info = {
+        guest_vm_info = {
             "id_ed25519": ssh_client_key,
             "id_ed25519.pub": ssh_client_pubkey,
             "user": getpass.getuser(),
@@ -166,9 +165,17 @@ class Vm(QtCore.QObject):
             "tunnel_port": self.sshd_tunnel_port,
         }
         with open(self.vm_disk_img_path, "wb") as f:
-            vm_info_bytes = json.dumps(vm_info).encode()
-            f.write(vm_info_bytes)
-            f.write(b"\x00" * (512 * 1024 - len(vm_info_bytes)))
+            guest_vm_info_bytes = json.dumps(guest_vm_info).encode()
+            f.write(guest_vm_info_bytes)
+            f.write(b"\x00" * (512 * 1024 - len(guest_vm_info_bytes)))
+
+        # Create a JSON object for the container process to read
+        vm_info = {
+            "client_key_path": self.ssh_client_key_path,
+            "tunnel_port": self.sshd_tunnel_port,
+        }
+        with open(self.vm_info_path, "w") as f:
+            f.write(json.dumps(vm_info))
 
         # Run VPNKit
         args = [

@@ -1,0 +1,12 @@
+KEYMAPOPTS="us us"
+HOSTNAMEOPTS="-n dangerzone"
+INTERFACESOPTS="auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+    hostname dangerzone
+"
+DNSOPTS="-d example.com 4.4.4.4"
+TIMEZONEOPTS="-z UTC"
+SSHDOPTS="-c openssh"

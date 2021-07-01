@@ -10,15 +10,6 @@ cleanup() {
 	rm -rf "$tmp"
 }
 
-makefile() {
-	OWNER="$1"
-	PERMS="$2"
-	FILENAME="$3"
-	cat > "$FILENAME"
-	chown "$OWNER" "$FILENAME"
-	chmod "$PERMS" "$FILENAME"
-}
-
 rc_add() {
 	mkdir -p "$tmp"/etc/runlevels/"$2"
 	ln -sf /etc/init.d/"$1" "$tmp"/etc/runlevels/"$2"/"$1"
@@ -27,107 +18,9 @@ rc_add() {
 tmp="$(mktemp -d)"
 trap cleanup EXIT
 
-mkdir -p "$tmp"/etc/apk
-makefile root:root 0644 "$tmp"/etc/apk/world <<EOF
-alpine-base
-openssh
-podman
-EOF
-
-# Custom sshd config
-mkdir -p "$tmp"/etc/ssh
-makefile root:root 0644 "$tmp"/etc/ssh/sshd_config <<EOF
-AuthorizedKeysFile .ssh/authorized_keys
-AllowTcpForwarding no
-GatewayPorts no
-X11Forwarding no
-Subsystem sftp /usr/lib/ssh/sftp-server
-UseDNS no
-PasswordAuthentication no
-EOF
-
-# Script to read info from host
-makefile root:root 0755 "$tmp"/etc/read-info-from-host <<EOF
-#!/usr/bin/env python3
-import json
-
-# Read data
-with open("/dev/vda", "rb") as f:
-    s = f.read()
-
-info = json.loads(s[0:s.find(b"\0")])
-
-# Create SSH files
-os.makedirs("/home/user/.ssh", exist_ok=True)
-
-with open("/home/user/.ssh/id_ed25519") as f:
-    f.write(info["id_ed25519"])
-
-with open("/home/user/.ssh/id_ed25519.pub") as f:
-    f.write(info["id_ed25519.pub"])
-
-with open("/home/user/.ssh/authorized_keys") as f:
-    f.write(info["id_ed25519.pub"])
-
-with open("/home/user/.ssh/env_ssh_target") as f:
-    f.write(info['ssh_target'])
-
-with open("/home/user/.ssh/env_sshd_port") as f:
-    f.write(info['sshd_port'])
-
-with open("/home/user/.ssh/env_sshd_tunnel_port") as f:
-    f.write(info['sshd_tunnel_port'])
-EOF
-
-# Dangerzone alpine setup
-makefile root:root 0644 "$tmp"/etc/answers.txt <<EOF
-KEYMAPOPTS="us us"
-HOSTNAMEOPTS="-n dangerzone"
-INTERFACESOPTS="auto lo
-iface lo inet loopback
-
-auto eth0
-iface eth0 inet dhcp
-    hostname dangerzone
-"
-DNSOPTS="-d example.com 4.4.4.4"
-TIMEZONEOPTS="-z UTC"
-SSHDOPTS="-c openssh"
-EOF
-
-mkdir -p "$tmp"/etc/init.d
-makefile root:root 0755 "$tmp"/etc/init.d/dangerzone <<EOF
-#!/sbin/openrc-run
-name="Dangerzone init script"
-start_pre() {
-    # Setup Alpine
-	/sbin/setup-alpine -f /etc/answers.txt -e -q
-	rm /etc/answers.txt
-
-    # Create user
-    /usr/sbin/adduser -D -u 1001 user
-
-	# Move containers into home dir
-	mkdir -p /home/user/.local/share
-	mv /etc/container-data /home/user/.local/share/containers
-	chown -R user:user /home/user/.local
-
-	# Allow podman containers to run
-	echo "user:100000:65536" >> /etc/subuid
-    echo "user:100000:65536" >> /etc/subgid
-
-	# Get info from the host
-	/etc/read-info-from-host
-	chmod 700 /home/user/.ssh
-	chmod 600 /home/user/.ssh/*
-
-	# Start the ssh reverse tunnel
-	SSH_TARGET=$(cat /home/user/.ssh/env_ssh_target)
-	SSHD_PORT=$(cat /home/user/.ssh/env_sshd_port)
-	SSHD_TUNNEL_PORT=$(cat /home/user/.ssh/sshd_tunnel_port)
-	/usr/bin/ssh -o StrictHostKeyChecking=no -N -R $SSHD_TUNNEL_PORT:127.0.0.1:22 -p $SSHD_PORT $SSH_TARGET &
-}
-EOF
+# Copy /etc
+cp -r /vagrant/etc "$tmp"
+chown -R root:root "$tmp"/etc
 
 # Fix permissions and add containers to /etc/container-data, temporarily
 for WEIRD_FILE in $(find /home/user/.local/share/containers -perm 000); do
@@ -144,6 +37,7 @@ rc_add sshd boot
 # Run setup-alpine
 rc_add dangerzone boot
 
+# Other init scripts
 rc_add devfs sysinit
 rc_add dmesg sysinit
 rc_add mdev sysinit

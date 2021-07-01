@@ -1,0 +1,22 @@
+#!/sbin/openrc-run
+name="Dangerzone init script"
+start_pre() {
+    # Setup Alpine
+	/sbin/setup-alpine -f /etc/answers.txt -e -q
+	rm /etc/answers.txt
+
+    # Create user
+    /usr/sbin/adduser -D -u 1001 user
+
+	# Move containers into home dir
+	mkdir -p /home/user/.local/share
+	mv /etc/container-data /home/user/.local/share/containers
+	chown -R user:user /home/user/.local
+
+	# Allow podman containers to run
+	echo "user:100000:65536" >> /etc/subuid
+    echo "user:100000:65536" >> /etc/subgid
+
+	# SSH reverse tunnel to host
+	/etc/ssh-to-host.py &
+}

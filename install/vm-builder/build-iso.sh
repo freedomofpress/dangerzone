@@ -38,7 +38,7 @@ sudo -u user sh mkimage.sh --tag v3.14 \
     --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/main \
     --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/community \
     --profile dangerzone
-mv alpine-dangerzone-v3.14-x86_64.iso dangerzone.iso
+mv /vagrant/vm/alpine-dangerzone-v3.14-x86_64.iso /vagrant/vm/dangerzone.iso
 
 # Fix permissions
 chmod 755 /vagrant/vm

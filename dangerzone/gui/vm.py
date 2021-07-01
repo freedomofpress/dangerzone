@@ -133,15 +133,17 @@ class Vm(QtCore.QObject):
                 f"AuthorizedKeysFile={self.ssh_client_pubkey_path}",
             ]
         )
+        # TODO: keep track of the sshd process so we can kill it on close
 
         # Create a JSON object to pass into the VM
         # This is a 512kb file that starts with a JSON object, followed by null bytes
         vm_info = {
             "id_ed25519": ssh_client_key,
             "id_ed25519.pub": ssh_client_pubkey,
-            "ssh_target": f"{getpass.getuser()}@192.168.65.2",
-            "sshd_port": sshd_port,
-            "sshd_tunnel_port": sshd_tunnel_port,
+            "user": getpass.getuser(),
+            "ip": "192.168.65.2",
+            "port": sshd_port,
+            "tunnel_port": sshd_tunnel_port,
         }
         with open(self.vm_disk_img_path, "wb") as f:
             vm_info_bytes = json.dumps(vm_info).encode()

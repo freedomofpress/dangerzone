@@ -212,13 +212,14 @@ class SettingsWidget(QtWidgets.QWidget):
             "ocr", self.ocr_checkbox.checkState() == QtCore.Qt.Checked
         )
         self.global_common.settings.set("ocr_language", self.ocr_combobox.currentText())
-        if platform.system() != "Windows":
+        if platform.system() == "Darwin" or platform.system() == "Linux":
             self.global_common.settings.set(
                 "open", self.open_checkbox.checkState() == QtCore.Qt.Checked
             )
-            self.global_common.settings.set(
-                "open_app", self.open_combobox.currentText()
-            )
+            if platform.system() == "Linux":
+                self.global_common.settings.set(
+                    "open_app", self.open_combobox.currentText()
+                )
         self.global_common.settings.set(
             "update_container", self.update_checkbox.checkState() == QtCore.Qt.Checked
         )

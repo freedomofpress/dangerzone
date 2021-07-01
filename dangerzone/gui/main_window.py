@@ -101,7 +101,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def vm_started(self):
         self.waiting_widget.hide()
-        self.doc_selection_widget.show
+        self.doc_selection_widget.show()
 
     def document_selected(self):
         self.doc_selection_widget.hide()

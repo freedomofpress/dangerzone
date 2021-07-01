@@ -218,11 +218,7 @@ class Vm(QtCore.QObject):
         ]
         args_str = " ".join(pipes.quote(s) for s in args)
         print("> " + args_str)
-        self.hyperkit_p = subprocess.Popen(
-            args,
-            # stdout=sys.stdout,
-            # stderr=subprocess.STDOUT,
-        )
+        self.hyperkit_p = subprocess.Popen(args)
 
         # Get the sshd PID
         with open(self.sshd_pid_path) as f:
@@ -240,11 +236,11 @@ class Vm(QtCore.QObject):
 
     def vm_connected(self):
         self.state = self.STATE_ON
-        self.vm_state_change.emit()
+        self.vm_state_change.emit(self.state)
 
     def vm_timeout(self):
         self.state = self.STATE_FAIL
-        self.vm_state_change.emit()
+        self.vm_state_change.emit(self.state)
 
     def restart(self):
         self.stop()
@@ -293,12 +289,25 @@ class WaitForSsh(QtCore.QThread):
 
     def run(self):
         # Wait for the SSH port to be open
+        success = False
         timeout_seconds = 45
-        sock = socket.socket()
-        sock.settimeout(timeout_seconds)
-        try:
-            sock.connect(("127.0.0.1", int(self.ssh_port)))
+        start_ts = time.time()
+        while True:
+            sock = socket.socket()
+            try:
+                sock.connect(("127.0.0.1", int(self.ssh_port)))
+                sock.close()
+                success = True
+                print("ssh port open!")
+                break
+            except Exception:
+                print("ssh port closed ...")
+                pass
+
+            time.sleep(2)
+            if time.time() - start_ts >= timeout_seconds:
+                self.timeout.emit()
+                break
+
+        if success:
             self.connected.emit()
-            sock.close()
-        except socket.timeout:
-            self.timeout.emit()

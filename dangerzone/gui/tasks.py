@@ -46,48 +46,15 @@ class TaskBase(QtCore.QThread):
         return p.returncode, output, stderr
 
 
-class ConvertToPixels(TaskBase):
+class Convert(TaskBase):
     def __init__(self, global_common, common):
-        super(ConvertToPixels, self).__init__()
+        super(Convert, self).__init__()
         self.global_common = global_common
         self.common = common
 
     def run(self):
-        self.update_label.emit("Converting document to pixels")
-        args = [
-            "documenttopixels",
-            "--document-filename",
-            self.common.document_filename,
-            "--pixel-dir",
-            self.common.pixel_dir.name,
-            "--container-name",
-            self.global_common.get_container_name(),
-        ]
-        returncode, output, _ = self.exec_container(args)
+        self.update_label.emit("Converting document to safe PDF")
 
-        if returncode != 0:
-            return
-
-        success, error_message = self.global_common.validate_convert_to_pixel_output(
-            self.common, output
-        )
-        if not success:
-            self.task_failed.emit(error_message)
-            return
-
-        self.task_finished.emit()
-
-
-class ConvertToPDF(TaskBase):
-    def __init__(self, global_common, common):
-        super(ConvertToPDF, self).__init__()
-        self.global_common = global_common
-        self.common = common
-
-    def run(self):
-        self.update_label.emit("Converting pixels to safe PDF")
-
-        # Build environment variables list
         if self.global_common.settings.get("ocr"):
             ocr = "1"
         else:
@@ -97,13 +64,11 @@ class ConvertToPDF(TaskBase):
         ]
 
         args = [
-            "pixelstopdf",
-            "--pixel-dir",
-            self.common.pixel_dir.name,
-            "--safe-dir",
-            self.common.safe_dir.name,
-            "--container-name",
-            self.global_common.get_container_name(),
+            "convert",
+            "--input-filename",
+            self.common.input_filename,
+            "--output-filename",
+            self.common.output_filename,
             "--ocr",
             ocr,
             "--ocr-lang",
@@ -113,5 +78,12 @@ class ConvertToPDF(TaskBase):
 
         if returncode != 0:
             return
+
+        # success, error_message = self.global_common.validate_convert_to_pixel_output(
+        #     self.common, output
+        # )
+        # if not success:
+        #     self.task_failed.emit(error_message)
+        #     return
 
         self.task_finished.emit()

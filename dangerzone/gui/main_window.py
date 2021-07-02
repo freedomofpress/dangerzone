@@ -5,7 +5,7 @@ import tempfile
 import subprocess
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from .tasks import ConvertToPixels, ConvertToPDF
+from .tasks import Convert
 from ..common import Common
 
 
@@ -51,7 +51,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.doc_selection_widget.document_selected.connect(self.document_selected)
 
         # Only use the waiting widget if we have a VM
-        if self.global_common.vm and self.global_common.vm.state != self.global_common.vm.STATE_ON:
+        if (
+            self.global_common.vm
+            and self.global_common.vm.state != self.global_common.vm.STATE_ON
+        ):
             self.waiting_widget.show()
             self.doc_selection_widget.hide()
         else:
@@ -182,7 +185,7 @@ class DocSelectionWidget(QtWidgets.QWidget):
         )
         if filename[0] != "":
             filename = filename[0]
-            self.common.document_filename = filename
+            self.common.input_filename = filename
             self.document_selected.emit()
 
 
@@ -330,26 +333,31 @@ class SettingsWidget(QtWidgets.QWidget):
     def document_selected(self):
         # Update the danger doc label
         self.dangerous_doc_label.setText(
-            f"Dangerous: {os.path.basename(self.common.document_filename)}"
+            f"Untrusted: {os.path.basename(self.common.input_filename)}"
         )
 
         # Update the save location
-        save_filename = f"{os.path.splitext(self.common.document_filename)[0]}-safe.pdf"
-        self.common.save_filename = save_filename
-        self.save_lineedit.setText(os.path.basename(save_filename))
+        output_filename = f"{os.path.splitext(self.common.input_filename)[0]}-safe.pdf"
+        self.common.output_filename = output_filename
+        self.save_lineedit.setText(os.path.basename(output_filename))
 
     def save_browse_button_clicked(self):
         filename = QtWidgets.QFileDialog.getSaveFileName(
             self,
             "Save safe PDF as...",
-            self.common.save_filename,
+            self.common.output_filename,
             filter="Documents (*.pdf)",
         )
         if filename[0] != "":
-            self.common.save_filename = filename[0]
-            self.save_lineedit.setText(os.path.basename(self.common.save_filename))
+            self.common.output_filename = filename[0]
+            self.save_lineedit.setText(os.path.basename(self.common.output_filename))
 
     def start_button_clicked(self):
+        if self.common.output_filename is None:
+            # If not saving, then save it to a temp file instead
+            tmp = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
+            self.common.output_filename = tmp[1]
+
         # Update settings
         self.global_common.settings.set(
             "save", self.save_checkbox.checkState() == QtCore.Qt.Checked
@@ -414,31 +422,21 @@ class TasksWidget(QtWidgets.QWidget):
         layout.addWidget(self.details_scrollarea)
         self.setLayout(layout)
 
-        self.tasks = []
-
     def document_selected(self):
         # Update the danger doc label
         self.dangerous_doc_label.setText(
-            f"Dangerous: {os.path.basename(self.common.document_filename)}"
+            f"Dangerous: {os.path.basename(self.common.input_filename)}"
         )
 
     def start(self):
-        self.tasks += [ConvertToPixels, ConvertToPDF]
-        self.next_task()
-
-    def next_task(self):
-        if len(self.tasks) == 0:
-            self.all_done()
-            return
-
         self.task_details.setText("")
 
-        self.current_task = self.tasks.pop(0)(self.global_common, self.common)
-        self.current_task.update_label.connect(self.update_label)
-        self.current_task.update_details.connect(self.update_details)
-        self.current_task.task_finished.connect(self.next_task)
-        self.current_task.task_failed.connect(self.task_failed)
-        self.current_task.start()
+        self.task = Convert(self.global_common, self.common)
+        self.task.update_label.connect(self.update_label)
+        self.task.update_details.connect(self.update_details)
+        self.task.task_finished.connect(self.all_done)
+        self.task.task_failed.connect(self.task_failed)
+        self.task.start()
 
     def update_label(self, s):
         self.task_label.setText(s)
@@ -449,36 +447,18 @@ class TasksWidget(QtWidgets.QWidget):
     def task_failed(self, err):
         self.task_label.setText("Failed :(")
         self.task_details.setWordWrap(True)
-        text = self.task_details.text()
-        self.task_details.setText(
-            f"{text}\n\n--\n\nDirectory with pixel data: {self.common.pixel_dir.name}\n\n{err}"
-        )
 
     def all_done(self):
-        # Save safe PDF
-        source_filename = f"{self.common.safe_dir.name}/safe-output-compressed.pdf"
-        if self.global_common.settings.get("save"):
-            dest_filename = self.common.save_filename
-        else:
-            # If not saving, then save it to a temp file instead
-            tmp = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
-            dest_filename = tmp[1]
-        shutil.move(source_filename, dest_filename)
-
         # In Windows, open Explorer with the safe PDF in focus
         if platform.system() == "Windows":
-            dest_filename_windows = dest_filename.replace("/", "\\")
+            dest_filename_windows = self.common.output_filename.replace("/", "\\")
             subprocess.Popen(
                 f'explorer.exe /select,"{dest_filename_windows}"', shell=True
             )
 
         # Open
         if self.global_common.settings.get("open"):
-            self.gui_common.open_pdf_viewer(dest_filename)
-
-        # Clean up
-        self.common.pixel_dir.cleanup()
-        self.common.safe_dir.cleanup()
+            self.gui_common.open_pdf_viewer(self.common.output_filename)
 
         # Quit
         if platform.system() == "Darwin":

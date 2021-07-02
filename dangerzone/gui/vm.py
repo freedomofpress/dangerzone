@@ -248,10 +248,6 @@ class Vm(QtCore.QObject):
         self.state = self.STATE_FAIL
         self.vm_state_change.emit(self.state)
 
-    def restart(self):
-        self.stop()
-        self.start()
-
     def stop(self):
         # Kill existing processes
         self.kill_sshd()
@@ -261,6 +257,9 @@ class Vm(QtCore.QObject):
         if self.hyperkit_p is not None:
             self.hyperkit_p.terminate()
             self.hyperkit_p = None
+
+        # Just to be extra sure
+        self.kill_hyperkit()
 
     def find_open_port(self):
         with socket.socket() as tmpsock:
@@ -282,6 +281,18 @@ class Vm(QtCore.QObject):
             if psutil.pid_exists(sshd_pid):
                 try:
                     proc = psutil.Process(sshd_pid)
+                    proc.kill()
+                except Exception:
+                    pass
+
+    def kill_hyperkit(self):
+        if os.path.exists(self.hyperkit_pid_path):
+            with open(self.hyperkit_pid_path) as f:
+                hyperkit_pid = int(f.read())
+
+            if psutil.pid_exists(hyperkit_pid):
+                try:
+                    proc = psutil.Process(hyperkit_pid)
                     proc.kill()
                 except Exception:
                     pass

@@ -50,9 +50,8 @@ class ApplicationWrapper(QtCore.QObject):
 
 
 @click.command()
-@click.option("--custom-container")  # Use this container instead of flmcode/dangerzone
 @click.argument("filename", required=False)
-def gui_main(custom_container, filename):
+def gui_main(filename):
     if platform.system() == "Darwin":
         # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
         os.environ["QT_MAC_WANTS_LAYER"] = "1"
@@ -84,14 +83,6 @@ def gui_main(custom_container, filename):
     # Common objects
     global_common = GlobalCommon()
     gui_common = GuiCommon(app, global_common)
-
-    if custom_container:
-        success, error_message = global_common.container_exists(custom_container)
-        if not success:
-            click.echo(error_message)
-            return
-
-        global_common.custom_container = custom_container
 
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -130,7 +121,7 @@ def gui_main(custom_container, filename):
     def select_document(filename=None):
         if (
             len(windows) == 1
-            and windows[list(windows.keys())[0]].common.document_filename == None
+            and windows[list(windows.keys())[0]].common.input_filename == None
         ):
             window = windows[list(windows.keys())[0]]
         else:
@@ -150,7 +141,7 @@ def gui_main(custom_container, filename):
             except PermissionError:
                 click.echo("Permission denied")
                 return False
-            window.common.document_filename = filename
+            window.common.input_filename = filename
             window.doc_selection_widget.document_selected.emit()
 
         return True

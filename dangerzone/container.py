@@ -6,6 +6,7 @@ import pipes
 import shutil
 import json
 import os
+import uuid
 
 # What is the container runtime for this platform?
 if platform.system() == "Darwin":
@@ -31,10 +32,6 @@ else:
 
 
 def exec(args):
-    args_str = " ".join(pipes.quote(s) for s in args)
-    print("> " + args_str)
-    sys.stdout.flush()
-
     with subprocess.Popen(
         args,
         stdin=None,
@@ -48,12 +45,8 @@ def exec(args):
         return p.returncode
 
 
-def exec_vm(args, vm_info):
-    if container_tech == "dangerzone-vm" and vm_info is None:
-        print("--vm-info-path required on this platform")
-        return
-
-    args = [
+def vm_ssh_args(vm_info):
+    return [
         "/usr/bin/ssh",
         "-q",
         "-i",
@@ -63,20 +56,60 @@ def exec_vm(args, vm_info):
         "-o",
         "StrictHostKeyChecking=no",
         "user@127.0.0.1",
-    ] + args
+    ]
+
+
+def vm_scp_args(vm_info):
+    return [
+        "/usr/bin/scp",
+        "-i",
+        vm_info["client_key_path"],
+        "-P",
+        str(vm_info["tunnel_port"]),
+        "-o",
+        "StrictHostKeyChecking=no",
+    ]
+
+
+def host_exec(args):
+    args_str = " ".join(pipes.quote(s) for s in args)
+    print("> " + args_str)
+
     return exec(args)
 
 
-def mount_vm(path, vm_info):
-    basename = os.path.basename(path)
-    normalized_path = f"/home/user/mnt/{basename}"
-    exec_vm(["/usr/bin/sshfs", f"hostbox:{path}", normalized_path], vm_info)
-    return normalized_path
+def vm_exec(args, vm_info):
+    if container_tech == "dangerzone-vm" and vm_info is None:
+        print("--vm-info-path required on this platform")
+        return
+
+    args_str = " ".join(pipes.quote(s) for s in args)
+    print("VM > " + args_str)
+
+    args = vm_ssh_args(vm_info) + args
+    return exec(args)
 
 
-def unmount_vm(normalized_path, vm_info):
-    exec_vm(["/usr/bin/fusermount3", normalized_path], vm_info)
-    exec_vm(["/bin/rmdir", normalized_path], vm_info)
+def vm_mkdir(vm_info):
+    guest_path = os.path.join("/home/user/", str(uuid.uuid4()))
+    vm_exec(["/bin/mkdir", guest_path], vm_info)
+    return guest_path
+
+
+def vm_rmdir(guest_path, vm_info):
+    vm_exec(["/bin/rm", "-r", guest_path], vm_info)
+
+
+def vm_upload(host_path, guest_path, vm_info):
+    args = vm_scp_args(vm_info) + [host_path, f"user@127.0.0.1:{guest_path}"]
+    print(f"Uploading '{host_path}' to VM at '{guest_path}'")
+    host_exec(args)
+
+
+def vm_download(guest_path, host_path, vm_info):
+    args = vm_scp_args(vm_info) + [f"user@127.0.0.1:{guest_path}", host_path]
+    print(f"Downloading '{guest_path}' from VM to '{host_path}'")
+    host_exec(args)
 
 
 def exec_container(args, vm_info):
@@ -85,11 +118,11 @@ def exec_container(args, vm_info):
         return
 
     if container_tech == "dangerzone-vm":
-        args = ["podman"] + args
-        return exec_vm(args, vm_info)
-
-    args = [container_runtime] + args
-    return exec(args)
+        args = ["/usr/bin/podman"] + args
+        return vm_exec(args, vm_info)
+    else:
+        args = [container_runtime] + args
+        return host_exec(args)
 
 
 def load_vm_info(vm_info_path):
@@ -103,19 +136,19 @@ def load_vm_info(vm_info_path):
 @click.group()
 def container_main():
     """
-    Dangerzone container commands with elevated privileges.
-    Humans don't need to run this command by themselves.
+    Dangerzone container commands. Humans don't need to run this command by themselves.
     """
     pass
 
 
 @container_main.command()
 @click.option("--vm-info-path", default=None)
-@click.option("--container-name", default="docker.io/flmcode/dangerzone")
-def ls(vm_info_path, container_name):
+def ls(vm_info_path):
     """docker image ls [container_name]"""
     if vm_info_path:
         container_name = "localhost/dangerzone"
+    else:
+        container_name = "dangerzone"
 
     sys.exit(
         exec_container(["image", "ls", container_name]), load_vm_info(vm_info_path)
@@ -124,90 +157,86 @@ def ls(vm_info_path, container_name):
 
 @container_main.command()
 @click.option("--vm-info-path", default=None)
-@click.option("--document-filename", required=True)
-@click.option("--pixel-dir", required=True)
-@click.option("--container-name", default="docker.io/flmcode/dangerzone")
-def documenttopixels(vm_info_path, document_filename, pixel_dir, container_name):
-    """docker run --network none -v [document_filename]:/tmp/input_file -v [pixel_dir]:/dangerzone [container_name] document-to-pixels"""
-
-    vm_info = load_vm_info(vm_info_path)
-
-    document_dir = os.path.dirname(document_filename)
-    if vm_info:
-        container_name = "localhost/dangerzone"
-        normalized_document_dir = mount_vm(document_dir, vm_info)
-        normalized_document_filename = os.path.join(
-            normalized_document_dir, os.path.basename(document_filename)
-        )
-        normalized_pixel_dir = mount_vm(pixel_dir, vm_info)
-    else:
-        normalized_document_dir = document_dir
-        normalized_document_filename = document_filename
-        normalized_pixel_dir = pixel_dir
-
-    args = ["run", "--network", "none"]
-
-    # docker uses --security-opt, podman doesn't
-    if container_tech == "docker":
-        args += ["--security-opt=no-new-privileges:true"]
-
-    args += [
-        "-v",
-        f"{normalized_document_filename}:/tmp/input_file",
-        "-v",
-        f"{normalized_pixel_dir}:/dangerzone",
-        container_name,
-        "document-to-pixels",
-    ]
-    ret = exec_container(args, load_vm_info(vm_info_path))
-
-    if vm_info:
-        unmount_vm(normalized_document_dir, vm_info)
-        unmount_vm(normalized_pixel_dir, vm_info)
-
-    sys.exit(ret)
-
-
-@container_main.command()
-@click.option("--vm-info-path", default=None)
-@click.option("--pixel-dir", required=True)
-@click.option("--safe-dir", required=True)
-@click.option("--container-name", default="docker.io/flmcode/dangerzone")
+@click.option("--input-filename", required=True)
+@click.option("--output-filename", required=True)
 @click.option("--ocr", required=True)
 @click.option("--ocr-lang", required=True)
-def pixelstopdf(vm_info_path, pixel_dir, safe_dir, container_name, ocr, ocr_lang):
-    """docker run --network none -v [pixel_dir]:/dangerzone -v [safe_dir]:/safezone [container_name] -e OCR=[ocr] -e OCR_LANGUAGE=[ocr_lang] pixels-to-pdf"""
+def convert(vm_info_path, input_filename, output_filename, ocr, ocr_lang):
+    # If there's a VM:
+    # - make inputdir on VM
+    # - make pixeldir on VM
+    # - make safedir on VM
+    # - scp input file to inputdir
+    # - run podman documenttopixels
+    # - run podman pixelstopdf
+    # - scp output file to host
+    # - delete inputdir, pixeldir, safedir
+    #
+    # If there's not a VM
+    # - make tmp pixeldir
+    # - make tmp safedir
+    # - run podman documenttopixels
+    # - run podman pixelstopdf
+    # - delete pixeldir, safedir
+
     vm_info = load_vm_info(vm_info_path)
 
     if vm_info:
-        container_name = "localhost/dangerzone"
-        normalized_pixel_dir = mount_vm(pixel_dir, vm_info)
-        normalized_safe_dir = mount_vm(safe_dir, vm_info)
-    else:
-        normalized_pixel_dir = pixel_dir
-        normalized_safe_dir = safe_dir
+        ssh_args_str = " ".join(pipes.quote(s) for s in vm_ssh_args(vm_info))
+        print("If you want to SSH to the VM: " + ssh_args_str)
 
-    ret = exec_container(
-        [
+        container_name = "localhost/dangerzone"
+
+        input_dir = vm_mkdir(vm_info)
+        pixel_dir = vm_mkdir(vm_info)
+        safe_dir = vm_mkdir(vm_info)
+
+        guest_input_filename = os.path.join(input_dir, "input_file")
+        guest_output_filename = os.path.join(safe_dir, "safe-output-compressed.pdf")
+
+        vm_upload(input_filename, guest_input_filename, vm_info)
+
+        args = [
             "run",
             "--network",
             "none",
             "-v",
-            f"{normalized_pixel_dir}:/dangerzone",
+            f"{guest_input_filename}:/tmp/input_file",
             "-v",
-            f"{normalized_safe_dir}:/safezone",
-            "-e",
-            f"OCR={ocr}",
-            "-e",
-            f"OCR_LANGUAGE={ocr_lang}",
+            f"{pixel_dir}:/dangerzone",
             container_name,
-            "pixels-to-pdf",
-        ],
-        vm_info,
-    )
+            "document-to-pixels",
+        ]
+        ret = exec_container(args, vm_info)
+        if ret != 0:
+            print("documents-to-pixels failed")
+        else:
+            args = [
+                "run",
+                "--network",
+                "none",
+                "-v",
+                f"{pixel_dir}:/dangerzone",
+                "-v",
+                f"{safe_dir}:/safezone",
+                "-e",
+                f"OCR={ocr}",
+                "-e",
+                f"OCR_LANGUAGE={ocr_lang}",
+                container_name,
+                "pixels-to-pdf",
+            ]
+            ret = exec_container(args, vm_info)
+            if ret != 0:
+                print("pixels-to-pdf failed")
+            else:
+                vm_download(guest_output_filename, output_filename, vm_info)
 
-    if vm_info:
-        unmount_vm(normalized_pixel_dir, vm_info)
-        unmount_vm(normalized_safe_dir, vm_info)
+        vm_rmdir(input_dir, vm_info)
+        vm_rmdir(pixel_dir, vm_info)
+        vm_rmdir(safe_dir, vm_info)
 
-    sys.exit(ret)
+        return ret
+
+    else:
+        print("not implemented yet")

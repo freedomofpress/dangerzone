@@ -51,7 +51,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.doc_selection_widget.document_selected.connect(self.document_selected)
 
         # Only use the waiting widget if we have a VM
-        if self.global_common.vm:
+        if self.global_common.vm and self.global_common.vm.state != self.global_common.vm.STATE_ON:
             self.waiting_widget.show()
             self.doc_selection_widget.hide()
         else:

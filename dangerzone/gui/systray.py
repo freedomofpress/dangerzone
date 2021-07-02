@@ -3,11 +3,12 @@ from PySide2 import QtWidgets
 
 
 class SysTray(QtWidgets.QSystemTrayIcon):
-    def __init__(self, global_common, gui_common, app):
+    def __init__(self, global_common, gui_common, app, app_wrapper):
         super(SysTray, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
         self.app = app
+        self.app_wrapper = app_wrapper
 
         self.setIcon(self.gui_common.get_window_icon())
 
@@ -17,8 +18,9 @@ class SysTray(QtWidgets.QSystemTrayIcon):
             self.status_action = menu.addAction("...")
             self.status_action.setEnabled(False)
             menu.addSeparator()
-            self.restart_action = menu.addAction("Restart")
-            self.restart_action.triggered.connect(self.restart_clicked)
+
+        self.new_action = menu.addAction("New window")
+        self.new_action.triggered.connect(self.new_window)
 
         self.quit_action = menu.addAction("Quit")
         self.quit_action.triggered.connect(self.quit_clicked)
@@ -32,16 +34,15 @@ class SysTray(QtWidgets.QSystemTrayIcon):
     def vm_state_change(self, state):
         if state == self.global_common.vm.STATE_OFF:
             self.status_action.setText("Dangerzone VM is off")
-            self.restart_action.setEnabled(True)
         elif state == self.global_common.vm.STATE_STARTING:
             self.status_action.setText("Dangerzone VM is starting...")
-            self.restart_action.setEnabled(False)
         elif state == self.global_common.vm.STATE_ON:
             self.status_action.setText("Dangerzone VM is running")
-            self.restart_action.setEnabled(True)
+        elif state == self.global_common.vm.STATE_FAIL:
+            self.status_action.setText("Dangerzone VM failed to start")
 
-    def restart_clicked(self):
-        self.global_common.vm.restart()
+    def new_window(self):
+        self.app_wrapper.new_window.emit()
 
     def quit_clicked(self):
         self.app.quit()

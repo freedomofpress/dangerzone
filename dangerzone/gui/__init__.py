@@ -23,6 +23,7 @@ from ..global_common import GlobalCommon
 # this is a class whose job is to hold a QApplication object and customize it
 class ApplicationWrapper(QtCore.QObject):
     document_selected = QtCore.Signal(str)
+    new_window = QtCore.Signal()
     application_activated = QtCore.Signal()
 
     def __init__(self):
@@ -112,7 +113,7 @@ def gui_main(custom_container, filename):
         vm = None
 
     # Create the system tray
-    systray = SysTray(global_common, gui_common, app)
+    systray = SysTray(global_common, gui_common, app, app_wrapper)
 
     # Start the VM
     if vm:
@@ -169,6 +170,7 @@ def gui_main(custom_container, filename):
 
     # If we get a file open event, open it
     app_wrapper.document_selected.connect(select_document)
+    app_wrapper.new_window.connect(select_document)
 
     # If the application is activated and all windows are closed, open a new one
     app_wrapper.application_activated.connect(application_activated)

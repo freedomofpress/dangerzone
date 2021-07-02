@@ -59,7 +59,7 @@ def exec_vm(args, vm_info):
         "-i",
         vm_info["client_key_path"],
         "-p",
-        vm_info["tunnel_port"],
+        str(vm_info["tunnel_port"]),
         "-o",
         "StrictHostKeyChecking=no",
         "user@127.0.0.1",
@@ -114,6 +114,9 @@ def container_main():
 @click.option("--container-name", default="docker.io/flmcode/dangerzone")
 def ls(vm_info_path, container_name):
     """docker image ls [container_name]"""
+    if vm_info_path:
+        container_name = "localhost/dangerzone"
+
     sys.exit(
         exec_container(["image", "ls", container_name]), load_vm_info(vm_info_path)
     )
@@ -131,6 +134,7 @@ def documenttopixels(vm_info_path, document_filename, pixel_dir, container_name)
 
     document_dir = os.path.dirname(document_filename)
     if vm_info:
+        container_name = "localhost/dangerzone"
         normalized_document_dir = mount_vm(document_dir, vm_info)
         normalized_document_filename = os.path.join(
             normalized_document_dir, os.path.basename(document_filename)
@@ -176,6 +180,7 @@ def pixelstopdf(vm_info_path, pixel_dir, safe_dir, container_name, ocr, ocr_lang
     vm_info = load_vm_info(vm_info_path)
 
     if vm_info:
+        container_name = "localhost/dangerzone"
         normalized_pixel_dir = mount_vm(pixel_dir, vm_info)
         normalized_safe_dir = mount_vm(safe_dir, vm_info)
     else:

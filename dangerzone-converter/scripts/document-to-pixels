@@ -9,7 +9,8 @@ START_PERMISSIONS=$(stat /tmp/input_file | grep Access | grep Uid | cut -d"(" -f
 /bin/chmod 0644 /tmp/input_file
 
 # Do the conversion without root
-/usr/bin/sudo -u user /usr/local/bin/document-to-pixels-unpriv
+# /usr/bin/sudo -u user /usr/local/bin/document-to-pixels-unpriv
+/usr/local/bin/document-to-pixels-unpriv
 RETURN_CODE=$?
 
 # Restore original permissions

@@ -35,7 +35,7 @@ class Vm(QtCore.QObject):
         # Processes
         self.vpnkit_p = None
         self.hyperkit_p = None
-        self.sshd_pid = None
+        self.devnull = open(os.devnull, "w")
 
         # Relevant paths
         self.vpnkit_path = self.global_common.get_resource_path("bin/vpnkit")
@@ -101,7 +101,9 @@ class Vm(QtCore.QObject):
                 "",
                 "-f",
                 self.ssh_host_key_path,
-            ]
+            ],
+            stdout=self.devnull,
+            stderr=self.devnull,
         )
         subprocess.run(
             [
@@ -114,7 +116,9 @@ class Vm(QtCore.QObject):
                 "",
                 "-f",
                 self.ssh_client_key_path,
-            ]
+            ],
+            stdout=self.devnull,
+            stderr=self.devnull,
         )
         with open(self.ssh_client_key_path) as f:
             ssh_client_key = f.read()
@@ -152,7 +156,7 @@ class Vm(QtCore.QObject):
         ]
         args_str = " ".join(pipes.quote(s) for s in args)
         print("> " + args_str)
-        subprocess.run(args)
+        subprocess.run(args, stdout=self.devnull, stderr=self.devnull)
 
         # Create a JSON object to pass into the VM
         # This is a 512kb file that starts with a JSON object, followed by null bytes
@@ -193,7 +197,7 @@ class Vm(QtCore.QObject):
         ]
         args_str = " ".join(pipes.quote(s) for s in args)
         print("> " + args_str)
-        self.vpnkit_p = subprocess.Popen(args)
+        self.vpnkit_p = subprocess.Popen(args, stdout=self.devnull, stderr=self.devnull)
 
         # Run Hyperkit
         args = [
@@ -225,15 +229,10 @@ class Vm(QtCore.QObject):
         ]
         args_str = " ".join(pipes.quote(s) for s in args)
         print("> " + args_str)
-        self.hyperkit_p = subprocess.Popen(args)
-
-        # Get the sshd PID
-        with open(self.sshd_pid_path) as f:
-            self.sshd_pid = int(f.read())
-
-        print(f"sshd PID: {self.sshd_pid}")
-        print(f"vpnkit PID: {self.vpnkit_p.pid}")
-        print(f"hyperkit PID: {self.hyperkit_p.pid}")
+        # To be able to login to the VM from the console, remove the stdout, stderr, and stdin args below
+        self.hyperkit_p = subprocess.Popen(
+            args, stdout=self.devnull, stderr=self.devnull, stdin=self.devnull
+        )
 
         # Wait for SSH thread
         self.wait_t = WaitForSsh(self.sshd_tunnel_port)
@@ -276,14 +275,16 @@ class Vm(QtCore.QObject):
         return port
 
     def kill_sshd(self):
-        if self.sshd_pid and psutil.pid_exists(self.sshd_pid):
-            try:
-                proc = psutil.Process(self.sshd_pid)
-                proc.kill()
-            except Exception:
-                pass
+        if os.path.exists(self.sshd_pid_path):
+            with open(self.sshd_pid_path) as f:
+                sshd_pid = int(f.read())
 
-        self.sshd_pid = None
+            if psutil.pid_exists(sshd_pid):
+                try:
+                    proc = psutil.Process(sshd_pid)
+                    proc.kill()
+                except Exception:
+                    pass
 
 
 class WaitForSsh(QtCore.QThread):
@@ -305,13 +306,14 @@ class WaitForSsh(QtCore.QThread):
                 sock.connect(("127.0.0.1", int(self.ssh_port)))
                 sock.close()
                 success = True
-                print("ssh port open!")
+                print("\nVM is ready to use")
                 break
             except Exception:
-                print("ssh port closed ...")
+                so_far = int(time.time() - start_ts)
+                print(f"\rWaiting for SSH port to be available ({so_far}s)", end="")
                 pass
 
-            time.sleep(2)
+            time.sleep(1)
             if time.time() - start_ts >= timeout_seconds:
                 self.timeout.emit()
                 break

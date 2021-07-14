@@ -16,53 +16,55 @@ def main():
 
     info = json.loads(s[0 : s.find(b"\0")])
 
-    # Create SSH files
-    os.makedirs("/home/user/.ssh", exist_ok=True)
+    # Create root's SSH files
+    os.makedirs("/root/.ssh", exist_ok=True)
 
-    with open("/home/user/.ssh/id_ed25519", "w") as f:
+    with open("/root/.ssh/id_ed25519", "w") as f:
         f.write(info["id_ed25519"])
         f.write("\n")
 
-    with open("/home/user/.ssh/id_ed25519.pub", "w") as f:
+    with open("/root/.ssh/id_ed25519.pub", "w") as f:
         f.write(info["id_ed25519.pub"])
         f.write("\n")
+
+    with open("/root/.ssh/config", "w") as f:
+        f.write("Host hostbox\n")
+        f.write(f"  Hostname {info['ip']}\n")
+        f.write(f"  Port {info['port']}\n")
+        f.write(f"  User {info['user']}\n")
+        f.write(f"  RemoteForward {info['tunnel_port']} 127.0.0.1:22\n")
+        f.write("  IdentityFile /root/.ssh/id_ed25519\n")
+        f.write("  ServerAliveInterval 30\n")
+        f.write("  ServerAliveCountMax 3\n")
+        f.write("  StrictHostKeyChecking no\n")
+        f.write("\n")
+
+    os.chmod("/root/.ssh", 0o700)
+    os.chmod("/root/.ssh/id_ed25519", 0o600)
+    os.chmod("/root/.ssh/id_ed25519.pub", 0o600)
+    os.chmod("/root/.ssh/config", 0o600)
+
+    # Create user's SSH files
+    os.makedirs("/home/user/.ssh", exist_ok=True)
 
     with open("/home/user/.ssh/authorized_keys", "w") as f:
         f.write(info["id_ed25519.pub"])
         f.write("\n")
 
-    with open("/home/user/.ssh/config", "w") as f:
-        f.write("Host hostbox\n")
-        f.write(f"  Hostname {info['ip']}\n")
-        f.write(f"  Port {info['port']}\n")
-        f.write(f"  User {info['user']}\n")
-        f.write("  IdentityFile /home/user/.ssh/id_ed25519\n")
-        f.write("\n")
-
     os.chmod("/home/user/.ssh", 0o700)
-    os.chmod("/home/user/.ssh/id_ed25519", 0o600)
-    os.chmod("/home/user/.ssh/id_ed25519.pub", 0o644)
     os.chmod("/home/user/.ssh/authorized_keys", 0o600)
-    os.chmod("/home/user/.ssh/config", 0o600)
 
     shutil.chown("/home/user/.ssh", "user", "user")
-    shutil.chown("/home/user/.ssh/id_ed25519", "user", "user")
-    shutil.chown("/home/user/.ssh/id_ed25519.pub", "user", "user")
     shutil.chown("/home/user/.ssh/authorized_keys", "user", "user")
-    shutil.chown("/home/user/.ssh/config", "user", "user")
 
     # Start SSH reverse port forward
     subprocess.run(
         [
-            "/usr/bin/sudo",
-            "-u",
-            "user",
-            "/usr/bin/ssh",
-            "-o",
-            "StrictHostKeyChecking=no",
+            "/usr/bin/autossh",
+            "-M",
+            "0",
+            "-f",
             "-N",
-            "-R",
-            f"{info['tunnel_port']}:127.0.0.1:22",
             "hostbox",
         ]
     )

@@ -1,6 +1,6 @@
 alpine-base
 podman
 dropbear
-sshfs
+autossh
 python3
 sudo

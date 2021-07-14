@@ -8,10 +8,6 @@ start() {
     # Create user
     /usr/sbin/adduser -D -u 1001 user
 
-	# Make folder for user mounts
-	mkdir /home/user/mnt
-	chown user:user /home/user/mnt
-
 	# Move containers into home dir
 	mkdir -p /home/user/.local/share
 	mv /etc/container-data /home/user/.local/share/containers

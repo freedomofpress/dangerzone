@@ -230,9 +230,10 @@ class Vm(QtCore.QObject):
         args_str = " ".join(pipes.quote(s) for s in args)
         print("> " + args_str)
         # To be able to login to the VM from the console, remove the stdout, stderr, and stdin args below
-        self.hyperkit_p = subprocess.Popen(
-            args, stdout=self.devnull, stderr=self.devnull, stdin=self.devnull
-        )
+        # self.hyperkit_p = subprocess.Popen(
+        #     args, stdout=self.devnull, stderr=self.devnull, stdin=self.devnull
+        # )
+        self.hyperkit_p = subprocess.Popen(args)
 
         # Wait for SSH thread
         self.wait_t = WaitForSsh(self.sshd_tunnel_port)

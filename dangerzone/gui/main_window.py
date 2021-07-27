@@ -177,7 +177,7 @@ class DocSelectionWidget(QtWidgets.QWidget):
         self.dangerous_doc_label = QtWidgets.QLabel()
         self.dangerous_doc_label.hide()
         self.dangerous_doc_button = QtWidgets.QPushButton(
-            "Select dangerous document ..."
+            "Select suspicious document ..."
         )
         self.dangerous_doc_button.setStyleSheet(
             "QPushButton { font-weight: bold; padding: 10px; }"
@@ -222,7 +222,7 @@ class SettingsWidget(QtWidgets.QWidget):
         self.dangerous_doc_label = QtWidgets.QLabel()
         self.dangerous_doc_label.setAlignment(QtCore.Qt.AlignCenter)
         self.dangerous_doc_label.setStyleSheet(
-            "QLabel { font-size: 16px; font-weight: bold; color: #572606; }"
+            "QLabel { font-size: 16px; font-weight: bold; }"
         )
 
         # Save safe version
@@ -352,7 +352,7 @@ class SettingsWidget(QtWidgets.QWidget):
     def document_selected(self):
         # Update the danger doc label
         self.dangerous_doc_label.setText(
-            f"Untrusted: {os.path.basename(self.common.input_filename)}"
+            f"Suspicious: {os.path.basename(self.common.input_filename)}"
         )
 
         # Update the save location
@@ -412,7 +412,7 @@ class TasksWidget(QtWidgets.QWidget):
         self.dangerous_doc_label = QtWidgets.QLabel()
         self.dangerous_doc_label.setAlignment(QtCore.Qt.AlignCenter)
         self.dangerous_doc_label.setStyleSheet(
-            "QLabel { font-size: 16px; font-weight: bold; color: #572606; }"
+            "QLabel { font-size: 16px; font-weight: bold; }"
         )
 
         self.task_label = QtWidgets.QLabel()
@@ -420,9 +420,7 @@ class TasksWidget(QtWidgets.QWidget):
         self.task_label.setStyleSheet("QLabel { font-weight: bold; font-size: 20px; }")
 
         self.task_details = QtWidgets.QLabel()
-        self.task_details.setStyleSheet(
-            "QLabel { background-color: #ffffff; font-size: 12px; padding: 10px; }"
-        )
+        self.task_details.setStyleSheet("QLabel { font-size: 12px; padding: 10px; }")
         self.task_details.setFont(self.gui_common.fixed_font)
         self.task_details.setAlignment(QtCore.Qt.AlignTop)
 
@@ -444,7 +442,7 @@ class TasksWidget(QtWidgets.QWidget):
     def document_selected(self):
         # Update the danger doc label
         self.dangerous_doc_label.setText(
-            f"Dangerous: {os.path.basename(self.common.input_filename)}"
+            f"Suspicious: {os.path.basename(self.common.input_filename)}"
         )
 
     def start(self):

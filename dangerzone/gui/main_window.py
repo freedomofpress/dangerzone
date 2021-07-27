@@ -50,6 +50,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.content_widget = ContentWidget(
             self.global_common, self.gui_common, self.common
         )
+        self.content_widget.close_window.connect(self.close)
 
         # Only use the waiting widget if we have a VM
         if (
@@ -117,6 +118,8 @@ class WaitingWidget(QtWidgets.QWidget):
 
 
 class ContentWidget(QtWidgets.QWidget):
+    close_window = QtCore.Signal()
+
     def __init__(self, global_common, gui_common, common):
         super(ContentWidget, self).__init__()
 
@@ -136,14 +139,14 @@ class ContentWidget(QtWidgets.QWidget):
             self.settings_widget.document_selected
         )
         self.settings_widget.start_clicked.connect(self.start_clicked)
-        self.settings_widget.close_window.connect(self.close)
+        self.settings_widget.close_window.connect(self._close_window)
         self.settings_widget.hide()
 
         # Tasks
         self.tasks_widget = TasksWidget(
             self.global_common, self.gui_common, self.common
         )
-        self.tasks_widget.close_window.connect(self.close)
+        self.tasks_widget.close_window.connect(self._close_window)
         self.doc_selection_widget.document_selected.connect(
             self.tasks_widget.document_selected
         )
@@ -164,6 +167,9 @@ class ContentWidget(QtWidgets.QWidget):
     def start_clicked(self):
         self.settings_widget.hide()
         self.tasks_widget.show()
+
+    def _close_window(self):
+        self.close_window.emit()
 
 
 class DocSelectionWidget(QtWidgets.QWidget):

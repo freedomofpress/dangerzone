@@ -153,6 +153,8 @@ class Vm(QtCore.QObject):
             "UseDNS=no",
             "-o",
             f"AuthorizedKeysFile={self.ssh_client_pubkey_path}",
+            "-o",
+            "ForceCommand=/sbin/nologin",
         ]
         args_str = " ".join(pipes.quote(s) for s in args)
         print("> " + args_str)
@@ -229,11 +231,14 @@ class Vm(QtCore.QObject):
         ]
         args_str = " ".join(pipes.quote(s) for s in args)
         print("> " + args_str)
-        # To be able to login to the VM from the console, remove the stdout, stderr, and stdin args below
-        # self.hyperkit_p = subprocess.Popen(
-        #     args, stdout=self.devnull, stderr=self.devnull, stdin=self.devnull
-        # )
-        self.hyperkit_p = subprocess.Popen(args)
+
+        # Start the VM with the ability to login
+        # self.hyperkit_p = subprocess.Popen(args)
+
+        # Start the VM without ability to login
+        self.hyperkit_p = subprocess.Popen(
+            args, stdout=self.devnull, stderr=self.devnull, stdin=self.devnull
+        )
 
         # Wait for SSH thread
         self.wait_t = WaitForSsh(self.sshd_tunnel_port)

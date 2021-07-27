@@ -5,7 +5,9 @@ sudo modprobe fuse
 sudo modprobe tun
 sudo rc-update add cgroups
 sudo rc-service cgroups start
-sudo -u user podman system prune -a -f
+
+# Temporarily comment this out to speed up building ISOs in dev
+# sudo -u user podman system prune -a -f
 
 # Build the podman container
 cd /opt/dangerzone-converter

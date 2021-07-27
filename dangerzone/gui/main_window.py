@@ -42,13 +42,14 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(header_label)
         header_layout.addStretch()
 
-        # Waiting widget
+        # Waiting widget, replaces content widget while VM is booting
         self.waiting_widget = WaitingWidget(self.global_common, self.gui_common)
         self.waiting_widget.vm_started.connect(self.vm_started)
 
-        # Doc selection widget
-        self.doc_selection_widget = DocSelectionWidget(self.common)
-        self.doc_selection_widget.document_selected.connect(self.document_selected)
+        # Content widget, contains all the window content except waiting widget
+        self.content_widget = ContentWidget(
+            self.global_common, self.gui_common, self.common
+        )
 
         # Only use the waiting widget if we have a VM
         if (
@@ -56,40 +57,16 @@ class MainWindow(QtWidgets.QMainWindow):
             and self.global_common.vm.state != self.global_common.vm.STATE_ON
         ):
             self.waiting_widget.show()
-            self.doc_selection_widget.hide()
+            self.content_widget.hide()
         else:
             self.waiting_widget.hide()
-            self.doc_selection_widget.show()
-
-        # Settings
-        self.settings_widget = SettingsWidget(
-            self.global_common, self.gui_common, self.common
-        )
-        self.doc_selection_widget.document_selected.connect(
-            self.settings_widget.document_selected
-        )
-        self.settings_widget.start_clicked.connect(self.start_clicked)
-        self.settings_widget.close_window.connect(self.close)
-        self.settings_widget.hide()
-
-        # Tasks
-        self.tasks_widget = TasksWidget(
-            self.global_common, self.gui_common, self.common
-        )
-        self.tasks_widget.close_window.connect(self.close)
-        self.doc_selection_widget.document_selected.connect(
-            self.tasks_widget.document_selected
-        )
-        self.settings_widget.start_clicked.connect(self.tasks_widget.start)
-        self.tasks_widget.hide()
+            self.content_widget.show()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
         layout.addWidget(self.waiting_widget, stretch=1)
-        layout.addWidget(self.doc_selection_widget, stretch=1)
-        layout.addWidget(self.settings_widget, stretch=1)
-        layout.addWidget(self.tasks_widget, stretch=1)
+        layout.addWidget(self.content_widget, stretch=1)
 
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(layout)
@@ -99,15 +76,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def vm_started(self):
         self.waiting_widget.hide()
-        self.doc_selection_widget.show()
-
-    def document_selected(self):
-        self.doc_selection_widget.hide()
-        self.settings_widget.show()
-
-    def start_clicked(self):
-        self.settings_widget.hide()
-        self.tasks_widget.show()
+        self.content_widget.show()
 
     def closeEvent(self, e):
         e.accept()
@@ -145,6 +114,56 @@ class WaitingWidget(QtWidgets.QWidget):
             self.vm_started.emit()
         elif state == self.global_common.vm.STATE_FAIL:
             self.label.setText("Dangerzone virtual machine failed to start :(")
+
+
+class ContentWidget(QtWidgets.QWidget):
+    def __init__(self, global_common, gui_common, common):
+        super(ContentWidget, self).__init__()
+
+        self.global_common = global_common
+        self.gui_common = gui_common
+        self.common = common
+
+        # Doc selection widget
+        self.doc_selection_widget = DocSelectionWidget(self.common)
+        self.doc_selection_widget.document_selected.connect(self.document_selected)
+
+        # Settings
+        self.settings_widget = SettingsWidget(
+            self.global_common, self.gui_common, self.common
+        )
+        self.doc_selection_widget.document_selected.connect(
+            self.settings_widget.document_selected
+        )
+        self.settings_widget.start_clicked.connect(self.start_clicked)
+        self.settings_widget.close_window.connect(self.close)
+        self.settings_widget.hide()
+
+        # Tasks
+        self.tasks_widget = TasksWidget(
+            self.global_common, self.gui_common, self.common
+        )
+        self.tasks_widget.close_window.connect(self.close)
+        self.doc_selection_widget.document_selected.connect(
+            self.tasks_widget.document_selected
+        )
+        self.settings_widget.start_clicked.connect(self.tasks_widget.start)
+        self.tasks_widget.hide()
+
+        # Layout
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.doc_selection_widget, stretch=1)
+        layout.addWidget(self.settings_widget, stretch=1)
+        layout.addWidget(self.tasks_widget, stretch=1)
+        self.setLayout(layout)
+
+    def document_selected(self):
+        self.doc_selection_widget.hide()
+        self.settings_widget.show()
+
+    def start_clicked(self):
+        self.settings_widget.hide()
+        self.tasks_widget.show()
 
 
 class DocSelectionWidget(QtWidgets.QWidget):

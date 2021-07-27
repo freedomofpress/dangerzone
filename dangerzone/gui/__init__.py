@@ -142,7 +142,7 @@ def gui_main(filename):
                 click.echo("Permission denied")
                 return False
             window.common.input_filename = filename
-            window.doc_selection_widget.document_selected.emit()
+            window.content_widget.doc_selection_widget.document_selected.emit()
 
         return True
 

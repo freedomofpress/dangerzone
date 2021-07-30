@@ -8,6 +8,7 @@ RUN apk -U upgrade && \
     libreoffice \
     openjdk8 \
     poppler-utils \
+    python3 \
     py3-magic \
     py3-pillow \
     sudo \

@@ -236,7 +236,7 @@ def convert(vm_info_path, input_filename, output_filename, ocr, ocr_lang):
         vm_rmdir(pixel_dir, vm_info)
         vm_rmdir(safe_dir, vm_info)
 
-        return ret
+        sys.exit(ret)
 
     else:
         print("not implemented yet")

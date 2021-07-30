@@ -37,6 +37,7 @@ class TaskBase(QtCore.QThread):
 
             self.update_details.emit(output)
 
+        print(f"return code: {p.returncode}")
         if p.returncode == 126 or p.returncode == 127:
             self.task_failed.emit(f"Authorization failed")
         elif p.returncode != 0:

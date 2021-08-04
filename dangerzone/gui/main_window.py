@@ -6,6 +6,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from colorama import Style, Fore
 
 from ..common import Common
+from ..container import convert
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -422,7 +423,7 @@ class SettingsWidget(QtWidgets.QWidget):
 
 class ConvertThread(QtCore.QThread):
     task_finished = QtCore.Signal()
-    task_failed = QtCore.Signal(str)
+    task_failed = QtCore.Signal()
     update_label = QtCore.Signal(str)
     update_details = QtCore.Signal(str)
 
@@ -431,77 +432,39 @@ class ConvertThread(QtCore.QThread):
         self.global_common = global_common
         self.common = common
 
-    def exec_container(self, args):
-        output = ""
-        self.update_details.emit(output)
-
-        with self.global_common.exec_dangerzone_container(args) as p:
-            for line in p.stdout:
-                output += line.decode()
-
-                if line.startswith(b"> "):
-                    print(
-                        Style.DIM + "> " + Style.NORMAL + Fore.CYAN + line.decode()[2:],
-                        end="",
-                    )
-                else:
-                    print("  " + line.decode(), end="")
-
-                self.update_details.emit(output)
-
-            stderr = p.stderr.read().decode()
-            if len(stderr) > 0:
-                print("")
-                for line in stderr.strip().split("\n"):
-                    print("  " + Style.DIM + line)
-
-            self.update_details.emit(output)
-
-        print(f"return code: {p.returncode}")
-        if p.returncode == 126 or p.returncode == 127:
-            self.task_failed.emit(f"Authorization failed")
-        elif p.returncode != 0:
-            self.task_failed.emit(f"Return code: {p.returncode}")
-
-        print("")
-        return p.returncode, output, stderr
-
     def run(self):
         self.update_label.emit("Converting document to safe PDF")
 
-        if self.global_common.settings.get("ocr"):
-            ocr = "1"
-        else:
-            ocr = "0"
         ocr_lang = self.global_common.ocr_languages[
             self.global_common.settings.get("ocr_language")
         ]
 
-        args = [
-            "convert",
-            "--input-filename",
+        self.output = ""
+        self.update_details.emit(self.output)
+
+        if convert(
+            self.global_common,
             self.common.input_filename,
-            "--output-filename",
             self.common.output_filename,
-            "--ocr",
-            ocr,
-            "--ocr-lang",
             ocr_lang,
-        ]
-        returncode, _, _ = self.exec_container(args)
+            self.stdout_callback,
+        ):
+            self.task_finished.emit()
+        else:
+            self.task_failed.emit()
 
-        if returncode != 0:
-            return
+    def stdout_callback(self, line):
+        self.output += line
 
-        # success, error_message = self.global_common.validate_convert_to_pixel_output(
-        #     self.common, output
-        # )
-        # if not success:
-        #     self.task_failed.emit(error_message)
-        #     return
+        if line.startswith("> "):
+            print(
+                Style.DIM + "> " + Style.NORMAL + Fore.CYAN + line[2:],
+                end="",
+            )
+        else:
+            print("  " + line, end="")
 
-        self.task_finished.emit()
-
+        self.update_details.emit(self.output)
 
 
 class TasksWidget(QtWidgets.QWidget):
@@ -566,7 +529,7 @@ class TasksWidget(QtWidgets.QWidget):
     def update_details(self, s):
         self.task_details.setText(s)
 
-    def task_failed(self, err):
+    def task_failed(self):
         self.task_label.setText("Failed :(")
         self.task_details.setWordWrap(True)
 

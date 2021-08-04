@@ -26,7 +26,6 @@ else:
 
 
 def exec(args, stdout_callback=None):
-    print(f"exec, stdout_callback={stdout_callback}")
     with subprocess.Popen(
         args,
         stdin=None,

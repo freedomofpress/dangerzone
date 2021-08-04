@@ -92,15 +92,13 @@ def cli_main(output_filename, ocr_lang, filename):
     def stdout_callback(line):
         print(line.rstrip())
 
-    success = convert(
+    if convert(
         global_common,
         common.input_filename,
         common.output_filename,
         ocr_lang,
         stdout_callback,
-    )
-
-    if success:
+    ):
         print_header("Safe PDF created successfully")
         click.echo(common.output_filename)
     else:

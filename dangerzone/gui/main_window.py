@@ -1,4 +1,3 @@
-import shutil
 import os
 import platform
 import tempfile
@@ -44,7 +43,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Waiting widget, replaces content widget while VM is booting
         self.waiting_widget = WaitingWidget(self.global_common, self.gui_common)
-        self.waiting_widget.vm_started.connect(self.vm_started)
+        self.waiting_widget.finished.connect(self.waiting_finished)
 
         # Content widget, contains all the window content except waiting widget
         self.content_widget = ContentWidget(
@@ -75,7 +74,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.show()
 
-    def vm_started(self):
+    def waiting_finished(self):
         self.waiting_widget.hide()
         self.content_widget.show()
 
@@ -88,18 +87,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 class WaitingWidget(QtWidgets.QWidget):
-    vm_started = QtCore.Signal()
+    finished = QtCore.Signal()
 
     def __init__(self, global_common, gui_common):
         super(WaitingWidget, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
 
-        self.global_common.vm.vm_state_change.connect(self.vm_state_change)
-
-        self.label = QtWidgets.QLabel(
-            "Waiting for the Dangerzone virtual machine to start..."
-        )
+        self.label = QtWidgets.QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setStyleSheet("QLabel { font-size: 20px; }")
 
@@ -109,6 +104,16 @@ class WaitingWidget(QtWidgets.QWidget):
         layout.addWidget(self.label)
         layout.addStretch()
         self.setLayout(layout)
+
+        if platform.system() == "Darwin":
+            self.label.setText("Waiting for the Dangerzone virtual machine to start...")
+            self.global_common.vm.vm_state_change.connect(self.vm_state_change)
+        
+        elif platform.system() == "Linux":
+            self.label.setText("Installing the Dangerzone container...")
+        
+        else:
+            self.label.setText("Platform not implemented yet")
 
     def vm_state_change(self, state):
         if state == self.global_common.vm.STATE_ON:

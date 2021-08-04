@@ -5,6 +5,8 @@ import appdirs
 import platform
 import subprocess
 import pipes
+import json
+import gzip
 import colorama
 from colorama import Fore, Back, Style
 
@@ -560,3 +562,56 @@ class GlobalCommon(object):
                 return False, f"Page {i} has an invalid RGB file size"
 
         return True, True
+
+    def install_container(self):
+        """
+        Make sure the podman container is installed. Linux only.
+        """
+        if self.is_container_installed():
+            print("Dangerzone container is already installed")
+            return
+
+        # Load the container into podman
+        print("Installing Dangerzone container...")
+
+        p = subprocess.Popen(["podman", "load"], stdin=subprocess.PIPE)
+
+        chunk_size = 1024
+        compressed_container_path = self.get_resource_path(
+            "container/dangerzone.tar.gz"
+        )
+        with gzip.open(compressed_container_path) as f:
+            while True:
+                chunk = f.read(chunk_size)
+                if len(chunk) > 0:
+                    p.stdin.write(chunk)
+                else:
+                    break
+        p.communicate()
+
+        if not self.is_container_installed():
+            print("Failed to install the container")
+            return False
+
+        print("Container installed")
+        return True
+
+    def is_container_installed(self):
+        """
+        See if the podman container is installed. Linux only.
+        """
+        # Get the image id
+        with open(self.get_resource_path("container/image_id.txt")) as f:
+            image_id = f.read().strip()
+
+        # See if this image is already installed
+        installed = False
+        images = json.loads(
+            subprocess.check_output(["podman", "image", "list", "--format", "json"])
+        )
+        for image in images:
+            if image["Id"] == image_id:
+                installed = True
+                break
+
+        return installed

@@ -5,7 +5,13 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y podman dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
+sudo apt install -y podman dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama python3-psutil
+```
+
+Build the latest container:
+
+```sh
+./install/linux/build-container.py
 ```
 
 Run from source tree:
@@ -58,13 +64,13 @@ poetry install
 
 Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop) and vagrant (`brew install vagrant`) are installed and run this to collect the binaries from Docker Desktop and then build a custom Alpine Linux ISO for Dangerzone, and copy them into the `share` folder:
 
-```
+```sh
 ./install/macos/make-vm.sh
 ```
 
 Run from source tree:
 
-```
+```sh
 # start a shell in the virtual environment
 poetry shell
 

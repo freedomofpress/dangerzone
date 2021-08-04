@@ -25,16 +25,21 @@ else:
     startupinfo = None
 
 
-def exec(args):
+def exec(args, stdout_callback=None):
+    print(f"exec, stdout_callback={stdout_callback}")
     with subprocess.Popen(
         args,
         stdin=None,
-        stdout=sys.stdout,
-        stderr=sys.stderr,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         bufsize=1,
         universal_newlines=True,
         startupinfo=startupinfo,
     ) as p:
+        if stdout_callback:
+            for line in p.stdout:
+                stdout_callback(line)
+
         p.communicate()
         return p.returncode
 
@@ -65,14 +70,14 @@ def vm_scp_args(vm_info):
     ]
 
 
-def host_exec(args):
+def host_exec(args, stdout_callback=None):
     args_str = " ".join(pipes.quote(s) for s in args)
     print("> " + args_str)
 
-    return exec(args)
+    return exec(args, stdout_callback)
 
 
-def vm_exec(args, vm_info):
+def vm_exec(args, vm_info, stdout_callback=None):
     if container_tech == "dangerzone-vm" and vm_info is None:
         print("--vm-info-path required on this platform")
         return
@@ -81,7 +86,7 @@ def vm_exec(args, vm_info):
     print("VM > " + args_str)
 
     args = vm_ssh_args(vm_info) + args
-    return exec(args)
+    return exec(args, stdout_callback)
 
 
 def vm_mkdir(vm_info):
@@ -106,14 +111,14 @@ def vm_download(guest_path, host_path, vm_info):
     host_exec(args)
 
 
-def exec_container(args, vm_info=None):
+def exec_container(args, vm_info=None, stdout_callback=None):
     if container_tech == "dangerzone-vm" and vm_info is None:
         print("Invalid VM info")
         return
 
     if container_tech == "dangerzone-vm":
         args = ["/usr/bin/podman"] + args
-        return vm_exec(args, vm_info)
+        return vm_exec(args, vm_info, stdout_callback)
     else:
         if container_tech == "podman":
             container_runtime = shutil.which("podman")
@@ -121,7 +126,7 @@ def exec_container(args, vm_info=None):
             container_runtime = shutil.which("docker")
 
         args = [container_runtime] + args
-        return host_exec(args)
+        return host_exec(args, stdout_callback)
 
 
 def load_vm_info(vm_info_path):
@@ -132,7 +137,7 @@ def load_vm_info(vm_info_path):
         return json.loads(f.read())
 
 
-def convert(global_common, input_filename, output_filename, ocr_lang):
+def convert(global_common, input_filename, output_filename, ocr_lang, stdout_callback):
     success = False
 
     container_name = "dangerzone.rocks/dangerzone"
@@ -183,7 +188,7 @@ def convert(global_common, input_filename, output_filename, ocr_lang):
         container_name,
         "document-to-pixels",
     ]
-    ret = exec_container(args, vm_info)
+    ret = exec_container(args, vm_info, stdout_callback)
     if ret != 0:
         print("documents-to-pixels failed")
     else:
@@ -205,7 +210,7 @@ def convert(global_common, input_filename, output_filename, ocr_lang):
             container_name,
             "pixels-to-pdf",
         ]
-        ret = exec_container(args, vm_info)
+        ret = exec_container(args, vm_info, stdout_callback)
         if ret != 0:
             print("pixels-to-pdf failed")
         else:

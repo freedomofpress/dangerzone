@@ -88,8 +88,16 @@ def cli_main(output_filename, ocr_lang, filename):
 
     # Convert the document
     print_header("Converting document to safe PDF")
+
+    def stdout_callback(line):
+        print(line.rstrip())
+
     success = convert(
-        global_common, common.input_filename, common.output_filename, ocr_lang
+        global_common,
+        common.input_filename,
+        common.output_filename,
+        ocr_lang,
+        stdout_callback,
     )
 
     if success:

@@ -11,6 +11,7 @@ import colorama
 from colorama import Fore, Back, Style
 
 from .settings import Settings
+from .container import convert
 
 
 class GlobalCommon(object):
@@ -36,9 +37,6 @@ class GlobalCommon(object):
 
         # In case we have a custom container
         self.custom_container = None
-
-        # dangerzone-container path
-        self.dz_container_path = self.get_dangerzone_container_path()
 
         # VM object, if available
         self.vm = None
@@ -416,34 +414,9 @@ class GlobalCommon(object):
         resource_path = os.path.join(prefix, filename)
         return resource_path
 
-    def get_dangerzone_container_path(self):
-        if getattr(sys, "dangerzone_dev", False):
-            # Look for resources directory relative to python file
-            path = os.path.join(
-                os.path.dirname(
-                    os.path.dirname(
-                        os.path.abspath(inspect.getfile(inspect.currentframe()))
-                    )
-                ),
-                "dev_scripts",
-                "dangerzone-container",
-            )
-            if platform.system() == "Windows":
-                path = f"{path}.bat"
-            return path
-        else:
-            if platform.system() == "Darwin":
-                return os.path.join(
-                    os.path.dirname(sys.executable), "dangerzone-container"
-                )
-            elif platform.system() == "Windows":
-                return os.path.join(
-                    os.path.dirname(sys.executable), "dangerzone-container.exe"
-                )
-            else:
-                return "/usr/bin/dangerzone-container"
+    def exec_dangerzone_container(self, input_filename, output_filename, ocr_lang):
+        convert(self, input_filename, output_filename, ocr_lang)
 
-    def exec_dangerzone_container(self, args):
         args = [self.dz_container_path] + args
         if self.vm:
             args += ["--vm-info-path", self.vm.vm_info_path]
@@ -491,75 +464,6 @@ class GlobalCommon(object):
             # Check the output
             if container_name.encode() not in stdout_data:
                 return False, f"Container '{container_name}' not found"
-
-        return True, True
-
-    def validate_convert_to_pixel_output(self, common, output):
-        """
-        Take the output from the convert to pixels tasks and validate it. Returns
-        a tuple like: (success (boolean), error_message (str))
-        """
-        max_image_width = 10000
-        max_image_height = 10000
-
-        # Did we hit an error?
-        for line in output.split("\n"):
-            if (
-                "failed:" in line
-                or "The document format is not supported" in line
-                or "Error" in line
-            ):
-                return False, output
-
-        # How many pages was that?
-        num_pages = None
-        for line in output.split("\n"):
-            if line.startswith("Document has "):
-                num_pages = line.split(" ")[2]
-                break
-        if not num_pages or not num_pages.isdigit() or int(num_pages) <= 0:
-            return False, "Invalid number of pages returned"
-        num_pages = int(num_pages)
-
-        # Make sure we have the files we expect
-        expected_filenames = []
-        for i in range(1, num_pages + 1):
-            expected_filenames += [
-                f"page-{i}.rgb",
-                f"page-{i}.width",
-                f"page-{i}.height",
-            ]
-        expected_filenames.sort()
-        actual_filenames = os.listdir(common.pixel_dir.name)
-        actual_filenames.sort()
-
-        if expected_filenames != actual_filenames:
-            return (
-                False,
-                f"We expected these files:\n{expected_filenames}\n\nBut we got these files:\n{actual_filenames}",
-            )
-
-        # Make sure the files are the correct sizes
-        for i in range(1, num_pages + 1):
-            with open(f"{common.pixel_dir.name}/page-{i}.width") as f:
-                w_str = f.read().strip()
-            with open(f"{common.pixel_dir.name}/page-{i}.height") as f:
-                h_str = f.read().strip()
-            w = int(w_str)
-            h = int(h_str)
-            if (
-                not w_str.isdigit()
-                or not h_str.isdigit()
-                or w <= 0
-                or w > max_image_width
-                or h <= 0
-                or h > max_image_height
-            ):
-                return False, f"Page {i} has invalid geometry"
-
-            # Make sure the RGB file is the correct size
-            if os.path.getsize(f"{common.pixel_dir.name}/page-{i}.rgb") != w * h * 3:
-                return False, f"Page {i} has an invalid RGB file size"
 
         return True, True
 

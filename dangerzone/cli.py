@@ -142,12 +142,12 @@ def cli_main(output_filename, ocr_lang, filename):
     if returncode != 0:
         return
 
-    success, error_message = global_common.validate_convert_to_pixel_output(
-        common, output
-    )
-    if not success:
-        click.echo(error_message)
-        return
+    # success, error_message = global_common.validate_convert_to_pixel_output(
+    #     common, output
+    # )
+    # if not success:
+    #     click.echo(error_message)
+    #     return
 
     print_header("Safe PDF created successfully")
-    click.echo(common.save_filename)
+    click.echo(common.output_filename)

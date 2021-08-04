@@ -7,21 +7,16 @@ import shutil
 import json
 import os
 import uuid
+import tempfile
 
-# What is the container runtime for this platform?
+# What container tech is used for this platform?
 if platform.system() == "Darwin":
     container_tech = "dangerzone-vm"
-    container_runtime = shutil.which("docker")
-elif platform.system() == "Windows":
-    container_tech = "docker"
-    container_runtime = shutil.which("docker.exe")
 elif platform.system() == "Linux":
     container_tech = "podman"
-    container_runtime = shutil.which("podman")
 else:
-    print("Unknown operating system, defaulting to Docker")
+    # Windows and unknown use docker for now, dangerzone-vm eventually
     container_tech = "docker"
-    container_runtime = shutil.which("docker")
 
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
@@ -112,7 +107,7 @@ def vm_download(guest_path, host_path, vm_info):
     host_exec(args)
 
 
-def exec_container(args, vm_info):
+def exec_container(args, vm_info=None):
     if container_tech == "dangerzone-vm" and vm_info is None:
         print("--vm-info-path required on this platform")
         return
@@ -121,6 +116,11 @@ def exec_container(args, vm_info):
         args = ["/usr/bin/podman"] + args
         return vm_exec(args, vm_info)
     else:
+        if container_tech == "podman":
+            container_runtime = shutil.which("podman")
+        else:
+            container_runtime = shutil.which("docker")
+
         args = [container_runtime] + args
         return host_exec(args)
 
@@ -162,30 +162,21 @@ def ls(vm_info_path):
 @click.option("--ocr", required=True)
 @click.option("--ocr-lang", required=True)
 def convert(vm_info_path, input_filename, output_filename, ocr, ocr_lang):
-    # If there's a VM:
-    # - make inputdir on VM
-    # - make pixeldir on VM
-    # - make safedir on VM
-    # - scp input file to inputdir
-    # - run podman documenttopixels
-    # - run podman pixelstopdf
-    # - scp output file to host
-    # - delete inputdir, pixeldir, safedir
-    #
-    # If there's not a VM
-    # - make tmp pixeldir
-    # - make tmp safedir
-    # - run podman documenttopixels
-    # - run podman pixelstopdf
-    # - delete pixeldir, safedir
-
+    container_name = "dangerzone.rocks/dangerzone"
     vm_info = load_vm_info(vm_info_path)
 
     if vm_info:
+        # If there's a VM:
+        # - make inputdir on VM
+        # - make pixeldir on VM
+        # - make safedir on VM
+        # - scp input file to inputdir
+        # - run podman documenttopixels
+        # - run podman pixelstopdf
+        # - scp output file to host
+        # - delete inputdir, pixeldir, safedir
         ssh_args_str = " ".join(pipes.quote(s) for s in vm_ssh_args(vm_info))
         print("If you want to SSH to the VM: " + ssh_args_str)
-
-        container_name = "localhost/dangerzone"
 
         input_dir = vm_mkdir(vm_info)
         pixel_dir = vm_mkdir(vm_info)
@@ -239,4 +230,56 @@ def convert(vm_info_path, input_filename, output_filename, ocr, ocr_lang):
         sys.exit(ret)
 
     else:
-        print("not implemented yet")
+        # If there's not a VM
+        # - make tmp pixeldir
+        # - make tmp safedir
+        # - run podman documenttopixels
+        # - run podman pixelstopdf
+        # - copy safe PDF to output filename
+        # - delete pixeldir, safedir
+
+        tmpdir = tempfile.TemporaryDirectory()
+        pixel_dir = os.path.join(tmpdir.name, "pixels")
+        safe_dir = os.path.join(tmpdir.name, "safe")
+        os.makedirs(pixel_dir, exist_ok=True)
+        os.makedirs(safe_dir, exist_ok=True)
+
+        container_output_filename = os.path.join(safe_dir, "safe-output-compressed.pdf")
+
+        args = [
+            "run",
+            "--network",
+            "none",
+            "-v",
+            f"{input_filename}:/tmp/input_file",
+            "-v",
+            f"{pixel_dir}:/dangerzone",
+            container_name,
+            "document-to-pixels",
+        ]
+        ret = exec_container(args)
+        if ret != 0:
+            print("documents-to-pixels failed")
+        else:
+            args = [
+                "run",
+                "--network",
+                "none",
+                "-v",
+                f"{pixel_dir}:/dangerzone",
+                "-v",
+                f"{safe_dir}:/safezone",
+                "-e",
+                f"OCR={ocr}",
+                "-e",
+                f"OCR_LANGUAGE={ocr_lang}",
+                container_name,
+                "pixels-to-pdf",
+            ]
+            ret = exec_container(args)
+            if ret != 0:
+                print("pixels-to-pdf failed")
+            else:
+                os.rename(container_output_filename, output_filename)
+
+        shutil.rmtree(tmpdir.name)

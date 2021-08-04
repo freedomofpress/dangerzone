@@ -1,14 +1,10 @@
 import os
 import stat
 import requests
-import tempfile
 import subprocess
 import shutil
-import time
 import platform
 from PySide2 import QtCore, QtGui, QtWidgets
-
-from ..container import container_runtime
 
 
 class AuthorizationFailed(Exception):
@@ -16,6 +12,7 @@ class AuthorizationFailed(Exception):
 
 
 def is_docker_installed():
+    container_runtime = shutil.which("docker.exe")
     if platform.system() == "Darwin":
         # Does the docker binary exist?
         if os.path.isdir("/Applications/Docker.app") and os.path.exists(

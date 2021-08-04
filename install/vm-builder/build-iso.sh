@@ -9,7 +9,7 @@ sudo -u user podman system prune -a -f
 
 # Build the podman container
 cd /opt/dangerzone-converter
-sudo -u user podman build . --tag dangerzone
+sudo -u user podman build . --tag dangerzone.rocks/dangerzone
 
 # Setup aports
 cd ~/

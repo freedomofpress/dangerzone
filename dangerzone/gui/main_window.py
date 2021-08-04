@@ -52,15 +52,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.content_widget.close_window.connect(self.close)
 
         # Only use the waiting widget if we have a VM
-        if (
-            self.global_common.vm
-            and self.global_common.vm.state != self.global_common.vm.STATE_ON
-        ):
-            self.waiting_widget.show()
-            self.content_widget.hide()
-        else:
-            self.waiting_widget.hide()
-            self.content_widget.show()
+        self.waiting_widget.show()
+        self.content_widget.hide()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
@@ -86,6 +79,20 @@ class MainWindow(QtWidgets.QMainWindow):
             self.gui_common.app.quit()
 
 
+class InstallContainerThread(QtCore.QThread):
+    finished = QtCore.Signal()
+
+    def __init__(self, global_common):
+        super(InstallContainerThread, self).__init__()
+        self.global_common = global_common
+
+    def run(self):
+        if not self.global_common.is_container_installed():
+            self.global_common.install_container()
+
+        self.finished.emit()
+
+
 class WaitingWidget(QtWidgets.QWidget):
     finished = QtCore.Signal()
 
@@ -108,16 +115,19 @@ class WaitingWidget(QtWidgets.QWidget):
         if platform.system() == "Darwin":
             self.label.setText("Waiting for the Dangerzone virtual machine to start...")
             self.global_common.vm.vm_state_change.connect(self.vm_state_change)
-        
+
         elif platform.system() == "Linux":
             self.label.setText("Installing the Dangerzone container...")
-        
+            self.install_container_t = InstallContainerThread(self.global_common)
+            self.install_container_t.finished.connect(self.finished)
+            self.install_container_t.start()
+
         else:
             self.label.setText("Platform not implemented yet")
 
     def vm_state_change(self, state):
         if state == self.global_common.vm.STATE_ON:
-            self.vm_started.emit()
+            self.finished.emit()
         elif state == self.global_common.vm.STATE_FAIL:
             self.label.setText("Dangerzone virtual machine failed to start :(")
 
@@ -265,7 +275,7 @@ class SettingsWidget(QtWidgets.QWidget):
             )
             self.open_checkbox.clicked.connect(self.update_ui)
 
-        elif platform.system() != "Linux":
+        elif platform.system() == "Linux":
             self.open_checkbox = QtWidgets.QCheckBox(
                 "Open safe document after converting, using"
             )

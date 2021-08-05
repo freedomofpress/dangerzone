@@ -1,5 +1,5 @@
 import os
-import shutil
+import json
 import click
 from colorama import Fore, Style
 
@@ -90,7 +90,16 @@ def cli_main(output_filename, ocr_lang, filename):
     print_header("Converting document to safe PDF")
 
     def stdout_callback(line):
-        print(line.rstrip())
+        try:
+            status = json.loads(line)
+            s = Style.BRIGHT + Fore.CYAN + f"{status['percentage']}% "
+            if status["error"]:
+                s += Style.RESET_ALL + Fore.RED + status["text"]
+            else:
+                s += Style.RESET_ALL + status["text"]
+            click.echo(s)
+        except:
+            click.echo(f"Invalid JSON returned from container: {line}")
 
     if convert(
         global_common,

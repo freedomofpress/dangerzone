@@ -1,8 +1,22 @@
 #!/usr/bin/env python3
+"""
+Here are the steps, with progress bar percentages for each step:
+
+document_to_pixels
+- 0%-3%: Convert document into a PDF (skipped if the input file is a PDF)
+- 3%-5%: Split PDF into individual pages, and count those pages
+- 5%-50%: Convert each page into pixels (each page takes 45/n%, where n is the number of pages)
+
+pixels_to_pdf:
+- 50%-95%: Convert each page of pixels into a PDF (each page takes 45/n%, where n is the number of pages)
+- 95%-100%: Compress the final PDF
+"""
+
 import sys
 import subprocess
 import glob
 import os
+import json
 
 import magic
 from PIL import Image
@@ -13,6 +27,8 @@ class DangerzoneConverter:
         pass
 
     def document_to_pixels(self):
+        percentage = 0.0
+
         conversions = {
             # .pdf
             "application/pdf": {"type": None},
@@ -88,7 +104,7 @@ class DangerzoneConverter:
 
         # Validate MIME type
         if mime_type not in conversions:
-            self._print("The document format is not supported")
+            self.output(True, "The document format is not supported", percentage)
             return 1
 
         # Convert input document to PDF
@@ -96,7 +112,7 @@ class DangerzoneConverter:
         if conversion["type"] is None:
             pdf_filename = "/tmp/input_file"
         elif conversion["type"] == "libreoffice":
-            self._print(f"Converting to PDF using LibreOffice")
+            self.output(False, "Converting to PDF using LibreOffice", percentage)
             args = [
                 "libreoffice",
                 "--headless",
@@ -107,19 +123,30 @@ class DangerzoneConverter:
                 "/tmp/input_file",
             ]
             try:
-                p = subprocess.run(args, timeout=60)
+                p = subprocess.run(
+                    args,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=60,
+                )
             except subprocess.TimeoutExpired:
-                self._print(
-                    "Error converting document to PDF, LibreOffice timed out after 60 seconds"
+                self.output(
+                    True,
+                    "Error converting document to PDF, LibreOffice timed out after 60 seconds",
+                    percentage,
                 )
                 return 1
 
             if p.returncode != 0:
-                self._print(f"Conversion to PDF failed: {p.stdout}")
+                self.output(
+                    True,
+                    f"Conversion to PDF with LibreOffice failed",
+                    percentage,
+                )
                 return 1
             pdf_filename = "/tmp/input_file.pdf"
         elif conversion["type"] == "convert":
-            self._print(f"Converting to PDF using GraphicsMagick")
+            self.output(False, "Converting to PDF using GraphicsMagick", percentage)
             args = [
                 "gm",
                 "convert",
@@ -127,40 +154,69 @@ class DangerzoneConverter:
                 "/tmp/input_file.pdf",
             ]
             try:
-                p = subprocess.run(args, timeout=60)
+                p = subprocess.run(
+                    args,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=60,
+                )
             except subprocess.TimeoutExpired:
-                self._print(
-                    "Error converting document to PDF, GraphicsMagick timed out after 60 seconds"
+                self.output(
+                    True,
+                    "Error converting document to PDF, GraphicsMagick timed out after 60 seconds",
+                    percentage,
                 )
                 return 1
             if p.returncode != 0:
-                self._print(f"Conversion to PDF failed: {p.stdout}")
+                self.output(
+                    True,
+                    "Conversion to PDF with GraphicsMagick failed",
+                    percentage,
+                )
                 return 1
             pdf_filename = "/tmp/input_file.pdf"
         else:
-            self._print("Invalid conversion type")
+            self.output(
+                True,
+                "Invalid conversion type",
+                percentage,
+            )
             return 1
 
+        percentage += 3
+
         # Separate PDF into pages
-        self._print("")
-        self._print(f"Separating document into pages")
+        self.output(
+            False,
+            "Separating document into pages",
+            percentage,
+        )
         args = ["pdftk", pdf_filename, "burst", "output", "/tmp/page-%d.pdf"]
         try:
-            p = subprocess.run(args, timeout=60)
+            p = subprocess.run(
+                args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60
+            )
         except subprocess.TimeoutExpired:
-            self._print(
-                "Error separating document into pages, pdfseparate timed out after 60 seconds"
+            self.output(
+                True,
+                "Error separating document into pages, pdfseparate timed out after 60 seconds",
+                percentage,
             )
             return 1
         if p.returncode != 0:
-            self._print(f"Separating document into pages failed: {p.stdout}")
+            self.output(
+                True,
+                "Separating document into pages failed",
+                percentage,
+            )
             return 1
 
         page_filenames = glob.glob("/tmp/page-*.pdf")
-        self._print(f"Document has {len(page_filenames)} pages")
-        self._print("")
+
+        percentage += 2
 
         # Convert to RGB pixel data
+        percentage_per_page = 45.0 / len(page_filenames)
         for page in range(1, len(page_filenames) + 1):
             pdf_filename = f"/tmp/page-{page}.pdf"
             png_filename = f"/tmp/page-{page}.png"
@@ -169,21 +225,33 @@ class DangerzoneConverter:
             height_filename = f"/tmp/page-{page}.height"
             filename_base = f"/tmp/page-{page}"
 
-            self._print(f"Converting page {page} to pixels")
+            self.output(
+                False,
+                f"Converting page {page}/{len(page_filenames)} to pixels",
+                percentage,
+            )
 
             # Convert to png
             try:
                 p = subprocess.run(
                     ["pdftocairo", pdf_filename, "-png", "-singlefile", filename_base],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
                     timeout=60,
                 )
             except subprocess.TimeoutExpired:
-                self._print(
-                    "Error converting from PDF to PNG, pdftocairo timed out after 60 seconds"
+                self.output(
+                    True,
+                    "Error converting from PDF to PNG, pdftocairo timed out after 60 seconds",
+                    percentage,
                 )
                 return 1
             if p.returncode != 0:
-                self._print(f"Conversion from PDF to PNG failed: {p.stdout}")
+                self.output(
+                    True,
+                    "Conversion from PDF to PNG failed",
+                    percentage,
+                )
                 return 1
 
             # Save the width and height
@@ -208,24 +276,39 @@ class DangerzoneConverter:
                     timeout=60,
                 )
             except subprocess.TimeoutExpired:
-                self._print(
-                    "Error converting from PNG to pixels, convert timed out after 60 seconds"
+                self.output(
+                    True,
+                    "Error converting from PNG to pixels, convert timed out after 60 seconds",
+                    percentage,
                 )
                 return 1
             if p.returncode != 0:
-                self._print(f"Conversion from PNG to RGB failed: {p.stdout}")
+                self.output(
+                    True,
+                    "Conversion from PNG to RGB failed",
+                    percentage,
+                )
                 return 1
 
             # Delete the png
             os.remove(png_filename)
 
+            percentage += percentage_per_page
+
+        self.output(
+            False,
+            "Converted document to pixels",
+            percentage,
+        )
         return 0
 
     def pixels_to_pdf(self):
+        percentage = 50.0
+
         num_pages = len(glob.glob("/dangerzone/page-*.rgb"))
-        self._print(f"Document has {num_pages} pages")
 
         # Convert RGB files to PDF files
+        percentage_per_page = 45.0 / num_pages
         for page in range(1, num_pages + 1):
             filename_base = f"/dangerzone/page-{page}"
             rgb_filename = f"{filename_base}.rgb"
@@ -242,7 +325,11 @@ class DangerzoneConverter:
 
             if os.environ.get("OCR") == "1":
                 # OCR the document
-                self._print(f"Converting page {page} from pixels to searchable PDF")
+                self.output(
+                    False,
+                    f"Converting page {page}/{num_pages} from pixels to searchable PDF",
+                    percentage,
+                )
 
                 args = [
                     "gm",
@@ -255,14 +342,25 @@ class DangerzoneConverter:
                     f"png:{png_filename}",
                 ]
                 try:
-                    p = subprocess.run(args, timeout=60)
+                    p = subprocess.run(
+                        args,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=60,
+                    )
                 except subprocess.TimeoutExpired:
-                    self._print(
-                        "Error converting pixels to PNG, convert timed out after 60 seconds"
+                    self.output(
+                        True,
+                        "Error converting pixels to PNG, convert timed out after 60 seconds",
+                        percentage,
                     )
                     return 1
                 if p.returncode != 0:
-                    self._print(f"Page {page} conversion failed: {p.stdout}")
+                    self.output(
+                        True,
+                        f"Page {page}/{num_pages} conversion to PNG failed",
+                        percentage,
+                    )
                     return 1
 
                 args = [
@@ -276,19 +374,34 @@ class DangerzoneConverter:
                     "pdf",
                 ]
                 try:
-                    p = subprocess.run(args, timeout=60)
+                    p = subprocess.run(
+                        args,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=60,
+                    )
                 except subprocess.TimeoutExpired:
-                    self._print(
-                        "Error converting PNG to searchable PDF, tesseract timed out after 60 seconds"
+                    self.output(
+                        True,
+                        "Error converting PNG to searchable PDF, tesseract timed out after 60 seconds",
+                        percentage,
                     )
                     return 1
                 if p.returncode != 0:
-                    self._print(f"Page {page} conversion failed: {p.stdout}")
+                    self.output(
+                        True,
+                        f"Page {page}/{num_pages} OCR failed",
+                        percentage,
+                    )
                     return 1
 
             else:
                 # Don't OCR
-                self._print(f"Converting page {page} from pixels to PDF")
+                self.output(
+                    False,
+                    f"Converting page {page}/{num_pages} from pixels to PDF",
+                    percentage,
+                )
 
                 args = [
                     "gm",
@@ -301,56 +414,96 @@ class DangerzoneConverter:
                     f"pdf:{pdf_filename}",
                 ]
                 try:
-                    p = subprocess.run(args, timeout=60)
+                    p = subprocess.run(
+                        args,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=60,
+                    )
                 except subprocess.TimeoutExpired:
-                    self._print(
-                        "Error converting RGB to PDF, convert timed out after 60 seconds"
+                    self.output(
+                        True,
+                        "Error converting RGB to PDF, convert timed out after 60 seconds",
+                        percentage,
                     )
                     return 1
                 if p.returncode != 0:
-                    self._print(f"Page {page} conversion failed: {p.stdout}")
+                    self.output(
+                        True,
+                        f"Page {page}/{num_pages} conversion to PDF failed",
+                        percentage,
+                    )
                     return 1
 
-        self._print()
+            percentage += percentage_per_page
 
         # Merge pages into a single PDF
-        self._print(f"Merging {num_pages} pages into a single PDF")
+        self.output(
+            False,
+            f"Merging {num_pages} pages into a single PDF",
+            percentage,
+        )
         args = ["pdfunite"]
         for page in range(1, num_pages + 1):
             args.append(f"/tmp/page-{page}.pdf")
         args.append(f"/tmp/safe-output.pdf")
         try:
-            p = subprocess.run(args, timeout=60)
+            p = subprocess.run(
+                args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60
+            )
         except subprocess.TimeoutExpired:
-            self._print(
-                "Error merging pages into a single PDF, pdfunite timed out after 60 seconds"
+            self.output(
+                True,
+                "Error merging pages into a single PDF, pdfunite timed out after 60 seconds",
+                percentage,
             )
             return 1
         if p.returncode != 0:
-            self._print(f"Merge failed: {p.stdout}")
+            self.output(
+                True,
+                "Merging pages into a single PDF failed",
+                percentage,
+            )
             return 1
 
+        percentage += 2
+
         # Compress
-        self._print("Compressing PDF")
+        self.output(
+            False,
+            f"Compressing PDF",
+            percentage,
+        )
         compress_timeout = num_pages * 3
         try:
             p = subprocess.run(
                 ["ps2pdf", "/tmp/safe-output.pdf", "/tmp/safe-output-compressed.pdf"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 timeout=compress_timeout,
             )
         except subprocess.TimeoutExpired:
-            self._print(
-                f"Error compressing PDF, ps2pdf timed out after {compress_timeout} seconds"
+            self.output(
+                True,
+                f"Error compressing PDF, ps2pdf timed out after {compress_timeout} seconds",
+                percentage,
             )
             return 1
         if p.returncode != 0:
-            self._print(f"Compression failed: {p.stdout}")
+            self.output(
+                True,
+                f"Compressing PDF failed",
+                percentage,
+            )
             return 1
+
+        percentage = 100.0
+        self.output(False, "Safe PDF created", percentage)
 
         return 0
 
-    def _print(self, s=""):
-        print(s)
+    def output(self, error, text, percentage):
+        print(json.dumps({"error": error, "text": text, "percentage": int(percentage)}))
         sys.stdout.flush()
 
 

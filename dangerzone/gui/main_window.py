@@ -158,22 +158,22 @@ class ContentWidget(QtWidgets.QWidget):
         self.settings_widget.close_window.connect(self._close_window)
         self.settings_widget.hide()
 
-        # Tasks
-        self.tasks_widget = TasksWidget(
+        # Convert
+        self.convert_widget = ConvertWidget(
             self.global_common, self.gui_common, self.common
         )
-        self.tasks_widget.close_window.connect(self._close_window)
+        self.convert_widget.close_window.connect(self._close_window)
         self.doc_selection_widget.document_selected.connect(
-            self.tasks_widget.document_selected
+            self.convert_widget.document_selected
         )
-        self.settings_widget.start_clicked.connect(self.tasks_widget.start)
-        self.tasks_widget.hide()
+        self.settings_widget.start_clicked.connect(self.convert_widget.start)
+        self.convert_widget.hide()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.doc_selection_widget, stretch=1)
         layout.addWidget(self.settings_widget, stretch=1)
-        layout.addWidget(self.tasks_widget, stretch=1)
+        layout.addWidget(self.convert_widget, stretch=1)
         self.setLayout(layout)
 
     def document_selected(self):
@@ -467,11 +467,11 @@ class ConvertThread(QtCore.QThread):
         self.update_details.emit(self.output)
 
 
-class TasksWidget(QtWidgets.QWidget):
+class ConvertWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
     def __init__(self, global_common, gui_common, common):
-        super(TasksWidget, self).__init__()
+        super(ConvertWidget, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
         self.common = common

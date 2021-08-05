@@ -2,6 +2,7 @@ import os
 import platform
 import tempfile
 import subprocess
+import json
 from PySide2 import QtCore, QtGui, QtWidgets
 from colorama import Style, Fore
 
@@ -182,7 +183,7 @@ class ContentWidget(QtWidgets.QWidget):
 
     def start_clicked(self):
         self.settings_widget.hide()
-        self.tasks_widget.show()
+        self.convert_widget.show()
 
     def _close_window(self):
         self.close_window.emit()
@@ -422,10 +423,8 @@ class SettingsWidget(QtWidgets.QWidget):
 
 
 class ConvertThread(QtCore.QThread):
-    task_finished = QtCore.Signal()
-    task_failed = QtCore.Signal()
-    update_label = QtCore.Signal(str)
-    update_details = QtCore.Signal(str)
+    finished = QtCore.Signal()
+    update = QtCore.Signal(bool, str, int)
 
     def __init__(self, global_common, common):
         super(ConvertThread, self).__init__()
@@ -433,14 +432,9 @@ class ConvertThread(QtCore.QThread):
         self.common = common
 
     def run(self):
-        self.update_label.emit("Converting document to safe PDF")
-
         ocr_lang = self.global_common.ocr_languages[
             self.global_common.settings.get("ocr_language")
         ]
-
-        self.output = ""
-        self.update_details.emit(self.output)
 
         if convert(
             self.global_common,
@@ -449,22 +443,25 @@ class ConvertThread(QtCore.QThread):
             ocr_lang,
             self.stdout_callback,
         ):
-            self.task_finished.emit()
-        else:
-            self.task_failed.emit()
+            self.finished.emit()
 
     def stdout_callback(self, line):
-        self.output += line
+        try:
+            status = json.loads(line)
+        except:
+            print(f"Invalid JSON returned from container: {line}")
 
-        if line.startswith("> "):
-            print(
-                Style.DIM + "> " + Style.NORMAL + Fore.CYAN + line[2:],
-                end="",
-            )
+            self.update.emit(True, "Invalid JSON returned from container", 0)
+            return
+
+        s = Style.BRIGHT + Fore.CYAN + f"{status['percentage']}% "
+        if status["error"]:
+            s += Style.RESET_ALL + Fore.RED + status["text"]
         else:
-            print("  " + line, end="")
+            s += Style.RESET_ALL + status["text"]
+        print(s)
 
-        self.update_details.emit(self.output)
+        self.update.emit(status["error"], status["text"], status["percentage"])
 
 
 class ConvertWidget(QtWidgets.QWidget):
@@ -483,28 +480,22 @@ class ConvertWidget(QtWidgets.QWidget):
             "QLabel { font-size: 16px; font-weight: bold; }"
         )
 
-        self.task_label = QtWidgets.QLabel()
-        self.task_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.task_label.setStyleSheet("QLabel { font-weight: bold; font-size: 20px; }")
+        self.label = QtWidgets.QLabel()
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setWordWrap(True)
+        self.label.setStyleSheet("QLabel { font-size: 18px; }")
 
-        self.task_details = QtWidgets.QLabel()
-        self.task_details.setStyleSheet("QLabel { font-size: 12px; padding: 10px; }")
-        self.task_details.setFont(self.gui_common.fixed_font)
-        self.task_details.setAlignment(QtCore.Qt.AlignTop)
-
-        self.details_scrollarea = QtWidgets.QScrollArea()
-        self.details_scrollarea.setWidgetResizable(True)
-        self.details_scrollarea.setWidget(self.task_details)
-        self.details_scrollarea.verticalScrollBar().rangeChanged.connect(
-            self.scroll_to_bottom
-        )
+        self.progress = QtWidgets.QProgressBar()
+        self.progress.setRange(0, 100)
+        self.progress.setValue(0)
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.dangerous_doc_label)
-        layout.addSpacing(20)
-        layout.addWidget(self.task_label)
-        layout.addWidget(self.details_scrollarea)
+        layout.addStretch()
+        layout.addWidget(self.label)
+        layout.addWidget(self.progress)
+        layout.addStretch()
         self.setLayout(layout)
 
     def document_selected(self):
@@ -514,24 +505,18 @@ class ConvertWidget(QtWidgets.QWidget):
         )
 
     def start(self):
-        self.task_details.setText("")
+        self.convert_t = ConvertThread(self.global_common, self.common)
+        self.convert_t.update.connect(self.update)
+        self.convert_t.finished.connect(self.all_done)
+        self.convert_t.start()
 
-        self.task = ConvertThread(self.global_common, self.common)
-        self.task.update_label.connect(self.update_label)
-        self.task.update_details.connect(self.update_details)
-        self.task.task_finished.connect(self.all_done)
-        self.task.task_failed.connect(self.task_failed)
-        self.task.start()
+    def update(self, error, text, percentage):
+        if error:
+            # TODO: add error image or something
+            pass
 
-    def update_label(self, s):
-        self.task_label.setText(s)
-
-    def update_details(self, s):
-        self.task_details.setText(s)
-
-    def task_failed(self):
-        self.task_label.setText("Failed :(")
-        self.task_details.setWordWrap(True)
+        self.label.setText(text)
+        self.progress.setValue(percentage)
 
     def all_done(self):
         # In Windows, open Explorer with the safe PDF in focus
@@ -551,6 +536,3 @@ class ConvertWidget(QtWidgets.QWidget):
             self.close_window.emit()
         else:
             self.gui_common.app.quit()
-
-    def scroll_to_bottom(self, minimum, maximum):
-        self.details_scrollarea.verticalScrollBar().setValue(maximum)

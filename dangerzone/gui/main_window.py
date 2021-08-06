@@ -54,8 +54,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.content_widget.close_window.connect(self.close)
 
         # Only use the waiting widget if we have a VM
-        self.waiting_widget.show()
-        self.content_widget.hide()
+        if self.gui_common.is_waiting_finished:
+            self.waiting_widget.hide()
+            self.content_widget.show()
+        else:
+            self.waiting_widget.show()
+            self.content_widget.hide()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
@@ -70,6 +74,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show()
 
     def waiting_finished(self):
+        self.gui_common.is_waiting_finished = True
         self.waiting_widget.hide()
         self.content_widget.show()
 

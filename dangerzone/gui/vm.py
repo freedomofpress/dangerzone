@@ -76,6 +76,8 @@ class Vm(QtCore.QObject):
         self.stop()
 
     def start(self):
+        print("Starting VM\n")
+
         self.state = self.STATE_STARTING
         self.vm_state_change.emit(self.state)
 

@@ -5,6 +5,7 @@ import sys
 import pipes
 import shutil
 import os
+import getpass
 
 # What is the container runtime for this platform?
 if platform.system() == "Darwin":
@@ -39,7 +40,7 @@ def exec_container(args):
     # In Tails, tell the container runtime to download over Tor
     if (
         platform.system() == "Linux"
-        and os.getlogin() == "amnesia"
+        and getpass.getuser() == "amnesia"
         and os.getuid() == 1000
     ):
         env = os.environ.copy()

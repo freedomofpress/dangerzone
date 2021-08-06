@@ -88,10 +88,13 @@ def vm_exec(args, vm_info, stdout_callback=None):
     return exec(args, stdout_callback)
 
 
-def vm_mkdir(vm_info):
+def vm_mkdirs(vm_info):
     guest_path = os.path.join("/home/user/", str(uuid.uuid4()))
-    vm_exec(["/bin/mkdir", guest_path], vm_info)
-    return guest_path
+    input_dir = os.path.join(guest_path, "input")
+    pixel_dir = os.path.join(guest_path, "pixel")
+    safe_dir = os.path.join(guest_path, "safe")
+    vm_exec(["/bin/mkdir", guest_path, input_dir, pixel_dir, safe_dir], vm_info)
+    return guest_path, input_dir, pixel_dir, safe_dir
 
 
 def vm_rmdir(guest_path, vm_info):
@@ -154,13 +157,9 @@ def convert(global_common, input_filename, output_filename, ocr_lang, stdout_cal
     # Otherwise, create temp dirs
     if vm_info:
         ssh_args_str = " ".join(pipes.quote(s) for s in vm_ssh_args(vm_info))
-        print("If you want to SSH to the VM: " + ssh_args_str)
+        print("\nIf you want to SSH to the VM:\n" + ssh_args_str + "\n")
 
-        guest_tmpdir = vm_mkdir(vm_info)
-        input_dir = os.path.join(guest_tmpdir, "input")
-        pixel_dir = os.path.join(guest_tmpdir, "pixel")
-        safe_dir = os.path.join(guest_tmpdir, "safe")
-
+        guest_tmpdir, input_dir, pixel_dir, safe_dir = vm_mkdirs(vm_info)
         guest_input_filename = os.path.join(input_dir, "input_file")
         container_output_filename = os.path.join(safe_dir, "safe-output-compressed.pdf")
 

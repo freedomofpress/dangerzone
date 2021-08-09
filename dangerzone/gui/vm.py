@@ -1,5 +1,4 @@
 import os
-import sys
 import subprocess
 import uuid
 import pipes
@@ -10,6 +9,7 @@ import getpass
 import json
 import psutil
 import time
+import platform
 from PySide2 import QtCore
 
 
@@ -32,24 +32,8 @@ class Vm(QtCore.QObject):
         self.sshd_port = None
         self.sshd_tunnel_port = None
 
-        # Processes
-        self.vpnkit_p = None
-        self.hyperkit_p = None
-        self.devnull = open(os.devnull, "w")
-
-        # Relevant paths
-        self.vpnkit_path = self.global_common.get_resource_path("bin/vpnkit")
-        self.hyperkit_path = self.global_common.get_resource_path("bin/hyperkit")
-        self.vm_iso_path = self.global_common.get_resource_path("vm/dangerzone.iso")
-        self.vm_kernel_path = self.global_common.get_resource_path("vm/kernel")
-        self.vm_initramfs_path = self.global_common.get_resource_path(
-            "vm/initramfs.img"
-        )
-
         # Folder to hold temporary files related to the VM
         self.state_dir = tempfile.TemporaryDirectory()
-        self.vpnkit_sock_path = os.path.join(self.state_dir.name, "vpnkit.eth.sock")
-        self.hyperkit_pid_path = os.path.join(self.state_dir.name, "hyperkit.pid")
         self.ssh_host_key_path = os.path.join(self.state_dir.name, "host_ed25519")
         self.ssh_host_pubkey_path = os.path.join(
             self.state_dir.name, "host_ed25519.pub"
@@ -63,11 +47,33 @@ class Vm(QtCore.QObject):
         self.vm_info_path = os.path.join(self.state_dir.name, "info.json")
         self.vm_disk_img_path = os.path.join(self.state_dir.name, "disk.img")
 
-        # UDID for VM
-        self.vm_uuid = str(uuid.uuid4())
-        self.vm_cmdline = (
-            "earlyprintk=serial console=ttyS0 modules=loop,squashfs,sd-mod"
-        )
+        if platform.system() == "Darwin":
+            # Processes
+            self.vpnkit_p = None
+            self.hyperkit_p = None
+            self.devnull = open(os.devnull, "w")
+
+            # Relevant paths
+            self.vpnkit_path = self.global_common.get_resource_path("bin/vpnkit")
+            self.hyperkit_path = self.global_common.get_resource_path("bin/hyperkit")
+            self.vm_iso_path = self.global_common.get_resource_path("vm/dangerzone.iso")
+            self.vm_kernel_path = self.global_common.get_resource_path("vm/kernel")
+            self.vm_initramfs_path = self.global_common.get_resource_path(
+                "vm/initramfs.img"
+            )
+
+            # Temporary files related to the VM
+            self.vpnkit_sock_path = os.path.join(self.state_dir.name, "vpnkit.eth.sock")
+            self.hyperkit_pid_path = os.path.join(self.state_dir.name, "hyperkit.pid")
+
+            # UDID for VM
+            self.vm_uuid = str(uuid.uuid4())
+            self.vm_cmdline = (
+                "earlyprintk=serial console=ttyS0 modules=loop,squashfs,sd-mod"
+            )
+
+        if platform.system() == "Windows":
+            pass
 
         # Threads
         self.wait_t = None
@@ -78,9 +84,6 @@ class Vm(QtCore.QObject):
     def start(self):
         print("Starting VM\n")
 
-        self.state = self.STATE_STARTING
-        self.vm_state_change.emit(self.state)
-
         # Delete keys if they already exist
         for filename in [
             self.ssh_host_key_path,
@@ -90,6 +93,10 @@ class Vm(QtCore.QObject):
         ]:
             if os.path.exists(filename):
                 os.remove(filename)
+
+        # Find an open port
+        self.sshd_port = self.find_open_port()
+        self.sshd_tunnel_port = self.find_open_port()
 
         # Generate new keys
         subprocess.run(
@@ -127,10 +134,6 @@ class Vm(QtCore.QObject):
         with open(self.ssh_client_pubkey_path) as f:
             ssh_client_pubkey = f.read()
 
-        # Find an open port
-        self.sshd_port = self.find_open_port()
-        self.sshd_tunnel_port = self.find_open_port()
-
         # Start an sshd service on this port
         args = [
             "/usr/sbin/sshd",
@@ -161,6 +164,13 @@ class Vm(QtCore.QObject):
         args_str = " ".join(pipes.quote(s) for s in args)
         print("> " + args_str)
         subprocess.run(args, stdout=self.devnull, stderr=self.devnull)
+
+        if platform.system() == "Darwin":
+            self.start_macos()
+
+    def start_macos(self):
+        self.state = self.STATE_STARTING
+        self.vm_state_change.emit(self.state)
 
         # Create a JSON object to pass into the VM
         # This is a 512kb file that starts with a JSON object, followed by null bytes
@@ -257,6 +267,10 @@ class Vm(QtCore.QObject):
         self.vm_state_change.emit(self.state)
 
     def stop(self):
+        if platform.system() == "Darwin":
+            self.stop_macos()
+
+    def stop_macos(self):
         # Kill existing processes
         self.kill_sshd()
         if self.vpnkit_p is not None:

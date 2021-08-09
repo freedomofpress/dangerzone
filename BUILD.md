@@ -31,7 +31,13 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
+sudo dnf install -y rpm-build podman python3 python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama python3-psutil
+```
+
+Build the latest container:
+
+```sh
+./install/linux/build-container.py
 ```
 
 Run from source tree:
@@ -62,7 +68,9 @@ If you don't have it already, install poetry (`pip3 install --user poetry`). The
 poetry install
 ```
 
-Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop) and vagrant (`brew install vagrant`) are installed and run this to collect the binaries from Docker Desktop and then build a custom Alpine Linux ISO for Dangerzone, and copy them into the `share` folder:
+Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop) and vagrant (`brew install vagrant`) are installed.
+
+Run this to build a custom Alpine Linux ISO for Dangerzone, and copy it into the `share` folder:
 
 ```sh
 ./install/macos/make-vm.sh
@@ -97,8 +105,6 @@ The output is in the `dist` folder.
 
 ## Windows
 
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
-
 These instructions include adding folders to the path in Windows. To do this, go to Start and type "advanced system settings", and open "View advanced system settings" in the Control Panel. Click Environment Variables. Under "System variables" double-click on Path. From there you can add and remove folders that are available in the PATH.
 
 Download Python 3.9.0, 32-bit (x86) from https://www.python.org/downloads/release/python-390/. I downloaded python-3.9.0.exe. When installing it, make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
@@ -113,6 +119,31 @@ Change to the `dangerzone` folder, and install the poetry dependencies:
 
 ```
 poetry install
+```
+
+Make sure these are installed:
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- [Vagrant](https://www.vagrantup.com/downloads)
+- [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+- [Chocolatey](https://chocolatey.org/install)
+
+Open an administrator PowerShell and run:
+
+```
+choco install vcbuildtools
+```
+
+Build OpenSSH:
+
+```
+powershell.exe -executionpolicy remotesigned -File .\install\windows\make-openssh.ps1
+```
+
+Run this to build a custom Alpine Linux ISO for Dangerzone, and copy it (and some binaries from Docker) into the `share` folder:
+
+```
+.\install\windows\make-vm.bat
 ```
 
 After that you can launch dangerzone during development with:

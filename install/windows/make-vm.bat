@@ -7,5 +7,5 @@ vagrant halt
 cd ..\..
 
 REM Copy the ISO to resources
-if not exists share\vm mkdir share\vm
-cp install\vm-builder\vm\* share\vm
+mkdir share\vm
+cp install\vm-builder\vm\dangerzone.iso share\vm

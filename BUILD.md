@@ -126,19 +126,6 @@ Make sure these are installed:
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - [Vagrant](https://www.vagrantup.com/downloads)
 - [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-- [Chocolatey](https://chocolatey.org/install)
-
-Open an administrator PowerShell and run:
-
-```
-choco install vcbuildtools
-```
-
-Build OpenSSH:
-
-```
-powershell.exe -executionpolicy remotesigned -File .\install\windows\make-openssh.ps1
-```
 
 Run this to build a custom Alpine Linux ISO for Dangerzone, and copy it (and some binaries from Docker) into the `share` folder:
 

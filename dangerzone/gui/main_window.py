@@ -54,8 +54,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.content_widget.close_window.connect(self.close)
 
         # Only use the waiting widget if we have a VM
-        self.waiting_widget.show()
-        self.content_widget.hide()
+        if self.gui_common.is_waiting_finished:
+            self.waiting_widget.hide()
+            self.content_widget.show()
+        else:
+            self.waiting_widget.show()
+            self.content_widget.hide()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
@@ -70,6 +74,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show()
 
     def waiting_finished(self):
+        self.gui_common.is_waiting_finished = True
         self.waiting_widget.hide()
         self.content_widget.show()
 
@@ -423,13 +428,14 @@ class SettingsWidget(QtWidgets.QWidget):
 
 
 class ConvertThread(QtCore.QThread):
-    finished = QtCore.Signal()
+    finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
     def __init__(self, global_common, common):
         super(ConvertThread, self).__init__()
         self.global_common = global_common
         self.common = common
+        self.error = False
 
     def run(self):
         ocr_lang = self.global_common.ocr_languages[
@@ -443,19 +449,20 @@ class ConvertThread(QtCore.QThread):
             ocr_lang,
             self.stdout_callback,
         ):
-            self.finished.emit()
+            self.finished.emit(self.error)
 
     def stdout_callback(self, line):
         try:
             status = json.loads(line)
         except:
             print(f"Invalid JSON returned from container: {line}")
-
+            self.error = True
             self.update.emit(True, "Invalid JSON returned from container", 0)
             return
 
         s = Style.BRIGHT + Fore.CYAN + f"{status['percentage']}% "
         if status["error"]:
+            self.error = True
             s += Style.RESET_ALL + Fore.RED + status["text"]
         else:
             s += Style.RESET_ALL + status["text"]
@@ -473,6 +480,8 @@ class ConvertWidget(QtWidgets.QWidget):
         self.gui_common = gui_common
         self.common = common
 
+        self.error = False
+
         # Dangerous document label
         self.dangerous_doc_label = QtWidgets.QLabel()
         self.dangerous_doc_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -480,11 +489,25 @@ class ConvertWidget(QtWidgets.QWidget):
             "QLabel { font-size: 16px; font-weight: bold; }"
         )
 
+        # Label
+        self.error_image = QtWidgets.QLabel()
+        self.error_image.setPixmap(
+            QtGui.QPixmap.fromImage(
+                QtGui.QImage(self.global_common.get_resource_path("error.png"))
+            )
+        )
+        self.error_image.hide()
+
         self.label = QtWidgets.QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setWordWrap(True)
         self.label.setStyleSheet("QLabel { font-size: 18px; }")
 
+        label_layout = QtWidgets.QHBoxLayout()
+        label_layout.addWidget(self.error_image)
+        label_layout.addWidget(self.label, stretch=1)
+
+        # Progress bar
         self.progress = QtWidgets.QProgressBar()
         self.progress.setRange(0, 100)
         self.progress.setValue(0)
@@ -493,7 +516,7 @@ class ConvertWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.dangerous_doc_label)
         layout.addStretch()
-        layout.addWidget(self.label)
+        layout.addLayout(label_layout)
         layout.addWidget(self.progress)
         layout.addStretch()
         self.setLayout(layout)
@@ -512,13 +535,17 @@ class ConvertWidget(QtWidgets.QWidget):
 
     def update(self, error, text, percentage):
         if error:
-            # TODO: add error image or something
-            pass
+            self.error = True
+            self.error_image.show()
+            self.progress.hide()
 
         self.label.setText(text)
         self.progress.setValue(percentage)
 
     def all_done(self):
+        if self.error:
+            return
+
         # In Windows, open Explorer with the safe PDF in focus
         if platform.system() == "Windows":
             dest_filename_windows = self.common.output_filename.replace("/", "\\")

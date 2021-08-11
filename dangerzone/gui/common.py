@@ -38,6 +38,9 @@ class GuiCommon(object):
         # Preload list of PDF viewers on computer
         self.pdf_viewers = self._find_pdf_viewers()
 
+        # Are we done waiting (for VM to start, or container to install)
+        self.is_waiting_finished = False
+
     def get_window_icon(self):
         if platform.system() == "Windows":
             path = self.global_common.get_resource_path("dangerzone.ico")

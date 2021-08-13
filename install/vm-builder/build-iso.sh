@@ -32,7 +32,7 @@ chmod 777 /vagrant/vm
 
 # Make the iso
 cd ~/aports/scripts
-sudo -u user sh mkimage.sh --tag v3.14 \
+sudo -u user sh mkimage.sh --tag v3.14.1 \
     --outdir /vagrant/vm \
     --arch x86_64 \
     --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/main \

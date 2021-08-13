@@ -34,7 +34,7 @@ rc_add cgroups boot
 # Start dropbear (ssh server)
 rc_add dropbear boot
 
-# Run setup-alpine
+# Initialize the dangerzone VM
 rc_add dangerzone boot
 
 # Other init scripts

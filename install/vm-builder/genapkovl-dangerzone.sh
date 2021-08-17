@@ -29,13 +29,13 @@ done
 cp -r /home/user/.local/share/containers "$tmp"/etc/container-data
 
 # Start cgroups, required by podman
-rc_add cgroups boot
+rc_add cgroups default
 
 # Start dropbear (ssh server)
-rc_add dropbear boot
+rc_add dropbear default
 
 # Initialize the dangerzone VM
-rc_add dangerzone boot
+rc_add dangerzone default
 
 # Other init scripts
 rc_add devfs sysinit

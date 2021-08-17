@@ -1,5 +1,7 @@
 #!/bin/sh
 
+ALPINE_TAG=v3.14.1
+
 # Set up podman
 sudo modprobe fuse
 sudo modprobe tun
@@ -32,13 +34,13 @@ chmod 777 /vagrant/vm
 
 # Make the iso
 cd ~/aports/scripts
-sudo -u user sh mkimage.sh --tag v3.14.1 \
+sudo -u user sh mkimage.sh --tag "$ALPINE_TAG" \
     --outdir /vagrant/vm \
     --arch x86_64 \
     --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/main \
     --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/community \
     --profile dangerzone
-mv /vagrant/vm/alpine-dangerzone-v3.14-x86_64.iso /vagrant/vm/dangerzone.iso
+mv /vagrant/vm/alpine-dangerzone-${ALPINE_TAG}-x86_64.iso /vagrant/vm/dangerzone.iso
 
 # Fix permissions
 chmod 755 /vagrant/vm

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VAGRANT_FILES=$(find /vagrant -type f | grep -v /vagrant/.vagrant | grep -v /vagrant/vm)
+VAGRANT_FILES=$(find /vagrant -type f | grep -v /vagrant/.vagrant | grep -v /vagrant/vm | grep -v /vagrant/windows.sh)
 DANGERZONE_CONVERTER_FILES=$(find /opt/dangerzone-converter -type f)
 
 for FILE in $VAGRANT_FILES; do dos2unix $FILE; done

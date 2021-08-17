@@ -8,4 +8,4 @@ cd ..\..
 
 REM Copy the ISO to resources
 mkdir share\vm
-cp install\vm-builder\vm\dangerzone.iso share\vm
+copy install\vm-builder\vm\dangerzone.iso share\vm

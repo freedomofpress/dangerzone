@@ -1,9 +1,26 @@
 #!/sbin/openrc-run
 name="Dangerzone init script"
 start() {
-    # Setup Alpine
-	/sbin/setup-alpine -f /etc/answers.txt -e -q
-	rm /etc/answers.txt
+    # Hostname
+	echo "dangerzone" > /etc/hostname
+	echo "127.0.0.1 dangerzone" >> /etc/hosts
+	hostname dangerzone
+
+	# Networking	
+	cat > /etc/network/interfaces << EOF
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+    hostname dangerzone
+EOF
+	setup-interfaces -a
+	echo -e "\n" | setup-dns 4.4.4.4
+	rc-service networking restart
+
+	# Timezone
+	setup-timezone -z UTC
 
     # Create user
     /usr/sbin/adduser -D -u 1001 user
@@ -18,5 +35,5 @@ start() {
     echo "user:100000:65536" >> /etc/subgid
 
 	# SSH reverse tunnel to host
-	/etc/ssh-to-host.py &
+	/etc/setup-ssh.py &
 }

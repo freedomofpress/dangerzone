@@ -1,0 +1,6 @@
+[submodule "vendor/hyperkit"]
+	path = vendor/hyperkit
+	url = https://github.com/moby/hyperkit.git
+[submodule "vendor/vpnkit"]
+	path = vendor/vpnkit
+	url = https://github.com/moby/vpnkit.git

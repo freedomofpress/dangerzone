@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<Foundry>
-<VM>
-<ClientMetaData>
-<clientMetaDataAttributes/>
-<HistoryEventList/></ClientMetaData>
-<VMId type="string">52 59 c0 38 41 3e 81 21-fb fe 13 82 cc 38 5e 9d</VMId>
-<vmxPathName type="string">generic-alpine314-vmware.vmx</vmxPathName></VM></Foundry>

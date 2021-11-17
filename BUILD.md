@@ -54,6 +54,8 @@ Create a .rpm:
 
 ## macOS
 
+_Note for Apple Silicon users:_ Unfortunately the build process requires using a Mac with an Intel chip for now. Building the container image uses Vagrant, which requires VMs, and for now the M1 chip can only run M1 VMs, VirtualBox isn't supported, etc.
+
 Ensure you have the git submodules checked out:
 
 ```

@@ -137,5 +137,5 @@ test_docs/sample-safe.pdf
 share/bin
 share/vm
 share/container
-install/vm-builder/vm
-install/vm-builder/.vagrant
+vm-builder/vm
+vm-builder/.vagrant

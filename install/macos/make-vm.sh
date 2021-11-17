@@ -1,17 +1,28 @@
 #!/bin/sh
 
-# Extract hyperkit and vpnkit from Docker Desktop
+# Compile hyperkit
+cd vendor/hyperkit/
+make || { echo 'Failed to compile hyperkit' ; exit 1; }
+cd ../..
+
+# Compile vpnkit
+cd vendor/vpnkit/
+unset OPAMROOT
+make || { echo 'Failed to compile vpnkit' ; exit 1; }
+cd ../..
+
+# Copy binaries to share
 mkdir -p share/bin
-cp /Applications/Docker.app/Contents/Resources/bin/com.docker.hyperkit share/bin/hyperkit
-cp /Applications/Docker.app/Contents/Resources/bin/com.docker.vpnkit share/bin/vpnkit
+cp vendor/hyperkit/build/hyperkit share/bin/hyperkit
+cp vendor/vpnkit/build/vpnkit share/bin/vpnkit
 
 # Build ISO
-cd install/vm-builder
+cd vm-builder
 vagrant up
 vagrant ssh -- /vagrant/build-iso.sh
 vagrant halt
-cd ../..
+cd ..
 
 # Copy the ISO to resources
 mkdir -p share/vm
-cp install/vm-builder/vm/* share/vm
+cp vm-builder/vm/* share/vm

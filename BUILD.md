@@ -54,23 +54,32 @@ Create a .rpm:
 
 ## macOS
 
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
-
-Install python@3.9 from Homebrew:
+Ensure you have the git submodules checked out:
 
 ```
-brew install python@3.9 create-dmg
+git submodule init
+git submodule update
 ```
 
-If you don't have it already, install poetry (`pip3 install --user poetry`). Then install dependencies:
+Install Xcode from the App Store.
+
+Install Python 3.9.9 [[from python.org])(https://www.python.org/downloads/release/python-399/).
+
+Install Python dependencies:
 
 ```sh
+pip3 install --user poetry
 poetry install
 ```
 
-Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop) and vagrant (`brew install vagrant`) are installed.
+Install [Homebrew](https://brew.sh/) dependencies:
 
-Run this to build a custom Alpine Linux ISO for Dangerzone, and copy it into the `share` folder:
+```
+brew install vagrant create-dmg
+brew install wget opam pkg-config
+```
+
+Run this to compile hyperkit and vpnkit, and build a custom Alpine Linux ISO for Dangerzone, and copy it into the `share` folder:
 
 ```sh
 ./install/macos/make-vm.sh

@@ -1,6 +1,0 @@
-alpine-base
-podman
-dropbear
-autossh
-python3
-sudo

@@ -21,3 +21,6 @@ This takes awhile to run. It:
 ```sh
 ./run-vm.sh
 ```
+
+# How the VM works
+

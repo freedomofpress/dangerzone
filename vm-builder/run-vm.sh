@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ROOT=$(pwd)/vm
-HYPERKIT=/Applications/Docker.app/Contents/Resources/bin/com.docker.hyperkit
-VPNKIT=/Applications/Docker.app/Contents/Resources/bin/com.docker.vpnkit
+HYPERKIT=$(pwd)/../share/bin/hyperkit
+VPNKIT=$(pwd)/../share/bin/vpnkit
 
 SSHD_PORT=4445
 SSHD_TUNNEL_PORT=4446

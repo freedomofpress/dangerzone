@@ -76,9 +76,16 @@ poetry install
 
 Install [Homebrew](https://brew.sh/) dependencies:
 
-```
+```sh
 brew install vagrant create-dmg
-brew install wget opam pkg-config
+brew install wget pkg-config opam dune ocaml
+```
+
+Install opam dependencies:
+
+```
+opam init -y
+opam install -y alcotest astring base64 bigarray-compat charrua-client-mirage charrua-core cmdliner cohttp-lwt cstruct cstruct-lwt datakit-server datakit-server-9p duration ezjsonm fd-send-recv fmt hvsock io-page io-page-unix ipaddr logs lwt lwt-dllist mirage-channel mirage-channel-lwt mirage-clock-lwt mirage-clock-unix mirage-flow-lwt mirage-kv-lwt mirage-profile mirage-protocols-lwt mirage-random mirage-stack-lwt mirage-time-lwt mirage-vnetif oUnit pcap-format ppx_cstruct ppx_sexp_conv protocol-9p re rresult sexplib sha tar tcpip uri uuidm uwt
 ```
 
 Run this to compile hyperkit and vpnkit, and build a custom Alpine Linux ISO for Dangerzone, and copy it into the `share` folder:

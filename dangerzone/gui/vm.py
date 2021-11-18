@@ -22,9 +22,10 @@ class Vm(QtCore.QObject):
 
     vm_state_change = QtCore.Signal(int)
 
-    def __init__(self, global_common):
+    def __init__(self, global_common, allow_vm_login):
         super(Vm, self).__init__()
         self.global_common = global_common
+        self.allow_vm_login = allow_vm_login
 
         # VM starts off
         self.state = self.STATE_OFF
@@ -144,9 +145,9 @@ class Vm(QtCore.QObject):
             stderr=self.devnull,
         )
         with open(self.ssh_client_key_path) as f:
-            ssh_client_key = f.read()
+            self.ssh_client_key = f.read()
         with open(self.ssh_client_pubkey_path) as f:
-            ssh_client_pubkey = f.read()
+            self.ssh_client_pubkey = f.read()
 
         # Start an sshd service on this port
         args = [
@@ -192,8 +193,8 @@ class Vm(QtCore.QObject):
         # Create a JSON object to pass into the VM
         # This is a 512kb file that starts with a JSON object, followed by null bytes
         guest_vm_info = {
-            "id_ed25519": ssh_client_key,
-            "id_ed25519.pub": ssh_client_pubkey,
+            "id_ed25519": self.ssh_client_key,
+            "id_ed25519.pub": self.ssh_client_pubkey,
             "user": getpass.getuser(),
             "ip": "192.168.65.2",
             "port": self.sshd_port,
@@ -261,13 +262,14 @@ class Vm(QtCore.QObject):
         args_str = " ".join(pipes.quote(s) for s in args)
         print("> " + args_str)
 
-        # Start the VM with the ability to login
-        # self.hyperkit_p = subprocess.Popen(args)
-
-        # Start the VM without ability to login
-        self.hyperkit_p = subprocess.Popen(
-            args, stdout=self.devnull, stderr=self.devnull, stdin=self.devnull
-        )
+        if self.allow_vm_login:
+            # Start the VM with the ability to login
+            self.hyperkit_p = subprocess.Popen(args)
+        else:
+            # Start the VM without ability to login
+            self.hyperkit_p = subprocess.Popen(
+                args, stdout=self.devnull, stderr=self.devnull, stdin=self.devnull
+            )
 
         # Wait for SSH thread
         self.wait_t = WaitForSsh(self.sshd_tunnel_port)

@@ -7,14 +7,13 @@ cd ../..
 
 # Compile vpnkit
 cd vendor/vpnkit/
-unset OPAMROOT
-make || { echo 'Failed to compile vpnkit' ; exit 1; }
+make -f Makefile.darwin || { echo 'Failed to compile vpnkit' ; exit 1; }
 cd ../..
 
 # Copy binaries to share
 mkdir -p share/bin
 cp vendor/hyperkit/build/hyperkit share/bin/hyperkit
-cp vendor/vpnkit/build/vpnkit share/bin/vpnkit
+cp vendor/vpnkit/_build/install/default/bin/vpnkit share/bin/vpnkit
 
 # Build ISO
 cd vm-builder

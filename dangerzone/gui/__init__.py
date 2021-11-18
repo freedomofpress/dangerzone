@@ -51,7 +51,8 @@ class ApplicationWrapper(QtCore.QObject):
 
 @click.command()
 @click.argument("filename", required=False)
-def gui_main(filename):
+@click.option("--allow-vm-login", is_flag=True, help="Allow logging into the VM as root to troubleshoot")
+def gui_main(filename, allow_vm_login):
     if platform.system() == "Darwin":
         # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
         os.environ["QT_MAC_WANTS_LAYER"] = "1"
@@ -98,7 +99,7 @@ def gui_main(filename):
 
     # The dangerzone VM (Mac-only)
     if platform.system() == "Darwin":
-        vm = Vm(global_common)
+        vm = Vm(global_common, allow_vm_login)
         global_common.vm = vm
     else:
         vm = None

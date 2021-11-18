@@ -15,12 +15,16 @@ mkdir -p share/bin
 cp vendor/hyperkit/build/hyperkit share/bin/hyperkit
 cp vendor/vpnkit/_build/install/default/bin/vpnkit share/bin/vpnkit
 
-# Build ISO
-cd vm-builder
-vagrant up
-vagrant ssh -- /vagrant/build-iso.sh
-vagrant halt
-cd ..
+# Build the dangerzone-converter image
+echo "Building dangerzone-converter image"
+docker build dangerzone-converter --tag dangerzone.rocks/dangerzone
+echo "Saving dangerzone-converter image"
+docker save dangerzone.rocks/dangerzone -o vm-builder/dangerzone-converter.tar
+echo "Compressing dangerzone-converter image"
+gzip vm-builder/dangerzone-converter.tar
+
+# Build the ISO
+docker run -v $(pwd)/vm-builder:/vm-builder alpine:latest /vm-builder/build-iso.sh
 
 # Copy the ISO to resources
 mkdir -p share/vm

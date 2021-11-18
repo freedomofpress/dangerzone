@@ -77,8 +77,7 @@ poetry install
 Install [Homebrew](https://brew.sh/) dependencies:
 
 ```sh
-brew install vagrant create-dmg
-brew install wget pkg-config opam dune ocaml
+brew install create-dmg wget pkg-config opam dune ocaml
 ```
 
 Install opam dependencies:

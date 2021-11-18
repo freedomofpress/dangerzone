@@ -25,10 +25,8 @@ EOF
     # Create user
     /usr/sbin/adduser -D -u 1001 user
 
-	# Move containers into home dir
-	mkdir -p /home/user/.local/share
-	mv /etc/container-data /home/user/.local/share/containers
-	chown -R user:user /home/user/.local
+	# Load the dangerzone container
+	sudo -u user podman load -i /etc/dangerzone-converter.tar.gz
 
 	# Allow podman containers to run
 	echo "user:100000:65536" >> /etc/subuid

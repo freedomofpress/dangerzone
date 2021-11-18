@@ -2,52 +2,43 @@
 
 ALPINE_TAG=v3.14.3
 
-# Set up podman
-sudo modprobe fuse
-sudo modprobe tun
-sudo rc-update add cgroups
-sudo rc-service cgroups start
-sudo -u user podman system prune -a -f
+# Install dependencies
+apk add alpine-sdk build-base apk-tools alpine-conf busybox fakeroot xorriso squashfs-tools mtools dosfstools grub-efi p7zip abuild sudo
 
-# Build the podman container
-cd /opt/dangerzone-converter
-sudo -u user podman build . --tag dangerzone.rocks/dangerzone
+# Make keys for build
+abuild-keygen -i -a -n
 
 # Setup aports
 cd ~/
-if [ -d ~/aports ]; then
-    echo "already downloaded"
-else
-    wget https://gitlab.alpinelinux.org/alpine/aports/-/archive/master/aports-master.tar.gz
-    tar -xf ~/aports-master.tar.gz
-    mv ~/aports-master ~/aports
-fi
-cp /vagrant/mkimg.dangerzone.sh ~/aports/scripts/
-cp /vagrant/genapkovl-dangerzone.sh ~/aports/scripts/
-chmod +x ~/aports/scripts/mkimg.dangerzone.sh
-chmod +x ~/aports/scripts/genapkovl-dangerzone.sh
+wget https://gitlab.alpinelinux.org/alpine/aports/-/archive/master/aports-master.tar.gz
+tar -xf ~/aports-master.tar.gz
+mv ~/aports-master ~/aports
+cp /vm-builder/mkimg.dz.sh ~/aports/scripts/
+cp /vm-builder/genapkovl-dz.sh ~/aports/scripts/
+chmod +x ~/aports/scripts/mkimg.dz.sh
+chmod +x ~/aports/scripts/genapkovl-dz.sh
 
 # Set up the vm dir
-rm -r /vagrant/vm
-mkdir -p /vagrant/vm
-chmod 777 /vagrant/vm
+rm -r /vm-builder/vm
+mkdir -p /vm-builder/vm
+chmod 777 /vm-builder/vm
 
 # Make the iso
 cd ~/aports/scripts
-sudo -u user sh mkimage.sh --tag "$ALPINE_TAG" \
-    --outdir /vagrant/vm \
-    --arch x86_64 \
+./mkimage.sh --tag "$ALPINE_TAG" \
+    --outdir /vm-builder/vm \
+    --arch $(uname -m) \
     --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/main \
     --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/community \
-    --profile dangerzone
-mv /vagrant/vm/alpine-dangerzone-${ALPINE_TAG}-x86_64.iso /vagrant/vm/dangerzone.iso
+    --profile dz
+mv /vm-builder/vm/alpine-dz-${ALPINE_TAG}-$(uname -m).iso /vm-builder/vm/dangerzone.iso
 
 # Fix permissions
-chmod 755 /vagrant/vm
-chmod 644 /vagrant/vm/*
+chmod 755 /vm-builder/vm
+chmod 644 /vm-builder/vm/*
 
 # Extract vmlinuz and initramfs
-cd /vagrant/vm
+cd /vm-builder/vm
 7z x dangerzone.iso boot/vmlinuz-virt
 7z x dangerzone.iso boot/initramfs-virt
 mv boot/* .

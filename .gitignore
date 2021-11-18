@@ -139,3 +139,4 @@ share/vm
 share/container
 vm-builder/vm
 vm-builder/.vagrant
+vm-builder/dangerzone.docker_image

@@ -19,14 +19,11 @@ tmp="$(mktemp -d)"
 trap cleanup EXIT
 
 # Copy /etc
-cp -r /vagrant/etc "$tmp"
+cp -r /vm-builder/etc "$tmp"
 chown -R root:root "$tmp"/etc
 
-# Fix permissions and add containers to /etc/container-data, temporarily
-for WEIRD_FILE in $(find /home/user/.local/share/containers -perm 000); do
-	chmod 600 $WEIRD_FILE
-done
-cp -r /home/user/.local/share/containers "$tmp"/etc/container-data
+# Copy container image to /etc, temporarily
+cp /vm-builder/dangerzone-converter.tar.gz "$tmp"/etc
 
 # Start cgroups, required by podman
 rc_add cgroups default

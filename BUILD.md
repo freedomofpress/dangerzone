@@ -54,8 +54,6 @@ Create a .rpm:
 
 ## macOS
 
-_Note for Apple Silicon users:_ Unfortunately the build process requires using a Mac with an Intel chip for now. Building the container image uses Vagrant, which requires VMs, and for now the M1 chip can only run M1 VMs, VirtualBox isn't supported, etc.
-
 Ensure you have the git submodules checked out:
 
 ```
@@ -64,6 +62,8 @@ git submodule update
 ```
 
 Install Xcode from the App Store.
+
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Make sure to choose your correct CPU, either Intel Chip or Apple Chip.
 
 Install Python 3.9.9 [[from python.org])(https://www.python.org/downloads/release/python-399/).
 
@@ -77,12 +77,13 @@ poetry install
 Install [Homebrew](https://brew.sh/) dependencies:
 
 ```sh
-brew install create-dmg wget pkg-config opam dune ocaml
+brew install create-dmg wget pkg-config
 ```
 
-Install opam dependencies:
+Install opam dependencies (you can skip this step if you are using an Apple M1 chip Mac):
 
 ```
+brew install opam dune ocaml
 opam init -y
 opam install -y alcotest astring base64 bigarray-compat charrua-client-mirage charrua-core cmdliner cohttp-lwt cstruct cstruct-lwt datakit-server datakit-server-9p duration ezjsonm fd-send-recv fmt hvsock io-page io-page-unix ipaddr logs lwt lwt-dllist mirage-channel mirage-channel-lwt mirage-clock-lwt mirage-clock-unix mirage-flow-lwt mirage-kv-lwt mirage-profile mirage-protocols-lwt mirage-random mirage-stack-lwt mirage-time-lwt mirage-vnetif oUnit pcap-format ppx_cstruct ppx_sexp_conv protocol-9p re rresult sexplib sha tar tcpip uri uuidm uwt
 ```

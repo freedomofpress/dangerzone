@@ -16,8 +16,6 @@ PySide2 = "5.15.2"
 pywin32 = {version = "*", platform = "win32"}
 wmi = {version = "*", platform = "win32"}
 pyxdg = {version = "*", platform = "linux"}
-pyobjc-core = {version = "*", platform = "darwin"}
-pyobjc-framework-launchservices = {version = "*", platform = "darwin"}
 strip-ansi = {version = "*", platform = "darwin"}
 colorama = "^0.4.4"
 psutil = "^5.8.0"

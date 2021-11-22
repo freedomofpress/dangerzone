@@ -16,7 +16,7 @@ python-versions = "*"
 
 [[package]]
 name = "black"
-version = "21.11b0"
+version = "21.11b1"
 description = "The uncompromising code formatter."
 category = "dev"
 optional = false
@@ -27,7 +27,7 @@ click = ">=7.1.2"
 mypy-extensions = ">=0.4.3"
 pathspec = ">=0.9.0,<1"
 platformdirs = ">=2"
-regex = ">=2020.1.8"
+regex = ">=2021.4.4"
 tomli = ">=0.2.6,<2.0.0"
 typed-ast = {version = ">=1.4.2", markers = "python_version < \"3.8\" and implementation_name == \"cpython\""}
 typing-extensions = ">=3.10.0.0"
@@ -180,61 +180,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "pyobjc-core"
-version = "8.0"
-description = "Python<->ObjC Interoperability Module"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[[package]]
-name = "pyobjc-framework-cocoa"
-version = "8.0"
-description = "Wrappers for the Cocoa frameworks on macOS"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-pyobjc-core = ">=8.0"
-
-[[package]]
-name = "pyobjc-framework-coreservices"
-version = "8.0"
-description = "Wrappers for the framework CoreServices on macOS"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-pyobjc-core = ">=8.0"
-pyobjc-framework-FSEvents = ">=8.0"
-
-[[package]]
-name = "pyobjc-framework-fsevents"
-version = "8.0"
-description = "Wrappers for the framework FSEvents on macOS"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-pyobjc-core = ">=8.0"
-pyobjc-framework-Cocoa = ">=8.0"
-
-[[package]]
-name = "pyobjc-framework-launchservices"
-version = "8.0"
-description = "Wrappers for the framework LaunchServices on macOS"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-pyobjc-core = ">=8.0"
-pyobjc-framework-CoreServices = ">=8.0"
-
-[[package]]
 name = "pyside2"
 version = "5.15.2"
 description = "Python bindings for the Qt cross-platform application and UI framework"
@@ -381,7 +326,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<3.10"
-content-hash = "648ba9b893cabebf634b7b384bb774aa0c36e88d122674bb88afc41193920d6f"
+content-hash = "3110d5fdca4397fd0495ecfc932c103f14696323eb561b8b11f9bcfb0aed981c"
 
 [metadata.files]
 altgraph = [
@@ -393,8 +338,8 @@ appdirs = [
     {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
 ]
 black = [
-    {file = "black-21.11b0-py3-none-any.whl", hash = "sha256:0b1f66cbfadcd332ceeaeecf6373d9991d451868d2e2219ad0ac1213fb701117"},
-    {file = "black-21.11b0.tar.gz", hash = "sha256:83f3852301c8dcb229e9c444dd79f573c8d31c7c2dad9bbaaa94c808630e32aa"},
+    {file = "black-21.11b1-py3-none-any.whl", hash = "sha256:802c6c30b637b28645b7fde282ed2569c0cd777dbe493a41b6a03c1d903f99ac"},
+    {file = "black-21.11b1.tar.gz", hash = "sha256:a042adbb18b3262faad5aff4e834ff186bb893f95ba3a8013f09de1e5569def2"},
 ]
 certifi = [
     {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},
@@ -480,38 +425,6 @@ pyinstaller = [
 pyinstaller-hooks-contrib = [
     {file = "pyinstaller-hooks-contrib-2021.3.tar.gz", hash = "sha256:169b09802a19f83593114821d6ba0416a05c7071ef0ca394f7bfb7e2c0c916c8"},
     {file = "pyinstaller_hooks_contrib-2021.3-py2.py3-none-any.whl", hash = "sha256:a52bc3834281266bbf77239cfc9521923336ca622f44f90924546ed6c6d3ad5e"},
-]
-pyobjc-core = [
-    {file = "pyobjc-core-8.0.tar.gz", hash = "sha256:4cd0735cdb7a7b959def0fe1769df74e0ab6de5ea1ca40f1464d2ac78b85326f"},
-    {file = "pyobjc_core-8.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:d517f1dffddb30d1a9d4c5109a46ffc37eb461720558a54d57586459014b2d0b"},
-    {file = "pyobjc_core-8.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:7e710f7329a7dbca27639c7ce60a50b2003d5492d55f66fec2ab8c375f134812"},
-    {file = "pyobjc_core-8.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:0e1d2f3e1216e92428e0107a651b074d44f2856b98aac93fef5b27bfb4355232"},
-    {file = "pyobjc_core-8.0-cp38-cp38-macosx_11_0_universal2.whl", hash = "sha256:d56c69d9267723326c9254e268838a5d67120c34e0667ef9c947c8336a755dec"},
-    {file = "pyobjc_core-8.0-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:e19d3fd51cc993e31f51e32f62463e81da79dbd22042e7a18cf6ee141db9d539"},
-]
-pyobjc-framework-cocoa = [
-    {file = "pyobjc-framework-Cocoa-8.0.tar.gz", hash = "sha256:233fe4cf6ddd5804d76b68fac3f0601b78cc0c307703eb5f2dcb9a1ef62a7904"},
-    {file = "pyobjc_framework_Cocoa-8.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:f6b4e8708d574b26a72366f11b0a3afb59e6cd8569f6aabf42450ac39d69c115"},
-    {file = "pyobjc_framework_Cocoa-8.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:49ceaae8bf993b42e6afa1a91aa6fda44628ac8944b5a631fdc844b9b8da4b27"},
-    {file = "pyobjc_framework_Cocoa-8.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:4fd7b0627681841c12a47e77fd06ec518b41f0037e12cd1d1e035de5d2b4a333"},
-    {file = "pyobjc_framework_Cocoa-8.0-cp38-cp38-macosx_11_0_universal2.whl", hash = "sha256:fab76fd835228c37280fdf4db71b740c3c8a60a0a304373c9a162134fba58fd3"},
-    {file = "pyobjc_framework_Cocoa-8.0-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:0766f4adbfca41815529c639da1e4c9959bed86c961956c564f3163dc3e56c74"},
-]
-pyobjc-framework-coreservices = [
-    {file = "pyobjc-framework-CoreServices-8.0.tar.gz", hash = "sha256:0eee0e6df5c6de7dfe880bc6bd74c09a920854569f247f227a7aa9aec0a95e07"},
-    {file = "pyobjc_framework_CoreServices-8.0-cp36-abi3-macosx_10_9_universal2.whl", hash = "sha256:fd8bbbcf86cf30ce95245caca6cfe9d72b203897d51272f88dfada14eb493355"},
-    {file = "pyobjc_framework_CoreServices-8.0-cp36-abi3-macosx_10_9_x86_64.whl", hash = "sha256:587ca6214a3a0bd46464c7df4d4b084c02254944cf1410b5fd82eeb0b910615d"},
-    {file = "pyobjc_framework_CoreServices-8.0-cp36-abi3-macosx_11_0_universal2.whl", hash = "sha256:ac38bc13040f95367b403ad00358847ff8ab9a5b1c471d161d41aaaa28d6cf66"},
-]
-pyobjc-framework-fsevents = [
-    {file = "pyobjc-framework-FSEvents-8.0.tar.gz", hash = "sha256:48f892a95aa7917806098976f4e6f4fc6feb214d47902bc69c046d775a81698d"},
-    {file = "pyobjc_framework_FSEvents-8.0-cp36-abi3-macosx_10_9_universal2.whl", hash = "sha256:401698355f7e9541eb2856b551419ccdfece1c9f942b92506d8941d3f15a4aee"},
-    {file = "pyobjc_framework_FSEvents-8.0-cp36-abi3-macosx_10_9_x86_64.whl", hash = "sha256:f1aeae43c0726ab0304133584028b4689cef4c5056834da979c7db4bcd91dd22"},
-    {file = "pyobjc_framework_FSEvents-8.0-cp36-abi3-macosx_11_0_universal2.whl", hash = "sha256:e35b4dcf987e3e1f7da1d27a2b41d0875d07be7a034f70002ba641331c275840"},
-]
-pyobjc-framework-launchservices = [
-    {file = "pyobjc-framework-LaunchServices-8.0.tar.gz", hash = "sha256:afaa3264ef90256f6ac4efda9cbacca6adb804c03930576e7ed1f8cbb10f94ee"},
-    {file = "pyobjc_framework_LaunchServices-8.0-py2.py3-none-any.whl", hash = "sha256:aecd7293bbb0e3377b4da837417a73d777d793cb450181a0725bd48907245d75"},
 ]
 pyside2 = [
     {file = "PySide2-5.15.2-5.15.2-cp27-cp27m-macosx_10_13_intel.whl", hash = "sha256:4f17a0161995678110447711d685fcd7b15b762810e8f00f6dc239bffb70a32e"},

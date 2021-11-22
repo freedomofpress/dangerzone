@@ -7,8 +7,6 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from colorama import Fore
 
 if platform.system() == "Darwin":
-    import CoreServices
-    import LaunchServices
     import plistlib
 
 elif platform.system() == "Linux":

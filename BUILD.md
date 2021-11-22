@@ -11,7 +11,7 @@ sudo apt install -y podman dh-python python3 python3-stdeb python3-pyside2.qtcor
 Build the latest container:
 
 ```sh
-./install/linux/build-container.py
+./install/linux/build-image.sh
 ```
 
 Run from source tree:
@@ -37,7 +37,7 @@ sudo dnf install -y rpm-build podman python3 python3-setuptools python3-pyside2 
 Build the latest container:
 
 ```sh
-./install/linux/build-container.py
+./install/linux/build-image.sh
 ```
 
 Run from source tree:
@@ -76,7 +76,7 @@ brew install create-dmg
 Build the dangerzone container image:
 
 ```sh
-./install/build-image.sh
+./install/macos/build-image.sh
 ```
 
 Run from source tree:

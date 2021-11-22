@@ -83,8 +83,7 @@ def cli_main(output_filename, ocr_lang, filename):
             return
 
     # Ensure container is installed
-    if not global_common.is_container_installed():
-        global_common.install_container()
+    global_common.install_container()
 
     # Convert the document
     print_header("Converting document to safe PDF")

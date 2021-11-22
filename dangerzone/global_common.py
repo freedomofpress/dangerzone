@@ -414,18 +414,6 @@ class GlobalCommon(object):
     def exec_dangerzone_container(self, input_filename, output_filename, ocr_lang):
         convert(self, input_filename, output_filename, ocr_lang)
 
-        # args = [self.dz_container_path] + args
-        # args_str = " ".join(pipes.quote(s) for s in args)
-        # print(Style.DIM + "> " + Style.NORMAL + Fore.CYAN + args_str)
-
-        # # Execute dangerzone-container
-        # return subprocess.Popen(
-        #     args,
-        #     startupinfo=self.get_subprocess_startupinfo(),
-        #     stdout=subprocess.PIPE,
-        #     stderr=subprocess.PIPE,
-        # )
-
     def get_subprocess_startupinfo(self):
         if platform.system() == "Windows":
             startupinfo = subprocess.STARTUPINFO()
@@ -470,7 +458,7 @@ class GlobalCommon(object):
             return
 
         # Load the container into podman
-        print("Installing Dangerzone container...")
+        print("Installing Dangerzone container image...")
 
         p = subprocess.Popen(
             [self.get_container_runtime(), "load"], stdin=subprocess.PIPE
@@ -490,10 +478,10 @@ class GlobalCommon(object):
         p.communicate()
 
         if not self.is_container_installed():
-            print("Failed to install the container")
+            print("Failed to install the container image")
             return False
 
-        print("Container installed")
+        print("Container image installed")
         return True
 
     def is_container_installed(self):
@@ -506,42 +494,28 @@ class GlobalCommon(object):
 
         # See if this image is already installed
         installed = False
+        found_image_id = subprocess.check_output(
+            [
+                self.get_container_runtime(),
+                "image",
+                "list",
+                "--format",
+                "{{.ID}}",
+                self.container_name,
+            ],
+            text=True,
+        )
+        found_image_id = found_image_id.strip()
 
-        if platform.system() == "Linux":
-            # Podman
-            images = json.loads(
-                subprocess.check_output(
-                    [self.get_container_runtime(), "image", "list", "--format", "json"]
-                )
-            )
-            for image in images:
-                if image["Id"] == expected_image_id:
-                    installed = True
-                    break
+        if found_image_id == expected_image_id:
+            installed = True
+        elif found_image_id == "":
+            pass
         else:
-            # Docker
-            found_image_id = subprocess.check_output(
-                [
-                    self.get_container_runtime(),
-                    "image",
-                    "list",
-                    "--format",
-                    "{{.ID}}",
-                    self.container_name,
-                ],
-                text=True,
-            )
-            found_image_id = found_image_id.strip()
-            if found_image_id == expected_image_id:
-                installed = True
-            elif found_image_id == "":
-                print("Dangerzone container image is not installed")
-            else:
-                print(f"Image {found_image_id} is installed, not {expected_image_id}")
+            print(f"Deleting old dangerzone container image")
 
-                # Delete the image that exists
-                subprocess.check_output(
-                    [self.get_container_runtime(), "rmi", found_image_id]
-                )
+            subprocess.check_output(
+                [self.get_container_runtime(), "rmi", found_image_id]
+            )
 
         return installed

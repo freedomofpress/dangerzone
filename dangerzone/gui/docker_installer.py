@@ -1,36 +1,24 @@
 import os
-import stat
-import requests
 import subprocess
 import shutil
 import platform
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtWidgets
 
 
 class AuthorizationFailed(Exception):
     pass
 
 
+container_runtime = shutil.which("docker")    
+
+
 def is_docker_installed():
-    container_runtime = shutil.which("docker.exe")
-    if platform.system() == "Darwin":
-        # Does the docker binary exist?
-        if os.path.isdir("/Applications/Docker.app") and os.path.exists(
-            container_runtime
-        ):
-            # Is it executable?
-            st = os.stat(container_runtime)
-            return bool(st.st_mode & stat.S_IXOTH)
-
-    if platform.system() == "Windows":
-        return os.path.exists(container_runtime)
-
-    return False
+    return container_runtime is not None
 
 
 def is_docker_ready(global_common):
     # Run `docker image ls` without an error
-    with global_common.exec_dangerzone_container(["ls"]) as p:
+    with subprocess.Popen([container_runtime, "image", "ls"]) as p:
         outs, errs = p.communicate()
 
         # The user canceled, or permission denied
@@ -41,8 +29,8 @@ def is_docker_ready(global_common):
         if p.returncode == 0:
             return True
         else:
-            print(outs.decode())
-            print(errs.decode())
+            print(outs)
+            print(errs)
             return False
 
 
@@ -57,7 +45,7 @@ class DockerInstaller(QtWidgets.QDialog):
     def __init__(self, gui_common):
         super(DockerInstaller, self).__init__()
 
-        self.setWindowTitle("dangerzone")
+        self.setWindowTitle("Dangerzone")
         self.setWindowIcon(gui_common.get_window_icon())
         # self.setMinimumHeight(170)
 
@@ -74,176 +62,38 @@ class DockerInstaller(QtWidgets.QDialog):
         self.task_label.setWordWrap(True)
         self.task_label.setOpenExternalLinks(True)
 
-        self.progress = QtWidgets.QProgressBar()
-        self.progress.setMinimum(0)
-
-        self.open_finder_button = QtWidgets.QPushButton()
-        if platform.system() == "Darwin":
-            self.open_finder_button.setText("Show in Finder")
-        else:
-            self.open_finder_button.setText("Show in Explorer")
-        self.open_finder_button.setStyleSheet("QPushButton { font-weight: bold; }")
-        self.open_finder_button.clicked.connect(self.open_finder_clicked)
-        self.open_finder_button.hide()
-
-        self.cancel_button = QtWidgets.QPushButton("Cancel")
-        self.cancel_button.clicked.connect(self.cancel_clicked)
-
         self.ok_button = QtWidgets.QPushButton("OK")
         self.ok_button.clicked.connect(self.ok_clicked)
 
         buttons_layout = QtWidgets.QHBoxLayout()
         buttons_layout.addStretch()
-        buttons_layout.addWidget(self.open_finder_button)
         buttons_layout.addWidget(self.ok_button)
-        buttons_layout.addWidget(self.cancel_button)
         buttons_layout.addStretch()
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(label)
         layout.addWidget(self.task_label)
-        layout.addWidget(self.progress)
         layout.addLayout(buttons_layout)
         layout.addStretch()
         self.setLayout(layout)
 
         if platform.system() == "Darwin":
-            self.installer_filename = os.path.join(
-                os.path.expanduser("~/Downloads"), "Docker.dmg"
-            )
-        else:
-            self.installer_filename = os.path.join(
-                os.path.expanduser("~\\Downloads"), "Docker for Windows Installer.exe"
-            )
-
-        # Threads
-        self.download_t = None
-
-    def update_progress(self, value, maximum):
-        self.progress.setMaximum(maximum)
-        self.progress.setValue(value)
-
-    def update_task_label(self, s):
-        self.task_label.setText(s)
-
-    def download_finished(self):
-        self.task_label.setText(
-            "Finished downloading Docker. Install it, make sure it's running, and then open Dangerzone again."
-        )
-        self.download_t = None
-        self.progress.hide()
-        self.cancel_button.hide()
-
-        self.open_finder_path = self.installer_filename
-        self.open_finder_button.show()
-
-    def download_failed(self, status_code):
-        print(f"Download failed: status code {status_code}")
-        self.download_t = None
-
-    def download(self):
-        self.task_label.setText("Downloading Docker")
-
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.start_download)
-        self.timer.setSingleShot(True)
-        self.timer.start(10)
-
-    def start_download(self):
-        self.download_t = Downloader(self.installer_filename)
-        self.download_t.download_finished.connect(self.download_finished)
-        self.download_t.download_failed.connect(self.download_failed)
-        self.download_t.update_progress.connect(self.update_progress)
-        self.download_t.start()
-
-    def cancel_clicked(self):
-        self.reject()
-
-        if self.download_t:
-            self.download_t.quit()
-            try:
-                os.remove(self.installer_filename)
-            except:
-                pass
+            self.docker_path = "/Applications/Docker.app/Contents/Resources/bin/docker"
+        elif platform.system() == "Windows":
+            self.docker_path = shutil.which("docker.exe")
 
     def ok_clicked(self):
         self.accept()
 
-        if self.download_t:
-            self.download_t.quit()
-            try:
-                os.remove(self.installer_filename)
-            except:
-                pass
-
-    def open_finder_clicked(self):
-        if platform.system() == "Darwin":
-            subprocess.call(["open", "-R", self.open_finder_path])
-        else:
-            subprocess.Popen(
-                f'explorer.exe /select,"{self.open_finder_path}"', shell=True
-            )
-        self.accept()
-
     def start(self):
-        if platform.system() == "Darwin":
-            docker_app_path = "/Applications/Docker.app"
-        else:
-            docker_app_path = "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"
-
-        if not os.path.exists(docker_app_path):
-            if platform.system() == "Windows":
-                self.task_label.setText(
-                    "<a href='https://docs.docker.com/docker-for-windows/install/'>Download Docker</a>, install it, and then run Dangerzone again."
-                )
-                self.task_label.setTextFormat(QtCore.Qt.RichText)
-                self.progress.hide()
-                self.cancel_button.hide()
-            else:
-                self.ok_button.hide()
-                self.download()
+        if not os.path.exists(self.docker_path):
+            self.task_label.setText(
+                "<a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>, install it, and then run Dangerzone again."
+            )
+            self.task_label.setTextFormat(QtCore.Qt.RichText)
         else:
             self.task_label.setText(
-                "Docker is installed, but you must launch it first. Open Docker, make sure it's running, and then open Dangerzone again."
+                "Docker Desktop is installed, but you must launch it first. Open Docker, make sure it's running, and then open Dangerzone again."
             )
-            self.progress.hide()
-            self.ok_button.hide()
-            self.cancel_button.hide()
-
-            self.open_finder_path = docker_app_path
-            self.open_finder_button.show()
 
         return self.exec_() == QtWidgets.QDialog.Accepted
-
-
-class Downloader(QtCore.QThread):
-    download_finished = QtCore.Signal()
-    download_failed = QtCore.Signal(int)
-    update_progress = QtCore.Signal(int, int)
-
-    def __init__(self, installer_filename):
-        super(Downloader, self).__init__()
-        self.installer_filename = installer_filename
-
-        if platform.system() == "Darwin":
-            self.installer_url = "https://download.docker.com/mac/stable/Docker.dmg"
-        elif platform.system() == "Windows":
-            self.installer_url = "https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe"
-
-    def run(self):
-        print(f"Downloading docker to {self.installer_filename}")
-        with requests.get(self.installer_url, stream=True) as r:
-            if r.status_code != 200:
-                self.download_failed.emit(r.status_code)
-                return
-            total_bytes = int(r.headers.get("content-length"))
-            downloaded_bytes = 0
-
-            with open(self.installer_filename, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    if chunk:  # filter out keep-alive new chunks
-                        downloaded_bytes += f.write(chunk)
-
-                        self.update_progress.emit(downloaded_bytes, total_bytes)
-
-        self.download_finished.emit()

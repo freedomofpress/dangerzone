@@ -20,7 +20,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.window_id = window_id
         self.common = Common()
 
-        self.setWindowTitle("dangerzone")
+        self.setWindowTitle("Dangerzone")
         self.setWindowIcon(self.gui_common.get_window_icon())
 
         self.setMinimumWidth(600)

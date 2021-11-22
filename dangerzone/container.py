@@ -1,20 +1,16 @@
 import platform
 import subprocess
-import sys
 import pipes
 import shutil
-import json
 import os
-import uuid
 import tempfile
+import appdirs
 
 # What container tech is used for this platform?
-if platform.system() == "Darwin":
-    container_tech = "dangerzone-vm"
-elif platform.system() == "Linux":
+if platform.system() == "Linux":
     container_tech = "podman"
 else:
-    # Windows and unknown use docker for now, dangerzone-vm eventually
+    # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
     container_tech = "docker"
 
 # Define startupinfo for subprocesses
@@ -25,7 +21,14 @@ else:
     startupinfo = None
 
 
+# Name of the dangerzone container
+container_name = "dangerzone.rocks/dangerzone"
+
+
 def exec(args, stdout_callback=None):
+    args_str = " ".join(pipes.quote(s) for s in args)
+    print("> " + args_str)
+
     with subprocess.Popen(
         args,
         stdin=None,
@@ -43,136 +46,34 @@ def exec(args, stdout_callback=None):
         return p.returncode
 
 
-def vm_ssh_args(vm_info):
-    return [
-        "/usr/bin/ssh",
-        "-q",
-        "-i",
-        vm_info["client_key_path"],
-        "-p",
-        str(vm_info["tunnel_port"]),
-        "-o",
-        "StrictHostKeyChecking=no",
-        "user@127.0.0.1",
-    ]
-
-
-def vm_scp_args(vm_info):
-    return [
-        "/usr/bin/scp",
-        "-i",
-        vm_info["client_key_path"],
-        "-P",
-        str(vm_info["tunnel_port"]),
-        "-o",
-        "StrictHostKeyChecking=no",
-    ]
-
-
-def host_exec(args, stdout_callback=None):
-    args_str = " ".join(pipes.quote(s) for s in args)
-    print("> " + args_str)
-
-    return exec(args, stdout_callback)
-
-
-def vm_exec(args, vm_info, stdout_callback=None):
-    if container_tech == "dangerzone-vm" and vm_info is None:
-        print("--vm-info-path required on this platform")
-        return
-
-    args_str = " ".join(pipes.quote(s) for s in args)
-    print("VM > " + args_str)
-
-    args = vm_ssh_args(vm_info) + args
-    return exec(args, stdout_callback)
-
-
-def vm_mkdirs(vm_info):
-    guest_path = os.path.join("/home/user/", str(uuid.uuid4()))
-    input_dir = os.path.join(guest_path, "input")
-    pixel_dir = os.path.join(guest_path, "pixel")
-    safe_dir = os.path.join(guest_path, "safe")
-    vm_exec(["/bin/mkdir", guest_path, input_dir, pixel_dir, safe_dir], vm_info)
-    return guest_path, input_dir, pixel_dir, safe_dir
-
-
-def vm_rmdir(guest_path, vm_info):
-    vm_exec(["/bin/rm", "-r", guest_path], vm_info)
-
-
-def vm_upload(host_path, guest_path, vm_info):
-    args = vm_scp_args(vm_info) + [host_path, f"user@127.0.0.1:{guest_path}"]
-    print(f"Uploading '{host_path}' to VM at '{guest_path}'")
-    host_exec(args)
-
-
-def vm_download(guest_path, host_path, vm_info):
-    args = vm_scp_args(vm_info) + [f"user@127.0.0.1:{guest_path}", host_path]
-    print(f"Downloading '{guest_path}' from VM to '{host_path}'")
-    host_exec(args)
-
-
-def exec_container(args, vm_info=None, stdout_callback=None):
-    if container_tech == "dangerzone-vm" and vm_info is None:
-        print("Invalid VM info")
-        return
-
-    if container_tech == "dangerzone-vm":
-        args = ["/usr/bin/podman"] + args
-        return vm_exec(args, vm_info, stdout_callback)
+def exec_container(args, stdout_callback=None):
+    if container_tech == "podman":
+        container_runtime = shutil.which("podman")
     else:
-        if container_tech == "podman":
-            container_runtime = shutil.which("podman")
-        else:
-            container_runtime = shutil.which("docker")
+        container_runtime = shutil.which("docker")
 
-        args = [container_runtime] + args
-        return host_exec(args, stdout_callback)
-
-
-def load_vm_info(vm_info_path):
-    if not vm_info_path:
-        return None
-
-    with open(vm_info_path) as f:
-        return json.loads(f.read())
+    args = [container_runtime] + args
+    return exec(args, stdout_callback)
 
 
 def convert(global_common, input_filename, output_filename, ocr_lang, stdout_callback):
     success = False
 
-    container_name = "dangerzone.rocks/dangerzone"
     if ocr_lang:
         ocr = "1"
     else:
         ocr = "0"
 
-    if global_common.vm:
-        vm_info = load_vm_info(global_common.vm.vm_info_path)
-    else:
-        vm_info = None
+    dz_tmp = os.path.join(appdirs.user_config_dir("dangerzone"), "tmp")
+    os.makedirs(dz_tmp, exist_ok=True)
 
-    # If we're using the VM, create temp dirs in the guest and upload the input file
-    # Otherwise, create temp dirs
-    if vm_info:
-        ssh_args_str = " ".join(pipes.quote(s) for s in vm_ssh_args(vm_info))
-        print("\nIf you want to SSH to the VM:\n" + ssh_args_str + "\n")
+    tmpdir = tempfile.TemporaryDirectory(dir=dz_tmp)
+    pixel_dir = os.path.join(tmpdir.name, "pixels")
+    safe_dir = os.path.join(tmpdir.name, "safe")
+    os.makedirs(pixel_dir, exist_ok=True)
+    os.makedirs(safe_dir, exist_ok=True)
 
-        guest_tmpdir, input_dir, pixel_dir, safe_dir = vm_mkdirs(vm_info)
-        guest_input_filename = os.path.join(input_dir, "input_file")
-        container_output_filename = os.path.join(safe_dir, "safe-output-compressed.pdf")
-
-        vm_upload(input_filename, guest_input_filename, vm_info)
-        input_filename = guest_input_filename
-    else:
-        tmpdir = tempfile.TemporaryDirectory()
-        pixel_dir = os.path.join(tmpdir.name, "pixels")
-        safe_dir = os.path.join(tmpdir.name, "safe")
-        os.makedirs(pixel_dir, exist_ok=True)
-        os.makedirs(safe_dir, exist_ok=True)
-
-        container_output_filename = os.path.join(safe_dir, "safe-output-compressed.pdf")
+    container_output_filename = os.path.join(safe_dir, "safe-output-compressed.pdf")
 
     # Convert document to pixels
     args = [
@@ -186,7 +87,7 @@ def convert(global_common, input_filename, output_filename, ocr_lang, stdout_cal
         container_name,
         "document-to-pixels",
     ]
-    ret = exec_container(args, vm_info, stdout_callback)
+    ret = exec_container(args, stdout_callback)
     if ret != 0:
         print("documents-to-pixels failed")
     else:
@@ -208,24 +109,18 @@ def convert(global_common, input_filename, output_filename, ocr_lang, stdout_cal
             container_name,
             "pixels-to-pdf",
         ]
-        ret = exec_container(args, vm_info, stdout_callback)
+        ret = exec_container(args, stdout_callback)
         if ret != 0:
             print("pixels-to-pdf failed")
         else:
             # Move the final file to the right place
-            if vm_info:
-                vm_download(container_output_filename, output_filename, vm_info)
-            else:
-                os.rename(container_output_filename, output_filename)
+            os.rename(container_output_filename, output_filename)
 
             # We did it
             success = True
 
     # Clean up
-    if vm_info:
-        vm_rmdir(guest_tmpdir, vm_info)
-    else:
-        shutil.rmtree(tmpdir.name)
+    shutil.rmtree(tmpdir.name)
 
     return success
 

@@ -38,9 +38,6 @@ class GlobalCommon(object):
         # In case we have a custom container
         self.custom_container = None
 
-        # VM object, if available
-        self.vm = None
-
         # Languages supported by tesseract
         self.ocr_languages = {
             "Afrikaans": "ar",
@@ -418,8 +415,6 @@ class GlobalCommon(object):
         convert(self, input_filename, output_filename, ocr_lang)
 
         args = [self.dz_container_path] + args
-        if self.vm:
-            args += ["--vm-info-path", self.vm.vm_info_path]
         args_str = " ".join(pipes.quote(s) for s in args)
         print(Style.DIM + "> " + Style.NORMAL + Fore.CYAN + args_str)
 

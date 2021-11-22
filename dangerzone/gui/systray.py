@@ -28,19 +28,6 @@ class SysTray(QtWidgets.QSystemTrayIcon):
         self.setContextMenu(menu)
         self.show()
 
-        if self.global_common.vm:
-            self.global_common.vm.vm_state_change.connect(self.vm_state_change)
-
-    def vm_state_change(self, state):
-        if state == self.global_common.vm.STATE_OFF:
-            self.status_action.setText("Dangerzone VM is off")
-        elif state == self.global_common.vm.STATE_STARTING:
-            self.status_action.setText("Dangerzone VM is starting...")
-        elif state == self.global_common.vm.STATE_ON:
-            self.status_action.setText("Dangerzone VM is running")
-        elif state == self.global_common.vm.STATE_FAIL:
-            self.status_action.setText("Dangerzone VM failed to start")
-
     def new_window(self):
         self.app_wrapper.new_window.emit()
 

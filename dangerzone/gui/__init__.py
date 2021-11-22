@@ -8,7 +8,6 @@ from PySide2 import QtCore, QtWidgets
 
 from .common import GuiCommon
 from .main_window import MainWindow
-from .vm import Vm
 from .systray import SysTray
 from .docker_installer import (
     is_docker_installed,
@@ -51,8 +50,7 @@ class ApplicationWrapper(QtCore.QObject):
 
 @click.command()
 @click.argument("filename", required=False)
-@click.option("--allow-vm-login", is_flag=True, help="Allow logging into the VM as root to troubleshoot")
-def gui_main(filename, allow_vm_login):
+def gui_main(filename):
     if platform.system() == "Darwin":
         # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
         os.environ["QT_MAC_WANTS_LAYER"] = "1"
@@ -89,7 +87,7 @@ def gui_main(filename, allow_vm_login):
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # See if we need to install Docker (Windows-only)
-    if platform.system() == "Windows" and (
+    if (platform.system() == "Windows" or platform.system() == "Darwin") and (
         not is_docker_installed() or not is_docker_ready(global_common)
     ):
         click.echo("Docker is either not installed or not running")
@@ -97,19 +95,8 @@ def gui_main(filename, allow_vm_login):
         docker_installer.start()
         return
 
-    # The dangerzone VM (Mac-only)
-    if platform.system() == "Darwin":
-        vm = Vm(global_common, allow_vm_login)
-        global_common.vm = vm
-    else:
-        vm = None
-
     # Create the system tray
     systray = SysTray(global_common, gui_common, app, app_wrapper)
-
-    # Start the VM
-    if vm:
-        vm.start()
 
     closed_windows = {}
     windows = {}
@@ -169,8 +156,5 @@ def gui_main(filename, allow_vm_login):
 
     # Launch the GUI
     ret = app.exec_()
-
-    if vm:
-        vm.stop()
 
     sys.exit(ret)

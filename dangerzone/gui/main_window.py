@@ -135,6 +135,7 @@ class WaitingWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.addStretch()
         layout.addWidget(self.label)
+        layout.addStretch()
         layout.addWidget(self.buttons)
         layout.addStretch()
         self.setLayout(layout)
@@ -150,41 +151,43 @@ class WaitingWidget(QtWidgets.QWidget):
             container_runtime = shutil.which("podman")
         else:
             container_runtime = shutil.which("docker")
-        
+
         if container_runtime is None:
             print("Docker is not installed")
             state = "not_installed"
 
         else:
             # Can we run `docker image ls` without an error
-            with subprocess.Popen([container_runtime, "image", "ls"]) as p:
+            with subprocess.Popen(
+                [container_runtime, "image", "ls"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ) as p:
                 p.communicate()
                 if p.returncode != 0:
                     print("Docker is not running")
                     state = "not_running"
                 else:
                     # Always try installing the container
-                    print("Ensuring the container is installed")
                     state = "install_container"
-        
+
         # Update the state
-        print(f"Dangerzone state: {state}")
         self.state_change(state)
 
     def state_change(self, state):
         if state == "not_installed":
             self.label.setText(
-                "<strong>Dangerzone requires Docker</strong><br><br><a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a> and install it."
+                "<strong>Dangerzone Requires Docker Desktop</strong><br><br><a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>, install it, and open it."
             )
             self.buttons.show()
         elif state == "not_running":
             self.label.setText(
-                "Docker Desktop is installed, but you must launch it first. Open Docker and make sure it's running in the background."
+                "<strong>Dangerzone Requires Docker Desktop</strong><br><br>Docker is installed but isn't running.<br><br>Open Docker and make sure it's running in the background."
             )
             self.buttons.show()
         else:
             self.label.setText(
-                "Installing the Dangerzone container..."
+                "Installing the Dangerzone container image.<br><br>This might take a few minutes..."
             )
             self.buttons.hide()
             self.install_container_t = InstallContainerThread(self.global_common)

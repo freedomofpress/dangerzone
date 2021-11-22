@@ -37,10 +37,6 @@ class GlobalCommon(object):
 
         # Container
         self.container_name = "dangerzone.rocks/dangerzone"
-        if platform.system() == "Linux":
-            self.container_runtime = shutil.which("podman")
-        else:
-            self.container_runtime = shutil.which("docker")
 
         # Languages supported by tesseract
         self.ocr_languages = {
@@ -384,6 +380,12 @@ class GlobalCommon(object):
         )
         print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
 
+    def get_container_runtime(self):
+        if platform.system() == "Linux":
+            return shutil.which("podman")
+        else:
+            return shutil.which("docker")
+
     def get_resource_path(self, filename):
         if getattr(sys, "dangerzone_dev", False):
             # Look for resources directory relative to python file
@@ -465,16 +467,19 @@ class GlobalCommon(object):
         Make sure the podman container is installed. Linux only.
         """
         if self.is_container_installed():
-            print("Dangerzone container is already installed")
             return
 
         # Load the container into podman
         print("Installing Dangerzone container...")
 
-        p = subprocess.Popen([self.container_runtime, "load"], stdin=subprocess.PIPE)
+        p = subprocess.Popen(
+            [self.get_container_runtime(), "load"], stdin=subprocess.PIPE
+        )
 
         chunk_size = 1024
-        compressed_container_path = self.get_resource_path("dangerzone-converter.tar.gz")
+        compressed_container_path = self.get_resource_path(
+            "dangerzone-converter.tar.gz"
+        )
         with gzip.open(compressed_container_path) as f:
             while True:
                 chunk = f.read(chunk_size)
@@ -495,8 +500,6 @@ class GlobalCommon(object):
         """
         See if the podman container is installed. Linux only.
         """
-        print("Checking if container is already installed")
-
         # Get the image id
         with open(self.get_resource_path("image-id.txt")) as f:
             expected_image_id = f.read().strip()
@@ -507,7 +510,9 @@ class GlobalCommon(object):
         if platform.system() == "Linux":
             # Podman
             images = json.loads(
-                subprocess.check_output([self.container_runtime, "image", "list", "--format", "json"])
+                subprocess.check_output(
+                    [self.get_container_runtime(), "image", "list", "--format", "json"]
+                )
             )
             for image in images:
                 if image["Id"] == expected_image_id:
@@ -515,10 +520,28 @@ class GlobalCommon(object):
                     break
         else:
             # Docker
-            found_image_id = subprocess.check_output([self.container_runtime, "image", "list", "--format", "{{.ID}}", self.container_name], text=True)
-            if found_image_id.strip() == expected_image_id:
+            found_image_id = subprocess.check_output(
+                [
+                    self.get_container_runtime(),
+                    "image",
+                    "list",
+                    "--format",
+                    "{{.ID}}",
+                    self.container_name,
+                ],
+                text=True,
+            )
+            found_image_id = found_image_id.strip()
+            if found_image_id == expected_image_id:
                 installed = True
+            elif found_image_id == "":
+                print("Dangerzone container image is not installed")
             else:
                 print(f"Image {found_image_id} is installed, not {expected_image_id}")
+
+                # Delete the image that exists
+                subprocess.check_output(
+                    [self.get_container_runtime(), "rmi", found_image_id]
+                )
 
         return installed

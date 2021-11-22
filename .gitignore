@@ -134,9 +134,6 @@ deb_dist
 .DS_Store
 install/windows/Dangerzone.wxs
 test_docs/sample-safe.pdf
-share/bin
-share/vm
-share/container
-vm-builder/vm
-vm-builder/.vagrant
-vm-builder/dangerzone.docker_image
+share/dangerzone-converter.tar
+share/dangerzone-converter.tar.gz
+share/image-id.txt

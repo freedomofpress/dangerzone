@@ -54,13 +54,6 @@ Create a .rpm:
 
 ## macOS
 
-Ensure you have the git submodules checked out:
-
-```
-git submodule init
-git submodule update
-```
-
 Install Xcode from the App Store.
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Make sure to choose your correct CPU, either Intel Chip or Apple Chip.
@@ -77,21 +70,13 @@ poetry install
 Install [Homebrew](https://brew.sh/) dependencies:
 
 ```sh
-brew install create-dmg wget pkg-config
+brew install create-dmg
 ```
 
-Install opam dependencies (you can skip this step if you are using an Apple M1 chip Mac):
-
-```
-brew install opam dune ocaml
-opam init -y
-opam install -y alcotest astring base64 bigarray-compat charrua-client-mirage charrua-core cmdliner cohttp-lwt cstruct cstruct-lwt datakit-server datakit-server-9p duration ezjsonm fd-send-recv fmt hvsock io-page io-page-unix ipaddr logs lwt lwt-dllist mirage-channel mirage-channel-lwt mirage-clock-lwt mirage-clock-unix mirage-flow-lwt mirage-kv-lwt mirage-profile mirage-protocols-lwt mirage-random mirage-stack-lwt mirage-time-lwt mirage-vnetif oUnit pcap-format ppx_cstruct ppx_sexp_conv protocol-9p re rresult sexplib sha tar tcpip uri uuidm uwt
-```
-
-Run this to compile hyperkit and vpnkit, and build a custom Alpine Linux ISO for Dangerzone, and copy it into the `share` folder:
+Build the dangerzone container image:
 
 ```sh
-./install/macos/make-vm.sh
+./install/build-image.sh
 ```
 
 Run from source tree:

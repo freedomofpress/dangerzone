@@ -494,7 +494,7 @@ class GlobalCommon(object):
         See if the podman container is installed. Linux only.
         """
         # Get the image id
-        with open(self.get_resource_path("container/image_id.txt")) as f:
+        with open(self.get_resource_path("image-id.txt")) as f:
             image_id = f.read().strip()
 
         # See if this image is already installed

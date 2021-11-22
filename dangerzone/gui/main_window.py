@@ -95,9 +95,7 @@ class InstallContainerThread(QtCore.QThread):
         self.global_common = global_common
 
     def run(self):
-        if not self.global_common.is_container_installed():
-            self.global_common.install_container()
-
+        self.global_common.install_container()
         self.finished.emit()
 
 
@@ -170,6 +168,7 @@ class WaitingWidget(QtWidgets.QWidget):
                     state = "install_container"
         
         # Update the state
+        print(f"Dangerzone state: {state}")
         self.state_change(state)
 
     def state_change(self, state):

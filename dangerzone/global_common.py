@@ -4,7 +4,7 @@ import inspect
 import appdirs
 import platform
 import subprocess
-import pipes
+import shutil
 import json
 import gzip
 import colorama
@@ -35,8 +35,12 @@ class GlobalCommon(object):
         # App data folder
         self.appdata_path = appdirs.user_config_dir("dangerzone")
 
-        # Container name
+        # Container
         self.container_name = "dangerzone.rocks/dangerzone"
+        if platform.system() == "Linux":
+            self.container_runtime = shutil.which("podman")
+        else:
+            self.container_runtime = shutil.which("docker")
 
         # Languages supported by tesseract
         self.ocr_languages = {
@@ -467,12 +471,10 @@ class GlobalCommon(object):
         # Load the container into podman
         print("Installing Dangerzone container...")
 
-        p = subprocess.Popen(["podman", "load"], stdin=subprocess.PIPE)
+        p = subprocess.Popen([self.container_runtime, "load"], stdin=subprocess.PIPE)
 
         chunk_size = 1024
-        compressed_container_path = self.get_resource_path(
-            "container/dangerzone.tar.gz"
-        )
+        compressed_container_path = self.get_resource_path("dangerzone-converter.tar.gz")
         with gzip.open(compressed_container_path) as f:
             while True:
                 chunk = f.read(chunk_size)
@@ -493,18 +495,30 @@ class GlobalCommon(object):
         """
         See if the podman container is installed. Linux only.
         """
+        print("Checking if container is already installed")
+
         # Get the image id
         with open(self.get_resource_path("image-id.txt")) as f:
-            image_id = f.read().strip()
+            expected_image_id = f.read().strip()
 
         # See if this image is already installed
         installed = False
-        images = json.loads(
-            subprocess.check_output(["podman", "image", "list", "--format", "json"])
-        )
-        for image in images:
-            if image["Id"] == image_id:
+
+        if platform.system() == "Linux":
+            # Podman
+            images = json.loads(
+                subprocess.check_output([self.container_runtime, "image", "list", "--format", "json"])
+            )
+            for image in images:
+                if image["Id"] == expected_image_id:
+                    installed = True
+                    break
+        else:
+            # Docker
+            found_image_id = subprocess.check_output([self.container_runtime, "image", "list", "--format", "{{.ID}}", self.container_name], text=True)
+            if found_image_id.strip() == expected_image_id:
                 installed = True
-                break
+            else:
+                print(f"Image {found_image_id} is installed, not {expected_image_id}")
 
         return installed

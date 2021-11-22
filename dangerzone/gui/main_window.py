@@ -3,6 +3,7 @@ import platform
 import tempfile
 import subprocess
 import json
+import shutil
 from PySide2 import QtCore, QtGui, QtWidgets
 from colorama import Style, Fore
 
@@ -43,7 +44,7 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(header_label)
         header_layout.addStretch()
 
-        # Waiting widget, replaces content widget while VM is booting
+        # Waiting widget, replaces content widget while container runtime isn't available
         self.waiting_widget = WaitingWidget(self.global_common, self.gui_common)
         self.waiting_widget.finished.connect(self.waiting_finished)
 
@@ -53,7 +54,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.content_widget.close_window.connect(self.close)
 
-        # Only use the waiting widget if we have a VM
+        # Only use the waiting widget if container runtime isn't available
         if self.gui_common.is_waiting_finished:
             self.waiting_widget.hide()
             self.content_widget.show()
@@ -101,6 +102,15 @@ class InstallContainerThread(QtCore.QThread):
 
 
 class WaitingWidget(QtWidgets.QWidget):
+    # These are the possible states that the WaitingWidget can show.
+    #
+    # Windows and macOS states:
+    # - "not_installed"
+    # - "not_running"
+    # - "install_container"
+    #
+    # Linux states
+    # - "install_container"
     finished = QtCore.Signal()
 
     def __init__(self, global_common, gui_common):
@@ -110,33 +120,77 @@ class WaitingWidget(QtWidgets.QWidget):
 
         self.label = QtWidgets.QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setTextFormat(QtCore.Qt.RichText)
         self.label.setStyleSheet("QLabel { font-size: 20px; }")
+
+        # Buttons
+        check_button = QtWidgets.QPushButton("Check Again")
+        check_button.clicked.connect(self.check_state)
+        buttons_layout = QtWidgets.QHBoxLayout()
+        buttons_layout.addStretch()
+        buttons_layout.addWidget(check_button)
+        buttons_layout.addStretch()
+        self.buttons = QtWidgets.QWidget()
+        self.buttons.setLayout(buttons_layout)
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addStretch()
         layout.addWidget(self.label)
+        layout.addWidget(self.buttons)
         layout.addStretch()
         self.setLayout(layout)
 
-        if platform.system() == "Darwin":
-            self.label.setText("Waiting for the Dangerzone virtual machine to start...")
-            self.global_common.vm.vm_state_change.connect(self.vm_state_change)
+        # Check the state
+        self.check_state()
 
-        elif platform.system() == "Linux":
-            self.label.setText("Installing the Dangerzone container...")
+    def check_state(self):
+        state = None
+
+        # Can we find the container runtime binary binary
+        if platform.system() == "Linux":
+            container_runtime = shutil.which("podman")
+        else:
+            container_runtime = shutil.which("docker")
+        
+        if container_runtime is None:
+            print("Docker is not installed")
+            state = "not_installed"
+
+        else:
+            # Can we run `docker image ls` without an error
+            with subprocess.Popen([container_runtime, "image", "ls"]) as p:
+                p.communicate()
+                if p.returncode != 0:
+                    print("Docker is not running")
+                    state = "not_running"
+                else:
+                    # Always try installing the container
+                    print("Ensuring the container is installed")
+                    state = "install_container"
+        
+        # Update the state
+        self.state_change(state)
+
+    def state_change(self, state):
+        if state == "not_installed":
+            self.label.setText(
+                "<strong>Dangerzone requires Docker</strong><br><br><a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a> and install it."
+            )
+            self.buttons.show()
+        elif state == "not_running":
+            self.label.setText(
+                "Docker Desktop is installed, but you must launch it first. Open Docker and make sure it's running in the background."
+            )
+            self.buttons.show()
+        else:
+            self.label.setText(
+                "Installing the Dangerzone container..."
+            )
+            self.buttons.hide()
             self.install_container_t = InstallContainerThread(self.global_common)
             self.install_container_t.finished.connect(self.finished)
             self.install_container_t.start()
-
-        else:
-            self.label.setText("Platform not implemented yet")
-
-    def vm_state_change(self, state):
-        if state == self.global_common.vm.STATE_ON:
-            self.finished.emit()
-        elif state == self.global_common.vm.STATE_FAIL:
-            self.label.setText("Dangerzone virtual machine failed to start :(")
 
 
 class ContentWidget(QtWidgets.QWidget):

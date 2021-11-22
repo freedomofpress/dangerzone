@@ -9,12 +9,6 @@ from PySide2 import QtCore, QtWidgets
 from .common import GuiCommon
 from .main_window import MainWindow
 from .systray import SysTray
-from .docker_installer import (
-    is_docker_installed,
-    is_docker_ready,
-    DockerInstaller,
-    AuthorizationFailed,
-)
 from ..global_common import GlobalCommon
 
 
@@ -85,15 +79,6 @@ def gui_main(filename):
 
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    # See if we need to install Docker (Windows-only)
-    if (platform.system() == "Windows" or platform.system() == "Darwin") and (
-        not is_docker_installed() or not is_docker_ready(global_common)
-    ):
-        click.echo("Docker is either not installed or not running")
-        docker_installer = DockerInstaller(gui_common)
-        docker_installer.start()
-        return
 
     # Create the system tray
     systray = SysTray(global_common, gui_common, app, app_wrapper)

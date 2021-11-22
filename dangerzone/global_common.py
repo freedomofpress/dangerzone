@@ -35,8 +35,8 @@ class GlobalCommon(object):
         # App data folder
         self.appdata_path = appdirs.user_config_dir("dangerzone")
 
-        # In case we have a custom container
-        self.custom_container = None
+        # Container name
+        self.container_name = "dangerzone.rocks/dangerzone"
 
         # Languages supported by tesseract
         self.ocr_languages = {
@@ -380,12 +380,6 @@ class GlobalCommon(object):
         )
         print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
 
-    def get_container_name(self):
-        if self.custom_container:
-            return self.custom_container
-        else:
-            return "docker.io/flmcode/dangerzone"
-
     def get_resource_path(self, filename):
         if getattr(sys, "dangerzone_dev", False):
             # Look for resources directory relative to python file
@@ -414,17 +408,17 @@ class GlobalCommon(object):
     def exec_dangerzone_container(self, input_filename, output_filename, ocr_lang):
         convert(self, input_filename, output_filename, ocr_lang)
 
-        args = [self.dz_container_path] + args
-        args_str = " ".join(pipes.quote(s) for s in args)
-        print(Style.DIM + "> " + Style.NORMAL + Fore.CYAN + args_str)
+        # args = [self.dz_container_path] + args
+        # args_str = " ".join(pipes.quote(s) for s in args)
+        # print(Style.DIM + "> " + Style.NORMAL + Fore.CYAN + args_str)
 
-        # Execute dangerzone-container
-        return subprocess.Popen(
-            args,
-            startupinfo=self.get_subprocess_startupinfo(),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+        # # Execute dangerzone-container
+        # return subprocess.Popen(
+        #     args,
+        #     startupinfo=self.get_subprocess_startupinfo(),
+        #     stdout=subprocess.PIPE,
+        #     stderr=subprocess.PIPE,
+        # )
 
     def get_subprocess_startupinfo(self):
         if platform.system() == "Windows":

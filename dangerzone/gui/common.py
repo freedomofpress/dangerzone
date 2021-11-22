@@ -14,7 +14,6 @@ elif platform.system() == "Linux":
     import getpass
     from xdg.DesktopEntry import DesktopEntry
 
-from .docker_installer import is_docker_ready
 from ..settings import Settings
 
 
@@ -36,7 +35,7 @@ class GuiCommon(object):
         # Preload list of PDF viewers on computer
         self.pdf_viewers = self._find_pdf_viewers()
 
-        # Are we done waiting (for VM to start, or container to install)
+        # Are we done waiting (for Docker Desktop to be installed, or for container to install)
         self.is_waiting_finished = False
 
     def get_window_icon(self):

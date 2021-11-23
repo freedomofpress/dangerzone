@@ -23,7 +23,7 @@ Run from source tree:
 Create a .deb:
 
 ```sh
-./install/linux/build_deb.py
+./install/linux/build-deb.py
 ```
 
 ## Fedora
@@ -49,7 +49,7 @@ Run from source tree:
 Create a .rpm:
 
 ```sh
-./install/linux/build_rpm.py
+./install/linux/build-rpm.py
 ```
 
 ## macOS
@@ -95,13 +95,13 @@ poetry shell
 To create an app bundle, use the `build_app.py` script:
 
 ```sh
-poetry run ./install/macos/build_app.py
+poetry run ./install/macos/build-app.py
 ```
 
 If you want to build for distribution, you'll need a codesigning certificate, and then run:
 
 ```sh
-poetry run ./install/macos/build_app.py --with-codesign
+poetry run ./install/macos/build-app.py --with-codesign
 ```
 
 The output is in the `dist` folder.

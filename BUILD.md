@@ -108,9 +108,9 @@ The output is in the `dist` folder.
 
 ## Windows
 
-These instructions include adding folders to the path in Windows. To do this, go to Start and type "advanced system settings", and open "View advanced system settings" in the Control Panel. Click Environment Variables. Under "System variables" double-click on Path. From there you can add and remove folders that are available in the PATH.
+Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
-Download Python 3.9.0, 32-bit (x86) from https://www.python.org/downloads/release/python-390/. I downloaded python-3.9.0.exe. When installing it, make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
+Install Python 3.9.9 (x86) [[from python.org])(https://www.python.org/downloads/release/python-399/). When installing it, make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
 
 Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
 
@@ -124,16 +124,10 @@ Change to the `dangerzone` folder, and install the poetry dependencies:
 poetry install
 ```
 
-Make sure these are installed:
+Build the dangerzone container image:
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- [Vagrant](https://www.vagrantup.com/downloads)
-- [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-
-Run this to build a custom Alpine Linux ISO for Dangerzone, and copy it (and some binaries from Docker) into the `share` folder:
-
-```
-.\install\windows\make-vm.bat
+```sh
+python .\install\windows\build-image.py
 ```
 
 After that you can launch dangerzone during development with:

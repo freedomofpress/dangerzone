@@ -1,11 +1,6 @@
 #!/bin/sh
 
-# Remove this warning by setting the host in /etc/hosts:
-# sudo: unable to resolve host 8160b021d811: Temporary failure in name resolution
-echo 127.0.0.1 $(hostname) >> /etc/hosts
-
-# Do the conversion without root
-# /usr/bin/sudo OCR=$OCR OCR_LANGUAGE=$OCR_LANGUAGE -u user /usr/local/bin/pixels-to-pdf-unpriv
+# Do the conversion
 OCR=$OCR OCR_LANGUAGE=$OCR_LANGUAGE /usr/bin/python3 /usr/local/bin/dangerzone.py pixels-to-pdf
 RETURN_CODE=$?
 if [ $RETURN_CODE -ne 0 ]; then

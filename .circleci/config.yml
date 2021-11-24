@@ -208,12 +208,7 @@ workflows:
   build-tags:
     jobs:
       # Build container image on every commit
-      - build-container-image:
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              ignore: /.*/
+      - build-container-image
 
       # Ubuntu 21.10 (impish) not yet supported by packagecloud.io
       # - build-ubuntu-impish: 

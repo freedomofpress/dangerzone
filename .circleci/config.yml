@@ -98,6 +98,25 @@ jobs:
             - /caches/dangerzone-converter.tar.gz
             - /caches/image-id.txt
 
+  tests:
+    working_directory: /app
+    machine:
+      - image: ubuntu-2004:202111-01
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+      - run:
+          name: Convert each test document
+          command: |
+            for FILE in $(ls test_docs); do
+              echo Converting $FILE
+              dangerzone-cli test_docs/$FILE
+              echo
+            done
+
   build-ubuntu-impish:
     docker:
       - image: ubuntu:21.10
@@ -177,6 +196,33 @@ jobs:
           environment:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "ubuntu/groovy"
+          <<: *deploy-packagecloud
+
+  build-ubuntu-focal:
+    docker:
+      - image: ubuntu:20.04
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+
+  deploy-ubuntu-focal:
+    docker:
+      - image: ubuntu:20.04
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+      - run:
+          environment:
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "ubuntu/focal"
           <<: *deploy-packagecloud
 
   build-debian-bullseye:
@@ -293,6 +339,9 @@ workflows:
   build:
     jobs:
       - build-container-image
+      - tests
+          requires:
+            - build-container-image
       - build-ubuntu-impish:
           requires:
             - build-container-image
@@ -300,6 +349,9 @@ workflows:
           requires:
             - build-container-image
       - build-ubuntu-groovy:
+          requires:
+            - build-container-image
+      - build-ubuntu-focal:
           requires:
             - build-container-image
       - build-debian-bullseye:
@@ -340,6 +392,14 @@ workflows:
             branches:
               ignore: /.*/
       - deploy-ubuntu-groovy:
+          requires:
+            - build-container-image
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - deploy-ubuntu-focal:
           requires:
             - build-container-image
           filters:

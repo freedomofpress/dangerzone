@@ -237,6 +237,16 @@ jobs:
             PACKAGECLOUD_DISTRO: "fedora/34"
           <<: *deploy-packagecloud
 
+  build-fedora-33:
+    docker:
+      - image: fedora:33
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
+
   deploy-fedora-33:
     docker:
       - image: fedora:33

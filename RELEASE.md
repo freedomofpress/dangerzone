@@ -8,7 +8,7 @@ Before making a release, all of these should be complete:
 
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
-- [ ] Update version and download links in `README.md`
+- [ ] Update version and download links in `README.md`, and screenshot if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
 - [ ] Test CircleCI Linux builds: Look in `.circleci/config.yml`, manually try each build in docker, and add new platforms and remove obsolete platforms
 - [ ] Create a test build in Windows and make sure it works

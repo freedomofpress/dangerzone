@@ -1,5 +1,10 @@
 # Change Log
 
+## Dangerzone 0.3
+
+- Removes the need for internet access by shipping the Dangerzone container image directly with the software
+- Friendly user experience with a progress bar
+
 ## Dangerzone 0.2.1
 
 - Switch from Docker to Podman for Linux

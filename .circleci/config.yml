@@ -98,15 +98,15 @@ jobs:
             - /caches/dangerzone-converter.tar.gz
             - /caches/image-id.txt
 
-  tests:
-    working_directory: /app
+  convert_test_docs:
     machine:
       - image: ubuntu-2004:202111-01
     steps:
       - run: *install-dependencies-deb
       - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
+      - run:
+          name: Build image with podman
+          command: ./install/linux/build-image.sh
       - run: *build-deb
       - run:
           name: Convert each test document
@@ -338,10 +338,8 @@ workflows:
 
   build:
     jobs:
+      - convert_test_docs
       - build-container-image
-      - tests:
-          requires:
-            - build-container-image
       - build-ubuntu-impish:
           requires:
             - build-container-image

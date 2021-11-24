@@ -87,7 +87,9 @@ RUN \
     echo '/usr/bin/java -jar "/usr/local/bin/pdftk-all.jar" "$@"' >> /usr/local/bin/pdftk && \
     chmod +x /usr/local/bin/pdftk
 
-COPY scripts/* /usr/local/bin/
+COPY dangerzone.py /usr/local/bin/
+COPY document-to-pixels /usr/local/bin/
+COPY pixels-to-pdf /usr/local/bin/
 
 # Add the unprivileged user
 RUN adduser -h /home/user -s /bin/sh -D user

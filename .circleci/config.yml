@@ -77,7 +77,7 @@ jobs:
           name: Load Dangerzone image into docker, if we restored it from cache
           command: |
             set +o pipefail
-            gunzip --stdout /caches/dangerzone-converter.tar | docker load | true
+            gunzip --stdout /caches/dangerzone-converter.tar.gz | docker load | true
       - run:
           name: Build Dangerzone image
           command: |

@@ -21,7 +21,7 @@ aliases:
       ls -lh deb_dist/dangerzone_*-1_all.deb
 
   - &build-rpm
-    name: Build the .deb package
+    name: Build the .rpm package
     command: |
       ./install/linux/build-rpm.py
       dnf install -y dist/dangerzone-*-1.noarch.rpm

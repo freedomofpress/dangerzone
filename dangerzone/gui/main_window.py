@@ -512,7 +512,9 @@ class ConvertThread(QtCore.QThread):
         except:
             print(f"Invalid JSON returned from container: {line}")
             self.error = True
-            self.update.emit(True, "Invalid JSON returned from container", 0)
+            self.update.emit(
+                True, f"Invalid JSON returned from container:\n\n{line}", 0
+            )
             return
 
         s = Style.BRIGHT + Fore.CYAN + f"{status['percentage']}% "

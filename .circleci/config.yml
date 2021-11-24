@@ -245,15 +245,22 @@ jobs:
 workflows:
   version: 2
 
-  build-and-test:
+  build:
     jobs:
       - build-container-image
       - build-ubuntu-impish:
           requires:
             - build-container-image
 
-  build-tags:
+  build-and-deploy:
     jobs:
+      - build-container-image
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
       # Ubuntu 21.10 (impish) not yet supported by packagecloud.io
       # - build-ubuntu-impish: 
       #     filters:

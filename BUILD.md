@@ -223,24 +223,10 @@ mklink dangerzone-container.exe dangerzone.exe
 
 ### To build the installer
 
-Note that you must have a codesigning certificate installed in order to use the `install\windows\build.bat` script, because it codesigns `dangerzone.exe` and `Dangerzone.msi`.
-
-Open a command prompt, cd to the dangerzone directory, and run:
+Note that you must have a codesigning certificate installed in order to use the `install\windows\build-app.bat` script, because it codesigns `dangerzone.exe` and `Dangerzone.msi`.
 
 ```
-poetry run install\windows\step1-build-exe.bat
-```
-
-Open a second command prompt _as an administratror_, cd to the dangerzone directory, and run:
-
-```
-install\windows\step2-make-symlink.bat
-```
-
-Then back in the first command prompt, run:
-
-```
-poetry run install\windows\step3-build-installer.bat
+poetry run .\install\windows\build-app.bat
 ```
 
 When you're done you will have `dist\Dangerzone.msi`.

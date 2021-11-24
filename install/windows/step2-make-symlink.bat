@@ -1,4 +1,4 @@
 REM make dangerzone-container.exe symbolic link (as administrator)
 cd dist\dangerzone
-mklink dangerzone-container.exe dangerzone.exe
+mklink dangerzone-cli.exe dangerzone.exe
 cd ..\..

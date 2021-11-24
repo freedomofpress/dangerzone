@@ -9,7 +9,7 @@ candle.exe ..\..\install\windows\Dangerzone.wxs
 light.exe -ext WixUIExtension Dangerzone.wixobj
 
 REM code sign dangerzone.msi
-signtool.exe sign /v /d "Dangerzone" /a /tr http://time.certum.pl/ Dangerzone.msi
+signtool.exe sign /v /d "Dangerzone" /sha1 28a4af3b6ba5ed0ef307e1b96a140e1b42450c3b /tr http://timestamp.digicert.com Dangerzone.msi
 
 REM moving Dangerzone.msi to dist
 cd ..\..

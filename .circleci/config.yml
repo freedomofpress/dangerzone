@@ -102,11 +102,6 @@ jobs:
     machine:
       image: ubuntu-2004:202111-01
     steps:
-      - run:
-          name: Install dependencies
-          command: |
-            sudo pip3 install poetry
-            poetry install
       # https://www.atlantic.net/dedicated-server-hosting/how-to-install-and-use-podman-on-ubuntu-20-04/
       - run:
           name: Install podman on Ubuntu 20.04
@@ -119,6 +114,11 @@ jobs:
             sudo apt-get -qq --yes install podman
             podman --version
       - checkout
+      - run:
+          name: Install poetry dependencies
+          command: |
+            sudo pip3 install poetry
+            poetry install
       - run:
           name: Prepare cache directory
           command: |

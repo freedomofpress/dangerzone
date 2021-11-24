@@ -30,14 +30,14 @@ aliases:
   - &restore-cache
     key: v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
     paths:
-      - /tmp/caches/dangerzone-converter.tar.gz
-      - /tmp/caches/image-id.txt
+      - /caches/dangerzone-converter.tar.gz
+      - /caches/image-id.txt
 
   - &copy-image
     name: Copy container image into package
     command: |
-      cp /tmp/caches/dangerzone-converter.tar.gz share/
-      cp /tmp/caches/image-id.txt share/
+      cp /caches/dangerzone-converter.tar.gz share/
+      cp /caches/image-id.txt share/
 
   - &deploy-packagecloud
     name: Deploy to packagecloud.io
@@ -76,7 +76,7 @@ jobs:
       - run:
           name: Build Dangerzone image
           command: |
-            if [ -f "/tmp/caches/dangerzone-converter.tar.gz" ]; then
+            if [ -f "/caches/dangerzone-converter.tar.gz" ]; then
               echo "Already cached, skipping"
             else
               docker build --cache-from=dangerzone.rocks/dangerzone --tag dangerzone.rocks/dangerzone dangerzone-converter
@@ -84,19 +84,19 @@ jobs:
       - run:
           name: Save Dangerzone image and image-id.txt to cache
           command: |
-            if [ -f "/tmp/caches/dangerzone-converter.tar.gz" ]; then
+            if [ -f "/caches/dangerzone-converter.tar.gz" ]; then
               echo "Already cached, skipping"
             else
-              mkdir -p /tmp/caches
-              docker save -o /tmp/caches/dangerzone-converter.tar dangerzone.rocks/dangerzone
-              gzip -f /tmp/caches/dangerzone-converter.tar
-              docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /tmp/caches/image-id.txt
+              mkdir -p /caches
+              docker save -o /caches/dangerzone-converter.tar dangerzone.rocks/dangerzone
+              gzip -f /caches/dangerzone-converter.tar
+              docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
             fi
       - save_cache:
           key: v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
           paths:
-            - /tmp/caches/dangerzone-converter.tar.gz
-            - /tmp/caches/image-id.txt
+            - /caches/dangerzone-converter.tar.gz
+            - /caches/image-id.txt
 
   convert-test-docs:
     machine:
@@ -120,6 +120,11 @@ jobs:
             sudo apt-get -qq --yes install podman
             podman --version
       - checkout
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
       - restore_cache: *restore-cache
       - run: *copy-image
       - run:

@@ -98,9 +98,9 @@ jobs:
             - /caches/dangerzone-converter.tar.gz
             - /caches/image-id.txt
 
-  convert_test_docs:
+  convert-test-docs:
     machine:
-      - image: ubuntu-2004:202111-01
+      image: ubuntu-2004:202111-01
     steps:
       - run: *install-dependencies-deb
       - checkout
@@ -338,7 +338,7 @@ workflows:
 
   build:
     jobs:
-      - convert_test_docs
+      - convert-test-docs
       - build-container-image
       - build-ubuntu-impish:
           requires:

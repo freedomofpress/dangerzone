@@ -28,7 +28,7 @@ aliases:
       ls -lh dist/dangerzone-*-1.noarch.rpm
 
   - &restore-cache
-    key: v1-{{ .Revision }}
+    key: v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
     paths:
       - /caches/dangerzone-converter.tar.gz
       - /caches/image-id.txt
@@ -82,7 +82,7 @@ jobs:
             gzip /caches/dangerzone-converter.tar
             docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
       - save_cache:
-          key: v1-{{ .Revision }}
+          key: v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
           paths:
             - /caches/dangerzone-converter.tar.gz
             - /caches/image-id.txt

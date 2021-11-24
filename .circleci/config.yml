@@ -90,7 +90,7 @@ jobs:
   build-ubuntu-impish:
     docker:
       - image: ubuntu:21.10
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-deb
       - checkout
@@ -101,7 +101,7 @@ jobs:
   deploy-ubuntu-impish:
     docker:
       - image: ubuntu:21.10
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-deb
       - checkout
@@ -117,7 +117,7 @@ jobs:
   build-ubuntu-hirsute:
     docker:
       - image: ubuntu:21.04
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-deb
       - checkout
@@ -128,7 +128,7 @@ jobs:
   deploy-ubuntu-hirsute:
     docker:
       - image: ubuntu:21.04
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-deb
       - checkout
@@ -144,7 +144,7 @@ jobs:
   build-ubuntu-groovy:
     docker:
       - image: ubuntu:20.10
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-deb
       - checkout
@@ -155,7 +155,7 @@ jobs:
   deploy-ubuntu-groovy:
     docker:
       - image: ubuntu:20.10
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-deb
       - checkout
@@ -171,7 +171,7 @@ jobs:
   build-debian-bullseye:
     docker:
       - image: debian:bullseye
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-deb
       - checkout
@@ -182,7 +182,7 @@ jobs:
   deploy-debian-bullseye:
     docker:
       - image: debian:bullseye
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-deb
       - checkout
@@ -198,7 +198,7 @@ jobs:
   build-fedora-35:
     docker:
       - image: fedora:35
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-rpm
       - checkout
@@ -209,7 +209,7 @@ jobs:
   deploy-fedora-35:
     docker:
       - image: fedora:35
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-rpm
       - checkout
@@ -225,7 +225,7 @@ jobs:
   build-fedora-34:
     docker:
       - image: fedora:34
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-rpm
       - checkout
@@ -236,7 +236,7 @@ jobs:
   deploy-fedora-34:
     docker:
       - image: fedora:34
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-rpm
       - checkout
@@ -252,7 +252,7 @@ jobs:
   build-fedora-33:
     docker:
       - image: fedora:33
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-rpm
       - checkout
@@ -263,7 +263,7 @@ jobs:
   deploy-fedora-33:
     docker:
       - image: fedora:33
-    resource_class: medium
+    resource_class: medium+
     steps:
       - run: *install-dependencies-rpm
       - checkout

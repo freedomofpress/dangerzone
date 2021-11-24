@@ -8,11 +8,6 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - restore_cache:
-          keys: v1-{{ .Revision }}
-          paths:
-            - /caches/dangerzone-converter.tar.gz
-            - /caches/image-id.txt
       - run:
           name: Build Dangerzone image
           command: |
@@ -43,6 +38,16 @@ jobs:
             gem install -N rake
             gem install -N package_cloud
       - checkout
+      - restore_cache:
+          key: v1-{{ .Revision }}
+          paths:
+            - /caches/dangerzone-converter.tar.gz
+            - /caches/image-id.txt
+      - run:
+          name: Copy container image into package
+          command: |
+            cp /caches/dangerzone-converter.tar.gz share/
+            cp /caches/image-id.txt share/
       - run:
           name: Create the .deb package
           command: |
@@ -199,17 +204,28 @@ jobs:
       - run:
           name: Deploy to packagecloud.io
           command: |
-            VERSION=$(cat share/version.txt)
-            package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.noarch.rpm
-            package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.src.rpm
+            if [[ ! -z "${SKIP_DEPLOY}" ]]; then
+              echo "Skipping deploy..."
+            else
+              VERSION=$(cat share/version.txt)
+              package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.noarch.rpm
+              package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.src.rpm
+            fi
 
 workflows:
   version: 2
+
+  build-and-test:
+    jobs:
+      - build-container-image
+      - build-ubuntu-impish:
+          environment:
+            SKIP_DEPLOY: 1
+          requires:
+            - build-container-image
+
   build-tags:
     jobs:
-      # Build container image on every commit
-      - build-container-image
-
       # Ubuntu 21.10 (impish) not yet supported by packagecloud.io
       # - build-ubuntu-impish: 
       #     filters:

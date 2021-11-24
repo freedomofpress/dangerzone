@@ -85,10 +85,14 @@ jobs:
       - run:
           name: Save Dangerzone image and image-id.txt to cache
           command: |
-            mkdir -p /caches
-            docker save -o /caches/dangerzone-converter.tar dangerzone.rocks/dangerzone
-            gzip /caches/dangerzone-converter.tar
-            docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
+            if [ -f "/caches/dangerzone-converter.tar.gz" ]; then
+              echo "Already cached, skipping"
+            else
+              mkdir -p /caches
+              docker save -o /caches/dangerzone-converter.tar dangerzone.rocks/dangerzone
+              gzip -f /caches/dangerzone-converter.tar
+              docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
+            fi
       - save_cache:
           key: v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
           paths:

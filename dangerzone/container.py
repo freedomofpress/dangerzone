@@ -56,7 +56,7 @@ def exec_container(args, stdout_callback=None):
     return exec(args, stdout_callback)
 
 
-def convert(global_common, input_filename, output_filename, ocr_lang, stdout_callback):
+def convert(input_filename, output_filename, ocr_lang, stdout_callback):
     success = False
 
     if ocr_lang:
@@ -72,8 +72,6 @@ def convert(global_common, input_filename, output_filename, ocr_lang, stdout_cal
     safe_dir = os.path.join(tmpdir.name, "safe")
     os.makedirs(pixel_dir, exist_ok=True)
     os.makedirs(safe_dir, exist_ok=True)
-
-    container_output_filename = os.path.join(safe_dir, "safe-output-compressed.pdf")
 
     # Convert document to pixels
     args = [
@@ -113,9 +111,6 @@ def convert(global_common, input_filename, output_filename, ocr_lang, stdout_cal
         if ret != 0:
             print("pixels-to-pdf failed")
         else:
-            # Move the final file to the right place
-            os.rename(container_output_filename, output_filename)
-
             # We did it
             success = True
 

@@ -101,7 +101,6 @@ def cli_main(output_filename, ocr_lang, filename):
             click.echo(f"Invalid JSON returned from container: {line}")
 
     if convert(
-        global_common,
         common.input_filename,
         common.output_filename,
         ocr_lang,

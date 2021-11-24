@@ -499,7 +499,6 @@ class ConvertThread(QtCore.QThread):
         ]
 
         if convert(
-            self.global_common,
             self.common.input_filename,
             self.common.output_filename,
             ocr_lang,

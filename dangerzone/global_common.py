@@ -411,9 +411,6 @@ class GlobalCommon(object):
         resource_path = os.path.join(prefix, filename)
         return resource_path
 
-    def exec_dangerzone_container(self, input_filename, output_filename, ocr_lang):
-        convert(self, input_filename, output_filename, ocr_lang)
-
     def get_subprocess_startupinfo(self):
         if platform.system() == "Windows":
             startupinfo = subprocess.STARTUPINFO()
@@ -421,34 +418,6 @@ class GlobalCommon(object):
             return startupinfo
         else:
             return None
-
-    def container_exists(self, container_name):
-        """
-        Check if container_name is a valid container. Returns a tuple like:
-        (success (boolean), error_message (str))
-        """
-        # Do we have this container?
-        with self.exec_dangerzone_container(
-            ["ls", "--container-name", container_name]
-        ) as p:
-            stdout_data, _ = p.communicate()
-            lines = stdout_data.split(b"\n")
-            if b"> " in lines[0]:
-                stdout_data = b"\n".join(lines[1:])
-
-            # The user canceled, or permission denied
-            if p.returncode == 126 or p.returncode == 127:
-                return False, "Authorization failed"
-                return
-            elif p.returncode != 0:
-                return False, "Container error"
-                return
-
-            # Check the output
-            if container_name.encode() not in stdout_data:
-                return False, f"Container '{container_name}' not found"
-
-        return True, True
 
     def install_container(self):
         """

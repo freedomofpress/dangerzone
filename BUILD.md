@@ -152,21 +152,21 @@ Dangerzone uses PyInstaller to turn the python source code into Windows executab
 
 Here's how to compile the PyInstaller bootloader:
 
-Download and install [Microsoft Build Tools for Visual Studio 2019](https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2019). I downloaded `vs_buildtools__719988613.1603831511.exe`. In the installer, check the box next to "C++ build tools". Click "Individual components", and under "Compilers, build tools and runtimes", check "Windows Universal CRT SDK". Then click install. When installation is done, you may have to reboot your computer.
+Download and install [Microsoft Build Tools for Visual Studio 2022](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022). I downloaded `vs_BuildTools.exe`. In the installer, check the box next to "Desktop development with C++". Click "Individual components", and under "Compilers, build tools and runtimes", check "Windows Universal CRT SDK". Then click install. When installation is done, you may have to reboot your computer.
 
 Then, enable the 32-bit Visual C++ Toolset on the Command Line like this:
 
 ```
-cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build"
-vcvars32.bat
+cd 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build'
+.\vcvars32.bat
 ```
 
-Change to a folder where you keep source code, and clone the PyInstaller git repo and checkout the `v4.3` tag:
+Change to a folder where you keep source code, and clone the PyInstaller git repo and checkout the `v4.7` tag:
 
 ```
 git clone https://github.com/pyinstaller/pyinstaller.git
 cd pyinstaller
-git checkout v4.3
+git checkout v4.7
 ```
 
 The next step is to compile the bootloader. We should do this all in dangerzone's poetry shell:
@@ -180,7 +180,7 @@ cd ..\pyinstaller
 Then, compile the bootloader:
 
 ```
-cd bootloader
+cd .\bootloader\
 python waf distclean all --target-arch=32bit --msvc_targets=x86
 cd ..
 ```
@@ -202,8 +202,7 @@ Now the next time you use PyInstaller to build dangerzone, the `.exe` file shoul
 
 ### If you want to sign binaries with Authenticode
 
-* You'll need a code signing certificate. I got an open source code signing certificate from [Certum](https://www.certum.eu/certum/cert,offer_en_open_source_cs.xml).
-* Once you get a code signing key and certificate and covert it to a pfx file, import it into your certificate store.
+You'll need a code signing certificate.
 
 ## To make a .exe
 
@@ -224,24 +223,10 @@ mklink dangerzone-container.exe dangerzone.exe
 
 ### To build the installer
 
-Note that you must have a codesigning certificate installed in order to use the `install\windows\build.bat` script, because it codesigns `dangerzone.exe` and `Dangerzone.msi`.
-
-Open a command prompt, cd to the dangerzone directory, and run:
+Note that you must have a codesigning certificate installed in order to use the `install\windows\build-app.bat` script, because it codesigns `dangerzone.exe` and `Dangerzone.msi`.
 
 ```
-poetry run install\windows\step1-build-exe.bat
-```
-
-Open a second command prompt _as an administratror_, cd to the dangerzone directory, and run:
-
-```
-install\windows\step2-make-symlink.bat
-```
-
-Then back in the first command prompt, run:
-
-```
-poetry run install\windows\step3-build-installer.bat
+poetry run .\install\windows\build-app.bat
 ```
 
 When you're done you will have `dist\Dangerzone.msi`.

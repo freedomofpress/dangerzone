@@ -430,7 +430,9 @@ class GlobalCommon(object):
         print("Installing Dangerzone container image...")
 
         p = subprocess.Popen(
-            [self.get_container_runtime(), "load"], stdin=subprocess.PIPE
+            [self.get_container_runtime(), "load"],
+            stdin=subprocess.PIPE,
+            startupinfo=self.get_subprocess_startupinfo(),
         )
 
         chunk_size = 1024
@@ -473,6 +475,7 @@ class GlobalCommon(object):
                 self.container_name,
             ],
             text=True,
+            startupinfo=self.get_subprocess_startupinfo(),
         )
         found_image_id = found_image_id.strip()
 
@@ -484,7 +487,8 @@ class GlobalCommon(object):
             print(f"Deleting old dangerzone container image")
 
             subprocess.check_output(
-                [self.get_container_runtime(), "rmi", found_image_id]
+                [self.get_container_runtime(), "rmi", found_image_id],
+                startupinfo=self.get_subprocess_startupinfo(),
             )
 
         return installed

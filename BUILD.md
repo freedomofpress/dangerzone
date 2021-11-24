@@ -110,7 +110,7 @@ The output is in the `dist` folder.
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
-Install Python 3.9.9 (x86) [[from python.org])(https://www.python.org/downloads/release/python-399/). When installing it, make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
+Install Python 3.9.9 (x86) [from python.org](https://www.python.org/downloads/release/python-399/). When installing it, make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
 
 Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
 

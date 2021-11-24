@@ -71,7 +71,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            -v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
+            - v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
       - setup_remote_docker
       - run:
           name: Load Dangerzone image into docker, if we restored it from cache

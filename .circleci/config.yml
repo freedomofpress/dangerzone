@@ -1,6 +1,35 @@
 version: 2.1
 
 jobs:
+  build-container-image:
+    working_directory: /app
+    docker:
+      - image: docker:20.10.11-dind
+    steps:
+      - checkout
+      - setup_remote_docker
+      - restore_cache:
+          keys: v1-{{ .Revision }}
+          paths:
+            - /caches/dangerzone-converter.tar.gz
+            - /caches/image-id.txt
+      - run:
+          name: Build Dangerzone image
+          command: |
+            docker build --cache-from=dangerzone.rocks/dangerzone --tag dangerzone.rocks/dangerzone dangerzone-converter
+      - run:
+          name: Save Dangerzone image and image-id.txt to cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/dangerzone-converter.tar dangerzone.rocks/dangerzone
+            gzip /caches/dangerzone-converter.tar
+            docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
+      - save_cache:
+          key: v1-{{ .Revision }}
+          paths:
+            - /caches/dangerzone-converter.tar.gz
+            - /caches/image-id.txt
+
   build-ubuntu-impish:
     docker:
       - image: ubuntu:21.10
@@ -17,7 +46,7 @@ jobs:
       - run:
           name: Create the .deb package
           command: |
-            ./install/linux/build_deb.py
+            ./install/linux/build-deb.py
             dpkg -i deb_dist/dangerzone_*-1_all.deb
       - run:
           name: Deploy to packagecloud.io
@@ -47,7 +76,7 @@ jobs:
       - run:
           name: Create the .deb package
           command: |
-            ./install/linux/build_deb.py
+            ./install/linux/build-deb.py
             dpkg -i deb_dist/dangerzone_*-1_all.deb
       - run:
           name: Deploy to packagecloud.io
@@ -72,7 +101,7 @@ jobs:
       - run:
           name: Create the .deb package
           command: |
-            ./install/linux/build_deb.py
+            ./install/linux/build-deb.py
             dpkg -i deb_dist/dangerzone_*-1_all.deb
       - run:
           name: Deploy to packagecloud.io
@@ -96,7 +125,7 @@ jobs:
       - run:
           name: Create the .deb package
           command: |
-            ./install/linux/build_deb.py
+            ./install/linux/build-deb.py
             dpkg -i deb_dist/dangerzone_*-1_all.deb
       - run:
           name: Deploy to packagecloud.io
@@ -121,7 +150,7 @@ jobs:
       - run:
           name: Create the .rpm package
           command: |
-            ./install/linux/build_rpm.py
+            ./install/linux/build-rpm.py
             dnf install -y dist/dangerzone-*-1.noarch.rpm
       - run:
           name: Deploy to packagecloud.io
@@ -143,7 +172,7 @@ jobs:
       - run:
           name: Create the .rpm package
           command: |
-            ./install/linux/build_rpm.py
+            ./install/linux/build-rpm.py
             dnf install -y dist/dangerzone-*-1.noarch.rpm
       - run:
           name: Deploy to packagecloud.io
@@ -165,7 +194,7 @@ jobs:
       - run:
           name: Create the .rpm package
           command: |
-            ./install/linux/build_rpm.py
+            ./install/linux/build-rpm.py
             dnf install -y dist/dangerzone-*-1.noarch.rpm
       - run:
           name: Deploy to packagecloud.io
@@ -178,6 +207,14 @@ workflows:
   version: 2
   build-tags:
     jobs:
+      # Build container image on every commit
+      - build-container-image:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+
       # Ubuntu 21.10 (impish) not yet supported by packagecloud.io
       # - build-ubuntu-impish: 
       #     filters:

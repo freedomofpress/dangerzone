@@ -30,14 +30,14 @@ aliases:
   - &restore-cache
     key: v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
     paths:
-      - /caches/dangerzone-converter.tar.gz
-      - /caches/image-id.txt
+      - /tmp/caches/dangerzone-converter.tar.gz
+      - /tmp/caches/image-id.txt
 
   - &copy-image
     name: Copy container image into package
     command: |
-      cp /caches/dangerzone-converter.tar.gz share/
-      cp /caches/image-id.txt share/
+      cp /tmp/caches/dangerzone-converter.tar.gz share/
+      cp /tmp/caches/image-id.txt share/
 
   - &deploy-packagecloud
     name: Deploy to packagecloud.io
@@ -76,7 +76,7 @@ jobs:
       - run:
           name: Build Dangerzone image
           command: |
-            if [ -f "/caches/dangerzone-converter.tar.gz" ]; then
+            if [ -f "/tmp/caches/dangerzone-converter.tar.gz" ]; then
               echo "Already cached, skipping"
             else
               docker build --cache-from=dangerzone.rocks/dangerzone --tag dangerzone.rocks/dangerzone dangerzone-converter
@@ -84,19 +84,19 @@ jobs:
       - run:
           name: Save Dangerzone image and image-id.txt to cache
           command: |
-            if [ -f "/caches/dangerzone-converter.tar.gz" ]; then
+            if [ -f "/tmp/caches/dangerzone-converter.tar.gz" ]; then
               echo "Already cached, skipping"
             else
-              mkdir -p /caches
-              docker save -o /caches/dangerzone-converter.tar dangerzone.rocks/dangerzone
-              gzip -f /caches/dangerzone-converter.tar
-              docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
+              mkdir -p /tmp/caches
+              docker save -o /tmp/caches/dangerzone-converter.tar dangerzone.rocks/dangerzone
+              gzip -f /tmp/caches/dangerzone-converter.tar
+              docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /tmp/caches/image-id.txt
             fi
       - save_cache:
           key: v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
           paths:
-            - /caches/dangerzone-converter.tar.gz
-            - /caches/image-id.txt
+            - /tmp/caches/dangerzone-converter.tar.gz
+            - /tmp/caches/image-id.txt
 
   convert-test-docs:
     machine:
@@ -216,6 +216,33 @@ jobs:
           environment:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "ubuntu/groovy"
+          <<: *deploy-packagecloud
+
+  build-debian-bookworm:
+    docker:
+      - image: debian:bookworm
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+
+  deploy-debian-bookworm:
+    docker:
+      - image: debian:bookworm
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+      - run:
+          environment:
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "debian/bookworm"
           <<: *deploy-packagecloud
 
   build-debian-bullseye:
@@ -347,6 +374,9 @@ workflows:
       - build-debian-bullseye:
           requires:
             - build-container-image
+      - build-debian-bookworm:
+          requires:
+            - build-container-image
       - build-fedora-35:
           requires:
             - build-container-image
@@ -382,6 +412,14 @@ workflows:
             branches:
               ignore: /.*/
       - deploy-ubuntu-groovy:
+          requires:
+            - build-container-image
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - deploy-debian-bookworm:
           requires:
             - build-container-image
           filters:

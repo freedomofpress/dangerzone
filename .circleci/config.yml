@@ -74,14 +74,13 @@ jobs:
             - v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
       - setup_remote_docker
       - run:
-          name: Load Dangerzone image into docker, if we restored it from cache
-          command: |
-            set +o pipefail
-            gunzip --stdout /caches/dangerzone-converter.tar.gz | docker load | true
-      - run:
           name: Build Dangerzone image
           command: |
-            docker build --cache-from=dangerzone.rocks/dangerzone --tag dangerzone.rocks/dangerzone dangerzone-converter
+            if [ -f "/caches/dangerzone-converter.tar.gz" ]; then
+              echo "Already cached, skipping"
+            else
+              docker build --cache-from=dangerzone.rocks/dangerzone --tag dangerzone.rocks/dangerzone dangerzone-converter
+            fi
       - run:
           name: Save Dangerzone image and image-id.txt to cache
           command: |

@@ -49,6 +49,9 @@ def gui_main(filename):
         # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
         os.environ["QT_MAC_WANTS_LAYER"] = "1"
 
+        # Make sure /usr/local/bin is in the path
+        os.environ["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
+
         # Strip ANSI colors from stdout output, to prevent terminal colors from breaking
         # the macOS GUI app
         from strip_ansi import strip_ansi

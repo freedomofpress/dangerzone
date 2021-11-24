@@ -282,7 +282,7 @@ workflows:
 
   build-and-deploy:
     jobs:
-      - build-container-image
+      - build-container-image:
           filters:
             tags:
               only: /^v.*/

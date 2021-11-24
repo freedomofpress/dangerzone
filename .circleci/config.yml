@@ -107,7 +107,20 @@ jobs:
           command: |
             export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
             sudo apt-get update
-            sudo apt-get install -y git ssh podman python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
+            sudo apt-get install -y git ssh python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
+      # https://www.atlantic.net/dedicated-server-hosting/how-to-install-and-use-podman-on-ubuntu-20-04/
+      - run:
+          name: Install podman on Ubuntu 20.04
+          command: |
+            export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+            sudo apt-get install -y curl wget gnupg2
+            source /etc/os-release
+            echo 'text' | sudo tee -a /path/to/file
+            sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
+            wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- | sudo apt-key add -
+            sudo apt-get update -qq -y
+            sudo apt-get -qq --yes install podman
+            podman --version
       - checkout
       - restore_cache: *restore-cache
       - run: *copy-image
@@ -205,33 +218,6 @@ jobs:
           environment:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "ubuntu/groovy"
-          <<: *deploy-packagecloud
-
-  build-ubuntu-focal:
-    docker:
-      - image: ubuntu:20.04
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-
-  deploy-ubuntu-focal:
-    docker:
-      - image: ubuntu:20.04
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-      - run:
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/focal"
           <<: *deploy-packagecloud
 
   build-debian-bullseye:
@@ -360,9 +346,6 @@ workflows:
       - build-ubuntu-groovy:
           requires:
             - build-container-image
-      - build-ubuntu-focal:
-          requires:
-            - build-container-image
       - build-debian-bullseye:
           requires:
             - build-container-image
@@ -401,14 +384,6 @@ workflows:
             branches:
               ignore: /.*/
       - deploy-ubuntu-groovy:
-          requires:
-            - build-container-image
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      - deploy-ubuntu-focal:
           requires:
             - build-container-image
           filters:

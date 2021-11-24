@@ -339,7 +339,7 @@ workflows:
   build:
     jobs:
       - build-container-image
-      - tests
+      - tests:
           requires:
             - build-container-image
       - build-ubuntu-impish:

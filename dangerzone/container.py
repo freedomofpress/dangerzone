@@ -111,6 +111,15 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
         if ret != 0:
             print("pixels-to-pdf failed")
         else:
+            # Move the final file to the right place
+            if os.path.exists(output_filename):
+                os.remove(output_filename)
+
+            container_output_filename = os.path.join(
+                safe_dir, "safe-output-compressed.pdf"
+            )
+            os.rename(container_output_filename, output_filename)
+
             # We did it
             success = True
 

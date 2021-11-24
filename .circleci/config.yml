@@ -6,15 +6,26 @@ aliases:
     command: |
       export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
       apt-get update
-      apt-get install -y git ssh ruby-dev rubygems podman python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
-      gem install -N rake
-      gem install -N package_cloud
+      apt-get install -y git ssh podman python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
+
+  - &install-dependencies-rpm
+    name: Install dependencies (rpm)
+    command: |
+      dnf install -y podman git openssh make automake gcc gcc-c++ rpm-build python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
 
   - &build-deb
     name: Build the .deb package
     command: |
       ./install/linux/build-deb.py
       dpkg -i deb_dist/dangerzone_*-1_all.deb
+      ls -lh deb_dist/dangerzone_*-1_all.deb
+
+  - &build-rpm
+    name: Build the .deb package
+    command: |
+      ./install/linux/build-rpm.py
+      dnf install -y dist/dangerzone-*-1.noarch.rpm
+      ls -lh dist/dangerzone-*-1.noarch.rpm
 
   - &restore-cache
     key: v1-{{ .Revision }}
@@ -33,9 +44,20 @@ aliases:
     command: |
       VERSION=$(cat share/version.txt)
       if [[ "${PACKAGE_TYPE}" == "deb" ]]; then
+        # install packagecloud.io
+        apt-get install -y ruby-dev rubygems
+        gem install -N rake
+        gem install -N package_cloud
+
+        # deploy the package
         package_cloud push firstlookmedia/code/${PACKAGECLOUD_DISTO} deb_dist/dangerzone_${VERSION}-1_all.deb
         package_cloud push firstlookmedia/code/${PACKAGECLOUD_DISTO} deb_dist/dangerzone_${VERSION}-1.dsc
       elif [[ "${PACKAGE_TYPE}" == "rpm" ]]; then
+        # install packagecloud.
+        dnf install -y ruby-devel
+        gem install package_cloud
+
+        # deploy the package
         package_cloud push firstlookmedia/code/${PACKAGECLOUD_DISTO} dist/dangerzone-${VERSION}-1.noarch.rpm
         package_cloud push firstlookmedia/code/${PACKAGECLOUD_DISTO} dist/dangerzone-${VERSION}-1.src.rpm
       fi
@@ -74,7 +96,7 @@ jobs:
       - restore_cache: *restore-cache
       - run: *copy-image
       - run: *build-deb
-  
+
   deploy-ubuntu-impish:
     docker:
       - image: ubuntu:21.10
@@ -92,155 +114,143 @@ jobs:
 
   build-ubuntu-hirsute:
     docker:
-      # The ubuntu:21.04 container doesn't work in CircleCI until they update
-      # their docker runtime due to this bug:
-      # https://stackoverflow.com/questions/66319610/gpg-error-in-ubuntu-21-04-after-second-apt-get-update-during-docker-build
-      # So for now, we'll build the 21.04 package in a 20.10 container
-      # - image: ubuntu:21.04
-      - image: ubuntu:20.10
+      - image: ubuntu:21.04
     steps:
-      - run:
-          name: Install dependencies
-          command: |
-            export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
-            apt-get update
-            apt-get install -y git ssh ruby-dev rubygems podman python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
-            gem install -N rake
-            gem install -N package_cloud
+      - run: *install-dependencies-deb
       - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+
+  deploy-ubuntu-hirsute:
+    docker:
+      - image: ubuntu:21.04
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
       - run:
-          name: Create the .deb package
-          command: |
-            ./install/linux/build-deb.py
-            dpkg -i deb_dist/dangerzone_*-1_all.deb
-      - run:
-          name: Deploy to packagecloud.io
-          command: |
-            VERSION=$(cat share/version.txt)
-            package_cloud push firstlookmedia/code/ubuntu/hirsute deb_dist/dangerzone_${VERSION}-1_all.deb
-            package_cloud push firstlookmedia/code/ubuntu/hirsute deb_dist/dangerzone_${VERSION}-1.dsc
+          environment:
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "ubuntu/hirsute"
+          <<: *deploy-packagecloud
 
   build-ubuntu-groovy:
     docker:
       - image: ubuntu:20.10
     steps:
-      - run:
-          name: Install dependencies
-          command: |
-            export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
-            apt-get update
-            apt-get install -y git ssh ruby-dev rubygems podman python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
-            gem install -N rake
-            gem install -N package_cloud
+      - run: *install-dependencies-deb
       - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+
+  deploy-ubuntu-groovy:
+    docker:
+      - image: ubuntu:20.10
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
       - run:
-          name: Create the .deb package
-          command: |
-            ./install/linux/build-deb.py
-            dpkg -i deb_dist/dangerzone_*-1_all.deb
-      - run:
-          name: Deploy to packagecloud.io
-          command: |
-            VERSION=$(cat share/version.txt)
-            package_cloud push firstlookmedia/code/ubuntu/groovy deb_dist/dangerzone_${VERSION}-1_all.deb
-            package_cloud push firstlookmedia/code/ubuntu/groovy deb_dist/dangerzone_${VERSION}-1.dsc
+          environment:
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "ubuntu/groovy"
+          <<: *deploy-packagecloud
 
   build-debian-bullseye:
     docker:
       - image: debian:bullseye
     steps:
-      - run:
-          name: Install dependencies
-          command: |
-            apt-get update
-            apt-get install -y git ssh ruby-dev rubygems podman python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-requests python3-colorama
-            gem install -N rake
-            gem install -N package_cloud
+      - run: *install-dependencies-deb
       - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+
+  deploy-debian-bullseye:
+    docker:
+      - image: debian:bullseye
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
       - run:
-          name: Create the .deb package
-          command: |
-            ./install/linux/build-deb.py
-            dpkg -i deb_dist/dangerzone_*-1_all.deb
+          environment:
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "debian/bullseye"
+          <<: *deploy-packagecloud
+
+  build-fedora-35:
+    docker:
+      - image: fedora:35
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
+
+  deploy-fedora-35:
+    docker:
+      - image: fedora:35
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
       - run:
-          name: Deploy to packagecloud.io
-          command: |
-            VERSION=$(cat share/version.txt)
-            package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1_all.deb
-            package_cloud push firstlookmedia/code/debian/bullseye deb_dist/dangerzone_${VERSION}-1.dsc
+          environment:
+            PACKAGE_TYPE: "rpm"
+            PACKAGECLOUD_DISTRO: "fedora/35"
+          <<: *deploy-packagecloud
 
   build-fedora-34:
     docker:
-      # The package_cloud ruby gem doesn't work properly when installed in fedora 34,
-      # so for now we'll built the fedora 34 package in a fedora:33 container
-      # - image: fedora:34
-      - image: fedora:33
+      - image: fedora:34
     steps:
-      - run:
-          name: Install dependencies
-          command: |
-            dnf install -y podman git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
-            gem install package_cloud
+      - run: *install-dependencies-rpm
       - checkout
-      - run:
-          name: Create the .rpm package
-          command: |
-            ./install/linux/build-rpm.py
-            dnf install -y dist/dangerzone-*-1.noarch.rpm
-      - run:
-          name: Deploy to packagecloud.io
-          command: |
-            VERSION=$(cat share/version.txt)
-            package_cloud push firstlookmedia/code/fedora/34 dist/dangerzone-${VERSION}-1.noarch.rpm
-            package_cloud push firstlookmedia/code/fedora/34 dist/dangerzone-${VERSION}-1.src.rpm
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
 
-  build-fedora-33:
+  deploy-fedora-34:
+    docker:
+      - image: fedora:34
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
+      - run:
+          environment:
+            PACKAGE_TYPE: "rpm"
+            PACKAGECLOUD_DISTRO: "fedora/34"
+          <<: *deploy-packagecloud
+
+  deploy-fedora-33:
     docker:
       - image: fedora:33
     steps:
-      - run:
-          name: Install dependencies
-          command: |
-            dnf install -y podman git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
-            gem install package_cloud
+      - run: *install-dependencies-rpm
       - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
       - run:
-          name: Create the .rpm package
-          command: |
-            ./install/linux/build-rpm.py
-            dnf install -y dist/dangerzone-*-1.noarch.rpm
-      - run:
-          name: Deploy to packagecloud.io
-          command: |
-            VERSION=$(cat share/version.txt)
-            package_cloud push firstlookmedia/code/fedora/33 dist/dangerzone-${VERSION}-1.noarch.rpm
-            package_cloud push firstlookmedia/code/fedora/33 dist/dangerzone-${VERSION}-1.src.rpm
-
-  build-fedora-32:
-    docker:
-      - image: fedora:32
-    steps:
-      - run:
-          name: Install dependencies
-          command: |
-            dnf install -y podman git openssh ruby-devel make automake gcc gcc-c++ rpm-build python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-requests python3-colorama
-            gem install package_cloud
-      - checkout
-      - run:
-          name: Create the .rpm package
-          command: |
-            ./install/linux/build-rpm.py
-            dnf install -y dist/dangerzone-*-1.noarch.rpm
-      - run:
-          name: Deploy to packagecloud.io
-          command: |
-            if [[ ! -z "${SKIP_DEPLOY}" ]]; then
-              echo "Skipping deploy..."
-            else
-              VERSION=$(cat share/version.txt)
-              package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.noarch.rpm
-              package_cloud push firstlookmedia/code/fedora/32 dist/dangerzone-${VERSION}-1.src.rpm
-            fi
+          environment:
+            PACKAGE_TYPE: "rpm"
+            PACKAGECLOUD_DISTRO: "fedora/33"
+          <<: *deploy-packagecloud
 
 workflows:
   version: 2
@@ -249,6 +259,24 @@ workflows:
     jobs:
       - build-container-image
       - build-ubuntu-impish:
+          requires:
+            - build-container-image
+      - build-ubuntu-hirsute:
+          requires:
+            - build-container-image
+      - build-ubuntu-groovy:
+          requires:
+            - build-container-image
+      - build-debian-bullseye:
+          requires:
+            - build-container-image
+      - build-fedora-35:
+          requires:
+            - build-container-image
+      - build-fedora-34:
+          requires:
+            - build-container-image
+      - build-fedora-33:
           requires:
             - build-container-image
 
@@ -260,45 +288,57 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-
-      # Ubuntu 21.10 (impish) not yet supported by packagecloud.io
-      # - build-ubuntu-impish: 
-      #     filters:
-      #       tags:
-      #         only: /^v.*/
-      #       branches:
-      #         ignore: /.*/
-      - build-ubuntu-hirsute:
+      - deploy-ubuntu-impish:
+          requires:
+            - build-container-image
           filters:
             tags:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-ubuntu-groovy:
+      - deploy-ubuntu-hirsute:
+          requires:
+            - build-container-image
           filters:
             tags:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-debian-bullseye:
+      - deploy-ubuntu-groovy:
+          requires:
+            - build-container-image
           filters:
             tags:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-fedora-34:
+      - deploy-debian-bullseye:
+          requires:
+            - build-container-image
           filters:
             tags:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-fedora-33:
+      - deploy-fedora-35:
+          requires:
+            - build-container-image
           filters:
             tags:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - build-fedora-32:
+      - deploy-fedora-34:
+          requires:
+            - build-container-image
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - deploy-fedora-33:
+          requires:
+            - build-container-image
           filters:
             tags:
               only: /^v.*/

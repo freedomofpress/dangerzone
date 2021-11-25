@@ -222,6 +222,7 @@ def main():
     print(f'<?define ProductVersion = "{version}"?>')
     print('<?define ProductUpgradeCode = "12b9695c-965b-4be0-bc33-21274e809576"?>')
 
+    ET.indent(root_el)
     ET.dump(root_el)
 
 

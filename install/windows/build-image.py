@@ -1,5 +1,6 @@
 import subprocess
 import gzip
+import os
 
 
 def main():
@@ -35,6 +36,8 @@ def main():
                     gzip_f.write(chunk)
                 else:
                     break
+
+    os.remove("share/dangerzone-converter.tar")
 
     print("Looking up the image id")
     image_id = subprocess.check_output(

@@ -85,6 +85,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
         "-v",
         f"{pixel_dir}:/dangerzone",
         container_name,
+        "dangerzone.py",
         "document-to-pixels",
     ]
     ret = exec_container(args, stdout_callback)
@@ -109,6 +110,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
             "-e",
             f"OCR_LANGUAGE={ocr_lang}",
             container_name,
+            "dangerzone.py",
             "pixels-to-pdf",
         ]
         ret = exec_container(args, stdout_callback)

@@ -17,6 +17,7 @@ import subprocess
 import glob
 import os
 import json
+import shutil
 
 import magic
 from PIL import Image
@@ -300,6 +301,15 @@ class DangerzoneConverter:
             "Converted document to pixels",
             percentage,
         )
+
+        # Move converted files into /dangerzone
+        for filename in (
+            glob.glob("/tmp/page-*.rgb")
+            + glob.glob("/tmp/page-*.width")
+            + glob.glob("/tmp/page-*.height")
+        ):
+            shutil.move(filename, "/dangerzone")
+
         return 0
 
     def pixels_to_pdf(self):
@@ -499,6 +509,10 @@ class DangerzoneConverter:
 
         percentage = 100.0
         self.output(False, "Safe PDF created", percentage)
+
+        # Move converted files into /safezone
+        shutil.move("/tmp/safe-output.pdf", "/safezone")
+        shutil.move("/tmp/safe-output-compressed.pdf", "/safezone")
 
         return 0
 

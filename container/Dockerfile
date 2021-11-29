@@ -88,8 +88,7 @@ RUN \
     chmod +x /usr/local/bin/pdftk
 
 COPY dangerzone.py /usr/local/bin/
-COPY document-to-pixels /usr/local/bin/
-COPY pixels-to-pdf /usr/local/bin/
+RUN chmod +x /usr/local/bin/dangerzone.py
 
 # Add the unprivileged user
 RUN adduser -h /home/user -s /bin/sh -D user

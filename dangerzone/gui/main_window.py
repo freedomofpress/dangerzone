@@ -162,6 +162,7 @@ class WaitingWidget(QtWidgets.QWidget):
                 [container_runtime, "image", "ls"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
+                startupinfo=self.global_common.get_subprocess_startupinfo(),
             ) as p:
                 p.communicate()
                 if p.returncode != 0:
@@ -607,7 +608,9 @@ class ConvertWidget(QtWidgets.QWidget):
         if platform.system() == "Windows":
             dest_filename_windows = self.common.output_filename.replace("/", "\\")
             subprocess.Popen(
-                f'explorer.exe /select,"{dest_filename_windows}"', shell=True
+                f'explorer.exe /select,"{dest_filename_windows}"',
+                shell=True,
+                startupinfo=self.global_common.get_subprocess_startupinfo(),
             )
 
         # Open

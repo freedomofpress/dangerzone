@@ -1,13 +1,13 @@
 #!/bin/sh
 
-echo "Building dangerzone-converter image"
-podman build dangerzone-converter --tag dangerzone.rocks/dangerzone
+echo "Building container image"
+podman build container --tag dangerzone.rocks/dangerzone
 
-echo "Saving dangerzone-converter image"
-podman save dangerzone.rocks/dangerzone -o share/dangerzone-converter.tar
+echo "Saving container image"
+podman save dangerzone.rocks/dangerzone -o share/container.tar
 
-echo "Compressing dangerzone-converter image"
-gzip -f share/dangerzone-converter.tar
+echo "Compressing container image"
+gzip -f share/container.tar
 
 echo "Looking up the image id"
 podman image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > share/image-id.txt

@@ -4,32 +4,32 @@ import os
 
 
 def main():
-    print("Building dangerzone-converter image")
+    print("Building container image")
     subprocess.run(
         [
             "docker",
             "build",
-            "dangerzone-converter",
+            "container",
             "--tag",
             "dangerzone.rocks/dangerzone",
         ]
     )
 
-    print("Saving dangerzone-converter image")
+    print("Saving container image")
     subprocess.run(
         [
             "docker",
             "save",
             "dangerzone.rocks/dangerzone",
             "-o",
-            "share/dangerzone-converter.tar",
+            "share/container.tar",
         ]
     )
 
-    print("Compressing dangerzone-converter image")
+    print("Compressing container image")
     chunk_size = 1024
-    with open("share/dangerzone-converter.tar", "rb") as f:
-        with gzip.open("share/dangerzone-converter.tar.gz", "wb") as gzip_f:
+    with open("share/container.tar", "rb") as f:
+        with gzip.open("share/container.tar.gz", "wb") as gzip_f:
             while True:
                 chunk = f.read(chunk_size)
                 if len(chunk) > 0:
@@ -37,7 +37,7 @@ def main():
                 else:
                     break
 
-    os.remove("share/dangerzone-converter.tar")
+    os.remove("share/container.tar")
 
     print("Looking up the image id")
     image_id = subprocess.check_output(

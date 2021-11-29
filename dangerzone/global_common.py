@@ -25,7 +25,7 @@ class GlobalCommon(object):
             with open(self.get_resource_path("version.txt")) as f:
                 self.version = f.read().strip()
         except FileNotFoundError:
-            # In dev mode, in Windows, get_resource_path doesn't work properly for dangerzone-container, but luckily
+            # In dev mode, in Windows, get_resource_path doesn't work properly for the container, but luckily
             # it doesn't need to know the version
             self.version = "unknown"
 
@@ -435,10 +435,8 @@ class GlobalCommon(object):
             startupinfo=self.get_subprocess_startupinfo(),
         )
 
-        chunk_size = 1024
-        compressed_container_path = self.get_resource_path(
-            "dangerzone-converter.tar.gz"
-        )
+        chunk_size = 10240
+        compressed_container_path = self.get_resource_path("container.tar.gz")
         with gzip.open(compressed_container_path) as f:
             while True:
                 chunk = f.read(chunk_size)

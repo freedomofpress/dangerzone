@@ -58,7 +58,7 @@ Install Xcode from the App Store.
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Make sure to choose your correct CPU, either Intel Chip or Apple Chip.
 
-Install Python 3.9.9 [[from python.org])(https://www.python.org/downloads/release/python-399/).
+Install Python 3.9.9 [from python.org](https://www.python.org/downloads/release/python-399/).
 
 Install Python dependencies:
 

@@ -10,7 +10,8 @@ def main():
             "docker",
             "build",
             "container",
-            "--tag",
+            "--platform",
+            "linux/amd64" "--tag",
             "dangerzone.rocks/dangerzone",
         ]
     )

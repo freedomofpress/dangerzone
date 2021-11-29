@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Building container image"
-docker build container --tag dangerzone.rocks/dangerzone
+docker build container --platform linux/amd64 --tag dangerzone.rocks/dangerzone
 
 echo "Saving container image"
 docker save dangerzone.rocks/dangerzone -o share/container.tar

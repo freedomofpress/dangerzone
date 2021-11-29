@@ -21,7 +21,7 @@ colorama = "^0.4.4"
 psutil = "^5.8.0"
 
 [tool.poetry.dev-dependencies]
-pyinstaller = {version = "*", platform = "darwin"}
+pyinstaller = "*"
 setuptools = {version = "*", platform = "win32"}
 black = "^21.5b2"
 

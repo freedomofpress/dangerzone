@@ -146,54 +146,6 @@ Add the following directories to the path:
 * `C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86`
 * `C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x86`
 
-### If you want the .exe to not get falsely flagged as malicious by anti-virus software
-
-Dangerzone uses PyInstaller to turn the python source code into Windows executable `.exe` file. Apparently, malware developers also use PyInstaller, and some anti-virus vendors have included snippets of PyInstaller code in their virus definitions. To avoid this, you have to compile the Windows PyInstaller bootloader yourself instead of using the pre-compiled one that comes with PyInstaller.
-
-Here's how to compile the PyInstaller bootloader:
-
-Download and install [Microsoft Build Tools for Visual Studio 2022](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022). I downloaded `vs_BuildTools.exe`. In the installer, check the box next to "Desktop development with C++". Click "Individual components", and under "Compilers, build tools and runtimes", check "Windows Universal CRT SDK". Then click install. When installation is done, you may have to reboot your computer.
-
-Then, enable the 32-bit Visual C++ Toolset on the Command Line like this:
-
-```
-cd 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build'
-.\vcvars32.bat
-```
-
-Change to a folder where you keep source code, and clone the PyInstaller git repo and checkout the `v4.7` tag:
-
-```
-git clone https://github.com/pyinstaller/pyinstaller.git
-cd pyinstaller
-git checkout v4.7
-```
-
-The next step is to compile the bootloader. We should do this all in dangerzone's poetry shell:
-
-```
-cd dangerzone
-poetry shell
-cd ..\pyinstaller
-```
-
-Then, compile the bootloader:
-
-```
-cd .\bootloader\
-python waf distclean all --target-arch=32bit --msvc_targets=x86
-cd ..
-```
-
-Finally, install the PyInstaller module into your poetry environment:
-
-```
-python setup.py install
-exit
-```
-
-Now the next time you use PyInstaller to build dangerzone, the `.exe` file should not be flagged as malicious by anti-virus.
-
 ### If you want to build the installer
 
 * Go to https://dotnet.microsoft.com/download/dotnet-framework and download and install .NET Framework 3.5 SP1 Runtime. I downloaded `dotnetfx35.exe`.

@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import click
 from colorama import Fore, Style
@@ -108,5 +109,7 @@ def cli_main(output_filename, ocr_lang, filename):
     ):
         print_header("Safe PDF created successfully")
         click.echo(common.output_filename)
+        sys.exit(0)
     else:
         print_header("Failed to convert document")
+        sys.exit(-1)

@@ -17,15 +17,13 @@ aliases:
     name: Build the .deb package
     command: |
       ./install/linux/build-deb.py
-      dpkg -i deb_dist/dangerzone_*-1_all.deb
-      ls -lh deb_dist/dangerzone_*-1_all.deb
+      ls -lh deb_dist/
 
   - &build-rpm
     name: Build the .rpm package
     command: |
       ./install/linux/build-rpm.py
-      dnf install -y dist/dangerzone-*-1.noarch.rpm
-      ls -lh dist/dangerzone-*-1.noarch.rpm
+      ls -lh dist/
 
   - &restore-cache
     key: v1-{{ checksum "container/Dockerfile" }}-{{ checksum "container/dangerzone.py" }}
@@ -43,6 +41,9 @@ aliases:
     name: Deploy to packagecloud.io
     command: |
       VERSION=$(cat share/version.txt)
+      echo "PACKAGE_TYPE is ${PACKAGE_TYPE}"
+      echo "PACKAGECLOUD_DISTO is ${PACKAGECLOUD_DISTO}"
+      echo "VERSION is ${VERSION}"
       if [[ "${PACKAGE_TYPE}" == "deb" ]]; then
         # install packagecloud.io
         apt-get install -y ruby-dev rubygems
@@ -50,16 +51,16 @@ aliases:
         gem install -N package_cloud
 
         # deploy the package
-        package_cloud push firstlookmedia/code/${PACKAGECLOUD_DISTO} deb_dist/dangerzone_${VERSION}-1_all.deb
-        package_cloud push firstlookmedia/code/${PACKAGECLOUD_DISTO} deb_dist/dangerzone_${VERSION}-1.dsc
+        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTO}" "deb_dist/dangerzone_${VERSION}-1_all.deb"
+        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTO}" "deb_dist/dangerzone_${VERSION}-1.dsc"
       elif [[ "${PACKAGE_TYPE}" == "rpm" ]]; then
         # install packagecloud.
         dnf install -y ruby-devel
         gem install package_cloud
 
         # deploy the package
-        package_cloud push firstlookmedia/code/${PACKAGECLOUD_DISTO} dist/dangerzone-${VERSION}-1.noarch.rpm
-        package_cloud push firstlookmedia/code/${PACKAGECLOUD_DISTO} dist/dangerzone-${VERSION}-1.src.rpm
+        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTO}" "dist/dangerzone-${VERSION}-1.noarch.rpm"
+        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTO}" "dist/dangerzone-${VERSION}-1.src.rpm"
       fi
 
 jobs:

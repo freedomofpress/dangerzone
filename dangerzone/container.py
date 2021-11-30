@@ -73,22 +73,26 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
     os.makedirs(pixel_dir, exist_ok=True)
     os.makedirs(safe_dir, exist_ok=True)
 
+    if container_tech == "docker":
+        platform_args = ["--platform", "linux/amd64"]
+    else:
+        platform_args = []
+
     # Convert document to pixels
-    args = [
-        "run",
-        "--network",
-        "none",
-        "--platform",
-        "linux/amd64",
-        "-v",
-        f"{input_filename}:/tmp/input_file",
-        "-v",
-        f"{pixel_dir}:/dangerzone",
-        container_name,
-        "/usr/bin/python3",
-        "/usr/local/bin/dangerzone.py",
-        "document-to-pixels",
-    ]
+    args = (
+        ["run", "--network", "none"]
+        + platform_args
+        + [
+            "-v",
+            f"{input_filename}:/tmp/input_file",
+            "-v",
+            f"{pixel_dir}:/dangerzone",
+            container_name,
+            "/usr/bin/python3",
+            "/usr/local/bin/dangerzone.py",
+            "document-to-pixels",
+        ]
+    )
     ret = exec_container(args, stdout_callback)
     if ret != 0:
         print("documents-to-pixels failed")
@@ -96,25 +100,24 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
         # TODO: validate convert to pixels output
 
         # Convert pixels to safe PDF
-        args = [
-            "run",
-            "--network",
-            "none",
-            "--platform",
-            "linux/amd64",
-            "-v",
-            f"{pixel_dir}:/dangerzone",
-            "-v",
-            f"{safe_dir}:/safezone",
-            "-e",
-            f"OCR={ocr}",
-            "-e",
-            f"OCR_LANGUAGE={ocr_lang}",
-            container_name,
-            "/usr/bin/python3",
-            "/usr/local/bin/dangerzone.py",
-            "pixels-to-pdf",
-        ]
+        args = (
+            ["run", "--network", "none"]
+            + platform_args
+            + [
+                "-v",
+                f"{pixel_dir}:/dangerzone",
+                "-v",
+                f"{safe_dir}:/safezone",
+                "-e",
+                f"OCR={ocr}",
+                "-e",
+                f"OCR_LANGUAGE={ocr_lang}",
+                container_name,
+                "/usr/bin/python3",
+                "/usr/local/bin/dangerzone.py",
+                "pixels-to-pdf",
+            ]
+        )
         ret = exec_container(args, stdout_callback)
         if ret != 0:
             print("pixels-to-pdf failed")

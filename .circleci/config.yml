@@ -28,7 +28,7 @@ aliases:
       ls -lh dist/dangerzone-*-1.noarch.rpm
 
   - &restore-cache
-    key: v1-{{ checksum "container/Dockerfile" }}-{{ checksum "container/dangerzone.py" }}-{{ checksum "container/document-to-pixels" }}-{{ checksum "container/pixels-to-pdf" }}
+    key: v1-{{ checksum "container/Dockerfile" }}-{{ checksum "container/dangerzone.py" }}
     paths:
       - /caches/container.tar.gz
       - /caches/image-id.txt
@@ -71,7 +71,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-{{ checksum "container/Dockerfile" }}-{{ checksum "container/dangerzone.py" }}-{{ checksum "container/document-to-pixels" }}-{{ checksum "container/pixels-to-pdf" }}
+            - v1-{{ checksum "container/Dockerfile" }}-{{ checksum "container/dangerzone.py" }}
       - setup_remote_docker
       - run:
           name: Build Dangerzone image
@@ -93,7 +93,7 @@ jobs:
               docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
             fi
       - save_cache:
-          key: v1-{{ checksum "container/Dockerfile" }}-{{ checksum "container/dangerzone.py" }}-{{ checksum "container/document-to-pixels" }}-{{ checksum "container/pixels-to-pdf" }}
+          key: v1-{{ checksum "container/Dockerfile" }}-{{ checksum "container/dangerzone.py" }}
           paths:
             - /caches/container.tar.gz
             - /caches/image-id.txt

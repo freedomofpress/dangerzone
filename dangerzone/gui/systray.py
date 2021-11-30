@@ -14,11 +14,6 @@ class SysTray(QtWidgets.QSystemTrayIcon):
 
         menu = QtWidgets.QMenu()
 
-        if platform.system() == "Darwin":
-            self.status_action = menu.addAction("...")
-            self.status_action.setEnabled(False)
-            menu.addSeparator()
-
         self.new_action = menu.addAction("New window")
         self.new_action.triggered.connect(self.new_window)
 

@@ -28,15 +28,15 @@ aliases:
       ls -lh dist/dangerzone-*-1.noarch.rpm
 
   - &restore-cache
-    key: v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
+    key: v1-{{ checksum "container/Dockerfile" }}-{{ checksum "container/dangerzone.py" }}-{{ checksum "container/document-to-pixels" }}-{{ checksum "container/pixels-to-pdf" }}
     paths:
-      - /caches/dangerzone-converter.tar.gz
+      - /caches/container.tar.gz
       - /caches/image-id.txt
 
   - &copy-image
     name: Copy container image into package
     command: |
-      cp /caches/dangerzone-converter.tar.gz share/
+      cp /caches/container.tar.gz share/
       cp /caches/image-id.txt share/
 
   - &deploy-packagecloud
@@ -71,31 +71,31 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
+            - v1-{{ checksum "container/Dockerfile" }}-{{ checksum "container/dangerzone.py" }}-{{ checksum "container/document-to-pixels" }}-{{ checksum "container/pixels-to-pdf" }}
       - setup_remote_docker
       - run:
           name: Build Dangerzone image
           command: |
-            if [ -f "/caches/dangerzone-converter.tar.gz" ]; then
+            if [ -f "/caches/container.tar.gz" ]; then
               echo "Already cached, skipping"
             else
-              docker build --cache-from=dangerzone.rocks/dangerzone --tag dangerzone.rocks/dangerzone dangerzone-converter
+              docker build --cache-from=dangerzone.rocks/dangerzone --platform linux/amd64 --tag dangerzone.rocks/dangerzone container
             fi
       - run:
           name: Save Dangerzone image and image-id.txt to cache
           command: |
-            if [ -f "/caches/dangerzone-converter.tar.gz" ]; then
+            if [ -f "/caches/container.tar.gz" ]; then
               echo "Already cached, skipping"
             else
               mkdir -p /caches
-              docker save -o /caches/dangerzone-converter.tar dangerzone.rocks/dangerzone
-              gzip -f /caches/dangerzone-converter.tar
+              docker save -o /caches/container.tar dangerzone.rocks/dangerzone
+              gzip -f /caches/container.tar
               docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
             fi
       - save_cache:
-          key: v1-{{ checksum "dangerzone-converter/Dockerfile" }}-{{ checksum "dangerzone-converter/dangerzone.py" }}-{{ checksum "dangerzone-converter/document-to-pixels" }}-{{ checksum "dangerzone-converter/pixels-to-pdf" }}
+          key: v1-{{ checksum "container/Dockerfile" }}-{{ checksum "container/dangerzone.py" }}-{{ checksum "container/document-to-pixels" }}-{{ checksum "container/pixels-to-pdf" }}
           paths:
-            - /caches/dangerzone-converter.tar.gz
+            - /caches/container.tar.gz
             - /caches/image-id.txt
 
   convert-test-docs:

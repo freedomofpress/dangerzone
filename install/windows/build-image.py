@@ -11,7 +11,8 @@ def main():
             "build",
             "container",
             "--platform",
-            "linux/amd64" "--tag",
+            "linux/amd64",
+            "--tag",
             "dangerzone.rocks/dangerzone",
         ]
     )

@@ -485,7 +485,7 @@ class GlobalCommon(object):
             print(f"Deleting old dangerzone container image")
 
             subprocess.check_output(
-                [self.get_container_runtime(), "rmi", found_image_id],
+                [self.get_container_runtime(), "rmi", "--force", found_image_id],
                 startupinfo=self.get_subprocess_startupinfo(),
             )
 

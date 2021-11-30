@@ -119,6 +119,7 @@ class WaitingWidget(QtWidgets.QWidget):
         self.label = QtWidgets.QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setTextFormat(QtCore.Qt.RichText)
+        self.label.setOpenExternalLinks(True)
         self.label.setStyleSheet("QLabel { font-size: 20px; }")
 
         # Buttons

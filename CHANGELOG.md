@@ -4,6 +4,7 @@
 
 - Removes the need for internet access by shipping the Dangerzone container image directly with the software
 - Friendly user experience with a progress bar
+- Support for Macs with M1 chips
 
 ## Dangerzone 0.2.1
 

@@ -12,7 +12,7 @@ Before making a release, all of these should be complete:
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
 - [ ] In `.circleci/config.yml`, add new platforms and remove obsolete platforms
 - [ ] Create a test build in Windows and make sure it works
-- [ ] Create a test build in mcaOS and make sure it works
+- [ ] Create a test build in macOS and make sure it works
 - [ ] There must be a PGP-signed git tag for the version, e.g. for dangerzone 0.1.0, the tag must be `v0.1.0`
 
 Before making a release, verify the release git tag:

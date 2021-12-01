@@ -58,6 +58,7 @@ aliases:
         # install packagecloud.io
         dnf module install -y ruby:2.7 # requires ruby 2.7
         dnf --allowerasing -y distro-sync
+        dnf install -y ruby-devel
         gem install package_cloud
 
         # deploy the package
@@ -149,22 +150,6 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
-  deploy-ubuntu-impish:
-    docker:
-      - image: ubuntu:21.10
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-      - run:
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/impish"
-          <<: *deploy-packagecloud
-
   build-ubuntu-hirsute:
     docker:
       - image: ubuntu:21.04
@@ -175,22 +160,6 @@ jobs:
       - restore_cache: *restore-cache
       - run: *copy-image
       - run: *build-deb
-
-  deploy-ubuntu-hirsute:
-    docker:
-      - image: ubuntu:21.04
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-      - run:
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/hirsute"
-          <<: *deploy-packagecloud
 
   build-ubuntu-groovy:
     docker:
@@ -203,22 +172,6 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
-  deploy-ubuntu-groovy:
-    docker:
-      - image: ubuntu:20.10
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-      - run:
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/groovy"
-          <<: *deploy-packagecloud
-
   build-debian-bookworm:
     docker:
       - image: debian:bookworm
@@ -229,22 +182,6 @@ jobs:
       - restore_cache: *restore-cache
       - run: *copy-image
       - run: *build-deb
-
-  deploy-debian-bookworm:
-    docker:
-      - image: debian:bookworm
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-      - run:
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "debian/bookworm"
-          <<: *deploy-packagecloud
 
   build-debian-bullseye:
     docker:
@@ -257,7 +194,66 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
-  deploy-debian-bullseye:
+  build-fedora-35:
+    docker:
+      - image: fedora:35
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
+
+  build-fedora-34:
+    docker:
+      - image: fedora:34
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
+
+  build-fedora-33:
+    docker:
+      - image: fedora:33
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
+
+  deploy-fedora:
+    docker:
+      - image: fedora:33
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
+      - run:
+          environment:
+            PACKAGE_TYPE: "rpm"
+            PACKAGECLOUD_DISTRO: "fedora/33"
+          <<: *deploy-packagecloud
+      - run:
+          environment:
+            PACKAGE_TYPE: "rpm"
+            PACKAGECLOUD_DISTRO: "fedora/34"
+          <<: *deploy-packagecloud
+      - run:
+          environment:
+            PACKAGE_TYPE: "rpm"
+            PACKAGECLOUD_DISTRO: "fedora/35"
+          <<: *deploy-packagecloud
+
+  deploy-debian:
     docker:
       - image: debian:bullseye
     resource_class: medium+
@@ -272,86 +268,36 @@ jobs:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "debian/bullseye"
           <<: *deploy-packagecloud
-
-  build-fedora-35:
-    docker:
-      - image: fedora:35
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-rpm
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-rpm
-
-  deploy-fedora-35:
-    docker:
-      - image: fedora:35
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-rpm
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-rpm
       - run:
           environment:
-            PACKAGE_TYPE: "rpm"
-            PACKAGECLOUD_DISTRO: "fedora/35"
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "debian/bookworm"
           <<: *deploy-packagecloud
 
-  build-fedora-34:
+  deploy-ubuntu:
     docker:
-      - image: fedora:34
+      - image: ubuntu:21.10
     resource_class: medium+
     steps:
-      - run: *install-dependencies-rpm
+      - run: *install-dependencies-deb
       - checkout
       - restore_cache: *restore-cache
       - run: *copy-image
-      - run: *build-rpm
-
-  deploy-fedora-34:
-    docker:
-      - image: fedora:34
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-rpm
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-rpm
+      - run: *build-deb
       - run:
           environment:
-            PACKAGE_TYPE: "rpm"
-            PACKAGECLOUD_DISTRO: "fedora/34"
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "ubuntu/impish"
           <<: *deploy-packagecloud
-
-  build-fedora-33:
-    docker:
-      - image: fedora:33
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-rpm
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-rpm
-
-  deploy-fedora-33:
-    docker:
-      - image: fedora:33
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-rpm
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-rpm
       - run:
           environment:
-            PACKAGE_TYPE: "rpm"
-            PACKAGECLOUD_DISTRO: "fedora/33"
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "ubuntu/hirsute"
+          <<: *deploy-packagecloud
+      - run:
+          environment:
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "ubuntu/groovy"
           <<: *deploy-packagecloud
 
 workflows:
@@ -396,7 +342,7 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - deploy-ubuntu-impish:
+      - deploy-ubuntu:
           requires:
             - build-container-image
           filters:
@@ -404,7 +350,7 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - deploy-ubuntu-hirsute:
+      - deploy-debian:
           requires:
             - build-container-image
           filters:
@@ -412,47 +358,7 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - deploy-ubuntu-groovy:
-          requires:
-            - build-container-image
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      - deploy-debian-bookworm:
-          requires:
-            - build-container-image
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      - deploy-debian-bullseye:
-          requires:
-            - build-container-image
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      - deploy-fedora-35:
-          requires:
-            - build-container-image
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      - deploy-fedora-34:
-          requires:
-            - build-container-image
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      - deploy-fedora-33:
+      - deploy-fedora:
           requires:
             - build-container-image
           filters:

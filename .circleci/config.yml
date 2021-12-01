@@ -287,7 +287,7 @@ jobs:
 
   deploy-ubuntu:
     docker:
-      - image: ubuntu:21.10
+      - image: ubuntu:21.04
     resource_class: medium+
     steps:
       - run: *install-dependencies-deb

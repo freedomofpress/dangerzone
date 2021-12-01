@@ -42,8 +42,9 @@ aliases:
     command: |
       VERSION=$(cat share/version.txt)
       echo "PACKAGE_TYPE is ${PACKAGE_TYPE}"
-      echo "PACKAGECLOUD_DISTO is ${PACKAGECLOUD_DISTO}"
+      echo "PACKAGECLOUD_DISTRO is ${PACKAGECLOUD_DISTRO}"
       echo "VERSION is ${VERSION}"
+      echo ""
       if [[ "${PACKAGE_TYPE}" == "deb" ]]; then
         # install packagecloud.io
         apt-get install -y ruby-dev rubygems
@@ -51,16 +52,16 @@ aliases:
         gem install -N package_cloud
 
         # deploy the package
-        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTO}" "deb_dist/dangerzone_${VERSION}-1_all.deb"
-        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTO}" "deb_dist/dangerzone_${VERSION}-1.dsc"
+        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "deb_dist/dangerzone_${VERSION}-1_all.deb"
+        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "deb_dist/dangerzone_${VERSION}-1.dsc"
       elif [[ "${PACKAGE_TYPE}" == "rpm" ]]; then
         # install packagecloud.
         dnf install -y ruby-devel
         gem install package_cloud
 
         # deploy the package
-        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTO}" "dist/dangerzone-${VERSION}-1.noarch.rpm"
-        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTO}" "dist/dangerzone-${VERSION}-1.src.rpm"
+        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "dist/dangerzone-${VERSION}-1.noarch.rpm"
+        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "dist/dangerzone-${VERSION}-1.src.rpm"
       fi
 
 jobs:

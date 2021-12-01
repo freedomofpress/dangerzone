@@ -38,31 +38,24 @@ aliases:
       cp /caches/image-id.txt share/
 
   - &deploy-packagecloud
-    name: Deploy to packagecloud.io
     command: |
       VERSION=$(cat share/version.txt)
       echo "PACKAGE_TYPE is ${PACKAGE_TYPE}"
       echo "PACKAGECLOUD_DISTRO is ${PACKAGECLOUD_DISTRO}"
       echo "VERSION is ${VERSION}"
       echo ""
-      if [[ "${PACKAGE_TYPE}" == "deb" ]]; then
-        # install packagecloud.io
-        apt-get install -y ruby-dev rubygems
-        gem install -N rake
-        gem install -N package_cloud
 
-        # deploy the package
+      if [[ "${PACKAGE_TYPE}" == "deb" ]]; then
+        echo "pushing: deb_dist/dangerzone_${VERSION}-1_all.deb"
         package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "deb_dist/dangerzone_${VERSION}-1_all.deb"
+        echo ""
+        echo "pushing: deb_dist/dangerzone_${VERSION}-1.dsc"
         package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "deb_dist/dangerzone_${VERSION}-1.dsc"
       elif [[ "${PACKAGE_TYPE}" == "rpm" ]]; then
-        # install packagecloud.io
-        dnf module install -y ruby:2.7 # requires ruby 2.7
-        dnf --allowerasing -y distro-sync
-        dnf install -y ruby-devel
-        gem install package_cloud
-
-        # deploy the package
+        echo "pushing: dist/dangerzone-${VERSION}-1.noarch.rpm"
         package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "dist/dangerzone-${VERSION}-1.noarch.rpm"
+        echo ""
+        echo "pushing: dist/dangerzone-${VERSION}-1.src.rpm"
         package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "dist/dangerzone-${VERSION}-1.src.rpm"
       fi
 
@@ -238,16 +231,26 @@ jobs:
       - run: *copy-image
       - run: *build-rpm
       - run:
+          name: Install packagecloud.io
+          command: |
+            dnf module install -y ruby:2.7 # requires ruby 2.7
+            dnf --allowerasing -y distro-sync
+            dnf install -y ruby-devel
+            gem install package_cloud
+      - run:
+          name: Deploy fedora/33
           environment:
             PACKAGE_TYPE: "rpm"
             PACKAGECLOUD_DISTRO: "fedora/33"
           <<: *deploy-packagecloud
       - run:
+          name: Deploy fedora/34
           environment:
             PACKAGE_TYPE: "rpm"
             PACKAGECLOUD_DISTRO: "fedora/34"
           <<: *deploy-packagecloud
       - run:
+          name: Deploy fedora/35
           environment:
             PACKAGE_TYPE: "rpm"
             PACKAGECLOUD_DISTRO: "fedora/35"
@@ -264,11 +267,19 @@ jobs:
       - run: *copy-image
       - run: *build-deb
       - run:
+          name: Install packagecloud.io
+          command: |
+            apt-get install -y ruby-dev rubygems
+            gem install -N rake
+            gem install -N package_cloud
+      - run:
+          name: Deploy debian/bullseye
           environment:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "debian/bullseye"
           <<: *deploy-packagecloud
       - run:
+          name: Deploy debian/bookworm
           environment:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "debian/bookworm"
@@ -285,16 +296,25 @@ jobs:
       - run: *copy-image
       - run: *build-deb
       - run:
+          name: Install packagecloud.io
+          command: |
+            apt-get install -y ruby-dev rubygems
+            gem install -N rake
+            gem install -N package_cloud
+      - run:
+          name: Deploy ubuntu/impish
           environment:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "ubuntu/impish"
           <<: *deploy-packagecloud
       - run:
+          name: Deploy ubuntu/hirsute
           environment:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "ubuntu/hirsute"
           <<: *deploy-packagecloud
       - run:
+          name: Deploy ubuntu/groovy
           environment:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "ubuntu/groovy"

@@ -55,8 +55,9 @@ aliases:
         package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "deb_dist/dangerzone_${VERSION}-1_all.deb"
         package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "deb_dist/dangerzone_${VERSION}-1.dsc"
       elif [[ "${PACKAGE_TYPE}" == "rpm" ]]; then
-        # install packagecloud.
-        dnf install -y ruby-devel
+        # install packagecloud.io
+        dnf module install -y ruby:2.7 # requires ruby 2.7
+        dnf --allowerasing -y distro-sync
         gem install package_cloud
 
         # deploy the package

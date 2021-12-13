@@ -482,11 +482,14 @@ class GlobalCommon(object):
         elif found_image_id == "":
             pass
         else:
-            print(f"Deleting old dangerzone container image")
+            print("Deleting old dangerzone container image")
 
-            subprocess.check_output(
-                [self.get_container_runtime(), "rmi", "--force", found_image_id],
-                startupinfo=self.get_subprocess_startupinfo(),
-            )
+            try:
+                subprocess.check_output(
+                    [self.get_container_runtime(), "rmi", "--force", found_image_id],
+                    startupinfo=self.get_subprocess_startupinfo(),
+                )
+            except:
+                print("Couldn't delete old container image, so leaving it there")
 
         return installed

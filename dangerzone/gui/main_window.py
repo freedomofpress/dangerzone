@@ -496,9 +496,12 @@ class ConvertThread(QtCore.QThread):
         self.error = False
 
     def run(self):
-        ocr_lang = self.global_common.ocr_languages[
-            self.global_common.settings.get("ocr_language")
-        ]
+        if self.global_common.settings.get("ocr"):
+            ocr_lang = self.global_common.ocr_languages[
+                self.global_common.settings.get("ocr_language")
+            ]
+        else:
+            ocr_lang = None
 
         if convert(
             self.common.input_filename,

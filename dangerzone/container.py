@@ -129,7 +129,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
             container_output_filename = os.path.join(
                 safe_dir, "safe-output-compressed.pdf"
             )
-            os.rename(container_output_filename, output_filename)
+            shutil.move(container_output_filename, output_filename)
 
             # We did it
             success = True

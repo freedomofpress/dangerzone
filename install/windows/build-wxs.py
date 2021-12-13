@@ -112,8 +112,8 @@ def build_components_xml(root, data):
 def main():
     version_filename = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        "build",
-        "exe.win32-3.9",
+        "share",
+        "version.txt",
     )
     with open(version_filename) as f:
         version = f.read().strip()

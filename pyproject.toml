@@ -13,17 +13,18 @@ requests = "*"
 macholib = "*"
 termcolor = "*"
 PySide2 = "5.15.2"
+colorama = "*"
+psutil = "*"
+cx_freeze = {version = "*", platform = "win32"}
 pywin32 = {version = "*", platform = "win32"}
 wmi = {version = "*", platform = "win32"}
 pyxdg = {version = "*", platform = "linux"}
+pyinstaller = {version = "*", platform = "darwin"}
 strip-ansi = {version = "*", platform = "darwin"}
-colorama = "^0.4.4"
-psutil = "^5.8.0"
 
 [tool.poetry.dev-dependencies]
-pyinstaller = "*"
 setuptools = {version = "*", platform = "win32"}
-black = "^21.5b2"
+black = "*"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

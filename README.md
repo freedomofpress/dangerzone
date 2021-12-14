@@ -11,8 +11,8 @@ _Read more about Dangerzone in the blog post [Dangerzone: Working With Suspiciou
 
 ## Getting started
 
-- Download [Dangerzone 0.3 for Mac](https://github.com/firstlookmedia/dangerzone/releases/download/v0.3/Dangerzone-0.3.dmg)
-- Download [Dangerzone 0.3 for Windows](https://github.com/firstlookmedia/dangerzone/releases/download/v0.3/Dangerzone-0.3.msi)
+- Download [Dangerzone 0.3.1 for Mac](https://github.com/firstlookmedia/dangerzone/releases/download/v0.3.1/Dangerzone-0.3.1.dmg)
+- Download [Dangerzone 0.3.1 for Windows](https://github.com/firstlookmedia/dangerzone/releases/download/v0.3.1/Dangerzone-0.3.1.msi)
 - See [installing Dangerzone](https://github.com/firstlookmedia/dangerzone/wiki/Installing-Dangerzone) on the wiki for Linux repositories
 
 You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`

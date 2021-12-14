@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "dangerzone"
-version = "0.3"
-description = "Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF"
+version = "0.3.1"
+description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
 authors = ["Micah Lee <micah.lee@theintercept.com>"]
 license = "MIT"
 

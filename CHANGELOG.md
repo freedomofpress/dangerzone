@@ -1,5 +1,12 @@
 # Change Log
 
+## Dangerzone 0.3.1
+
+- Bug fix: Allow converting documents on different mounted filesystems than the container volume
+- Bug fix: In GUI mode, don't always OCR document
+- Bug fix: In macOS, fix "open with" Dangerzone so documents are automatically selected
+- Windows: Change packaging to avoid anti-virus false positives
+
 ## Dangerzone 0.3
 
 - Removes the need for internet access by shipping the Dangerzone container image directly with the software

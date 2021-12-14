@@ -19,7 +19,7 @@ setup(
         }
     },
     executables=[
-        Executable("install/windows/dangerzone.py", base="Win32GUI"),
-        Executable("install/windows/dangerzone-cli.py", base=None),
+        Executable("install/windows/dangerzone.py", base="Win32GUI", icon="share/dangerzone.ico"),
+        Executable("install/windows/dangerzone-cli.py", base=None, icon="share/dangerzone.ico"),
     ],
 )

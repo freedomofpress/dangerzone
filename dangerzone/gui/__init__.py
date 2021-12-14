@@ -30,7 +30,7 @@ class ApplicationWrapper(QtCore.QObject):
             # In macOS, handle the file open event
             if event.type() == QtCore.QEvent.FileOpen:
                 # Skip file open events in dev mode
-                if not sys.dangerzone_dev:
+                if not hasattr(sys, "dangerzone_dev"):
                     self.document_selected.emit(event.file())
                     return True
             elif event.type() == QtCore.QEvent.ApplicationActivate:

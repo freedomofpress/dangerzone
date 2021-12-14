@@ -1,0 +1,3 @@
+import dangerzone
+
+dangerzone.main()

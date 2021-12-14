@@ -22,11 +22,16 @@ def build_data(dirname, dir_prefix, id_, name):
             else:
                 id_prefix = id_
 
+            # Skip lib/Pyside2/Examples folder
+            if "\\build\\exe.win32-3.9\\lib\\PySide2\\examples" in dirname:
+                continue
+
+            id_value = f"{id_prefix}{basename.capitalize().replace('-', '_')}"
             data["dirs"].append(
                 build_data(
                     os.path.join(dirname, basename),
                     os.path.join(dir_prefix, basename),
-                    f"{id_prefix}{basename.capitalize()}",
+                    id_value,
                     basename,
                 )
             )
@@ -115,13 +120,11 @@ def main():
 
     dist_dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        "dist",
-        "dangerzone",
+        "build",
+        "exe.win32-3.9",
     )
     if not os.path.exists(dist_dir):
-        print(
-            "You must run step1-build-exe.bat to build dangerzone binary before running this"
-        )
+        print("You must build the dangerzone binary before running this")
         return
 
     data = {
@@ -142,7 +145,7 @@ def main():
     data["dirs"][0]["dirs"].append(
         build_data(
             dist_dir,
-            os.path.join("..", "..", "dist", "dangerzone"),
+            "exe.win32-3.9",
             "INSTALLDIR",
             "Dangerzone",
         )
@@ -174,14 +177,14 @@ def main():
     )
     ET.SubElement(product_el, "Media", Id="1", Cabinet="product.cab", EmbedCab="yes")
     ET.SubElement(
-        product_el, "Icon", Id="ProductIcon", SourceFile="..\\..\\share\\dangerzone.ico"
+        product_el, "Icon", Id="ProductIcon", SourceFile="..\\share\\dangerzone.ico"
     )
     ET.SubElement(product_el, "Property", Id="ARPPRODUCTICON", Value="ProductIcon")
     ET.SubElement(
         product_el,
         "Property",
         Id="ARPHELPLINK",
-        Value="https://github.com/firstlookmedia/dangerzone",
+        Value="https://dangerzone.rocks",
     )
     ET.SubElement(
         product_el,
@@ -195,13 +198,13 @@ def main():
         product_el,
         "WixVariable",
         Id="WixUILicenseRtf",
-        Value="..\\..\\install\\windows\\license.rtf",
+        Value="..\\install\\windows\\license.rtf",
     )
     ET.SubElement(
         product_el,
         "WixVariable",
         Id="WixUIDialogBmp",
-        Value="..\\..\\install\\windows\\dialog.bmp",
+        Value="..\\install\\windows\\dialog.bmp",
     )
     ET.SubElement(
         product_el,

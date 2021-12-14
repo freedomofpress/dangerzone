@@ -21,7 +21,7 @@ setuptools.setup(
     author="Micah Lee",
     author_email="micah.lee@theintercept.com",
     license="MIT",
-    description="Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF",
+    description="Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs",
     url="https://github.com/firstlookmedia/dangerzone",
     packages=["dangerzone", "dangerzone.gui"],
     data_files=[

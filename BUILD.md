@@ -137,15 +137,6 @@ After that you can launch dangerzone during development with:
 .\dev_scripts\dangerzone-cli.bat --help
 ```
 
-### If you want to build a .exe
-
-Download and install the [Windows 10 SDK](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk/).
-
-Add the following directories to the path:
-
-* `C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86`
-* `C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\x86`
-
 ### If you want to build the installer
 
 * Go to https://dotnet.microsoft.com/download/dotnet-framework and download and install .NET Framework 3.5 SP1 Runtime. I downloaded `dotnetfx35.exe`.
@@ -161,21 +152,14 @@ You'll need a code signing certificate.
 Open a command prompt, cd into the dangerzone directory, and run:
 
 ```
-poetry run pyinstaller install\pyinstaller\pyinstaller.spec
+poetry run python .\setup-windows.py build
 ```
 
-`dangerzone.exe` and all of their supporting files will get created inside the `dist` folder.
-
-You then must create a symbolic link for dangerzone to run. To do this, open a command prompt _as an administrator_, cd to the dangerzone folder, and run:
-
-```
-cd dist\dangerzone
-mklink dangerzone-container.exe dangerzone.exe
-```
+In `build\exe.win32-3.9\` you will find `dangerzone.exe`, `dangerzone-cli.exe`, and all supporting files.
 
 ### To build the installer
 
-Note that you must have a codesigning certificate installed in order to use the `install\windows\build-app.bat` script, because it codesigns `dangerzone.exe` and `Dangerzone.msi`.
+Note that you must have a codesigning certificate installed in order to use the `install\windows\build-app.bat` script, because it codesigns `dangerzone.exe`, `dangerzone-cli.exe` and `Dangerzone.msi`.
 
 ```
 poetry run .\install\windows\build-app.bat

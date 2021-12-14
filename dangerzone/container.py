@@ -135,7 +135,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
             success = True
 
     # Clean up
-    shutil.rmtree(tmpdir.name)
+    tmpdir.cleanup()
 
     return success
 

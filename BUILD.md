@@ -56,7 +56,7 @@ Create a .rpm:
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Make sure to choose your correct CPU, either Intel Chip or Apple Chip.
 
-Install the latest version of Python 3.9 [from python.org](https://www.python.org/downloads/macos/), and make sure `/Library/Frameworks/Python.framework/Versions/3.9/bin` is in your `PATH`.
+Install the latest version of Python 3.10 [from python.org](https://www.python.org/downloads/macos/), and make sure `/Library/Frameworks/Python.framework/Versions/3.10/bin` is in your `PATH`.
 
 Install Python dependencies:
 
@@ -108,7 +108,7 @@ The output is in the `dist` folder.
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
-Install the latest version of Python 3.9 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
+Install the latest version of Python 3.10 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.10 to PATH" checkbox on the first page of the installer.
 
 Install [poetry](https://python-poetry.org/):
 
@@ -153,7 +153,7 @@ Open a command prompt, cd into the dangerzone directory, and run:
 poetry run python .\setup-windows.py build
 ```
 
-In `build\exe.win32-3.9\` you will find `dangerzone.exe`, `dangerzone-cli.exe`, and all supporting files.
+In `build\exe.win32-3.10\` you will find `dangerzone.exe`, `dangerzone-cli.exe`, and all supporting files.
 
 ### To build the installer
 

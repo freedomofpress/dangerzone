@@ -6,10 +6,10 @@ authors = ["Micah Lee <micah.lee@theintercept.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.10"
+python = ">=3.7,<3.11"
 click = "*"
 appdirs = "*"
-PySide2 = "5.15.2"
+PySide2 = "5.15.2.1"
 colorama = "*"
 cx_freeze = {version = "*", platform = "win32"}
 pywin32 = {version = "*", platform = "win32"}

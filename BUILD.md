@@ -58,7 +58,7 @@ Install Xcode from the App Store.
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Make sure to choose your correct CPU, either Intel Chip or Apple Chip.
 
-Install Python 3.9.9 [from python.org](https://www.python.org/downloads/release/python-399/).
+Install Python 3.10.4 [from python.org](https://www.python.org/downloads/release/python-3104/).
 
 Install Python dependencies:
 
@@ -110,7 +110,7 @@ The output is in the `dist` folder.
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
-Install Python 3.9.9 (x86) [from python.org](https://www.python.org/downloads/release/python-399/). When installing it, make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
+Install Python 3.10.4 (x86) [from python.org](https://www.python.org/downloads/release/python-3104/). When installing it, make sure to check the "Add Python 3.10 to PATH" checkbox on the first page of the installer.
 
 Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
 
@@ -155,7 +155,7 @@ Open a command prompt, cd into the dangerzone directory, and run:
 poetry run python .\setup-windows.py build
 ```
 
-In `build\exe.win32-3.9\` you will find `dangerzone.exe`, `dangerzone-cli.exe`, and all supporting files.
+In `build\exe.win32-3.10\` you will find `dangerzone.exe`, `dangerzone-cli.exe`, and all supporting files.
 
 ### To build the installer
 

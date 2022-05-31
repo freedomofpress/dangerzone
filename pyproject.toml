@@ -12,7 +12,7 @@ appdirs = "*"
 requests = "*"
 macholib = "*"
 termcolor = "*"
-PySide2 = "5.15.2.1"
+PySide6 = "6.2.*" # 6.2 is LTS
 colorama = "*"
 psutil = "*"
 cx_freeze = {version = "*", platform = "win32"}

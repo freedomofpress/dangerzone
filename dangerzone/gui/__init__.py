@@ -4,7 +4,7 @@ import signal
 import platform
 import click
 import uuid
-from PySide2 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 from .common import GuiCommon
 from .main_window import MainWindow
@@ -46,9 +46,6 @@ class ApplicationWrapper(QtCore.QObject):
 @click.argument("filename", required=False)
 def gui_main(filename):
     if platform.system() == "Darwin":
-        # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
-        os.environ["QT_MAC_WANTS_LAYER"] = "1"
-
         # Make sure /usr/local/bin is in the path
         os.environ["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
 

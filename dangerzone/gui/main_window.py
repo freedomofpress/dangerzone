@@ -4,7 +4,7 @@ import tempfile
 import subprocess
 import json
 import shutil
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 from colorama import Style, Fore
 
 from ..common import Common

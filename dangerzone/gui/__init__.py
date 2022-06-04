@@ -79,7 +79,8 @@ def gui_main(filename):
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # Create the system tray
-    SysTray(global_common, gui_common, app)
+    # noinspection PyUnusedLocal
+    systray = SysTray(global_common, gui_common, app)
 
     closed_windows = {}
     windows = {}

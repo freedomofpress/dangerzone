@@ -2,9 +2,13 @@ import os
 import sys
 import signal
 import platform
+from typing import Optional
+
 import click
 import uuid
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore
+from PySide6.QtCore import QEvent
+from PySide6.QtWidgets import QApplication
 
 from .common import GuiCommon
 from .main_window import MainWindow
@@ -12,21 +16,17 @@ from .systray import SysTray
 from ..global_common import GlobalCommon
 
 
-# For some reason, Dangerzone segfaults if I inherit from QApplication directly, so instead
-# this is a class whose job is to hold a QApplication object and customize it
-class ApplicationWrapper(QtCore.QObject):
+class Application(QApplication):
     document_selected = QtCore.Signal(str)
     new_window = QtCore.Signal()
     application_activated = QtCore.Signal()
 
     def __init__(self):
-        super(ApplicationWrapper, self).__init__()
-        self.app = QtWidgets.QApplication()
-        self.app.setQuitOnLastWindowClosed(False)
+        super(Application, self).__init__()
+        self.setQuitOnLastWindowClosed(False)
+        self.original_event = self.event
 
-        self.original_event = self.app.event
-
-        def monkeypatch_event(event):
+        def monkeypatch_event(event: QEvent):
             # In macOS, handle the file open event
             if event.type() == QtCore.QEvent.FileOpen:
                 # Skip file open events in dev mode
@@ -36,10 +36,9 @@ class ApplicationWrapper(QtCore.QObject):
             elif event.type() == QtCore.QEvent.ApplicationActivate:
                 self.application_activated.emit()
                 return True
-
             return self.original_event(event)
 
-        self.app.event = monkeypatch_event
+        self.event = monkeypatch_event
 
 
 @click.command()
@@ -70,8 +69,7 @@ def gui_main(filename):
         sys.stderr = StdoutFilter(sys.stderr)
 
     # Create the Qt app
-    app_wrapper = ApplicationWrapper()
-    app = app_wrapper.app
+    app = Application()
 
     # Common objects
     global_common = GlobalCommon()
@@ -81,7 +79,7 @@ def gui_main(filename):
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # Create the system tray
-    systray = SysTray(global_common, gui_common, app, app_wrapper)
+    SysTray(global_common, gui_common, app)
 
     closed_windows = {}
     windows = {}
@@ -91,10 +89,10 @@ def gui_main(filename):
         del windows[window_id]
 
     # Open a document in a window
-    def select_document(filename=None):
+    def select_document(path: Optional[str] = None):
         if (
             len(windows) == 1
-            and windows[list(windows.keys())[0]].common.input_filename == None
+            and windows[list(windows.keys())[0]].common.input_filename is None
         ):
             window = windows[list(windows.keys())[0]]
         else:
@@ -103,18 +101,18 @@ def gui_main(filename):
             window.delete_window.connect(delete_window)
             windows[window_id] = window
 
-        if filename:
-            # Validate filename
-            filename = os.path.abspath(os.path.expanduser(filename))
+        if path is not None:
+            # Validate path
+            path = os.path.abspath(os.path.expanduser(path))
             try:
-                open(filename, "rb")
+                open(path, "rb")
             except FileNotFoundError:
                 click.echo("File not found")
                 return False
             except PermissionError:
                 click.echo("Permission denied")
                 return False
-            window.common.input_filename = filename
+            window.common.input_filename = path
             window.content_widget.doc_selection_widget.document_selected.emit()
 
         return True
@@ -133,11 +131,11 @@ def gui_main(filename):
             select_document()
 
     # If we get a file open event, open it
-    app_wrapper.document_selected.connect(select_document)
-    app_wrapper.new_window.connect(select_document)
+    app.document_selected.connect(select_document)
+    app.new_window.connect(select_document)
 
     # If the application is activated and all windows are closed, open a new one
-    app_wrapper.application_activated.connect(application_activated)
+    app.application_activated.connect(application_activated)
 
     # Launch the GUI
     ret = app.exec_()

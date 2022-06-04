@@ -1,14 +1,17 @@
-import platform
 from PySide6 import QtWidgets
+
+from dangerzone.global_common import GlobalCommon
+from dangerzone.gui import Application, GuiCommon
 
 
 class SysTray(QtWidgets.QSystemTrayIcon):
-    def __init__(self, global_common, gui_common, app, app_wrapper):
+    def __init__(
+        self, global_common: GlobalCommon, gui_common: GuiCommon, app: Application
+    ):
         super(SysTray, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
         self.app = app
-        self.app_wrapper = app_wrapper
 
         self.setIcon(self.gui_common.get_window_icon())
 
@@ -24,7 +27,7 @@ class SysTray(QtWidgets.QSystemTrayIcon):
         self.show()
 
     def new_window(self):
-        self.app_wrapper.new_window.emit()
+        self.app.new_window.emit()
 
     def quit_clicked(self):
         self.app.quit()

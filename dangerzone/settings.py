@@ -1,12 +1,12 @@
 import os
 import json
-import appdirs
+
+from dangerzone import APPDATA_PATH
 
 
 class Settings:
-    def __init__(self, common):
-        self.common = common
-        self.settings_filename = os.path.join(self.common.appdata_path, "settings.json")
+    def __init__(self):
+        self.settings_filename = os.path.join(APPDATA_PATH, "settings.json")
         self.default_settings = {
             "save": True,
             "ocr": True,
@@ -47,6 +47,6 @@ class Settings:
         self.save()
 
     def save(self):
-        os.makedirs(self.common.appdata_path, exist_ok=True)
+        os.makedirs(APPDATA_PATH, exist_ok=True)
         with open(self.settings_filename, "w") as settings_file:
             json.dump(self.settings, settings_file, indent=4)

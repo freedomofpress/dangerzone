@@ -17,8 +17,6 @@ elif platform.system() == "Linux":
     import getpass
     from xdg.DesktopEntry import DesktopEntry  # type: ignore
 
-from ..settings import Settings
-
 
 class GuiCommon(object):
     """
@@ -41,11 +39,12 @@ class GuiCommon(object):
         # Are we done waiting (for Docker Desktop to be installed, or for container to install)
         self.is_waiting_finished = False
 
-    def get_window_icon(self):
+    @staticmethod
+    def get_window_icon():
         if platform.system() == "Windows":
-            path = self.global_common.get_resource_path("dangerzone.ico")
+            path = GlobalCommon.get_resource_path("dangerzone.ico")
         else:
-            path = self.global_common.get_resource_path("icon.png")
+            path = GlobalCommon.get_resource_path("icon.png")
         return QtGui.QIcon(path)
 
     def open_pdf_viewer(self, filename: str):
@@ -111,7 +110,12 @@ class GuiCommon(object):
 
 class Alert(QtWidgets.QDialog):
     def __init__(
-        self, gui_common, global_common, message, ok_text="Ok", extra_button_text=None
+        self,
+        gui_common: GuiCommon,
+        global_common: GlobalCommon,
+        message: str,
+        ok_text="Ok",
+        extra_button_text=None,
     ):
         super(Alert, self).__init__()
         self.global_common = global_common
@@ -121,8 +125,8 @@ class Alert(QtWidgets.QDialog):
         self.setWindowIcon(self.gui_common.get_window_icon())
         self.setModal(True)
 
-        flags = (
-            QtCore.Qt.CustomizeWindowHint
+        flags = (  # TODO Mypy: unsupported left operand type for | ("WindowType")
+            QtCore.Qt.CustomizeWindowHint  # type: ignore
             | QtCore.Qt.WindowTitleHint
             | QtCore.Qt.WindowSystemMenuHint
             | QtCore.Qt.WindowCloseButtonHint

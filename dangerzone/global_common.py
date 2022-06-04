@@ -1,17 +1,15 @@
 import sys
 import os
 import inspect
-import appdirs
 import platform
 import subprocess
 import shutil
-import json
 import gzip
 import colorama
 from colorama import Fore, Back, Style
 
+from . import CONTAINER_NAME
 from .settings import Settings
-from .container import convert
 
 
 class GlobalCommon(object):
@@ -31,12 +29,6 @@ class GlobalCommon(object):
 
         # Initialize terminal colors
         colorama.init(autoreset=True)
-
-        # App data folder
-        self.appdata_path = appdirs.user_config_dir("dangerzone")
-
-        # Container
-        self.container_name = "dangerzone.rocks/dangerzone"
 
         # Languages supported by tesseract
         self.ocr_languages = {
@@ -203,7 +195,7 @@ class GlobalCommon(object):
         }
 
         # Load settings
-        self.settings = Settings(self)
+        self.settings = Settings()
 
     def display_banner(self):
         """
@@ -380,13 +372,15 @@ class GlobalCommon(object):
         )
         print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
 
-    def get_container_runtime(self):
+    @staticmethod
+    def get_container_runtime():
         if platform.system() == "Linux":
             return shutil.which("podman")
         else:
             return shutil.which("docker")
 
-    def get_resource_path(self, filename):
+    @staticmethod
+    def get_resource_path(filename):
         if getattr(sys, "dangerzone_dev", False):
             # Look for resources directory relative to python file
             prefix = os.path.join(
@@ -411,7 +405,8 @@ class GlobalCommon(object):
         resource_path = os.path.join(prefix, filename)
         return resource_path
 
-    def get_subprocess_startupinfo(self):
+    @staticmethod
+    def get_subprocess_startupinfo():
         if platform.system() == "Windows":
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -419,24 +414,25 @@ class GlobalCommon(object):
         else:
             return None
 
-    def install_container(self):
+    @staticmethod
+    def install_container():
         """
         Make sure the podman container is installed. Linux only.
         """
-        if self.is_container_installed():
+        if GlobalCommon.is_container_installed():
             return
 
         # Load the container into podman
         print("Installing Dangerzone container image...")
 
         p = subprocess.Popen(
-            [self.get_container_runtime(), "load"],
+            [GlobalCommon.get_container_runtime(), "load"],
             stdin=subprocess.PIPE,
-            startupinfo=self.get_subprocess_startupinfo(),
+            startupinfo=GlobalCommon.get_subprocess_startupinfo(),
         )
 
         chunk_size = 10240
-        compressed_container_path = self.get_resource_path("container.tar.gz")
+        compressed_container_path = GlobalCommon.get_resource_path("container.tar.gz")
         with gzip.open(compressed_container_path) as f:
             while True:
                 chunk = f.read(chunk_size)
@@ -446,34 +442,35 @@ class GlobalCommon(object):
                     break
         p.communicate()
 
-        if not self.is_container_installed():
+        if not GlobalCommon.is_container_installed():
             print("Failed to install the container image")
             return False
 
         print("Container image installed")
         return True
 
-    def is_container_installed(self):
+    @staticmethod
+    def is_container_installed():
         """
         See if the podman container is installed. Linux only.
         """
         # Get the image id
-        with open(self.get_resource_path("image-id.txt")) as f:
+        with open(GlobalCommon.get_resource_path("image-id.txt")) as f:
             expected_image_id = f.read().strip()
 
         # See if this image is already installed
         installed = False
         found_image_id = subprocess.check_output(
             [
-                self.get_container_runtime(),
+                GlobalCommon.get_container_runtime(),
                 "image",
                 "list",
                 "--format",
                 "{{.ID}}",
-                self.container_name,
+                CONTAINER_NAME,
             ],
             text=True,
-            startupinfo=self.get_subprocess_startupinfo(),
+            startupinfo=GlobalCommon.get_subprocess_startupinfo(),
         )
         found_image_id = found_image_id.strip()
 
@@ -486,8 +483,8 @@ class GlobalCommon(object):
 
             try:
                 subprocess.check_output(
-                    [self.get_container_runtime(), "rmi", "--force", found_image_id],
-                    startupinfo=self.get_subprocess_startupinfo(),
+                    [GlobalCommon.get_container_runtime(), "rmi", "--force", found_image_id],
+                    startupinfo=GlobalCommon.get_subprocess_startupinfo(),
                 )
             except:
                 print("Couldn't delete old container image, so leaving it there")

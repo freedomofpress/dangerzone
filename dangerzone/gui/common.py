@@ -79,6 +79,7 @@ class GuiCommon(object):
 
     @staticmethod
     def _find_pdf_viewers():
+        """Dict of PDF viewers installed on the machine, empty if system is not Linux."""
         pdf_viewers = {}
         if platform.system() == "Linux":
             # Find all .desktop files
@@ -111,18 +112,13 @@ class GuiCommon(object):
 class Alert(QtWidgets.QDialog):
     def __init__(
         self,
-        gui_common: GuiCommon,
-        global_common: GlobalCommon,
         message: str,
         ok_text="Ok",
         extra_button_text=None,
     ):
         super(Alert, self).__init__()
-        self.global_common = global_common
-        self.gui_common = gui_common
-
         self.setWindowTitle("dangerzone")
-        self.setWindowIcon(self.gui_common.get_window_icon())
+        self.setWindowIcon(GuiCommon.get_window_icon())
         self.setModal(True)
 
         flags = (  # TODO Mypy: unsupported left operand type for | ("WindowType")
@@ -137,7 +133,7 @@ class Alert(QtWidgets.QDialog):
         logo = QtWidgets.QLabel()
         logo.setPixmap(
             QtGui.QPixmap.fromImage(
-                QtGui.QImage(self.global_common.get_resource_path("icon.png"))
+                QtGui.QImage(GlobalCommon.get_resource_path("icon.png"))
             )
         )
 

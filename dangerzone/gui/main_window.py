@@ -7,14 +7,16 @@ import shutil
 from PySide6 import QtCore, QtGui, QtWidgets
 from colorama import Style, Fore
 
+from . import GuiCommon
 from ..common import Common
 from ..container import convert
+from ..global_common import GlobalCommon
 
 
 class MainWindow(QtWidgets.QMainWindow):
     delete_window = QtCore.Signal(str)
 
-    def __init__(self, global_common, gui_common, window_id):
+    def __init__(self, global_common: GlobalCommon, gui_common: GuiCommon, window_id: str):
         super(MainWindow, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
@@ -90,7 +92,7 @@ class MainWindow(QtWidgets.QMainWindow):
 class InstallContainerThread(QtCore.QThread):
     finished = QtCore.Signal()
 
-    def __init__(self, global_common):
+    def __init__(self, global_common: GlobalCommon):
         super(InstallContainerThread, self).__init__()
         self.global_common = global_common
 
@@ -111,7 +113,7 @@ class WaitingWidget(QtWidgets.QWidget):
     # - "install_container"
     finished = QtCore.Signal()
 
-    def __init__(self, global_common, gui_common):
+    def __init__(self, global_common: GlobalCommon, gui_common: GuiCommon):
         super(WaitingWidget, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
@@ -145,7 +147,7 @@ class WaitingWidget(QtWidgets.QWidget):
         self.check_state()
 
     def check_state(self):
-        state = None
+        state: str
 
         # Can we find the container runtime binary binary
         if platform.system() == "Linux":
@@ -200,7 +202,7 @@ class WaitingWidget(QtWidgets.QWidget):
 class ContentWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
-    def __init__(self, global_common, gui_common, common):
+    def __init__(self, global_common: GlobalCommon, gui_common: GuiCommon, common: Common):
         super(ContentWidget, self).__init__()
 
         self.global_common = global_common
@@ -255,7 +257,7 @@ class ContentWidget(QtWidgets.QWidget):
 class DocSelectionWidget(QtWidgets.QWidget):
     document_selected = QtCore.Signal()
 
-    def __init__(self, common):
+    def __init__(self, common: Common):
         super(DocSelectionWidget, self).__init__()
         self.common = common
 
@@ -298,7 +300,7 @@ class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.Signal()
     close_window = QtCore.Signal()
 
-    def __init__(self, global_common, gui_common, common):
+    def __init__(self, global_common: GlobalCommon, gui_common: GuiCommon, common: Common):
         super(SettingsWidget, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
@@ -489,7 +491,7 @@ class ConvertThread(QtCore.QThread):
     is_finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
-    def __init__(self, global_common, common):
+    def __init__(self, global_common: GlobalCommon, common: Common):
         super(ConvertThread, self).__init__()
         self.global_common = global_common
         self.common = common
@@ -536,7 +538,7 @@ class ConvertThread(QtCore.QThread):
 class ConvertWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
-    def __init__(self, global_common, gui_common, common):
+    def __init__(self, global_common: GlobalCommon, gui_common: GuiCommon, common: Common):
         super(ConvertWidget, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common

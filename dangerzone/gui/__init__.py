@@ -6,39 +6,12 @@ from typing import Optional
 
 import click
 import uuid
-from PySide6 import QtCore
-from PySide6.QtCore import QEvent
-from PySide6.QtWidgets import QApplication
 
+from .application import Application
 from .common import GuiCommon
 from .main_window import MainWindow
 from .systray import SysTray
 from ..global_common import GlobalCommon
-
-
-class Application(QApplication):
-    document_selected = QtCore.Signal(str)
-    new_window = QtCore.Signal()
-    application_activated = QtCore.Signal()
-
-    def __init__(self):
-        super(Application, self).__init__()
-        self.setQuitOnLastWindowClosed(False)
-        self.original_event = self.event
-
-        def monkeypatch_event(event: QEvent):
-            # In macOS, handle the file open event
-            if event.type() == QtCore.QEvent.FileOpen:
-                # Skip file open events in dev mode
-                if not hasattr(sys, "dangerzone_dev"):
-                    self.document_selected.emit(event.file())
-                    return True
-            elif event.type() == QtCore.QEvent.ApplicationActivate:
-                self.application_activated.emit()
-                return True
-            return self.original_event(event)
-
-        self.event = monkeypatch_event
 
 
 @click.command()
@@ -50,7 +23,7 @@ def gui_main(filename):
 
         # Strip ANSI colors from stdout output, to prevent terminal colors from breaking
         # the macOS GUI app
-        from strip_ansi import strip_ansi
+        from strip_ansi import strip_ansi  # type: ignore
 
         class StdoutFilter:
             def __init__(self, stream):
@@ -95,7 +68,7 @@ def gui_main(filename):
             len(windows) == 1
             and windows[list(windows.keys())[0]].common.input_filename is None
         ):
-            window = windows[list(windows.keys())[0]]
+            window: MainWindow = windows[list(windows.keys())[0]]
         else:
             window_id = uuid.uuid4().hex
             window = MainWindow(global_common, gui_common, window_id)

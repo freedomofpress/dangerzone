@@ -1,12 +1,12 @@
 from PySide6 import QtWidgets
 
 from dangerzone.global_common import GlobalCommon
-from dangerzone.gui import GuiCommon
+from dangerzone.gui import GuiCommon, Application
 
 
 class SysTray(QtWidgets.QSystemTrayIcon):
     def __init__(
-        self, global_common: GlobalCommon, gui_common: GuiCommon, app
+        self, global_common: GlobalCommon, gui_common: GuiCommon, app: Application
     ):
         super(SysTray, self).__init__()
         self.global_common = global_common

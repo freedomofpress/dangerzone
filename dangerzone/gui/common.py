@@ -6,13 +6,16 @@ import pipes
 from PySide6 import QtCore, QtGui, QtWidgets
 from colorama import Fore
 
+from . import Application
+from ..global_common import GlobalCommon
+
 if platform.system() == "Darwin":
     import plistlib
 
 elif platform.system() == "Linux":
     import grp
     import getpass
-    from xdg.DesktopEntry import DesktopEntry
+    from xdg.DesktopEntry import DesktopEntry  # type: ignore
 
 from ..settings import Settings
 
@@ -22,7 +25,7 @@ class GuiCommon(object):
     The GuiCommon class is a singleton of shared functionality for the GUI
     """
 
-    def __init__(self, app, global_common):
+    def __init__(self, app: Application, global_common: GlobalCommon):
         # Qt app
         self.app = app
 
@@ -45,7 +48,7 @@ class GuiCommon(object):
             path = self.global_common.get_resource_path("icon.png")
         return QtGui.QIcon(path)
 
-    def open_pdf_viewer(self, filename):
+    def open_pdf_viewer(self, filename: str):
         if platform.system() == "Darwin":
             # Open in Preview
             args = ["open", "-a", "Preview.app", filename]
@@ -75,7 +78,8 @@ class GuiCommon(object):
             print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.Popen(args)
 
-    def _find_pdf_viewers(self):
+    @staticmethod
+    def _find_pdf_viewers():
         pdf_viewers = {}
         if platform.system() == "Linux":
             # Find all .desktop files

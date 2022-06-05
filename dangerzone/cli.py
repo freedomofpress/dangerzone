@@ -7,6 +7,7 @@ from colorama import Fore, Style
 from .global_common import GlobalCommon
 from .common import Common
 from .container import convert
+import dangerzone.util as dzutil
 
 
 def print_header(s):
@@ -73,14 +74,14 @@ def cli_main(output_filename, ocr_lang, filename):
     # Validate OCR language
     if ocr_lang:
         valid = False
-        for lang in global_common.ocr_languages:
-            if global_common.ocr_languages[lang] == ocr_lang:
+        for lang in dzutil.OCR_LANGUAGES:
+            if dzutil.OCR_LANGUAGES[lang] == ocr_lang:
                 valid = True
                 break
         if not valid:
             click.echo("Invalid OCR language code. Valid language codes:")
-            for lang in global_common.ocr_languages:
-                click.echo(f"{global_common.ocr_languages[lang]}: {lang}")
+            for lang in dzutil.OCR_LANGUAGES:
+                click.echo(f"{dzutil.OCR_LANGUAGES[lang]}: {lang}")
             return
 
     # Ensure container is installed

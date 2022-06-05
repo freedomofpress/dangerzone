@@ -53,7 +53,7 @@ def gui_main(filename):
 
     # Create the system tray
     # noinspection PyUnusedLocal
-    systray = SysTray(global_common, gui_common, app)
+    systray = SysTray(gui_common, app)
 
     closed_windows = {}
     windows = {}

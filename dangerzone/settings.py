@@ -1,12 +1,12 @@
 import os
 import json
 
-from dangerzone import APPDATA_PATH
+import dangerzone.util as dzutil
 
 
 class Settings:
     def __init__(self):
-        self.settings_filename = os.path.join(APPDATA_PATH, "settings.json")
+        self.settings_filename = os.path.join(dzutil.APPDATA_PATH, "settings.json")
         self.default_settings = {
             "save": True,
             "ocr": True,
@@ -47,6 +47,6 @@ class Settings:
         self.save()
 
     def save(self):
-        os.makedirs(APPDATA_PATH, exist_ok=True)
+        os.makedirs(dzutil.APPDATA_PATH, exist_ok=True)
         with open(self.settings_filename, "w") as settings_file:
             json.dump(self.settings, settings_file, indent=4)

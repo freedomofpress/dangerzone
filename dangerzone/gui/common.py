@@ -4,17 +4,14 @@ import subprocess
 import shlex
 import pipes
 from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtGui import QIcon
 from colorama import Fore
 
 from . import Application
 from ..global_common import GlobalCommon
+import dangerzone.util as dzutil
 
-if platform.system() == "Darwin":
-    import plistlib
-
-elif platform.system() == "Linux":
-    import grp
-    import getpass
+if platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry  # type: ignore
 
 
@@ -38,14 +35,6 @@ class GuiCommon(object):
 
         # Are we done waiting (for Docker Desktop to be installed, or for container to install)
         self.is_waiting_finished = False
-
-    @staticmethod
-    def get_window_icon():
-        if platform.system() == "Windows":
-            path = GlobalCommon.get_resource_path("dangerzone.ico")
-        else:
-            path = GlobalCommon.get_resource_path("icon.png")
-        return QtGui.QIcon(path)
 
     def open_pdf_viewer(self, filename: str):
         if platform.system() == "Darwin":
@@ -118,7 +107,7 @@ class Alert(QtWidgets.QDialog):
     ):
         super(Alert, self).__init__()
         self.setWindowTitle("dangerzone")
-        self.setWindowIcon(GuiCommon.get_window_icon())
+        self.setWindowIcon(QIcon(dzutil.WINDOW_ICON_PATH))
         self.setModal(True)
 
         flags = (  # TODO Mypy: unsupported left operand type for | ("WindowType")
@@ -133,7 +122,7 @@ class Alert(QtWidgets.QDialog):
         logo = QtWidgets.QLabel()
         logo.setPixmap(
             QtGui.QPixmap.fromImage(
-                QtGui.QImage(GlobalCommon.get_resource_path("icon.png"))
+                QtGui.QImage(dzutil.get_resource_path("icon.png"))
             )
         )
 

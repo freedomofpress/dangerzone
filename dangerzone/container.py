@@ -1,4 +1,3 @@
-import platform
 import subprocess
 import pipes
 import shutil
@@ -6,23 +5,7 @@ import os
 import tempfile
 import appdirs
 
-# What container tech is used for this platform?
-if platform.system() == "Linux":
-    container_tech = "podman"
-else:
-    # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
-    container_tech = "docker"
-
-# Define startupinfo for subprocesses
-if platform.system() == "Windows":
-    startupinfo = subprocess.STARTUPINFO()
-    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-else:
-    startupinfo = None
-
-
-# Name of the dangerzone container
-container_name = "dangerzone.rocks/dangerzone"
+import dangerzone.util as dzutil
 
 
 def exec(args, stdout_callback=None):
@@ -30,13 +13,13 @@ def exec(args, stdout_callback=None):
     print("> " + args_str)
 
     with subprocess.Popen(
-        args,
-        stdin=None,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        bufsize=1,
-        universal_newlines=True,
-        startupinfo=startupinfo,
+            args,
+            stdin=None,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            bufsize=1,
+            universal_newlines=True,
+            startupinfo=dzutil.get_subprocess_startupinfo(),
     ) as p:
         if stdout_callback:
             for line in p.stdout:
@@ -47,12 +30,7 @@ def exec(args, stdout_callback=None):
 
 
 def exec_container(args, stdout_callback=None):
-    if container_tech == "podman":
-        container_runtime = shutil.which("podman")
-    else:
-        container_runtime = shutil.which("docker")
-
-    args = [container_runtime] + args
+    args = [dzutil.CONTAINER_RUNTIME] + args
     return exec(args, stdout_callback)
 
 
@@ -80,18 +58,18 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
 
     # Convert document to pixels
     args = (
-        ["run", "--network", "none"]
-        + platform_args
-        + [
-            "-v",
-            f"{input_filename}:/tmp/input_file",
-            "-v",
-            f"{pixel_dir}:/dangerzone",
-            container_name,
-            "/usr/bin/python3",
-            "/usr/local/bin/dangerzone.py",
-            "document-to-pixels",
-        ]
+            ["run", "--network", "none"]
+            + platform_args
+            + [
+                "-v",
+                f"{input_filename}:/tmp/input_file",
+                "-v",
+                f"{pixel_dir}:/dangerzone",
+                dzutil.CONTAINER_NAME,
+                "/usr/bin/python3",
+                "/usr/local/bin/dangerzone.py",
+                "document-to-pixels",
+            ]
     )
     ret = exec_container(args, stdout_callback)
     if ret != 0:
@@ -101,22 +79,22 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
 
         # Convert pixels to safe PDF
         args = (
-            ["run", "--network", "none"]
-            + platform_args
-            + [
-                "-v",
-                f"{pixel_dir}:/dangerzone",
-                "-v",
-                f"{safe_dir}:/safezone",
-                "-e",
-                f"OCR={ocr}",
-                "-e",
-                f"OCR_LANGUAGE={ocr_lang}",
-                container_name,
-                "/usr/bin/python3",
-                "/usr/local/bin/dangerzone.py",
-                "pixels-to-pdf",
-            ]
+                ["run", "--network", "none"]
+                + platform_args
+                + [
+                    "-v",
+                    f"{pixel_dir}:/dangerzone",
+                    "-v",
+                    f"{safe_dir}:/safezone",
+                    "-e",
+                    f"OCR={ocr}",
+                    "-e",
+                    f"OCR_LANGUAGE={ocr_lang}",
+                    dzutil.CONTAINER_NAME,
+                    "/usr/bin/python3",
+                    "/usr/local/bin/dangerzone.py",
+                    "pixels-to-pdf",
+                ]
         )
         ret = exec_container(args, stdout_callback)
         if ret != 0:
@@ -138,7 +116,6 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
     tmpdir.cleanup()
 
     return success
-
 
 # From global_common:
 

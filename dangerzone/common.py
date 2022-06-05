@@ -1,10 +1,3 @@
-import os
-import stat
-import platform
-import tempfile
-import appdirs
-
-
 class Common(object):
     """
     The Common class is a singleton of shared functionality throughout an open dangerzone window

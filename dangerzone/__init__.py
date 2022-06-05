@@ -1,11 +1,6 @@
 import os
 import sys
 
-import appdirs
-
-CONTAINER_NAME = "dangerzone.rocks/dangerzone"
-APPDATA_PATH = appdirs.user_config_dir("dangerzone")
-
 if "DANGERZONE_MODE" in os.environ:
     mode = os.environ["DANGERZONE_MODE"]
 else:

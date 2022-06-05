@@ -1,19 +1,19 @@
 from PySide6 import QtWidgets
+from PySide6.QtGui import QIcon
 
-from dangerzone.global_common import GlobalCommon
 from dangerzone.gui import GuiCommon, Application
+import dangerzone.util as dzutil
 
 
 class SysTray(QtWidgets.QSystemTrayIcon):
     def __init__(
-        self, global_common: GlobalCommon, gui_common: GuiCommon, app: Application
+        self, gui_common: GuiCommon, app: Application
     ):
         super(SysTray, self).__init__()
-        self.global_common = global_common
         self.gui_common = gui_common
         self.app = app
 
-        self.setIcon(self.gui_common.get_window_icon())
+        self.setIcon(QIcon(dzutil.WINDOW_ICON_PATH))
 
         menu = QtWidgets.QMenu()
 

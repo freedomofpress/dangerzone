@@ -5,8 +5,10 @@ import subprocess
 import json
 import shutil
 from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtGui import QIcon
 from colorama import Style, Fore
 
+import dangerzone.util as dzutil
 from . import GuiCommon
 from ..common import Common
 from ..container import convert
@@ -24,7 +26,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.common = Common()
 
         self.setWindowTitle("Dangerzone")
-        self.setWindowIcon(self.gui_common.get_window_icon())
+        self.setWindowIcon(QIcon(dzutil.WINDOW_ICON_PATH))
 
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
@@ -33,7 +35,7 @@ class MainWindow(QtWidgets.QMainWindow):
         logo = QtWidgets.QLabel()
         logo.setPixmap(
             QtGui.QPixmap.fromImage(
-                QtGui.QImage(self.global_common.get_resource_path("icon.png"))
+                QtGui.QImage(dzutil.get_resource_path("icon.png"))
             )
         )
         header_label = QtWidgets.QLabel("dangerzone")
@@ -165,7 +167,7 @@ class WaitingWidget(QtWidgets.QWidget):
                 [container_runtime, "image", "ls"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                startupinfo=self.global_common.get_subprocess_startupinfo(),
+                startupinfo=dzutil.get_subprocess_startupinfo(),
             ) as p:
                 p.communicate()
                 if p.returncode != 0:
@@ -361,8 +363,8 @@ class SettingsWidget(QtWidgets.QWidget):
         # OCR document
         self.ocr_checkbox = QtWidgets.QCheckBox("OCR document, language")
         self.ocr_combobox = QtWidgets.QComboBox()
-        for k in self.global_common.ocr_languages:
-            self.ocr_combobox.addItem(k, self.global_common.ocr_languages[k])
+        for k in dzutil.OCR_LANGUAGES:
+            self.ocr_combobox.addItem(k, dzutil.OCR_LANGUAGES[k])
         ocr_layout = QtWidgets.QHBoxLayout()
         ocr_layout.addWidget(self.ocr_checkbox)
         ocr_layout.addWidget(self.ocr_combobox)
@@ -499,7 +501,7 @@ class ConvertThread(QtCore.QThread):
 
     def run(self):
         if self.global_common.settings.get("ocr"):
-            ocr_lang = self.global_common.ocr_languages[
+            ocr_lang = dzutil.OCR_LANGUAGES[
                 self.global_common.settings.get("ocr_language")
             ]
         else:
@@ -557,7 +559,7 @@ class ConvertWidget(QtWidgets.QWidget):
         self.error_image = QtWidgets.QLabel()
         self.error_image.setPixmap(
             QtGui.QPixmap.fromImage(
-                QtGui.QImage(self.global_common.get_resource_path("error.png"))
+                QtGui.QImage(dzutil.get_resource_path("error.png"))
             )
         )
         self.error_image.hide()
@@ -616,7 +618,7 @@ class ConvertWidget(QtWidgets.QWidget):
             subprocess.Popen(
                 f'explorer.exe /select,"{dest_filename_windows}"',
                 shell=True,
-                startupinfo=self.global_common.get_subprocess_startupinfo(),
+                startupinfo=dzutil.get_subprocess_startupinfo(),
             )
 
         # Open

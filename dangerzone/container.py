@@ -42,7 +42,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
     else:
         ocr = "0"
 
-    dz_tmp = os.path.join(appdirs.user_config_dir("dangerzone"), "tmp")
+    dz_tmp = os.path.join(dzutil.APPDATA_PATH, "tmp")
     os.makedirs(dz_tmp, exist_ok=True)
 
     tmpdir = tempfile.TemporaryDirectory(dir=dz_tmp)

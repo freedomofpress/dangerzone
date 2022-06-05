@@ -1,8 +1,8 @@
-import sys
-
 from PySide6 import QtCore
 from PySide6.QtCore import QEvent
 from PySide6.QtWidgets import QApplication
+
+import dangerzone.util as dzutil
 
 
 class Application(QApplication):
@@ -19,7 +19,7 @@ class Application(QApplication):
             # In macOS, handle the file open event
             if event.type() == QtCore.QEvent.FileOpen:
                 # Skip file open events in dev mode
-                if not hasattr(sys, "dangerzone_dev"):
+                if not dzutil.dev_mode():
                     self.document_selected.emit(event.file())
                     return True
             elif event.type() == QtCore.QEvent.ApplicationActivate:

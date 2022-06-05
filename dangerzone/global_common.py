@@ -14,15 +14,14 @@ class GlobalCommon(object):
     """
 
     def __init__(self):
-        self.version = dzutil.VERSION
-
         # Initialize terminal colors
         colorama.init(autoreset=True)
 
         # Load settings
         self.settings = Settings()
 
-    def display_banner(self):
+    @staticmethod
+    def display_banner():
         """
         Raw ASCII art example:
         ╭──────────────────────────╮

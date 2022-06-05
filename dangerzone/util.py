@@ -1,12 +1,22 @@
+from __future__ import annotations
+
 import inspect
 import os
+import pathlib
 import platform
 import shutil
 import subprocess
 import sys
 import appdirs
 
-# If a general-purpose function doesn't depend on anything else in the dangerzone package, then it belongs here.
+# If a general-purpose function or constant doesn't depend on anything else in the dangerzone package,
+# then it belongs here.
+
+SYSTEM = platform.system()
+
+
+def dev_mode() -> bool:
+    return hasattr(sys, "dangerzone_dev")
 
 
 def get_resource_path(filename):
@@ -35,7 +45,7 @@ def get_resource_path(filename):
 
 
 def get_subprocess_startupinfo():
-    if platform.system() == "Windows":
+    if SYSTEM == "Windows":
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         return startupinfo
@@ -44,7 +54,7 @@ def get_subprocess_startupinfo():
 
 
 def _get_version() -> str:
-    """Dangerzone version number. Prefer dangerzone.VERSION to this function."""
+    """Dangerzone version number. Prefer VERSION to this function."""
     try:
         with open(get_resource_path("version.txt")) as f:
             version = f.read().strip()
@@ -57,7 +67,6 @@ def _get_version() -> str:
 
 VERSION = _get_version()
 APPDATA_PATH = appdirs.user_config_dir("dangerzone")
-SYSTEM = platform.system()
 CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 CONTAINER_COMMAND = "podman" if SYSTEM == "Linux" else "docker"
 CONTAINER_RUNTIME = shutil.which(CONTAINER_COMMAND)

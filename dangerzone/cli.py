@@ -23,7 +23,7 @@ def cli_main(output_filename, ocr_lang, filename):
     global_common = GlobalCommon()
     common = Common()
 
-    global_common.display_banner()
+    GlobalCommon.display_banner()
 
     # Validate filename
     valid = True
@@ -85,7 +85,7 @@ def cli_main(output_filename, ocr_lang, filename):
             return
 
     # Ensure container is installed
-    global_common.install_container()
+    GlobalCommon.install_container()
 
     # Convert the document
     print_header("Converting document to safe PDF")

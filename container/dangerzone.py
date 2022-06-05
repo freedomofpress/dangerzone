@@ -18,16 +18,41 @@ import os
 import shutil
 import subprocess
 import sys
+<<<<<<< HEAD
 from typing import Dict, Optional
+=======
+>>>>>>> d990cfb (refactor dangerzone.py, raise exceptions instead of returning int)
 
 import magic
 from PIL import Image
 
-
 # timeout in seconds for any single subprocess
 # FIXME https://github.com/freedomofpress/dangerzone/issues/146
 # FIXME https://github.com/freedomofpress/dangerzone/issues/149
-TIMEOUT_SECONDS = 60
+DEFAULT_TIMEOUT: float = 60
+
+
+def run_command(
+    args, *, error_message: str, timeout_message: str, timeout: float = DEFAULT_TIMEOUT
+) -> subprocess.CompletedProcess:
+    """
+    Runs a command and returns the result.
+
+    :raises RuntimeError: if the process returns a non-zero exit status
+    :raises TimeoutError: if the process times out
+    """
+    try:
+        return subprocess.run(
+            args,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(error_message) from e
+    except subprocess.TimeoutExpired as e:
+        raise TimeoutError(timeout_message) from e
 
 
 def output(self, error: bool, text: str, percentage: float) -> None:
@@ -35,7 +60,7 @@ def output(self, error: bool, text: str, percentage: float) -> None:
     sys.stdout.flush()
 
 
-def document_to_pixels() -> int:
+def document_to_pixels() -> None:
     percentage: float = 0.0
 
     conversions: Dict[str, Dict[str, Optional[str]]] = {
@@ -130,18 +155,11 @@ def document_to_pixels() -> int:
             "/tmp",
             "/tmp/input_file",
         ]
-        try:
-            subprocess.run(
-                args,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                timeout=TIMEOUT_SECONDS,
-                check=True,
-            )
-        except subprocess.TimeoutExpired:
-            raise TimeoutError(f"Error converting document to PDF, LibreOffice timed out after {TIMEOUT_SECONDS} seconds")
-        except subprocess.CalledProcessError:
-            raise RuntimeError("Conversion to PDF with LibreOffice failed")
+        run_command(
+            args,
+            error_message="Conversion to PDF with LibreOffice failed",
+            timeout_message=f"Error converting document to PDF, LibreOffice timed out after {DEFAULT_TIMEOUT} seconds",
+        )
         pdf_filename = "/tmp/input_file.pdf"
     elif conversion["type"] == "convert":
         output(False, "Converting to PDF using GraphicsMagick", percentage)
@@ -151,21 +169,16 @@ def document_to_pixels() -> int:
             "/tmp/input_file",
             "/tmp/input_file.pdf",
         ]
-        try:
-            subprocess.run(
-                args,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                timeout=TIMEOUT_SECONDS,
-                check=True,
-            )
-        except subprocess.TimeoutExpired:
-            raise TimeoutError(f"Error converting document to PDF, GraphicsMagick timed out after {TIMEOUT_SECONDS} seconds")
-        except subprocess.CalledProcessError:
-            raise RuntimeError("Conversion to PDF with GraphicsMagick failed")
+        run_command(
+            args,
+            error_message="Conversion to PDF with GraphicsMagick failed",
+            timeout_message=f"Error converting document to PDF, GraphicsMagick timed out after {DEFAULT_TIMEOUT} seconds",
+        )
         pdf_filename = "/tmp/input_file.pdf"
     else:
-        raise ValueError(f"Invalid conversion type {conversion['type']} for MIME type {mime_type}")
+        raise ValueError(
+            f"Invalid conversion type {conversion['type']} for MIME type {mime_type}"
+        )
     percentage += 3
 
     # Separate PDF into pages
@@ -175,18 +188,11 @@ def document_to_pixels() -> int:
         percentage,
     )
     args = ["pdftk", pdf_filename, "burst", "output", "/tmp/page-%d.pdf"]
-    try:
-        subprocess.run(
-            args,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=TIMEOUT_SECONDS,
-            check=True,
-        )
-    except subprocess.TimeoutExpired:
-        raise TimeoutError(f"Error separating document into pages, pdfseparate timed out after {TIMEOUT_SECONDS} seconds")
-    except subprocess.CalledProcessError:
-        raise RuntimeError(f"Separating document into pages failed")
+    run_command(
+        args,
+        error_message="Separating document into pages failed",
+        timeout_message=f"Error separating document into pages, pdfseparate timed out after {DEFAULT_TIMEOUT} seconds",
+    )
 
     page_filenames = glob.glob("/tmp/page-*.pdf")
 
@@ -209,18 +215,11 @@ def document_to_pixels() -> int:
         )
 
         # Convert to png
-        try:
-            subprocess.run(
-                ["pdftocairo", pdf_filename, "-png", "-singlefile", filename_base],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                timeout=TIMEOUT_SECONDS,
-                check=True,
-            )
-        except subprocess.TimeoutExpired:
-            raise TimeoutError(f"Error converting from PDF to PNG, pdftocairo timed out after {TIMEOUT_SECONDS} seconds")
-        except subprocess.CalledProcessError:
-            raise RuntimeError("Conversion from PDF to PNG failed")
+        run_command(
+            ["pdftocairo", pdf_filename, "-png", "-singlefile", filename_base],
+            error_message="Conversion from PDF to PNG failed",
+            timeout_message=f"Error converting from PDF to PNG, pdftocairo timed out after {DEFAULT_TIMEOUT} seconds",
+        )
 
         # Save the width and height
         with Image.open(png_filename, "r") as im:
@@ -231,33 +230,24 @@ def document_to_pixels() -> int:
             f.write(str(height))
 
         # Convert to RGB pixels
-        try:
-            p = subprocess.run(
-                [
-                    "gm",
-                    "convert",
-                    png_filename,
-                    "-depth",
-                    "8",
-                    f"rgb:{rgb_filename}",
-                ],
-                timeout=TIMEOUT_SECONDS,
-                check=True,
-            )
-        except subprocess.TimeoutExpired:
-            raise TimeoutError(f"Error converting from PNG to pixels, convert timed out after {TIMEOUT_SECONDS} seconds")
-        if p.returncode != 0:
-            output(
-                True,
-                "Conversion from PNG to RGB failed",
-                percentage,
-            )
-            return 1
+        run_command(
+            [
+                "gm",
+                "convert",
+                png_filename,
+                "-depth",
+                "8",
+                f"rgb:{rgb_filename}",
+            ],
+            error_message="Conversion from PNG to RGB failed",
+            timeout_message=f"Error converting from PNG to pixels, convert timed out after {DEFAULT_TIMEOUT} seconds",
+        )
 
         # Delete the png
         os.remove(png_filename)
-
         percentage += percentage_per_page
+
+        # END OF FOR LOOP
 
     output(
         False,
@@ -273,11 +263,9 @@ def document_to_pixels() -> int:
     ):
         shutil.move(filename, "/dangerzone")
 
-    return 0
 
-
-def pixels_to_pdf() -> int:
-    percentage: float = 50.0
+def pixels_to_pdf() -> None:
+    percentage = 50.0
 
     num_pages = len(glob.glob("/dangerzone/page-*.rgb"))
 
@@ -297,119 +285,65 @@ def pixels_to_pdf() -> int:
         with open(height_filename) as f:
             height = f.read().strip()
 
-        if os.environ.get("OCR") == "1":
-            # OCR the document
+        if os.environ.get("OCR") == "1":  # OCR the document
             output(
                 False,
                 f"Converting page {page}/{num_pages} from pixels to searchable PDF",
                 percentage,
             )
+            run_command(
+                [
+                    "gm",
+                    "convert",
+                    "-size",
+                    f"{width}x{height}",
+                    "-depth",
+                    "8",
+                    f"rgb:{rgb_filename}",
+                    f"png:{png_filename}",
+                ],
+                error_message=f"Page {page}/{num_pages} conversion to PNG failed",
+                timeout_message=f"Error converting pixels to PNG, convert timed out after {DEFAULT_TIMEOUT} seconds",
+            )
+            run_command(
+                [
+                    "tesseract",
+                    png_filename,
+                    ocr_filename,
+                    "-l",
+                    os.environ.get("OCR_LANGUAGE"),  # type: ignore
+                    "--dpi",
+                    "70",
+                    "pdf",
+                ],
+                error_message=f"Page {page}/{num_pages} OCR failed",
+                timeout_message=f"Error converting PNG to searchable PDF, tesseract timed out after {DEFAULT_TIMEOUT} seconds",
+            )
 
-            args = [
-                "gm",
-                "convert",
-                "-size",
-                f"{width}x{height}",
-                "-depth",
-                "8",
-                f"rgb:{rgb_filename}",
-                f"png:{png_filename}",
-            ]
-            try:
-                p = subprocess.run(
-                    args,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    timeout=60,
-                )
-            except subprocess.TimeoutExpired:
-                output(
-                    True,
-                    "Error converting pixels to PNG, convert timed out after 60 seconds",
-                    percentage,
-                )
-                return 1
-            if p.returncode != 0:
-                output(
-                    True,
-                    f"Page {page}/{num_pages} conversion to PNG failed",
-                    percentage,
-                )
-                return 1
-
-            args = [
-                "tesseract",
-                png_filename,
-                ocr_filename,
-                "-l",
-                os.environ.get("OCR_LANGUAGE"),  # type: ignore
-                "--dpi",
-                "70",
-                "pdf",
-            ]
-            try:
-                p = subprocess.run(
-                    args,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    timeout=60,
-                )
-            except subprocess.TimeoutExpired:
-                output(
-                    True,
-                    "Error converting PNG to searchable PDF, tesseract timed out after 60 seconds",
-                    percentage,
-                )
-                return 1
-            if p.returncode != 0:
-                output(
-                    True,
-                    f"Page {page}/{num_pages} OCR failed",
-                    percentage,
-                )
-                return 1
-
-        else:
-            # Don't OCR
+        else:  # Don't OCR
             output(
                 False,
                 f"Converting page {page}/{num_pages} from pixels to PDF",
                 percentage,
             )
-
-            args = [
-                "gm",
-                "convert",
-                "-size",
-                f"{width}x{height}",
-                "-depth",
-                "8",
-                f"rgb:{rgb_filename}",
-                f"pdf:{pdf_filename}",
-            ]
-            try:
-                p = subprocess.run(
-                    args,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    timeout=60,
-                )
-            except subprocess.TimeoutExpired:
-                output(
-                    True,
-                    "Error converting RGB to PDF, convert timed out after 60 seconds",
-                    percentage,
-                )
-                return 1
-            if p.returncode != 0:
-                output(
-                    True,
-                    f"Page {page}/{num_pages} conversion to PDF failed",
-                    percentage,
-                )
-                return 1
+            run_command(
+                [
+                    "gm",
+                    "convert",
+                    "-size",
+                    f"{width}x{height}",
+                    "-depth",
+                    "8",
+                    f"rgb:{rgb_filename}",
+                    f"pdf:{pdf_filename}",
+                ],
+                error_message=f"Page {page}/{num_pages} conversion to PDF failed",
+                timeout_message=f"Error converting RGB to PDF, convert timed out after {DEFAULT_TIMEOUT} seconds",
+            )
 
         percentage += percentage_per_page
+
+        # END OF FOR LOOP
 
     # Merge pages into a single PDF
     output(
@@ -421,24 +355,11 @@ def pixels_to_pdf() -> int:
     for page in range(1, num_pages + 1):
         args.append(f"/tmp/page-{page}.pdf")
     args.append(f"/tmp/safe-output.pdf")
-    try:
-        p = subprocess.run(
-            args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60
-        )
-    except subprocess.TimeoutExpired:
-        output(
-            True,
-            "Error merging pages into a single PDF, pdfunite timed out after 60 seconds",
-            percentage,
-        )
-        return 1
-    if p.returncode != 0:
-        output(
-            True,
-            "Merging pages into a single PDF failed",
-            percentage,
-        )
-        return 1
+    run_command(
+        args,
+        error_message="Merging pages into a single PDF failed",
+        timeout_message=f"Error merging pages into a single PDF, pdfunite timed out after {DEFAULT_TIMEOUT} seconds",
+    )
 
     percentage += 2
 
@@ -449,27 +370,12 @@ def pixels_to_pdf() -> int:
         percentage,
     )
     compress_timeout = num_pages * 3
-    try:
-        p = subprocess.run(
-            ["ps2pdf", "/tmp/safe-output.pdf", "/tmp/safe-output-compressed.pdf"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=compress_timeout,
-        )
-    except subprocess.TimeoutExpired:
-        output(
-            True,
-            f"Error compressing PDF, ps2pdf timed out after {compress_timeout} seconds",
-            percentage,
-        )
-        return 1
-    if p.returncode != 0:
-        output(
-            True,
-            f"Compressing PDF failed",
-            percentage,
-        )
-        return 1
+    run_command(
+        ["ps2pdf", "/tmp/safe-output.pdf", "/tmp/safe-output-compressed.pdf"],
+        timeout_message=f"Error compressing PDF, ps2pdf timed out after {compress_timeout} seconds",
+        error_message="Compressing PDF failed",
+        timeout=compress_timeout,
+    )
 
     percentage = 100.0
     output(False, "Safe PDF created", percentage)
@@ -477,8 +383,6 @@ def pixels_to_pdf() -> int:
     # Move converted files into /safezone
     shutil.move("/tmp/safe-output.pdf", "/safezone")
     shutil.move("/tmp/safe-output-compressed.pdf", "/safezone")
-
-    return 0
 
 
 def main() -> int:

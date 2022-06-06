@@ -59,7 +59,7 @@ VERSION = _get_version()
 APPDATA_PATH = appdirs.user_config_dir("dangerzone")
 SYSTEM = platform.system()
 CONTAINER_NAME = "dangerzone.rocks/dangerzone"
-CONTAINER_COMMAND = "podman" if SYSTEM == "Linux" else "Docker"
+CONTAINER_COMMAND = "podman" if SYSTEM == "Linux" else "docker"
 CONTAINER_RUNTIME = shutil.which(CONTAINER_COMMAND)
 
 WINDOW_ICON_FILENAME = "dangerzone.ico" if SYSTEM == "Windows" else "icon.png"

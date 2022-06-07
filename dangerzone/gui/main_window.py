@@ -9,10 +9,10 @@ from PySide6.QtGui import QIcon
 from colorama import Style, Fore
 
 import dangerzone.util as dzutil
-from . import GuiCommon
-from ..common import Common
-from ..container import convert
-from ..util import install_container
+from dangerzone.gui import GuiCommon
+from dangerzone.common import Common
+from dangerzone.container import convert
+from dangerzone.util import install_container
 
 
 class MainWindow(QtWidgets.QMainWindow):

@@ -5,9 +5,8 @@ import click
 import colorama
 from colorama import Fore, Style  # type: ignore
 
-from .util import install_container, display_banner
-from .common import Common
-from .container import convert
+from dangerzone import container
+from dangerzone.common import Common
 import dangerzone.util as dzutil
 
 
@@ -23,7 +22,7 @@ def print_header(s):
 def cli_main(output_filename, ocr_lang, filename):
     colorama.init(autoreset=True)
     common = Common()
-    display_banner()
+    dzutil.display_banner()
 
     # Validate filename
     valid = True
@@ -85,7 +84,7 @@ def cli_main(output_filename, ocr_lang, filename):
             return
 
     # Ensure container is installed
-    install_container()
+    dzutil.install_container()
 
     # Convert the document
     print_header("Converting document to safe PDF")
@@ -102,7 +101,7 @@ def cli_main(output_filename, ocr_lang, filename):
         except:
             click.echo(f"Invalid JSON returned from container: {line}")
 
-    if convert(
+    if container.convert(
         common.input_filename,
         common.output_filename,
         ocr_lang,

@@ -9,10 +9,10 @@ import uuid
 
 import colorama
 
-from .application import Application
-from .gui_common import GuiCommon
-from .main_window import MainWindow
-from .systray import SysTray
+from dangerzone.gui.application import Application
+from dangerzone.gui.gui_common import GuiCommon
+from dangerzone.gui.main_window import MainWindow
+from dangerzone.gui.systray import SysTray
 
 
 @click.command()

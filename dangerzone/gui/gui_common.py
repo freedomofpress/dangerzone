@@ -6,8 +6,8 @@ import pipes
 from PySide6 import QtGui
 from colorama import Fore
 
-from . import Application
-from .settings import Settings
+from dangerzone.gui import Application
+from dangerzone.gui.settings import Settings
 
 if platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry  # type: ignore

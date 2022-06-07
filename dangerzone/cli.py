@@ -5,7 +5,7 @@ import click
 import colorama
 from colorama import Fore, Style  # type: ignore
 
-from .global_common import GlobalCommon
+from .global_common import display_banner, install_container
 from .common import Common
 from .container import convert
 import dangerzone.util as dzutil
@@ -23,7 +23,7 @@ def print_header(s):
 def cli_main(output_filename, ocr_lang, filename):
     colorama.init(autoreset=True)
     common = Common()
-    GlobalCommon.display_banner()
+    display_banner()
 
     # Validate filename
     valid = True
@@ -85,7 +85,7 @@ def cli_main(output_filename, ocr_lang, filename):
             return
 
     # Ensure container is installed
-    GlobalCommon.install_container()
+    install_container()
 
     # Convert the document
     print_header("Converting document to safe PDF")

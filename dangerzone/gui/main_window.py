@@ -12,7 +12,7 @@ import dangerzone.util as dzutil
 from . import GuiCommon
 from ..common import Common
 from ..container import convert
-from ..global_common import GlobalCommon
+from ..global_common import install_container
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -97,7 +97,7 @@ class InstallContainerThread(QtCore.QThread):
         super(InstallContainerThread, self).__init__()
 
     def run(self):
-        GlobalCommon.install_container()
+        install_container()
         self.finished.emit()
 
 

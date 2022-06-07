@@ -1,40 +1,38 @@
+from __future__ import annotations
+
+import platform
 import subprocess
 import pipes
 import shutil
 import os
 import tempfile
-import appdirs
+from typing import Callable
 
 import dangerzone.util as dzutil
 
 
-def exec(args, stdout_callback=None):
-    args_str = " ".join(pipes.quote(s) for s in args)
+def exec_container(args, stdout_callback: Callable[[str], None]) -> int:
+    args = [dzutil.CONTAINER_RUNTIME] + args
+    args_str = " ".join(pipes.quote(arg) for arg in args)
     print("> " + args_str)
 
     with subprocess.Popen(
-            args,
-            stdin=None,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            bufsize=1,
-            universal_newlines=True,
-            startupinfo=dzutil.get_subprocess_startupinfo(),
+        args,
+        stdin=None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        bufsize=1,
+        universal_newlines=True,
+        startupinfo=dzutil.get_subprocess_startupinfo(),
     ) as p:
-        if stdout_callback:
+        if p.stdout:
             for line in p.stdout:
                 stdout_callback(line)
-
         p.communicate()
         return p.returncode
 
 
-def exec_container(args, stdout_callback=None):
-    args = [dzutil.CONTAINER_RUNTIME] + args
-    return exec(args, stdout_callback)
-
-
-def convert(input_filename, output_filename, ocr_lang, stdout_callback):
+def convert(input_filename, output_filename, ocr_lang, stdout_callback: Callable[[str], None]):
     success = False
 
     if ocr_lang:
@@ -51,25 +49,27 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
     os.makedirs(pixel_dir, exist_ok=True)
     os.makedirs(safe_dir, exist_ok=True)
 
-    if container_tech == "docker":
-        platform_args = ["--platform", "linux/amd64"]
+    platform_args: list[str] = []
+    if dzutil.CONTAINER_COMMAND == "docker":
+        if platform.machine() in ("i386", "AMD64", "x86_64"):
+            platform_args += ["--platform", "linux/amd64"]
     else:
         platform_args = []
 
     # Convert document to pixels
     args = (
-            ["run", "--network", "none"]
-            + platform_args
-            + [
-                "-v",
-                f"{input_filename}:/tmp/input_file",
-                "-v",
-                f"{pixel_dir}:/dangerzone",
-                dzutil.CONTAINER_NAME,
-                "/usr/bin/python3",
-                "/usr/local/bin/dangerzone.py",
-                "document-to-pixels",
-            ]
+        ["run", "--network", "none"]
+        + platform_args
+        + [
+            "-v",
+            f"{input_filename}:/tmp/input_file",
+            "-v",
+            f"{pixel_dir}:/dangerzone",
+            dzutil.CONTAINER_NAME,
+            "/usr/bin/python3",
+            "/usr/local/bin/dangerzone.py",
+            "document-to-pixels",
+        ]
     )
     ret = exec_container(args, stdout_callback)
     if ret != 0:
@@ -79,22 +79,22 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
 
         # Convert pixels to safe PDF
         args = (
-                ["run", "--network", "none"]
-                + platform_args
-                + [
-                    "-v",
-                    f"{pixel_dir}:/dangerzone",
-                    "-v",
-                    f"{safe_dir}:/safezone",
-                    "-e",
-                    f"OCR={ocr}",
-                    "-e",
-                    f"OCR_LANGUAGE={ocr_lang}",
-                    dzutil.CONTAINER_NAME,
-                    "/usr/bin/python3",
-                    "/usr/local/bin/dangerzone.py",
-                    "pixels-to-pdf",
-                ]
+            ["run", "--network", "none"]
+            + platform_args
+            + [
+                "-v",
+                f"{pixel_dir}:/dangerzone",
+                "-v",
+                f"{safe_dir}:/safezone",
+                "-e",
+                f"OCR={ocr}",
+                "-e",
+                f"OCR_LANGUAGE={ocr_lang}",
+                dzutil.CONTAINER_NAME,
+                "/usr/bin/python3",
+                "/usr/local/bin/dangerzone.py",
+                "pixels-to-pdf",
+            ]
         )
         ret = exec_container(args, stdout_callback)
         if ret != 0:

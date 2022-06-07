@@ -33,9 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Header
         logo = QtWidgets.QLabel()
         logo.setPixmap(
-            QtGui.QPixmap.fromImage(
-                QtGui.QImage(dzutil.get_resource_path("icon.png"))
-            )
+            QtGui.QPixmap.fromImage(QtGui.QImage(dzutil.get_resource_path("icon.png")))
         )
         header_label = QtWidgets.QLabel("dangerzone")
         header_label.setFont(self.gui_common.fixed_font)
@@ -52,9 +50,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.waiting_widget.finished.connect(self.waiting_finished)
 
         # Content widget, contains all the window content except waiting widget
-        self.content_widget = ContentWidget(
-            self.gui_common, self.common
-        )
+        self.content_widget = ContentWidget(self.gui_common, self.common)
         self.content_widget.close_window.connect(self.close)
 
         # Only use the waiting widget if container runtime isn't available
@@ -211,9 +207,7 @@ class ContentWidget(QtWidgets.QWidget):
         self.doc_selection_widget.document_selected.connect(self.document_selected)
 
         # Settings
-        self.settings_widget = SettingsWidget(
-            self.gui_common, self.common
-        )
+        self.settings_widget = SettingsWidget(self.gui_common, self.common)
         self.doc_selection_widget.document_selected.connect(
             self.settings_widget.document_selected
         )
@@ -222,9 +216,7 @@ class ContentWidget(QtWidgets.QWidget):
         self.settings_widget.hide()
 
         # Convert
-        self.convert_widget = ConvertWidget(
-            self.gui_common, self.common
-        )
+        self.convert_widget = ConvertWidget(self.gui_common, self.common)
         self.convert_widget.close_window.connect(self._close_window)
         self.doc_selection_widget.document_selected.connect(
             self.convert_widget.document_selected
@@ -399,9 +391,7 @@ class SettingsWidget(QtWidgets.QWidget):
         else:
             self.ocr_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-        index = self.ocr_combobox.findText(
-            self.gui_common.settings.get("ocr_language")
-        )
+        index = self.ocr_combobox.findText(self.gui_common.settings.get("ocr_language"))
         if index != -1:
             self.ocr_combobox.setCurrentIndex(index)
 
@@ -551,9 +541,7 @@ class ConvertWidget(QtWidgets.QWidget):
         # Label
         self.error_image = QtWidgets.QLabel()
         self.error_image.setPixmap(
-            QtGui.QPixmap.fromImage(
-                QtGui.QImage(dzutil.get_resource_path("error.png"))
-            )
+            QtGui.QPixmap.fromImage(QtGui.QImage(dzutil.get_resource_path("error.png")))
         )
         self.error_image.hide()
 

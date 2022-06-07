@@ -40,9 +40,13 @@ def get_resource_path(filename: str | os.PathLike[str]) -> str:
         # Look for ./share relative to python file
         prefix = _dev_root_path().joinpath("share")  # e.g., /home/user/dangerzone/share
     elif SYSTEM == "Darwin":
-        bin_path = pathlib.Path(sys.executable)  # /path/to/Dangerzone.app/Contents/MacOS/dangerzone[-cli]
+        bin_path = pathlib.Path(
+            sys.executable
+        )  # /path/to/Dangerzone.app/Contents/MacOS/dangerzone[-cli]
         app_path = bin_path.parent.parent  # /path/to/Dangerzone.app/Contents
-        prefix = app_path.joinpath("Resources", "share")  # /path/to/Dangerzone.app/Contents/Resources/share
+        prefix = app_path.joinpath(
+            "Resources", "share"
+        )  # /path/to/Dangerzone.app/Contents/Resources/share
     elif SYSTEM == "Linux":
         prefix = pathlib.Path(sys.prefix).joinpath("share", "dangerzone")
     elif SYSTEM == "Windows":
@@ -243,7 +247,7 @@ OCR_LANGUAGES = {
     "Vietnamese": "vie",
     "Welsh": "cym",
     "Yiddish": "yid",
-    "Yoruba": "yor"
+    "Yoruba": "yor",
 }
 
 

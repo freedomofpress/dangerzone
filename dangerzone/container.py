@@ -32,7 +32,9 @@ def exec_container(args, stdout_callback: Callable[[str], None]) -> int:
         return p.returncode
 
 
-def convert(input_filename, output_filename, ocr_lang, stdout_callback: Callable[[str], None]):
+def convert(
+    input_filename, output_filename, ocr_lang, stdout_callback: Callable[[str], None]
+):
     success = False
 
     if ocr_lang:
@@ -116,6 +118,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback: Callable
     tmpdir.cleanup()
 
     return success
+
 
 # From global_common:
 

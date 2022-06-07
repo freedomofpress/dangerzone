@@ -47,7 +47,7 @@ def gui_main(filename):
 
     # Initialize colorama
     colorama.init(autoreset=True)
-    
+
     # Common objects
     gui_common = GuiCommon(app)
 

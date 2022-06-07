@@ -6,9 +6,7 @@ import dangerzone.util as dzutil
 
 
 class SysTray(QtWidgets.QSystemTrayIcon):
-    def __init__(
-        self, gui_common: GuiCommon, app: Application
-    ):
+    def __init__(self, gui_common: GuiCommon, app: Application):
         super(SysTray, self).__init__()
         self.gui_common = gui_common
         self.app = app

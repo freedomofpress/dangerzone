@@ -45,9 +45,7 @@ class GuiCommon(object):
 
         elif platform.system() == "Linux":
             # Get the PDF reader command
-            args = shlex.split(
-                self.pdf_viewers[self.settings.get("open_app")]
-            )
+            args = shlex.split(self.pdf_viewers[self.settings.get("open_app")])
             # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
             for i in range(len(args)):
                 if (

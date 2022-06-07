@@ -5,7 +5,7 @@ import click
 import colorama
 from colorama import Fore, Style  # type: ignore
 
-from .global_common import display_banner, install_container
+from .util import install_container, display_banner
 from .common import Common
 from .container import convert
 import dangerzone.util as dzutil

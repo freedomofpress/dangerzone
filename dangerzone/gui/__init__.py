@@ -10,7 +10,7 @@ import uuid
 import colorama
 
 from .application import Application
-from .guicommon import GuiCommon
+from .gui_common import GuiCommon
 from .main_window import MainWindow
 from .systray import SysTray
 

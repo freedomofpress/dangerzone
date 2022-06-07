@@ -12,7 +12,7 @@ import dangerzone.util as dzutil
 from . import GuiCommon
 from ..common import Common
 from ..container import convert
-from ..global_common import install_container
+from ..util import install_container
 
 
 class MainWindow(QtWidgets.QMainWindow):

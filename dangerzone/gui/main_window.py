@@ -10,8 +10,7 @@ from colorama import Style, Fore
 
 import dangerzone.util as dzutil
 from dangerzone.gui import GuiCommon
-from dangerzone.container import convert
-from dangerzone.util import install_container
+from dangerzone import container
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -91,7 +90,7 @@ class InstallContainerThread(QtCore.QThread):
         super(InstallContainerThread, self).__init__()
 
     def run(self):
-        install_container()
+        container.install_container()
         self.finished.emit()
 
 
@@ -483,7 +482,7 @@ class ConvertThread(QtCore.QThread):
         else:
             ocr_lang = None
 
-        if convert(
+        if container.convert(
             self.common.input_filename,
             self.common.output_filename,
             ocr_lang,

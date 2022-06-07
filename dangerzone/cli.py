@@ -84,7 +84,7 @@ def cli_main(output_filename, ocr_lang, filename):
             return
 
     # Ensure container is installed
-    dzutil.install_container()
+    container.install_container()
 
     # Convert the document
     print_header("Converting document to safe PDF")

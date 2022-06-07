@@ -1,6 +1,6 @@
 class Common(object):
     """
-    The Common class is a singleton of shared functionality throughout an open dangerzone window
+    The Common class is a singleton of shared functionality throughout a dangerzone process
     """
 
     def __init__(self):

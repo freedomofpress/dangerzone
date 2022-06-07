@@ -6,6 +6,7 @@ import pipes
 from PySide6 import QtGui
 from colorama import Fore
 
+from dangerzone.common import Common
 from dangerzone.gui import Application
 from dangerzone.gui.settings import Settings
 
@@ -13,12 +14,14 @@ if platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry  # type: ignore
 
 
-class GuiCommon(object):
+class GuiCommon(Common):
     """
-    The GuiCommon class is a singleton of shared functionality for the GUI
+    The GuiCommon class adds GUI-specific features to Common
     """
 
     def __init__(self, app: Application):
+        super().__init__()
+
         # Qt app
         self.app = app
 

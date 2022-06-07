@@ -49,14 +49,14 @@ def gui_main(filename):
     colorama.init(autoreset=True)
 
     # Common objects
-    gui_common = GuiCommon(app)
+    common = GuiCommon(app)
 
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # Create the system tray
     # noinspection PyUnusedLocal
-    systray = SysTray(gui_common, app)
+    systray = SysTray(common, app)
 
     closed_windows = {}
     windows = {}
@@ -74,7 +74,7 @@ def gui_main(filename):
             window: MainWindow = windows[list(windows.keys())[0]]
         else:
             window_id = uuid.uuid4().hex
-            window = MainWindow(gui_common, window_id)
+            window = MainWindow(common, window_id)
             window.delete_window.connect(delete_window)
             windows[window_id] = window
 

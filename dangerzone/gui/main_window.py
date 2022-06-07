@@ -10,7 +10,6 @@ from colorama import Style, Fore
 
 import dangerzone.util as dzutil
 from dangerzone.gui import GuiCommon
-from dangerzone.common import Common
 from dangerzone.container import convert
 from dangerzone.util import install_container
 
@@ -18,11 +17,10 @@ from dangerzone.util import install_container
 class MainWindow(QtWidgets.QMainWindow):
     delete_window = QtCore.Signal(str)
 
-    def __init__(self, gui_common: GuiCommon, window_id: str):
+    def __init__(self, common: GuiCommon, window_id: str):
         super(MainWindow, self).__init__()
-        self.gui_common = gui_common
+        self.common = common
         self.window_id = window_id
-        self.common = Common()
 
         self.setWindowTitle("Dangerzone")
         self.setWindowIcon(QIcon(dzutil.WINDOW_ICON_PATH))
@@ -36,7 +34,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QtGui.QPixmap.fromImage(QtGui.QImage(dzutil.get_resource_path("icon.png")))
         )
         header_label = QtWidgets.QLabel("dangerzone")
-        header_label.setFont(self.gui_common.fixed_font)
+        header_label.setFont(self.common.fixed_font)
         header_label.setStyleSheet("QLabel { font-weight: bold; font-size: 50px; }")
         header_layout = QtWidgets.QHBoxLayout()
         header_layout.addStretch()
@@ -46,15 +44,15 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addStretch()
 
         # Waiting widget, replaces content widget while container runtime isn't available
-        self.waiting_widget = WaitingWidget(self.gui_common)
+        self.waiting_widget = WaitingWidget(self.common)
         self.waiting_widget.finished.connect(self.waiting_finished)
 
         # Content widget, contains all the window content except waiting widget
-        self.content_widget = ContentWidget(self.gui_common, self.common)
+        self.content_widget = ContentWidget(self.common)
         self.content_widget.close_window.connect(self.close)
 
         # Only use the waiting widget if container runtime isn't available
-        if self.gui_common.is_waiting_finished:
+        if self.common.is_waiting_finished:
             self.waiting_widget.hide()
             self.content_widget.show()
         else:
@@ -74,7 +72,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show()
 
     def waiting_finished(self):
-        self.gui_common.is_waiting_finished = True
+        self.common.is_waiting_finished = True
         self.waiting_widget.hide()
         self.content_widget.show()
 
@@ -83,7 +81,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.delete_window.emit(self.window_id)
 
         if platform.system() != "Darwin":
-            self.gui_common.app.quit()
+            self.common.app.quit()
 
 
 class InstallContainerThread(QtCore.QThread):
@@ -109,9 +107,9 @@ class WaitingWidget(QtWidgets.QWidget):
     # - "install_container"
     finished = QtCore.Signal()
 
-    def __init__(self, gui_common: GuiCommon):
+    def __init__(self, common: GuiCommon):
         super(WaitingWidget, self).__init__()
-        self.gui_common = gui_common
+        self.common = common
 
         self.label = QtWidgets.QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
@@ -144,7 +142,7 @@ class WaitingWidget(QtWidgets.QWidget):
     def check_state(self):
         state: str
 
-        # Can we find the container runtime binary binary
+        # Can we find the container runtime binary
         if platform.system() == "Linux":
             container_runtime = shutil.which("podman")
         else:
@@ -197,9 +195,8 @@ class WaitingWidget(QtWidgets.QWidget):
 class ContentWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
-    def __init__(self, gui_common: GuiCommon, common: Common):
+    def __init__(self, common: GuiCommon):
         super(ContentWidget, self).__init__()
-        self.gui_common = gui_common
         self.common = common
 
         # Doc selection widget
@@ -207,7 +204,7 @@ class ContentWidget(QtWidgets.QWidget):
         self.doc_selection_widget.document_selected.connect(self.document_selected)
 
         # Settings
-        self.settings_widget = SettingsWidget(self.gui_common, self.common)
+        self.settings_widget = SettingsWidget(self.common)
         self.doc_selection_widget.document_selected.connect(
             self.settings_widget.document_selected
         )
@@ -216,7 +213,7 @@ class ContentWidget(QtWidgets.QWidget):
         self.settings_widget.hide()
 
         # Convert
-        self.convert_widget = ConvertWidget(self.gui_common, self.common)
+        self.convert_widget = ConvertWidget(self.common)
         self.convert_widget.close_window.connect(self._close_window)
         self.doc_selection_widget.document_selected.connect(
             self.convert_widget.document_selected
@@ -246,7 +243,7 @@ class ContentWidget(QtWidgets.QWidget):
 class DocSelectionWidget(QtWidgets.QWidget):
     document_selected = QtCore.Signal()
 
-    def __init__(self, common: Common):
+    def __init__(self, common: GuiCommon):
         super(DocSelectionWidget, self).__init__()
         self.common = common
 
@@ -289,9 +286,8 @@ class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.Signal()
     close_window = QtCore.Signal()
 
-    def __init__(self, gui_common: GuiCommon, common: Common):
+    def __init__(self, common: GuiCommon):
         super(SettingsWidget, self).__init__()
-        self.gui_common = gui_common
         self.common = common
 
         # Dangerous document label
@@ -336,8 +332,8 @@ class SettingsWidget(QtWidgets.QWidget):
             )
             self.open_checkbox.clicked.connect(self.update_ui)
             self.open_combobox = QtWidgets.QComboBox()
-            for k in self.gui_common.pdf_viewers:
-                self.open_combobox.addItem(k, self.gui_common.pdf_viewers[k])
+            for k in self.common.pdf_viewers:
+                self.open_combobox.addItem(k, self.common.pdf_viewers[k])
 
         if platform.system() == "Darwin" or platform.system() == "Linux":
             open_layout = QtWidgets.QHBoxLayout()
@@ -381,29 +377,29 @@ class SettingsWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
         # Load values from settings
-        if self.gui_common.settings.get("save"):
+        if self.common.settings.get("save"):
             self.save_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
             self.save_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-        if self.gui_common.settings.get("ocr"):
+        if self.common.settings.get("ocr"):
             self.ocr_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
             self.ocr_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-        index = self.ocr_combobox.findText(self.gui_common.settings.get("ocr_language"))
+        index = self.ocr_combobox.findText(self.common.settings.get("ocr_language"))
         if index != -1:
             self.ocr_combobox.setCurrentIndex(index)
 
         if platform.system() == "Darwin" or platform.system() == "Linux":
-            if self.gui_common.settings.get("open"):
+            if self.common.settings.get("open"):
                 self.open_checkbox.setCheckState(QtCore.Qt.Checked)
             else:
                 self.open_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
             if platform.system() == "Linux":
                 index = self.open_combobox.findText(
-                    self.gui_common.settings.get("open_app")
+                    self.common.settings.get("open_app")
                 )
                 if index != -1:
                     self.open_combobox.setCurrentIndex(index)
@@ -452,22 +448,20 @@ class SettingsWidget(QtWidgets.QWidget):
             self.common.output_filename = tmp[1]
 
         # Update settings
-        self.gui_common.settings.set(
+        self.common.settings.set(
             "save", self.save_checkbox.checkState() == QtCore.Qt.Checked
         )
-        self.gui_common.settings.set(
+        self.common.settings.set(
             "ocr", self.ocr_checkbox.checkState() == QtCore.Qt.Checked
         )
-        self.gui_common.settings.set("ocr_language", self.ocr_combobox.currentText())
+        self.common.settings.set("ocr_language", self.ocr_combobox.currentText())
         if platform.system() == "Darwin" or platform.system() == "Linux":
-            self.gui_common.settings.set(
+            self.common.settings.set(
                 "open", self.open_checkbox.checkState() == QtCore.Qt.Checked
             )
             if platform.system() == "Linux":
-                self.gui_common.settings.set(
-                    "open_app", self.open_combobox.currentText()
-                )
-        self.gui_common.settings.save()
+                self.common.settings.set("open_app", self.open_combobox.currentText())
+        self.common.settings.save()
 
         # Start!
         self.start_clicked.emit()
@@ -477,17 +471,15 @@ class ConvertThread(QtCore.QThread):
     is_finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
-    def __init__(self, gui_common: GuiCommon, common: Common):
+    def __init__(self, common: GuiCommon):
         super(ConvertThread, self).__init__()
-        self.gui_common = gui_common
+        self.common = common
         self.common = common
         self.error = False
 
     def run(self):
-        if self.gui_common.settings.get("ocr"):
-            ocr_lang = dzutil.OCR_LANGUAGES[
-                self.gui_common.settings.get("ocr_language")
-            ]
+        if self.common.settings.get("ocr"):
+            ocr_lang = dzutil.OCR_LANGUAGES[self.common.settings.get("ocr_language")]
         else:
             ocr_lang = None
 
@@ -524,9 +516,9 @@ class ConvertThread(QtCore.QThread):
 class ConvertWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
-    def __init__(self, gui_common: GuiCommon, common: Common):
+    def __init__(self, common: GuiCommon):
         super(ConvertWidget, self).__init__()
-        self.gui_common = gui_common
+        self.common = common
         self.common = common
 
         self.error = False
@@ -575,7 +567,7 @@ class ConvertWidget(QtWidgets.QWidget):
         )
 
     def start(self):
-        self.convert_t = ConvertThread(self.gui_common, self.common)
+        self.convert_t = ConvertThread(self.common)
         self.convert_t.update.connect(self.update)
         self.convert_t.finished.connect(self.all_done)
         self.convert_t.start()
@@ -603,12 +595,12 @@ class ConvertWidget(QtWidgets.QWidget):
             )
 
         # Open
-        if self.gui_common.settings.get("open"):
-            self.gui_common.open_pdf_viewer(self.common.output_filename)
+        if self.common.settings.get("open"):
+            self.common.open_pdf_viewer(self.common.output_filename)
 
         # Quit
         if platform.system() == "Darwin":
             # In macOS, just close the window
             self.close_window.emit()
         else:
-            self.gui_common.app.quit()
+            self.common.app.quit()

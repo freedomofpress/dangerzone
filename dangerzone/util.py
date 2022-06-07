@@ -19,29 +19,33 @@ def dev_mode() -> bool:
     return hasattr(sys, "dangerzone_dev")
 
 
-def get_resource_path(filename):
-    if getattr(sys, "dangerzone_dev", False):
-        # Look for resources directory relative to python file
-        prefix = os.path.join(
-            os.path.dirname(
-                os.path.dirname(
-                    os.path.abspath(inspect.getfile(inspect.currentframe()))
-                )
-            ),
-            "share",
-        )
+def _dev_root_path() -> pathlib.Path:
+    """:returns: path to the project root (e.g., /home/user/dangerzone)"""
+    frame = inspect.currentframe()
+    if frame is None:
+        raise SystemError("This Python implementation is missing stack frame support.")
+    frame_file = inspect.getfile(frame)  # get the file which defined the current frame
+    frame_path = pathlib.Path(frame_file)  # concrete path to frame_file
+    frame_abspath = frame_path.resolve()  # resolve any symlinks in frame_path
+    project_root = frame_abspath.parent.parent  # grandparent directory of frame_abspath
+    return project_root
+
+
+def get_resource_path(filename: str | os.PathLike[str]) -> str:
+    if dev_mode():
+        # Look for ./share relative to python file
+        prefix = _dev_root_path().joinpath("share")  # e.g., /home/user/dangerzone/share
+    elif SYSTEM == "Darwin":
+        bin_path = pathlib.Path(sys.executable)  # /path/to/Dangerzone.app/Contents/MacOS/dangerzone[-cli]
+        app_path = bin_path.parent.parent  # /path/to/Dangerzone.app/Contents
+        prefix = app_path.joinpath("Resources", "share")  # /path/to/Dangerzone.app/Contents/Resources/share
+    elif SYSTEM == "Linux":
+        prefix = pathlib.Path(sys.prefix).joinpath("share", "dangerzone")
+    elif SYSTEM == "Windows":
+        prefix = pathlib.Path(sys.executable).parent.joinpath("share")
     else:
-        if platform.system() == "Darwin":
-            prefix = os.path.join(
-                os.path.dirname(os.path.dirname(sys.executable)), "Resources/share"
-            )
-        elif platform.system() == "Linux":
-            prefix = os.path.join(sys.prefix, "share", "dangerzone")
-        else:
-            # Windows
-            prefix = os.path.join(os.path.dirname(sys.executable), "share")
-    resource_path = os.path.join(prefix, filename)
-    return resource_path
+        raise NotImplementedError(f"Unsupported system {SYSTEM}")
+    return str(prefix.joinpath(filename))
 
 
 def get_subprocess_startupinfo():

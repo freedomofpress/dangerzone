@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import click
+import colorama
 from colorama import Fore, Style  # type: ignore
 
 from .global_common import GlobalCommon
@@ -20,9 +21,8 @@ def print_header(s):
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
 @click.argument("filename", required=True)
 def cli_main(output_filename, ocr_lang, filename):
-    global_common = GlobalCommon()
+    colorama.init(autoreset=True)
     common = Common()
-
     GlobalCommon.display_banner()
 
     # Validate filename
@@ -90,7 +90,7 @@ def cli_main(output_filename, ocr_lang, filename):
     # Convert the document
     print_header("Converting document to safe PDF")
 
-    def stdout_callback(line):
+    def stdout_callback(line: str) -> None:
         try:
             status = json.loads(line)
             s = Style.BRIGHT + Fore.CYAN + f"{status['percentage']}% "

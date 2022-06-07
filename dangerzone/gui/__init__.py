@@ -7,11 +7,12 @@ from typing import Optional
 import click
 import uuid
 
+import colorama
+
 from .application import Application
 from .common import GuiCommon
 from .main_window import MainWindow
 from .systray import SysTray
-from ..global_common import GlobalCommon
 
 
 @click.command()
@@ -44,9 +45,11 @@ def gui_main(filename):
     # Create the Qt app
     app = Application()
 
+    # Initialize colorama
+    colorama.init(autoreset=True)
+    
     # Common objects
-    global_common = GlobalCommon()
-    gui_common = GuiCommon(app, global_common)
+    gui_common = GuiCommon(app)
 
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -71,7 +74,7 @@ def gui_main(filename):
             window: MainWindow = windows[list(windows.keys())[0]]
         else:
             window_id = uuid.uuid4().hex
-            window = MainWindow(global_common, gui_common, window_id)
+            window = MainWindow(gui_common, window_id)
             window.delete_window.connect(delete_window)
             windows[window_id] = window
 

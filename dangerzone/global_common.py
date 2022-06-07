@@ -1,24 +1,15 @@
 import subprocess
 import gzip
-import colorama
 from colorama import Fore, Back, Style
 
 import dangerzone
-from dangerzone.settings import Settings
 import dangerzone.util as dzutil
 
 
 class GlobalCommon(object):
     """
-    The GlobalCommon class is a singleton of shared functionality throughout the app
+    The GlobalCommon class contains functionality shared throughout the app
     """
-
-    def __init__(self):
-        # Initialize terminal colors
-        colorama.init(autoreset=True)
-
-        # Load settings
-        self.settings = Settings()
 
     @staticmethod
     def display_banner():

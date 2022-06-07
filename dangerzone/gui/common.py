@@ -3,13 +3,11 @@ import platform
 import subprocess
 import shlex
 import pipes
-from PySide6 import QtCore, QtGui, QtWidgets
-from PySide6.QtGui import QIcon
+from PySide6 import QtGui
 from colorama import Fore
 
 from . import Application
-from ..global_common import GlobalCommon
-import dangerzone.util as dzutil
+from .settings import Settings
 
 if platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry  # type: ignore
@@ -20,12 +18,9 @@ class GuiCommon(object):
     The GuiCommon class is a singleton of shared functionality for the GUI
     """
 
-    def __init__(self, app: Application, global_common: GlobalCommon):
+    def __init__(self, app: Application):
         # Qt app
         self.app = app
-
-        # Global common singleton
-        self.global_common = global_common
 
         # Preload font
         self.fixed_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
@@ -35,6 +30,8 @@ class GuiCommon(object):
 
         # Are we done waiting (for Docker Desktop to be installed, or for container to install)
         self.is_waiting_finished = False
+
+        self.settings = Settings()
 
     def open_pdf_viewer(self, filename: str):
         if platform.system() == "Darwin":
@@ -49,7 +46,7 @@ class GuiCommon(object):
         elif platform.system() == "Linux":
             # Get the PDF reader command
             args = shlex.split(
-                self.pdf_viewers[self.global_common.settings.get("open_app")]
+                self.pdf_viewers[self.settings.get("open_app")]
             )
             # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
             for i in range(len(args)):

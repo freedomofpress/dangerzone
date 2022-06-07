@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import platform
 import subprocess
 import pipes
 import shutil
@@ -53,8 +52,7 @@ def convert(
 
     platform_args: list[str] = []
     if dzutil.CONTAINER_COMMAND == "docker":
-        if platform.machine() in ("i386", "AMD64", "x86_64"):
-            platform_args += ["--platform", "linux/amd64"]
+        platform_args += ["--platform", "linux/amd64"]
     else:
         platform_args = []
 

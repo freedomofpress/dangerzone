@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import click
-from colorama import Fore, Style
+from colorama import Fore, Style  # type: ignore
 
 from .global_common import GlobalCommon
 from .common import Common

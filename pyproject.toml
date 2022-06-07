@@ -25,6 +25,8 @@ strip-ansi = {version = "*", platform = "darwin"}
 [tool.poetry.dev-dependencies]
 setuptools = {version = "*", platform = "win32"}
 black = "*"
+typing-extensions = "*"
+types-Pillow = "*"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

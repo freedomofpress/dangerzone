@@ -3,7 +3,6 @@ import platform
 import tempfile
 import subprocess
 import json
-import shutil
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtGui import QIcon
 from colorama import Style, Fore  # type: ignore
@@ -141,27 +140,21 @@ class WaitingWidget(QtWidgets.QWidget):
     def check_state(self):
         state: str
 
-        # Can we find the container runtime binary
-        if platform.system() == "Linux":
-            container_runtime = shutil.which("podman")
-        else:
-            container_runtime = shutil.which("docker")
-
-        if container_runtime is None:
-            print("Docker is not installed")
+        if dzutil.CONTAINER_RUNTIME is None:
+            print(f"{dzutil.CONTAINER_COMMAND} is not installed")
             state = "not_installed"
 
         else:
             # Can we run `docker image ls` without an error
             with subprocess.Popen(
-                [container_runtime, "image", "ls"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                startupinfo=dzutil.get_subprocess_startupinfo(),
+                    [dzutil.CONTAINER_RUNTIME, "image", "ls"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    startupinfo=dzutil.get_subprocess_startupinfo(),
             ) as p:
                 p.communicate()
                 if p.returncode != 0:
-                    print("Docker is not running")
+                    print(f"{dzutil.CONTAINER_COMMAND} is not running")
                     state = "not_running"
                 else:
                     # Always try installing the container
@@ -171,20 +164,27 @@ class WaitingWidget(QtWidgets.QWidget):
         self.state_change(state)
 
     def state_change(self, state):
+        if dzutil.CONTAINER_COMMAND == "docker":
+            not_installed_text = "<strong>Dangerzone Requires Docker Desktop</strong><br><br><a " \
+                                 "href='https://www.docker.com/products/docker-desktop'>Download Docker " \
+                                 "Desktop</a>, install it, and open it."
+            not_running_text = "<strong>Dangerzone Requires Docker Desktop</strong><br><br>Docker is installed but " \
+                               "isn't running.<br><br>Open Docker and make sure it's running in the background."
+        else:  # dzutil.CONTAINER_COMMAND == "podman"
+            # This should only happen in developer mode, since Dangerzone's Linux repos are packaged with podman.
+            not_installed_text = "<strong>Dangerzone for Linux requires Podman.</strong>"
+            not_running_text = "<strong>Dangerzone for Linux requires Podman.</strong> Podman is installed but isn't " \
+                               "running.</strong>"
+        installing_container_text = "<p>Installing the Dangerzone container image.</p><p>This might take a few " \
+                                    "minutes...</p> "
         if state == "not_installed":
-            self.label.setText(
-                "<strong>Dangerzone Requires Docker Desktop</strong><br><br><a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>, install it, and open it."
-            )
+            self.label.setText(not_installed_text)
             self.buttons.show()
         elif state == "not_running":
-            self.label.setText(
-                "<strong>Dangerzone Requires Docker Desktop</strong><br><br>Docker is installed but isn't running.<br><br>Open Docker and make sure it's running in the background."
-            )
+            self.label.setText(not_running_text)
             self.buttons.show()
         else:
-            self.label.setText(
-                "Installing the Dangerzone container image.<br><br>This might take a few minutes..."
-            )
+            self.label.setText(installing_container_text)
             self.buttons.hide()
             self.install_container_t = InstallContainerThread()
             self.install_container_t.finished.connect(self.finished)
@@ -273,7 +273,8 @@ class DocSelectionWidget(QtWidgets.QWidget):
         filename = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Open document",
-            filter="Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.jpg *.jpeg *.gif *.png *.tif *.tiff)",
+            filter="Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.jpg "
+                   "*.jpeg *.gif *.png *.tif *.tiff)",
         )
         if filename[0] != "":
             filename = filename[0]
@@ -411,8 +412,8 @@ class SettingsWidget(QtWidgets.QWidget):
         else:
             # Either save or open must be checked
             if (
-                self.save_checkbox.checkState() == QtCore.Qt.Checked
-                or self.open_checkbox.checkState() == QtCore.Qt.Checked
+                    self.save_checkbox.checkState() == QtCore.Qt.Checked
+                    or self.open_checkbox.checkState() == QtCore.Qt.Checked
             ):
                 self.start_button.setEnabled(True)
             else:
@@ -483,10 +484,10 @@ class ConvertThread(QtCore.QThread):
             ocr_lang = None
 
         if container.convert(
-            self.common.input_filename,
-            self.common.output_filename,
-            ocr_lang,
-            self.stdout_callback,
+                self.common.input_filename,
+                self.common.output_filename,
+                ocr_lang,
+                self.stdout_callback,
         ):
             self.is_finished.emit(self.error)
 

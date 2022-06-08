@@ -7,7 +7,7 @@ from typing import Optional
 import click
 import uuid
 
-import colorama
+import colorama  # type: ignore
 
 from dangerzone.gui.application import Application
 from dangerzone.gui.gui_common import GuiCommon

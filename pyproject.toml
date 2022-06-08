@@ -27,6 +27,7 @@ setuptools = {version = "*", platform = "win32"}
 black = "*"
 typing-extensions = "*"
 types-Pillow = "*"
+types-appdirs = "*"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

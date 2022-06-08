@@ -6,7 +6,7 @@ import json
 import shutil
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtGui import QIcon
-from colorama import Style, Fore
+from colorama import Style, Fore  # type: ignore
 
 import dangerzone.util as dzutil
 from dangerzone.gui import GuiCommon

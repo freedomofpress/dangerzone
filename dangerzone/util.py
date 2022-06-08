@@ -11,7 +11,7 @@ import appdirs
 
 # If a general-purpose function or constant doesn't depend on anything else in the dangerzone package,
 # then it belongs here.
-from colorama import Back, Fore, Style
+from colorama import Back, Fore, Style  # type: ignore
 
 SYSTEM = platform.system()
 

@@ -4,7 +4,7 @@ import subprocess
 import shlex
 import pipes
 from PySide6 import QtGui
-from colorama import Fore
+from colorama import Fore  # type: ignore
 
 from dangerzone.common import Common
 from dangerzone.gui import Application

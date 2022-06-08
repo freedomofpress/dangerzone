@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import click
-import colorama
+import colorama  # type: ignore
 from colorama import Fore, Style  # type: ignore
 
 from dangerzone import container

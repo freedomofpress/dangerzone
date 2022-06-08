@@ -11,7 +11,7 @@ from dangerzone.gui import Application
 from dangerzone.gui.settings import Settings
 
 if platform.system() == "Linux":
-    from xdg.DesktopEntry import DesktopEntry  # type: ignore
+    import xdg
 
 
 class GuiCommon(Common):
@@ -24,6 +24,7 @@ class GuiCommon(Common):
 
         # Qt app
         self.app = app
+        self.settings = Settings()
 
         # Preload font
         self.fixed_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
@@ -34,18 +35,13 @@ class GuiCommon(Common):
         # Are we done waiting (for Docker Desktop to be installed, or for container to install)
         self.is_waiting_finished = False
 
-        self.settings = Settings()
-
     def open_pdf_viewer(self, filename: str):
         if platform.system() == "Darwin":
             # Open in Preview
             args = ["open", "-a", "Preview.app", filename]
-
-            # Run
             args_str = " ".join(pipes.quote(s) for s in args)
             print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.run(args)
-
         elif platform.system() == "Linux":
             # Get the PDF reader command
             args = shlex.split(self.pdf_viewers[self.settings.get("open_app")])
@@ -58,39 +54,29 @@ class GuiCommon(Common):
                     or args[i] == "%U"
                 ):
                     args[i] = filename
-
             # Open as a background process
             args_str = " ".join(pipes.quote(s) for s in args)
             print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.Popen(args)
 
     @staticmethod
-    def _find_pdf_viewers():
+    def _find_pdf_viewers() -> dict[str, str]:
         """Dict of PDF viewers installed on the machine, empty if system is not Linux."""
-        pdf_viewers = {}
+        pdf_viewers: dict[str, str] = {}
         if platform.system() == "Linux":
             # Find all .desktop files
-            for search_path in [
-                "/usr/share/applications",
-                "/usr/local/share/applications",
-                os.path.expanduser("~/.local/share/applications"),
-            ]:
-                try:
-                    for filename in os.listdir(search_path):
-                        full_filename = os.path.join(search_path, filename)
-                        if os.path.splitext(filename)[1] == ".desktop":
-
-                            # See which ones can open PDFs
-                            desktop_entry = DesktopEntry(full_filename)
-                            if (
-                                "application/pdf" in desktop_entry.getMimeTypes()
-                                and desktop_entry.getName() != "dangerzone"
-                            ):
-                                pdf_viewers[
-                                    desktop_entry.getName()
-                                ] = desktop_entry.getExec()
-
+            paths = [path + "/applications" for path in xdg.BaseDirectory.xdg_data_dirs]
+            for path in paths:
+                try:  # search the directory
+                    contents = os.listdir(path)
                 except FileNotFoundError:
                     pass
-
+                else:
+                    for file_name in contents:
+                        if os.path.splitext(file_name)[1] == ".desktop":
+                            # See which ones can open PDFs
+                            file_path = os.path.join(path, file_name)
+                            entry = xdg.DesktopEntry(file_path)
+                            if "application/pdf" in entry.getMimeTypes() and entry.getName() != "dangerzone":
+                                pdf_viewers[entry.getName()] = entry.getExec()
         return pdf_viewers

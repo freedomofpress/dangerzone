@@ -28,6 +28,7 @@ black = "*"
 typing-extensions = "*"
 types-Pillow = "*"
 types-appdirs = "*"
+pyxdg = "*"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

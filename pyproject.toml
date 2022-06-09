@@ -23,6 +23,7 @@ black = "*"
 isort = "*"
 mypy = "*"
 PySide2-stubs = "*"
+strip-ansi = "*"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

@@ -40,8 +40,9 @@ class CliTestCase(TestCase):
             for p in samples_dir.rglob("*")
             if p.is_file() and not p.name.endswith(self.SAFE_SUFFIX)
         ]
+        print(f"{self.BASIC_SAMPLE} --output-filename {self.SAMPLE_DIRECTORY}/out/my-output.pdf")
         if len(self.samples) < 10:
-            raise RuntimeWarning(f"Only ${len(self.samples)} samples found.")
+            raise RuntimeWarning(f"Only {len(self.samples)} samples found.")
 
     def invoke_runner(self, *args, **kwargs) -> Result:
         return self.runner.invoke(cli_main, *args, **kwargs)
@@ -77,7 +78,7 @@ class CliConversionTestCase(CliTestCase):
                 self.assertEqual(result.exit_code, 0)
 
     def test_output_filename(self):
-        result = self.invoke_runner(f"{self.BASIC_SAMPLE} --output-filename ${self.SAMPLE_DIRECTORY}/out/my-output.pdf")
+        result = self.invoke_runner(f"{self.BASIC_SAMPLE} --output-filename {self.SAMPLE_DIRECTORY}/out/my-output.pdf")
         self.assertEqual(result.exit_code, 0)
 
     def test_output_filename_new_dir(self):
@@ -85,15 +86,14 @@ class CliConversionTestCase(CliTestCase):
         self.assertEqual(result.exit_code, 0)
 
     def test_sample_not_found(self):
-        with self.subTest():
-            result = self.invoke_runner("fake-directory/fake-file.pdf")
-            self.assertEquals(result.exit_code, 0)
+        result = self.invoke_runner("fake-directory/fake-file.pdf")
+        self.assertEquals(result.exit_code, 1)
 
     def test_lang_mismatch(self):
         """Try to OCR sample.pdf (Lorem ipsum) as traditional Chinese characters."""
         # TODO how should we handle these cases?
         with self.assertWarns(RuntimeWarning):
-            self.invoke_runner(f"${self.BASIC_SAMPLE} --ocr-lang chi_tra")
+            self.invoke_runner(f"{self.BASIC_SAMPLE} --ocr-lang chi_tra")
 
     def test_lang_eng(self):
         # Rewrite this case if samples in other languages or scripts are added.

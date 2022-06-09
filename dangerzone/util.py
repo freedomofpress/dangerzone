@@ -8,10 +8,10 @@ import shutil
 import subprocess
 import sys
 import appdirs
+from colorama import Back, Fore, Style  # type: ignore
 
 # If a general-purpose function or constant doesn't depend on anything else in the dangerzone package,
 # then it belongs here.
-from colorama import Back, Fore, Style  # type: ignore
 
 SYSTEM = platform.system()
 

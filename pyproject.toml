@@ -29,6 +29,7 @@ typing-extensions = "*"
 types-Pillow = "*"
 types-appdirs = "*"
 pyxdg = "*"
+mypy = "*"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

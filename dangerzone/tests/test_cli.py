@@ -10,7 +10,6 @@ from click.testing import CliRunner, Result
 from dangerzone.cli import cli_main
 
 
-# TODO --output-filename
 # TODO --output-filename with spaces
 # TODO explore any symlink edge cases
 # TODO simulate ctrl-c, ctrl-d, SIGINT/SIGKILL/SIGTERM... (man 7 signal), etc?
@@ -20,7 +19,6 @@ from dangerzone.cli import cli_main
 # TODO simulate container runtime missing
 # TODO simulate container connection error
 # TODO simulate container connection loss
-# TODO pass invalid filenames
 # FIXME "/" path separator is platform-dependent, use pathlib instead
 
 

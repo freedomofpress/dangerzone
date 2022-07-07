@@ -323,7 +323,6 @@ class ConversionJob(object):
 
             self.percentage += percentage_per_page
 
-            # END OF FOR LOOP
 
         # Merge pages into a single PDF
         self.update_progress(f"Merging {num_pages} pages into a single PDF")

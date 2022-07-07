@@ -237,7 +237,6 @@ class ConversionJob(object):
             os.remove(png_filename)
             self.percentage += percentage_per_page
 
-            # END OF FOR LOOP
 
         self.update_progress("Converted document to pixels")
 

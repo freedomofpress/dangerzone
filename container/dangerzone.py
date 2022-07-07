@@ -52,7 +52,7 @@ def run_command(
         raise TimeoutError(timeout_message) from e
 
 
-class ConversionJob(object):
+class DangerzoneConverter:
     def __init__(self) -> None:
         self.percentage: float = 0.0  # TODO Optional[float], but this default value will be overwritten immediately
 
@@ -369,7 +369,7 @@ def main() -> int:
         print(f"Usage: {sys.argv[0]} [document-to-pixels]|[pixels-to-pdf]")
         return -1
 
-    job = ConversionJob()
+    converter = DangerzoneConverter()
 
     if sys.argv[1] == "document-to-pixels":
         try:

@@ -132,6 +132,17 @@ jobs:
               echo
             done
 
+  build-ubuntu-jammy:
+    docker:
+      - image: ubuntu:22.04
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+
   build-ubuntu-impish:
     docker:
       - image: ubuntu:21.10
@@ -146,17 +157,6 @@ jobs:
   build-ubuntu-hirsute:
     docker:
       - image: ubuntu:21.04
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-
-  build-ubuntu-groovy:
-    docker:
-      - image: ubuntu:20.10
     resource_class: medium+
     steps:
       - run: *install-dependencies-deb
@@ -187,6 +187,28 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
+  build-fedora-37:
+    docker:
+      - image: fedora:37
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
+
+  build-fedora-36:
+    docker:
+      - image: fedora:36
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
+
   build-fedora-35:
     docker:
       - image: fedora:35
@@ -198,31 +220,9 @@ jobs:
       - run: *copy-image
       - run: *build-rpm
 
-  build-fedora-34:
-    docker:
-      - image: fedora:34
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-rpm
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-rpm
-
-  build-fedora-33:
-    docker:
-      - image: fedora:33
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-rpm
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-rpm
-
   deploy-fedora:
     docker:
-      - image: fedora:33
+      - image: fedora:35
     resource_class: medium+
     steps:
       - run: *install-dependencies-rpm
@@ -238,16 +238,16 @@ jobs:
             dnf install -y ruby-devel
             gem install package_cloud
       - run:
-          name: Deploy fedora/33
+          name: Deploy fedora/37
           environment:
             PACKAGE_TYPE: "rpm"
-            PACKAGECLOUD_DISTRO: "fedora/33"
+            PACKAGECLOUD_DISTRO: "fedora/37"
           <<: *deploy-packagecloud
       - run:
-          name: Deploy fedora/34
+          name: Deploy fedora/36
           environment:
             PACKAGE_TYPE: "rpm"
-            PACKAGECLOUD_DISTRO: "fedora/34"
+            PACKAGECLOUD_DISTRO: "fedora/36"
           <<: *deploy-packagecloud
       - run:
           name: Deploy fedora/35
@@ -302,6 +302,12 @@ jobs:
             gem install -N rake
             gem install -N package_cloud
       - run:
+          name: Deploy ubuntu/jammy
+          environment:
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "ubuntu/jammy"
+          <<: *deploy-packagecloud
+      - run:
           name: Deploy ubuntu/impish
           environment:
             PACKAGE_TYPE: "deb"
@@ -313,12 +319,6 @@ jobs:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "ubuntu/hirsute"
           <<: *deploy-packagecloud
-      - run:
-          name: Deploy ubuntu/groovy
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/groovy"
-          <<: *deploy-packagecloud
 
 workflows:
   version: 2
@@ -329,13 +329,13 @@ workflows:
       - convert-test-docs:
           requires:
             - build-container-image
+      - build-ubuntu-jammy:
+          requires:
+            - build-container-image
       - build-ubuntu-impish:
           requires:
             - build-container-image
       - build-ubuntu-hirsute:
-          requires:
-            - build-container-image
-      - build-ubuntu-groovy:
           requires:
             - build-container-image
       - build-debian-bullseye:
@@ -344,13 +344,13 @@ workflows:
       - build-debian-bookworm:
           requires:
             - build-container-image
+      - build-fedora-37:
+          requires:
+            - build-container-image
+      - build-fedora-36:
+          requires:
+            - build-container-image
       - build-fedora-35:
-          requires:
-            - build-container-image
-      - build-fedora-34:
-          requires:
-            - build-container-image
-      - build-fedora-33:
           requires:
             - build-container-image
 

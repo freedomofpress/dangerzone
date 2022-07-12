@@ -486,7 +486,6 @@ class SettingsWidget(QtWidgets.QWidget):
 
 
 class ConvertThread(QtCore.QThread):
-    is_finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
     def __init__(self, global_common, common):
@@ -503,13 +502,12 @@ class ConvertThread(QtCore.QThread):
         else:
             ocr_lang = None
 
-        if convert(
+        convert(
             self.common.input_filename,
             self.common.output_filename,
             ocr_lang,
             self.stdout_callback,
-        ):
-            self.is_finished.emit(self.error)
+        )
 
     def stdout_callback(self, line):
         try:

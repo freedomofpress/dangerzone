@@ -21,6 +21,7 @@ strip-ansi = {version = "*", platform = "darwin"}
 setuptools = {version = "*", platform = "win32"}
 black = "*"
 isort = "*"
+mypy = "*"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

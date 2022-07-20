@@ -20,6 +20,7 @@ strip-ansi = {version = "*", platform = "darwin"}
 [tool.poetry.dev-dependencies]
 setuptools = {version = "*", platform = "win32"}
 black = "*"
+isort = "*"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

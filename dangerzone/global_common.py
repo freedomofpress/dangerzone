@@ -1,17 +1,20 @@
-import sys
-import appdirs
+import gzip
+import inspect
+import json
+import logging
+import os
 import pathlib
 import platform
-import subprocess
 import shutil
-import json
-import gzip
-import colorama
-from colorama import Fore, Back, Style
-import logging
+import subprocess
+import sys
 
-from .settings import Settings
+import appdirs
+import colorama
+from colorama import Back, Fore, Style
+
 from .container import convert
+from .settings import Settings
 
 log = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
-import subprocess
 import gzip
 import os
+import subprocess
 
 
 def main():

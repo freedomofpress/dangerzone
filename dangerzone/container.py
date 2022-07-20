@@ -1,10 +1,11 @@
-import platform
-import subprocess
-import pipes
-import shutil
 import logging
 import os
+import pipes
+import platform
+import shutil
+import subprocess
 import tempfile
+
 import appdirs
 
 # What container tech is used for this platform?

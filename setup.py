@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import setuptools
 import os
 import sys
+
+import setuptools
 
 with open("share/version.txt") as f:
     version = f.read().strip()

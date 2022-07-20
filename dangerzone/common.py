@@ -1,7 +1,8 @@
 import os
-import stat
 import platform
+import stat
 import tempfile
+
 import appdirs
 
 

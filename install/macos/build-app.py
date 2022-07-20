@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
-import inspect
-import subprocess
-import shutil
 import argparse
 import glob
+import inspect
 import itertools
+import os
+import shutil
+import subprocess
 
 root = os.path.dirname(
     os.path.dirname(

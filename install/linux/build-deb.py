@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
-import sys
 import inspect
-import subprocess
+import os
 import shutil
+import subprocess
+import sys
 
 root = os.path.dirname(
     os.path.dirname(

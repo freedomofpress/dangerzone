@@ -1,12 +1,13 @@
+import json
+import logging
 import os
 import platform
-import tempfile
-import subprocess
-import json
 import shutil
-import logging
+import subprocess
+import tempfile
+
+from colorama import Fore, Style
 from PySide2 import QtCore, QtGui, QtWidgets
-from colorama import Style, Fore
 
 from ..common import Common
 from ..container import convert

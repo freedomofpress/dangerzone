@@ -1,11 +1,12 @@
-import os
-import platform
-import subprocess
-import shlex
-import pipes
-from PySide2 import QtCore, QtGui, QtWidgets
-from colorama import Fore
 import logging
+import os
+import pipes
+import platform
+import shlex
+import subprocess
+
+from colorama import Fore
+from PySide2 import QtCore, QtGui, QtWidgets
 
 if platform.system() == "Darwin":
     import plistlib

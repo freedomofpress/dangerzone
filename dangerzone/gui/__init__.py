@@ -1,16 +1,17 @@
-import os
-import sys
-import signal
-import platform
-import click
-import uuid
 import logging
+import os
+import platform
+import signal
+import sys
+import uuid
+
+import click
 from PySide2 import QtCore, QtWidgets
 
+from ..global_common import GlobalCommon
 from .common import GuiCommon
 from .main_window import MainWindow
 from .systray import SysTray
-from ..global_common import GlobalCommon
 
 
 # For some reason, Dangerzone segfaults if I inherit from QApplication directly, so instead

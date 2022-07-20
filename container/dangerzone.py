@@ -12,12 +12,12 @@ pixels_to_pdf:
 - 95%-100%: Compress the final PDF
 """
 
-import sys
-import subprocess
 import glob
-import os
 import json
+import os
 import shutil
+import subprocess
+import sys
 
 import magic
 from PIL import Image

@@ -1,7 +1,6 @@
-import os
 import json
-import appdirs
 import logging
+import os
 
 log = logging.getLogger(__name__)
 

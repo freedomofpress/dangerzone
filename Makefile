@@ -14,6 +14,19 @@ lint-isort: ## check imports are organized, with isort
 lint-isort-apply: ## apply isort's imports organization suggestions
 	isort ./
 
+mypy-host:
+	mypy dangerzone
+
+mypy-container:
+	mypy container
+
+mypy-dev-scripts:
+	mypy install \
+		dev_scripts/* \
+		*.py
+
+mypy: mypy-host # mypy-container mypy-dev-scripts ## check type hints with mypy
+
 .PHONY: lint
 lint: lint-black lint-isort ## check the code with various linters
 

@@ -14,16 +14,21 @@ lint-isort: ## check imports are organized, with isort
 lint-isort-apply: ## apply isort's imports organization suggestions
 	isort ./
 
+MYPY_ARGS := --ignore-missing-imports \
+			 --disallow-incomplete-defs \
+			 --disallow-untyped-defs \
+			 --show-error-codes \
+			 --warn-unreachable \
+			 --warn-unused-ignores
+
 mypy-host:
-	mypy dangerzone
+	mypy $(MYPY_ARGS) dangerzone
 
 mypy-container:
-	mypy container
+	mypy $(MYPY_ARGS) container
 
 mypy-dev-scripts:
-	mypy install \
-		dev_scripts/* \
-		*.py
+	mypy $(MYPY_ARGS) install dev_scripts/* *.py
 
 mypy: mypy-host # mypy-container mypy-dev-scripts ## check type hints with mypy
 

@@ -27,7 +27,9 @@ class GuiCommon(object):
     The GuiCommon class is a singleton of shared functionality for the GUI
     """
 
-    def __init__(self, app, global_common: GlobalCommon) -> None:
+    def __init__(
+        self, app: QtWidgets.QApplication, global_common: GlobalCommon
+    ) -> None:
         # Qt app
         self.app = app
 

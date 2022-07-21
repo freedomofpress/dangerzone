@@ -1,14 +1,20 @@
 import json
 import logging
 import os
+from typing import TYPE_CHECKING
 
 log = logging.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from .global_common import GlobalCommon
+
 
 class Settings:
-    def __init__(self, common):
-        self.common = common
-        self.settings_filename = os.path.join(self.common.appdata_path, "settings.json")
+    def __init__(self, global_common: "GlobalCommon") -> None:
+        self.global_common = global_common
+        self.settings_filename = os.path.join(
+            self.global_common.appdata_path, "settings.json"
+        )
         self.default_settings = {
             "save": True,
             "ocr": True,
@@ -48,7 +54,7 @@ class Settings:
 
         self.save()
 
-    def save(self):
-        os.makedirs(self.common.appdata_path, exist_ok=True)
+    def save(self) -> None:
+        os.makedirs(self.global_common.appdata_path, exist_ok=True)
         with open(self.settings_filename, "w") as settings_file:
             json.dump(self.settings, settings_file, indent=4)

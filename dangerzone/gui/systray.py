@@ -1,10 +1,23 @@
 import platform
+from typing import TYPE_CHECKING
 
 from PySide2 import QtWidgets
 
+from ..global_common import GlobalCommon
+from .common import GuiCommon
+
+if TYPE_CHECKING:
+    from . import ApplicationWrapper
+
 
 class SysTray(QtWidgets.QSystemTrayIcon):
-    def __init__(self, global_common, gui_common, app, app_wrapper):
+    def __init__(
+        self,
+        global_common: GlobalCommon,
+        gui_common: GuiCommon,
+        app: QtWidgets.QApplication,
+        app_wrapper: "ApplicationWrapper",
+    ) -> None:
         super(SysTray, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
@@ -24,8 +37,8 @@ class SysTray(QtWidgets.QSystemTrayIcon):
         self.setContextMenu(menu)
         self.show()
 
-    def new_window(self):
+    def new_window(self) -> None:
         self.app_wrapper.new_window.emit()
 
-    def quit_clicked(self):
+    def quit_clicked(self) -> None:
         self.app.quit()

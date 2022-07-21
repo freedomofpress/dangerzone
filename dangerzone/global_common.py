@@ -447,7 +447,8 @@ class GlobalCommon(object):
             while True:
                 chunk = f.read(chunk_size)
                 if len(chunk) > 0:
-                    p.stdin.write(chunk)
+                    if p.stdin:
+                        p.stdin.write(chunk)
                 else:
                     break
         p.communicate()

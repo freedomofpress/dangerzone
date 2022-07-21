@@ -17,8 +17,8 @@ else:
 
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
-    startupinfo = subprocess.STARTUPINFO()
-    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    startupinfo = subprocess.STARTUPINFO()  # type: ignore [attr-defined]
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # type: ignore [attr-defined]
 else:
     startupinfo = None
 

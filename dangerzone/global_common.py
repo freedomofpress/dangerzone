@@ -417,7 +417,7 @@ class GlobalCommon(object):
         resource_path = prefix.joinpath(filename)
         return str(resource_path)
 
-    def get_subprocess_startupinfo(self):
+    def get_subprocess_startupinfo(self):  # type: ignore [no-untyped-def]
         if platform.system() == "Windows":
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW

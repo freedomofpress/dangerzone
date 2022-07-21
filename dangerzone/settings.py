@@ -19,13 +19,13 @@ class Settings:
 
         self.load()
 
-    def get(self, key):
+    def get(self, key: str):
         return self.settings[key]
 
-    def set(self, key, val):
+    def set(self, key: str, val) -> None:
         self.settings[key] = val
 
-    def load(self):
+    def load(self) -> None:
         if os.path.isfile(self.settings_filename):
             # If the settings file exists, load it
             try:

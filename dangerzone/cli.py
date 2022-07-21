@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+from typing import Optional
 
 import click
 from colorama import Fore, Style
@@ -11,7 +12,7 @@ from .container import convert
 from .global_common import GlobalCommon
 
 
-def print_header(s):
+def print_header(s: str) -> None:
     click.echo("")
     click.echo(Style.BRIGHT + s)
 
@@ -20,7 +21,9 @@ def print_header(s):
 @click.option("--output-filename", help="Default is filename ending with -safe.pdf")
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
 @click.argument("filename", required=True)
-def cli_main(output_filename, ocr_lang, filename):
+def cli_main(
+    output_filename: Optional[str], ocr_lang: Optional[str], filename: str
+) -> None:
     setup_logging()
     global_common = GlobalCommon()
     common = Common()
@@ -92,7 +95,7 @@ def cli_main(output_filename, ocr_lang, filename):
     # Convert the document
     print_header("Converting document to safe PDF")
 
-    def stdout_callback(line):
+    def stdout_callback(line: str) -> None:
         try:
             status = json.loads(line)
             s = Style.BRIGHT + Fore.CYAN + f"{status['percentage']}% "

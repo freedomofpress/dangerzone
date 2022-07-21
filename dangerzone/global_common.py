@@ -8,6 +8,7 @@ import platform
 import shutil
 import subprocess
 import sys
+from typing import Optional
 
 import appdirs
 import colorama
@@ -24,7 +25,7 @@ class GlobalCommon(object):
     The GlobalCommon class is a singleton of shared functionality throughout the app
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Version
         try:
             with open(self.get_resource_path("version.txt")) as f:
@@ -210,7 +211,7 @@ class GlobalCommon(object):
         # Load settings
         self.settings = Settings(self)
 
-    def display_banner(self):
+    def display_banner(self) -> None:
         """
         Raw ASCII art example:
         ╭──────────────────────────╮
@@ -391,7 +392,7 @@ class GlobalCommon(object):
         else:
             return shutil.which("docker")
 
-    def get_resource_path(self, filename):
+    def get_resource_path(self, filename: str) -> str:
         if getattr(sys, "dangerzone_dev", False):
             # Look for resources directory relative to python file
             project_root = pathlib.Path(__file__).parent.parent
@@ -420,12 +421,12 @@ class GlobalCommon(object):
         else:
             return None
 
-    def install_container(self):
+    def install_container(self) -> Optional[bool]:
         """
         Make sure the podman container is installed. Linux only.
         """
         if self.is_container_installed():
-            return
+            return None
 
         # Load the container into podman
         log.info("Installing Dangerzone container image...")
@@ -454,7 +455,7 @@ class GlobalCommon(object):
         log.info("Container image installed")
         return True
 
-    def is_container_installed(self):
+    def is_container_installed(self) -> bool:
         """
         See if the podman container is installed. Linux only.
         """

@@ -5,12 +5,15 @@ import platform
 import shutil
 import subprocess
 import tempfile
+from typing import Optional
 
 from colorama import Fore, Style
 from PySide2 import QtCore, QtGui, QtWidgets
 
 from ..common import Common
 from ..container import convert
+from ..global_common import GlobalCommon
+from .common import GuiCommon
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +21,9 @@ log = logging.getLogger(__name__)
 class MainWindow(QtWidgets.QMainWindow):
     delete_window = QtCore.Signal(str)
 
-    def __init__(self, global_common, gui_common, window_id):
+    def __init__(
+        self, global_common: GlobalCommon, gui_common: GuiCommon, window_id: str
+    ) -> None:
         super(MainWindow, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
@@ -78,12 +83,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.show()
 
-    def waiting_finished(self):
+    def waiting_finished(self) -> None:
         self.gui_common.is_waiting_finished = True
         self.waiting_widget.hide()
         self.content_widget.show()
 
-    def closeEvent(self, e):
+    def closeEvent(self, e: QtGui.QCloseEvent) -> None:
         e.accept()
         self.delete_window.emit(self.window_id)
 
@@ -94,11 +99,11 @@ class MainWindow(QtWidgets.QMainWindow):
 class InstallContainerThread(QtCore.QThread):
     finished = QtCore.Signal()
 
-    def __init__(self, global_common):
+    def __init__(self, global_common: GlobalCommon) -> None:
         super(InstallContainerThread, self).__init__()
         self.global_common = global_common
 
-    def run(self):
+    def run(self) -> None:
         self.global_common.install_container()
         self.finished.emit()
 
@@ -115,7 +120,7 @@ class WaitingWidget(QtWidgets.QWidget):
     # - "install_container"
     finished = QtCore.Signal()
 
-    def __init__(self, global_common, gui_common):
+    def __init__(self, global_common: GlobalCommon, gui_common: GuiCommon) -> None:
         super(WaitingWidget, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
@@ -148,8 +153,8 @@ class WaitingWidget(QtWidgets.QWidget):
         # Check the state
         self.check_state()
 
-    def check_state(self):
-        state = None
+    def check_state(self) -> None:
+        state: Optional[str] = None
 
         # Can we find the container runtime binary binary
         if platform.system() == "Linux":
@@ -180,7 +185,7 @@ class WaitingWidget(QtWidgets.QWidget):
         # Update the state
         self.state_change(state)
 
-    def state_change(self, state):
+    def state_change(self, state: str) -> None:
         if state == "not_installed":
             self.label.setText(
                 "<strong>Dangerzone Requires Docker Desktop</strong><br><br><a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>, install it, and open it."
@@ -204,7 +209,9 @@ class WaitingWidget(QtWidgets.QWidget):
 class ContentWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
-    def __init__(self, global_common, gui_common, common):
+    def __init__(
+        self, global_common: GlobalCommon, gui_common: GuiCommon, common: Common
+    ) -> None:
         super(ContentWidget, self).__init__()
 
         self.global_common = global_common
@@ -244,22 +251,22 @@ class ContentWidget(QtWidgets.QWidget):
         layout.addWidget(self.convert_widget, stretch=1)
         self.setLayout(layout)
 
-    def document_selected(self):
+    def document_selected(self) -> None:
         self.doc_selection_widget.hide()
         self.settings_widget.show()
 
-    def start_clicked(self):
+    def start_clicked(self) -> None:
         self.settings_widget.hide()
         self.convert_widget.show()
 
-    def _close_window(self):
+    def _close_window(self) -> None:
         self.close_window.emit()
 
 
 class DocSelectionWidget(QtWidgets.QWidget):
     document_selected = QtCore.Signal()
 
-    def __init__(self, common):
+    def __init__(self, common: Common) -> None:
         super(DocSelectionWidget, self).__init__()
         self.common = common
 
@@ -286,7 +293,7 @@ class DocSelectionWidget(QtWidgets.QWidget):
         layout.addStretch()
         self.setLayout(layout)
 
-    def dangerous_doc_button_clicked(self):
+    def dangerous_doc_button_clicked(self) -> None:
         filename = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Open document",
@@ -302,7 +309,9 @@ class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.Signal()
     close_window = QtCore.Signal()
 
-    def __init__(self, global_common, gui_common, common):
+    def __init__(
+        self, global_common: GlobalCommon, gui_common: GuiCommon, common: Common
+    ) -> None:
         super(SettingsWidget, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
@@ -424,7 +433,7 @@ class SettingsWidget(QtWidgets.QWidget):
                 if index != -1:
                     self.open_combobox.setCurrentIndex(index)
 
-    def update_ui(self):
+    def update_ui(self) -> None:
         if platform.system() == "Windows":
             # Because the save checkbox is always checked in Windows, the
             # start button can be enabled
@@ -439,7 +448,7 @@ class SettingsWidget(QtWidgets.QWidget):
             else:
                 self.start_button.setEnabled(False)
 
-    def document_selected(self):
+    def document_selected(self) -> None:
         # Update the danger doc label
         self.dangerous_doc_label.setText(
             f"Suspicious: {os.path.basename(self.common.input_filename)}"
@@ -450,7 +459,7 @@ class SettingsWidget(QtWidgets.QWidget):
         self.common.output_filename = output_filename
         self.save_lineedit.setText(os.path.basename(output_filename))
 
-    def save_browse_button_clicked(self):
+    def save_browse_button_clicked(self) -> None:
         filename = QtWidgets.QFileDialog.getSaveFileName(
             self,
             "Save safe PDF as...",
@@ -461,7 +470,7 @@ class SettingsWidget(QtWidgets.QWidget):
             self.common.output_filename = filename[0]
             self.save_lineedit.setText(os.path.basename(self.common.output_filename))
 
-    def start_button_clicked(self):
+    def start_button_clicked(self) -> None:
         if self.common.output_filename is None:
             # If not saving, then save it to a temp file instead
             tmp = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
@@ -493,13 +502,13 @@ class ConvertThread(QtCore.QThread):
     finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
-    def __init__(self, global_common, common):
+    def __init__(self, global_common: GlobalCommon, common: Common) -> None:
         super(ConvertThread, self).__init__()
         self.global_common = global_common
         self.common = common
         self.error = False
 
-    def run(self):
+    def run(self) -> None:
         if self.global_common.settings.get("ocr"):
             ocr_lang = self.global_common.ocr_languages[
                 self.global_common.settings.get("ocr_language")
@@ -515,7 +524,7 @@ class ConvertThread(QtCore.QThread):
         ):
             self.finished.emit(self.error)
 
-    def stdout_callback(self, line):
+    def stdout_callback(self, line: str) -> None:
         try:
             status = json.loads(line)
         except:
@@ -541,7 +550,9 @@ class ConvertThread(QtCore.QThread):
 class ConvertWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
-    def __init__(self, global_common, gui_common, common):
+    def __init__(
+        self, global_common: GlobalCommon, gui_common: GuiCommon, common: Common
+    ) -> None:
         super(ConvertWidget, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
@@ -588,19 +599,19 @@ class ConvertWidget(QtWidgets.QWidget):
         layout.addStretch()
         self.setLayout(layout)
 
-    def document_selected(self):
+    def document_selected(self) -> None:
         # Update the danger doc label
         self.dangerous_doc_label.setText(
             f"Suspicious: {os.path.basename(self.common.input_filename)}"
         )
 
-    def start(self):
+    def start(self) -> None:
         self.convert_t = ConvertThread(self.global_common, self.common)
         self.convert_t.update.connect(self.update)
         self.convert_t.finished.connect(self.all_done)
         self.convert_t.start()
 
-    def update(self, error, text, percentage):
+    def update(self, error, text, percentage) -> None:
         if error:
             self.error = True
             self.error_image.show()
@@ -609,7 +620,7 @@ class ConvertWidget(QtWidgets.QWidget):
         self.label.setText(text)
         self.progress.setValue(percentage)
 
-    def all_done(self):
+    def all_done(self) -> None:
         if self.error:
             return
 

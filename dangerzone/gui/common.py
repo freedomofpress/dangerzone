@@ -16,6 +16,7 @@ elif platform.system() == "Linux":
     import getpass
     from xdg.DesktopEntry import DesktopEntry
 
+from ..global_common import GlobalCommon
 from ..settings import Settings
 
 log = logging.getLogger(__name__)
@@ -26,7 +27,7 @@ class GuiCommon(object):
     The GuiCommon class is a singleton of shared functionality for the GUI
     """
 
-    def __init__(self, app, global_common):
+    def __init__(self, app, global_common: GlobalCommon) -> None:
         # Qt app
         self.app = app
 
@@ -42,14 +43,14 @@ class GuiCommon(object):
         # Are we done waiting (for Docker Desktop to be installed, or for container to install)
         self.is_waiting_finished = False
 
-    def get_window_icon(self):
+    def get_window_icon(self) -> QtGui.QIcon:
         if platform.system() == "Windows":
             path = self.global_common.get_resource_path("dangerzone.ico")
         else:
             path = self.global_common.get_resource_path("icon.png")
         return QtGui.QIcon(path)
 
-    def open_pdf_viewer(self, filename):
+    def open_pdf_viewer(self, filename: str) -> None:
         if platform.system() == "Darwin":
             # Open in Preview
             args = ["open", "-a", "Preview.app", filename]
@@ -79,8 +80,8 @@ class GuiCommon(object):
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.Popen(args)
 
-    def _find_pdf_viewers(self):
-        pdf_viewers = {}
+    def _find_pdf_viewers(self) -> dict[str, str]:
+        pdf_viewers: dict[str, str] = {}
         if platform.system() == "Linux":
             # Find all .desktop files
             for search_path in [
@@ -111,8 +112,13 @@ class GuiCommon(object):
 
 class Alert(QtWidgets.QDialog):
     def __init__(
-        self, gui_common, global_common, message, ok_text="Ok", extra_button_text=None
-    ):
+        self,
+        gui_common: GuiCommon,
+        global_common: GlobalCommon,
+        message: str,
+        ok_text: str = "Ok",
+        extra_button_text: str = None,
+    ) -> None:
         super(Alert, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
@@ -167,14 +173,14 @@ class Alert(QtWidgets.QDialog):
         layout.addLayout(buttons_layout)
         self.setLayout(layout)
 
-    def clicked_ok(self):
+    def clicked_ok(self) -> None:
         self.done(QtWidgets.QDialog.Accepted)
 
-    def clicked_extra(self):
+    def clicked_extra(self) -> None:
         self.done(2)
 
-    def clicked_cancel(self):
+    def clicked_cancel(self) -> None:
         self.done(QtWidgets.QDialog.Rejected)
 
-    def launch(self):
+    def launch(self) -> int:
         return self.exec_()

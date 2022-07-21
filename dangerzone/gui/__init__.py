@@ -4,6 +4,7 @@ import platform
 import signal
 import sys
 import uuid
+from typing import Dict, NoReturn, Optional, TextIO
 
 import click
 from PySide2 import QtCore, QtWidgets
@@ -21,14 +22,14 @@ class ApplicationWrapper(QtCore.QObject):
     new_window = QtCore.Signal()
     application_activated = QtCore.Signal()
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(ApplicationWrapper, self).__init__()
         self.app = QtWidgets.QApplication()
         self.app.setQuitOnLastWindowClosed(False)
 
         self.original_event = self.app.event
 
-        def monkeypatch_event(event):
+        def monkeypatch_event(event: QtCore.QEvent) -> bool:
             # In macOS, handle the file open event
             if event.type() == QtCore.QEvent.FileOpen:
                 # Skip file open events in dev mode
@@ -46,7 +47,7 @@ class ApplicationWrapper(QtCore.QObject):
 
 @click.command()
 @click.argument("filename", required=False)
-def gui_main(filename):
+def gui_main(filename: str) -> bool:
     setup_logging()
 
     if platform.system() == "Darwin":
@@ -61,16 +62,16 @@ def gui_main(filename):
         from strip_ansi import strip_ansi
 
         class StdoutFilter:
-            def __init__(self, stream):
+            def __init__(self, stream: TextIO) -> None:
                 self.stream = stream
 
-            def __getattr__(self, attr_name):
+            def __getattr__(self, attr_name):  # type: ignore [no-untyped-def]
                 return getattr(self.stream, attr_name)
 
-            def write(self, data):
+            def write(self, data: str) -> None:
                 self.stream.write(strip_ansi(data))
 
-            def flush(self):
+            def flush(self) -> None:
                 self.stream.flush()
 
         sys.stdout = StdoutFilter(sys.stdout)
@@ -90,15 +91,15 @@ def gui_main(filename):
     # Create the system tray
     systray = SysTray(global_common, gui_common, app, app_wrapper)
 
-    closed_windows = {}
-    windows = {}
+    closed_windows: Dict[str, MainWindow] = {}
+    windows: Dict[str, MainWindow] = {}
 
-    def delete_window(window_id):
+    def delete_window(window_id: str) -> None:
         closed_windows[window_id] = windows[window_id]
         del windows[window_id]
 
     # Open a document in a window
-    def select_document(filename=None):
+    def select_document(filename: Optional[str] = None) -> bool:
         if (
             len(windows) == 1
             and windows[list(windows.keys())[0]].common.input_filename == None
@@ -112,16 +113,16 @@ def gui_main(filename):
 
         if filename:
             # Validate filename
-            filename = os.path.abspath(os.path.expanduser(filename))
+            file_path: str = os.path.abspath(os.path.expanduser(filename))
             try:
-                open(filename, "rb")
+                open(file_path, "rb")
             except FileNotFoundError:
                 click.echo("File not found")
                 return False
             except PermissionError:
                 click.echo("Permission denied")
                 return False
-            window.common.input_filename = filename
+            window.common.input_filename = file_path
             window.content_widget.doc_selection_widget.document_selected.emit()
 
         return True
@@ -135,7 +136,7 @@ def gui_main(filename):
             return True
 
     # Open a new window, if all windows are closed
-    def application_activated():
+    def application_activated() -> None:
         if len(windows) == 0:
             select_document()
 

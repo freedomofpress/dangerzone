@@ -386,11 +386,15 @@ class GlobalCommon(object):
         )
         print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
 
-    def get_container_runtime(self):
+    def get_container_runtime(self) -> str:
         if platform.system() == "Linux":
-            return shutil.which("podman")
+            runtime_name = "podman"
         else:
-            return shutil.which("docker")
+            runtime_name = "docker"
+        runtime = shutil.which(runtime_name)
+        if runtime is None:
+            raise Exception(f"{runtime_name} is not installed")
+        return runtime
 
     def get_resource_path(self, filename: str) -> str:
         if getattr(sys, "dangerzone_dev", False):

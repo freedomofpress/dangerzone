@@ -52,11 +52,17 @@ def exec(args, stdout_callback=None):
 def exec_container(command, extra_args=[], stdout_callback=None):
     if container_tech == "podman":
         container_runtime = shutil.which("podman")
+        if container_runtime is None:
+            raise Exception(f"podman is not installed")
+
         platform_args = []
         security_args = ["--security-opt", "no-new-privileges"]
         security_args += ["--userns", "keep-id"]
     else:
         container_runtime = shutil.which("docker")
+        if container_runtime is None:
+            raise Exception(f"docker is not installed")
+
         platform_args = ["--platform", "linux/amd64"]
         security_args = ["--security-opt=no-new-privileges:true"]
 

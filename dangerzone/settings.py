@@ -1,21 +1,22 @@
 import json
 import logging
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .global_common import GlobalCommon
 
-
 class Settings:
+    settings: Dict[str, Any]
+
     def __init__(self, global_common: "GlobalCommon") -> None:
         self.global_common = global_common
         self.settings_filename = os.path.join(
             self.global_common.appdata_path, "settings.json"
         )
-        self.default_settings = {
+        self.default_settings: Dict[str, Any] = {
             "save": True,
             "ocr": True,
             "ocr_language": "English",
@@ -25,14 +26,16 @@ class Settings:
 
         self.load()
 
-    def get(self, key: str):
+    def get(self, key: str) -> Any:
         return self.settings[key]
 
-    def set(self, key: str, val) -> None:
+    def set(self, key: str, val: Any) -> None:
         self.settings[key] = val
 
     def load(self) -> None:
         if os.path.isfile(self.settings_filename):
+            self.settings = self.default_settings
+
             # If the settings file exists, load it
             try:
                 with open(self.settings_filename, "r") as settings_file:

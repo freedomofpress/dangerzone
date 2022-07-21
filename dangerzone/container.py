@@ -5,6 +5,8 @@ import platform
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Callable
+from typing import List, Optional
 
 import appdirs
 
@@ -28,7 +30,7 @@ log = logging.getLogger(__name__)
 container_name = "dangerzone.rocks/dangerzone"
 
 
-def exec(args, stdout_callback=None):
+def exec(args: List[str], stdout_callback: Callable[[str], None] = None) -> int:
     args_str = " ".join(pipes.quote(s) for s in args)
     log.info("> " + args_str)
 
@@ -41,7 +43,7 @@ def exec(args, stdout_callback=None):
         universal_newlines=True,
         startupinfo=startupinfo,
     ) as p:
-        if stdout_callback:
+        if stdout_callback and p.stdout is not None:
             for line in p.stdout:
                 stdout_callback(line)
 
@@ -49,7 +51,11 @@ def exec(args, stdout_callback=None):
         return p.returncode
 
 
-def exec_container(command, extra_args=[], stdout_callback=None):
+def exec_container(
+    command: List[str],
+    extra_args: List[str] = [],
+    stdout_callback: Callable[[str], None] = None,
+) -> int:
     if container_tech == "podman":
         container_runtime = shutil.which("podman")
         if container_runtime is None:
@@ -84,7 +90,12 @@ def exec_container(command, extra_args=[], stdout_callback=None):
     return exec(args, stdout_callback)
 
 
-def convert(input_filename, output_filename, ocr_lang, stdout_callback):
+def convert(
+    input_filename: str,
+    output_filename: str,
+    ocr_lang: Optional[str],
+    stdout_callback: Callable[[str], None],
+) -> bool:
     success = False
 
     if ocr_lang:

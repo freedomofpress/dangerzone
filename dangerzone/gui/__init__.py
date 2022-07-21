@@ -47,7 +47,7 @@ class ApplicationWrapper(QtCore.QObject):
 
 @click.command()
 @click.argument("filename", required=False)
-def gui_main(filename: str) -> bool:
+def gui_main(filename: Optional[str]) -> bool:
     setup_logging()
 
     if platform.system() == "Darwin":

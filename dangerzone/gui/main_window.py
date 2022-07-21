@@ -611,7 +611,7 @@ class ConvertWidget(QtWidgets.QWidget):
         self.convert_t.finished.connect(self.all_done)
         self.convert_t.start()
 
-    def update(self, error, text, percentage) -> None:
+    def update(self, error: bool, text: str, percentage: int) -> None:
         if error:
             self.error = True
             self.error_image.show()

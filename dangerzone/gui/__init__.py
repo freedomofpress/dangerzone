@@ -4,9 +4,10 @@ import platform
 import signal
 import sys
 import uuid
-from typing import Dict, NoReturn, Optional, TextIO
+from typing import Dict, Optional
 
 import click
+import colorama
 from PySide2 import QtCore, QtWidgets
 
 from ..global_common import GlobalCommon
@@ -57,25 +58,9 @@ def gui_main(filename: Optional[str]) -> bool:
         # Make sure /usr/local/bin is in the path
         os.environ["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
 
-        # Strip ANSI colors from stdout output, to prevent terminal colors from breaking
-        # the macOS GUI app
-        from strip_ansi import strip_ansi
-
-        class StdoutFilter:
-            def __init__(self, stream: TextIO) -> None:
-                self.stream = stream
-
-            def __getattr__(self, attr_name):  # type: ignore [no-untyped-def]
-                return getattr(self.stream, attr_name)
-
-            def write(self, data: str) -> None:
-                self.stream.write(strip_ansi(data))
-
-            def flush(self) -> None:
-                self.stream.flush()
-
-        sys.stdout = StdoutFilter(sys.stdout)
-        sys.stderr = StdoutFilter(sys.stderr)
+        # Don't show ANSI colors from stdout output, to prevent terminal
+        # colors from breaking the macOS GUI app
+        colorama.deinit()
 
     # Create the Qt app
     app_wrapper = ApplicationWrapper()

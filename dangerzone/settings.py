@@ -8,6 +8,7 @@ log = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from .global_common import GlobalCommon
 
+
 class Settings:
     settings: Dict[str, Any]
 

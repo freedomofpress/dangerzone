@@ -5,8 +5,7 @@ import platform
 import shutil
 import subprocess
 import tempfile
-from collections.abc import Callable
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 import appdirs
 

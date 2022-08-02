@@ -471,7 +471,7 @@ class SettingsWidget(QtWidgets.QWidget):
             self.save_lineedit.setText(os.path.basename(self.common.output_filename))
 
     def start_button_clicked(self) -> None:
-        if self.common.output_filename is None:
+        if self.save_checkbox.checkState() == QtCore.Qt.Unchecked:
             # If not saving, then save it to a temp file instead
             tmp = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
             self.common.output_filename = tmp[1]

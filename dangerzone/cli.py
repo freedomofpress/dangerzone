@@ -52,7 +52,7 @@ def cli_main(
             return
 
         try:
-            with open(os.path.abspath(output_filename), "wb") as f:
+            with open(os.path.abspath(output_filename), "rb") as f:
                 pass
         except:
             valid = False
@@ -68,7 +68,7 @@ def cli_main(
             f"{os.path.splitext(common.input_filename)[0]}-safe.pdf"
         )
         try:
-            with open(common.output_filename, "wb") as f:
+            with open(common.output_filename, "rb") as f:
                 pass
         except:
             click.echo(

@@ -33,7 +33,7 @@ mypy-dev-scripts:
 mypy: mypy-host # mypy-container mypy-dev-scripts ## check type hints with mypy
 
 .PHONY: lint
-lint: lint-black lint-isort ## check the code with various linters
+lint: lint-black lint-isort mypy ## check the code with various linters
 
 .PHONY: lint-apply
 lint-apply: lint-black-apply lint-isort-apply ## apply all the linter's suggestions

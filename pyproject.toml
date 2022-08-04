@@ -22,6 +22,7 @@ setuptools = {version = "*", platform = "win32"}
 black = "*"
 isort = "*"
 mypy = "*"
+PySide2-stubs = "*"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

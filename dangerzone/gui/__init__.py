@@ -8,7 +8,7 @@ from typing import Dict, Optional
 
 import click
 import colorama
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 from ..global_common import GlobalCommon
 from .common import GuiCommon
@@ -30,9 +30,10 @@ class ApplicationWrapper(QtCore.QObject):
 
         self.original_event = self.app.event
 
-        def monkeypatch_event(event: QtCore.QEvent) -> bool:
+        def monkeypatch_event(arg__1: QtCore.QEvent) -> bool:
+            event = arg__1  # oddly Qt calls internally event by "arg__1"
             # In macOS, handle the file open event
-            if event.type() == QtCore.QEvent.FileOpen:
+            if isinstance(event, QtGui.QFileOpenEvent):
                 # Skip file open events in dev mode
                 if not hasattr(sys, "dangerzone_dev"):
                     self.document_selected.emit(event.file())
@@ -43,7 +44,7 @@ class ApplicationWrapper(QtCore.QObject):
 
             return self.original_event(event)
 
-        self.app.event = monkeypatch_event
+        self.app.event = monkeypatch_event  # type: ignore [assignment]
 
 
 @click.command()

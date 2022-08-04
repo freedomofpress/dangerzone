@@ -143,28 +143,6 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
-  build-ubuntu-impish:
-    docker:
-      - image: ubuntu:21.10
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-
-  build-ubuntu-hirsute:
-    docker:
-      - image: ubuntu:21.04
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-
   build-debian-bookworm:
     docker:
       - image: debian:bookworm
@@ -287,7 +265,7 @@ jobs:
 
   deploy-ubuntu:
     docker:
-      - image: ubuntu:21.04
+      - image: ubuntu:22.04
     resource_class: medium+
     steps:
       - run: *install-dependencies-deb
@@ -307,18 +285,6 @@ jobs:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "ubuntu/jammy"
           <<: *deploy-packagecloud
-      - run:
-          name: Deploy ubuntu/impish
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/impish"
-          <<: *deploy-packagecloud
-      - run:
-          name: Deploy ubuntu/hirsute
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/hirsute"
-          <<: *deploy-packagecloud
 
 workflows:
   version: 2
@@ -330,12 +296,6 @@ workflows:
           requires:
             - build-container-image
       - build-ubuntu-jammy:
-          requires:
-            - build-container-image
-      - build-ubuntu-impish:
-          requires:
-            - build-container-image
-      - build-ubuntu-hirsute:
           requires:
             - build-container-image
       - build-debian-bullseye:

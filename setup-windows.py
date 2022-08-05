@@ -5,14 +5,16 @@ from cx_Freeze import setup, Executable
 with open("share/version.txt") as f:
     version = f.read().strip()
 
+packages = ["dangerzone", "dangerzone.gui"]
 
 setup(
     name="dangerzone",
     version=version,
     description="Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF",
+    packages=packages,
     options={
         "build_exe": {
-            "packages": ["dangerzone", "dangerzone.gui"],
+            "packages": packages,
             "excludes": ["test", "tkinter"],
             "include_files": [("share", "share"), ("LICENSE", "LICENSE")],
             "include_msvcr": True,

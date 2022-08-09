@@ -2,6 +2,7 @@ import platform
 import subprocess
 import pipes
 import shutil
+import logging
 import os
 import tempfile
 import appdirs
@@ -20,6 +21,7 @@ if platform.system() == "Windows":
 else:
     startupinfo = None
 
+log = logging.getLogger(__name__)
 
 # Name of the dangerzone container
 container_name = "dangerzone.rocks/dangerzone"
@@ -27,7 +29,7 @@ container_name = "dangerzone.rocks/dangerzone"
 
 def exec(args, stdout_callback=None):
     args_str = " ".join(pipes.quote(s) for s in args)
-    print("> " + args_str)
+    log.info("> " + args_str)
 
     with subprocess.Popen(
         args,
@@ -95,7 +97,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
     )
     ret = exec_container(args, stdout_callback)
     if ret != 0:
-        print("documents-to-pixels failed")
+        log.error("documents-to-pixels failed")
     else:
         # TODO: validate convert to pixels output
 
@@ -120,7 +122,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
         )
         ret = exec_container(args, stdout_callback)
         if ret != 0:
-            print("pixels-to-pdf failed")
+            log.error("pixels-to-pdf failed")
         else:
             # Move the final file to the right place
             if os.path.exists(output_filename):

@@ -4,6 +4,7 @@ import signal
 import platform
 import click
 import uuid
+import logging
 from PySide2 import QtCore, QtWidgets
 
 from .common import GuiCommon
@@ -45,6 +46,8 @@ class ApplicationWrapper(QtCore.QObject):
 @click.command()
 @click.argument("filename", required=False)
 def gui_main(filename):
+    setup_logging()
+
     if platform.system() == "Darwin":
         # Required for macOS Big Sur: https://stackoverflow.com/a/64878899
         os.environ["QT_MAC_WANTS_LAYER"] = "1"
@@ -146,3 +149,7 @@ def gui_main(filename):
     ret = app.exec_()
 
     sys.exit(ret)
+
+
+def setup_logging() -> None:
+    logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] %(message)s")

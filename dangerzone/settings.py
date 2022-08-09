@@ -1,6 +1,9 @@
 import os
 import json
 import appdirs
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class Settings:
@@ -36,12 +39,12 @@ class Settings:
                         self.settings[key] = self.default_settings[key]
 
             except:
-                print("Error loading settings, falling back to default")
+                log.error("Error loading settings, falling back to default")
                 self.settings = self.default_settings
 
         else:
             # Save with default settings
-            print("Settings file doesn't exist, starting with default")
+            log.info("Settings file doesn't exist, starting with default")
             self.settings = self.default_settings
 
         self.save()

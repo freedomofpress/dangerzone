@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import click
+import logging
 from colorama import Fore, Style
 
 from .global_common import GlobalCommon
@@ -19,6 +20,7 @@ def print_header(s):
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
 @click.argument("filename", required=True)
 def cli_main(output_filename, ocr_lang, filename):
+    setup_logging()
     global_common = GlobalCommon()
     common = Common()
 
@@ -113,3 +115,11 @@ def cli_main(output_filename, ocr_lang, filename):
     else:
         print_header("Failed to convert document")
         sys.exit(-1)
+
+
+def setup_logging() -> None:
+    if getattr(sys, "dangerzone_dev", True):
+        fmt = "%(message)s"
+        logging.basicConfig(level=logging.DEBUG, format=fmt)
+    else:
+        logging.basicConfig(level=logging.ERROR, format=fmt)

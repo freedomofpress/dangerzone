@@ -5,6 +5,7 @@ import shlex
 import pipes
 from PySide2 import QtCore, QtGui, QtWidgets
 from colorama import Fore
+import logging
 
 if platform.system() == "Darwin":
     import plistlib
@@ -15,6 +16,8 @@ elif platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry
 
 from ..settings import Settings
+
+log = logging.getLogger(__name__)
 
 
 class GuiCommon(object):
@@ -52,7 +55,7 @@ class GuiCommon(object):
 
             # Run
             args_str = " ".join(pipes.quote(s) for s in args)
-            print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
+            log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.run(args)
 
         elif platform.system() == "Linux":
@@ -72,7 +75,7 @@ class GuiCommon(object):
 
             # Open as a background process
             args_str = " ".join(pipes.quote(s) for s in args)
-            print(Fore.YELLOW + "> " + Fore.CYAN + args_str)
+            log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.Popen(args)
 
     def _find_pdf_viewers(self):

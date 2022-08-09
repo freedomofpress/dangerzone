@@ -8,9 +8,12 @@ import json
 import gzip
 import colorama
 from colorama import Fore, Back, Style
+import logging
 
 from .settings import Settings
 from .container import convert
+
+log = logging.getLogger(__name__)
 
 
 class GlobalCommon(object):
@@ -224,8 +227,8 @@ class GlobalCommon(object):
         ╰──────────────────────────╯
         """
 
-        print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
-        print(
+        log.info(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -237,7 +240,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -249,7 +252,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -261,7 +264,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -273,7 +276,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -285,7 +288,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -297,7 +300,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -309,7 +312,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -321,7 +324,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -333,7 +336,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -345,12 +348,12 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │")
+        log.info(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │")
         left_spaces = (15 - len(self.version) - 1) // 2
         right_spaces = left_spaces
         if left_spaces + len(self.version) + 1 + right_spaces < 15:
             right_spaces += 1
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -364,7 +367,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(
+        log.info(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -377,7 +380,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
+        log.info(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
 
     def get_container_runtime(self):
         if platform.system() == "Linux":
@@ -423,7 +426,7 @@ class GlobalCommon(object):
             return
 
         # Load the container into podman
-        print("Installing Dangerzone container image...")
+        log.info("Installing Dangerzone container image...")
 
         p = subprocess.Popen(
             [self.get_container_runtime(), "load"],
@@ -443,10 +446,10 @@ class GlobalCommon(object):
         p.communicate()
 
         if not self.is_container_installed():
-            print("Failed to install the container image")
+            log.error("Failed to install the container image")
             return False
 
-        print("Container image installed")
+        log.info("Container image installed")
         return True
 
     def is_container_installed(self):
@@ -478,7 +481,7 @@ class GlobalCommon(object):
         elif found_image_id == "":
             pass
         else:
-            print("Deleting old dangerzone container image")
+            log.info("Deleting old dangerzone container image")
 
             try:
                 subprocess.check_output(
@@ -486,6 +489,6 @@ class GlobalCommon(object):
                     startupinfo=self.get_subprocess_startupinfo(),
                 )
             except:
-                print("Couldn't delete old container image, so leaving it there")
+                log.warning("Couldn't delete old container image, so leaving it there")
 
         return installed

@@ -4,11 +4,14 @@ import tempfile
 import subprocess
 import json
 import shutil
+import logging
 from PySide2 import QtCore, QtGui, QtWidgets
 from colorama import Style, Fore
 
 from ..common import Common
 from ..container import convert
+
+log = logging.getLogger(__name__)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -154,7 +157,7 @@ class WaitingWidget(QtWidgets.QWidget):
             container_runtime = shutil.which("docker")
 
         if container_runtime is None:
-            print("Docker is not installed")
+            log.error("Docker is not installed")
             state = "not_installed"
 
         else:
@@ -167,7 +170,7 @@ class WaitingWidget(QtWidgets.QWidget):
             ) as p:
                 p.communicate()
                 if p.returncode != 0:
-                    print("Docker is not running")
+                    log.error("Docker is not running")
                     state = "not_running"
                 else:
                     # Always try installing the container
@@ -515,7 +518,7 @@ class ConvertThread(QtCore.QThread):
         try:
             status = json.loads(line)
         except:
-            print(f"Invalid JSON returned from container: {line}")
+            log.error(f"Invalid JSON returned from container: {line}")
             self.error = True
             self.update.emit(
                 True, f"Invalid JSON returned from container:\n\n{line}", 0
@@ -526,9 +529,10 @@ class ConvertThread(QtCore.QThread):
         if status["error"]:
             self.error = True
             s += Style.RESET_ALL + Fore.RED + status["text"]
+            log.error(s)
         else:
             s += Style.RESET_ALL + status["text"]
-        print(s)
+            log.info(s)
 
         self.update.emit(status["error"], status["text"], status["percentage"])
 

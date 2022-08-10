@@ -82,6 +82,8 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
         platform_args = []
         security_args = ["--security-opt", "no-new-privileges"]
 
+    # drop all linux kernel capabilities
+    security_args += ["--cap-drop", "all"]
 
 
     # Convert document to pixels

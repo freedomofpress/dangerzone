@@ -77,13 +77,18 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
 
     if container_tech == "docker":
         platform_args = ["--platform", "linux/amd64"]
+        security_args = ["--security-opt=no-new-privileges:true"]
     else:
         platform_args = []
+        security_args = ["--security-opt", "no-new-privileges"]
+
+
 
     # Convert document to pixels
     args = (
         ["run", "--network", "none"]
         + platform_args
+        + security_args
         + [
             "-v",
             f"{input_filename}:/tmp/input_file",
@@ -105,6 +110,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
         args = (
             ["run", "--network", "none"]
             + platform_args
+            + security_args
             + [
                 "-v",
                 f"{pixel_dir}:/dangerzone",

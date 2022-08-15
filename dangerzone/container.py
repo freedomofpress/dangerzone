@@ -81,6 +81,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
     else:
         platform_args = []
         security_args = ["--security-opt", "no-new-privileges"]
+        security_args += ["--userns", "keep-id"]
 
     # drop all linux kernel capabilities
     security_args += ["--cap-drop", "all"]

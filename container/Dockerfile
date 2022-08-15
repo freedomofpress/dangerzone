@@ -91,7 +91,8 @@ COPY dangerzone.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/dangerzone.py
 
 # Add the unprivileged user
-RUN adduser -h /home/user -s /bin/sh -D user
+RUN adduser -s /bin/sh -D dangerzone
+USER dangerzone
 
 # /tmp/input_file is where the first convert expects the input file to be, and
 # /tmp where it will write the pixel files

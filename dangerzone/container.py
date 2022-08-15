@@ -85,11 +85,13 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
     # drop all linux kernel capabilities
     security_args += ["--cap-drop", "all"]
 
+    user_args = ["-u", "dangerzone"]
 
     # Convert document to pixels
     args = (
         ["run", "--network", "none"]
         + platform_args
+        + user_args
         + security_args
         + [
             "-v",
@@ -113,6 +115,7 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
             ["run", "--network", "none"]
             + platform_args
             + security_args
+            + user_args
             + [
                 "-v",
                 f"{pixel_dir}:/dangerzone",

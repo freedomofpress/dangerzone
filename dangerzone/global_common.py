@@ -398,16 +398,15 @@ class GlobalCommon(object):
             prefix = project_root.joinpath("share")
         else:
             if platform.system() == "Darwin":
-                bin_path = pathlib.Path(sys.executable)           # /path/to/Dangerzone.app/Contents/MacOS/dangerzone[-cli]
-                app_path = bin_path.parent.parent                 # /path/to/Dangerzone.app/Contents
-                prefix = app_path.joinpath("Resources", "share")  # /path/to/Dangerzone.app/Contents/Resources/share
+                bin_path = pathlib.Path(sys.executable)
+                app_path = bin_path.parent.parent
+                prefix = app_path.joinpath("Resources", "share")
             elif platform.system() == "Linux":
-                prefix = pathlib.Path(sys.prefix)\
-                                .joinpath("share", "dangerzone")  # /usr/share/dangerzone
+                prefix = pathlib.Path(sys.prefix).joinpath("share", "dangerzone")
             elif platform.system() == "Windows":
-                exe_path = pathlib.Path(sys.executable)           # c:\Program Files (x86)\Dangerzone\dangerzone.exe
-                dz_install_path = exe_path.parent                 # c:\Program Files (x86)\Dangerzone\
-                prefix = dz_install_path.joinpath("share")        # c:\Program Files (x86)\Dangerzone\share
+                exe_path = pathlib.Path(sys.executable)
+                dz_install_path = exe_path.parent
+                prefix = dz_install_path.joinpath("share")
             else:
                 raise NotImplementedError(f"Unsupported system {platform.system()}")
         resource_path = prefix.joinpath(filename)

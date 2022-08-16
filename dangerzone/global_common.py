@@ -1,7 +1,6 @@
 import sys
-import os
-import inspect
 import appdirs
+import pathlib
 import platform
 import subprocess
 import shutil
@@ -389,27 +388,24 @@ class GlobalCommon(object):
     def get_resource_path(self, filename):
         if getattr(sys, "dangerzone_dev", False):
             # Look for resources directory relative to python file
-            prefix = os.path.join(
-                os.path.dirname(
-                    os.path.dirname(
-                        os.path.abspath(inspect.getfile(inspect.currentframe()))
-                    )
-                ),
-                "share",
-            )
+            project_root = pathlib.Path(__file__).parent.parent
+            prefix = project_root.joinpath("share")
         else:
             if platform.system() == "Darwin":
-                prefix = os.path.join(
-                    os.path.dirname(os.path.dirname(sys.executable)), "Resources/share"
-                )
+                bin_path = pathlib.Path(sys.executable)           # /path/to/Dangerzone.app/Contents/MacOS/dangerzone[-cli]
+                app_path = bin_path.parent.parent                 # /path/to/Dangerzone.app/Contents
+                prefix = app_path.joinpath("Resources", "share")  # /path/to/Dangerzone.app/Contents/Resources/share
             elif platform.system() == "Linux":
-                prefix = os.path.join(sys.prefix, "share", "dangerzone")
+                prefix = pathlib.Path(sys.prefix)\
+                                .joinpath("share", "dangerzone")  # /usr/share/dangerzone
+            elif platform.system() == "Windows":
+                exe_path = pathlib.Path(sys.executable)           # c:\Program Files (x86)\Dangerzone\dangerzone.exe
+                dz_install_path = exe_path.parent                 # c:\Program Files (x86)\Dangerzone\
+                prefix = dz_install_path.joinpath("share")        # c:\Program Files (x86)\Dangerzone\share
             else:
-                # Windows
-                prefix = os.path.join(os.path.dirname(sys.executable), "share")
-
-        resource_path = os.path.join(prefix, filename)
-        return resource_path
+                raise NotImplementedError(f"Unsupported system {platform.system()}")
+        resource_path = prefix.joinpath(filename)
+        return str(resource_path)
 
     def get_subprocess_startupinfo(self):
         if platform.system() == "Windows":

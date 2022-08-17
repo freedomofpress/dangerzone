@@ -294,13 +294,12 @@ class DocSelectionWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def dangerous_doc_button_clicked(self) -> None:
-        filename = QtWidgets.QFileDialog.getOpenFileName(
+        (filename, _) = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Open document",
             filter="Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.jpg *.jpeg *.gif *.png *.tif *.tiff)",
         )
-        if filename[0] != "":
-            filename = filename[0]
+        if filename != "":
             self.common.input_filename = filename
             self.document_selected.emit()
 

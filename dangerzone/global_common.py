@@ -227,8 +227,8 @@ class GlobalCommon(object):
         ╰──────────────────────────╯
         """
 
-        log.info(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
-        log.info(
+        print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -240,7 +240,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -252,7 +252,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -264,7 +264,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -276,7 +276,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -288,7 +288,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -300,7 +300,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -312,7 +312,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -324,7 +324,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -336,7 +336,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -348,12 +348,12 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │")
+        print(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │")
         left_spaces = (15 - len(self.version) - 1) // 2
         right_spaces = left_spaces
         if left_spaces + len(self.version) + 1 + right_spaces < 15:
             right_spaces += 1
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -367,7 +367,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(
+        print(
             Back.BLACK
             + Fore.YELLOW
             + Style.DIM
@@ -380,7 +380,7 @@ class GlobalCommon(object):
             + Style.DIM
             + "│"
         )
-        log.info(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
+        print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
 
     def get_container_runtime(self):
         if platform.system() == "Linux":

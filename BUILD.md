@@ -5,7 +5,7 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y podman dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-colorama python3-psutil
+sudo apt install -y podman dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-colorama
 ```
 
 Build the latest container:
@@ -31,7 +31,7 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-colorama python3-psutil
+sudo dnf install -y rpm-build podman python3 python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-colorama
 ```
 
 Build the latest container:

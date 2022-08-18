@@ -9,13 +9,10 @@ license = "MIT"
 python = ">=3.7,<3.10"
 click = "*"
 appdirs = "*"
-termcolor = "*"
 PySide2 = "5.15.2"
 colorama = "*"
-psutil = "*"
 cx_freeze = {version = "*", platform = "win32"}
 pywin32 = {version = "*", platform = "win32"}
-wmi = {version = "*", platform = "win32"}
 pyxdg = {version = "*", platform = "linux"}
 pyinstaller = {version = "*", platform = "darwin"}
 strip-ansi = {version = "*", platform = "darwin"}

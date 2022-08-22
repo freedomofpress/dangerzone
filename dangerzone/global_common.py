@@ -428,7 +428,7 @@ class GlobalCommon(object):
         Make sure the podman container is installed. Linux only.
         """
         if self.is_container_installed():
-            return None
+            return True
 
         # Load the container into podman
         log.info("Installing Dangerzone container image...")

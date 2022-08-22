@@ -48,11 +48,30 @@ def exec(args, stdout_callback=None):
         return p.returncode
 
 
-def exec_container(args, stdout_callback=None):
+def exec_container(command, extra_args=[], stdout_callback=None):
     if container_tech == "podman":
         container_runtime = shutil.which("podman")
+        platform_args = []
+        security_args = ["--security-opt", "no-new-privileges"]
+        security_args += ["--userns", "keep-id"]
     else:
         container_runtime = shutil.which("docker")
+        platform_args = ["--platform", "linux/amd64"]
+        security_args = ["--security-opt=no-new-privileges:true"]
+
+    # drop all linux kernel capabilities
+    security_args += ["--cap-drop", "all"]
+    user_args = ["-u", "dangerzone"]
+
+    args = (
+        ["run", "--network", "none"]
+        + platform_args
+        + user_args
+        + security_args
+        + extra_args
+        + [container_name]
+        + command
+    )
 
     args = [container_runtime] + args
     return exec(args, stdout_callback)
@@ -75,64 +94,33 @@ def convert(input_filename, output_filename, ocr_lang, stdout_callback):
     os.makedirs(pixel_dir, exist_ok=True)
     os.makedirs(safe_dir, exist_ok=True)
 
-    if container_tech == "docker":
-        platform_args = ["--platform", "linux/amd64"]
-        security_args = ["--security-opt=no-new-privileges:true"]
-    else:
-        platform_args = []
-        security_args = ["--security-opt", "no-new-privileges"]
-        security_args += ["--userns", "keep-id"]
-
-    # drop all linux kernel capabilities
-    security_args += ["--cap-drop", "all"]
-
-    user_args = ["-u", "dangerzone"]
-
     # Convert document to pixels
-    args = (
-        ["run", "--network", "none"]
-        + platform_args
-        + user_args
-        + security_args
-        + [
-            "-v",
-            f"{input_filename}:/tmp/input_file",
-            "-v",
-            f"{pixel_dir}:/dangerzone",
-            container_name,
-            "/usr/bin/python3",
-            "/usr/local/bin/dangerzone.py",
-            "document-to-pixels",
-        ]
-    )
-    ret = exec_container(args, stdout_callback)
+    command = ["/usr/bin/python3", "/usr/local/bin/dangerzone.py", "document-to-pixels"]
+    extra_args = [
+        "-v",
+        f"{input_filename}:/tmp/input_file",
+        "-v",
+        f"{pixel_dir}:/dangerzone",
+    ]
+    ret = exec_container(command, extra_args, stdout_callback)
     if ret != 0:
         log.error("documents-to-pixels failed")
     else:
         # TODO: validate convert to pixels output
 
         # Convert pixels to safe PDF
-        args = (
-            ["run", "--network", "none"]
-            + platform_args
-            + security_args
-            + user_args
-            + [
-                "-v",
-                f"{pixel_dir}:/dangerzone",
-                "-v",
-                f"{safe_dir}:/safezone",
-                "-e",
-                f"OCR={ocr}",
-                "-e",
-                f"OCR_LANGUAGE={ocr_lang}",
-                container_name,
-                "/usr/bin/python3",
-                "/usr/local/bin/dangerzone.py",
-                "pixels-to-pdf",
-            ]
-        )
-        ret = exec_container(args, stdout_callback)
+        command = ["/usr/bin/python3", "/usr/local/bin/dangerzone.py", "pixels-to-pdf"]
+        extra_args = [
+            "-v",
+            f"{pixel_dir}:/dangerzone",
+            "-v",
+            f"{safe_dir}:/safezone",
+            "-e",
+            f"OCR={ocr}",
+            "-e",
+            f"OCR_LANGUAGE={ocr_lang}",
+        ]
+        ret = exec_container(command, extra_args, stdout_callback)
         if ret != 0:
             log.error("pixels-to-pdf failed")
         else:

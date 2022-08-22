@@ -78,3 +78,4 @@ To publish the release:
 - Create a new release on GitHub, put the changelog in the description of the release, and upload the macOS and Windows installers
 - Update the [Installing Dangerzone](https://github.com/firstlookmedia/dangerzone/wiki/Installing-Dangerzone) wiki page
 - Update the [Dangerzone website](https://github.com/firstlookmedia/dangerzone.rocks) to link to the new installers
+- Update the brew cask release of Dangerzone with a [PR like this one](https://github.com/Homebrew/homebrew-cask/pull/116319)

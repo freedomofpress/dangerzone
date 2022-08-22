@@ -18,19 +18,20 @@ import os
 import shutil
 import subprocess
 import sys
+from typing import Dict, Optional
 
 import magic
 from PIL import Image
 
 
 class DangerzoneConverter:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def document_to_pixels(self):
+    def document_to_pixels(self) -> int:
         percentage = 0.0
 
-        conversions = {
+        conversions: Dict[str, Dict[str, Optional[str]]] = {
             # .pdf
             "application/pdf": {"type": None},
             # .docx
@@ -312,8 +313,8 @@ class DangerzoneConverter:
 
         return 0
 
-    def pixels_to_pdf(self):
-        percentage = 50.0
+    def pixels_to_pdf(self) -> int:
+        percentage: float = 50.0
 
         num_pages = len(glob.glob("/dangerzone/page-*.rgb"))
 
@@ -516,12 +517,12 @@ class DangerzoneConverter:
 
         return 0
 
-    def output(self, error, text, percentage):
+    def output(self, error: bool, text: str, percentage: float) -> None:
         print(json.dumps({"error": error, "text": text, "percentage": int(percentage)}))
         sys.stdout.flush()
 
 
-def main():
+def main() -> int:
     if len(sys.argv) != 2:
         print(f"Usage: {sys.argv[0]} [document-to-pixels]|[pixels-to-pdf]")
         return -1

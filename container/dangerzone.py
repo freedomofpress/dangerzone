@@ -334,7 +334,7 @@ class DangerzoneConverter:
             with open(height_filename) as f:
                 height = f.read().strip()
 
-            if os.environ.get("OCR") == "1":
+            if os.environ.get("OCR") == "1" and os.environ.get("OCR_LANGUAGE"):
                 # OCR the document
                 self.output(
                     False,
@@ -379,7 +379,7 @@ class DangerzoneConverter:
                     png_filename,
                     ocr_filename,
                     "-l",
-                    os.environ.get("OCR_LANGUAGE"),
+                    os.environ.get("OCR_LANGUAGE"), # type: ignore
                     "--dpi",
                     "70",
                     "pdf",

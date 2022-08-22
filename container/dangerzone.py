@@ -379,7 +379,7 @@ class DangerzoneConverter:
                     png_filename,
                     ocr_filename,
                     "-l",
-                    os.environ.get("OCR_LANGUAGE"), # type: ignore
+                    os.environ.get("OCR_LANGUAGE"),  # type: ignore
                     "--dpi",
                     "70",
                     "pdf",

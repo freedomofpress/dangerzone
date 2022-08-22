@@ -27,10 +27,7 @@ mypy-host:
 mypy-container:
 	mypy $(MYPY_ARGS) container
 
-mypy-dev-scripts:
-	mypy $(MYPY_ARGS) install dev_scripts/* *.py
-
-mypy: mypy-host  mypy-container # mypy-dev-scripts ## check type hints with mypy
+mypy: mypy-host  mypy-container ## check type hints with mypy
 
 .PHONY: lint
 lint: lint-black lint-isort mypy ## check the code with various linters

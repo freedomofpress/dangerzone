@@ -40,7 +40,7 @@ def cli_main(
 
     if not valid:
         click.echo("Invalid filename")
-        return
+        exit(1)
 
     common.input_filename = os.path.abspath(filename)
 
@@ -49,7 +49,7 @@ def cli_main(
         valid = True
         if not output_filename.endswith(".pdf"):
             click.echo("Safe PDF filename must end in '.pdf'")
-            return
+            exit(1)
 
         try:
             with open(os.path.abspath(output_filename), "wb"):
@@ -59,7 +59,7 @@ def cli_main(
 
         if not valid:
             click.echo("Safe PDF filename is not writable")
-            return
+            exit(1)
 
         common.output_filename = os.path.abspath(output_filename)
 
@@ -74,7 +74,7 @@ def cli_main(
             click.echo(
                 f"Output filename {common.output_filename} is not writable, use --output-filename"
             )
-            return
+            exit(1)
 
     # Validate OCR language
     if ocr_lang:
@@ -87,7 +87,7 @@ def cli_main(
             click.echo("Invalid OCR language code. Valid language codes:")
             for lang in global_common.ocr_languages:
                 click.echo(f"{global_common.ocr_languages[lang]}: {lang}")
-            return
+            exit(1)
 
     # Ensure container is installed
     global_common.install_container()
@@ -115,10 +115,10 @@ def cli_main(
     ):
         print_header("Safe PDF created successfully")
         click.echo(common.output_filename)
-        sys.exit(0)
+        exit(0)
     else:
         print_header("Failed to convert document")
-        sys.exit(-1)
+        exit(1)
 
 
 def setup_logging() -> None:

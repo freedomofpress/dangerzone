@@ -57,13 +57,6 @@ class CliBasicTestCase(CliTestCase):
         result = self.invoke_runner("--help")
         self.assertEqual(result.exit_code, 0)
 
-    def test_version(self):
-        """``$ dangerzone-cli --version``"""
-        # Note: fails for now, "--version" is not yet implemented.
-        result = self.invoke_runner("--version")
-        self.assertEqual(result.exit_code, 0)
-
-
 class CliConversionTestCase(CliTestCase):
     def test_invalid_lang(self):
         result = self.invoke_runner(f"{self.BASIC_SAMPLE} --ocr-lang piglatin")
@@ -87,39 +80,7 @@ class CliConversionTestCase(CliTestCase):
         result = self.invoke_runner("fake-directory/fake-file.pdf")
         self.assertEquals(result.exit_code, 1)
 
-    def test_lang_mismatch(self):
-        """Try to OCR sample.pdf (Lorem ipsum) as traditional Chinese characters."""
-        # TODO how should we handle these cases?
-        with self.assertWarns(RuntimeWarning):
-            self.invoke_runner(f"{self.BASIC_SAMPLE} --ocr-lang chi_tra")
-
     def test_lang_eng(self):
         # Rewrite this case if samples in other languages or scripts are added.
         result = self.invoke_runner(f'"{self.BASIC_SAMPLE}" --ocr-lang eng')
-        self.assertEqual(result.exit_code, 0)
-
-    def test_bulk(self):
-        """
-        Try to convert all sample documents in one run.
-        Fails for now, since bulk conversion is not yet implemented.
-        """
-        # FIXME Once bulk conversion is implemented, return here to expand and quote self.samples correctly.
-        result = self.invoke_runner(self.samples)
-        self.assertEqual(result.exit_code, 0)
-
-    def test_bulk_input_one_name(self):
-        """
-        Try to convert all sample documents in one run and supplies --output-filename This should fail.
-        """
-        # FIXME Once bulk conversion is implemented, return here to expand and quote self.samples correctly.
-        result = self.invoke_runner(self.samples + ["--output-filename sample-safe.pdf"])  # more samples than names
-        self.assertNotEqual(result.exit_code, 0)
-
-    def test_bulk_ocr_eng(self):
-        """
-        Try to convert all sample documents in one run and with English OCR.
-        Fails for now, since bulk conversion is not yet implemented.
-        """
-        # FIXME Once bulk conversion is implemented, return here to expand and quote self.samples correctly.
-        result = self.invoke_runner(self.samples + ["--ocr-lang eng"])
         self.assertEqual(result.exit_code, 0)

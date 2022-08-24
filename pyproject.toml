@@ -24,6 +24,7 @@ isort = "*"
 mypy = "*"
 PySide2-stubs = "*"
 strip-ansi = "*"
+pytest = "^7.1.2"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

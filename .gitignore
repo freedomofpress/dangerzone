@@ -132,9 +132,8 @@ dmypy.json
 *.tar.gz
 deb_dist
 .DS_Store
+tests/test_docs/**/*-safe.pdf
 install/windows/Dangerzone.wxs
-**/*-safe.pdf
-test_docs/out/
 share/container.tar
 share/container.tar.gz
 share/image-id.txt

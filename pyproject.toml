@@ -25,6 +25,7 @@ mypy = "*"
 PySide2-stubs = "*"
 strip-ansi = "*"
 pytest = "^7.1.2"
+pytest-xdist = "^2.5.0"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

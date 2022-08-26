@@ -75,11 +75,14 @@ def exec_container(
     security_args += ["--cap-drop", "all"]
     user_args = ["-u", "dangerzone"]
 
+    prevent_leakage_args = ["--rm"]
+
     args = (
         ["run", "--network", "none"]
         + platform_args
         + user_args
         + security_args
+        + prevent_leakage_args
         + extra_args
         + [container_name]
         + command

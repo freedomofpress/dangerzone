@@ -4,6 +4,7 @@ import pipes
 import platform
 import shlex
 import subprocess
+from typing import Dict
 
 from colorama import Fore
 from PySide2 import QtCore, QtGui, QtWidgets
@@ -82,8 +83,8 @@ class GuiCommon(object):
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.Popen(args)
 
-    def _find_pdf_viewers(self) -> dict[str, str]:
-        pdf_viewers: dict[str, str] = {}
+    def _find_pdf_viewers(self) -> Dict[str, str]:
+        pdf_viewers: Dict[str, str] = {}
         if platform.system() == "Linux":
             # Find all .desktop files
             for search_path in [

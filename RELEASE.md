@@ -34,14 +34,13 @@ To make a macOS release, go to macOS build machine:
 
 - Build machine must have:
   - macOS 10.14
-  - Apple-trusted `Developer ID Application: FIRST LOOK PRODUCTIONS, INC.` and `Developer ID Installer: FIRST LOOK PRODUCTIONS, INC.` code-signing certificates installed
-  - An app-specific Apple ID password saved in the login keychain called `flockagent-notarize`
+  - Apple-trusted `Developer ID Application: FIRST LOOK PRODUCTIONS, INC. (P24U45L8P5)` code-signing certificates installed
 - Verify and checkout the git tag for this release
 - Run `poetry install`
-- Run `poetry run ./install/macos/build_app.py --with-codesign`; this will make `dist/Dangerzone.dmg`
-- Notarize it: `xcrun altool --notarize-app --primary-bundle-id "media.firstlook.dangerzone" -u "micah@firstlook.org" -p "@keychain:dangerzone-notarize" --file dist/Dangerzone.dmg`
-- Wait for it to get approved, check status with: `xcrun altool --notarization-history 0 -u "micah@firstlook.org" -p "@keychain:dangerzone-notarize"`
-- (If it gets rejected, you can see why with: `xcrun altool --notarization-info [RequestUUID] -u "micah@firstlook.org" -p "@keychain:dangerzone-notarize"`)
+- Run `poetry run ./install/macos/build-app.py --with-codesign`; this will make `dist/Dangerzone.dmg`
+- Notarize it: `xcrun altool --notarize-app --primary-bundle-id "media.firstlook.dangerzone" -u "micah@firstlook.org" -p "$PASSWORD" --file dist/Dangerzone.dmg`
+- Wait for it to get approved, check status with: `xcrun altool --notarization-history 0 -u "micah@firstlook.org" -p "$PASSWORD"`
+- (If it gets rejected, you can see why with: `xcrun altool --notarization-info $REQUEST_UUID -u "micah@firstlook.org" -p "$PASSWORD"`)
 - After it's approved, staple the ticket: `xcrun stapler staple dist/Dangerzone.dmg`
 
 This process ends up with the final file:
@@ -54,15 +53,25 @@ Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
 
 ## Windows release
 
-To make a Windows release, go to the Windows build machine:
+### Set up a Windows 11 VM for making releases
 
-- Build machine should be running Windows 10, and have the Windows codesigning certificate installed
+- Download a VirtualBox VM image for Windows from here: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/ and import it into VirtualBox. Also install the Oracle VM VirtualBox Extension Pack.
+- Install updates
+- Install git for Windows from https://git-scm.com/download/win, and clone the dangerzone repo
+- Follow the Windows build instructions in `BUILD.md`, except:
+  - Don't install Docker Desktop (it won't work without nested virtualization)
+  - Install the Windows SDK from here: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/ and add `C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool` to the path (you'll need it for `signtool.exe`)
+  - You'll also need the Windows codesigning certificate installed on the VM
+
+### Build the container image
+
+Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar.gz` and `share/image-id.txt` from the host into the `share` folder in the VM
+
+### Build the Dangerzone binary and installer
+
 - Verify and checkout the git tag for this release
 - Run `poetry install`
-- Run `poetry shell`, then `cd ..\pyinstaller`, `python setup.py install`, `exit`
-- Run `poetry run install\windows\step1-build-exe.bat`
-- Open a second command prompt _as an administratror_, cd to the dangerzone directory, and run: `install\windows\step2-make-symlink.bat`
-- Back in the first command prompt, run: `poetry run install\windows\step3-build-installer.bat`
+- Run `poetry run .\install\windows\build-app.bat`
 - When you're done you will have `dist\Dangerzone.msi`
 
 Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.

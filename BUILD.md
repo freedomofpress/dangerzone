@@ -54,16 +54,14 @@ Create a .rpm:
 
 ## macOS
 
-Install Xcode from the App Store.
-
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Make sure to choose your correct CPU, either Intel Chip or Apple Chip.
 
-Install Python 3.9.9 [from python.org](https://www.python.org/downloads/release/python-399/).
+Install the latest version of Python 3.9 [from python.org](https://www.python.org/downloads/macos/), and make sure `/Library/Frameworks/Python.framework/Versions/3.9/bin` is in your `PATH`.
 
 Install Python dependencies:
 
 ```sh
-pip3 install --user poetry
+python3 -m pip install poetry
 poetry install
 ```
 
@@ -110,12 +108,12 @@ The output is in the `dist` folder.
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
-Install Python 3.9.9 (x86) [from python.org](https://www.python.org/downloads/release/python-399/). When installing it, make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
+Install the latest version of Python 3.9 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.9 to PATH" checkbox on the first page of the installer.
 
-Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
+Install [poetry](https://python-poetry.org/):
 
 ```
-(Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py -UseBasicParsing).Content | python
+python -m pip install poetry
 ```
 
 Change to the `dangerzone` folder, and install the poetry dependencies:

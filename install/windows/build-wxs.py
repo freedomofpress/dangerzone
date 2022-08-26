@@ -23,7 +23,7 @@ def build_data(dirname, dir_prefix, id_, name):
                 id_prefix = id_
 
             # Skip lib/Pyside2/Examples folder
-            if "\\build\\exe.win32-3.9\\lib\\PySide2\\examples" in dirname:
+            if "\\build\\exe.win-amd64-3.9\\lib\\PySide2\\examples" in dirname:
                 continue
 
             id_value = f"{id_prefix}{basename.capitalize().replace('-', '_')}"
@@ -121,7 +121,7 @@ def main():
     dist_dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
         "build",
-        "exe.win32-3.9",
+        "exe.win-amd64-3.9",
     )
     if not os.path.exists(dist_dir):
         print("You must build the dangerzone binary before running this")
@@ -145,7 +145,7 @@ def main():
     data["dirs"][0]["dirs"].append(
         build_data(
             dist_dir,
-            "exe.win32-3.9",
+            "exe.win-amd64-3.9",
             "INSTALLDIR",
             "Dangerzone",
         )
@@ -224,9 +224,8 @@ def main():
     print('<?xml version="1.0" encoding="windows-1252"?>')
     print(f'<?define ProductVersion = "{version}"?>')
     print('<?define ProductUpgradeCode = "12b9695c-965b-4be0-bc33-21274e809576"?>')
-
     ET.indent(root_el)
-    ET.dump(root_el)
+    print(ET.tostring(root_el).decode())
 
 
 if __name__ == "__main__":

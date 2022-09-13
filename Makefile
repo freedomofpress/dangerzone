@@ -37,7 +37,7 @@ lint-apply: lint-black-apply lint-isort-apply ## apply all the linter's suggesti
 
 .PHONT: test
 test:  ## run tests in parallel
-	pytest -v -n 4
+	pytest -v -n 4 --cov
 
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.

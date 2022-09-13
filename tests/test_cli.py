@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import shutil
 import tempfile
 
 import pytest
@@ -67,4 +69,19 @@ class TestCliConversion(TestCliBasic):
 
     def test_lang_eng(self):
         result = self.run_cli(f'"{self.sample_doc}" --ocr-lang eng')
+        assert result.exit_code == 0
+
+    @pytest.mark.parametrize(
+        "filename,",
+        [
+            "“Curly_Quotes”.pdf",  # issue 144
+            "Оригинал.pdf",
+        ],
+    )
+    def test_filenames(self, filename):
+        tempdir = tempfile.mkdtemp(prefix="dangerzone-")
+        doc_path = os.path.join(filename)
+        shutil.copyfile(self.sample_doc, doc_path)
+        result = self.run_cli(doc_path)
+        shutil.rmtree(tempdir)
         assert result.exit_code == 0

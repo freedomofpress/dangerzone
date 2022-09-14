@@ -9,6 +9,8 @@ from typing import Callable, List, Optional
 
 import appdirs
 
+from .util import get_resource_path
+
 # What container tech is used for this platform?
 if platform.system() == "Linux":
     container_tech = "podman"

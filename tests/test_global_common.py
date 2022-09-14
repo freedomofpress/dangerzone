@@ -7,8 +7,6 @@ from strip_ansi import strip_ansi  # type: ignore
 
 import dangerzone.global_common
 
-VERSION_FILE_NAME = "version.txt"
-
 
 @pytest.fixture
 def global_common():
@@ -16,13 +14,6 @@ def global_common():
 
 
 class TestGlobalCommon:
-    def test_get_resource_path(self, global_common):
-        share_dir = Path("share").resolve()
-        resource_path = Path(global_common.get_resource_path(VERSION_FILE_NAME)).parent
-        assert share_dir.samefile(
-            resource_path
-        ), f"{share_dir} is not the same file as {resource_path}"
-
     @pytest.mark.skipif(platform.system() != "Windows", reason="Windows-specific")
     def test_get_subprocess_startupinfo(self, global_common):
         startupinfo = global_common.get_subprocess_startupinfo()

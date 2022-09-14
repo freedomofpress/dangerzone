@@ -14,6 +14,7 @@ from colorama import Back, Fore, Style
 
 from .container import convert
 from .settings import Settings
+from .util import get_resource_path
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class GlobalCommon(object):
     def __init__(self) -> None:
         # Version
         try:
-            with open(self.get_resource_path("version.txt")) as f:
+            with open(get_resource_path("version.txt")) as f:
                 self.version = f.read().strip()
         except FileNotFoundError:
             # In dev mode, in Windows, get_resource_path doesn't work properly for the container, but luckily
@@ -394,27 +395,6 @@ class GlobalCommon(object):
             raise Exception(f"{runtime_name} is not installed")
         return runtime
 
-    def get_resource_path(self, filename: str) -> str:
-        if getattr(sys, "dangerzone_dev", False):
-            # Look for resources directory relative to python file
-            project_root = pathlib.Path(__file__).parent.parent
-            prefix = project_root.joinpath("share")
-        else:
-            if platform.system() == "Darwin":
-                bin_path = pathlib.Path(sys.executable)
-                app_path = bin_path.parent.parent
-                prefix = app_path.joinpath("Resources", "share")
-            elif platform.system() == "Linux":
-                prefix = pathlib.Path(sys.prefix).joinpath("share", "dangerzone")
-            elif platform.system() == "Windows":
-                exe_path = pathlib.Path(sys.executable)
-                dz_install_path = exe_path.parent
-                prefix = dz_install_path.joinpath("share")
-            else:
-                raise NotImplementedError(f"Unsupported system {platform.system()}")
-        resource_path = prefix.joinpath(filename)
-        return str(resource_path)
-
     def get_subprocess_startupinfo(self):  # type: ignore [no-untyped-def]
         if platform.system() == "Windows":
             startupinfo = subprocess.STARTUPINFO()
@@ -440,7 +420,7 @@ class GlobalCommon(object):
         )
 
         chunk_size = 10240
-        compressed_container_path = self.get_resource_path("container.tar.gz")
+        compressed_container_path = get_resource_path("container.tar.gz")
         with gzip.open(compressed_container_path) as f:
             while True:
                 chunk = f.read(chunk_size)
@@ -463,7 +443,7 @@ class GlobalCommon(object):
         See if the podman container is installed. Linux only.
         """
         # Get the image id
-        with open(self.get_resource_path("image-id.txt")) as f:
+        with open(get_resource_path("image-id.txt")) as f:
             expected_image_id = f.read().strip()
 
         # See if this image is already installed

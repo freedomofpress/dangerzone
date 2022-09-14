@@ -13,6 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from ..common import Common
 from ..container import convert
 from ..global_common import GlobalCommon
+from ..util import get_resource_path
 from .common import GuiCommon
 
 log = logging.getLogger(__name__)
@@ -39,9 +40,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Header
         logo = QtWidgets.QLabel()
         logo.setPixmap(
-            QtGui.QPixmap.fromImage(
-                QtGui.QImage(self.global_common.get_resource_path("icon.png"))
-            )
+            QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("icon.png")))
         )
         header_label = QtWidgets.QLabel("dangerzone")
         header_label.setFont(self.gui_common.fixed_font)
@@ -569,9 +568,7 @@ class ConvertWidget(QtWidgets.QWidget):
         # Label
         self.error_image = QtWidgets.QLabel()
         self.error_image.setPixmap(
-            QtGui.QPixmap.fromImage(
-                QtGui.QImage(self.global_common.get_resource_path("error.png"))
-            )
+            QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("error.png")))
         )
         self.error_image.hide()
 

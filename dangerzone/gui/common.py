@@ -19,6 +19,7 @@ elif platform.system() == "Linux":
 
 from ..global_common import GlobalCommon
 from ..settings import Settings
+from ..util import get_resource_path
 
 log = logging.getLogger(__name__)
 
@@ -48,9 +49,9 @@ class GuiCommon(object):
 
     def get_window_icon(self) -> QtGui.QIcon:
         if platform.system() == "Windows":
-            path = self.global_common.get_resource_path("dangerzone.ico")
+            path = get_resource_path("dangerzone.ico")
         else:
-            path = self.global_common.get_resource_path("icon.png")
+            path = get_resource_path("icon.png")
         return QtGui.QIcon(path)
 
     def open_pdf_viewer(self, filename: str) -> None:
@@ -141,9 +142,7 @@ class Alert(QtWidgets.QDialog):
 
         logo = QtWidgets.QLabel()
         logo.setPixmap(
-            QtGui.QPixmap.fromImage(
-                QtGui.QImage(self.global_common.get_resource_path("icon.png"))
-            )
+            QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("icon.png")))
         )
 
         label = QtWidgets.QLabel()

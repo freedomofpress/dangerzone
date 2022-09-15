@@ -158,8 +158,8 @@ class WaitingWidget(QtWidgets.QWidget):
 
         try:
             container_runtime = container.get_runtime()
-        except container.NoContainerTechException:
-            log.error("Docker is not installed")
+        except container.NoContainerTechException as e:
+            log.error(str(e))
             state = "not_installed"
 
         else:

@@ -5,11 +5,12 @@ import sys
 from typing import Optional
 
 import click
-from colorama import Fore, Style
+from colorama import Back, Fore, Style
 
 from .common import Common
 from .container import convert
 from .global_common import GlobalCommon
+from .util import get_version
 
 
 def print_header(s: str) -> None:
@@ -28,7 +29,7 @@ def cli_main(
     global_common = GlobalCommon()
     common = Common()
 
-    global_common.display_banner()
+    display_banner()
 
     # Validate filename
     valid = True
@@ -127,3 +128,179 @@ def setup_logging() -> None:
         logging.basicConfig(level=logging.DEBUG, format=fmt)
     else:
         logging.basicConfig(level=logging.ERROR, format=fmt)
+
+
+def display_banner() -> None:
+    """
+    Raw ASCII art example:
+    ╭──────────────────────────╮
+    │           ▄██▄           │
+    │          ██████          │
+    │         ███▀▀▀██         │
+    │        ███   ████        │
+    │       ███   ██████       │
+    │      ███   ▀▀▀▀████      │
+    │     ███████  ▄██████     │
+    │    ███████ ▄█████████    │
+    │   ████████████████████   │
+    │    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    │
+    │                          │
+    │    Dangerzone v0.1.5     │
+    │ https://dangerzone.rocks │
+    ╰──────────────────────────╯
+    """
+
+    print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "           ▄██▄           "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "          ██████          "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "         ███▀▀▀██         "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "        ███   ████        "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "       ███   ██████       "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "      ███   ▀▀▀▀████      "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "     ███████  ▄██████     "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "    ███████ ▄█████████    "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "   ████████████████████   "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Fore.LIGHTYELLOW_EX
+        + Style.NORMAL
+        + "    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │")
+    left_spaces = (15 - len(get_version()) - 1) // 2
+    right_spaces = left_spaces
+    if left_spaces + len(get_version()) + 1 + right_spaces < 15:
+        right_spaces += 1
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Style.RESET_ALL
+        + Back.BLACK
+        + Fore.LIGHTWHITE_EX
+        + Style.BRIGHT
+        + f"{' '*left_spaces}Dangerzone v{get_version()}{' '*right_spaces}"
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+        + Style.RESET_ALL
+        + Back.BLACK
+        + Fore.LIGHTWHITE_EX
+        + " https://dangerzone.rocks "
+        + Fore.YELLOW
+        + Style.DIM
+        + "│"
+    )
+    print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")

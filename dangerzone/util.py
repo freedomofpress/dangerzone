@@ -23,3 +23,14 @@ def get_resource_path(filename: str) -> str:
             raise NotImplementedError(f"Unsupported system {platform.system()}")
     resource_path = prefix.joinpath(filename)
     return str(resource_path)
+
+
+def get_version() -> str:
+    try:
+        with open(get_resource_path("version.txt")) as f:
+            version = f.read().strip()
+    except FileNotFoundError:
+        # In dev mode, in Windows, get_resource_path doesn't work properly for the container, but luckily
+        # it doesn't need to know the version
+        version = "unknown"
+    return version

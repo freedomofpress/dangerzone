@@ -10,7 +10,6 @@ from typing import Optional
 
 import appdirs
 import colorama
-from colorama import Back, Fore, Style
 
 from .container import convert
 from .settings import Settings
@@ -25,15 +24,6 @@ class GlobalCommon(object):
     """
 
     def __init__(self) -> None:
-        # Version
-        try:
-            with open(get_resource_path("version.txt")) as f:
-                self.version = f.read().strip()
-        except FileNotFoundError:
-            # In dev mode, in Windows, get_resource_path doesn't work properly for the container, but luckily
-            # it doesn't need to know the version
-            self.version = "unknown"
-
         # Initialize terminal colors
         colorama.init(autoreset=True)
 
@@ -209,181 +199,6 @@ class GlobalCommon(object):
 
         # Load settings
         self.settings = Settings(self)
-
-    def display_banner(self) -> None:
-        """
-        Raw ASCII art example:
-        ╭──────────────────────────╮
-        │           ▄██▄           │
-        │          ██████          │
-        │         ███▀▀▀██         │
-        │        ███   ████        │
-        │       ███   ██████       │
-        │      ███   ▀▀▀▀████      │
-        │     ███████  ▄██████     │
-        │    ███████ ▄█████████    │
-        │   ████████████████████   │
-        │    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    │
-        │                          │
-        │    Dangerzone v0.1.5     │
-        │ https://dangerzone.rocks │
-        ╰──────────────────────────╯
-        """
-
-        print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Fore.LIGHTYELLOW_EX
-            + Style.NORMAL
-            + "           ▄██▄           "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Fore.LIGHTYELLOW_EX
-            + Style.NORMAL
-            + "          ██████          "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Fore.LIGHTYELLOW_EX
-            + Style.NORMAL
-            + "         ███▀▀▀██         "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Fore.LIGHTYELLOW_EX
-            + Style.NORMAL
-            + "        ███   ████        "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Fore.LIGHTYELLOW_EX
-            + Style.NORMAL
-            + "       ███   ██████       "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Fore.LIGHTYELLOW_EX
-            + Style.NORMAL
-            + "      ███   ▀▀▀▀████      "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Fore.LIGHTYELLOW_EX
-            + Style.NORMAL
-            + "     ███████  ▄██████     "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Fore.LIGHTYELLOW_EX
-            + Style.NORMAL
-            + "    ███████ ▄█████████    "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Fore.LIGHTYELLOW_EX
-            + Style.NORMAL
-            + "   ████████████████████   "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Fore.LIGHTYELLOW_EX
-            + Style.NORMAL
-            + "    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │")
-        left_spaces = (15 - len(self.version) - 1) // 2
-        right_spaces = left_spaces
-        if left_spaces + len(self.version) + 1 + right_spaces < 15:
-            right_spaces += 1
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Style.RESET_ALL
-            + Back.BLACK
-            + Fore.LIGHTWHITE_EX
-            + Style.BRIGHT
-            + f"{' '*left_spaces}Dangerzone v{self.version}{' '*right_spaces}"
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(
-            Back.BLACK
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-            + Style.RESET_ALL
-            + Back.BLACK
-            + Fore.LIGHTWHITE_EX
-            + " https://dangerzone.rocks "
-            + Fore.YELLOW
-            + Style.DIM
-            + "│"
-        )
-        print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
 
     def get_container_runtime(self) -> str:
         if platform.system() == "Linux":

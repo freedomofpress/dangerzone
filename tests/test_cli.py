@@ -6,8 +6,9 @@ import tempfile
 
 import pytest
 from click.testing import CliRunner, Result
+from strip_ansi import strip_ansi  # type: ignore
 
-from dangerzone.cli import cli_main
+from dangerzone.cli import cli_main, display_banner
 
 from . import TestBase, for_each_doc
 
@@ -38,6 +39,17 @@ class TestCliBasic(TestCli):
         """``$ dangerzone-cli --help``"""
         result = self.run_cli("--help")
         assert result.exit_code == 0
+
+    def test_display_banner(self, capfd):
+        display_banner()  # call the test subject
+        (out, err) = capfd.readouterr()
+        plain_lines = [strip_ansi(line) for line in out.splitlines()]
+        assert "╭──────────────────────────╮" in plain_lines, "missing top border"
+        assert "╰──────────────────────────╯" in plain_lines, "missing bottom border"
+
+        banner_width = len(plain_lines[0])
+        for line in plain_lines:
+            assert len(line) == banner_width, "banner has inconsistent width"
 
 
 class TestCliConversion(TestCliBasic):

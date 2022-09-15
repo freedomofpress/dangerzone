@@ -1,3 +1,4 @@
+import gzip
 import logging
 import os
 import pipes
@@ -9,7 +10,9 @@ from typing import Callable, List, Optional
 
 import appdirs
 
-from .util import get_resource_path
+from .util import get_resource_path, get_subprocess_startupinfo
+
+container_name = "dangerzone.rocks/dangerzone"
 
 # What container tech is used for this platform?
 if platform.system() == "Linux":
@@ -29,6 +32,95 @@ log = logging.getLogger(__name__)
 
 # Name of the dangerzone container
 container_name = "dangerzone.rocks/dangerzone"
+
+
+def get_container_runtime() -> str:
+    if platform.system() == "Linux":
+        runtime_name = "podman"
+    else:
+        runtime_name = "docker"
+    runtime = shutil.which(runtime_name)
+    if runtime is None:
+        raise Exception(f"{runtime_name} is not installed")
+    return runtime
+
+
+def install_container() -> Optional[bool]:
+    """
+    Make sure the podman container is installed. Linux only.
+    """
+    if is_container_installed():
+        return True
+
+    # Load the container into podman
+    log.info("Installing Dangerzone container image...")
+
+    p = subprocess.Popen(
+        [get_container_runtime(), "load"],
+        stdin=subprocess.PIPE,
+        startupinfo=get_subprocess_startupinfo(),
+    )
+
+    chunk_size = 10240
+    compressed_container_path = get_resource_path("container.tar.gz")
+    with gzip.open(compressed_container_path) as f:
+        while True:
+            chunk = f.read(chunk_size)
+            if len(chunk) > 0:
+                if p.stdin:
+                    p.stdin.write(chunk)
+            else:
+                break
+    p.communicate()
+
+    if not is_container_installed():
+        log.error("Failed to install the container image")
+        return False
+
+    log.info("Container image installed")
+    return True
+
+
+def is_container_installed() -> bool:
+    """
+    See if the podman container is installed. Linux only.
+    """
+    # Get the image id
+    with open(get_resource_path("image-id.txt")) as f:
+        expected_image_id = f.read().strip()
+
+    # See if this image is already installed
+    installed = False
+    found_image_id = subprocess.check_output(
+        [
+            get_container_runtime(),
+            "image",
+            "list",
+            "--format",
+            "{{.ID}}",
+            container_name,
+        ],
+        text=True,
+        startupinfo=get_subprocess_startupinfo(),
+    )
+    found_image_id = found_image_id.strip()
+
+    if found_image_id == expected_image_id:
+        installed = True
+    elif found_image_id == "":
+        pass
+    else:
+        log.info("Deleting old dangerzone container image")
+
+        try:
+            subprocess.check_output(
+                [get_container_runtime(), "rmi", "--force", found_image_id],
+                startupinfo=get_subprocess_startupinfo(),
+            )
+        except:
+            log.warning("Couldn't delete old container image, so leaving it there")
+
+    return installed
 
 
 def exec(args: List[str], stdout_callback: Callable[[str], None] = None) -> int:

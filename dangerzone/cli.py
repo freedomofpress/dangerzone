@@ -7,6 +7,7 @@ from typing import Optional
 import click
 from colorama import Back, Fore, Style
 
+from . import container
 from .common import Common
 from .container import convert
 from .global_common import GlobalCommon
@@ -91,7 +92,7 @@ def cli_main(
             exit(1)
 
     # Ensure container is installed
-    global_common.install_container()
+    container.install_container()
 
     # Convert the document
     print_header("Converting document to safe PDF")

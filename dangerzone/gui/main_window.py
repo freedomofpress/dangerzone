@@ -10,6 +10,7 @@ from typing import Optional
 from colorama import Fore, Style
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from .. import container
 from ..common import Common
 from ..container import convert
 from ..global_common import GlobalCommon
@@ -103,7 +104,7 @@ class InstallContainerThread(QtCore.QThread):
         self.global_common = global_common
 
     def run(self) -> None:
-        self.global_common.install_container()
+        container.install_container()
         self.finished.emit()
 
 

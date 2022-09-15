@@ -1,4 +1,7 @@
+import platform
 from pathlib import Path
+
+import pytest
 
 import dangerzone.util as util
 
@@ -11,3 +14,9 @@ def test_get_resource_path():
     assert share_dir.samefile(
         resource_path
     ), f"{share_dir} is not the same file as {resource_path}"
+
+
+@pytest.mark.skipif(platform.system() != "Windows", reason="Windows-specific")
+def test_get_subprocess_startupinfo():
+    startupinfo = util.get_subprocess_startupinfo()
+    self.assertIsInstance(startupinfo, subprocess.STARTUPINFO)

@@ -13,7 +13,7 @@ import colorama
 
 from .container import convert
 from .settings import Settings
-from .util import get_resource_path
+from .util import get_resource_path, get_subprocess_startupinfo
 
 log = logging.getLogger(__name__)
 
@@ -50,14 +50,6 @@ class GlobalCommon(object):
             raise Exception(f"{runtime_name} is not installed")
         return runtime
 
-    def get_subprocess_startupinfo(self):  # type: ignore [no-untyped-def]
-        if platform.system() == "Windows":
-            startupinfo = subprocess.STARTUPINFO()
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            return startupinfo
-        else:
-            return None
-
     def install_container(self) -> Optional[bool]:
         """
         Make sure the podman container is installed. Linux only.
@@ -71,7 +63,7 @@ class GlobalCommon(object):
         p = subprocess.Popen(
             [self.get_container_runtime(), "load"],
             stdin=subprocess.PIPE,
-            startupinfo=self.get_subprocess_startupinfo(),
+            startupinfo=get_subprocess_startupinfo(),
         )
 
         chunk_size = 10240
@@ -113,7 +105,7 @@ class GlobalCommon(object):
                 self.container_name,
             ],
             text=True,
-            startupinfo=self.get_subprocess_startupinfo(),
+            startupinfo=get_subprocess_startupinfo(),
         )
         found_image_id = found_image_id.strip()
 
@@ -127,7 +119,7 @@ class GlobalCommon(object):
             try:
                 subprocess.check_output(
                     [self.get_container_runtime(), "rmi", "--force", found_image_id],
-                    startupinfo=self.get_subprocess_startupinfo(),
+                    startupinfo=get_subprocess_startupinfo(),
                 )
             except:
                 log.warning("Couldn't delete old container image, so leaving it there")

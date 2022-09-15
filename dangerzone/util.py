@@ -1,5 +1,6 @@
 import pathlib
 import platform
+import subprocess
 import sys
 
 
@@ -34,3 +35,12 @@ def get_version() -> str:
         # it doesn't need to know the version
         version = "unknown"
     return version
+
+
+def get_subprocess_startupinfo():  # type: ignore [no-untyped-def]
+    if platform.system() == "Windows":
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        return startupinfo
+    else:
+        return None

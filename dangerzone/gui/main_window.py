@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from ..common import Common
 from ..container import convert
 from ..global_common import GlobalCommon
-from ..util import get_resource_path
+from ..util import get_resource_path, get_subprocess_startupinfo
 from .common import GuiCommon
 
 log = logging.getLogger(__name__)
@@ -171,7 +171,7 @@ class WaitingWidget(QtWidgets.QWidget):
                 [container_runtime, "image", "ls"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                startupinfo=self.global_common.get_subprocess_startupinfo(),
+                startupinfo=get_subprocess_startupinfo(),
             ) as p:
                 p.communicate()
                 if p.returncode != 0:
@@ -626,7 +626,7 @@ class ConvertWidget(QtWidgets.QWidget):
             subprocess.Popen(
                 f'explorer.exe /select,"{dest_filename_windows}"',
                 shell=True,
-                startupinfo=self.global_common.get_subprocess_startupinfo(),
+                startupinfo=get_subprocess_startupinfo(),
             )
 
         # Open

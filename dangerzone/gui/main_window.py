@@ -11,8 +11,8 @@ from colorama import Fore, Style
 from PySide2 import QtCore, QtGui, QtWidgets
 
 from .. import container
-from ..common import Common
 from ..container import convert
+from ..document import Document
 from ..global_common import GlobalCommon
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .common import GuiCommon
@@ -30,7 +30,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.global_common = global_common
         self.gui_common = gui_common
         self.window_id = window_id
-        self.common = Common()
+        self.document = Document()
 
         self.setWindowTitle("Dangerzone")
         self.setWindowIcon(self.gui_common.get_window_icon())
@@ -59,7 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Content widget, contains all the window content except waiting widget
         self.content_widget = ContentWidget(
-            self.global_common, self.gui_common, self.common
+            self.global_common, self.gui_common, self.document
         )
         self.content_widget.close_window.connect(self.close)
 
@@ -206,21 +206,21 @@ class ContentWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
     def __init__(
-        self, global_common: GlobalCommon, gui_common: GuiCommon, common: Common
+        self, global_common: GlobalCommon, gui_common: GuiCommon, document: Document
     ) -> None:
         super(ContentWidget, self).__init__()
 
         self.global_common = global_common
         self.gui_common = gui_common
-        self.common = common
+        self.document = document
 
         # Doc selection widget
-        self.doc_selection_widget = DocSelectionWidget(self.common)
+        self.doc_selection_widget = DocSelectionWidget(self.document)
         self.doc_selection_widget.document_selected.connect(self.document_selected)
 
         # Settings
         self.settings_widget = SettingsWidget(
-            self.global_common, self.gui_common, self.common
+            self.global_common, self.gui_common, self.document
         )
         self.doc_selection_widget.document_selected.connect(
             self.settings_widget.document_selected
@@ -231,7 +231,7 @@ class ContentWidget(QtWidgets.QWidget):
 
         # Convert
         self.convert_widget = ConvertWidget(
-            self.global_common, self.gui_common, self.common
+            self.global_common, self.gui_common, self.document
         )
         self.convert_widget.close_window.connect(self._close_window)
         self.doc_selection_widget.document_selected.connect(
@@ -262,9 +262,9 @@ class ContentWidget(QtWidgets.QWidget):
 class DocSelectionWidget(QtWidgets.QWidget):
     document_selected = QtCore.Signal()
 
-    def __init__(self, common: Common) -> None:
+    def __init__(self, document: Document) -> None:
         super(DocSelectionWidget, self).__init__()
-        self.common = common
+        self.document = document
 
         # Dangerous document selection
         self.dangerous_doc_label = QtWidgets.QLabel()
@@ -296,7 +296,7 @@ class DocSelectionWidget(QtWidgets.QWidget):
             filter="Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.jpg *.jpeg *.gif *.png *.tif *.tiff)",
         )
         if filename != "":
-            self.common.input_filename = filename
+            self.document.input_filename = filename
             self.document_selected.emit()
 
 
@@ -305,12 +305,12 @@ class SettingsWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
     def __init__(
-        self, global_common: GlobalCommon, gui_common: GuiCommon, common: Common
+        self, global_common: GlobalCommon, gui_common: GuiCommon, document: Document
     ) -> None:
         super(SettingsWidget, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
-        self.common = common
+        self.document = document
 
         # Dangerous document label
         self.dangerous_doc_label = QtWidgets.QLabel()
@@ -446,30 +446,32 @@ class SettingsWidget(QtWidgets.QWidget):
     def document_selected(self) -> None:
         # Update the danger doc label
         self.dangerous_doc_label.setText(
-            f"Suspicious: {os.path.basename(self.common.input_filename)}"
+            f"Suspicious: {os.path.basename(self.document.input_filename)}"
         )
 
         # Update the save location
-        output_filename = f"{os.path.splitext(self.common.input_filename)[0]}-safe.pdf"
-        self.common.output_filename = output_filename
+        output_filename = (
+            f"{os.path.splitext(self.document.input_filename)[0]}-safe.pdf"
+        )
+        self.document.output_filename = output_filename
         self.save_lineedit.setText(os.path.basename(output_filename))
 
     def save_browse_button_clicked(self) -> None:
         filename = QtWidgets.QFileDialog.getSaveFileName(
             self,
             "Save safe PDF as...",
-            self.common.output_filename,
+            self.document.output_filename,
             filter="Documents (*.pdf)",
         )
         if filename[0] != "":
-            self.common.output_filename = filename[0]
-            self.save_lineedit.setText(os.path.basename(self.common.output_filename))
+            self.document.output_filename = filename[0]
+            self.save_lineedit.setText(os.path.basename(self.document.output_filename))
 
     def start_button_clicked(self) -> None:
         if self.save_checkbox.checkState() == QtCore.Qt.Unchecked:
             # If not saving, then save it to a temp file instead
             tmp = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
-            self.common.output_filename = tmp[1]
+            self.document.output_filename = tmp[1]
 
         # Update settings
         self.global_common.settings.set(
@@ -497,10 +499,10 @@ class ConvertThread(QtCore.QThread):
     finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
-    def __init__(self, global_common: GlobalCommon, common: Common) -> None:
+    def __init__(self, global_common: GlobalCommon, document: Document) -> None:
         super(ConvertThread, self).__init__()
         self.global_common = global_common
-        self.common = common
+        self.document = document
         self.error = False
 
     def run(self) -> None:
@@ -512,8 +514,8 @@ class ConvertThread(QtCore.QThread):
             ocr_lang = None
 
         if convert(
-            self.common.input_filename,
-            self.common.output_filename,
+            self.document.input_filename,
+            self.document.output_filename,
             ocr_lang,
             self.stdout_callback,
         ):
@@ -546,12 +548,12 @@ class ConvertWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
     def __init__(
-        self, global_common: GlobalCommon, gui_common: GuiCommon, common: Common
+        self, global_common: GlobalCommon, gui_common: GuiCommon, document: Document
     ) -> None:
         super(ConvertWidget, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
-        self.common = common
+        self.document = document
 
         self.error = False
 
@@ -595,11 +597,11 @@ class ConvertWidget(QtWidgets.QWidget):
     def document_selected(self) -> None:
         # Update the danger doc label
         self.dangerous_doc_label.setText(
-            f"Suspicious: {os.path.basename(self.common.input_filename)}"
+            f"Suspicious: {os.path.basename(self.document.input_filename)}"
         )
 
     def start(self) -> None:
-        self.convert_t = ConvertThread(self.global_common, self.common)
+        self.convert_t = ConvertThread(self.global_common, self.document)
         self.convert_t.update.connect(self.update_progress)
         self.convert_t.finished.connect(self.all_done)
         self.convert_t.start()
@@ -619,7 +621,7 @@ class ConvertWidget(QtWidgets.QWidget):
 
         # In Windows, open Explorer with the safe PDF in focus
         if platform.system() == "Windows":
-            dest_filename_windows = self.common.output_filename.replace("/", "\\")
+            dest_filename_windows = self.document.output_filename.replace("/", "\\")
             subprocess.Popen(
                 f'explorer.exe /select,"{dest_filename_windows}"',
                 shell=True,
@@ -628,7 +630,7 @@ class ConvertWidget(QtWidgets.QWidget):
 
         # Open
         if self.global_common.settings.get("open"):
-            self.gui_common.open_pdf_viewer(self.common.output_filename)
+            self.gui_common.open_pdf_viewer(self.document.output_filename)
 
         # Quit
         if platform.system() == "Darwin":

@@ -88,7 +88,7 @@ def gui_main(filename: Optional[str]) -> bool:
     def select_document(filename: Optional[str] = None) -> bool:
         if (
             len(windows) == 1
-            and windows[list(windows.keys())[0]].common.input_filename == None
+            and windows[list(windows.keys())[0]].document.input_filename == None
         ):
             window = windows[list(windows.keys())[0]]
         else:
@@ -108,7 +108,7 @@ def gui_main(filename: Optional[str]) -> bool:
             except PermissionError:
                 click.echo("Permission denied")
                 return False
-            window.common.input_filename = file_path
+            window.document.input_filename = file_path
             window.content_widget.doc_selection_widget.document_selected.emit()
 
         return True

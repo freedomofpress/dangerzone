@@ -156,13 +156,9 @@ class WaitingWidget(QtWidgets.QWidget):
     def check_state(self) -> None:
         state: Optional[str] = None
 
-        # Can we find the container runtime binary binary
-        if platform.system() == "Linux":
-            container_runtime = shutil.which("podman")
-        else:
-            container_runtime = shutil.which("docker")
-
-        if container_runtime is None:
+        try:
+            container_runtime = container.get_container_runtime()
+        except container.NoContainerTechException:
             log.error("Docker is not installed")
             state = "not_installed"
 

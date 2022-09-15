@@ -14,13 +14,6 @@ from .util import get_resource_path, get_subprocess_startupinfo
 
 container_name = "dangerzone.rocks/dangerzone"
 
-# What container tech is used for this platform?
-if platform.system() == "Linux":
-    container_tech = "podman"
-else:
-    # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
-    container_tech = "docker"
-
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
     startupinfo = subprocess.STARTUPINFO()  # type: ignore [attr-defined]
@@ -34,14 +27,23 @@ log = logging.getLogger(__name__)
 container_name = "dangerzone.rocks/dangerzone"
 
 
-def get_container_runtime() -> str:
+class NoContainerTechException(Exception):
+    pass
+
+
+def get_container_tech() -> str:
     if platform.system() == "Linux":
         runtime_name = "podman"
     else:
+        # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
         runtime_name = "docker"
-    runtime = shutil.which(runtime_name)
+    return runtime_name
+
+
+def get_container_runtime() -> str:
+    runtime = shutil.which(get_container_tech())
     if runtime is None:
-        raise Exception(f"{runtime_name} is not installed")
+        raise NoContainerTechException(f"{runtime_name} is not installed")
     return runtime
 
 
@@ -149,19 +151,13 @@ def exec_container(
     extra_args: List[str] = [],
     stdout_callback: Callable[[str], None] = None,
 ) -> int:
-    if container_tech == "podman":
-        container_runtime = shutil.which("podman")
-        if container_runtime is None:
-            raise Exception(f"podman is not installed")
+    container_runtime = container.get_container_runtime()
 
+    if get_container_tech() == "podman":
         platform_args = []
         security_args = ["--security-opt", "no-new-privileges"]
         security_args += ["--userns", "keep-id"]
     else:
-        container_runtime = shutil.which("docker")
-        if container_runtime is None:
-            raise Exception(f"docker is not installed")
-
         platform_args = ["--platform", "linux/amd64"]
         security_args = ["--security-opt=no-new-privileges:true"]
 

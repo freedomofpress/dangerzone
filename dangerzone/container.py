@@ -49,7 +49,7 @@ def get_runtime() -> str:
     return runtime
 
 
-def install() -> Optional[bool]:
+def install() -> bool:
     """
     Make sure the podman container is installed. Linux only.
     """

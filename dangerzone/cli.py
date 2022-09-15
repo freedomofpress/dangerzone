@@ -8,8 +8,8 @@ import click
 from colorama import Back, Fore, Style
 
 from . import container
-from .common import Common
 from .container import convert
+from .document import Document
 from .global_common import GlobalCommon
 from .util import get_version
 
@@ -28,7 +28,7 @@ def cli_main(
 ) -> None:
     setup_logging()
     global_common = GlobalCommon()
-    common = Common()
+    document = Document()
 
     display_banner()
 
@@ -44,7 +44,7 @@ def cli_main(
         click.echo("Invalid filename")
         exit(1)
 
-    common.input_filename = os.path.abspath(filename)
+    document.input_filename = os.path.abspath(filename)
 
     # Validate safe PDF output filename
     if output_filename:
@@ -63,18 +63,18 @@ def cli_main(
             click.echo("Safe PDF filename is not writable")
             exit(1)
 
-        common.output_filename = os.path.abspath(output_filename)
+        document.output_filename = os.path.abspath(output_filename)
 
     else:
-        common.output_filename = (
-            f"{os.path.splitext(common.input_filename)[0]}-safe.pdf"
+        document.output_filename = (
+            f"{os.path.splitext(document.input_filename)[0]}-safe.pdf"
         )
         try:
-            with open(common.output_filename, "wb"):
+            with open(document.output_filename, "wb"):
                 pass
         except:
             click.echo(
-                f"Output filename {common.output_filename} is not writable, use --output-filename"
+                f"Output filename {document.output_filename} is not writable, use --output-filename"
             )
             exit(1)
 
@@ -110,13 +110,13 @@ def cli_main(
             click.echo(f"Invalid JSON returned from container: {line}")
 
     if convert(
-        common.input_filename,
-        common.output_filename,
+        document.input_filename,
+        document.output_filename,
         ocr_lang,
         stdout_callback,
     ):
         print_header("Safe PDF created successfully")
-        click.echo(common.output_filename)
+        click.echo(document.output_filename)
         exit(0)
     else:
         print_header("Failed to convert document")

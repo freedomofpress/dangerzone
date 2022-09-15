@@ -7,9 +7,11 @@ from typing import Optional
 import appdirs
 
 
-class Common(object):
-    """
-    The Common class is a singleton of shared functionality throughout an open dangerzone window
+class Document:
+    """Track the state of a single document.
+
+    The Document class is responsible for holding the state of a single
+    document, and validating its info.
     """
 
     def __init__(self) -> None:

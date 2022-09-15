@@ -92,7 +92,7 @@ def cli_main(
             exit(1)
 
     # Ensure container is installed
-    container.install_container()
+    container.install()
 
     # Convert the document
     print_header("Converting document to safe PDF")

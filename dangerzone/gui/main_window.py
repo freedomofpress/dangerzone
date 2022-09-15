@@ -104,7 +104,7 @@ class InstallContainerThread(QtCore.QThread):
         self.global_common = global_common
 
     def run(self) -> None:
-        container.install_container()
+        container.install()
         self.finished.emit()
 
 
@@ -157,7 +157,7 @@ class WaitingWidget(QtWidgets.QWidget):
         state: Optional[str] = None
 
         try:
-            container_runtime = container.get_container_runtime()
+            container_runtime = container.get_runtime()
         except container.NoContainerTechException:
             log.error("Docker is not installed")
             state = "not_installed"

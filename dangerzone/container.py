@@ -28,10 +28,11 @@ container_name = "dangerzone.rocks/dangerzone"
 
 
 class NoContainerTechException(Exception):
-    pass
+    def __init__(self, container_tech: str) -> None:
+        super().__init__(f"{container_tech} is not installed")
 
 
-def get_container_tech() -> str:
+def get_runtime_name() -> str:
     if platform.system() == "Linux":
         runtime_name = "podman"
     else:
@@ -40,14 +41,15 @@ def get_container_tech() -> str:
     return runtime_name
 
 
-def get_container_runtime() -> str:
-    runtime = shutil.which(get_container_tech())
+def get_runtime() -> str:
+    container_tech = get_runtime_name()
+    runtime = shutil.which(container_tech)
     if runtime is None:
-        raise NoContainerTechException(f"{runtime_name} is not installed")
+        raise NoContainerTechException(container_tech)
     return runtime
 
 
-def install_container() -> Optional[bool]:
+def install() -> Optional[bool]:
     """
     Make sure the podman container is installed. Linux only.
     """
@@ -58,7 +60,7 @@ def install_container() -> Optional[bool]:
     log.info("Installing Dangerzone container image...")
 
     p = subprocess.Popen(
-        [get_container_runtime(), "load"],
+        [get_runtime(), "load"],
         stdin=subprocess.PIPE,
         startupinfo=get_subprocess_startupinfo(),
     )
@@ -95,7 +97,7 @@ def is_container_installed() -> bool:
     installed = False
     found_image_id = subprocess.check_output(
         [
-            get_container_runtime(),
+            get_runtime(),
             "image",
             "list",
             "--format",
@@ -116,7 +118,7 @@ def is_container_installed() -> bool:
 
         try:
             subprocess.check_output(
-                [get_container_runtime(), "rmi", "--force", found_image_id],
+                [get_runtime(), "rmi", "--force", found_image_id],
                 startupinfo=get_subprocess_startupinfo(),
             )
         except:
@@ -151,9 +153,9 @@ def exec_container(
     extra_args: List[str] = [],
     stdout_callback: Callable[[str], None] = None,
 ) -> int:
-    container_runtime = container.get_container_runtime()
+    container_runtime = get_runtime()
 
-    if get_container_tech() == "podman":
+    if get_runtime_name() == "podman":
         platform_args = []
         security_args = ["--security-opt", "no-new-privileges"]
         security_args += ["--userns", "keep-id"]

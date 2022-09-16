@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -20,3 +21,22 @@ for_each_doc = pytest.mark.parametrize("doc", test_docs)
 
 class TestBase:
     sample_doc = str(test_docs_dir.joinpath(BASIC_SAMPLE))
+
+
+@pytest.fixture
+def sample_doc() -> str:
+    return str(test_docs_dir.joinpath(BASIC_SAMPLE))
+
+
+@pytest.fixture
+def unwriteable_pdf(tmp_path: Path) -> str:
+    file_path = tmp_path / "document.pdf"
+    file_path.touch(mode=0o400)
+    return str(file_path)
+
+
+@pytest.fixture
+def unreadable_pdf(tmp_path: Path) -> str:
+    file_path = tmp_path / "document.pdf"
+    file_path.touch(mode=0o000)
+    return str(file_path)

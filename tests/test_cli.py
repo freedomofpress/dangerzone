@@ -191,10 +191,9 @@ class TestCliConversion(TestCliBasic):
             "spaces test.pdf",
         ],
     )
-    def test_filenames(self, filename: str) -> None:
-        tempdir = tempfile.mkdtemp(prefix="dangerzone-")
-        doc_path = os.path.join(filename)
+    def test_filenames(self, filename: str, tmp_path: Path) -> None:
+        doc_path = str(Path(tmp_path).joinpath(filename))
         shutil.copyfile(self.sample_doc, doc_path)
         result = self.run_cli(doc_path)
-        shutil.rmtree(tempdir)
         result.assert_success()
+        assert len(os.listdir(tmp_path)) == 2

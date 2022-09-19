@@ -8,6 +8,8 @@ import appdirs
 
 from .errors import DocumentFilenameException
 
+SAFE_EXTENSION = "-safe.pdf"
+
 
 class Document:
     """Track the state of a single document.
@@ -75,3 +77,8 @@ class Document:
         filename = self.normalize_filename(filename)
         self.validate_output_filename(filename)
         self._output_filename = filename
+
+    def set_default_output_filename(self) -> None:
+        self.output_filename = (
+            f"{os.path.splitext(self.input_filename)[0]}{SAFE_EXTENSION}"
+        )

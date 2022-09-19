@@ -17,7 +17,7 @@ elif platform.system() == "Linux":
     import getpass
     from xdg.DesktopEntry import DesktopEntry
 
-from ..global_common import GlobalCommon
+from ..logic import DangerzoneCore
 from ..settings import Settings
 from ..util import get_resource_path
 
@@ -29,14 +29,12 @@ class GuiCommon(object):
     The GuiCommon class is a singleton of shared functionality for the GUI
     """
 
-    def __init__(
-        self, app: QtWidgets.QApplication, global_common: GlobalCommon
-    ) -> None:
+    def __init__(self, app: QtWidgets.QApplication, dangerzone: DangerzoneCore) -> None:
         # Qt app
         self.app = app
 
         # Global common singleton
-        self.global_common = global_common
+        self.dangerzone = dangerzone
 
         # Preload font
         self.fixed_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
@@ -67,7 +65,7 @@ class GuiCommon(object):
         elif platform.system() == "Linux":
             # Get the PDF reader command
             args = shlex.split(
-                self.pdf_viewers[self.global_common.settings.get("open_app")]
+                self.pdf_viewers[self.dangerzone.settings.get("open_app")]
             )
             # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
             for i in range(len(args)):
@@ -118,13 +116,13 @@ class Alert(QtWidgets.QDialog):
     def __init__(
         self,
         gui_common: GuiCommon,
-        global_common: GlobalCommon,
+        dangerzone: DangerzoneCore,
         message: str,
         ok_text: str = "Ok",
         extra_button_text: str = None,
     ) -> None:
         super(Alert, self).__init__()
-        self.global_common = global_common
+        self.dangerzone = dangerzone
         self.gui_common = gui_common
 
         self.setWindowTitle("dangerzone")

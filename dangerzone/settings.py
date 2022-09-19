@@ -6,16 +6,16 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from .global_common import GlobalCommon
+    from .logic import DangerzoneCore
 
 
 class Settings:
     settings: Dict[str, Any]
 
-    def __init__(self, global_common: "GlobalCommon") -> None:
-        self.global_common = global_common
+    def __init__(self, dangerzone: "DangerzoneCore") -> None:
+        self.dangerzone = dangerzone
         self.settings_filename = os.path.join(
-            self.global_common.appdata_path, "settings.json"
+            self.dangerzone.appdata_path, "settings.json"
         )
         self.default_settings: Dict[str, Any] = {
             "save": True,
@@ -59,6 +59,6 @@ class Settings:
         self.save()
 
     def save(self) -> None:
-        os.makedirs(self.global_common.appdata_path, exist_ok=True)
+        os.makedirs(self.dangerzone.appdata_path, exist_ok=True)
         with open(self.settings_filename, "w") as settings_file:
             json.dump(self.settings, settings_file, indent=4)

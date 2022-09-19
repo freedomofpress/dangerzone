@@ -453,12 +453,9 @@ class SettingsWidget(QtWidgets.QWidget):
             f"Suspicious: {os.path.basename(self.document.input_filename)}"
         )
 
-        # Update the save location
-        output_filename = (
-            f"{os.path.splitext(self.document.input_filename)[0]}-safe.pdf"
-        )
-        self.document.output_filename = output_filename
-        self.save_lineedit.setText(os.path.basename(output_filename))
+        # Set the default save location
+        self.document.set_default_output_filename()
+        self.save_lineedit.setText(os.path.basename(self.document.output_filename))
 
     def save_browse_button_clicked(self) -> None:
         filename = QtWidgets.QFileDialog.getSaveFileName(

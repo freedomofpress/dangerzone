@@ -6,13 +6,15 @@ import pytest
 
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
 
+from dangerzone.document import SAFE_EXTENSION
+
 SAMPLE_DIRECTORY = "test_docs"
 BASIC_SAMPLE = "sample.pdf"
 test_docs_dir = Path(__file__).parent.joinpath(SAMPLE_DIRECTORY)
 test_docs = [
     p
     for p in test_docs_dir.rglob("*")
-    if p.is_file() and not p.name.endswith("-safe.pdf")
+    if p.is_file() and not p.name.endswith(SAFE_EXTENSION)
 ]
 
 # Pytest parameter decorators

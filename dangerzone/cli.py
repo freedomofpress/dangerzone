@@ -9,7 +9,7 @@ from colorama import Back, Fore, Style
 
 from . import args, container, errors
 from .container import convert
-from .document import Document
+from .document import SAFE_EXTENSION, Document
 from .global_common import GlobalCommon
 from .util import get_version
 
@@ -23,7 +23,7 @@ def print_header(s: str) -> None:
 @click.option(
     "--output-filename",
     callback=args.validate_output_filename,
-    help="Default is filename ending with -safe.pdf",
+    help=f"Default is filename ending with {SAFE_EXTENSION}",
 )
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
 @click.argument("filename", required=True, callback=args.validate_input_filename)
@@ -38,13 +38,11 @@ def cli_main(
 
     document = Document(filename)
 
-    # Validate safe PDF output filename
+    # Set PDF output filename
     if output_filename:
         document.output_filename = output_filename
     else:
-        document.output_filename = (
-            f"{os.path.splitext(document.input_filename)[0]}-safe.pdf"
-        )
+        document.set_default_output_filename()
 
     # Validate OCR language
     if ocr_lang:

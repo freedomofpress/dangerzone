@@ -12,8 +12,9 @@ def validate_input_filename(
 ) -> Optional[str]:
     if value is None:
         return None
-    Document.validate_input_filename(value)
-    return value
+    filename = Document.normalize_filename(value)
+    Document.validate_input_filename(filename)
+    return filename
 
 
 @errors.handle_document_errors
@@ -22,5 +23,6 @@ def validate_output_filename(
 ) -> Optional[str]:
     if value is None:
         return None
-    Document.validate_output_filename(value)
-    return value
+    filename = Document.normalize_filename(value)
+    Document.validate_output_filename(filename)
+    return filename

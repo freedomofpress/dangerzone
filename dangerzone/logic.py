@@ -18,9 +18,9 @@ from .util import get_resource_path
 log = logging.getLogger(__name__)
 
 
-class GlobalCommon(object):
+class DangerzoneCore(object):
     """
-    The GlobalCommon class is a singleton of shared functionality throughout the app
+    The DangerzoneCore class is a singleton of shared functionality throughout the app
     """
 
     def __init__(self) -> None:

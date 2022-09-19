@@ -10,7 +10,7 @@ from colorama import Back, Fore, Style
 from . import args, container, errors
 from .container import convert
 from .document import SAFE_EXTENSION, Document
-from .global_common import GlobalCommon
+from .logic import DangerzoneCore
 from .util import get_version
 
 
@@ -32,7 +32,7 @@ def cli_main(
     output_filename: Optional[str], ocr_lang: Optional[str], filename: str
 ) -> None:
     setup_logging()
-    global_common = GlobalCommon()
+    dangerzone = DangerzoneCore()
 
     display_banner()
 
@@ -47,14 +47,14 @@ def cli_main(
     # Validate OCR language
     if ocr_lang:
         valid = False
-        for lang in global_common.ocr_languages:
-            if global_common.ocr_languages[lang] == ocr_lang:
+        for lang in dangerzone.ocr_languages:
+            if dangerzone.ocr_languages[lang] == ocr_lang:
                 valid = True
                 break
         if not valid:
             click.echo("Invalid OCR language code. Valid language codes:")
-            for lang in global_common.ocr_languages:
-                click.echo(f"{global_common.ocr_languages[lang]}: {lang}")
+            for lang in dangerzone.ocr_languages:
+                click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}")
             exit(1)
 
     # Ensure container is installed

@@ -24,6 +24,10 @@ class Document:
             self.input_filename = input_filename
 
     @staticmethod
+    def normalize_filename(filename: str) -> str:
+        return os.path.abspath(filename)
+
+    @staticmethod
     def validate_input_filename(filename: str) -> None:
         try:
             open(filename, "rb")
@@ -41,7 +45,7 @@ class Document:
         if not filename.endswith(".pdf"):
             raise DocumentFilenameException("Safe PDF filename must end in '.pdf'")
         try:
-            with open(os.path.abspath(filename), "wb"):
+            with open(filename, "wb"):
                 pass
         except PermissionError as e:
             raise DocumentFilenameException("Safe PDF filename is not writable") from e
@@ -55,6 +59,7 @@ class Document:
 
     @input_filename.setter
     def input_filename(self, filename: str) -> None:
+        filename = self.normalize_filename(filename)
         self.validate_input_filename(filename)
         self._input_filename = filename
 
@@ -67,5 +72,6 @@ class Document:
 
     @output_filename.setter
     def output_filename(self, filename: str) -> None:
+        filename = self.normalize_filename(filename)
         self.validate_output_filename(filename)
         self._output_filename = filename

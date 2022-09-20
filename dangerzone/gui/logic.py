@@ -9,12 +9,7 @@ from typing import Dict
 from colorama import Fore
 from PySide2 import QtCore, QtGui, QtWidgets
 
-if platform.system() == "Darwin":
-    import plistlib
-
-elif platform.system() == "Linux":
-    import grp
-    import getpass
+if platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry
 
 from ..logic import DangerzoneCore

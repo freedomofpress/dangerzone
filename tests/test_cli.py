@@ -214,6 +214,29 @@ class TestCliConversion(TestCliBasic):
         result.assert_success()
         assert len(os.listdir(tmp_path)) == 2
 
+    def test_bulk(self, tmp_path: Path) -> None:
+        filenames = ["1.pdf", "2.pdf", "3.pdf"]
+        file_paths = []
+        for filename in filenames:
+            doc_path = str(tmp_path / filename)
+            shutil.copyfile(self.sample_doc, doc_path)
+            file_paths.append(doc_path)
+
+        result = self.run_cli(file_paths)
+        result.assert_success()
+        assert len(os.listdir(tmp_path)) == 2 * len(filenames)
+
+    def test_bulk_fail_on_output_filename(self, tmp_path: Path) -> None:
+        filenames = ["1.pdf", "2.pdf", "3.pdf"]
+        file_paths = []
+        for filename in filenames:
+            doc_path = str(tmp_path / filename)
+            shutil.copyfile(self.sample_doc, doc_path)
+            file_paths.append(doc_path)
+
+        result = self.run_cli(['--output-filename="output.pdf"'] + file_paths)
+        result.assert_failure()
+
 
 class TestSecurity(TestCli):
     def test_suspicious_double_dash_file(self, tmp_path: Path) -> None:

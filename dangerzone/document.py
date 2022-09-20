@@ -1,3 +1,4 @@
+import enum
 import os
 import platform
 import stat
@@ -18,12 +19,22 @@ class Document:
     document, and validating its info.
     """
 
-    def __init__(self, input_filename: str = None) -> None:
+    # document conversion state
+    STATE_UNCONVERTED = enum.auto()
+    STATE_SAFE = enum.auto()
+    STATE_FAILED = enum.auto()
+
+    def __init__(self, input_filename: str = None, output_filename: str = None) -> None:
         self._input_filename: Optional[str] = None
         self._output_filename: Optional[str] = None
 
         if input_filename:
             self.input_filename = input_filename
+
+            if output_filename:
+                self.output_filename = output_filename
+
+        self.state = Document.STATE_UNCONVERTED
 
     @staticmethod
     def normalize_filename(filename: str) -> str:
@@ -68,7 +79,10 @@ class Document:
     @property
     def output_filename(self) -> str:
         if self._output_filename is None:
-            raise DocumentFilenameException("Output filename has not been set yet.")
+            if self._input_filename is not None:
+                return self.default_output_filename
+            else:
+                raise DocumentFilenameException("Output filename has not been set yet.")
         else:
             return self._output_filename
 
@@ -78,7 +92,21 @@ class Document:
         self.validate_output_filename(filename)
         self._output_filename = filename
 
-    def set_default_output_filename(self) -> None:
-        self.output_filename = (
-            f"{os.path.splitext(self.input_filename)[0]}{SAFE_EXTENSION}"
-        )
+    @property
+    def default_output_filename(self) -> str:
+        return f"{os.path.splitext(self.input_filename)[0]}{SAFE_EXTENSION}"
+
+    def is_unconverted(self) -> bool:
+        return self.state is Document.STATE_UNCONVERTED
+
+    def is_failed(self) -> bool:
+        return self.state is Document.STATE_FAILED
+
+    def is_safe(self) -> bool:
+        return self.state is Document.STATE_SAFE
+
+    def mark_as_failed(self) -> None:
+        self.state = Document.STATE_FAILED
+
+    def mark_as_safe(self) -> None:
+        self.state = Document.STATE_SAFE

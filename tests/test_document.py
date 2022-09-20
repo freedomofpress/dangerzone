@@ -78,3 +78,24 @@ def test_output_file_not_pdf(tmp_path: Path) -> None:
     assert "Safe PDF filename must end in '.pdf'" in str(e.value)
 
     assert not os.path.exists(docx_file)
+
+
+def test_is_unconverted_by_default(sample_doc: None) -> None:
+    d = Document(sample_doc)
+    assert d.is_unconverted()
+
+
+def test_mark_as_safe(sample_doc: str) -> None:
+    d = Document(sample_doc)
+    d.mark_as_safe()
+    assert d.is_safe()
+    assert not d.is_failed()
+    assert not d.is_unconverted()
+
+
+def test_mark_as_failed(sample_doc: str) -> None:
+    d = Document(sample_doc)
+    d.mark_as_failed()
+    assert d.is_failed()
+    assert not d.is_safe()
+    assert not d.is_unconverted()

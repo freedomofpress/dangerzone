@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional, Tuple
 
 import click
 
@@ -15,6 +15,18 @@ def _validate_input_filename(
     filename = Document.normalize_filename(value)
     Document.validate_input_filename(filename)
     return filename
+
+
+@errors.handle_document_errors
+def _validate_input_filenames(
+    ctx: click.Context, param: List[str], value: Tuple[str]
+) -> List[str]:
+    normalized_filenames = []
+    for filename in value:
+        filename = Document.normalize_filename(filename)
+        Document.validate_input_filename(filename)
+        normalized_filenames.append(filename)
+    return normalized_filenames
 
 
 @errors.handle_document_errors
@@ -40,6 +52,12 @@ def validate_input_filename(
     ctx: click.Context, param: str, value: Optional[str]
 ) -> Optional[str]:
     return _validate_input_filename(ctx, param, value)
+
+
+def validate_input_filenames(
+    ctx: click.Context, param: List[str], value: Tuple[str]
+) -> List[str]:
+    return _validate_input_filenames(ctx, param, value)
 
 
 def validate_output_filename(

@@ -6,12 +6,13 @@ import platform
 import shutil
 import subprocess
 import sys
-from typing import Optional
+from typing import Callable, List, Optional
 
 import appdirs
 import colorama
 
 from .container import convert
+from .document import Document
 from .settings import Settings
 from .util import get_resource_path
 
@@ -36,3 +37,34 @@ class DangerzoneCore(object):
 
         # Load settings
         self.settings = Settings(self)
+
+        self.documents: List[Document] = []
+
+    def add_document(
+        self, input_filename: str, output_filename: Optional[str] = None
+    ) -> None:
+        doc = Document(input_filename, output_filename)
+        self.documents.append(doc)
+
+    def convert_documents(
+        self, ocr_lang: Optional[str], stdout_callback: Callable[[str], None]
+    ) -> None:
+        all_successful = True
+
+        for document in self.documents:
+            success = convert(
+                document.input_filename,
+                document.output_filename,
+                ocr_lang,
+                stdout_callback,
+            )
+            if success:
+                document.mark_as_safe()
+            else:
+                document.mark_as_failed()
+
+    def get_safe_documents(self) -> List[Document]:
+        return [doc for doc in self.documents if doc.is_safe()]
+
+    def get_failed_documents(self) -> List[Document]:
+        return [doc for doc in self.documents if doc.is_failed()]

@@ -433,9 +433,6 @@ class SettingsWidget(QtWidgets.QWidget):
         self.dangerous_doc_label.setText(
             f"Suspicious: {os.path.basename(self.document.input_filename)}"
         )
-
-        # Set the default save location
-        self.document.set_default_output_filename()
         self.save_lineedit.setText(os.path.basename(self.document.output_filename))
 
     def save_browse_button_clicked(self) -> None:

@@ -369,25 +369,16 @@ def main() -> int:
 
     converter = DangerzoneConverter()
 
-    if sys.argv[1] == "document-to-pixels":
-        try:
-            job.document_to_pixels()
-        except (RuntimeError, TimeoutError) as e:
-            job.update_progress(str(e), error=True)
-            return 1
-        else:
-            return 0  # Success!
-
-    elif sys.argv[1] == "pixels-to-pdf":
-        try:
-            job.pixels_to_pdf()
-        except (RuntimeError, TimeoutError) as e:
-            job.update_progress(str(e), error=True)
-            return 1
-        else:
-            return 0  # Success!
-
-    return -1
+    try:
+        if sys.argv[1] == "document-to-pixels":
+            converter.document_to_pixels()
+        elif sys.argv[1] == "pixels-to-pdf":
+            converter.pixels_to_pdf()
+    except (RuntimeError, TimeoutError, ValueError) as e:
+        converter.update_progress(str(e), error=True)
+        return 1
+    else:
+        return 0  # Success!
 
 
 if __name__ == "__main__":

@@ -132,7 +132,7 @@ class DangerzoneConverter:
 
         # Validate MIME type
         if mime_type not in conversions:
-            raise ValueError(f"Document format ${mime_type} is not supported")
+            raise ValueError(f"The document format is not supported")
 
         # Convert input document to PDF
         conversion = conversions[mime_type]

@@ -52,10 +52,9 @@ def run_command(
 
 class DangerzoneConverter:
     def __init__(self) -> None:
-        self.percentage: float = 0.0  # TODO Optional[float], but this default value will be overwritten immediately
+        self.percentage: float = 0.0
 
     def document_to_pixels(self) -> None:
-        self.percentage: float = 0.0
 
         conversions: Dict[str, Dict[str, Optional[str]]] = {
             # .pdf

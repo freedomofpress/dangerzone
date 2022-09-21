@@ -24,8 +24,6 @@ import magic
 from PIL import Image
 
 # timeout in seconds for any single subprocess
-# FIXME https://github.com/freedomofpress/dangerzone/issues/146
-# FIXME https://github.com/freedomofpress/dangerzone/issues/149
 DEFAULT_TIMEOUT: float = 60
 
 

@@ -18,7 +18,7 @@ import os
 import shutil
 import subprocess
 import sys
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import magic
 from PIL import Image
@@ -28,7 +28,11 @@ DEFAULT_TIMEOUT: float = 60
 
 
 def run_command(
-    args, *, error_message: str, timeout_message: str, timeout: float = DEFAULT_TIMEOUT
+    args: List[str],
+    *,
+    error_message: str,
+    timeout_message: str,
+    timeout: float = DEFAULT_TIMEOUT,
 ) -> subprocess.CompletedProcess:
     """
     Runs a command and returns the result.
@@ -234,7 +238,6 @@ class DangerzoneConverter:
             os.remove(png_filename)
             self.percentage += percentage_per_page
 
-
         self.update_progress("Converted document to pixels")
 
         # Move converted files into /dangerzone
@@ -320,7 +323,6 @@ class DangerzoneConverter:
 
             self.percentage += percentage_per_page
 
-
         # Merge pages into a single PDF
         self.update_progress(f"Merging {num_pages} pages into a single PDF")
         args = ["pdfunite"]
@@ -352,7 +354,7 @@ class DangerzoneConverter:
         shutil.move("/tmp/safe-output.pdf", "/safezone")
         shutil.move("/tmp/safe-output-compressed.pdf", "/safezone")
 
-    def update_progress(self, text, *, error: bool = False):
+    def update_progress(self, text: str, *, error: bool = False) -> None:
         print(
             json.dumps(
                 {"error": error, "text": text, "percentage": int(self.percentage)}

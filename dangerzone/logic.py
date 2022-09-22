@@ -1,3 +1,4 @@
+import concurrent.futures
 import gzip
 import json
 import logging
@@ -11,7 +12,7 @@ from typing import Callable, List, Optional
 import appdirs
 import colorama
 
-from .container import convert
+from . import container
 from .document import Document
 from .settings import Settings
 from .util import get_resource_path
@@ -49,10 +50,8 @@ class DangerzoneCore(object):
     def convert_documents(
         self, ocr_lang: Optional[str], stdout_callback: Callable[[str], None]
     ) -> None:
-        all_successful = True
-
-        for document in self.documents:
-            success = convert(
+        def convert_doc(document: Document) -> None:
+            success = container.convert(
                 document.input_filename,
                 document.output_filename,
                 ocr_lang,
@@ -62,6 +61,10 @@ class DangerzoneCore(object):
                 document.mark_as_safe()
             else:
                 document.mark_as_failed()
+
+        max_jobs = container.get_max_parallel_conversions()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_jobs) as executor:
+            executor.map(convert_doc, self.documents)
 
     def get_safe_documents(self) -> List[Document]:
         return [doc for doc in self.documents if doc.is_safe()]

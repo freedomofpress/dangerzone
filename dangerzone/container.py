@@ -254,6 +254,27 @@ def convert(
     return success
 
 
+def get_max_parallel_conversions() -> int:
+    n_cpu = 1
+    if platform.system() == "Linux":
+        # if on linux containers run natively
+        cpu_count = os.cpu_count()
+        if cpu_count is not None:
+            n_cpu = cpu_count
+
+    elif get_runtime_name() == "docker":
+        # For Windows and MacOS containers run in VM
+        # So we obtain the CPU count for the VM
+        n_cpu_str = subprocess.check_output(
+            [get_runtime(), "info", "--format", "{{.NCPU}}"],
+            text=True,
+            startupinfo=get_subprocess_startupinfo(),
+        )
+        n_cpu = int(n_cpu_str.strip())
+
+    return 2 * n_cpu + 1
+
+
 # From global_common:
 
 # def validate_convert_to_pixel_output(self, common, output):

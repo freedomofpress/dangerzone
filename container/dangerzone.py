@@ -179,7 +179,7 @@ class DangerzoneConverter:
         self.percentage += 3
 
         # Separate PDF into pages
-        self.update_progress("Separating document into pages"),
+        self.update_progress("Separating document into pages")
         args = ["pdftk", pdf_filename, "burst", "output", "/tmp/page-%d.pdf"]
         run_command(
             args,

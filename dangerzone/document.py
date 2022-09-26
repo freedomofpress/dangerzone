@@ -1,6 +1,8 @@
 import enum
+import logging
 import os
 import platform
+import secrets
 import stat
 import tempfile
 from typing import Optional
@@ -10,6 +12,8 @@ import appdirs
 from .errors import DocumentFilenameException
 
 SAFE_EXTENSION = "-safe.pdf"
+
+log = logging.getLogger(__name__)
 
 
 class Document:
@@ -25,11 +29,15 @@ class Document:
     STATE_FAILED = enum.auto()
 
     def __init__(self, input_filename: str = None, output_filename: str = None) -> None:
+        # NOTE: See https://github.com/freedomofpress/dangerzone/pull/216#discussion_r1015449418
+        self.id = secrets.token_urlsafe(6)[0:6]
+
         self._input_filename: Optional[str] = None
         self._output_filename: Optional[str] = None
 
         if input_filename:
             self.input_filename = input_filename
+            self.announce_id()
 
             if output_filename:
                 self.output_filename = output_filename
@@ -75,6 +83,7 @@ class Document:
         filename = self.normalize_filename(filename)
         self.validate_input_filename(filename)
         self._input_filename = filename
+        self.announce_id()
 
     @property
     def output_filename(self) -> str:
@@ -95,6 +104,9 @@ class Document:
     @property
     def default_output_filename(self) -> str:
         return f"{os.path.splitext(self.input_filename)[0]}{SAFE_EXTENSION}"
+
+    def announce_id(self) -> None:
+        log.info(f"Assigning ID '{self.id}' to doc '{self.input_filename}'")
 
     def is_unconverted(self) -> bool:
         return self.state is Document.STATE_UNCONVERTED

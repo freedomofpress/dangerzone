@@ -493,34 +493,17 @@ class ConvertThread(QtCore.QThread):
             ocr_lang = None
 
         if convert(
-            self.document.input_filename,
-            self.document.output_filename,
+            self.document,
             ocr_lang,
             self.stdout_callback,
         ):
             self.finished.emit(self.error)
 
-    def stdout_callback(self, line: str) -> None:
-        try:
-            status = json.loads(line)
-        except:
-            log.error(f"Invalid JSON returned from container: {line}")
+    def stdout_callback(self, error: bool, text: str, percentage: int) -> None:
+        if error:
             self.error = True
-            self.update.emit(
-                True, f"Invalid JSON returned from container:\n\n{line}", 0
-            )
-            return
 
-        s = Style.BRIGHT + Fore.CYAN + f"{status['percentage']}% "
-        if status["error"]:
-            self.error = True
-            s += Style.RESET_ALL + Fore.RED + status["text"]
-            log.error(s)
-        else:
-            s += Style.RESET_ALL + status["text"]
-            log.info(s)
-
-        self.update.emit(status["error"], status["text"], status["percentage"])
+        self.update.emit(error, text, percentage)
 
 
 class ConvertWidget(QtWidgets.QWidget):

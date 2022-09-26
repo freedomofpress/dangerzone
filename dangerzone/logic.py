@@ -48,12 +48,11 @@ class DangerzoneCore(object):
         self.documents.append(doc)
 
     def convert_documents(
-        self, ocr_lang: Optional[str], stdout_callback: Callable[[str], None]
+        self, ocr_lang: Optional[str], stdout_callback: Optional[Callable] = None
     ) -> None:
         def convert_doc(document: Document) -> None:
             success = container.convert(
-                document.input_filename,
-                document.output_filename,
+                document,
                 ocr_lang,
                 stdout_callback,
             )

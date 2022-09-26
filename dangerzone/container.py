@@ -1,4 +1,5 @@
 import gzip
+import json
 import logging
 import os
 import pipes
@@ -6,10 +7,12 @@ import platform
 import shutil
 import subprocess
 import tempfile
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Tuple
 
 import appdirs
+from colorama import Fore, Style
 
+from .document import Document
 from .util import get_resource_path, get_subprocess_startupinfo
 
 container_name = "dangerzone.rocks/dangerzone"
@@ -127,7 +130,34 @@ def is_container_installed() -> bool:
     return installed
 
 
-def exec(args: List[str], stdout_callback: Callable[[str], None] = None) -> int:
+def parse_progress(document: Document, line: str) -> Tuple[bool, str, int]:
+    """
+    Parses a line returned by the container.
+    """
+    try:
+        status = json.loads(line)
+    except:
+        error_message = f"Invalid JSON returned from container:\n\n\t {line}"
+        log.error(error_message)
+        return (True, error_message, -1)
+
+    s = Style.BRIGHT + Fore.YELLOW + f"[doc {document.id}] "
+    s += Fore.CYAN + f"{status['percentage']}% "
+    if status["error"]:
+        s += Style.RESET_ALL + Fore.RED + status["text"]
+        log.error(s)
+    else:
+        s += Style.RESET_ALL + status["text"]
+        log.info(s)
+
+    return (status["error"], status["text"], status["percentage"])
+
+
+def exec(
+    document: Document,
+    args: List[str],
+    stdout_callback: Optional[Callable] = None,
+) -> int:
     args_str = " ".join(pipes.quote(s) for s in args)
     log.info("> " + args_str)
 
@@ -140,18 +170,21 @@ def exec(args: List[str], stdout_callback: Callable[[str], None] = None) -> int:
         universal_newlines=True,
         startupinfo=startupinfo,
     ) as p:
-        if stdout_callback and p.stdout is not None:
+        if p.stdout is not None:
             for line in p.stdout:
-                stdout_callback(line)
+                (error, text, percentage) = parse_progress(document, line)
+                if stdout_callback:
+                    stdout_callback(error, text, percentage)
 
         p.communicate()
         return p.returncode
 
 
 def exec_container(
+    document: Document,
     command: List[str],
     extra_args: List[str] = [],
-    stdout_callback: Callable[[str], None] = None,
+    stdout_callback: Optional[Callable] = None,
 ) -> int:
     container_runtime = get_runtime()
 
@@ -181,14 +214,13 @@ def exec_container(
     )
 
     args = [container_runtime] + args
-    return exec(args, stdout_callback)
+    return exec(document, args, stdout_callback)
 
 
 def convert(
-    input_filename: str,
-    output_filename: str,
+    document: Document,
     ocr_lang: Optional[str],
-    stdout_callback: Callable[[str], None],
+    stdout_callback: Optional[Callable] = None,
 ) -> bool:
     success = False
 
@@ -210,11 +242,11 @@ def convert(
     command = ["/usr/bin/python3", "/usr/local/bin/dangerzone.py", "document-to-pixels"]
     extra_args = [
         "-v",
-        f"{input_filename}:/tmp/input_file",
+        f"{document.input_filename}:/tmp/input_file",
         "-v",
         f"{pixel_dir}:/dangerzone",
     ]
-    ret = exec_container(command, extra_args, stdout_callback)
+    ret = exec_container(document, command, extra_args, stdout_callback)
     if ret != 0:
         log.error("documents-to-pixels failed")
     else:
@@ -232,18 +264,18 @@ def convert(
             "-e",
             f"OCR_LANGUAGE={ocr_lang}",
         ]
-        ret = exec_container(command, extra_args, stdout_callback)
+        ret = exec_container(document, command, extra_args, stdout_callback)
         if ret != 0:
             log.error("pixels-to-pdf failed")
         else:
             # Move the final file to the right place
-            if os.path.exists(output_filename):
-                os.remove(output_filename)
+            if os.path.exists(document.output_filename):
+                os.remove(document.output_filename)
 
             container_output_filename = os.path.join(
                 safe_dir, "safe-output-compressed.pdf"
             )
-            shutil.move(container_output_filename, output_filename)
+            shutil.move(container_output_filename, document.output_filename)
 
             # We did it
             success = True

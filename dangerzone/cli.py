@@ -1,4 +1,3 @@
-import json
 import logging
 import sys
 from typing import Any, Callable, List, Optional, TypeVar
@@ -69,19 +68,7 @@ def cli_main(
     # Convert the document
     print_header("Converting document to safe PDF")
 
-    def stdout_callback(line: str) -> None:
-        try:
-            status = json.loads(line)
-            s = Style.BRIGHT + Fore.CYAN + f"{status['percentage']}% "
-            if status["error"]:
-                s += Style.RESET_ALL + Fore.RED + status["text"]
-            else:
-                s += Style.RESET_ALL + status["text"]
-            click.echo(s)
-        except:
-            click.echo(f"Invalid JSON returned from container: {line}")
-
-    dangerzone.convert_documents(ocr_lang, stdout_callback)
+    dangerzone.convert_documents(ocr_lang)
     documents_safe = dangerzone.get_safe_documents()
     documents_failed = dangerzone.get_failed_documents()
 

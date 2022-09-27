@@ -232,14 +232,14 @@ class ContentWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.doc_selection_widget, stretch=1)
         layout.addWidget(self.settings_widget, stretch=1)
         layout.addWidget(self.convert_widget, stretch=1)
+        layout.addWidget(self.doc_selection_widget, stretch=1)
         self.setLayout(layout)
 
     def document_selected(self) -> None:
-        self.doc_selection_widget.hide()
         self.settings_widget.show()
+        self.convert_widget.show()
 
     def start_clicked(self) -> None:
         self.settings_widget.hide()

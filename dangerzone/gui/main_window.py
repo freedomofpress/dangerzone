@@ -222,28 +222,28 @@ class ContentWidget(QtWidgets.QWidget):
         self.settings_widget.hide()
 
         # Convert
-        self.convert_widget = ConvertWidget(self.dangerzone, self.document)
-        self.convert_widget.close_window.connect(self._close_window)
+        self.documents_list = DocumentsListWidget(self.dangerzone, self.document)
+        self.documents_list.close_window.connect(self._close_window)
         self.doc_selection_widget.document_selected.connect(
-            self.convert_widget.document_selected
+            self.documents_list.document_selected
         )
-        self.settings_widget.start_clicked.connect(self.convert_widget.start)
-        self.convert_widget.hide()
+        self.settings_widget.start_clicked.connect(self.documents_list.start)
+        self.documents_list.hide()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.settings_widget, stretch=1)
-        layout.addWidget(self.convert_widget, stretch=1)
+        layout.addWidget(self.documents_list, stretch=1)
         layout.addWidget(self.doc_selection_widget, stretch=1)
         self.setLayout(layout)
 
     def document_selected(self) -> None:
         self.settings_widget.show()
-        self.convert_widget.show()
+        self.documents_list.show()
 
     def start_clicked(self) -> None:
         self.settings_widget.hide()
-        self.convert_widget.show()
+        self.documents_list.show()
 
     def _close_window(self) -> None:
         self.close_window.emit()
@@ -506,11 +506,38 @@ class ConvertThread(QtCore.QThread):
         self.update.emit(error, text, percentage)
 
 
-class ConvertWidget(QtWidgets.QWidget):
+class DocumentsListWidget(QtWidgets.QListWidget):
     close_window = QtCore.Signal()
 
     def __init__(self, dangerzone: DangerzoneGui, document: Document) -> None:
-        super(ConvertWidget, self).__init__()
+        super().__init__()
+        self.document_widgets = []
+
+        item = QtWidgets.QListWidgetItem()
+        item.setSizeHint(QtCore.QSize(500, 50))
+        widget = DocumentWidget(dangerzone, document)
+        self.document_widgets.append(widget)
+        self.addItem(item)
+        self.setItemWidget(item, widget)
+
+    def document_selected(self) -> None:
+        for item in self.document_widgets:
+            item.document_selected()
+
+    def start(self) -> None:
+        for item in self.document_widgets:
+            item.start()
+
+
+class DocumentWidget(QtWidgets.QWidget):
+    close_window = QtCore.Signal()
+
+    def __init__(
+        self,
+        dangerzone: DangerzoneGui,
+        document: Document,
+    ) -> None:
+        super().__init__()
         self.dangerzone = dangerzone
         self.document = document
 
@@ -545,7 +572,7 @@ class ConvertWidget(QtWidgets.QWidget):
         self.progress.setValue(0)
 
         # Layout
-        layout = QtWidgets.QVBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.dangerous_doc_label)
         layout.addStretch()
         layout.addLayout(label_layout)

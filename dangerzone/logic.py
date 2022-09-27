@@ -61,6 +61,9 @@ class DangerzoneCore(object):
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_jobs) as executor:
             executor.map(convert_doc, self.documents)
 
+    def get_unsafe_documents(self) -> List[Document]:
+        return [doc for doc in self.documents if doc.is_unsafe()]
+
     def get_safe_documents(self) -> List[Document]:
         return [doc for doc in self.documents if doc.is_safe()]
 

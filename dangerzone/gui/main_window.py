@@ -5,7 +5,7 @@ import platform
 import shutil
 import subprocess
 import tempfile
-from typing import Optional
+from typing import List, Optional
 
 from colorama import Fore, Style
 from PySide2 import QtCore, QtGui, QtWidgets
@@ -25,13 +25,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(
         self,
         dangerzone: DangerzoneGui,
-        window_id: str,
-        document: Document,
+        window_id: str
     ) -> None:
         super(MainWindow, self).__init__()
         self.dangerzone = dangerzone
         self.window_id = window_id
-        self.document = document
 
         self.setWindowTitle("Dangerzone")
         self.setWindowIcon(self.dangerzone.get_window_icon())
@@ -59,7 +57,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.waiting_widget.finished.connect(self.waiting_finished)
 
         # Content widget, contains all the window content except waiting widget
-        self.content_widget = ContentWidget(self.dangerzone, self.document)
+        self.content_widget = ContentWidget(self.dangerzone)
         self.content_widget.close_window.connect(self.close)
 
         # Only use the waiting widget if container runtime isn't available
@@ -202,27 +200,25 @@ class WaitingWidget(QtWidgets.QWidget):
 class ContentWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
-    def __init__(self, dangerzone: DangerzoneGui, document: Document) -> None:
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(ContentWidget, self).__init__()
-
         self.dangerzone = dangerzone
-        self.document = document
 
         # Doc selection widget
-        self.doc_selection_widget = DocSelectionWidget(self.document)
+        self.doc_selection_widget = DocSelectionWidget()
         self.doc_selection_widget.document_selected.connect(self.document_selected)
 
         # Settings
-        # self.settings_widget = SettingsWidget(self.dangerzone, self.document)
+        # self.settings_widget = SettingsWidget(self.dangerzone, self.documents)
         # self.doc_selection_widget.document_selected.connect(
-        #    self.settings_widget.document_selected
+        #   self.settings_widget.document_selected
         # )
         # self.settings_widget.start_clicked.connect(self.start_clicked)
         # self.settings_widget.close_window.connect(self._close_window)
         # self.settings_widget.hide()
 
         # Convert
-        self.documents_list = DocumentsListWidget(self.dangerzone, self.document)
+        self.documents_list = DocumentsListWidget(self.dangerzone)
         self.documents_list.close_window.connect(self._close_window)
         self.doc_selection_widget.document_selected.connect(
             self.documents_list.document_selected
@@ -250,11 +246,10 @@ class ContentWidget(QtWidgets.QWidget):
 
 
 class DocSelectionWidget(QtWidgets.QWidget):
-    document_selected = QtCore.Signal()
+    document_selected = QtCore.Signal(list)
 
-    def __init__(self, document: Document) -> None:
+    def __init__(self) -> None:
         super(DocSelectionWidget, self).__init__()
-        self.document = document
 
         # Dangerous document selection
         self.dangerous_doc_label = QtWidgets.QLabel()
@@ -280,24 +275,26 @@ class DocSelectionWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def dangerous_doc_button_clicked(self) -> None:
-        (filename, _) = QtWidgets.QFileDialog.getOpenFileName(
+        (filenames, _) = QtWidgets.QFileDialog.getOpenFileNames(
             self,
-            "Open document",
+            "Open documents",
             filter="Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.jpg *.jpeg *.gif *.png *.tif *.tiff)",
         )
-        if filename != "":
-            self.document.input_filename = filename
-            self.document_selected.emit()
+        if filenames == []:
+            # no files selected
+            return
+
+        self.document_selected.emit(filenames)
 
 
 class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.Signal()
     close_window = QtCore.Signal()
 
-    def __init__(self, dangerzone: DangerzoneGui, document: Document) -> None:
+    def __init__(self, dangerzone: DangerzoneGui, documents: List[Document]) -> None:
         super(SettingsWidget, self).__init__()
         self.dangerzone = dangerzone
-        self.document = document
+        self.documents = documents
 
         # Dangerous document label
         self.dangerous_doc_label = QtWidgets.QLabel()
@@ -431,26 +428,26 @@ class SettingsWidget(QtWidgets.QWidget):
     def document_selected(self) -> None:
         # Update the danger doc label
         self.dangerous_doc_label.setText(
-            f"Suspicious: {os.path.basename(self.document.input_filename)}"
+            f"Suspicious: {os.path.basename(self.documents.input_filename)}"
         )
-        self.save_lineedit.setText(os.path.basename(self.document.output_filename))
+        self.save_lineedit.setText(os.path.basename(self.documents.output_filename))
 
     def save_browse_button_clicked(self) -> None:
         filename = QtWidgets.QFileDialog.getSaveFileName(
             self,
             "Save safe PDF as...",
-            self.document.output_filename,
+            self.documents.output_filename,
             filter="Documents (*.pdf)",
         )
         if filename[0] != "":
-            self.document.output_filename = filename[0]
-            self.save_lineedit.setText(os.path.basename(self.document.output_filename))
+            self.documents.output_filename = filename[0]
+            self.save_lineedit.setText(os.path.basename(self.documents.output_filename))
 
     def start_button_clicked(self) -> None:
         if self.save_checkbox.checkState() == QtCore.Qt.Unchecked:
             # If not saving, then save it to a temp file instead
             tmp = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
-            self.document.output_filename = tmp[1]
+            self.documents.output_filename = tmp[1]
 
         # Update settings
         self.dangerzone.settings.set(
@@ -509,20 +506,22 @@ class ConvertThread(QtCore.QThread):
 class DocumentsListWidget(QtWidgets.QListWidget):
     close_window = QtCore.Signal()
 
-    def __init__(self, dangerzone: DangerzoneGui, document: Document) -> None:
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
         super().__init__()
-        self.document_widgets = []
+        self.dangerzone = dangerzone
+        self.document_widgets: List[DocumentWidget] = []
 
-        item = QtWidgets.QListWidgetItem()
-        item.setSizeHint(QtCore.QSize(500, 50))
-        widget = DocumentWidget(dangerzone, document)
-        self.document_widgets.append(widget)
-        self.addItem(item)
-        self.setItemWidget(item, widget)
+    def document_selected(self, filenames: list) -> None:
+        for filename in filenames:
+            self.dangerzone.add_document(filename)
 
-    def document_selected(self) -> None:
-        for item in self.document_widgets:
-            item.document_selected()
+        for document in self.dangerzone.get_unsafe_documents():
+            item = QtWidgets.QListWidgetItem()
+            item.setSizeHint(QtCore.QSize(500, 50))
+            widget = DocumentWidget(self.dangerzone, document)
+            self.addItem(item)
+            self.setItemWidget(item, widget)
+            self.document_widgets.append(widget)
 
     def start(self) -> None:
         for item in self.document_widgets:
@@ -548,6 +547,9 @@ class DocumentWidget(QtWidgets.QWidget):
         self.dangerous_doc_label.setAlignment(QtCore.Qt.AlignCenter)
         self.dangerous_doc_label.setStyleSheet(
             "QLabel { font-size: 16px; font-weight: bold; }"
+        )
+        self.dangerous_doc_label.setText(
+            f"Suspicious: {os.path.basename(self.document.input_filename)}"
         )
 
         # Label
@@ -579,12 +581,6 @@ class DocumentWidget(QtWidgets.QWidget):
         layout.addWidget(self.progress)
         layout.addStretch()
         self.setLayout(layout)
-
-    def document_selected(self) -> None:
-        # Update the danger doc label
-        self.dangerous_doc_label.setText(
-            f"Suspicious: {os.path.basename(self.document.input_filename)}"
-        )
 
     def start(self) -> None:
         self.convert_t = ConvertThread(self.dangerzone, self.document)

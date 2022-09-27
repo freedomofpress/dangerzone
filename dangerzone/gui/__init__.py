@@ -92,22 +92,15 @@ def gui_main(filenames: Optional[List[str]]) -> bool:
         del windows[window_id]
 
     # Open a document in a window
-    def new_window(input_filename: Optional[str] = None) -> None:
-        document = Document(input_filename)
+    def new_window(filenames: Optional[List[str]] = []) -> None:
         window_id = uuid.uuid4().hex
-        window = MainWindow(dangerzone, window_id, document)
+        window = MainWindow(dangerzone, window_id)
+        if filenames:
+            window.content_widget.doc_selection_widget.document_selected.emit(filenames)
         window.delete_window.connect(delete_window)
         windows[window_id] = window
 
-        if input_filename:
-            window.content_widget.doc_selection_widget.document_selected.emit()
-
-    # Open a new window if not filename is passed
-    if filenames is None:
-        new_window()
-    else:
-        for filename in filenames:
-            new_window(filename)
+    new_window(filenames)
 
     # Open a new window, if all windows are closed
     def application_activated() -> None:

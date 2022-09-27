@@ -213,13 +213,13 @@ class ContentWidget(QtWidgets.QWidget):
         self.doc_selection_widget.document_selected.connect(self.document_selected)
 
         # Settings
-        self.settings_widget = SettingsWidget(self.dangerzone, self.document)
-        self.doc_selection_widget.document_selected.connect(
-            self.settings_widget.document_selected
-        )
-        self.settings_widget.start_clicked.connect(self.start_clicked)
-        self.settings_widget.close_window.connect(self._close_window)
-        self.settings_widget.hide()
+        # self.settings_widget = SettingsWidget(self.dangerzone, self.document)
+        # self.doc_selection_widget.document_selected.connect(
+        #    self.settings_widget.document_selected
+        # )
+        # self.settings_widget.start_clicked.connect(self.start_clicked)
+        # self.settings_widget.close_window.connect(self._close_window)
+        # self.settings_widget.hide()
 
         # Convert
         self.documents_list = DocumentsListWidget(self.dangerzone, self.document)
@@ -227,22 +227,22 @@ class ContentWidget(QtWidgets.QWidget):
         self.doc_selection_widget.document_selected.connect(
             self.documents_list.document_selected
         )
-        self.settings_widget.start_clicked.connect(self.documents_list.start)
+        # self.settings_widget.start_clicked.connect(self.documents_list.start)
         self.documents_list.hide()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.settings_widget, stretch=1)
+        # layout.addWidget(self.settings_widget, stretch=1)
         layout.addWidget(self.documents_list, stretch=1)
         layout.addWidget(self.doc_selection_widget, stretch=1)
         self.setLayout(layout)
 
     def document_selected(self) -> None:
-        self.settings_widget.show()
+        # self.settings_widget.show()
         self.documents_list.show()
 
     def start_clicked(self) -> None:
-        self.settings_widget.hide()
+        # self.settings_widget.hide()
         self.documents_list.show()
 
     def _close_window(self) -> None:

@@ -209,13 +209,13 @@ class ContentWidget(QtWidgets.QWidget):
         self.doc_selection_widget.document_selected.connect(self.document_selected)
 
         # Settings
-        # self.settings_widget = SettingsWidget(self.dangerzone, self.documents)
-        # self.doc_selection_widget.document_selected.connect(
-        #   self.settings_widget.document_selected
-        # )
-        # self.settings_widget.start_clicked.connect(self.start_clicked)
-        # self.settings_widget.close_window.connect(self._close_window)
-        # self.settings_widget.hide()
+        self.settings_widget = SettingsWidget(self.dangerzone)
+        self.doc_selection_widget.document_selected.connect(
+            self.settings_widget.document_selected
+        )
+        self.settings_widget.start_clicked.connect(self.start_clicked)
+        self.settings_widget.close_window.connect(self._close_window)
+        self.settings_widget.hide()
 
         # Convert
         self.documents_list = DocumentsListWidget(self.dangerzone)
@@ -223,22 +223,22 @@ class ContentWidget(QtWidgets.QWidget):
         self.doc_selection_widget.document_selected.connect(
             self.documents_list.document_selected
         )
-        # self.settings_widget.start_clicked.connect(self.documents_list.start)
+        self.settings_widget.start_clicked.connect(self.documents_list.start)
         self.documents_list.hide()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
-        # layout.addWidget(self.settings_widget, stretch=1)
+        layout.addWidget(self.settings_widget, stretch=1)
         layout.addWidget(self.documents_list, stretch=1)
         layout.addWidget(self.doc_selection_widget, stretch=1)
         self.setLayout(layout)
 
     def document_selected(self) -> None:
-        # self.settings_widget.show()
+        self.settings_widget.show()
         self.documents_list.show()
 
     def start_clicked(self) -> None:
-        # self.settings_widget.hide()
+        self.settings_widget.hide()
         self.documents_list.show()
 
     def _close_window(self) -> None:
@@ -255,7 +255,7 @@ class DocSelectionWidget(QtWidgets.QWidget):
         self.dangerous_doc_label = QtWidgets.QLabel()
         self.dangerous_doc_label.hide()
         self.dangerous_doc_button = QtWidgets.QPushButton(
-            "Select suspicious document ..."
+            "Select suspicious documents ..."
         )
         self.dangerous_doc_button.setStyleSheet(
             "QPushButton { font-weight: bold; padding: 10px; }"
@@ -291,50 +291,54 @@ class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.Signal()
     close_window = QtCore.Signal()
 
-    def __init__(self, dangerzone: DangerzoneGui, documents: List[Document]) -> None:
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(SettingsWidget, self).__init__()
         self.dangerzone = dangerzone
-        self.documents = documents
-
-        # Dangerous document label
-        self.dangerous_doc_label = QtWidgets.QLabel()
-        self.dangerous_doc_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.dangerous_doc_label.setStyleSheet(
-            "QLabel { font-size: 16px; font-weight: bold; }"
-        )
 
         # Save safe version
-        self.save_checkbox = QtWidgets.QCheckBox("Save safe PDF")
+        self.save_checkbox = QtWidgets.QCheckBox("Save safe PDF to")
         self.save_checkbox.clicked.connect(self.update_ui)
-        self.save_label = QtWidgets.QLabel("Save safe PDF")  # For Windows
+        self.save_label = QtWidgets.QLabel("Save safe PDF to")  # For Windows
         self.save_label.hide()
+        self.output_dir = None
         if platform.system() == "Windows":
             # In Windows, users must save the PDF, since they can't open it
             self.save_checkbox.setCheckState(QtCore.Qt.Checked)
             self.save_checkbox.setEnabled(False)
             self.save_checkbox.hide()
             self.save_label.show()
-        self.save_lineedit = QtWidgets.QLineEdit()
-        self.save_lineedit.setReadOnly(True)
-        self.save_browse_button = QtWidgets.QPushButton("Save as...")
-        self.save_browse_button.clicked.connect(self.save_browse_button_clicked)
-        save_layout = QtWidgets.QHBoxLayout()
-        save_layout.addWidget(self.save_checkbox)
-        save_layout.addWidget(self.save_label)
-        save_layout.addWidget(self.save_lineedit)
-        save_layout.addWidget(self.save_browse_button)
-        save_layout.addStretch()
+
+        # Save safe to...
+        self.save_location = QtWidgets.QLineEdit()
+        self.save_location.setReadOnly(True)
+        self.save_browse_button = QtWidgets.QPushButton("Choose...")
+        self.save_browse_button.clicked.connect(self.select_output_directory)
+        self.save_location_layout = QtWidgets.QHBoxLayout()
+        self.save_location_layout.addWidget(self.save_checkbox)
+        self.save_location_layout.addWidget(self.save_location)
+        self.save_location_layout.addWidget(self.save_browse_button)
+        self.save_location_layout.addStretch()
+
+        # Save safe as... [filename]-safe.pdf
+        self.safe_extension_label = QtWidgets.QLabel("Save as")
+        self.safe_extension = QtWidgets.QLineEdit()
+        self.safe_extension_layout = QtWidgets.QHBoxLayout()
+        self.safe_extension_layout.setContentsMargins(20, 0, 0, 0)
+        self.safe_extension_layout.addWidget(self.safe_extension_label)
+        self.safe_extension_layout.addWidget(self.save_label)
+        self.safe_extension_layout.addWidget(self.safe_extension)
+        self.safe_extension_layout.addStretch()
 
         # Open safe document
         if platform.system() == "Darwin":
             self.open_checkbox = QtWidgets.QCheckBox(
-                "Open safe document after converting"
+                "Open safe documents after converting"
             )
             self.open_checkbox.clicked.connect(self.update_ui)
 
         elif platform.system() == "Linux":
             self.open_checkbox = QtWidgets.QCheckBox(
-                "Open safe document after converting, using"
+                "Open safe documents after converting, using"
             )
             self.open_checkbox.clicked.connect(self.update_ui)
             self.open_combobox = QtWidgets.QComboBox()
@@ -371,9 +375,9 @@ class SettingsWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.dangerous_doc_label)
         layout.addSpacing(20)
-        layout.addLayout(save_layout)
+        layout.addLayout(self.save_location_layout)
+        layout.addLayout(self.safe_extension_layout)
         if platform.system() != "Windows":
             layout.addLayout(open_layout)
         layout.addLayout(ocr_layout)
@@ -426,28 +430,37 @@ class SettingsWidget(QtWidgets.QWidget):
                 self.start_button.setEnabled(False)
 
     def document_selected(self) -> None:
-        # Update the danger doc label
-        self.dangerous_doc_label.setText(
-            f"Suspicious: {os.path.basename(self.documents.input_filename)}"
-        )
-        self.save_lineedit.setText(os.path.basename(self.documents.output_filename))
+        pass
 
-    def save_browse_button_clicked(self) -> None:
-        filename = QtWidgets.QFileDialog.getSaveFileName(
-            self,
-            "Save safe PDF as...",
-            self.documents.output_filename,
-            filter="Documents (*.pdf)",
-        )
-        if filename[0] != "":
-            self.documents.output_filename = filename[0]
-            self.save_lineedit.setText(os.path.basename(self.documents.output_filename))
+    def select_output_directory(self) -> None:
+        dialog = QtWidgets.QFileDialog()
+        dialog.setLabelText(QtWidgets.QFileDialog.Accept, "Select output directory")
+
+        if len(self.dangerzone.get_unsafe_documents()) >= 1:
+            # pick the first document's directory as the default one
+            dialog.setDirectory(
+                os.path.dirname(self.dangerzone.documents[0].input_filename)
+            )
+
+        # allow only the selection of directories
+        dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
+        dialog.setOption(QtWidgets.QFileDialog.ShowDirsOnly, True)
+
+        if dialog.exec_() == QtWidgets.QFileDialog.Accepted:
+            self.output_dir = dialog.selectedFiles()[0]
 
     def start_button_clicked(self) -> None:
         if self.save_checkbox.checkState() == QtCore.Qt.Unchecked:
             # If not saving, then save it to a temp file instead
-            tmp = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
-            self.documents.output_filename = tmp[1]
+            for document in self.dangerzone.get_unsafe_documents():
+                (_, tmp) = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
+                document.output_filename = tmp
+        else:
+            for document in self.dangerzone.get_unsafe_documents():
+                document.suffix = self.safe_extension.text()
+
+                if self.output_dir:
+                    document.set_output_dir(self.output_dir)  # type: ignore [unreachable]
 
         # Update settings
         self.dangerzone.settings.set(

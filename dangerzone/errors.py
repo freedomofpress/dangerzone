@@ -57,6 +57,20 @@ class NotSetOutputFilenameException(DocumentFilenameException):
         super().__init__("Output filename has not been set yet.")
 
 
+class NonExistantOutputDirException(DocumentFilenameException):
+    """Exception for when the output dir does not exist."""
+
+    def __init__(self) -> None:
+        super().__init__("Output directory does not exist")
+
+
+class OutputDirIsNotDirException(DocumentFilenameException):
+    """Exception for when the specified output dir is not actually a dir."""
+
+    def __init__(self) -> None:
+        super().__init__("Specified output directory is actually not a directory")
+
+
 def handle_document_errors(func: F) -> F:
     """Log document-related errors and exit gracefully."""
 

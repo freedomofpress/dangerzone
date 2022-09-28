@@ -1,12 +1,13 @@
 import os
 import platform
+import stat
 import tempfile
 from pathlib import Path
 
 import pytest
 
 from dangerzone import errors
-from dangerzone.document import Document
+from dangerzone.document import SAFE_EXTENSION, Document
 
 from . import sample_doc, unreadable_pdf
 
@@ -68,7 +69,7 @@ def test_output_file_none() -> None:
 
 
 def test_output_file_not_pdf(tmp_path: Path) -> None:
-    docx_file = str(tmp_path.joinpath("document.docx"))
+    docx_file = str(tmp_path / "document.docx")
     d = Document()
 
     with pytest.raises(errors.NonPDFOutputFileException) as e:
@@ -77,7 +78,43 @@ def test_output_file_not_pdf(tmp_path: Path) -> None:
     assert not os.path.exists(docx_file)
 
 
-def test_is_unconverted_by_default(sample_doc: None) -> None:
+def test_set_output_dir(sample_doc: str, tmp_path: Path) -> None:
+    d = Document(sample_doc)
+    d.set_output_dir(str(tmp_path))
+    assert os.path.dirname(d.output_filename) == str(tmp_path)
+
+
+def test_set_output_dir_non_existant(sample_doc: str, tmp_path: Path) -> None:
+    non_existant_path = str(tmp_path / "fake-dir")
+    d = Document(sample_doc)
+    with pytest.raises(errors.NonExistantOutputDirException):
+        d.set_output_dir(non_existant_path)
+
+
+def test_set_output_dir_is_file(sample_doc: str, tmp_path: Path) -> None:
+    # create a file
+    file_path = str(tmp_path / "file")
+    with open(file_path, "w"):
+        pass
+
+    d = Document(sample_doc)
+    with pytest.raises(errors.OutputDirIsNotDirException):
+        d.set_output_dir(file_path)
+
+
+def test_default_output_filename(sample_doc: str) -> None:
+    d = Document(sample_doc)
+    assert d.output_filename.endswith(SAFE_EXTENSION)
+
+
+def test_set_output_filename_suffix(sample_doc: str) -> None:
+    d = Document(sample_doc)
+    safe_extension = "-trusted.pdf"
+    d.suffix = safe_extension
+    assert d.output_filename.endswith(safe_extension)
+
+
+def test_is_unconverted_by_default(sample_doc: str) -> None:
     d = Document(sample_doc)
     assert d.is_unconverted()
 

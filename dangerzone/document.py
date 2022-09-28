@@ -30,12 +30,18 @@ class Document:
     STATE_SAFE = enum.auto()
     STATE_FAILED = enum.auto()
 
-    def __init__(self, input_filename: str = None, output_filename: str = None) -> None:
+    def __init__(
+        self,
+        input_filename: str = None,
+        output_filename: str = None,
+        suffix: str = SAFE_EXTENSION,
+    ) -> None:
         # NOTE: See https://github.com/freedomofpress/dangerzone/pull/216#discussion_r1015449418
         self.id = secrets.token_urlsafe(6)[0:6]
 
         self._input_filename: Optional[str] = None
         self._output_filename: Optional[str] = None
+        self._suffix = suffix
 
         if input_filename:
             self.input_filename = input_filename
@@ -98,11 +104,33 @@ class Document:
         self._output_filename = filename
 
     @property
+    def suffix(self) -> str:
+        return self._suffix
+
+    @suffix.setter
+    def suffix(self, suf: str) -> None:
+        self._suffix = suf
+
+    @property
     def default_output_filename(self) -> str:
-        return f"{os.path.splitext(self.input_filename)[0]}{SAFE_EXTENSION}"
+        return f"{os.path.splitext(self.input_filename)[0]}{self.suffix}"
 
     def announce_id(self) -> None:
         log.info(f"Assigning ID '{self.id}' to doc '{self.input_filename}'")
+
+    def set_output_dir(self, path: str) -> None:
+        # keep the same name
+        old_filename = os.path.basename(self.output_filename)
+
+        new_path = os.path.abspath(path)
+        if not os.path.exists(new_path):
+            raise errors.NonExistantOutputDirException()
+        if not os.path.isdir(new_path):
+            raise errors.OutputDirIsNotDirException()
+        if not os.access(new_path, os.W_OK):
+            raise errors.UnwriteableOutputDirException()
+
+        self._output_filename = os.path.join(new_path, old_filename)
 
     def is_unconverted(self) -> bool:
         return self.state is Document.STATE_UNCONVERTED

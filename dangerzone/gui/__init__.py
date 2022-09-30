@@ -16,7 +16,6 @@ from ..document import Document
 from ..util import get_resource_path
 from .logic import DangerzoneGui
 from .main_window import MainWindow
-from .systray import SysTray
 
 
 class Application(QtWidgets.QApplication):
@@ -80,9 +79,6 @@ def gui_main(filenames: Optional[List[str]]) -> bool:
 
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    # Create the system tray
-    systray = SysTray(dangerzone, app)
 
     closed_windows: Dict[str, MainWindow] = {}
     windows: Dict[str, MainWindow] = {}

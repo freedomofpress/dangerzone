@@ -5,21 +5,16 @@ from PySide2 import QtWidgets
 
 from .logic import DangerzoneGui
 
-if TYPE_CHECKING:
-    from . import ApplicationWrapper
-
 
 class SysTray(QtWidgets.QSystemTrayIcon):
     def __init__(
         self,
         dangerzone: DangerzoneGui,
         app: QtWidgets.QApplication,
-        app_wrapper: "ApplicationWrapper",
     ) -> None:
         super(SysTray, self).__init__()
         self.dangerzone = dangerzone
         self.app = app
-        self.app_wrapper = app_wrapper
 
         self.setIcon(self.dangerzone.get_window_icon())
 
@@ -35,7 +30,7 @@ class SysTray(QtWidgets.QSystemTrayIcon):
         self.show()
 
     def new_window(self) -> None:
-        self.app_wrapper.new_window.emit()
+        self.new_window.emit()
 
     def quit_clicked(self) -> None:
         self.app.quit()

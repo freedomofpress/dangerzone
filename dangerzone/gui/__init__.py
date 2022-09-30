@@ -19,21 +19,18 @@ from .main_window import MainWindow
 from .systray import SysTray
 
 
-# For some reason, Dangerzone segfaults if I inherit from QApplication directly, so instead
-# this is a class whose job is to hold a QApplication object and customize it
-class ApplicationWrapper(QtCore.QObject):
+class Application(QtWidgets.QApplication):
     document_selected = QtCore.Signal(str)
     new_window = QtCore.Signal()
     application_activated = QtCore.Signal()
 
     def __init__(self) -> None:
-        super(ApplicationWrapper, self).__init__()
-        self.app = QtWidgets.QApplication()
-        self.app.setQuitOnLastWindowClosed(False)
+        super(Application, self).__init__()
+        self.setQuitOnLastWindowClosed(False)
         with open(get_resource_path("dangerzone.css"), "r") as f:
             style = f.read()
-        self.app.setStyleSheet(style)
-        self.original_event = self.app.event
+        self.setStyleSheet(style)
+        self.original_event = self.event
 
         def monkeypatch_event(arg__1: QtCore.QEvent) -> bool:
             event = arg__1  # oddly Qt calls internally event by "arg__1"
@@ -49,7 +46,7 @@ class ApplicationWrapper(QtCore.QObject):
 
             return self.original_event(event)
 
-        self.app.event = monkeypatch_event  # type: ignore [assignment]
+        self.event = monkeypatch_event  # type: ignore [assignment]
 
 
 @click.command()
@@ -76,8 +73,7 @@ def gui_main(filenames: Optional[List[str]]) -> bool:
         colorama.deinit()
 
     # Create the Qt app
-    app_wrapper = ApplicationWrapper()
-    app = app_wrapper.app
+    app = Application()
 
     # Common objects
     dangerzone = DangerzoneGui(app)
@@ -86,7 +82,7 @@ def gui_main(filenames: Optional[List[str]]) -> bool:
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # Create the system tray
-    systray = SysTray(dangerzone, app, app_wrapper)
+    systray = SysTray(dangerzone, app)
 
     closed_windows: Dict[str, MainWindow] = {}
     windows: Dict[str, MainWindow] = {}
@@ -112,11 +108,11 @@ def gui_main(filenames: Optional[List[str]]) -> bool:
             new_window()
 
     # If we get a file open event, open it
-    app_wrapper.document_selected.connect(new_window)
-    app_wrapper.new_window.connect(new_window)
+    app.document_selected.connect(new_window)
+    app.new_window.connect(new_window)
 
     # If the application is activated and all windows are closed, open a new one
-    app_wrapper.application_activated.connect(application_activated)
+    app.application_activated.connect(application_activated)
 
     # Launch the GUI
     ret = app.exec_()

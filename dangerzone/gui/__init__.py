@@ -20,7 +20,6 @@ from .main_window import MainWindow
 
 class Application(QtWidgets.QApplication):
     document_selected = QtCore.Signal(str)
-    new_window = QtCore.Signal()
     application_activated = QtCore.Signal()
 
     def __init__(self) -> None:
@@ -80,32 +79,20 @@ def gui_main(filenames: Optional[List[str]]) -> bool:
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    closed_windows: Dict[str, MainWindow] = {}
-    windows: Dict[str, MainWindow] = {}
-
-    def delete_window(window_id: str) -> None:
-        closed_windows[window_id] = windows[window_id]
-        del windows[window_id]
-
-    # Open a document in a window
-    def new_window(filenames: Optional[List[str]] = []) -> None:
-        window_id = uuid.uuid4().hex
-        window = MainWindow(dangerzone, window_id)
+    def new_window(filenames: Optional[List[str]] = []) -> MainWindow:
+        window = MainWindow(dangerzone)
         if filenames:
             window.content_widget.doc_selection_widget.document_selected.emit(filenames)
-        window.delete_window.connect(delete_window)
-        windows[window_id] = window
+        return window
 
-    new_window(filenames)
+    window = new_window(filenames)
 
-    # Open a new window, if all windows are closed
+    # MacOS: Open a new window, if all windows are closed
     def application_activated() -> None:
-        if len(windows) == 0:
-            new_window()
+        window.show()
 
     # If we get a file open event, open it
     app.document_selected.connect(new_window)
-    app.new_window.connect(new_window)
 
     # If the application is activated and all windows are closed, open a new one
     app.application_activated.connect(application_activated)

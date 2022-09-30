@@ -20,12 +20,9 @@ log = logging.getLogger(__name__)
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    delete_window = QtCore.Signal(str)
-
-    def __init__(self, dangerzone: DangerzoneGui, window_id: str) -> None:
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(MainWindow, self).__init__()
         self.dangerzone = dangerzone
-        self.window_id = window_id
 
         self.setWindowTitle("Dangerzone")
         self.setWindowIcon(self.dangerzone.get_window_icon())
@@ -82,7 +79,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
         e.accept()
-        self.delete_window.emit(self.window_id)
 
         if platform.system() != "Darwin":
             # in MacOS applications only quit when the user

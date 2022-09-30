@@ -54,7 +54,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Content widget, contains all the window content except waiting widget
         self.content_widget = ContentWidget(self.dangerzone)
-        self.content_widget.close_window.connect(self.close)
 
         # Only use the waiting widget if container runtime isn't available
         if self.dangerzone.is_waiting_finished:
@@ -86,6 +85,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.delete_window.emit(self.window_id)
 
         if platform.system() != "Darwin":
+            # in MacOS applications only quit when the user
+            # explicitly closes them
             self.dangerzone.app.quit()
 
 
@@ -194,8 +195,6 @@ class WaitingWidget(QtWidgets.QWidget):
 
 
 class ContentWidget(QtWidgets.QWidget):
-    close_window = QtCore.Signal()
-
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(ContentWidget, self).__init__()
         self.dangerzone = dangerzone
@@ -210,12 +209,10 @@ class ContentWidget(QtWidgets.QWidget):
             self.settings_widget.document_selected
         )
         self.settings_widget.start_clicked.connect(self.start_clicked)
-        self.settings_widget.close_window.connect(self._close_window)
         self.settings_widget.hide()
 
         # Convert
         self.documents_list = DocumentsListWidget(self.dangerzone)
-        self.documents_list.close_window.connect(self._close_window)
         self.doc_selection_widget.document_selected.connect(
             self.documents_list.document_selected
         )
@@ -236,9 +233,6 @@ class ContentWidget(QtWidgets.QWidget):
     def start_clicked(self) -> None:
         self.settings_widget.hide()
         self.documents_list.show()
-
-    def _close_window(self) -> None:
-        self.close_window.emit()
 
 
 class DocSelectionWidget(QtWidgets.QWidget):
@@ -285,7 +279,6 @@ class DocSelectionWidget(QtWidgets.QWidget):
 
 class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.Signal()
-    close_window = QtCore.Signal()
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(SettingsWidget, self).__init__()
@@ -562,8 +555,6 @@ class ConvertThread(QtCore.QThread):
 
 
 class DocumentsListWidget(QtWidgets.QListWidget):
-    close_window = QtCore.Signal()
-
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super().__init__()
         self.dangerzone = dangerzone
@@ -587,8 +578,6 @@ class DocumentsListWidget(QtWidgets.QListWidget):
 
 
 class DocumentWidget(QtWidgets.QWidget):
-    close_window = QtCore.Signal()
-
     def __init__(
         self,
         dangerzone: DangerzoneGui,
@@ -671,10 +660,3 @@ class DocumentWidget(QtWidgets.QWidget):
         # Open
         if self.dangerzone.settings.get("open"):
             self.dangerzone.open_pdf_viewer(self.document.output_filename)
-
-        # Quit
-        if platform.system() == "Darwin":
-            # In macOS, just close the window
-            self.close_window.emit()
-        else:
-            self.dangerzone.app.quit()

@@ -86,7 +86,7 @@ def gui_main(filename: Optional[str]) -> bool:
         del windows[window_id]
 
     # Open a document in a window
-    def select_document(filename: Optional[str] = None) -> bool:
+    def new_window(filename: Optional[str] = None) -> bool:
         document = Document(filename)
         window_id = uuid.uuid4().hex
         window = MainWindow(global_common, gui_common, window_id)
@@ -111,20 +111,20 @@ def gui_main(filename: Optional[str]) -> bool:
 
     # Open a new window if not filename is passed
     if filename is None:
-        select_document()
+        new_window()
     else:
         # If filename is passed as an argument, open it
-        if not select_document(filename):
+        if not new_window(filename):
             return True
 
     # Open a new window, if all windows are closed
     def application_activated() -> None:
         if len(windows) == 0:
-            select_document()
+            new_window()
 
     # If we get a file open event, open it
-    app_wrapper.document_selected.connect(select_document)
-    app_wrapper.new_window.connect(select_document)
+    app_wrapper.document_selected.connect(new_window)
+    app_wrapper.new_window.connect(new_window)
 
     # If the application is activated and all windows are closed, open a new one
     app_wrapper.application_activated.connect(application_activated)

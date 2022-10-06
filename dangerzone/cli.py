@@ -7,7 +7,7 @@ from typing import Optional
 import click
 from colorama import Back, Fore, Style
 
-from . import container
+from . import container, errors
 from .container import convert
 from .document import Document
 from .global_common import GlobalCommon
@@ -23,6 +23,7 @@ def print_header(s: str) -> None:
 @click.option("--output-filename", help="Default is filename ending with -safe.pdf")
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
 @click.argument("filename", required=True)
+@errors.handle_document_errors
 def cli_main(
     output_filename: Optional[str], ocr_lang: Optional[str], filename: str
 ) -> None:
@@ -31,51 +32,15 @@ def cli_main(
 
     display_banner()
 
-    # Validate filename
-    valid = True
-    try:
-        with open(os.path.abspath(filename), "rb") as f:
-            pass
-    except:
-        valid = False
-
-    if not valid:
-        click.echo("Invalid filename")
-        exit(1)
-
     document = Document(os.path.abspath(filename))
 
     # Validate safe PDF output filename
     if output_filename:
-        valid = True
-        if not output_filename.endswith(".pdf"):
-            click.echo("Safe PDF filename must end in '.pdf'")
-            exit(1)
-
-        try:
-            with open(os.path.abspath(output_filename), "wb"):
-                pass
-        except:
-            valid = False
-
-        if not valid:
-            click.echo("Safe PDF filename is not writable")
-            exit(1)
-
         document.output_filename = os.path.abspath(output_filename)
-
     else:
         document.output_filename = (
             f"{os.path.splitext(document.input_filename)[0]}-safe.pdf"
         )
-        try:
-            with open(document.output_filename, "wb"):
-                pass
-        except:
-            click.echo(
-                f"Output filename {document.output_filename} is not writable, use --output-filename"
-            )
-            exit(1)
 
     # Validate OCR language
     if ocr_lang:

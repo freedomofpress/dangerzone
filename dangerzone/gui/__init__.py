@@ -10,6 +10,7 @@ import click
 import colorama
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from .. import errors
 from ..document import Document
 from ..global_common import GlobalCommon
 from .common import GuiCommon
@@ -50,6 +51,7 @@ class ApplicationWrapper(QtCore.QObject):
 
 @click.command()
 @click.argument("filename", required=False)
+@errors.handle_document_errors
 def gui_main(filename: Optional[str]) -> bool:
     setup_logging()
 
@@ -86,36 +88,23 @@ def gui_main(filename: Optional[str]) -> bool:
         del windows[window_id]
 
     # Open a document in a window
-    def new_window(filename: Optional[str] = None) -> bool:
-        document = Document(filename)
+    def new_window(input_filename: Optional[str] = None) -> None:
+        document = Document(input_filename)
         window_id = uuid.uuid4().hex
-        window = MainWindow(global_common, gui_common, window_id)
+        window = MainWindow(global_common, gui_common, window_id, document)
         window.delete_window.connect(delete_window)
         windows[window_id] = window
 
-        if filename:
-            # Validate filename
-            file_path: str = os.path.abspath(os.path.expanduser(filename))
-            try:
-                open(file_path, "rb")
-            except FileNotFoundError:
-                click.echo("File not found")
-                return False
-            except PermissionError:
-                click.echo("Permission denied")
-                return False
-            window.document.input_filename = file_path
+        if input_filename:
             window.content_widget.doc_selection_widget.document_selected.emit()
-
-        return True
 
     # Open a new window if not filename is passed
     if filename is None:
         new_window()
     else:
         # If filename is passed as an argument, open it
-        if not new_window(filename):
-            return True
+        input_filename: str = os.path.abspath(os.path.expanduser(filename))
+        new_window(input_filename)
 
     # Open a new window, if all windows are closed
     def application_activated() -> None:

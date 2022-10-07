@@ -13,6 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 from .. import args, errors
 from ..document import Document
+from ..util import get_resource_path
 from .logic import DangerzoneGui
 from .main_window import MainWindow
 from .systray import SysTray
@@ -29,7 +30,9 @@ class ApplicationWrapper(QtCore.QObject):
         super(ApplicationWrapper, self).__init__()
         self.app = QtWidgets.QApplication()
         self.app.setQuitOnLastWindowClosed(False)
-
+        with open(get_resource_path("dangerzone.css"), "r") as f:
+            style = f.read()
+        self.app.setStyleSheet(style)
         self.original_event = self.app.event
 
         def monkeypatch_event(arg__1: QtCore.QEvent) -> bool:

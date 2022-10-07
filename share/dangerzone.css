@@ -1,0 +1,6 @@
+QLineEdit {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #c8c8c8 #c8c8c8 white;
+    padding: 3px;
+}

@@ -22,11 +22,7 @@ log = logging.getLogger(__name__)
 class MainWindow(QtWidgets.QMainWindow):
     delete_window = QtCore.Signal(str)
 
-    def __init__(
-        self,
-        dangerzone: DangerzoneGui,
-        window_id: str
-    ) -> None:
+    def __init__(self, dangerzone: DangerzoneGui, window_id: str) -> None:
         super(MainWindow, self).__init__()
         self.dangerzone = dangerzone
         self.window_id = window_id
@@ -429,34 +425,43 @@ class SettingsWidget(QtWidgets.QWidget):
             else:
                 self.start_button.setEnabled(False)
 
-    def document_selected(self) -> None:
-        pass
+    def document_selected(self, filenames: List[str]) -> None:
+        # set the default save location as the directory for the first document
+        save_path = os.path.dirname(filenames[0])
+        save_dir = os.path.basename(save_path)
+        self.save_location.setText(save_dir)
 
     def select_output_directory(self) -> None:
         dialog = QtWidgets.QFileDialog()
         dialog.setLabelText(QtWidgets.QFileDialog.Accept, "Select output directory")
 
-        if len(self.dangerzone.get_unsafe_documents()) >= 1:
+        if self.output_dir is None:
             # pick the first document's directory as the default one
-            dialog.setDirectory(
-                os.path.dirname(self.dangerzone.documents[0].input_filename)
-            )
+            unconverted_docs = self.dangerzone.get_unconverted_documents()
+            if len(unconverted_docs) >= 1:
+                dialog.setDirectory(os.path.dirname(unconverted_docs[0].input_filename))
+        else:
+            # open the directory where the user last saved it
+            dialog.setDirectory(self.output_dir)
 
         # allow only the selection of directories
         dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
         dialog.setOption(QtWidgets.QFileDialog.ShowDirsOnly, True)
 
         if dialog.exec_() == QtWidgets.QFileDialog.Accepted:
-            self.output_dir = dialog.selectedFiles()[0]
+            selected_dir = dialog.selectedFiles()[0]
+            if selected_dir is not None:
+                self.output_dir = str(selected_dir)  # type: ignore [assignment]
+                self.save_location.setText(selected_dir)
 
     def start_button_clicked(self) -> None:
         if self.save_checkbox.checkState() == QtCore.Qt.Unchecked:
             # If not saving, then save it to a temp file instead
-            for document in self.dangerzone.get_unsafe_documents():
+            for document in self.dangerzone.get_unconverted_documents():
                 (_, tmp) = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
                 document.output_filename = tmp
         else:
-            for document in self.dangerzone.get_unsafe_documents():
+            for document in self.dangerzone.get_unconverted_documents():
                 document.suffix = self.safe_extension.text()
 
                 if self.output_dir:
@@ -528,7 +533,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         for filename in filenames:
             self.dangerzone.add_document(filename)
 
-        for document in self.dangerzone.get_unsafe_documents():
+        for document in self.dangerzone.get_unconverted_documents():
             item = QtWidgets.QListWidgetItem()
             item.setSizeHint(QtCore.QSize(500, 50))
             widget = DocumentWidget(self.dangerzone, document)

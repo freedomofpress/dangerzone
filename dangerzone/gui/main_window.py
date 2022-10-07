@@ -12,7 +12,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 from .. import container
 from ..container import convert
-from ..document import Document
+from ..document import SAFE_EXTENSION, Document
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .logic import DangerzoneGui
 
@@ -317,12 +317,21 @@ class SettingsWidget(QtWidgets.QWidget):
 
         # Save safe as... [filename]-safe.pdf
         self.safe_extension_label = QtWidgets.QLabel("Save as")
+        self.safe_extension_filename = QtWidgets.QLabel("document")
         self.safe_extension = QtWidgets.QLineEdit()
+        self.safe_extension.textChanged.connect(self.update_ui)
+        self.safe_extension_invalid = QtWidgets.QLabel("(must end in .pdf)")
+        self.safe_extension_invalid.setStyleSheet("color: red")
+        self.safe_extension_invalid.hide()
+        dot_pdf_regex = QtCore.QRegExp(r".*\.[Pp][Dd][Ff]")
+        self.safe_extension.setValidator(QtGui.QRegExpValidator(dot_pdf_regex))
         self.safe_extension_layout = QtWidgets.QHBoxLayout()
         self.safe_extension_layout.setContentsMargins(20, 0, 0, 0)
         self.safe_extension_layout.addWidget(self.safe_extension_label)
+        self.safe_extension_layout.addWidget(self.safe_extension_filename)
         self.safe_extension_layout.addWidget(self.save_label)
         self.safe_extension_layout.addWidget(self.safe_extension)
+        self.safe_extension_layout.addWidget(self.safe_extension_invalid)
         self.safe_extension_layout.addStretch()
 
         # Open safe document
@@ -388,6 +397,11 @@ class SettingsWidget(QtWidgets.QWidget):
         else:
             self.save_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
+        if self.dangerzone.settings.get("safe_extension"):
+            self.safe_extension.setText(self.dangerzone.settings.get("safe_extension"))
+        else:
+            self.safe_extension.setText(SAFE_EXTENSION)
+
         if self.dangerzone.settings.get("ocr"):
             self.ocr_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
@@ -410,26 +424,43 @@ class SettingsWidget(QtWidgets.QWidget):
                 if index != -1:
                     self.open_combobox.setCurrentIndex(index)
 
+    def check_safe_extension_is_valid(self) -> bool:
+        if self.save_checkbox.checkState() == QtCore.Qt.Unchecked:
+            # ignore validity if not saving file
+            self.safe_extension_invalid.hide()
+            return True
+
+        if self.safe_extension.hasAcceptableInput():
+            self.safe_extension_invalid.hide()
+            return True
+        else:
+            # prevent starting conversion until correct
+            self.safe_extension_invalid.show()
+            return False
+
+    def check_either_save_or_open(self) -> bool:
+        return (
+            self.save_checkbox.checkState() == QtCore.Qt.Checked
+            or self.open_checkbox.checkState() == QtCore.Qt.Checked
+        )
+
     def update_ui(self) -> None:
-        if platform.system() == "Windows":
-            # Because the save checkbox is always checked in Windows, the
-            # start button can be enabled
+        conversion_readiness_conditions = [
+            self.check_safe_extension_is_valid(),
+            self.check_either_save_or_open(),
+        ]
+        if all(conversion_readiness_conditions):
             self.start_button.setEnabled(True)
         else:
-            # Either save or open must be checked
-            if (
-                self.save_checkbox.checkState() == QtCore.Qt.Checked
-                or self.open_checkbox.checkState() == QtCore.Qt.Checked
-            ):
-                self.start_button.setEnabled(True)
-            else:
-                self.start_button.setEnabled(False)
+            self.start_button.setDisabled(True)
 
     def document_selected(self, filenames: List[str]) -> None:
         # set the default save location as the directory for the first document
         save_path = os.path.dirname(filenames[0])
         save_dir = os.path.basename(save_path)
         self.save_location.setText(save_dir)
+
+        self.update_ui()
 
     def select_output_directory(self) -> None:
         dialog = QtWidgets.QFileDialog()
@@ -471,6 +502,7 @@ class SettingsWidget(QtWidgets.QWidget):
         self.dangerzone.settings.set(
             "save", self.save_checkbox.checkState() == QtCore.Qt.Checked
         )
+        self.dangerzone.settings.set("safe_extension", self.safe_extension.text())
         self.dangerzone.settings.set(
             "ocr", self.ocr_checkbox.checkState() == QtCore.Qt.Checked
         )

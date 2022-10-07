@@ -3,6 +3,8 @@ import logging
 import os
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from .document import SAFE_EXTENSION
+
 log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
@@ -23,6 +25,7 @@ class Settings:
             "ocr_language": "English",
             "open": True,
             "open_app": None,
+            "safe_extension": SAFE_EXTENSION,
         }
 
         self.load()

@@ -56,10 +56,6 @@ class DangerzoneCore(object):
                 ocr_lang,
                 stdout_callback,
             )
-            if success:
-                document.mark_as_safe()
-            else:
-                document.mark_as_failed()
 
         max_jobs = container.get_max_parallel_conversions()
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_jobs) as executor:

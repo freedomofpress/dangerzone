@@ -93,6 +93,12 @@ def test_mark_as_safe(sample_doc: str) -> None:
     assert not d.is_unconverted()
 
 
+def test_mark_as_converting(sample_doc: str) -> None:
+    d = Document(sample_doc)
+    d.mark_as_converting()
+    assert d.is_converting()
+
+
 def test_mark_as_failed(sample_doc: str) -> None:
     d = Document(sample_doc)
     d.mark_as_failed()

@@ -173,6 +173,10 @@ def exec(
         if p.stdout is not None:
             for line in p.stdout:
                 (error, text, percentage) = parse_progress(document, line)
+                if error:
+                    document.mark_as_failed()
+                if percentage == 100.0:
+                    document.mark_as_safe()
                 if stdout_callback:
                     stdout_callback(error, text, percentage)
 
@@ -223,6 +227,7 @@ def convert(
     stdout_callback: Optional[Callable] = None,
 ) -> bool:
     success = False
+    document.mark_as_converting()
 
     if ocr_lang:
         ocr = "1"

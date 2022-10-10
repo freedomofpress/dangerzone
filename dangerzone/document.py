@@ -25,6 +25,7 @@ class Document:
 
     # document conversion state
     STATE_UNCONVERTED = enum.auto()
+    STATE_CONVERTING = enum.auto()
     STATE_SAFE = enum.auto()
     STATE_FAILED = enum.auto()
 
@@ -111,14 +112,23 @@ class Document:
     def is_unconverted(self) -> bool:
         return self.state is Document.STATE_UNCONVERTED
 
+    def is_converting(self) -> bool:
+        return self.state is Document.STATE_CONVERTING
+
     def is_failed(self) -> bool:
         return self.state is Document.STATE_FAILED
 
     def is_safe(self) -> bool:
         return self.state is Document.STATE_SAFE
 
+    def mark_as_converting(self) -> None:
+        log.debug(f"Marking doc {self.id} as 'converting'")
+        self.state = Document.STATE_CONVERTING
+
     def mark_as_failed(self) -> None:
+        log.debug(f"Marking doc {self.id} as 'failed'")
         self.state = Document.STATE_FAILED
 
     def mark_as_safe(self) -> None:
+        log.debug(f"Marking doc {self.id} as 'safe'")
         self.state = Document.STATE_SAFE

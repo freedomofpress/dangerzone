@@ -597,21 +597,20 @@ class DocumentWidget(QtWidgets.QWidget):
             f"Suspicious: {os.path.basename(self.document.input_filename)}"
         )
 
-        # Label
-        self.error_image = QtWidgets.QLabel()
-        self.error_image.setPixmap(
-            QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("error.png")))
-        )
-        self.error_image.hide()
+        # Conversion status images
+        self.img_status_unconverted = self.load_status_image("status_unconverted.png")
+        self.img_status_converting = self.load_status_image("status_converting.png")
+        self.img_status_failed = self.load_status_image("status_failed.png")
+        self.img_status_safe = self.load_status_image("status_safe.png")
+        self.status_image = QtWidgets.QLabel()
+        self.status_image.setPixmap(self.img_status_unconverted)
 
+        # Label
         self.label = QtWidgets.QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setWordWrap(True)
         self.label.setStyleSheet("QLabel { font-size: 18px; }")
-
-        label_layout = QtWidgets.QHBoxLayout()
-        label_layout.addWidget(self.error_image)
-        label_layout.addWidget(self.label, stretch=1)
+        self.label.hide()  # only show on error
 
         # Progress bar
         self.progress = QtWidgets.QProgressBar()
@@ -620,10 +619,11 @@ class DocumentWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.status_image)
         layout.addWidget(self.dangerous_doc_label)
         layout.addStretch()
-        layout.addLayout(label_layout)
         layout.addWidget(self.progress)
+        layout.addWidget(self.label, stretch=1)
         layout.addStretch()
         self.setLayout(layout)
 
@@ -636,13 +636,35 @@ class DocumentWidget(QtWidgets.QWidget):
     def update_progress(self, error: bool, text: str, percentage: int) -> None:
         if error:
             self.error = True
-            self.error_image.show()
+            self.status_image.show()
             self.progress.hide()
+            self.label.show()
+
+        self.update_status_image()
 
         self.label.setText(text)
+        self.progress.setToolTip(text)
         self.progress.setValue(percentage)
 
+    def load_status_image(self, filename: str) -> QtGui.QPixmap:
+        path = get_resource_path(filename)
+        img = QtGui.QImage(path)
+        image = QtGui.QPixmap.fromImage(img)
+        return image.scaled(QtCore.QSize(15, 15))
+
+    def update_status_image(self) -> None:
+        if self.document.is_unconverted():
+            self.status_image.setPixmap(self.img_status_unconverted)
+        elif self.document.is_converting():
+            self.status_image.setPixmap(self.img_status_converting)
+        elif self.document.is_failed():
+            self.status_image.setPixmap(self.img_status_failed)
+        elif self.document.is_safe():
+            self.status_image.setPixmap(self.img_status_safe)
+
     def all_done(self) -> None:
+        self.update_status_image()
+
         if self.error:
             return
 

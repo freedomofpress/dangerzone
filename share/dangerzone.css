@@ -1,6 +1,20 @@
 QLineEdit {
     border-width: 1px;
     border-style: solid;
-    border-color: #c8c8c8 #c8c8c8 white;
+    border-color: #c8c8c8;
     padding: 3px;
+}
+
+/*
+ * QLabel left-adjacent to a QLineEdit to give the illusion
+ * that it is part of it, but just not editable
+ */
+QLabel[style="safe_extension_filename"] {
+    border-width: 1px;
+    border-right-width: 0px;
+    border-style: solid;
+    border-color: #c8c8c8;
+    padding: 4px 0px 4px 4px;
+    background: white;
+    color: grey;
 }

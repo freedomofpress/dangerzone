@@ -318,20 +318,28 @@ class SettingsWidget(QtWidgets.QWidget):
         # Save safe as... [filename]-safe.pdf
         self.safe_extension_label = QtWidgets.QLabel("Save as")
         self.safe_extension_filename = QtWidgets.QLabel("document")
+        self.safe_extension_filename.setAlignment(QtCore.Qt.AlignRight)
+        self.safe_extension_filename.setProperty("style", "safe_extension_filename")
         self.safe_extension = QtWidgets.QLineEdit()
+        self.safe_extension.setStyleSheet("margin-left: -6px;")  # no left margin
         self.safe_extension.textChanged.connect(self.update_ui)
         self.safe_extension_invalid = QtWidgets.QLabel("(must end in .pdf)")
         self.safe_extension_invalid.setStyleSheet("color: red")
         self.safe_extension_invalid.hide()
+        self.safe_extension_name_layout = QtWidgets.QHBoxLayout()
+        self.safe_extension_name_layout.setSpacing(0)
+        self.safe_extension_name_layout.addWidget(self.safe_extension_filename)
+        self.safe_extension_name_layout.addWidget(self.safe_extension)
+
         dot_pdf_regex = QtCore.QRegExp(r".*\.[Pp][Dd][Ff]")
         self.safe_extension.setValidator(QtGui.QRegExpValidator(dot_pdf_regex))
         self.safe_extension_layout = QtWidgets.QHBoxLayout()
         self.safe_extension_layout.setContentsMargins(20, 0, 0, 0)
         self.safe_extension_layout.addWidget(self.safe_extension_label)
-        self.safe_extension_layout.addWidget(self.safe_extension_filename)
         self.safe_extension_layout.addWidget(self.save_label)
-        self.safe_extension_layout.addWidget(self.safe_extension)
+        self.safe_extension_layout.addLayout(self.safe_extension_name_layout)
         self.safe_extension_layout.addWidget(self.safe_extension_invalid)
+
         self.safe_extension_layout.addStretch()
 
         # Open safe document

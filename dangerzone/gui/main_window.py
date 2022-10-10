@@ -308,7 +308,9 @@ class SettingsWidget(QtWidgets.QWidget):
         self.safe_extension_label = QtWidgets.QLabel("Save as")
         self.safe_extension_filename = QtWidgets.QLabel("document")
         self.safe_extension_filename.setAlignment(QtCore.Qt.AlignRight)
-        self.safe_extension_filename.setProperty("style", "safe_extension_filename")
+        self.safe_extension_filename.setProperty(
+            "style", "safe_extension_filename"  # type: ignore
+        )
         self.safe_extension = QtWidgets.QLineEdit()
         self.safe_extension.setStyleSheet("margin-left: -6px;")  # no left margin
         self.safe_extension.textChanged.connect(self.update_ui)

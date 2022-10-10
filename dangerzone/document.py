@@ -14,10 +14,12 @@ class Document:
     document, and validating its info.
     """
 
-    def __init__(self) -> None:
-        # Name of input and out files
+    def __init__(self, input_filename: str = None) -> None:
         self._input_filename: Optional[str] = None
         self._output_filename: Optional[str] = None
+
+        if input_filename:
+            self.input_filename = input_filename
 
     @property
     def input_filename(self) -> str:

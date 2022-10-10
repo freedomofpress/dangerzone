@@ -28,7 +28,6 @@ def cli_main(
 ) -> None:
     setup_logging()
     global_common = GlobalCommon()
-    document = Document()
 
     display_banner()
 
@@ -44,7 +43,7 @@ def cli_main(
         click.echo("Invalid filename")
         exit(1)
 
-    document.input_filename = os.path.abspath(filename)
+    document = Document(os.path.abspath(filename))
 
     # Validate safe PDF output filename
     if output_filename:

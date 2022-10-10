@@ -10,6 +10,7 @@ import click
 import colorama
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from ..document import Document
 from ..global_common import GlobalCommon
 from .common import GuiCommon
 from .main_window import MainWindow
@@ -86,16 +87,11 @@ def gui_main(filename: Optional[str]) -> bool:
 
     # Open a document in a window
     def select_document(filename: Optional[str] = None) -> bool:
-        if (
-            len(windows) == 1
-            and windows[list(windows.keys())[0]].document.input_filename == None
-        ):
-            window = windows[list(windows.keys())[0]]
-        else:
-            window_id = uuid.uuid4().hex
-            window = MainWindow(global_common, gui_common, window_id)
-            window.delete_window.connect(delete_window)
-            windows[window_id] = window
+        document = Document(filename)
+        window_id = uuid.uuid4().hex
+        window = MainWindow(global_common, gui_common, window_id)
+        window.delete_window.connect(delete_window)
+        windows[window_id] = window
 
         if filename:
             # Validate filename

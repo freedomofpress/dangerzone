@@ -24,13 +24,17 @@ class MainWindow(QtWidgets.QMainWindow):
     delete_window = QtCore.Signal(str)
 
     def __init__(
-        self, global_common: GlobalCommon, gui_common: GuiCommon, window_id: str
+        self,
+        global_common: GlobalCommon,
+        gui_common: GuiCommon,
+        window_id: str,
+        document: Document,
     ) -> None:
         super(MainWindow, self).__init__()
         self.global_common = global_common
         self.gui_common = gui_common
         self.window_id = window_id
-        self.document = Document()
+        self.document = document
 
         self.setWindowTitle("Dangerzone")
         self.setWindowIcon(self.gui_common.get_window_icon())

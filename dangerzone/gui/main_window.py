@@ -15,7 +15,7 @@ from ..container import convert
 from ..document import Document
 from ..logic import DangerzoneCore
 from ..util import get_resource_path, get_subprocess_startupinfo
-from .common import GuiCommon
+from .logic import DangerzoneGui
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(
         self,
         dangerzone: DangerzoneCore,
-        gui_common: GuiCommon,
+        gui_common: DangerzoneGui,
         window_id: str,
         document: Document,
     ) -> None:
@@ -124,7 +124,7 @@ class WaitingWidget(QtWidgets.QWidget):
     # - "install_container"
     finished = QtCore.Signal()
 
-    def __init__(self, dangerzone: DangerzoneCore, gui_common: GuiCommon) -> None:
+    def __init__(self, dangerzone: DangerzoneCore, gui_common: DangerzoneGui) -> None:
         super(WaitingWidget, self).__init__()
         self.dangerzone = dangerzone
         self.gui_common = gui_common
@@ -210,7 +210,7 @@ class ContentWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
     def __init__(
-        self, dangerzone: DangerzoneCore, gui_common: GuiCommon, document: Document
+        self, dangerzone: DangerzoneCore, gui_common: DangerzoneGui, document: Document
     ) -> None:
         super(ContentWidget, self).__init__()
 
@@ -309,7 +309,7 @@ class SettingsWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
     def __init__(
-        self, dangerzone: DangerzoneCore, gui_common: GuiCommon, document: Document
+        self, dangerzone: DangerzoneCore, gui_common: DangerzoneGui, document: Document
     ) -> None:
         super(SettingsWidget, self).__init__()
         self.dangerzone = dangerzone
@@ -547,7 +547,7 @@ class ConvertWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
     def __init__(
-        self, dangerzone: DangerzoneCore, gui_common: GuiCommon, document: Document
+        self, dangerzone: DangerzoneCore, gui_common: DangerzoneGui, document: Document
     ) -> None:
         super(ConvertWidget, self).__init__()
         self.dangerzone = dangerzone

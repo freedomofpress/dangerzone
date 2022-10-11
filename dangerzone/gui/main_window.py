@@ -528,23 +528,16 @@ class ConvertThread(QtCore.QThread):
     finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
-    def __init__(self, dangerzone: DangerzoneGui, document: Document) -> None:
+    def __init__(self, document: Document, ocr_lang: str = None) -> None:
         super(ConvertThread, self).__init__()
-        self.dangerzone = dangerzone
         self.document = document
+        self.ocr_lang = ocr_lang
         self.error = False
 
     def run(self) -> None:
-        if self.dangerzone.settings.get("ocr"):
-            ocr_lang = self.dangerzone.ocr_languages[
-                self.dangerzone.settings.get("ocr_language")
-            ]
-        else:
-            ocr_lang = None
-
         if convert(
             self.document,
-            ocr_lang,
+            self.ocr_lang,
             self.stdout_callback,
         ):
             self.finished.emit(self.error)
@@ -629,10 +622,18 @@ class DocumentWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def start(self) -> None:
-        self.convert_t = ConvertThread(self.dangerzone, self.document)
+        self.convert_t = ConvertThread(self.document, self.get_ocr_lang())
         self.convert_t.update.connect(self.update_progress)
         self.convert_t.finished.connect(self.all_done)
         self.convert_t.start()
+
+    def get_ocr_lang(self) -> Optional[str]:
+        ocr_lang = None
+        if self.dangerzone.settings.get("ocr"):
+            ocr_lang = self.dangerzone.ocr_languages[
+                self.dangerzone.settings.get("ocr_language")
+            ]
+        return ocr_lang
 
     def update_progress(self, error: bool, text: str, percentage: int) -> None:
         self.update_status_image()

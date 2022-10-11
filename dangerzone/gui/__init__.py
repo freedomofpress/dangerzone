@@ -10,7 +10,7 @@ import click
 import colorama
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from .. import errors
+from .. import args, errors
 from ..document import Document
 from ..global_common import GlobalCommon
 from .common import GuiCommon
@@ -50,7 +50,7 @@ class ApplicationWrapper(QtCore.QObject):
 
 
 @click.command()
-@click.argument("filename", required=False)
+@click.argument("filename", required=False, callback=args.validate_input_filename)
 @errors.handle_document_errors
 def gui_main(filename: Optional[str]) -> bool:
     setup_logging()

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from PySide2 import QtWidgets
 
 from ..logic import DangerzoneCore
-from .common import GuiCommon
+from .logic import DangerzoneGui
 
 if TYPE_CHECKING:
     from . import ApplicationWrapper
@@ -14,7 +14,7 @@ class SysTray(QtWidgets.QSystemTrayIcon):
     def __init__(
         self,
         dangerzone: DangerzoneCore,
-        gui_common: GuiCommon,
+        gui_common: DangerzoneGui,
         app: QtWidgets.QApplication,
         app_wrapper: "ApplicationWrapper",
     ) -> None:

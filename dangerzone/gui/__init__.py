@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from .. import args, errors
 from ..document import Document
 from ..logic import DangerzoneCore
-from .common import GuiCommon
+from .logic import DangerzoneGui
 from .main_window import MainWindow
 from .systray import SysTray
 
@@ -72,7 +72,7 @@ def gui_main(filename: Optional[str]) -> bool:
 
     # Common objects
     dangerzone = DangerzoneCore()
-    gui_common = GuiCommon(app, dangerzone)
+    gui_common = DangerzoneGui(app, dangerzone)
 
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)

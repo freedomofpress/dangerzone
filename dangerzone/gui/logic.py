@@ -24,9 +24,9 @@ from ..util import get_resource_path
 log = logging.getLogger(__name__)
 
 
-class GuiCommon(object):
+class DangerzoneGui(object):
     """
-    The GuiCommon class is a singleton of shared functionality for the GUI
+    The DangerzoneGui class is a singleton of shared functionality for the GUI
     """
 
     def __init__(self, app: QtWidgets.QApplication, dangerzone: DangerzoneCore) -> None:
@@ -115,7 +115,7 @@ class GuiCommon(object):
 class Alert(QtWidgets.QDialog):
     def __init__(
         self,
-        gui_common: GuiCommon,
+        dangerzone_gui: DangerzoneGui,
         dangerzone: DangerzoneCore,
         message: str,
         ok_text: str = "Ok",
@@ -123,10 +123,10 @@ class Alert(QtWidgets.QDialog):
     ) -> None:
         super(Alert, self).__init__()
         self.dangerzone = dangerzone
-        self.gui_common = gui_common
+        self.dangerzone_gui = dangerzone_gui
 
         self.setWindowTitle("dangerzone")
-        self.setWindowIcon(self.gui_common.get_window_icon())
+        self.setWindowIcon(self.dangerzone_gui.get_window_icon())
         self.setModal(True)
 
         flags = (

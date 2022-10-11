@@ -24,17 +24,16 @@ from ..util import get_resource_path
 log = logging.getLogger(__name__)
 
 
-class DangerzoneGui(object):
+class DangerzoneGui(DangerzoneCore):
     """
-    The DangerzoneGui class is a singleton of shared functionality for the GUI
+    Singleton of shared state / functionality for the GUI and core app logic
     """
 
-    def __init__(self, app: QtWidgets.QApplication, dangerzone: DangerzoneCore) -> None:
+    def __init__(self, app: QtWidgets.QApplication) -> None:
+        super().__init__()
+
         # Qt app
         self.app = app
-
-        # Global common singleton
-        self.dangerzone = dangerzone
 
         # Preload font
         self.fixed_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
@@ -64,9 +63,7 @@ class DangerzoneGui(object):
 
         elif platform.system() == "Linux":
             # Get the PDF reader command
-            args = shlex.split(
-                self.pdf_viewers[self.dangerzone.settings.get("open_app")]
-            )
+            args = shlex.split(self.pdf_viewers[self.settings.get("open_app")])
             # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
             for i in range(len(args)):
                 if (
@@ -115,18 +112,16 @@ class DangerzoneGui(object):
 class Alert(QtWidgets.QDialog):
     def __init__(
         self,
-        dangerzone_gui: DangerzoneGui,
-        dangerzone: DangerzoneCore,
+        gui_common: DangerzoneGui,
         message: str,
         ok_text: str = "Ok",
         extra_button_text: str = None,
     ) -> None:
         super(Alert, self).__init__()
-        self.dangerzone = dangerzone
-        self.dangerzone_gui = dangerzone_gui
+        self.gui_common = gui_common
 
         self.setWindowTitle("dangerzone")
-        self.setWindowIcon(self.dangerzone_gui.get_window_icon())
+        self.setWindowIcon(self.gui_common.get_window_icon())
         self.setModal(True)
 
         flags = (

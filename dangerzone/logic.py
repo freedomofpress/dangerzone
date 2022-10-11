@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 class DangerzoneCore(object):
     """
-    The DangerzoneCore class is a singleton of shared functionality throughout the app
+    Singleton of shared state / functionality throughout the app
     """
 
     def __init__(self) -> None:

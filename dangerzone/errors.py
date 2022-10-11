@@ -1,8 +1,11 @@
 import functools
 import logging
 import sys
+from typing import Any, Callable, TypeVar, cast
 
 import click
+
+F = TypeVar("F", bound=Callable[..., Any])
 
 log = logging.getLogger(__name__)
 
@@ -11,11 +14,11 @@ class DocumentFilenameException(Exception):
     """Exception for document-related filename errors."""
 
 
-def handle_document_errors(func):
+def handle_document_errors(func: F) -> F:
     """Log document-related errors and exit gracefully."""
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs):  # type: ignore
         try:
             return func(*args, **kwargs)
         except DocumentFilenameException as e:
@@ -26,4 +29,4 @@ def handle_document_errors(func):
             click.echo(str(e))
             exit(1)
 
-    return wrapper
+    return cast(F, wrapper)

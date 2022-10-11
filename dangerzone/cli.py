@@ -7,7 +7,7 @@ from typing import Optional
 import click
 from colorama import Back, Fore, Style
 
-from . import container, errors
+from . import args, container, errors
 from .container import convert
 from .document import Document
 from .global_common import GlobalCommon
@@ -20,9 +20,13 @@ def print_header(s: str) -> None:
 
 
 @click.command()
-@click.option("--output-filename", help="Default is filename ending with -safe.pdf")
+@click.option(
+    "--output-filename",
+    callback=args.validate_output_filename,
+    help="Default is filename ending with -safe.pdf",
+)
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
-@click.argument("filename", required=True)
+@click.argument("filename", required=True, callback=args.validate_input_filename)
 @errors.handle_document_errors
 def cli_main(
     output_filename: Optional[str], ocr_lang: Optional[str], filename: str

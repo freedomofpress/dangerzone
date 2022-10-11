@@ -13,7 +13,6 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from .. import container
 from ..container import convert
 from ..document import Document
-from ..logic import DangerzoneCore
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .logic import DangerzoneGui
 
@@ -25,19 +24,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(
         self,
-        dangerzone: DangerzoneCore,
-        gui_common: DangerzoneGui,
+        dangerzone: DangerzoneGui,
         window_id: str,
         document: Document,
     ) -> None:
         super(MainWindow, self).__init__()
         self.dangerzone = dangerzone
-        self.gui_common = gui_common
         self.window_id = window_id
         self.document = document
 
         self.setWindowTitle("Dangerzone")
-        self.setWindowIcon(self.gui_common.get_window_icon())
+        self.setWindowIcon(self.dangerzone.get_window_icon())
 
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
@@ -48,7 +45,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("icon.png")))
         )
         header_label = QtWidgets.QLabel("dangerzone")
-        header_label.setFont(self.gui_common.fixed_font)
+        header_label.setFont(self.dangerzone.fixed_font)
         header_label.setStyleSheet("QLabel { font-weight: bold; font-size: 50px; }")
         header_layout = QtWidgets.QHBoxLayout()
         header_layout.addStretch()
@@ -58,17 +55,15 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addStretch()
 
         # Waiting widget, replaces content widget while container runtime isn't available
-        self.waiting_widget = WaitingWidget(self.dangerzone, self.gui_common)
+        self.waiting_widget = WaitingWidget(self.dangerzone)
         self.waiting_widget.finished.connect(self.waiting_finished)
 
         # Content widget, contains all the window content except waiting widget
-        self.content_widget = ContentWidget(
-            self.dangerzone, self.gui_common, self.document
-        )
+        self.content_widget = ContentWidget(self.dangerzone, self.document)
         self.content_widget.close_window.connect(self.close)
 
         # Only use the waiting widget if container runtime isn't available
-        if self.gui_common.is_waiting_finished:
+        if self.dangerzone.is_waiting_finished:
             self.waiting_widget.hide()
             self.content_widget.show()
         else:
@@ -88,7 +83,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show()
 
     def waiting_finished(self) -> None:
-        self.gui_common.is_waiting_finished = True
+        self.dangerzone.is_waiting_finished = True
         self.waiting_widget.hide()
         self.content_widget.show()
 
@@ -97,15 +92,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.delete_window.emit(self.window_id)
 
         if platform.system() != "Darwin":
-            self.gui_common.app.quit()
+            self.dangerzone.app.quit()
 
 
 class InstallContainerThread(QtCore.QThread):
     finished = QtCore.Signal()
 
-    def __init__(self, dangerzone: DangerzoneCore) -> None:
+    def __init__(self) -> None:
         super(InstallContainerThread, self).__init__()
-        self.dangerzone = dangerzone
 
     def run(self) -> None:
         container.install()
@@ -124,10 +118,9 @@ class WaitingWidget(QtWidgets.QWidget):
     # - "install_container"
     finished = QtCore.Signal()
 
-    def __init__(self, dangerzone: DangerzoneCore, gui_common: DangerzoneGui) -> None:
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(WaitingWidget, self).__init__()
         self.dangerzone = dangerzone
-        self.gui_common = gui_common
 
         self.label = QtWidgets.QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
@@ -201,7 +194,7 @@ class WaitingWidget(QtWidgets.QWidget):
                 "Installing the Dangerzone container image.<br><br>This might take a few minutes..."
             )
             self.buttons.hide()
-            self.install_container_t = InstallContainerThread(self.dangerzone)
+            self.install_container_t = InstallContainerThread()
             self.install_container_t.finished.connect(self.finished)
             self.install_container_t.start()
 
@@ -209,13 +202,10 @@ class WaitingWidget(QtWidgets.QWidget):
 class ContentWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
-    def __init__(
-        self, dangerzone: DangerzoneCore, gui_common: DangerzoneGui, document: Document
-    ) -> None:
+    def __init__(self, dangerzone: DangerzoneGui, document: Document) -> None:
         super(ContentWidget, self).__init__()
 
         self.dangerzone = dangerzone
-        self.gui_common = gui_common
         self.document = document
 
         # Doc selection widget
@@ -223,9 +213,7 @@ class ContentWidget(QtWidgets.QWidget):
         self.doc_selection_widget.document_selected.connect(self.document_selected)
 
         # Settings
-        self.settings_widget = SettingsWidget(
-            self.dangerzone, self.gui_common, self.document
-        )
+        self.settings_widget = SettingsWidget(self.dangerzone, self.document)
         self.doc_selection_widget.document_selected.connect(
             self.settings_widget.document_selected
         )
@@ -234,9 +222,7 @@ class ContentWidget(QtWidgets.QWidget):
         self.settings_widget.hide()
 
         # Convert
-        self.convert_widget = ConvertWidget(
-            self.dangerzone, self.gui_common, self.document
-        )
+        self.convert_widget = ConvertWidget(self.dangerzone, self.document)
         self.convert_widget.close_window.connect(self._close_window)
         self.doc_selection_widget.document_selected.connect(
             self.convert_widget.document_selected
@@ -308,12 +294,9 @@ class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.Signal()
     close_window = QtCore.Signal()
 
-    def __init__(
-        self, dangerzone: DangerzoneCore, gui_common: DangerzoneGui, document: Document
-    ) -> None:
+    def __init__(self, dangerzone: DangerzoneGui, document: Document) -> None:
         super(SettingsWidget, self).__init__()
         self.dangerzone = dangerzone
-        self.gui_common = gui_common
         self.document = document
 
         # Dangerous document label
@@ -358,8 +341,8 @@ class SettingsWidget(QtWidgets.QWidget):
             )
             self.open_checkbox.clicked.connect(self.update_ui)
             self.open_combobox = QtWidgets.QComboBox()
-            for k in self.gui_common.pdf_viewers:
-                self.open_combobox.addItem(k, self.gui_common.pdf_viewers[k])
+            for k in self.dangerzone.pdf_viewers:
+                self.open_combobox.addItem(k, self.dangerzone.pdf_viewers[k])
 
         if platform.system() == "Darwin" or platform.system() == "Linux":
             open_layout = QtWidgets.QHBoxLayout()
@@ -498,7 +481,7 @@ class ConvertThread(QtCore.QThread):
     finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
-    def __init__(self, dangerzone: DangerzoneCore, document: Document) -> None:
+    def __init__(self, dangerzone: DangerzoneGui, document: Document) -> None:
         super(ConvertThread, self).__init__()
         self.dangerzone = dangerzone
         self.document = document
@@ -546,12 +529,9 @@ class ConvertThread(QtCore.QThread):
 class ConvertWidget(QtWidgets.QWidget):
     close_window = QtCore.Signal()
 
-    def __init__(
-        self, dangerzone: DangerzoneCore, gui_common: DangerzoneGui, document: Document
-    ) -> None:
+    def __init__(self, dangerzone: DangerzoneGui, document: Document) -> None:
         super(ConvertWidget, self).__init__()
         self.dangerzone = dangerzone
-        self.gui_common = gui_common
         self.document = document
 
         self.error = False
@@ -629,11 +609,11 @@ class ConvertWidget(QtWidgets.QWidget):
 
         # Open
         if self.dangerzone.settings.get("open"):
-            self.gui_common.open_pdf_viewer(self.document.output_filename)
+            self.dangerzone.open_pdf_viewer(self.document.output_filename)
 
         # Quit
         if platform.system() == "Darwin":
             # In macOS, just close the window
             self.close_window.emit()
         else:
-            self.gui_common.app.quit()
+            self.dangerzone.app.quit()

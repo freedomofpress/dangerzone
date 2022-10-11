@@ -12,7 +12,6 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 from .. import args, errors
 from ..document import Document
-from ..logic import DangerzoneCore
 from .logic import DangerzoneGui
 from .main_window import MainWindow
 from .systray import SysTray
@@ -71,14 +70,13 @@ def gui_main(filename: Optional[str]) -> bool:
     app = app_wrapper.app
 
     # Common objects
-    dangerzone = DangerzoneCore()
-    gui_common = DangerzoneGui(app, dangerzone)
+    dangerzone = DangerzoneGui(app)
 
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     # Create the system tray
-    systray = SysTray(dangerzone, gui_common, app, app_wrapper)
+    systray = SysTray(dangerzone, app, app_wrapper)
 
     closed_windows: Dict[str, MainWindow] = {}
     windows: Dict[str, MainWindow] = {}
@@ -91,7 +89,7 @@ def gui_main(filename: Optional[str]) -> bool:
     def new_window(input_filename: Optional[str] = None) -> None:
         document = Document(input_filename)
         window_id = uuid.uuid4().hex
-        window = MainWindow(dangerzone, gui_common, window_id, document)
+        window = MainWindow(dangerzone, window_id, document)
         window.delete_window.connect(delete_window)
         windows[window_id] = window
 

@@ -590,12 +590,7 @@ class DocumentWidget(QtWidgets.QWidget):
         # Dangerous document label
         self.dangerous_doc_label = QtWidgets.QLabel()
         self.dangerous_doc_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.dangerous_doc_label.setStyleSheet(
-            "QLabel { font-size: 16px; font-weight: bold; }"
-        )
-        self.dangerous_doc_label.setText(
-            f"Suspicious: {os.path.basename(self.document.input_filename)}"
-        )
+        self.dangerous_doc_label.setText(os.path.basename(self.document.input_filename))
 
         # Conversion status images
         self.img_status_unconverted = self.load_status_image("status_unconverted.png")

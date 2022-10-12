@@ -38,7 +38,7 @@ lint: lint-black lint-isort mypy ## check the code with various linters
 .PHONY: lint-apply
 lint-apply: lint-black-apply lint-isort-apply ## apply all the linter's suggestions
 
-.PHONT: test
+.PHONY: test
 test:  ## run tests in parallel
 	pytest -v -n 4 --cov
 

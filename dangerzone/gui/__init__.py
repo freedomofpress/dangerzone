@@ -4,7 +4,7 @@ import platform
 import signal
 import sys
 import uuid
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import click
 import colorama
@@ -49,9 +49,15 @@ class ApplicationWrapper(QtCore.QObject):
 
 
 @click.command()
-@click.argument("filename", required=False, callback=args.validate_input_filename)
+@click.argument(
+    "filenames",
+    required=False,
+    nargs=-1,
+    type=click.UNPROCESSED,
+    callback=args.validate_input_filenames,
+)
 @errors.handle_document_errors
-def gui_main(filename: Optional[str]) -> bool:
+def gui_main(filenames: Optional[List[str]]) -> bool:
     setup_logging()
 
     if platform.system() == "Darwin":
@@ -97,10 +103,11 @@ def gui_main(filename: Optional[str]) -> bool:
             window.content_widget.doc_selection_widget.document_selected.emit()
 
     # Open a new window if not filename is passed
-    if filename is None:
+    if filenames is None:
         new_window()
     else:
-        new_window(filename)
+        for filename in filenames:
+            new_window(filename)
 
     # Open a new window, if all windows are closed
     def application_activated() -> None:

@@ -107,16 +107,16 @@ class DangerzoneGui(DangerzoneCore):
 class Alert(QtWidgets.QDialog):
     def __init__(
         self,
-        gui_common: DangerzoneGui,
+        dangerzone: DangerzoneGui,
         message: str,
         ok_text: str = "Ok",
         extra_button_text: str = None,
     ) -> None:
         super(Alert, self).__init__()
-        self.gui_common = gui_common
+        self.dangerzone = dangerzone
 
         self.setWindowTitle("dangerzone")
-        self.setWindowIcon(self.gui_common.get_window_icon())
+        self.setWindowIcon(self.dangerzone.get_window_icon())
         self.setModal(True)
 
         flags = (

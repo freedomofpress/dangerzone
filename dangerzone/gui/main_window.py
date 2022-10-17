@@ -14,7 +14,7 @@ from .. import container
 from ..container import convert
 from ..document import SAFE_EXTENSION, Document
 from ..util import get_resource_path, get_subprocess_startupinfo
-from .logic import DangerzoneGui
+from .logic import Alert, DangerzoneGui
 
 log = logging.getLogger(__name__)
 
@@ -78,7 +78,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.content_widget.show()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
-        e.accept()
+        alert_widget = Alert(
+            self.dangerzone,
+            message="Some documents are still being converted.\n Are you sure you want to quit?",
+            ok_text="Abort conversions",
+        )
+        converting_docs = self.dangerzone.get_converting_documents()
+        if not converting_docs:
+            e.accept()
+        else:
+            accept_exit = alert_widget.exec_()
+            if not accept_exit:
+                e.ignore()
+                return
+            else:
+                e.accept()
 
         if platform.system() != "Darwin":
             # in MacOS applications only quit when the user

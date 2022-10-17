@@ -69,3 +69,6 @@ class DangerzoneCore(object):
 
     def get_failed_documents(self) -> List[Document]:
         return [doc for doc in self.documents if doc.is_failed()]
+
+    def get_converting_documents(self) -> List[Document]:
+        return [doc for doc in self.documents if doc.is_converting()]

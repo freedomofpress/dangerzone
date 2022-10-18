@@ -230,8 +230,8 @@ class ContentWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def document_selected(self) -> None:
+        self.doc_selection_widget.hide()
         self.settings_widget.show()
-        self.documents_list.show()
 
     def start_clicked(self) -> None:
         self.settings_widget.hide()

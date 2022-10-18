@@ -589,8 +589,12 @@ class DocumentWidget(QtWidgets.QWidget):
 
         # Dangerous document label
         self.dangerous_doc_label = QtWidgets.QLabel()
-        self.dangerous_doc_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.dangerous_doc_label.setAlignment(
+            QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft
+        )
         self.dangerous_doc_label.setText(os.path.basename(self.document.input_filename))
+        self.dangerous_doc_label.setMinimumWidth(200)
+        self.dangerous_doc_label.setMaximumWidth(200)
 
         # Conversion status images
         self.img_status_unconverted = self.load_status_image("status_unconverted.png")
@@ -598,14 +602,14 @@ class DocumentWidget(QtWidgets.QWidget):
         self.img_status_failed = self.load_status_image("status_failed.png")
         self.img_status_safe = self.load_status_image("status_safe.png")
         self.status_image = QtWidgets.QLabel()
+        self.status_image.setMaximumWidth(15)
         self.status_image.setPixmap(self.img_status_unconverted)
 
-        # Label
-        self.label = QtWidgets.QLabel()
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setWordWrap(True)
-        self.label.setStyleSheet("QLabel { font-size: 18px; }")
-        self.label.hide()  # only show on error
+        # Error label
+        self.error_label = QtWidgets.QLabel()
+        self.error_label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+        self.error_label.setWordWrap(True)
+        self.error_label.hide()  # only show on error
 
         # Progress bar
         self.progress = QtWidgets.QProgressBar()
@@ -616,10 +620,8 @@ class DocumentWidget(QtWidgets.QWidget):
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.status_image)
         layout.addWidget(self.dangerous_doc_label)
-        layout.addStretch()
         layout.addWidget(self.progress)
-        layout.addWidget(self.label, stretch=1)
-        layout.addStretch()
+        layout.addWidget(self.error_label)
         self.setLayout(layout)
 
     def start(self) -> None:
@@ -629,17 +631,16 @@ class DocumentWidget(QtWidgets.QWidget):
         self.convert_t.start()
 
     def update_progress(self, error: bool, text: str, percentage: int) -> None:
+        self.update_status_image()
         if error:
             self.error = True
-            self.status_image.show()
+            self.error_label.setText(text)
+            self.error_label.setToolTip(text)
+            self.error_label.show()
             self.progress.hide()
-            self.label.show()
-
-        self.update_status_image()
-
-        self.label.setText(text)
-        self.progress.setToolTip(text)
-        self.progress.setValue(percentage)
+        else:
+            self.progress.setToolTip(text)
+            self.progress.setValue(percentage)
 
     def load_status_image(self, filename: str) -> QtGui.QPixmap:
         path = get_resource_path(filename)

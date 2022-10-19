@@ -183,16 +183,16 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
-  # build-fedora-37:
-  #   docker:
-  #     - image: fedora:37
-  #   resource_class: medium+
-  #   steps:
-  #     - run: *install-dependencies-rpm
-  #     - checkout
-  #     - restore_cache: *restore-cache
-  #     - run: *copy-image
-  #     - run: *build-rpm
+  build-fedora-37:
+    docker:
+      - image: fedora:37
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
 
   build-fedora-36:
     docker:
@@ -233,12 +233,12 @@ jobs:
             dnf --allowerasing -y distro-sync
             dnf install -y ruby-devel
             gem install package_cloud
-      # - run:
-      #     name: Deploy fedora/37
-      #     environment:
-      #       PACKAGE_TYPE: "rpm"
-      #       PACKAGECLOUD_DISTRO: "fedora/37"
-      #     <<: *deploy-packagecloud
+      - run:
+          name: Deploy fedora/37
+          environment:
+            PACKAGE_TYPE: "rpm"
+            PACKAGECLOUD_DISTRO: "fedora/37"
+          <<: *deploy-packagecloud
       - run:
           name: Deploy fedora/36
           environment:
@@ -323,9 +323,9 @@ workflows:
       - build-debian-bookworm:
           requires:
             - build-container-image
-      #- build-fedora-37:
-      #    requires:
-      #      - build-container-image
+      - build-fedora-37:
+          requires:
+            - build-container-image
       - build-fedora-36:
           requires:
             - build-container-image

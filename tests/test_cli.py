@@ -150,24 +150,24 @@ class TestCliBasic(TestCli):
 
 class TestCliConversion(TestCliBasic):
     def test_invalid_lang(self):
-        result = self.run_cli(f"{self.sample_doc} --ocr-lang piglatin")
+        result = self.run_cli([self.sample_doc, "--ocr-lang", "piglatin"])
         result.assert_failure()
 
     @for_each_doc
     def test_formats(self, doc):
-        result = self.run_cli(f'"{doc}"')
+        result = self.run_cli(str(doc))
         result.assert_success()
 
     def test_output_filename(self):
         temp_dir = tempfile.mkdtemp(prefix="dangerzone-")
         result = self.run_cli(
-            f"{self.sample_doc} --output-filename {temp_dir}/safe.pdf"
+            [self.sample_doc, "--output-filename", f"{temp_dir}/safe.pdf"]
         )
         result.assert_success()
 
     def test_output_filename_new_dir(self):
         result = self.run_cli(
-            f"{self.sample_doc} --output-filename fake-directory/my-output.pdf"
+            [self.sample_doc, "--output-filename", "fake-directory/my-output.pdf"]
         )
         result.assert_failure()
 
@@ -176,7 +176,7 @@ class TestCliConversion(TestCliBasic):
         result.assert_failure()
 
     def test_lang_eng(self):
-        result = self.run_cli(f'"{self.sample_doc}" --ocr-lang eng')
+        result = self.run_cli([self.sample_doc, "--ocr-lang", "eng"])
         result.assert_success()
 
     @pytest.mark.parametrize(

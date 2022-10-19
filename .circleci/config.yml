@@ -320,10 +320,9 @@ workflows:
       - build-debian-bullseye:
           requires:
             - build-container-image
-      ## Waiting for upstream fix https://github.com/freedomofpress/dangerzone/issues/172
-      #- build-debian-bookworm:
-      #    requires:
-      #      - build-container-image
+      - build-debian-bookworm:
+          requires:
+            - build-container-image
       #- build-fedora-37:
       #    requires:
       #      - build-container-image

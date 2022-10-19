@@ -5,6 +5,7 @@ import platform
 import shutil
 import subprocess
 import tempfile
+from multiprocessing.pool import ThreadPool
 from typing import List, Optional
 
 from colorama import Fore, Style
@@ -226,7 +227,7 @@ class ContentWidget(QtWidgets.QWidget):
         self.doc_selection_widget.document_selected.connect(
             self.documents_list.document_selected
         )
-        self.settings_widget.start_clicked.connect(self.documents_list.start)
+        self.settings_widget.start_clicked.connect(self.documents_list.start_conversion)
         self.documents_list.hide()
 
         # Layout
@@ -538,23 +539,23 @@ class SettingsWidget(QtWidgets.QWidget):
         self.start_clicked.emit()
 
 
-class ConvertThread(QtCore.QThread):
+class ConvertTask(QtCore.QObject):
     finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
     def __init__(self, document: Document, ocr_lang: str = None) -> None:
-        super(ConvertThread, self).__init__()
+        super(ConvertTask, self).__init__()
         self.document = document
         self.ocr_lang = ocr_lang
         self.error = False
 
-    def run(self) -> None:
-        if convert(
+    def convert_document(self) -> None:
+        convert(
             self.document,
             self.ocr_lang,
             self.stdout_callback,
-        ):
-            self.finished.emit(self.error)
+        )
+        self.finished.emit(self.error)
 
     def stdout_callback(self, error: bool, text: str, percentage: int) -> None:
         if error:
@@ -569,6 +570,10 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         self.dangerzone = dangerzone
         self.document_widgets: List[DocumentWidget] = []
 
+        # Initialize thread_pool only on the first conversion
+        # to ensure docker-daemon detection logic runs first
+        self.thread_pool_initized = False
+
     def document_selected(self, filenames: list) -> None:
         for filename in filenames:
             self.dangerzone.add_document(filename)
@@ -581,9 +586,24 @@ class DocumentsListWidget(QtWidgets.QListWidget):
             self.setItemWidget(item, widget)
             self.document_widgets.append(widget)
 
-    def start(self) -> None:
-        for item in self.document_widgets:
-            item.start()
+    def start_conversion(self) -> None:
+        if not self.thread_pool_initized:
+            max_jobs = container.get_max_parallel_conversions()
+            self.thread_pool = ThreadPool(max_jobs)
+
+        for doc_widget in self.document_widgets:
+            task = ConvertTask(doc_widget.document, self.get_ocr_lang())
+            task.update.connect(doc_widget.update_progress)
+            task.finished.connect(doc_widget.all_done)
+            self.thread_pool.apply_async(task.convert_document)
+
+    def get_ocr_lang(self) -> Optional[str]:
+        ocr_lang = None
+        if self.dangerzone.settings.get("ocr"):
+            ocr_lang = self.dangerzone.ocr_languages[
+                self.dangerzone.settings.get("ocr_language")
+            ]
+        return ocr_lang
 
 
 class DocumentWidget(QtWidgets.QWidget):
@@ -634,20 +654,6 @@ class DocumentWidget(QtWidgets.QWidget):
         layout.addWidget(self.progress)
         layout.addWidget(self.error_label)
         self.setLayout(layout)
-
-    def start(self) -> None:
-        self.convert_t = ConvertThread(self.document, self.get_ocr_lang())
-        self.convert_t.update.connect(self.update_progress)
-        self.convert_t.finished.connect(self.all_done)
-        self.convert_t.start()
-
-    def get_ocr_lang(self) -> Optional[str]:
-        ocr_lang = None
-        if self.dangerzone.settings.get("ocr"):
-            ocr_lang = self.dangerzone.ocr_languages[
-                self.dangerzone.settings.get("ocr_language")
-            ]
-        return ocr_lang
 
     def update_progress(self, error: bool, text: str, percentage: int) -> None:
         self.update_status_image()

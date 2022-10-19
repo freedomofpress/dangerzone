@@ -16,7 +16,6 @@ from dangerzone.cli import cli_main, display_banner
 
 from . import TestBase, for_each_doc
 
-# TODO --output-filename with spaces
 # TODO explore any symlink edge cases
 # TODO simulate ctrl-c, ctrl-d, SIGINT/SIGKILL/SIGTERM... (man 7 signal), etc?
 # TODO validate output PDFs https://github.com/pdfminer/pdfminer.six
@@ -165,6 +164,13 @@ class TestCliConversion(TestCliBasic):
         )
         result.assert_success()
 
+    def test_output_filename_spaces(self):
+        temp_dir = tempfile.mkdtemp(prefix="dangerzone-")
+        result = self.run_cli(
+            [self.sample_doc, "--output-filename", f"{temp_dir}/safe space.pdf"]
+        )
+        result.assert_success()
+
     def test_output_filename_new_dir(self):
         result = self.run_cli(
             [self.sample_doc, "--output-filename", "fake-directory/my-output.pdf"]
@@ -184,6 +190,7 @@ class TestCliConversion(TestCliBasic):
         [
             "“Curly_Quotes”.pdf",  # issue 144
             "Оригинал.pdf",
+            "spaces test.pdf",
         ],
     )
     def test_filenames(self, filename):

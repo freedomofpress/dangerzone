@@ -1,4 +1,5 @@
 import platform
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -19,4 +20,4 @@ def test_get_resource_path():
 @pytest.mark.skipif(platform.system() != "Windows", reason="Windows-specific")
 def test_get_subprocess_startupinfo():
     startupinfo = util.get_subprocess_startupinfo()
-    self.assertIsInstance(startupinfo, subprocess.STARTUPINFO)
+    assert isinstance(startupinfo, subprocess.STARTUPINFO)

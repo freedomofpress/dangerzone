@@ -23,6 +23,11 @@ setuptools.setup(
     author_email="micah.lee@theintercept.com",
     license="MIT",
     description="Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs",
+    long_description="""\
+Dangerzone is an open source desktop application that takes potentially \
+dangerous PDFs, office documents, or images and converts them to safe PDFs. \
+It uses container technology to convert the documents within a secure sandbox.\
+""",
     url="https://github.com/firstlookmedia/dangerzone",
     packages=["dangerzone", "dangerzone.gui"],
     data_files=[

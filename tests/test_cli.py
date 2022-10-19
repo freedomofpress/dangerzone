@@ -6,6 +6,7 @@ import shutil
 import sys
 import tempfile
 import traceback
+from pathlib import Path
 from typing import Sequence
 
 import pytest
@@ -24,7 +25,6 @@ from . import TestBase, for_each_doc
 # TODO simulate container runtime missing
 # TODO simulate container connection error
 # TODO simulate container connection loss
-# FIXME "/" path separator is platform-dependent, use pathlib instead
 
 
 class CLIResult(Result):
@@ -159,26 +159,24 @@ class TestCliConversion(TestCliBasic):
 
     def test_output_filename(self):
         temp_dir = tempfile.mkdtemp(prefix="dangerzone-")
-        result = self.run_cli(
-            [self.sample_doc, "--output-filename", f"{temp_dir}/safe.pdf"]
-        )
+        output_filename = str(Path(temp_dir) / "safe.pdf")
+        result = self.run_cli([self.sample_doc, "--output-filename", output_filename])
         result.assert_success()
 
     def test_output_filename_spaces(self):
         temp_dir = tempfile.mkdtemp(prefix="dangerzone-")
-        result = self.run_cli(
-            [self.sample_doc, "--output-filename", f"{temp_dir}/safe space.pdf"]
-        )
+        output_filename = str(Path(temp_dir) / "safe space.pdf")
+        result = self.run_cli([self.sample_doc, "--output-filename", output_filename])
         result.assert_success()
 
     def test_output_filename_new_dir(self):
-        result = self.run_cli(
-            [self.sample_doc, "--output-filename", "fake-directory/my-output.pdf"]
-        )
+        output_filename = str(Path("fake-directory") / "my-output.pdf")
+        result = self.run_cli([self.sample_doc, "--output-filename", output_filename])
         result.assert_failure()
 
     def test_sample_not_found(self):
-        result = self.run_cli("fake-directory/fake-file.pdf")
+        input_filename = str(Path("fake-directory") / "fake-file.pdf")
+        result = self.run_cli(input_filename)
         result.assert_failure()
 
     def test_lang_eng(self):

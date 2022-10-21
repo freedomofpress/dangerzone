@@ -15,13 +15,14 @@ pixels_to_pdf:
 import glob
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
-from typing import Dict, List, Optional
+import time
+from typing import Callable, Dict, List, Optional
 
 import magic
-from PIL import Image
 
 # timeout in seconds for any single subprocess
 DEFAULT_TIMEOUT: float = 120
@@ -36,25 +37,63 @@ def run_command(
     error_message: str,
     timeout_message: str,
     timeout: float = DEFAULT_TIMEOUT,
-) -> subprocess.CompletedProcess:
+    stdout_callback: Callable = None,
+    stderr_callback: Callable = None,
+) -> None:
     """
     Runs a command and returns the result.
 
     :raises RuntimeError: if the process returns a non-zero exit status
     :raises TimeoutError: if the process times out
     """
-    try:
-        return subprocess.run(
+    if stdout_callback is None and stderr_callback is None:
+        try:
+            subprocess.run(args, timeout=timeout, check=True)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(error_message) from e
+        except subprocess.TimeoutExpired as e:
+            raise TimeoutError(timeout_message) from e
+
+    else:
+        p = subprocess.Popen(
             args,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=timeout,
-            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
         )
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(error_message) from e
-    except subprocess.TimeoutExpired as e:
-        raise TimeoutError(timeout_message) from e
+
+        # Progress callback requires a manually implemented timeout
+        start_time = time.time()
+
+        # Make reading from stdout or stderr non-blocking
+        if p.stdout:
+            os.set_blocking(p.stdout.fileno(), False)
+        if p.stderr:
+            os.set_blocking(p.stderr.fileno(), False)
+
+        while True:
+            # Processes hasn't finished
+            if p.poll() is not None:
+                if p.returncode != 0:
+                    raise RuntimeError(error_message)
+                break
+
+            # Check if timeout hasn't expired
+            if time.time() - start_time > timeout:
+                p.kill()
+                raise TimeoutError(timeout_message)
+
+            if p.stdout and stdout_callback is not None:
+                line = p.stdout.readline()
+                if len(line) > 0:
+                    line = line.rstrip()  # strip trailing "\n"
+                    stdout_callback(line)
+
+            if p.stderr and stderr_callback is not None:
+                line = p.stderr.readline()
+                if len(line) > 0:
+                    line = line.rstrip()  # strip trailing "\n"
+                    stderr_callback(line)
 
 
 class DangerzoneConverter:
@@ -181,65 +220,84 @@ class DangerzoneConverter:
             )
         self.percentage += 3
 
-        # Separate PDF into pages
-        self.update_progress("Separating document into pages")
-        args = ["pdftk", pdf_filename, "burst", "output", "/tmp/page-%d.pdf"]
-        run_command(
-            args,
-            error_message="Separating document into pages failed",
-            timeout_message=f"Error separating document into pages, pdftk timed out after {DEFAULT_TIMEOUT} seconds",
-        )
+        self.update_progress("Obtaining PDF metadata")
 
-        page_filenames = glob.glob("/tmp/page-*.pdf")
+        def pdftoppm_progress_callback(line: str) -> None:
+            """Function called for every line the 'pdftoppm'command outputs
 
-        self.percentage += 2
+            Sample pdftoppm output:
 
-        # Convert to RGB pixel data
-        percentage_per_page = 45.0 / len(page_filenames)
-        for page in range(1, len(page_filenames) + 1):
-            pdf_filename = f"/tmp/page-{page}.pdf"
-            png_filename = f"/tmp/page-{page}.png"
-            rgb_filename = f"/tmp/page-{page}.rgb"
-            width_filename = f"/tmp/page-{page}.width"
-            height_filename = f"/tmp/page-{page}.height"
-            filename_base = f"/tmp/page-{page}"
+                $ pdftoppm sample.pdf  /tmp/safe -progress
+                1 4 /tmp/safe-1.ppm
+                2 4 /tmp/safe-2.ppm
+                3 4 /tmp/safe-3.ppm
+                4 4 /tmp/safe-4.ppm
 
-            self.update_progress(
-                f"Converting page {page}/{len(page_filenames)} to pixels"
-            )
+            Each successful line is in the format "{page} {page_num} {ppm_filename}"
+            """
+            try:
+                (page_str, num_pages_str, _) = line.split()
+                num_pages = int(num_pages_str)
+                page = int(page_str)
+            except ValueError as e:
+                raise RuntimeError("Conversion from PDF to PPM failed") from e
 
-            # Convert to png
-            run_command(
-                ["pdftocairo", pdf_filename, "-png", "-singlefile", filename_base],
-                error_message="Conversion from PDF to PNG failed",
-                timeout_message=f"Error converting from PDF to PNG, pdftocairo timed out after {DEFAULT_TIMEOUT} seconds",
-            )
-
-            # Save the width and height
-            with Image.open(png_filename, "r") as im:
-                width, height = im.size
-            with open(width_filename, "w") as f:
-                f.write(str(width))
-            with open(height_filename, "w") as f:
-                f.write(str(height))
-
-            # Convert to RGB pixels
-            run_command(
-                [
-                    "gm",
-                    "convert",
-                    png_filename,
-                    "-depth",
-                    "8",
-                    f"rgb:{rgb_filename}",
-                ],
-                error_message="Conversion from PNG to RGB failed",
-                timeout_message=f"Error converting from PNG to pixels, convert timed out after {DEFAULT_TIMEOUT} seconds",
-            )
-
-            # Delete the png
-            os.remove(png_filename)
+            percentage_per_page = 45.0 / num_pages
             self.percentage += percentage_per_page
+            self.update_progress(f"Converting page {page}/{num_pages} to pixels")
+
+            zero_padding = "0" * (len(num_pages_str) - len(page_str))
+            ppm_filename = f"{page_base}-{zero_padding}{page}.ppm"
+            rgb_filename = f"{page_base}-{page}.rgb"
+            width_filename = f"{page_base}-{page}.width"
+            height_filename = f"{page_base}-{page}.height"
+            filename_base = f"{page_base}-{page}"
+
+            with open(ppm_filename, "rb") as f:
+                # NOTE: PPM files have multiple ways of writing headers.
+                # For our specific case we parse it expecting the header format that ppmtopdf produces
+                # More info on PPM headers: https://people.uncw.edu/tompkinsj/112/texnh/assignments/imageFormat.html
+
+                # Read the header
+                header = f.readline().decode().strip()
+                if header != "P6":
+                    raise ValueError("Invalid PPM header")
+
+                # Save the width and height
+                dims = f.readline().decode().strip()
+                width, height = dims.split()
+                with open(width_filename, "w") as width_file:
+                    width_file.write(width)
+                with open(height_filename, "w") as height_file:
+                    height_file.write(height)
+
+                maxval = int(f.readline().decode().strip())
+                # Check that the depth is 8
+                if maxval != 255:
+                    raise ValueError("Invalid PPM depth")
+
+                data = f.read()
+
+            # Save pixel data
+            with open(rgb_filename, "wb") as f:
+                f.write(data)
+
+            # Delete the ppm file
+            os.remove(ppm_filename)
+
+        page_base = "/tmp/page"
+        # Convert to PPM, which is essentially an RGB format
+        run_command(
+            [
+                "pdftoppm",
+                pdf_filename,
+                page_base,
+                "-progress",
+            ],
+            error_message="Conversion from PDF to PPM failed",
+            timeout_message=f"Error converting from PDF to PPM, pdftoppm timed out after {DEFAULT_TIMEOUT} seconds",
+            stderr_callback=pdftoppm_progress_callback,
+        )
 
         self.update_progress("Converted document to pixels")
 

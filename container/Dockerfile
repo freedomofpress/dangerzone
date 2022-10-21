@@ -10,7 +10,6 @@ RUN apk -U upgrade && \
     poppler-utils \
     python3 \
     py3-magic \
-    py3-pillow \
     sudo \
     tesseract-ocr \
     tesseract-ocr-data-afr \
@@ -77,15 +76,6 @@ RUN apk -U upgrade && \
     tesseract-ocr-data-tur \
     tesseract-ocr-data-ukr \
     tesseract-ocr-data-vie
-
-# Install pdftk
-RUN \
-    wget https://gitlab.com/pdftk-java/pdftk/-/jobs/924565145/artifacts/raw/build/libs/pdftk-all.jar && \
-    mv pdftk-all.jar /usr/local/bin && \
-    chmod +x /usr/local/bin/pdftk-all.jar && \
-    echo '#!/bin/sh' > /usr/local/bin/pdftk && \
-    echo '/usr/bin/java -jar "/usr/local/bin/pdftk-all.jar" "$@"' >> /usr/local/bin/pdftk && \
-    chmod +x /usr/local/bin/pdftk
 
 COPY dangerzone.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/dangerzone.py

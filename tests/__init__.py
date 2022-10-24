@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-sys.dangerzone_dev = True
+sys.dangerzone_dev = True  # type: ignore[attr-defined]
 
 SAMPLE_DIRECTORY = "test_docs"
 BASIC_SAMPLE = "sample.pdf"

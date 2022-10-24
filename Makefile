@@ -27,7 +27,10 @@ mypy-host:
 mypy-container:
 	mypy $(MYPY_ARGS) container
 
-mypy: mypy-host  mypy-container ## check type hints with mypy
+mypy-tests:
+	mypy $(MYPY_ARGS) tests
+
+mypy: mypy-host  mypy-container mypy-tests ## check type hints with mypy
 
 .PHONY: lint
 lint: lint-black lint-isort mypy ## check the code with various linters

@@ -11,7 +11,7 @@ from typing import Sequence
 
 import pytest
 from click.testing import CliRunner, Result
-from strip_ansi import strip_ansi  # type: ignore
+from strip_ansi import strip_ansi
 
 from dangerzone.cli import cli_main, display_banner
 
@@ -125,17 +125,17 @@ class TestCli(TestBase):
 
 
 class TestCliBasic(TestCli):
-    def test_no_args(self):
+    def test_no_args(self) -> None:
         """``$ dangerzone-cli``"""
         result = self.run_cli()
         result.assert_failure()
 
-    def test_help(self):
+    def test_help(self) -> None:
         """``$ dangerzone-cli --help``"""
         result = self.run_cli("--help")
         result.assert_success()
 
-    def test_display_banner(self, capfd):
+    def test_display_banner(self, capfd) -> None:  # type: ignore[no-untyped-def]
         display_banner()  # call the test subject
         (out, err) = capfd.readouterr()
         plain_lines = [strip_ansi(line) for line in out.splitlines()]
@@ -148,38 +148,38 @@ class TestCliBasic(TestCli):
 
 
 class TestCliConversion(TestCliBasic):
-    def test_invalid_lang(self):
+    def test_invalid_lang(self) -> None:
         result = self.run_cli([self.sample_doc, "--ocr-lang", "piglatin"])
         result.assert_failure()
 
     @for_each_doc
-    def test_formats(self, doc):
+    def test_formats(self, doc: Path) -> None:
         result = self.run_cli(str(doc))
         result.assert_success()
 
-    def test_output_filename(self):
+    def test_output_filename(self) -> None:
         temp_dir = tempfile.mkdtemp(prefix="dangerzone-")
         output_filename = str(Path(temp_dir) / "safe.pdf")
         result = self.run_cli([self.sample_doc, "--output-filename", output_filename])
         result.assert_success()
 
-    def test_output_filename_spaces(self):
+    def test_output_filename_spaces(self) -> None:
         temp_dir = tempfile.mkdtemp(prefix="dangerzone-")
         output_filename = str(Path(temp_dir) / "safe space.pdf")
         result = self.run_cli([self.sample_doc, "--output-filename", output_filename])
         result.assert_success()
 
-    def test_output_filename_new_dir(self):
+    def test_output_filename_new_dir(self) -> None:
         output_filename = str(Path("fake-directory") / "my-output.pdf")
         result = self.run_cli([self.sample_doc, "--output-filename", output_filename])
         result.assert_failure()
 
-    def test_sample_not_found(self):
+    def test_sample_not_found(self) -> None:
         input_filename = str(Path("fake-directory") / "fake-file.pdf")
         result = self.run_cli(input_filename)
         result.assert_failure()
 
-    def test_lang_eng(self):
+    def test_lang_eng(self) -> None:
         result = self.run_cli([self.sample_doc, "--ocr-lang", "eng"])
         result.assert_success()
 
@@ -191,7 +191,7 @@ class TestCliConversion(TestCliBasic):
             "spaces test.pdf",
         ],
     )
-    def test_filenames(self, filename):
+    def test_filenames(self, filename: str) -> None:
         tempdir = tempfile.mkdtemp(prefix="dangerzone-")
         doc_path = os.path.join(filename)
         shutil.copyfile(self.sample_doc, doc_path)

@@ -1,6 +1,14 @@
 version: 2.1
 
 aliases:
+  - &provide-podman
+    name: Provide Podman in Ubuntu Focal
+    command: ./install/linux/install-podman-ubuntu-focal.sh --repo-only
+
+  - &install-podman
+    name: Install Podman in Ubuntu Focal
+    command: ./install/linux/install-podman-ubuntu-focal.sh
+
   - &install-dependencies-deb
     name: Install dependencies (deb)
     command: |
@@ -121,18 +129,8 @@ jobs:
     machine:
       image: ubuntu-2004:202111-01
     steps:
-      # https://www.atlantic.net/dedicated-server-hosting/how-to-install-and-use-podman-on-ubuntu-20-04/
-      - run:
-          name: Install podman on Ubuntu 20.04
-          command: |
-            export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
-            source /etc/os-release
-            sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
-            wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- | sudo apt-key add -
-            sudo apt-get update -qq -y
-            sudo apt-get -qq --yes install podman
-            podman --version
       - checkout
+      - run: *install-podman
       - run:
           name: Install poetry dependencies
           command: |

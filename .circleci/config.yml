@@ -159,6 +159,18 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
+  build-ubuntu-focal:
+    docker:
+      - image: ubuntu:20.04
+    resource_class: medium+
+    steps:
+      - checkout
+      - run: *provide-podman
+      - run: *install-dependencies-deb
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+
   build-debian-bookworm:
     docker:
       - image: debian:bookworm
@@ -301,6 +313,12 @@ jobs:
             PACKAGE_TYPE: "deb"
             PACKAGECLOUD_DISTRO: "ubuntu/jammy"
           <<: *deploy-packagecloud
+      - run:
+          name: Deploy ubuntu/focal
+          environment:
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "ubuntu/focal"
+          <<: *deploy-packagecloud
 
 workflows:
   version: 2
@@ -313,6 +331,9 @@ workflows:
           requires:
             - build-container-image
       - build-ubuntu-jammy:
+          requires:
+            - build-container-image
+      - build-ubuntu-focal:
           requires:
             - build-container-image
       - build-debian-bullseye:

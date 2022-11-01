@@ -5,6 +5,7 @@
 - Bug fix: Fix unit tests on Windows
 - Feature: Re-add Fedora 37 support
 - Feature: Add Debian Bookworm (12) support
+- Reinstate Ubuntu Focal support ([issue #206](https://github.com/freedomofpress/dangerzone/issues/206))
 
 ## Dangerzone 0.3.2
 - Bug fix: some non-ascii characters like “ would prevent Dangerzone from working  ([issue #144](https://github.com/freedomofpress/dangerzone/issues/144))

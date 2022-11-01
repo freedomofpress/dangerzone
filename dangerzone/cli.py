@@ -1,17 +1,17 @@
 import json
 import logging
-import os
 import sys
-from typing import List, Optional
+from typing import Any, Callable, List, Optional, TypeVar
 
 import click
 from colorama import Back, Fore, Style
 
 from . import args, container, errors
-from .container import convert
-from .document import SAFE_EXTENSION, Document
+from .document import SAFE_EXTENSION
 from .logic import DangerzoneCore
 from .util import get_version
+
+F = TypeVar("F", bound=Callable[..., Any])
 
 
 def print_header(s: str) -> None:
@@ -96,6 +96,9 @@ def cli_main(
         exit(1)
     else:
         exit(0)
+
+
+args.override_parser_and_check_suspicious_options(cli_main)
 
 
 def setup_logging() -> None:

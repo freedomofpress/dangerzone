@@ -1,7 +1,7 @@
 import functools
 import logging
 import sys
-from typing import Any, Callable, TypeVar, cast
+from typing import Any, Callable, Sequence, TypeVar, cast
 
 import click
 

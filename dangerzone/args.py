@@ -7,7 +7,7 @@ from .document import Document
 
 
 @errors.handle_document_errors
-def validate_input_filename(
+def _validate_input_filename(
     ctx: click.Context, param: str, value: Optional[str]
 ) -> Optional[str]:
     if value is None:
@@ -18,7 +18,7 @@ def validate_input_filename(
 
 
 @errors.handle_document_errors
-def validate_output_filename(
+def _validate_output_filename(
     ctx: click.Context, param: str, value: Optional[str]
 ) -> Optional[str]:
     if value is None:
@@ -26,3 +26,23 @@ def validate_output_filename(
     filename = Document.normalize_filename(value)
     Document.validate_output_filename(filename)
     return filename
+
+
+# XXX: Click versions 7.x and below inspect the number of arguments that the
+# callback handler supports. Unfortunately, common Python decorators (such as
+# `handle_document_errors()`) mask this number, so we need to reinstate it
+# somehow [1]. The simplest way to do so is using a wrapper function.
+#
+# Once we stop supporting Click 7.x, we can remove the wrappers below.
+#
+# [1]: https://github.com/freedomofpress/dangerzone/issues/206#issuecomment-1297336863
+def validate_input_filename(
+    ctx: click.Context, param: str, value: Optional[str]
+) -> Optional[str]:
+    return _validate_input_filename(ctx, param, value)
+
+
+def validate_output_filename(
+    ctx: click.Context, param: str, value: Optional[str]
+) -> Optional[str]:
+    return _validate_output_filename(ctx, param, value)

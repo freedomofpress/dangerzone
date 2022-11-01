@@ -8,6 +8,18 @@ Install dependencies:
 sudo apt install -y podman dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-colorama
 ```
 
+Install poetry:
+
+```sh
+python -m pip install poetry
+```
+
+Change to the `dangerzone` folder, and install the poetry dependencies:
+
+```
+poetry install
+```
+
 Build the latest container:
 
 ```sh
@@ -17,6 +29,13 @@ Build the latest container:
 Run from source tree:
 
 ```sh
+# start a shell in the virtual environment
+poetry shell
+
+# run the CLI
+./dev_scripts/dangerzone-cli --help
+
+# run the GUI
 ./dev_scripts/dangerzone
 ```
 
@@ -34,6 +53,18 @@ Install dependencies:
 sudo dnf install -y rpm-build podman python3 python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-colorama
 ```
 
+Install poetry:
+
+```sh
+python -m pip install poetry
+```
+
+Change to the `dangerzone` folder, and install the poetry dependencies:
+
+```
+poetry install
+```
+
 Build the latest container:
 
 ```sh
@@ -43,6 +74,13 @@ Build the latest container:
 Run from source tree:
 
 ```sh
+# start a shell in the virtual environment
+poetry shell
+
+# run the CLI
+./dev_scripts/dangerzone-cli --help
+
+# run the GUI
 ./dev_scripts/dangerzone
 ```
 
@@ -134,8 +172,14 @@ python .\install\windows\build-image.py
 After that you can launch dangerzone during development with:
 
 ```
-.\dev_scripts\dangerzone.bat
+# start a shell in the virtual environment
+poetry shell
+
+# run the CLI
 .\dev_scripts\dangerzone-cli.bat --help
+
+# run the GUI
+.\dev_scripts\dangerzone.bat
 ```
 
 ### If you want to build the installer

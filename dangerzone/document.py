@@ -9,7 +9,7 @@ from typing import Optional
 
 import appdirs
 
-from .errors import DocumentFilenameException
+from . import errors
 
 SAFE_EXTENSION = "-safe.pdf"
 
@@ -54,28 +54,24 @@ class Document:
         try:
             open(filename, "rb")
         except FileNotFoundError as e:
-            raise DocumentFilenameException(
-                "Input file not found: make sure you typed it correctly."
-            ) from e
+            raise errors.InputFileNotFoundException() from e
         except PermissionError as e:
-            raise DocumentFilenameException(
-                "You don't have permission to open the input file."
-            ) from e
+            raise errors.InputFileNotReadableException() from e
 
     @staticmethod
     def validate_output_filename(filename: str) -> None:
         if not filename.endswith(".pdf"):
-            raise DocumentFilenameException("Safe PDF filename must end in '.pdf'")
+            raise errors.NonPDFOutputFileException()
         try:
             with open(filename, "wb"):
                 pass
         except PermissionError as e:
-            raise DocumentFilenameException("Safe PDF filename is not writable") from e
+            raise errors.UnwriteableOutputFileException() from e
 
     @property
     def input_filename(self) -> str:
         if self._input_filename is None:
-            raise DocumentFilenameException("Input filename has not been set yet.")
+            raise errors.NotSetInputFilenameException()
         else:
             return self._input_filename
 
@@ -92,7 +88,7 @@ class Document:
             if self._input_filename is not None:
                 return self.default_output_filename
             else:
-                raise DocumentFilenameException("Output filename has not been set yet.")
+                raise errors.NotSetOutputFilenameException()
         else:
             return self._output_filename
 

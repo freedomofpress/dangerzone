@@ -14,6 +14,49 @@ class DocumentFilenameException(Exception):
     """Exception for document-related filename errors."""
 
 
+class InputFileNotFoundException(DocumentFilenameException):
+    """Exception for when an input file does not exist."""
+
+    def __init__(self) -> None:
+        super().__init__("Input file not found: make sure you typed it correctly.")
+
+
+class InputFileNotReadableException(DocumentFilenameException):
+    """Exception for when an input file exists but is not readable."""
+
+    def __init__(self) -> None:
+        super().__init__("You don't have permission to open the input file.")
+
+
+class NonPDFOutputFileException(DocumentFilenameException):
+    """Exception for when the output file is not a PDF."""
+
+    def __init__(self) -> None:
+        super().__init__("Safe PDF filename must end in '.pdf'")
+
+
+class UnwriteableOutputFileException(DocumentFilenameException):
+    """Exception for when the output file is not writeable."""
+
+    def __init__(self) -> None:
+        super().__init__("Safe PDF filename is not writable")
+
+
+class NotSetInputFilenameException(DocumentFilenameException):
+    """Exception for when the output filename is set before having an
+    associated input file."""
+
+    def __init__(self) -> None:
+        super().__init__("Input filename has not been set yet.")
+
+
+class NotSetOutputFilenameException(DocumentFilenameException):
+    """Exception for when the output filename is read before it has been set."""
+
+    def __init__(self) -> None:
+        super().__init__("Output filename has not been set yet.")
+
+
 def handle_document_errors(func: F) -> F:
     """Log document-related errors and exit gracefully."""
 

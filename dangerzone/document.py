@@ -5,6 +5,7 @@ import platform
 import secrets
 import stat
 import tempfile
+from pathlib import Path
 from typing import Optional
 
 import appdirs
@@ -62,11 +63,9 @@ class Document:
     def validate_output_filename(filename: str) -> None:
         if not filename.endswith(".pdf"):
             raise errors.NonPDFOutputFileException()
-        try:
-            with open(filename, "wb"):
-                pass
-        except PermissionError as e:
-            raise errors.UnwriteableOutputFileException() from e
+        if not os.access(Path(filename).parent, os.W_OK):
+            # in unwriteable directory
+            raise errors.UnwriteableOutputDirException()
 
     @property
     def input_filename(self) -> str:

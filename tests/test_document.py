@@ -8,7 +8,7 @@ import pytest
 from dangerzone import errors
 from dangerzone.document import Document
 
-from . import sample_doc, unreadable_pdf, unwriteable_pdf
+from . import sample_doc, unreadable_pdf
 
 
 def test_input_sample_init(sample_doc: str) -> None:
@@ -43,11 +43,13 @@ def test_input_file_unreadable(unreadable_pdf: str) -> None:
         Document(unreadable_pdf)
 
 
-def test_output_file_unwriteable(unwriteable_pdf: str) -> None:
-    d = Document()
-    with pytest.raises(errors.UnwriteableOutputFileException) as e:
-        d.output_filename = unwriteable_pdf
-    assert "Safe PDF filename is not writable" in str(e.value)
+@pytest.mark.skipif(platform.system() == "Windows", reason="Unix-specific")
+def test_output_file_unwriteable_dir(sample_doc: str, tmp_path: Path) -> None:
+    # make parent dir unwriteable
+    sample_doc_safe = str(tmp_path / "document-safe.pdf")
+    os.chmod(tmp_path, 0o400)
+    with pytest.raises(errors.UnwriteableOutputDirException) as e:
+        d = Document(sample_doc, sample_doc_safe)
 
 
 def test_output(tmp_path: Path) -> None:

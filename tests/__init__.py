@@ -31,13 +31,6 @@ def sample_doc() -> str:
 
 
 @pytest.fixture
-def unwriteable_pdf(tmp_path: Path) -> str:
-    file_path = tmp_path / "document.pdf"
-    file_path.touch(mode=0o400)
-    return str(file_path)
-
-
-@pytest.fixture
 def unreadable_pdf(tmp_path: Path) -> str:
     file_path = tmp_path / "document.pdf"
     file_path.touch(mode=0o000)

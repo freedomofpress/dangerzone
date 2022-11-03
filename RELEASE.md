@@ -216,3 +216,4 @@ To publish the release:
 - Update the [Installing Dangerzone](INSTALL.md) page
 - Update the [Dangerzone website](https://github.com/firstlookmedia/dangerzone.rocks) to link to the new installers
 - Update the brew cask release of Dangerzone with a [PR like this one](https://github.com/Homebrew/homebrew-cask/pull/116319)
+- Toot release announcement on our mastodon account @dangerzone@fosstodon.org

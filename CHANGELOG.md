@@ -8,6 +8,7 @@
 - Reinstate Ubuntu Focal support ([issue #206](https://github.com/freedomofpress/dangerzone/issues/206))
 - Feature: support multiple input documents in the CLI-version
 - Bug fix: Failed execution no longer produces an empty "safe" documents ([issue #214](https://github.com/freedomofpress/dangerzone/issues/214))
+- Feature: multi-document in graphical user interface (GUI) version
 
 ## Dangerzone 0.3.2
 - Bug fix: some non-ascii characters like “ would prevent Dangerzone from working  ([issue #144](https://github.com/freedomofpress/dangerzone/issues/144))

@@ -367,7 +367,7 @@ class SettingsWidget(QtWidgets.QWidget):
         ocr_layout.addStretch()
 
         # Button
-        self.start_button = QtWidgets.QPushButton("Convert to Safe Document")
+        self.start_button = QtWidgets.QPushButton()
         self.start_button.clicked.connect(self.start_button_clicked)
         self.start_button.setStyleSheet(
             "QPushButton { font-size: 16px; font-weight: bold; }"
@@ -458,6 +458,10 @@ class SettingsWidget(QtWidgets.QWidget):
         save_path = os.path.dirname(filenames[0])
         save_dir = os.path.basename(save_path)
         self.save_location.setText(save_dir)
+        if len(filenames) == 1:
+            self.start_button.setText("Convert to Safe Document")
+        else:
+            self.start_button.setText("Convert to Safe Documents")
 
         self.update_ui()
 

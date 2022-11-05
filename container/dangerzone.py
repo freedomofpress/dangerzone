@@ -135,7 +135,7 @@ class DangerzoneConverter:
 
         # Validate MIME type
         if mime_type not in conversions:
-            raise ValueError(f"The document format is not supported")
+            raise ValueError("The document format is not supported")
 
         # Convert input document to PDF
         conversion = conversions[mime_type]
@@ -338,7 +338,7 @@ class DangerzoneConverter:
         self.percentage += 2
 
         # Compress
-        self.update_progress(f"Compressing PDF")
+        self.update_progress("Compressing PDF")
         compress_timeout = num_pages * 3
         run_command(
             ["ps2pdf", "/tmp/safe-output.pdf", "/tmp/safe-output-compressed.pdf"],

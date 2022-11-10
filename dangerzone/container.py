@@ -1,4 +1,5 @@
 import gzip
+import json
 import logging
 import os
 import pipes
@@ -47,6 +48,19 @@ def get_runtime() -> str:
     if runtime is None:
         raise NoContainerTechException(container_tech)
     return runtime
+
+
+def podman_get_subids():
+    info = subprocess.run(
+        ["podman", "info", "-f", "json"], check=True, stdout=subprocess.PIPE
+    )
+    info_dict = json.loads(info.stdout)
+    for id_type in ["uid", "gid"]:
+        mapping = info_dict["host"]["idMappings"][f"{id_type}map"]
+        count = 0
+        for m in mapping[1:]:
+            count += m["size"]
+        yield count
 
 
 def install() -> bool:
@@ -158,7 +172,9 @@ def exec_container(
     if get_runtime_name() == "podman":
         platform_args = []
         security_args = ["--security-opt", "no-new-privileges"]
-        security_args += ["--userns", "keep-id"]
+        num_subuids, num_subgids = podman_get_subids()
+        security_args += ["--uidmap", f"0:1:{num_subuids}"]
+        security_args += ["--gidmap", f"0:1:{num_subgids}"]
     else:
         platform_args = ["--platform", "linux/amd64"]
         security_args = ["--security-opt=no-new-privileges:true"]
@@ -190,6 +206,29 @@ def convert(
     ocr_lang: Optional[str],
     stdout_callback: Callable[[str], None],
 ) -> bool:
+    dz_tmp = os.path.join(appdirs.user_config_dir("dangerzone"), "tmp")
+    os.makedirs(dz_tmp, exist_ok=True)
+    tmpdir = tempfile.TemporaryDirectory(dir=dz_tmp)
+
+    try:
+        return _convert(tmpdir, input_filename, output_filename, ocr_lang,
+                        stdout_callback)
+    finally:
+        if get_runtime_name() == "podman":
+            subprocess.run([
+                "podman", "unshare", "chown", "-R", "0:0", tmpdir.name
+            ], check=True)
+        # Clean up
+        tmpdir.cleanup()
+
+
+def _convert(
+    tmpdir: tempfile.TemporaryDirectory,
+    input_filename: str,
+    output_filename: str,
+    ocr_lang: Optional[str],
+    stdout_callback: Callable[[str], None],
+) -> bool:
     success = False
 
     if ocr_lang:
@@ -197,20 +236,23 @@ def convert(
     else:
         ocr = "0"
 
-    dz_tmp = os.path.join(appdirs.user_config_dir("dangerzone"), "tmp")
-    os.makedirs(dz_tmp, exist_ok=True)
-
-    tmpdir = tempfile.TemporaryDirectory(dir=dz_tmp)
+    tmp_input_file = os.path.join(tmpdir.name, "input_file")
     pixel_dir = os.path.join(tmpdir.name, "pixels")
     safe_dir = os.path.join(tmpdir.name, "safe")
+    shutil.copy(input_filename, tmp_input_file)
     os.makedirs(pixel_dir, exist_ok=True)
     os.makedirs(safe_dir, exist_ok=True)
+
+    if get_runtime_name() == "podman":
+        subprocess.run([
+            "podman", "unshare", "chown", "-R", "1001:1001", tmpdir.name
+        ], check=True)
 
     # Convert document to pixels
     command = ["/usr/bin/python3", "/usr/local/bin/dangerzone.py", "document-to-pixels"]
     extra_args = [
         "-v",
-        f"{input_filename}:/tmp/input_file",
+        f"{tmp_input_file}:/tmp/input_file",
         "-v",
         f"{pixel_dir}:/dangerzone",
     ]
@@ -243,13 +285,15 @@ def convert(
             container_output_filename = os.path.join(
                 safe_dir, "safe-output-compressed.pdf"
             )
-            shutil.move(container_output_filename, output_filename)
+
+            if get_runtime_name() == "podman":
+                subprocess.run([
+                    "podman", "unshare", "chown", "-R", "0:0", tmpdir.name
+                ], check=True)
+                shutil.move(container_output_filename, output_filename)
 
             # We did it
             success = True
-
-    # Clean up
-    tmpdir.cleanup()
 
     return success
 

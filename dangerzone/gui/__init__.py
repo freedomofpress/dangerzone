@@ -1,3 +1,4 @@
+import functools
 import logging
 import os
 import platform
@@ -122,3 +123,6 @@ def gui_main(filenames: Optional[List[str]]) -> bool:
 
 def setup_logging() -> None:
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] %(message)s")
+
+
+args.override_parser_and_check_suspicious_options(gui_main)

@@ -41,13 +41,13 @@ def cli_main(
 
     display_banner()
     if len(filenames) == 1 and output_filename:
-        dangerzone.add_document(filenames[0], output_filename)
+        dangerzone.add_document_from_filename(filenames[0], output_filename)
     elif len(filenames) > 1 and output_filename:
         click.echo("--output-filename can only be used with one input file.")
         exit(1)
     else:
         for filename in filenames:
-            dangerzone.add_document(filename)
+            dangerzone.add_document_from_filename(filename)
 
     # Validate OCR language
     if ocr_lang:

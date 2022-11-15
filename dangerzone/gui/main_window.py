@@ -237,7 +237,7 @@ class ContentWidget(QtWidgets.QWidget):
         layout.addWidget(self.doc_selection_widget, stretch=1)
         self.setLayout(layout)
 
-    def document_selected(self) -> None:
+    def document_selected(self, selected_docs: List[Document]) -> None:
         self.doc_selection_widget.hide()
         self.settings_widget.show()
 
@@ -285,7 +285,8 @@ class DocSelectionWidget(QtWidgets.QWidget):
             # no files selected
             return
 
-        self.document_selected.emit(filenames)
+        documents = [Document(filename) for filename in filenames]
+        self.document_selected.emit(documents)
 
 
 class SettingsWidget(QtWidgets.QWidget):
@@ -468,12 +469,13 @@ class SettingsWidget(QtWidgets.QWidget):
         else:
             self.start_button.setDisabled(True)
 
-    def document_selected(self, filenames: List[str]) -> None:
+    def document_selected(self, selected_docs: List[Document]) -> None:
+        first_doc = selected_docs[0]
         # set the default save location as the directory for the first document
-        save_path = os.path.dirname(filenames[0])
+        save_path = os.path.dirname(first_doc.input_filename)
         save_dir = os.path.basename(save_path)
         self.save_location.setText(save_dir)
-        if len(filenames) == 1:
+        if len(selected_docs) == 1:
             self.start_button.setText("Convert to Safe Document")
         else:
             self.start_button.setText("Convert to Safe Documents")
@@ -574,11 +576,9 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         # to ensure docker-daemon detection logic runs first
         self.thread_pool_initized = False
 
-    def document_selected(self, filenames: list) -> None:
-        for filename in filenames:
-            self.dangerzone.add_document(filename)
-
-        for document in self.dangerzone.get_unconverted_documents():
+    def document_selected(self, selected_docs: List[Document]) -> None:
+        for document in selected_docs:
+            self.dangerzone.add_document(document)
             item = QtWidgets.QListWidgetItem()
             item.setSizeHint(QtCore.QSize(500, 50))
             widget = DocumentWidget(self.dangerzone, document)

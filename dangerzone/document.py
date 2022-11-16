@@ -45,7 +45,6 @@ class Document:
 
         if input_filename:
             self.input_filename = input_filename
-            self.announce_id()
 
             if output_filename:
                 self.output_filename = output_filename

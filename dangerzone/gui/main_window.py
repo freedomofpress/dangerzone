@@ -303,20 +303,9 @@ class SettingsWidget(QtWidgets.QWidget):
         self.docs_selected_label.setProperty("class", "docs-selection")  # type: ignore [arg-type]
 
         # Save safe version
-        self.save_checkbox = QtWidgets.QCheckBox("Save safe PDF to")
+        self.save_checkbox = QtWidgets.QCheckBox()
         self.save_checkbox.clicked.connect(self.update_ui)
         self.output_dir = None
-
-        # Save safe to...
-        self.save_location = QtWidgets.QLineEdit()
-        self.save_location.setReadOnly(True)
-        self.save_browse_button = QtWidgets.QPushButton("Choose...")
-        self.save_browse_button.clicked.connect(self.select_output_directory)
-        self.save_location_layout = QtWidgets.QHBoxLayout()
-        self.save_location_layout.addWidget(self.save_checkbox)
-        self.save_location_layout.addWidget(self.save_location)
-        self.save_location_layout.addWidget(self.save_browse_button)
-        self.save_location_layout.addStretch()
 
         # Save safe as... [filename]-safe.pdf
         self.safe_extension_label = QtWidgets.QLabel("Save as")
@@ -339,12 +328,44 @@ class SettingsWidget(QtWidgets.QWidget):
         dot_pdf_regex = QtCore.QRegExp(r".*\.[Pp][Dd][Ff]")
         self.safe_extension.setValidator(QtGui.QRegExpValidator(dot_pdf_regex))
         self.safe_extension_layout = QtWidgets.QHBoxLayout()
-        self.safe_extension_layout.setContentsMargins(20, 0, 0, 0)
+        self.safe_extension_layout.addWidget(self.save_checkbox)
         self.safe_extension_layout.addWidget(self.safe_extension_label)
         self.safe_extension_layout.addLayout(self.safe_extension_name_layout)
         self.safe_extension_layout.addWidget(self.safe_extension_invalid)
-
         self.safe_extension_layout.addStretch()
+
+        # Save safe to...
+        self.save_label = QLabelClickable("Save safe PDFs to")
+        self.save_location = QtWidgets.QLineEdit()
+        self.save_location.setReadOnly(True)
+        self.save_browse_button = QtWidgets.QPushButton("Choose...")
+        self.save_browse_button.clicked.connect(self.select_output_directory)
+        self.save_location_layout = QtWidgets.QHBoxLayout()
+        self.save_location_layout.setContentsMargins(20, 0, 0, 0)
+        self.save_location_layout.addWidget(self.save_label)
+        self.save_location_layout.addWidget(self.save_location)
+        self.save_location_layout.addWidget(self.save_browse_button)
+        self.save_location_layout.addStretch()
+
+        # 'Save PDF to' group box
+        save_group_box_innner_layout = QtWidgets.QVBoxLayout()
+        save_group_box = QtWidgets.QGroupBox()
+        save_group_box.setLayout(save_group_box_innner_layout)
+        save_group_box_layout = QtWidgets.QHBoxLayout()
+        save_group_box_layout.setContentsMargins(20, 0, 0, 0)
+        save_group_box_layout.addWidget(save_group_box)
+        self.radio_move_untrusted = QtWidgets.QRadioButton(
+            "Move unsafe PDFs to 'unsafe' subdirectory"
+        )
+        self.radio_move_untrusted.setChecked(True)
+        save_group_box_innner_layout.addWidget(self.radio_move_untrusted)
+        self.radio_save_to = QtWidgets.QRadioButton()
+        self.save_label.clicked.connect(
+            lambda: self.radio_save_to.setChecked(True)
+        )  # select the radio button when label is clicked
+        self.radio_save_to.setMinimumHeight(30)  # make the QTextEdit fully visible
+        self.radio_save_to.setLayout(self.save_location_layout)
+        save_group_box_innner_layout.addWidget(self.radio_save_to)
 
         # Open safe document
         if platform.system() in ["Darwin", "Windows"]:
@@ -393,8 +414,8 @@ class SettingsWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.addSpacing(20)
         layout.addWidget(self.docs_selected_label)
-        layout.addLayout(self.save_location_layout)
         layout.addLayout(self.safe_extension_layout)
+        layout.addLayout(save_group_box_layout)
         layout.addLayout(open_layout)
         layout.addLayout(ocr_layout)
         layout.addSpacing(20)
@@ -690,3 +711,12 @@ class DocumentWidget(QtWidgets.QWidget):
         # Open
         if self.dangerzone.settings.get("open"):
             self.dangerzone.open_pdf_viewer(self.document.output_filename)
+
+
+class QLabelClickable(QtWidgets.QLabel):
+    """QLabel with a 'clicked' event"""
+
+    clicked = QtCore.Signal()
+
+    def mouseReleaseEvent(self, ev: QtGui.QMouseEvent) -> None:
+        self.clicked.emit()

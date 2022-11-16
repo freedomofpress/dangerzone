@@ -71,6 +71,13 @@ class OutputDirIsNotDirException(DocumentFilenameException):
         super().__init__("Specified output directory is actually not a directory")
 
 
+class SuffixNotApplicableException(DocumentFilenameException):
+    """Exception for when the suffix cannot be applied to the output filename."""
+
+    def __init__(self) -> None:
+        super().__init__("Cannot set a suffix after setting an output filename")
+
+
 def handle_document_errors(func: F) -> F:
     """Log document-related errors and exit gracefully."""
 

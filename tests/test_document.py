@@ -113,6 +113,10 @@ def test_set_output_filename_suffix(sample_doc: str) -> None:
     d.suffix = safe_extension
     assert d.output_filename.endswith(safe_extension)
 
+    d.output_filename = "something_else.pdf"
+    with pytest.raises(errors.SuffixNotApplicableException) as e:
+        d.suffix = "-new-trusted.pdf"
+
 
 def test_is_unconverted_by_default(sample_doc: str) -> None:
     d = Document(sample_doc)

@@ -83,7 +83,9 @@ def gui_main(filenames: Optional[List[str]]) -> bool:
         window = MainWindow(dangerzone)
         if filenames:
             documents = [Document(filename) for filename in filenames]
-            window.content_widget.doc_selection_widget.document_selected.emit(documents)
+            window.content_widget.doc_selection_widget.documents_selected.emit(
+                documents
+            )
         return window
 
     window = new_window(filenames)

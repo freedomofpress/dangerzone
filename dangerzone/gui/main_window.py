@@ -355,9 +355,8 @@ class SettingsWidget(QtWidgets.QWidget):
         save_group_box_layout.setContentsMargins(20, 0, 0, 0)
         save_group_box_layout.addWidget(save_group_box)
         self.radio_move_untrusted = QtWidgets.QRadioButton(
-            "Move unsafe PDFs to 'unsafe' subdirectory"
+            "Move original documents to 'unsafe' subdirectory"
         )
-        self.radio_move_untrusted.setChecked(True)
         save_group_box_innner_layout.addWidget(self.radio_move_untrusted)
         self.radio_save_to = QtWidgets.QRadioButton()
         self.save_label.clicked.connect(
@@ -432,6 +431,11 @@ class SettingsWidget(QtWidgets.QWidget):
             self.safe_extension.setText(self.dangerzone.settings.get("safe_extension"))
         else:
             self.safe_extension.setText(SAFE_EXTENSION)
+
+        if self.dangerzone.settings.get("archive"):
+            self.radio_move_untrusted.setChecked(True)
+        else:
+            self.radio_save_to.setChecked(True)
 
         if self.dangerzone.settings.get("ocr"):
             self.ocr_checkbox.setCheckState(QtCore.Qt.Checked)
@@ -524,23 +528,29 @@ class SettingsWidget(QtWidgets.QWidget):
                 self.save_location.setText(selected_dir)
 
     def start_button_clicked(self) -> None:
-        if self.save_checkbox.checkState() == QtCore.Qt.Unchecked:
-            # If not saving, then save it to a temp file instead
-            for document in self.dangerzone.get_unconverted_documents():
+        for document in self.dangerzone.get_unconverted_documents():
+            if self.save_checkbox.isChecked():
+                # If we're saving the document, set the suffix that the user chose. Then
+                # check if we should to store the document in the same directory, and
+                # move the original document to an 'unsafe' subdirectory, or save the
+                # document to another directory.
+                document.suffix = self.safe_extension.text()
+                if self.radio_move_untrusted.isChecked():
+                    document.archive_after_conversion = True
+                elif self.radio_save_to.isChecked():
+                    if self.output_dir:
+                        document.set_output_dir(self.output_dir)  # type: ignore [unreachable]
+            else:
+                # If not saving, then save it to a temp file instead
                 (_, tmp) = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
                 document.output_filename = tmp
-        else:
-            for document in self.dangerzone.get_unconverted_documents():
-                document.suffix = self.safe_extension.text()
-
-                if self.output_dir:
-                    document.set_output_dir(self.output_dir)  # type: ignore [unreachable]
 
         # Update settings
         self.dangerzone.settings.set(
             "save", self.save_checkbox.checkState() == QtCore.Qt.Checked
         )
         self.dangerzone.settings.set("safe_extension", self.safe_extension.text())
+        self.dangerzone.settings.set("archive", self.radio_move_untrusted.isChecked())
         self.dangerzone.settings.set(
             "ocr", self.ocr_checkbox.checkState() == QtCore.Qt.Checked
         )

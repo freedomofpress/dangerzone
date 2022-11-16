@@ -21,6 +21,7 @@ class Settings:
         )
         self.default_settings: Dict[str, Any] = {
             "save": True,
+            "archive": True,
             "ocr": True,
             "ocr_language": "English",
             "open": True,

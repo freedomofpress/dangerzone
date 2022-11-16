@@ -282,6 +282,9 @@ def convert(
             )
             shutil.move(container_output_filename, document.output_filename)
 
+            if document.archive_after_conversion:
+                document.archive()
+
             # We did it
             success = True
 

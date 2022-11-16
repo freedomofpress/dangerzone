@@ -13,6 +13,7 @@ import appdirs
 from . import errors
 
 SAFE_EXTENSION = "-safe.pdf"
+ARCHIVE_SUBDIR = "unsafe"
 
 log = logging.getLogger(__name__)
 
@@ -35,12 +36,14 @@ class Document:
         input_filename: str = None,
         output_filename: str = None,
         suffix: str = SAFE_EXTENSION,
+        archive: bool = False,
     ) -> None:
         # NOTE: See https://github.com/freedomofpress/dangerzone/pull/216#discussion_r1015449418
         self.id = secrets.token_urlsafe(6)[0:6]
 
         self._input_filename: Optional[str] = None
         self._output_filename: Optional[str] = None
+        self._archive = False
         self._suffix = suffix
 
         if input_filename:
@@ -50,6 +53,8 @@ class Document:
                 self.output_filename = output_filename
 
         self.state = Document.STATE_UNCONVERTED
+
+        self.archive_after_conversion = archive
 
     @staticmethod
     def normalize_filename(filename: str) -> str:
@@ -112,6 +117,33 @@ class Document:
             self._suffix = suf
         else:
             raise errors.SuffixNotApplicableException()
+
+    @property
+    def archive_after_conversion(self) -> bool:
+        return self._archive
+
+    @archive_after_conversion.setter
+    def archive_after_conversion(self, enabled: bool) -> None:
+        if enabled:
+            self._archive = True
+        else:
+            self._archive = False
+
+    def archive(self) -> None:
+        """
+        Moves the original document to a subdirectory. Prevents the user from
+        mistakenly opening the unsafe (original) document.
+        """
+        archive_dir = self.default_archive_dir
+        old_file_path = Path(self.input_filename)
+        new_file_path = archive_dir / old_file_path.name
+        log.debug(f"Archiving doc {self.id} to {new_file_path}")
+        Path.mkdir(archive_dir, exist_ok=True)
+        old_file_path.rename(new_file_path)
+
+    @property
+    def default_archive_dir(self) -> Path:
+        return Path(self.input_filename).parent / ARCHIVE_SUBDIR
 
     @property
     def default_output_filename(self) -> str:

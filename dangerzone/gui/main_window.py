@@ -511,7 +511,7 @@ class SettingsWidget(QtWidgets.QWidget):
                 dialog.setDirectory(os.path.dirname(unconverted_docs[0].input_filename))
         else:
             # open the directory where the user last saved it
-            dialog.setDirectory(self.output_dir)  # type: ignore [unreachable]
+            dialog.setDirectory(self.output_dir)
 
         # allow only the selection of directories
         dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
@@ -520,7 +520,7 @@ class SettingsWidget(QtWidgets.QWidget):
         if dialog.exec_() == QtWidgets.QFileDialog.Accepted:
             selected_dir = dialog.selectedFiles()[0]
             if selected_dir is not None:
-                self.output_dir = str(selected_dir)  # type: ignore [assignment]
+                self.output_dir = str(selected_dir)
                 self.save_location.setText(selected_dir)
 
     def start_button_clicked(self) -> None:

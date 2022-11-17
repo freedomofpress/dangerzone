@@ -4,6 +4,7 @@ import pipes
 import platform
 import shlex
 import subprocess
+from pathlib import Path
 from typing import Dict
 
 from colorama import Fore
@@ -55,6 +56,9 @@ class DangerzoneGui(DangerzoneCore):
             args_str = " ".join(pipes.quote(s) for s in args)
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.run(args)
+
+        elif platform.system() == "Windows":
+            os.startfile(Path(filename))  # type: ignore [attr-defined]
 
         elif platform.system() == "Linux":
             # Get the PDF reader command

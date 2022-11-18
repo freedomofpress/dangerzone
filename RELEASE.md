@@ -2,6 +2,137 @@
 
 This section documents the release process. Unless you're a dangerzone developer making a release, you'll probably never need to follow it.
 
+## QA
+
+To ensure that new releases do not introduce regressions, and support existing
+and newer platforms, we have to do the following:
+
+- [ ] In `.circleci/config.yml`, add new platforms and remove obsolete platforms
+- [ ] Make sure that the tip of the `main` branch passes the CI tests.
+- [ ] Create a test build in Windows and make sure it works:
+  - [ ] Create a new development environment with Poetry.
+  - [ ] Build the container image and ensure the development environment uses
+    the new image.
+  - [ ] Run the Dangerzone tests.
+  - [ ] Build and run the Dangerzone .exe
+  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+- [ ] Create a test build in macOS (Intel CPU) and make sure it works:
+  - [ ] Create a new development environment with Poetry.
+  - [ ] Build the container image and ensure the development environment uses
+    the new image.
+  - [ ] Run the Dangerzone tests.
+  - [ ] Create and run an app bundle.
+  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+- [ ] Create a test build in macOS (M1/2 CPU) and make sure it works:
+  - [ ] Grab the app bundle that we built for macOS above and run it.
+  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+- [ ] Create a test build in the most recent Ubuntu LTS platform (Ubuntu 22.04
+  as of writing this) and make sure it works:
+  - [ ] Create a new development environment with Poetry.
+  - [ ] Build the container image and ensure the development environment uses
+    the new image.
+  - [ ] Run the Dangerzone tests.
+  - [ ] Create a .deb package and install it system-wide.
+  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+- [ ] Create a test build in the most recent Fedora platform (Fedora 37 as of
+  writing this) and make sure it works:
+  - [ ] Create a new development environment with Poetry.
+  - [ ] Build the container image and ensure the development environment uses
+    the new image.
+  - [ ] Run the Dangerzone tests.
+  - [ ] Create an .rpm package and install it system-wide.
+  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+- [ ] Run only the CI tests in the rest of the Linux platforms:
+  - [ ] Create a new development environment with Poetry.
+  - [ ] Build the container image and ensure the development environment uses
+    the new image.
+  - [ ] Run the Dangerzone tests.
+
+### Scenarios
+
+#### 1. Dangerzone correctly identifies that Docker/Podman is not installed
+
+_(Only for MacOS / Windows)_
+
+Temporarily hide the Docker/Podman binaries, e.g., rename the `docker` /
+`podman` binaries to something else. Then run Dangerzone. Dangerzone should
+prompt the user to install Docker/Podman.
+
+#### 2. Dangerzone correctly identifies that Docker is not running
+
+_(Only for MacOS / Windows)_
+
+Stop the Docker Desktop application. Then run Dangerzone. Dangerzone should
+prompt the user to start Docker Desktop.
+
+#### 3. Dangerzone successfully installs the container image
+
+Remove the Dangerzone container image from Docker/Podman. Then run Dangerzone.
+Danerzone should install the container image successfully.
+
+#### 4. Dangerzone retains the settings of previous runs
+
+Run Dangerzone and make some changes in the settings (e.g., change the OCR
+language, toggle whether to open the document after conversion, etc.). Restart
+Dangerzone. Dangerzone should show the settings that the user chose.
+
+#### 5. Dangerzone reports failed conversions
+
+Run Dangerzone and convert the `tests/test_docs/sample_bad_pdf.pdf` document.
+Dangerzone should fail gracefully, by reporting that the operation failed, and
+showing the last error message.
+
+#### 6. Dangerzone succeeds in converting multiple documents
+
+Run Dangerzone against a list of documents, and tick all options. Ensure that:
+* Conversions start in parallel.
+* Conversions are completed successfully.
+* Conversions show individual progress.
+* _(Only for Linux)_ The resulting files open with the PDF viewer of our choice.
+* OCR seems to have detected characters in the PDF files.
+* The resulting files have been saved with the proper suffix, in the proper
+  location.
+
+#### 7. Dangerzone CLI succeeds in converting multiple documents
+
+Run Dangerzone CLI against a list of documents. Ensure that conversions start in
+parallel, are completed successfully, and we see their progress.
+
+#### 8. Dangerzone can open a document for conversion via right-click -> "Open With"
+
+_(Only for MacOS)_
+
+Go to a directory with office documents, right-click on one, and click on "Open
+With". We should be able to open the file with Dangerzone, and then convert it.
+
+#### 9. Updating Dangerzone handles external state correctly.
+
+_(Applies to Linux/Windows/MacOS. For MacOS/Windows, it requires an installer
+for the new version)_
+
+Install the previous version of Dangerzone system-wide. Open the Dangerzone
+application and enable some non-default settings. Close the Dangerzone
+application and get the container image for that version. For example
+
+```
+$ podman images dangerzone.rocks/dangerzone:latest
+REPOSITORY                   TAG         IMAGE ID      CREATED       SIZE
+dangerzone.rocks/dangerzone  latest      <image ID>    <date>        <size>
+```
+
+_(use `docker` on Windows/MacOS)_
+
+Install the new version of Dangerzone system-wide. Open the Dangerzone
+application and make sure that the previously enabled settings still show up.
+Also, ensure that Dangerzone reports that the new image has been installed, and
+verify that it's different from the old one by doing:
+
+```
+$ podman images dangerzone.rocks/dangerzone:latest
+REPOSITORY                   TAG         IMAGE ID        CREATED       SIZE
+dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <different size>
+```
+
 ## Changelog, version, and signed git tag
 
 Before making a release, all of these should be complete:
@@ -10,9 +141,6 @@ Before making a release, all of these should be complete:
 - [ ] Update `share/version.txt`
 - [ ] Update version and download links in `README.md`, and screenshot if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
-- [ ] In `.circleci/config.yml`, add new platforms and remove obsolete platforms
-- [ ] Create a test build in Windows and make sure it works
-- [ ] Create a test build in macOS and make sure it works
 - [ ] There must be a PGP-signed git tag for the version, e.g. for dangerzone 0.1.0, the tag must be `v0.1.0`
 
 Before making a release, verify the release git tag:

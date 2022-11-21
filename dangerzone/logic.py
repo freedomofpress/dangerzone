@@ -42,9 +42,12 @@ class DangerzoneCore(object):
         self.documents: List[Document] = []
 
     def add_document_from_filename(
-        self, input_filename: str, output_filename: Optional[str] = None
+        self,
+        input_filename: str,
+        output_filename: Optional[str] = None,
+        archive: bool = False,
     ) -> None:
-        doc = Document(input_filename, output_filename)
+        doc = Document(input_filename, output_filename, archive=archive)
         self.add_document(doc)
 
     def add_document(self, doc: Document) -> None:

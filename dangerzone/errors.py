@@ -97,7 +97,7 @@ def handle_document_errors(func: F) -> F:
         except DocumentFilenameException as e:
             if getattr(sys, "dangerzone_dev", False):
                 # Show the full traceback only on dev environments.
-                msg = "An exception occured while validating a document filename"
+                msg = "An exception occured while validating a document"
                 log.exception(msg)
             click.echo(str(e))
             exit(1)

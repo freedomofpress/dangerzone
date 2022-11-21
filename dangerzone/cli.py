@@ -6,7 +6,7 @@ import click
 from colorama import Back, Fore, Style
 
 from . import args, container, errors
-from .document import SAFE_EXTENSION
+from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from .logic import DangerzoneCore
 from .util import get_version
 
@@ -25,6 +25,12 @@ def print_header(s: str) -> None:
     help=f"Default is filename ending with {SAFE_EXTENSION}",
 )
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
+@click.option(
+    "--archive",
+    "archive",
+    flag_value=True,
+    help=f"Archives the unsafe version in a subdirectory named '{ARCHIVE_SUBDIR}'",
+)
 @click.argument(
     "filenames",
     required=True,
@@ -34,20 +40,23 @@ def print_header(s: str) -> None:
 )
 @errors.handle_document_errors
 def cli_main(
-    output_filename: Optional[str], ocr_lang: Optional[str], filenames: List[str]
+    output_filename: Optional[str],
+    ocr_lang: Optional[str],
+    filenames: List[str],
+    archive: bool,
 ) -> None:
     setup_logging()
     dangerzone = DangerzoneCore()
 
     display_banner()
     if len(filenames) == 1 and output_filename:
-        dangerzone.add_document_from_filename(filenames[0], output_filename)
+        dangerzone.add_document_from_filename(filenames[0], output_filename, archive)
     elif len(filenames) > 1 and output_filename:
         click.echo("--output-filename can only be used with one input file.")
         exit(1)
     else:
         for filename in filenames:
-            dangerzone.add_document_from_filename(filename)
+            dangerzone.add_document_from_filename(filename, archive=archive)
 
     # Validate OCR language
     if ocr_lang:
@@ -76,6 +85,12 @@ def cli_main(
         print_header("Safe PDF(s) created successfully")
         for document in documents_safe:
             click.echo(document.output_filename)
+
+        if archive:
+            print_header(
+                f"Unsafe (original) documents moved to '{ARCHIVE_SUBDIR}' subdirectory"
+            )
+
     if documents_failed != []:
         print_header("Failed to convert document(s)")
         for document in documents_failed:

@@ -14,7 +14,8 @@ test_docs_dir = Path(__file__).parent.joinpath(SAMPLE_DIRECTORY)
 test_docs = [
     p
     for p in test_docs_dir.rglob("*")
-    if p.is_file() and not p.name.endswith(SAFE_EXTENSION)
+    if p.is_file()
+    and not (p.name.endswith(SAFE_EXTENSION) or p.name.startswith("sample_bad"))
 ]
 
 # Pytest parameter decorators

@@ -3,17 +3,22 @@ import platform
 import stat
 import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
 from dangerzone import errors
-from dangerzone.document import SAFE_EXTENSION, Document
+from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION, Document
 
 from . import sample_doc, unreadable_pdf
 
 
 def test_input_sample_init(sample_doc: str) -> None:
     Document(sample_doc)
+
+
+def test_input_sample_init_archive(sample_doc: str) -> None:
+    Document(sample_doc, archive=True)
 
 
 def test_input_sample_after(sample_doc: str) -> None:
@@ -76,6 +81,40 @@ def test_output_file_not_pdf(tmp_path: Path) -> None:
         d.output_filename = docx_file
 
     assert not os.path.exists(docx_file)
+
+
+@pytest.mark.skipif(platform.system() == "Windows", reason="Unix-specific")
+def test_archive_unwriteable_dir(sample_doc: str, tmp_path: Path) -> None:
+    doc = tmp_path / "doc.pdf"
+    Path.touch(doc)
+    d = Document(str(doc))
+
+    # make archive directory unreadable
+    os.chmod(tmp_path, 0o400)
+
+    with pytest.raises(errors.UnwriteableArchiveDirException) as e:
+        d.validate_default_archive_dir()
+
+
+def test_archive(mocker: MagicMock, tmp_path: Path) -> None:
+    test_string = "original file"
+    original_doc_path = str(tmp_path / "doc.pdf")
+    archived_doc_path = str(tmp_path / ARCHIVE_SUBDIR / "doc.pdf")
+
+    # write some content for later verifying content integrity
+    with open(original_doc_path, "w") as f:
+        f.write(test_string)
+
+    d = Document(original_doc_path, archive=True)
+    d.archive()
+
+    # original document has been moved to unsafe/doc.pdf
+    assert not os.path.exists(original_doc_path)
+    assert os.path.exists(archived_doc_path)
+
+    # make sure it is the original file by comparing its content
+    with open(archived_doc_path) as f:
+        assert f.read() == test_string
 
 
 def test_set_output_dir(sample_doc: str, tmp_path: Path) -> None:

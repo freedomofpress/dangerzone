@@ -33,6 +33,9 @@ dangerzone = 'dangerzone:main'
 dangerzone-container = 'dangerzone:main'
 dangerzone-cli = 'dangerzone:main'
 
+[tool.poetry.group.dev.dependencies]
+pytest-mock = "^3.10.0"
+
 [build-system]
 requires = ["poetry>=1.1.4"]
 build-backend = "poetry.masonry.api"

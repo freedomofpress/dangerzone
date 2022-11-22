@@ -71,6 +71,15 @@ class OutputDirIsNotDirException(DocumentFilenameException):
         super().__init__("Specified output directory is actually not a directory")
 
 
+class UnwriteableArchiveDirException(DocumentFilenameException):
+    """Exception for when the archive directory cannot be created."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "Archive directory for storing unsafe documents cannot be created."
+        )
+
+
 class SuffixNotApplicableException(DocumentFilenameException):
     """Exception for when the suffix cannot be applied to the output filename."""
 

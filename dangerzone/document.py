@@ -77,6 +77,11 @@ class Document:
             # in unwriteable directory
             raise errors.UnwriteableOutputDirException()
 
+    def validate_default_archive_dir(self) -> None:
+        """Checks if archive dir can be created"""
+        if not os.access(self.default_archive_dir.parent, os.W_OK):
+            raise errors.UnwriteableArchiveDirException()
+
     @property
     def input_filename(self) -> str:
         if self._input_filename is None:
@@ -125,6 +130,7 @@ class Document:
     @archive_after_conversion.setter
     def archive_after_conversion(self, enabled: bool) -> None:
         if enabled:
+            self.validate_default_archive_dir()
             self._archive = True
         else:
             self._archive = False

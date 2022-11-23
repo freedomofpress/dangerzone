@@ -292,7 +292,12 @@ def convert(
 
 
 def get_max_parallel_conversions() -> int:
-    n_cpu = 1
+
+    # FIXME hardcoded 1 until timeouts are more limited and better handled
+    # https://github.com/freedomofpress/dangerzone/issues/257
+    return 1
+
+    n_cpu = 1  # type: ignore [unreachable]
     if platform.system() == "Linux":
         # if on linux containers run natively
         cpu_count = os.cpu_count()

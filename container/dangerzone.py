@@ -24,7 +24,10 @@ import magic
 from PIL import Image
 
 # timeout in seconds for any single subprocess
-DEFAULT_TIMEOUT: float = 60
+DEFAULT_TIMEOUT: float = 120
+
+# timeout in seconds for compressing a single page of the final document
+COMPRESSION_TIMEOUT: float = 10
 
 
 def run_command(
@@ -339,7 +342,7 @@ class DangerzoneConverter:
 
         # Compress
         self.update_progress("Compressing PDF")
-        compress_timeout = num_pages * 3
+        compress_timeout = num_pages * COMPRESSION_TIMEOUT
         run_command(
             ["ps2pdf", "/tmp/safe-output.pdf", "/tmp/safe-output-compressed.pdf"],
             timeout_message=f"Error compressing PDF, ps2pdf timed out after {compress_timeout} seconds",

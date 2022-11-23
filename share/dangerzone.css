@@ -18,3 +18,7 @@ QLabel[style="safe_extension_filename"] {
     background: white;
     color: grey;
 }
+
+QLabel.docs-selection {
+    font-size: 18px;
+}

@@ -296,6 +296,12 @@ class SettingsWidget(QtWidgets.QWidget):
         super(SettingsWidget, self).__init__()
         self.dangerzone = dangerzone
 
+        # Num Docs Selected
+        self.docs_selected_label = QtWidgets.QLabel("No documents selected")
+        self.docs_selected_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.docs_selected_label.setContentsMargins(0, 0, 0, 20)
+        self.docs_selected_label.setProperty("class", "docs-selection")  # type: ignore [arg-type]
+
         # Save safe version
         self.save_checkbox = QtWidgets.QCheckBox("Save safe PDF to")
         self.save_checkbox.clicked.connect(self.update_ui)
@@ -386,6 +392,7 @@ class SettingsWidget(QtWidgets.QWidget):
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addSpacing(20)
+        layout.addWidget(self.docs_selected_label)
         layout.addLayout(self.save_location_layout)
         layout.addLayout(self.safe_extension_layout)
         layout.addLayout(open_layout)
@@ -466,8 +473,10 @@ class SettingsWidget(QtWidgets.QWidget):
         self.save_location.setText(save_dir)
         if len(selected_docs) == 1:
             self.start_button.setText("Convert to Safe Document")
+            self.docs_selected_label.setText(f"1 document selected")
         else:
             self.start_button.setText("Convert to Safe Documents")
+            self.docs_selected_label.setText(f"{len(selected_docs)} documents selected")
 
         self.update_ui()
 

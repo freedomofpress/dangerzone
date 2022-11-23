@@ -11,7 +11,7 @@ from typing import List, Optional
 from colorama import Fore, Style
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from .. import container
+from .. import container, errors
 from ..container import convert
 from ..document import SAFE_EXTENSION, Document
 from ..util import get_resource_path, get_subprocess_startupinfo
@@ -479,6 +479,20 @@ class SettingsWidget(QtWidgets.QWidget):
             or self.open_checkbox.checkState() == QtCore.Qt.Checked
         )
 
+    def check_writeable_archive_dir(self, docs: List[Document]) -> None:
+        # assumed all documents are in the same directory
+        first_doc = docs[0]
+        try:
+            first_doc.validate_default_archive_dir()
+        except errors.UnwriteableArchiveDirException:
+            self.radio_move_untrusted.setDisabled(True)
+            self.radio_move_untrusted.setChecked(False)
+            self.radio_move_untrusted.setToolTip(
+                'Option disabled because Dangerzone couldn\'t create "untrusted"\n'
+                + "subdirectory in the same directory as the original files."
+            )
+            self.radio_save_to.setChecked(True)
+
     def update_ui(self) -> None:
         conversion_readiness_conditions = [
             self.check_safe_extension_is_valid(),
@@ -503,6 +517,9 @@ class SettingsWidget(QtWidgets.QWidget):
             self.docs_selected_label.setText(f"{len(selected_docs)} documents selected")
 
         self.update_ui()
+
+        # validations
+        self.check_writeable_archive_dir(selected_docs)
 
     def select_output_directory(self) -> None:
         dialog = QtWidgets.QFileDialog()

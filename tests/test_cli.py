@@ -15,6 +15,7 @@ from click.testing import CliRunner, Result
 from strip_ansi import strip_ansi
 
 from dangerzone.cli import cli_main, display_banner
+from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 
 from . import TestBase, for_each_doc
 
@@ -236,6 +237,22 @@ class TestCliConversion(TestCliBasic):
 
         result = self.run_cli(['--output-filename="output.pdf"'] + file_paths)
         result.assert_failure()
+
+    def test_archive(self, tmp_path: Path) -> None:
+        test_string = "original file"
+
+        original_doc_path = str(tmp_path / "doc.pdf")
+        safe_doc_path = str(tmp_path / f"doc{SAFE_EXTENSION}")
+        archived_doc_path = str(tmp_path / ARCHIVE_SUBDIR / "doc.pdf")
+        shutil.copyfile(self.sample_doc, original_doc_path)
+
+        result = self.run_cli(["--archive", original_doc_path])
+        result.assert_success()
+
+        # original document has been moved to unsafe/doc.pdf
+        assert not os.path.exists(original_doc_path)
+        assert os.path.exists(archived_doc_path)
+        assert os.path.exists(safe_doc_path)
 
 
 class TestSecurity(TestCli):

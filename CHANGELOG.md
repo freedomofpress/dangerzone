@@ -1,14 +1,18 @@
 # Change Log
 
-## Unreleased
+## Dangerzone 0.4.0
 
+- Platform support: Re-add Fedora 37 support
+- Platform support: Add Debian Bookworm (12) support ([issue #172](https://github.com/freedomofpress/dangerzone/issues/172))
+- Platform support: Reinstate Ubuntu Focal support ([issue #206](https://github.com/freedomofpress/dangerzone/issues/206))
+- Feature: Support bulk conversion to safe PDFs ([issue #77](https://github.com/freedomofpress/dangerzone/issues/77))
+- Feature: Option to archive unsafe directories ([issue #255](https://github.com/freedomofpress/dangerzone/pull/255))
+- Feature: Support python 3.10
 - Bug fix: Fix unit tests on Windows
-- Feature: Re-add Fedora 37 support
-- Feature: Add Debian Bookworm (12) support
-- Reinstate Ubuntu Focal support ([issue #206](https://github.com/freedomofpress/dangerzone/issues/206))
-- Feature: support multiple input documents in the CLI-version
+- Bug fix: Do not hardcode "docker" in help messages, now that Podman is also used ([issue #122](https://github.com/freedomofpress/dangerzone/issues/122))
 - Bug fix: Failed execution no longer produces an empty "safe" documents ([issue #214](https://github.com/freedomofpress/dangerzone/issues/214))
-- Feature: multi-document in graphical user interface (GUI) version
+- Bug fix: Malfunctioning "New window" logic was replaced with multi-doc support (([issue #204](https://github.com/freedomofpress/dangerzone/issues/204)))
+
 
 ## Dangerzone 0.3.2
 - Bug fix: some non-ascii characters like “ would prevent Dangerzone from working  ([issue #144](https://github.com/freedomofpress/dangerzone/issues/144))

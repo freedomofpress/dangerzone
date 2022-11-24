@@ -29,7 +29,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowIcon(self.dangerzone.get_window_icon())
 
         self.setMinimumWidth(600)
-        self.setMinimumHeight(400)
+        self.setMinimumHeight(430)
 
         # Header
         logo = QtWidgets.QLabel()
@@ -412,7 +412,6 @@ class SettingsWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
-        layout.addSpacing(20)
         layout.addWidget(self.docs_selected_label)
         layout.addLayout(self.safe_extension_layout)
         layout.addLayout(save_group_box_layout)

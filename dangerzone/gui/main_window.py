@@ -29,7 +29,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowIcon(self.dangerzone.get_window_icon())
 
         self.setMinimumWidth(600)
-        self.setMinimumHeight(430)
+        if platform.system() == "Darwin":
+            # FIXME have a different height for macOS due to font-size inconsistencies
+            # https://github.com/freedomofpress/dangerzone/issues/270
+            self.setMinimumHeight(470)
+        else:
+            self.setMinimumHeight(430)
 
         # Header
         logo = QtWidgets.QLabel()

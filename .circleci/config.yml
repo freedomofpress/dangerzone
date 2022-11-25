@@ -148,6 +148,17 @@ jobs:
           command: |
             poetry run make test
 
+  build-ubuntu-kudu:
+    docker:
+      - image: ubuntu:22.10
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+
   build-ubuntu-jammy:
     docker:
       - image: ubuntu:22.04
@@ -308,6 +319,12 @@ jobs:
             gem install -N rake
             gem install -N package_cloud
       - run:
+          name: Deploy ubuntu/kudu
+          environment:
+            PACKAGE_TYPE: "deb"
+            PACKAGECLOUD_DISTRO: "ubuntu/kudu"
+          <<: *deploy-packagecloud
+      - run:
           name: Deploy ubuntu/jammy
           environment:
             PACKAGE_TYPE: "deb"
@@ -328,6 +345,9 @@ workflows:
       - run-lint
       - build-container-image
       - convert-test-docs:
+          requires:
+            - build-container-image
+      - build-ubuntu-kudu:
           requires:
             - build-container-image
       - build-ubuntu-jammy:

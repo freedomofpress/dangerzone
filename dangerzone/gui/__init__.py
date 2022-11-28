@@ -19,7 +19,7 @@ from .main_window import MainWindow
 
 
 class Application(QtWidgets.QApplication):
-    document_selected = QtCore.Signal(str)
+    document_selected = QtCore.Signal(list)
     application_activated = QtCore.Signal()
 
     def __init__(self) -> None:
@@ -36,7 +36,7 @@ class Application(QtWidgets.QApplication):
             if isinstance(event, QtGui.QFileOpenEvent):
                 # Skip file open events in dev mode
                 if not hasattr(sys, "dangerzone_dev"):
-                    self.document_selected.emit(event.file())
+                    self.document_selected.emit([event.file()])
                     return True
             elif event.type() == QtCore.QEvent.ApplicationActivate:
                 self.application_activated.emit()
@@ -79,23 +79,20 @@ def gui_main(filenames: Optional[List[str]]) -> bool:
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    def new_window(filenames: Optional[List[str]] = []) -> MainWindow:
-        window = MainWindow(dangerzone)
-        if filenames:
-            documents = [Document(filename) for filename in filenames]
-            window.content_widget.doc_selection_widget.documents_selected.emit(
-                documents
-            )
-        return window
+    def open_files(filenames: List[str] = []) -> None:
+        documents = [Document(filename) for filename in filenames]
+        window.content_widget.doc_selection_widget.documents_selected.emit(documents)
 
-    window = new_window(filenames)
+    window = MainWindow(dangerzone)
+    if filenames:
+        open_files(filenames)
 
     # MacOS: Open a new window, if all windows are closed
     def application_activated() -> None:
         window.show()
 
     # If we get a file open event, open it
-    app.document_selected.connect(new_window)
+    app.document_selected.connect(open_files)
 
     # If the application is activated and all windows are closed, open a new one
     app.application_activated.connect(application_activated)

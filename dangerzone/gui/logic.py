@@ -114,6 +114,7 @@ class Alert(QtWidgets.QDialog):
         dangerzone: DangerzoneGui,
         message: str,
         ok_text: str = "Ok",
+        has_cancel: bool = True,
         extra_button_text: str = None,
     ) -> None:
         super(Alert, self).__init__()
@@ -151,15 +152,16 @@ class Alert(QtWidgets.QDialog):
         if extra_button_text:
             extra_button = QtWidgets.QPushButton(extra_button_text)
             extra_button.clicked.connect(self.clicked_extra)
-        cancel_button = QtWidgets.QPushButton("Cancel")
-        cancel_button.clicked.connect(self.clicked_cancel)
 
         buttons_layout = QtWidgets.QHBoxLayout()
         buttons_layout.addStretch()
         buttons_layout.addWidget(ok_button)
         if extra_button_text:
             buttons_layout.addWidget(extra_button)
-        buttons_layout.addWidget(cancel_button)
+        if has_cancel:
+            cancel_button = QtWidgets.QPushButton("Cancel")
+            cancel_button.clicked.connect(self.clicked_cancel)
+            buttons_layout.addWidget(cancel_button)
 
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(message_layout)

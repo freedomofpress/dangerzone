@@ -213,6 +213,7 @@ class ContentWidget(QtWidgets.QWidget):
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(ContentWidget, self).__init__()
         self.dangerzone = dangerzone
+        self.conversion_started = False
 
         # Doc selection widget
         self.doc_selection_widget = DocSelectionWidget()
@@ -238,14 +239,23 @@ class ContentWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def documents_selected(self, new_docs: List[Document]) -> None:
-        for doc in new_docs:
-            self.dangerzone.add_document(doc)
+        if not self.conversion_started:
+            for doc in new_docs:
+                self.dangerzone.add_document(doc)
 
-        self.doc_selection_widget.hide()
-        self.settings_widget.show()
-        self.documents_added.emit(new_docs)
+            self.doc_selection_widget.hide()
+            self.settings_widget.show()
+            self.documents_added.emit(new_docs)
+
+        else:
+            Alert(
+                self.dangerzone,
+                message="Dangerzone does not support adding documents after the conversion has started.",
+                has_cancel=False,
+            ).exec_()
 
     def start_clicked(self) -> None:
+        self.conversion_started = True
         self.settings_widget.hide()
         self.documents_list.show()
 
@@ -513,17 +523,23 @@ class SettingsWidget(QtWidgets.QWidget):
         save_path = os.path.dirname(first_doc.input_filename)
         save_dir = os.path.basename(save_path)
         self.save_location.setText(save_dir)
-        if len(new_docs) == 1:
-            self.start_button.setText("Convert to Safe Document")
-            self.docs_selected_label.setText(f"1 document selected")
-        else:
-            self.start_button.setText("Convert to Safe Documents")
-            self.docs_selected_label.setText(f"{len(new_docs)} documents selected")
+        self.update_doc_n_labels()
 
         self.update_ui()
 
         # validations
         self.check_writeable_archive_dir(new_docs)
+
+    def update_doc_n_labels(self) -> None:
+        """Updates labels dependent on the number of present documents"""
+        n_docs = len(self.dangerzone.get_unconverted_documents())
+
+        if n_docs == 1:
+            self.start_button.setText("Convert to Safe Document")
+            self.docs_selected_label.setText(f"1 document selected")
+        else:
+            self.start_button.setText("Convert to Safe Documents")
+            self.docs_selected_label.setText(f"{n_docs} documents selected")
 
     def select_output_directory(self) -> None:
         dialog = QtWidgets.QFileDialog()

@@ -208,6 +208,8 @@ class WaitingWidget(QtWidgets.QWidget):
 
 
 class ContentWidget(QtWidgets.QWidget):
+    documents_added = QtCore.Signal(list)
+
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(ContentWidget, self).__init__()
         self.dangerzone = dangerzone
@@ -218,17 +220,13 @@ class ContentWidget(QtWidgets.QWidget):
 
         # Settings
         self.settings_widget = SettingsWidget(self.dangerzone)
-        self.doc_selection_widget.documents_selected.connect(
-            self.settings_widget.documents_selected
-        )
+        self.documents_added.connect(self.settings_widget.documents_added)
         self.settings_widget.start_clicked.connect(self.start_clicked)
         self.settings_widget.hide()
 
         # Convert
         self.documents_list = DocumentsListWidget(self.dangerzone)
-        self.doc_selection_widget.documents_selected.connect(
-            self.documents_list.documents_selected
-        )
+        self.documents_added.connect(self.documents_list.documents_added)
         self.settings_widget.start_clicked.connect(self.documents_list.start_conversion)
         self.documents_list.hide()
 
@@ -239,9 +237,13 @@ class ContentWidget(QtWidgets.QWidget):
         layout.addWidget(self.doc_selection_widget, stretch=1)
         self.setLayout(layout)
 
-    def documents_selected(self, selected_docs: List[Document]) -> None:
+    def documents_selected(self, new_docs: List[Document]) -> None:
+        for doc in new_docs:
+            self.dangerzone.add_document(doc)
+
         self.doc_selection_widget.hide()
         self.settings_widget.show()
+        self.documents_added.emit(new_docs)
 
     def start_clicked(self) -> None:
         self.settings_widget.hide()
@@ -505,23 +507,23 @@ class SettingsWidget(QtWidgets.QWidget):
         else:
             self.start_button.setDisabled(True)
 
-    def documents_selected(self, selected_docs: List[Document]) -> None:
-        first_doc = selected_docs[0]
+    def documents_added(self, new_docs: List[Document]) -> None:
+        first_doc = new_docs[0]
         # set the default save location as the directory for the first document
         save_path = os.path.dirname(first_doc.input_filename)
         save_dir = os.path.basename(save_path)
         self.save_location.setText(save_dir)
-        if len(selected_docs) == 1:
+        if len(new_docs) == 1:
             self.start_button.setText("Convert to Safe Document")
             self.docs_selected_label.setText(f"1 document selected")
         else:
             self.start_button.setText("Convert to Safe Documents")
-            self.docs_selected_label.setText(f"{len(selected_docs)} documents selected")
+            self.docs_selected_label.setText(f"{len(new_docs)} documents selected")
 
         self.update_ui()
 
         # validations
-        self.check_writeable_archive_dir(selected_docs)
+        self.check_writeable_archive_dir(new_docs)
 
     def select_output_directory(self) -> None:
         dialog = QtWidgets.QFileDialog()
@@ -623,9 +625,8 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         # to ensure docker-daemon detection logic runs first
         self.thread_pool_initized = False
 
-    def documents_selected(self, selected_docs: List[Document]) -> None:
-        for document in selected_docs:
-            self.dangerzone.add_document(document)
+    def documents_added(self, new_docs: List[Document]) -> None:
+        for document in new_docs:
             item = QtWidgets.QListWidgetItem()
             item.setSizeHint(QtCore.QSize(500, 50))
             widget = DocumentWidget(self.dangerzone, document)

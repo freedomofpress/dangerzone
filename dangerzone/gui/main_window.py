@@ -100,10 +100,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 e.accept()
 
-        if platform.system() != "Darwin":
-            # in MacOS applications only quit when the user
-            # explicitly closes them
-            self.dangerzone.app.quit()
+        self.dangerzone.app.quit()
 
 
 class InstallContainerThread(QtCore.QThread):

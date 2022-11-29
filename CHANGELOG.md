@@ -12,6 +12,7 @@
 - Bug fix: Do not hardcode "docker" in help messages, now that Podman is also used ([issue #122](https://github.com/freedomofpress/dangerzone/issues/122))
 - Bug fix: Failed execution no longer produces an empty "safe" documents ([issue #214](https://github.com/freedomofpress/dangerzone/issues/214))
 - Bug fix: Malfunctioning "New window" logic was replaced with multi-doc support (([issue #204](https://github.com/freedomofpress/dangerzone/issues/204)))
+- Bug fix: (macOS) quit Dangerzone when main window is closed ([issue #271](https://github.com/freedomofpress/dangerzone/issues/271))
 
 
 ## Dangerzone 0.3.2

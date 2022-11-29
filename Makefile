@@ -1,18 +1,18 @@
 .PHONY: lint-black
 lint-black: ## check python source code formatting issues, with black
-	black --check --diff ./
+	black --check --diff --exclude dev_scripts/envs ./
 
 .PHONY: lint-black-apply
 lint-black-apply: ## apply black's source code formatting suggestions
-	black ./
+	black --exclude dev_scripts/envs ./
 
 .PHONY: lint-isort
 lint-isort: ## check imports are organized, with isort
-	isort --check-only ./
+	isort --check-only --skip dev_scripts/envs/** ./
 
 .PHONY: lint-isort-apply
 lint-isort-apply: ## apply isort's imports organization suggestions
-	isort ./
+	isort --skip dev_scripts/envs/** ./
 
 MYPY_ARGS := --ignore-missing-imports \
 			 --disallow-incomplete-defs \
@@ -40,7 +40,7 @@ lint-apply: lint-black-apply lint-isort-apply ## apply all the linter's suggesti
 
 .PHONY: test
 test:
-	./dev_scripts/pytest-wrapper.py -v --cov
+	./dev_scripts/pytest-wrapper.py -v --cov --ignore dev_scripts
 
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.

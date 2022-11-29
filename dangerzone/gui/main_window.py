@@ -240,12 +240,22 @@ class ContentWidget(QtWidgets.QWidget):
 
     def documents_selected(self, new_docs: List[Document]) -> None:
         if not self.conversion_started:
-            for doc in new_docs:
-                self.dangerzone.add_document(doc)
+            for doc in new_docs.copy():
+                try:
+                    self.dangerzone.add_document(doc)
+                except errors.AddedDuplicateDocumentException:
+                    new_docs.remove(doc)
+                    Alert(
+                        self.dangerzone,
+                        message=f"Document '{doc.input_filename}' has already been added for conversion.",
+                        has_cancel=False,
+                    ).exec_()
 
             self.doc_selection_widget.hide()
             self.settings_widget.show()
-            self.documents_added.emit(new_docs)
+
+            if len(new_docs) > 0:
+                self.documents_added.emit(new_docs)
 
         else:
             Alert(

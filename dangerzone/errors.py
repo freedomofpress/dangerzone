@@ -14,6 +14,13 @@ class DocumentFilenameException(Exception):
     """Exception for document-related filename errors."""
 
 
+class AddedDuplicateDocumentException(DocumentFilenameException):
+    """Exception for a document is added twice."""
+
+    def __init__(self) -> None:
+        super().__init__("A document was added twice")
+
+
 class InputFileNotFoundException(DocumentFilenameException):
     """Exception for when an input file does not exist."""
 

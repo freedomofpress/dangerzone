@@ -12,7 +12,7 @@ from typing import Callable, List, Optional
 import appdirs
 import colorama
 
-from . import container
+from . import container, errors
 from .document import Document
 from .settings import Settings
 from .util import get_resource_path
@@ -51,6 +51,8 @@ class DangerzoneCore(object):
         self.add_document(doc)
 
     def add_document(self, doc: Document) -> None:
+        if doc in self.documents:
+            raise errors.AddedDuplicateDocumentException()
         self.documents.append(doc)
 
     def convert_documents(

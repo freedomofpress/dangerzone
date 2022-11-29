@@ -195,3 +195,8 @@ class Document:
     def mark_as_safe(self) -> None:
         log.debug(f"Marking doc {self.id} as 'safe'")
         self.state = Document.STATE_SAFE
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Document):
+            return False
+        return self.input_filename == other.input_filename

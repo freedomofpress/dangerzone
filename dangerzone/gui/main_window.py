@@ -240,6 +240,22 @@ class ContentWidget(QtWidgets.QWidget):
 
     def documents_selected(self, new_docs: List[Document]) -> None:
         if not self.conversion_started:
+
+            # assumed all files in batch are in the same directory
+            first_doc = new_docs[0]
+            output_dir = os.path.dirname(first_doc.input_filename)
+            if not self.dangerzone.output_dir:
+                self.dangerzone.output_dir = output_dir
+            elif self.dangerzone.output_dir != output_dir:
+                Alert(
+                    self.dangerzone,
+                    message="Dangerzone does not support adding documents from multiple locations.\n\n The newly added documents were ignored.",
+                    has_cancel=False,
+                ).exec_()
+                return
+            else:
+                self.dangerzone.output_dir = output_dir
+
             for doc in new_docs.copy():
                 try:
                     self.dangerzone.add_document(doc)
@@ -329,7 +345,6 @@ class SettingsWidget(QtWidgets.QWidget):
         # Save safe version
         self.save_checkbox = QtWidgets.QCheckBox()
         self.save_checkbox.clicked.connect(self.update_ui)
-        self.output_dir = None
 
         # Save safe as... [filename]-safe.pdf
         self.safe_extension_label = QtWidgets.QLabel("Save as")
@@ -528,11 +543,7 @@ class SettingsWidget(QtWidgets.QWidget):
             self.start_button.setDisabled(True)
 
     def documents_added(self, new_docs: List[Document]) -> None:
-        first_doc = new_docs[0]
-        # set the default save location as the directory for the first document
-        save_path = os.path.dirname(first_doc.input_filename)
-        save_dir = os.path.basename(save_path)
-        self.save_location.setText(save_dir)
+        self.save_location.setText(os.path.basename(self.dangerzone.output_dir))
         self.update_doc_n_labels()
 
         self.update_ui()
@@ -555,14 +566,8 @@ class SettingsWidget(QtWidgets.QWidget):
         dialog = QtWidgets.QFileDialog()
         dialog.setLabelText(QtWidgets.QFileDialog.Accept, "Select output directory")
 
-        if self.output_dir is None:
-            # pick the first document's directory as the default one
-            unconverted_docs = self.dangerzone.get_unconverted_documents()
-            if len(unconverted_docs) >= 1:
-                dialog.setDirectory(os.path.dirname(unconverted_docs[0].input_filename))
-        else:
-            # open the directory where the user last saved it
-            dialog.setDirectory(self.output_dir)
+        # open the directory where the user last saved it
+        dialog.setDirectory(self.dangerzone.output_dir)
 
         # allow only the selection of directories
         dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
@@ -571,7 +576,7 @@ class SettingsWidget(QtWidgets.QWidget):
         if dialog.exec_() == QtWidgets.QFileDialog.Accepted:
             selected_dir = dialog.selectedFiles()[0]
             if selected_dir is not None:
-                self.output_dir = str(selected_dir)
+                self.dangerzone.output_dir = str(selected_dir)
                 self.save_location.setText(selected_dir)
 
     def start_button_clicked(self) -> None:
@@ -585,8 +590,7 @@ class SettingsWidget(QtWidgets.QWidget):
                 if self.radio_move_untrusted.isChecked():
                     document.archive_after_conversion = True
                 elif self.radio_save_to.isChecked():
-                    if self.output_dir:
-                        document.set_output_dir(self.output_dir)  # type: ignore [unreachable]
+                    document.set_output_dir(self.dangerzone.output_dir)
             else:
                 # If not saving, then save it to a temp file instead
                 (_, tmp) = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")

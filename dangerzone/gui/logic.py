@@ -31,6 +31,9 @@ class DangerzoneGui(DangerzoneCore):
         # Qt app
         self.app = app
 
+        # Only one output dir is supported in the GUI
+        self.output_dir: str = ""
+
         # Preload font
         self.fixed_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
 

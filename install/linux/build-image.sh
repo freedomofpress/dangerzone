@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 echo "Building container image"
 podman build container --platform linux/amd64 --tag dangerzone.rocks/dangerzone
 

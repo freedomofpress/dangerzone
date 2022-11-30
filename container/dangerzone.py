@@ -187,7 +187,7 @@ class DangerzoneConverter:
         run_command(
             args,
             error_message="Separating document into pages failed",
-            timeout_message=f"Error separating document into pages, pdfseparate timed out after {DEFAULT_TIMEOUT} seconds",
+            timeout_message=f"Error separating document into pages, pdftk timed out after {DEFAULT_TIMEOUT} seconds",
         )
 
         page_filenames = glob.glob("/tmp/page-*.pdf")

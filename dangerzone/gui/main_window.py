@@ -485,18 +485,17 @@ class SettingsWidget(QtWidgets.QWidget):
         if index != -1:
             self.ocr_combobox.setCurrentIndex(index)
 
-        if platform.system() == "Darwin" or platform.system() == "Linux":
-            if self.dangerzone.settings.get("open"):
-                self.open_checkbox.setCheckState(QtCore.Qt.Checked)
-            else:
-                self.open_checkbox.setCheckState(QtCore.Qt.Unchecked)
+        if self.dangerzone.settings.get("open"):
+            self.open_checkbox.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.open_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-            if platform.system() == "Linux":
-                index = self.open_combobox.findText(
-                    self.dangerzone.settings.get("open_app")
-                )
-                if index != -1:
-                    self.open_combobox.setCurrentIndex(index)
+        if platform.system() == "Linux":
+            index = self.open_combobox.findText(
+                self.dangerzone.settings.get("open_app")
+            )
+            if index != -1:
+                self.open_combobox.setCurrentIndex(index)
 
     def check_safe_extension_is_valid(self) -> bool:
         if self.save_checkbox.checkState() == QtCore.Qt.Unchecked:
@@ -606,14 +605,11 @@ class SettingsWidget(QtWidgets.QWidget):
             "ocr", self.ocr_checkbox.checkState() == QtCore.Qt.Checked
         )
         self.dangerzone.settings.set("ocr_language", self.ocr_combobox.currentText())
-        if platform.system() == "Darwin" or platform.system() == "Linux":
-            self.dangerzone.settings.set(
-                "open", self.open_checkbox.checkState() == QtCore.Qt.Checked
-            )
-            if platform.system() == "Linux":
-                self.dangerzone.settings.set(
-                    "open_app", self.open_combobox.currentText()
-                )
+        self.dangerzone.settings.set(
+            "open", self.open_checkbox.checkState() == QtCore.Qt.Checked
+        )
+        if platform.system() == "Linux":
+            self.dangerzone.settings.set("open_app", self.open_combobox.currentText())
         self.dangerzone.settings.save()
 
         # Start!

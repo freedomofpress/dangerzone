@@ -11,7 +11,7 @@ click = "*"
 appdirs = "*"
 PySide2 = "5.15.2.1"
 colorama = "*"
-cx_freeze = {version = "*", platform = "win32"}
+cx_freeze = {version = "^6.13.1", platform = "win32"}
 pywin32 = {version = "*", platform = "win32"}
 pyxdg = {version = "*", platform = "linux"}
 pyinstaller = {version = "*", platform = "darwin"}

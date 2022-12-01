@@ -95,9 +95,9 @@ def cli_main(
         print_header("Failed to convert document(s)")
         for document in documents_failed:
             click.echo(document.input_filename)
-        exit(1)
+        sys.exit(1)
     else:
-        exit(0)
+        sys.exit(0)
 
 
 args.override_parser_and_check_suspicious_options(cli_main)

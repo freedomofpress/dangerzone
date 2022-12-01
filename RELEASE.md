@@ -85,22 +85,27 @@ showing the last error message.
 #### 6. Dangerzone succeeds in converting multiple documents
 
 Run Dangerzone against a list of documents, and tick all options. Ensure that:
-* Conversions start in parallel.
+* Conversions take place sequentially.
+* Attempting to close the window while converting asks the user if they want to
+  abort the conversions.
 * Conversions are completed successfully.
 * Conversions show individual progress.
 * _(Only for Linux)_ The resulting files open with the PDF viewer of our choice.
 * OCR seems to have detected characters in the PDF files.
 * The resulting files have been saved with the proper suffix, in the proper
   location.
+* The original files have been saved in the `unsafe/` directory.
 
 #### 7. Dangerzone CLI succeeds in converting multiple documents
 
-Run Dangerzone CLI against a list of documents. Ensure that conversions start in
-parallel, are completed successfully, and we see their progress.
+_(Only for Windows and Linux)_
+
+Run Dangerzone CLI against a list of documents. Ensure that conversions happen
+sequentially, are completed successfully, and we see their progress.
 
 #### 8. Dangerzone can open a document for conversion via right-click -> "Open With"
 
-_(Only for MacOS)_
+_(Only for Windows and MacOS)_
 
 Go to a directory with office documents, right-click on one, and click on "Open
 With". We should be able to open the file with Dangerzone, and then convert it.

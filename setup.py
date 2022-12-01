@@ -28,7 +28,7 @@ Dangerzone is an open source desktop application that takes potentially \
 dangerous PDFs, office documents, or images and converts them to safe PDFs. \
 It uses container technology to convert the documents within a secure sandbox.\
 """,
-    url="https://github.com/firstlookmedia/dangerzone",
+    url="https://github.com/freedomofpress/dangerzone",
     packages=["dangerzone", "dangerzone.gui"],
     data_files=[
         (

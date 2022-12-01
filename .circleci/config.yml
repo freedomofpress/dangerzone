@@ -148,7 +148,7 @@ jobs:
           command: |
             poetry run make test
 
-  build-ubuntu-kudu:
+  build-ubuntu-kinetic:
     docker:
       - image: ubuntu:22.10
     resource_class: medium+
@@ -319,10 +319,10 @@ jobs:
             gem install -N rake
             gem install -N package_cloud
       - run:
-          name: Deploy ubuntu/kudu
+          name: Deploy ubuntu/kinetic
           environment:
             PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/kudu"
+            PACKAGECLOUD_DISTRO: "ubuntu/kinetic"
           <<: *deploy-packagecloud
       - run:
           name: Deploy ubuntu/jammy
@@ -347,7 +347,7 @@ workflows:
       - convert-test-docs:
           requires:
             - build-container-image
-      - build-ubuntu-kudu:
+      - build-ubuntu-kinetic:
           requires:
             - build-container-image
       - build-ubuntu-jammy:

@@ -5,13 +5,13 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y podman dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-colorama
+sudo apt install -y podman dh-python python3 python3-pip python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-colorama
 ```
 
-Install poetry:
+Install poetry (you may need to add `~/.local/bin/` to your `PATH` first):
 
 ```sh
-python -m pip install poetry
+python3 -m pip install poetry
 ```
 
 Change to the `dangerzone` folder, and install the poetry dependencies:
@@ -50,7 +50,7 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-colorama
+sudo dnf install -y rpm-build podman python3 python3-pip python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-colorama
 ```
 
 Install poetry:
@@ -89,6 +89,12 @@ Create a .rpm:
 ```sh
 ./install/linux/build-rpm.py
 ```
+
+## QubesOS
+
+Create a Debian- or Fedora-based standalone VM with at least 8GB of private storage space, and follow the relevant instructions above.
+
+Over time, you may need to increase disk space or prune outdated Docker images if you run into build issues on this VM.
 
 ## macOS
 

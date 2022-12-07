@@ -158,6 +158,136 @@ jobs:
           command: |
             poetry run make test
 
+  ci-ubuntu-kinetic:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro ubuntu --version 22.10 build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro ubuntu --version 22.10 run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
+  ci-ubuntu-jammy:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro ubuntu --version 22.04 build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro ubuntu --version 22.04 run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
+  ci-fedora-36:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro fedora --version 36 build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro fedora --version 36 run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
+  ci-fedora-35:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro fedora --version 35 build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro fedora --version 35 run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
+  ci-debian-bookworm:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro debian --version bookworm build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro debian --version bookworm run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
   build-ubuntu-kinetic:
     docker:
       - image: ubuntu:22.10
@@ -355,6 +485,21 @@ workflows:
       - run-lint
       - build-container-image
       - convert-test-docs:
+          requires:
+            - build-container-image
+      - ci-ubuntu-kinetic:
+          requires:
+            - build-container-image
+      - ci-ubuntu-jammy:
+          requires:
+            - build-container-image
+      - ci-debian-bookworm:
+          requires:
+            - build-container-image
+      - ci-fedora-36:
+          requires:
+            - build-container-image
+      - ci-fedora-35:
           requires:
             - build-container-image
       - build-ubuntu-kinetic:

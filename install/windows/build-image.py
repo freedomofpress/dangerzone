@@ -18,28 +18,26 @@ def main():
     )
 
     print("Saving container image")
-    subprocess.run(
+    cmd = subprocess.Popen(
         [
             "docker",
             "save",
             "dangerzone.rocks/dangerzone",
-            "-o",
-            "share/container.tar",
-        ]
+        ],
+        stdout=subprocess.PIPE,
     )
 
     print("Compressing container image")
-    chunk_size = 1024
-    with open("share/container.tar", "rb") as f:
-        with gzip.open("share/container.tar.gz", "wb") as gzip_f:
-            while True:
-                chunk = f.read(chunk_size)
-                if len(chunk) > 0:
-                    gzip_f.write(chunk)
-                else:
-                    break
+    chunk_size = 4 << 12
+    with gzip.open("share/container.tar.gz", "wb") as gzip_f:
+        while True:
+            chunk = cmd.stdout.read(chunk_size)
+            if len(chunk) > 0:
+                gzip_f.write(chunk)
+            else:
+                break
 
-    os.remove("share/container.tar")
+    cmd.wait(5)
 
     print("Looking up the image id")
     image_id = subprocess.check_output(

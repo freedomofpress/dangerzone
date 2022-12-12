@@ -39,8 +39,8 @@ lint: lint-black lint-isort mypy ## check the code with various linters
 lint-apply: lint-black-apply lint-isort-apply ## apply all the linter's suggestions
 
 .PHONY: test
-test:  ## run tests in parallel
-	pytest -v -n 4 --cov
+test:
+	./dev_scripts/pytest-wrapper.py -v --cov
 
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.

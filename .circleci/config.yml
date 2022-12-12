@@ -94,6 +94,9 @@ jobs:
       - run:
           name: Run linters to enforce code style
           command: poetry run make lint
+      - run:
+          name: Check that the QA script is up to date with the docs
+          command: ./dev_scripts/qa.py --check-refs
 
   build-container-image:
     working_directory: /app

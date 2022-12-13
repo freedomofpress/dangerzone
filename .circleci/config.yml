@@ -1,20 +1,29 @@
 version: 2.1
 
 aliases:
-  - &provide-podman
-    name: Provide Podman in Ubuntu Focal
-    command: ./install/linux/install-podman-ubuntu-focal.sh --repo-only
-
   - &install-podman
     name: Install Podman in Ubuntu Focal
     command: ./install/linux/install-podman-ubuntu-focal.sh
+
+    # FIXME: Remove the following step once we drop Ubuntu Focal support. The
+    # python-all dependency is an artificial requirement due to an stdeb bug
+    # prior to v0.9.1. See:
+    #
+    # * https://github.com/astraw/stdeb/issues/153
+    # * https://github.com/freedomofpress/dangerzone/issues/292#issuecomment-1349967888
+  - &install-python-all
+    name: Install python-all package
+    command: |
+      export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+      apt-get update
+      apt-get install -y python-all
 
   - &install-dependencies-deb
     name: Install dependencies (deb)
     command: |
       export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
       apt-get update
-      apt-get install -y git ssh podman python-all dh-python python3 python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-colorama
+      apt-get install -y dh-python python3 python3-setuptools python3-stdeb
 
   - &install-dependencies-rpm
     name: Install dependencies (rpm)
@@ -171,9 +180,9 @@ jobs:
       - image: ubuntu:20.04
     resource_class: medium+
     steps:
-      - checkout
-      - run: *provide-podman
       - run: *install-dependencies-deb
+      - run: *install-python-all
+      - checkout
       - restore_cache: *restore-cache
       - run: *copy-image
       - run: *build-deb

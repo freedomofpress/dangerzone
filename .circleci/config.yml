@@ -70,25 +70,21 @@ aliases:
 jobs:
   run-lint:
     docker:
-      - image: debian:bullseye
+      - image: debian:bookworm
     resource_class: small
     steps:
       - checkout
       - run:
           name: Install dev. dependencies
+          # Install only the necessary packages to run our linters.
           command: |
             export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
             apt-get update
-            apt-get install -y make python3 python3-pip python3-venv
-            python3 -m venv .venv
-            source .venv/bin/activate
-            pip install poetry
-            poetry install  # FIXME --dev-only once poetry 1.2.0 is out https://github.com/python-poetry/poetry/issues/2572
+            apt-get install -y make python3 python3-poetry --no-install-recommends
+            poetry install --only lint
       - run:
           name: Run linters to enforce code style
-          command: |
-            source .venv/bin/activate
-            make lint
+          command: poetry run make lint
 
   build-container-image:
     working_directory: /app

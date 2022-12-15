@@ -17,24 +17,26 @@ pyxdg = {version = "*", platform = "linux"}
 pyinstaller = {version = "*", platform = "darwin"}
 strip-ansi = {version = "*", platform = "darwin"}
 
-[tool.poetry.dev-dependencies]
-setuptools = {version = "*", platform = "win32"}
-black = "*"
-isort = "*"
-mypy = "*"
-PySide2-stubs = "*"
-strip-ansi = "*"
-pytest = "^7.1.2"
-pytest-xdist = "^2.5.0"
-pytest-cov = "^3.0.0"
-
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
 dangerzone-container = 'dangerzone:main'
 dangerzone-cli = 'dangerzone:main'
 
 [tool.poetry.group.dev.dependencies]
+setuptools = {version = "*", platform = "win32"}
+strip-ansi = "*"
+
+[tool.poetry.group.lint.dependencies]
+black = "*"
+isort = "*"
+mypy = "*"
+PySide2-stubs = "*"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.1.2"
 pytest-mock = "^3.10.0"
+pytest-xdist = "^2.5.0"
+pytest-cov = "^3.0.0"
 
 [build-system]
 requires = ["poetry>=1.1.4"]

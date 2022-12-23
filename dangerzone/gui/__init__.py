@@ -4,12 +4,21 @@ import os
 import platform
 import signal
 import sys
+import typing
 import uuid
 from typing import Dict, List, Optional
 
 import click
 import colorama
-from PySide2 import QtCore, QtGui, QtWidgets
+
+# FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
+if typing.TYPE_CHECKING:
+    from PySide2 import QtCore, QtGui, QtWidgets
+else:
+    try:
+        from PySide6 import QtCore, QtGui, QtWidgets
+    except ImportError:
+        from PySide2 import QtCore, QtGui, QtWidgets
 
 from .. import args, errors
 from ..document import Document

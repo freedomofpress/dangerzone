@@ -9,7 +9,8 @@ license = "MIT"
 python = ">=3.7,<3.11"
 click = "*"
 appdirs = "*"
-PySide2 = "5.15.2.1"
+PySide2 = {version = "5.15.2.1", platform = "linux"}
+PySide6 = {version = "^6.4.1", markers = "sys_platform == 'win32' or sys_platform == 'darwin'"}
 colorama = "*"
 pyxdg = {version = "*", platform = "linux"}
 

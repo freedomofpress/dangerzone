@@ -602,6 +602,66 @@ files = [
 shiboken2 = "5.15.2.1"
 
 [[package]]
+name = "pyside6"
+version = "6.4.2"
+description = "Python bindings for the Qt cross-platform application and UI framework"
+category = "main"
+optional = false
+python-versions = "<3.12,>=3.7"
+files = [
+    {file = "PySide6-6.4.2-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:e5f8f413743cc28b18e10b3d35a50f1410ed2874a376cd136ffa6030e5ed78fa"},
+    {file = "PySide6-6.4.2-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:b9f132133e0681c5d1d47d533108cc9d35f96486251a9f23bdac6f3b6aa53a1c"},
+    {file = "PySide6-6.4.2-cp37-abi3-win_amd64.whl", hash = "sha256:59dafe1f608d5363afa17d318377ac78d686907d6a1292754887b9229632f36e"},
+    {file = "PySide6-6.4.2-pp39-pypy39_pp73-macosx_10_9_universal2.whl", hash = "sha256:40830c2a5d1a19cedb33638f85b505831e172fa2630b95f11e993614187e8562"},
+    {file = "PySide6-6.4.2-pp39-pypy39_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:74b49be890662511eb8f279cf4862f7452c1ec7dbb61839f6a9baa0efdefce66"},
+    {file = "PySide6-6.4.2-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:0985a75aa5ff42f93e5e0a0034d2c00f4dfc9a5cda3d63a8f9c5da3096dc7e04"},
+]
+
+[package.dependencies]
+PySide6-Addons = "6.4.2"
+PySide6-Essentials = "6.4.2"
+shiboken6 = "6.4.2"
+
+[[package]]
+name = "pyside6-addons"
+version = "6.4.2"
+description = "Python bindings for the Qt cross-platform application and UI framework (Addons)"
+category = "main"
+optional = false
+python-versions = "<3.12,>=3.7"
+files = [
+    {file = "PySide6_Addons-6.4.2-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:e94d3d6385723c6c3c78b321498e6ab7331f67c77d6233d314c98b89cc629449"},
+    {file = "PySide6_Addons-6.4.2-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:5c06fa0e1bc6269b9e80e004f928eadc4c7f07bca51e41b375f79f3dc17c94ea"},
+    {file = "PySide6_Addons-6.4.2-cp37-abi3-win_amd64.whl", hash = "sha256:03245466c3844681cdd7d350c1c94444cafff4c86394b44b6bff32643a9668c6"},
+    {file = "PySide6_Addons-6.4.2-pp39-pypy39_pp73-macosx_10_9_universal2.whl", hash = "sha256:101bfe096a426eab15cc02f4d5755ace564ce53693cb44b3fc66223709d999b5"},
+    {file = "PySide6_Addons-6.4.2-pp39-pypy39_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:f5160f28cec8068f717150d7e9a054c6ae0034c75e404b9ae198f620e8bcc7c3"},
+    {file = "PySide6_Addons-6.4.2-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:9fddedee6d5d3c0c98677f421530402a4107f4b4ad773c596d5dd21366f88abf"},
+]
+
+[package.dependencies]
+PySide6-Essentials = "6.4.2"
+shiboken6 = "6.4.2"
+
+[[package]]
+name = "pyside6-essentials"
+version = "6.4.2"
+description = "Python bindings for the Qt cross-platform application and UI framework (Essentials)"
+category = "main"
+optional = false
+python-versions = "<3.12,>=3.7"
+files = [
+    {file = "PySide6_Essentials-6.4.2-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:8f208567e27c9caede517f07ec53cb6b3f9472d72866080393f3150393683c46"},
+    {file = "PySide6_Essentials-6.4.2-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:8c3d37cca6e27f6da12b50b20e741d593ccc857bdcdb82d97f8f7c8bfe53639a"},
+    {file = "PySide6_Essentials-6.4.2-cp37-abi3-win_amd64.whl", hash = "sha256:8061b68d7eb4ace0ad4443c66747ebac92f686ba704ac343f58e9e9eed8f1c0f"},
+    {file = "PySide6_Essentials-6.4.2-pp39-pypy39_pp73-macosx_10_9_universal2.whl", hash = "sha256:459202678a5217d1b1ad44ca6da2033e73082d702eafd842c1bf6952e243eb65"},
+    {file = "PySide6_Essentials-6.4.2-pp39-pypy39_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:7d01e1fd4136cbc3f5516d1c7187a694dd5b6d09a4be3de6e184d0845070ba85"},
+    {file = "PySide6_Essentials-6.4.2-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:0b00979a37a2cf0b848d5ac1eb595e4480687f0ddd34d82cbc738dfe7e8976bc"},
+]
+
+[package.dependencies]
+shiboken6 = "6.4.2"
+
+[[package]]
 name = "pytest"
 version = "7.2.0"
 description = "pytest: simple powerful testing with Python"
@@ -771,6 +831,22 @@ files = [
 ]
 
 [[package]]
+name = "shiboken6"
+version = "6.4.2"
+description = "Python/C++ bindings helper module"
+category = "main"
+optional = false
+python-versions = "<3.12,>=3.7"
+files = [
+    {file = "shiboken6-6.4.2-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:6131d32cce4114924dabea313fc345745f95ce567631349f2fad170ebff4bfee"},
+    {file = "shiboken6-6.4.2-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:0616c1a12d1e51e680595b3940b986275c1df952a751416a0730a59e5b90105f"},
+    {file = "shiboken6-6.4.2-cp37-abi3-win_amd64.whl", hash = "sha256:2278f8d6ab6f3377e82f72b6305e06bd53e9e479729de489e7a5205296bdb74e"},
+    {file = "shiboken6-6.4.2-pp39-pypy39_pp73-macosx_10_9_universal2.whl", hash = "sha256:0c706fd0e6eeb49d807aaef08f078526eb35bee1d84209cf66cb1ff70508b93a"},
+    {file = "shiboken6-6.4.2-pp39-pypy39_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:58511b2d0f77f3153b0371e0da2730db38195cb72e5d450e32a52db25c6af06d"},
+    {file = "shiboken6-6.4.2-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:d66bfdd80bbb3c8f9165afad4bb8786434a75456a36f8ee90b583c31ef311a50"},
+]
+
+[[package]]
 name = "strip-ansi"
 version = "0.1.1"
 description = "Strip ANSI escape sequences from a string"
@@ -870,4 +946,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.7,<3.11"
-content-hash = "a9c6233aa53837d4ca3f46223226293b368e71cc89ffcf5a3f8f1851356189f1"
+content-hash = "0c6081bcb22cdd2dae101bb2eaf3d5128b230246b653ca2abb400ad1fad7dc54"

@@ -5,11 +5,20 @@ import platform
 import shutil
 import subprocess
 import tempfile
+import typing
 from multiprocessing.pool import ThreadPool
 from typing import List, Optional
 
 from colorama import Fore, Style
-from PySide2 import QtCore, QtGui, QtWidgets
+
+# FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
+if typing.TYPE_CHECKING:
+    from PySide2 import QtCore, QtGui, QtWidgets
+else:
+    try:
+        from PySide6 import QtCore, QtGui, QtWidgets
+    except ImportError:
+        from PySide2 import QtCore, QtGui, QtWidgets
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
@@ -385,8 +394,10 @@ class SettingsWidget(QtWidgets.QWidget):
         self.safe_extension_name_layout.addWidget(self.safe_extension_filename)
         self.safe_extension_name_layout.addWidget(self.safe_extension)
 
-        dot_pdf_regex = QtCore.QRegExp(r".*\.[Pp][Dd][Ff]")
-        self.safe_extension.setValidator(QtGui.QRegExpValidator(dot_pdf_regex))
+        dot_pdf_regex = QtCore.QRegularExpression(r".*\.[Pp][Dd][Ff]")
+        self.safe_extension.setValidator(
+            QtGui.QRegularExpressionValidator(dot_pdf_regex)
+        )
         self.safe_extension_layout = QtWidgets.QHBoxLayout()
         self.safe_extension_layout.addWidget(self.save_checkbox)
         self.safe_extension_layout.addWidget(self.safe_extension_label)

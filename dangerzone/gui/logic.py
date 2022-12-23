@@ -4,11 +4,20 @@ import pipes
 import platform
 import shlex
 import subprocess
+import typing
 from pathlib import Path
 from typing import Dict
 
 from colorama import Fore
-from PySide2 import QtCore, QtGui, QtWidgets
+
+# FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
+if typing.TYPE_CHECKING:
+    from PySide2 import QtCore, QtGui, QtWidgets
+else:
+    try:
+        from PySide6 import QtCore, QtGui, QtWidgets
+    except ImportError:
+        from PySide2 import QtCore, QtGui, QtWidgets
 
 if platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry

@@ -38,6 +38,7 @@ def print_header(s: str) -> None:
     type=click.UNPROCESSED,
     callback=args.validate_input_filenames,
 )
+@click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
 def cli_main(
     output_filename: Optional[str],

@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 from .. import args, errors
 from ..document import Document
-from ..util import get_resource_path
+from ..util import get_resource_path, get_version
 from .logic import DangerzoneGui
 from .main_window import MainWindow
 
@@ -55,6 +55,7 @@ class Application(QtWidgets.QApplication):
     type=click.UNPROCESSED,
     callback=args.validate_input_filenames,
 )
+@click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
 def gui_main(filenames: Optional[List[str]]) -> bool:
     setup_logging()

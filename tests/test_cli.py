@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import copy
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -162,6 +163,14 @@ class TestCliBasic(TestCli):
         banner_width = len(plain_lines[0])
         for line in plain_lines:
             assert len(line) == banner_width, "banner has inconsistent width"
+
+    def test_version(self) -> None:
+        result = self.run_cli("--version")
+        result.assert_success()
+
+        with open("share/version.txt") as f:
+            version = f.read().strip()
+            assert version in result.stdout
 
 
 class TestCliConversion(TestCliBasic):

@@ -22,3 +22,8 @@ QLabel[style="safe_extension_filename"] {
 QLabel.docs-selection {
     font-size: 18px;
 }
+
+QLabel.version {
+    font-size: 20px;
+    padding-bottom: 5px;  /* align with 'dangerzone' font */
+}

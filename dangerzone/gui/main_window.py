@@ -14,7 +14,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from .. import container, errors
 from ..container import convert
 from ..document import SAFE_EXTENSION, Document
-from ..util import get_resource_path, get_subprocess_startupinfo
+from ..util import get_resource_path, get_subprocess_startupinfo, get_version
 from .logic import Alert, DangerzoneGui
 
 log = logging.getLogger(__name__)
@@ -44,11 +44,16 @@ class MainWindow(QtWidgets.QMainWindow):
         header_label = QtWidgets.QLabel("dangerzone")
         header_label.setFont(self.dangerzone.fixed_font)
         header_label.setStyleSheet("QLabel { font-weight: bold; font-size: 50px; }")
+        header_version_label = QtWidgets.QLabel(get_version())
+        header_version_label.setProperty("class", "version")  # type: ignore [arg-type]
+        header_version_label.setAlignment(QtCore.Qt.AlignBottom)
+
         header_layout = QtWidgets.QHBoxLayout()
         header_layout.addStretch()
         header_layout.addWidget(logo)
         header_layout.addSpacing(10)
         header_layout.addWidget(header_label)
+        header_layout.addWidget(header_version_label)
         header_layout.addStretch()
 
         # Waiting widget, replaces content widget while container runtime isn't available

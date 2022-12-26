@@ -11,7 +11,9 @@ packages = ["dangerzone", "dangerzone.gui"]
 setup(
     name="dangerzone",
     version=version,
-    description="Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF",
+    # On Windows description will show as the app's name in the "Open With" menu. See:
+    # https://github.com/freedomofpress/dangerzone/issues/283#issuecomment-1365148805
+    description="Dangerzone",
     packages=packages,
     options={
         "build_exe": {

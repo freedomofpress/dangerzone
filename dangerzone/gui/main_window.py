@@ -11,8 +11,7 @@ from typing import List, Optional
 from colorama import Fore, Style
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from .. import container, errors
-from ..container import convert
+from .. import errors, isolation_provider
 from ..document import SAFE_EXTENSION, Document
 from ..util import get_resource_path, get_subprocess_startupinfo, get_version
 from .logic import Alert, DangerzoneGui
@@ -115,7 +114,7 @@ class InstallContainerThread(QtCore.QThread):
         super(InstallContainerThread, self).__init__()
 
     def run(self) -> None:
-        container.install()
+        isolation_provider.install()
         self.finished.emit()
 
 
@@ -167,8 +166,8 @@ class WaitingWidget(QtWidgets.QWidget):
         state: Optional[str] = None
 
         try:
-            container_runtime = container.get_runtime()
-        except container.NoContainerTechException as e:
+            container_runtime = isolation_provider.get_runtime()
+        except isolation_provider.NoContainerTechException as e:
             log.error(str(e))
             state = "not_installed"
 
@@ -632,7 +631,7 @@ class ConvertTask(QtCore.QObject):
         self.error = False
 
     def convert_document(self) -> None:
-        convert(
+        isolation_provider.convert(
             self.document,
             self.ocr_lang,
             self.stdout_callback,
@@ -667,7 +666,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
 
     def start_conversion(self) -> None:
         if not self.thread_pool_initized:
-            max_jobs = container.get_max_parallel_conversions()
+            max_jobs = isolation_provider.get_max_parallel_conversions()
             self.thread_pool = ThreadPool(max_jobs)
 
         for doc_widget in self.document_widgets:

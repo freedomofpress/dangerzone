@@ -12,7 +12,7 @@ from typing import Callable, List, Optional
 import appdirs
 import colorama
 
-from . import container, errors
+from . import errors, isolation_provider
 from .document import Document
 from .settings import Settings
 from .util import get_resource_path
@@ -59,13 +59,13 @@ class DangerzoneCore(object):
         self, ocr_lang: Optional[str], stdout_callback: Optional[Callable] = None
     ) -> None:
         def convert_doc(document: Document) -> None:
-            success = container.convert(
+            success = isolation_provider.convert(
                 document,
                 ocr_lang,
                 stdout_callback,
             )
 
-        max_jobs = container.get_max_parallel_conversions()
+        max_jobs = isolation_provider.get_max_parallel_conversions()
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_jobs) as executor:
             executor.map(convert_doc, self.documents)
 

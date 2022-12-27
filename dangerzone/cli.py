@@ -5,7 +5,7 @@ from typing import Any, Callable, List, Optional, TypeVar
 import click
 from colorama import Back, Fore, Style
 
-from . import args, container, errors
+from . import args, errors, isolation_provider
 from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from .logic import DangerzoneCore
 from .util import get_version
@@ -73,7 +73,7 @@ def cli_main(
             exit(1)
 
     # Ensure container is installed
-    container.install()
+    isolation_provider.install()
 
     # Convert the document
     print_header("Converting document to safe PDF")

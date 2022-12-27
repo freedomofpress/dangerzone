@@ -73,7 +73,7 @@ def cli_main(
             exit(1)
 
     # Ensure container is installed
-    isolation_provider.install()
+    dangerzone.isolation_provider.install()
 
     # Convert the document
     print_header("Converting document to safe PDF")

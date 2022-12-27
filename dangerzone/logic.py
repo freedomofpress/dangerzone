@@ -41,6 +41,8 @@ class DangerzoneCore(object):
 
         self.documents: List[Document] = []
 
+        self.isolation_provider = isolation_provider.Container()
+
     def add_document_from_filename(
         self,
         input_filename: str,
@@ -59,13 +61,13 @@ class DangerzoneCore(object):
         self, ocr_lang: Optional[str], stdout_callback: Optional[Callable] = None
     ) -> None:
         def convert_doc(document: Document) -> None:
-            success = isolation_provider.convert(
+            success = self.isolation_provider.convert(
                 document,
                 ocr_lang,
                 stdout_callback,
             )
 
-        max_jobs = isolation_provider.get_max_parallel_conversions()
+        max_jobs = self.isolation_provider.get_max_parallel_conversions()
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_jobs) as executor:
             executor.map(convert_doc, self.documents)
 

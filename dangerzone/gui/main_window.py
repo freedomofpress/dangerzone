@@ -110,11 +110,12 @@ class MainWindow(QtWidgets.QMainWindow):
 class InstallContainerThread(QtCore.QThread):
     finished = QtCore.Signal()
 
-    def __init__(self) -> None:
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(InstallContainerThread, self).__init__()
+        self.dangerzone = dangerzone
 
     def run(self) -> None:
-        isolation_provider.install()
+        self.dangerzone.isolation_provider.install()
         self.finished.emit()
 
 
@@ -166,7 +167,7 @@ class WaitingWidget(QtWidgets.QWidget):
         state: Optional[str] = None
 
         try:
-            container_runtime = isolation_provider.get_runtime()
+            container_runtime = self.dangerzone.isolation_provider.get_runtime()
         except isolation_provider.NoContainerTechException as e:
             log.error(str(e))
             state = "not_installed"
@@ -206,7 +207,7 @@ class WaitingWidget(QtWidgets.QWidget):
                 "Installing the Dangerzone container image.<br><br>This might take a few minutes..."
             )
             self.buttons.hide()
-            self.install_container_t = InstallContainerThread()
+            self.install_container_t = InstallContainerThread(self.dangerzone)
             self.install_container_t.finished.connect(self.finished)
             self.install_container_t.start()
 
@@ -624,14 +625,20 @@ class ConvertTask(QtCore.QObject):
     finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
-    def __init__(self, document: Document, ocr_lang: str = None) -> None:
+    def __init__(
+        self,
+        dangerzone: DangerzoneGui,
+        document: Document,
+        ocr_lang: str = None,
+    ) -> None:
         super(ConvertTask, self).__init__()
         self.document = document
         self.ocr_lang = ocr_lang
         self.error = False
+        self.dangerzone = dangerzone
 
     def convert_document(self) -> None:
-        isolation_provider.convert(
+        self.dangerzone.isolation_provider.convert(
             self.document,
             self.ocr_lang,
             self.stdout_callback,
@@ -666,11 +673,13 @@ class DocumentsListWidget(QtWidgets.QListWidget):
 
     def start_conversion(self) -> None:
         if not self.thread_pool_initized:
-            max_jobs = isolation_provider.get_max_parallel_conversions()
+            max_jobs = self.dangerzone.isolation_provider.get_max_parallel_conversions()
             self.thread_pool = ThreadPool(max_jobs)
 
         for doc_widget in self.document_widgets:
-            task = ConvertTask(doc_widget.document, self.get_ocr_lang())
+            task = ConvertTask(
+                self.dangerzone, doc_widget.document, self.get_ocr_lang()
+            )
             task.update.connect(doc_widget.update_progress)
             task.finished.connect(doc_widget.all_done)
             self.thread_pool.apply_async(task.convert_document)

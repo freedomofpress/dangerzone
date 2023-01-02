@@ -105,7 +105,7 @@ args.override_parser_and_check_suspicious_options(cli_main)
 
 
 def setup_logging() -> None:
-    if getattr(sys, "dangerzone_dev", True):
+    if getattr(sys, "dangerzone_dev", False):
         fmt = "%(message)s"
         logging.basicConfig(level=logging.DEBUG, format=fmt)
     else:

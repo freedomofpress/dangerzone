@@ -109,7 +109,7 @@ def setup_logging() -> None:
         fmt = "%(message)s"
         logging.basicConfig(level=logging.DEBUG, format=fmt)
     else:
-        logging.basicConfig(level=logging.ERROR, format=fmt)
+        logging.basicConfig(level=logging.INFO, format=fmt)
 
 
 def display_banner() -> None:

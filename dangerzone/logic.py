@@ -61,7 +61,7 @@ class DangerzoneCore(object):
         self, ocr_lang: Optional[str], stdout_callback: Optional[Callable] = None
     ) -> None:
         def convert_doc(document: Document) -> None:
-            success = self.isolation_provider.convert(
+            self.isolation_provider.convert(
                 document,
                 ocr_lang,
                 stdout_callback,

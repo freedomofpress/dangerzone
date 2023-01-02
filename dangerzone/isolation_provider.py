@@ -40,8 +40,23 @@ class AbstractIsolationProvider(ABC):
     def install(self) -> bool:
         pass
 
-    @abstractmethod
     def convert(
+        self,
+        document: Document,
+        ocr_lang: Optional[str],
+        stdout_callback: Optional[Callable] = None,
+    ) -> None:
+        document.mark_as_converting()
+        success = self._convert(document, ocr_lang, stdout_callback)
+        if success:
+            document.mark_as_safe()
+            if document.archive_after_conversion:
+                document.archive()
+        else:
+            document.mark_as_failed()
+
+    @abstractmethod
+    def _convert(
         self,
         document: Document,
         ocr_lang: Optional[str],
@@ -196,10 +211,6 @@ class Container(AbstractIsolationProvider):
             if p.stdout is not None:
                 for line in p.stdout:
                     (error, text, percentage) = self.parse_progress(document, line)
-                    if error:
-                        document.mark_as_failed()
-                    if percentage == 100.0:
-                        document.mark_as_safe()
                     if stdout_callback:
                         stdout_callback(error, text, percentage)
 
@@ -243,14 +254,13 @@ class Container(AbstractIsolationProvider):
         args = [container_runtime] + args
         return self.exec(document, args, stdout_callback)
 
-    def convert(
+    def _convert(
         self,
         document: Document,
         ocr_lang: Optional[str],
         stdout_callback: Optional[Callable] = None,
     ) -> bool:
         success = False
-        document.mark_as_converting()
 
         if ocr_lang:
             ocr = "1"
@@ -312,9 +322,6 @@ class Container(AbstractIsolationProvider):
                     safe_dir, "safe-output-compressed.pdf"
                 )
                 shutil.move(container_output_filename, document.output_filename)
-
-                if document.archive_after_conversion:
-                    document.archive()
 
                 # We did it
                 success = True

@@ -50,6 +50,9 @@ class Application(QtWidgets.QApplication):
 
 
 @click.command()
+@click.option(
+    "--unsafe-dummy-conversion", "dummy_conversion", flag_value=True, hidden=True
+)
 @click.argument(
     "filenames",
     required=False,
@@ -59,7 +62,7 @@ class Application(QtWidgets.QApplication):
 )
 @click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
-def gui_main(filenames: Optional[List[str]]) -> bool:
+def gui_main(dummy_conversion: bool, filenames: Optional[List[str]]) -> bool:
     setup_logging()
 
     if platform.system() == "Darwin":
@@ -77,7 +80,12 @@ def gui_main(filenames: Optional[List[str]]) -> bool:
     app = Application()
 
     # Common objects
-    dangerzone = DangerzoneGui(app)
+    if getattr(sys, "dangerzone_dev", False) and dummy_conversion:
+        dummy = Dummy()
+        dangerzone = DangerzoneGui(app, isolation_provider=dummy)
+    else:
+        container = Container()
+        dangerzone = DangerzoneGui(app, isolation_provider=container)
 
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)

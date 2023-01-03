@@ -57,9 +57,15 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(header_version_label)
         header_layout.addStretch()
 
-        # Waiting widget, replaces content widget while container runtime isn't available
-        self.waiting_widget = WaitingWidget(self.dangerzone)
-        self.waiting_widget.finished.connect(self.waiting_finished)
+        if isinstance(self.dangerzone.isolation_provider, Container):
+            # Waiting widget replaces content widget while container runtime isn't available
+            self.waiting_widget: WaitingWidget = WaitingWidgetContainer(self.dangerzone)
+            self.waiting_widget.finished.connect(self.waiting_finished)
+
+        elif isinstance(self.dangerzone.isolation_provider, Dummy):
+            # Don't wait with dummy converter
+            self.waiting_widget = WaitingWidget()
+            self.dangerzone.is_waiting_finished = True
 
         # Content widget, contains all the window content except waiting widget
         self.content_widget = ContentWidget(self.dangerzone)
@@ -122,6 +128,13 @@ class InstallContainerThread(QtCore.QThread):
 
 
 class WaitingWidget(QtWidgets.QWidget):
+    finished = QtCore.Signal()
+
+    def __init__(self) -> None:
+        super(WaitingWidget, self).__init__()
+
+
+class WaitingWidgetContainer(WaitingWidget):
     # These are the possible states that the WaitingWidget can show.
     #
     # Windows and macOS states:
@@ -134,7 +147,7 @@ class WaitingWidget(QtWidgets.QWidget):
     finished = QtCore.Signal()
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
-        super(WaitingWidget, self).__init__()
+        super(WaitingWidgetContainer, self).__init__()
         self.dangerzone = dangerzone
 
         self.label = QtWidgets.QLabel()

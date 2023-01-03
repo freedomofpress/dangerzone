@@ -12,9 +12,9 @@ from typing import Callable, List, Optional
 import appdirs
 import colorama
 
-from . import errors, isolation_provider
+from . import errors
 from .document import Document
-from .isolation_provider.container import Container
+from .isolation_provider.base import IsolationProvider
 from .settings import Settings
 from .util import get_resource_path
 
@@ -26,7 +26,7 @@ class DangerzoneCore(object):
     Singleton of shared state / functionality throughout the app
     """
 
-    def __init__(self) -> None:
+    def __init__(self, isolation_provider: IsolationProvider) -> None:
         # Initialize terminal colors
         colorama.init(autoreset=True)
 
@@ -42,7 +42,7 @@ class DangerzoneCore(object):
 
         self.documents: List[Document] = []
 
-        self.isolation_provider = Container()
+        self.isolation_provider = isolation_provider
 
     def add_document_from_filename(
         self,

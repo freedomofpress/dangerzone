@@ -263,6 +263,21 @@ class TestCliConversion(TestCliBasic):
         assert os.path.exists(archived_doc_path)
         assert os.path.exists(safe_doc_path)
 
+    def test_dummy_conversion(self, tmp_path: Path) -> None:
+        result = self.run_cli([self.sample_doc, "--unsafe-dummy-conversion"])
+        result.assert_success()
+
+    def test_dummy_conversion_bulk(self, tmp_path: Path) -> None:
+        filenames = ["1.pdf", "2.pdf", "3.pdf"]
+        file_paths = []
+        for filename in filenames:
+            doc_path = str(tmp_path / filename)
+            shutil.copyfile(self.sample_doc, doc_path)
+            file_paths.append(doc_path)
+
+        result = self.run_cli(["--unsafe-dummy-conversion", *file_paths])
+        result.assert_success()
+
 
 class TestSecurity(TestCli):
     def test_suspicious_double_dash_file(self, tmp_path: Path) -> None:

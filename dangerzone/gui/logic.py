@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 if platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry
 
-from ..isolation_provider.base import IsolationProvider
+from ..isolation_provider.container import Container
 from ..logic import DangerzoneCore
 from ..settings import Settings
 from ..util import get_resource_path
@@ -27,7 +27,7 @@ class DangerzoneGui(DangerzoneCore):
     """
 
     def __init__(self, app: QtWidgets.QApplication) -> None:
-        super().__init__()
+        super().__init__(isolation_provider=Container())
 
         # Qt app
         self.app = app

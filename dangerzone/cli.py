@@ -33,6 +33,9 @@ def print_header(s: str) -> None:
     flag_value=True,
     help=f"Archives the unsafe version in a subdirectory named '{ARCHIVE_SUBDIR}'",
 )
+@click.option(
+    "--unsafe-dummy-conversion", "dummy_conversion", flag_value=True, hidden=True
+)
 @click.argument(
     "filenames",
     required=True,
@@ -47,9 +50,14 @@ def cli_main(
     ocr_lang: Optional[str],
     filenames: List[str],
     archive: bool,
+    dummy_conversion: bool,
 ) -> None:
     setup_logging()
-    dangerzone = DangerzoneCore()
+
+    if getattr(sys, "dangerzone_dev", False) and dummy_conversion:
+        dangerzone = DangerzoneCore(Dummy())
+    else:
+        dangerzone = DangerzoneCore(Container())
 
     display_banner()
     if len(filenames) == 1 and output_filename:

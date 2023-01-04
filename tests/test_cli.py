@@ -126,6 +126,9 @@ class TestCli(TestBase):
             # to tokenize it.
             args = (args,)
 
+        if os.environ.get("DUMMY_CONVERSION", False):
+            args = ("--unsafe-dummy-conversion", *args)
+
         # TODO: Replace this with `contextlib.chdir()` [1], which was added in
         # Python 3.11.
         #

@@ -1,0 +1,34 @@
+name: Tests
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    env:
+      DUMMY_CONVERSION: True
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install poetry
+      - run: poetry install
+      - name: Run CLI tests
+        run: poetry run make test
+
+  macOS:
+    runs-on: macos-latest
+    env:
+      DUMMY_CONVERSION: True
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install poetry
+      - run: poetry install
+      - name: Run CLI tests
+        run: poetry run make test

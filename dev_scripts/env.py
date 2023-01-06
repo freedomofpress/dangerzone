@@ -52,24 +52,25 @@ Run Dangerzone in the end-user environment:
 
 """
 
-DOCKERFILE_BUILD_DEV_DEBIAN_DEPS = rf"""
-RUN apt-get update && apt-get install -y \
-    podman dh-python python3 python3-stdeb python3-pyside2.qtcore \
-    python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs \
-    python3-click python3-xdg python3-colorama
+# FIXME: Do we really need the python3-venv packages?
+# XXX: We install uidmap separately, because it is not a hard dependency for Podman, and
+# we use --no-install-recommends.
+DOCKERFILE_BUILD_DEV_DEBIAN_DEPS = r"""
+ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y make
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    python3-dev python3-venv python3-pip
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends podman uidmap dh-python make \
+        libqt5gui5 python3 python3-dev python3-venv python3-pip python3-stdeb \
+    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends mupdf \
+    && rm -rf /var/lib/apt/lists/*
 """
 
 # FIXME: Install Poetry on Fedora via package manager.
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
-RUN dnf update -y && dnf install -y rpm-build podman python3 python3-setuptools \
-    python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-colorama
-RUN dnf update -y && dnf install -y make
-RUN dnf update -y && dnf install -y python3-pip
+RUN dnf install -y rpm-build podman python3 make python3-pip qt5-qtbase-gui \
+    && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.
 # See https://github.com/freedomofpress/dangerzone/issues/286#issuecomment-1347149783

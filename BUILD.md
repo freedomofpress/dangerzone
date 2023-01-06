@@ -5,7 +5,8 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y podman dh-python python3 python3-pip python3-stdeb python3-pyside2.qtcore python3-pyside2.qtgui python3-pyside2.qtwidgets python3-appdirs python3-click python3-xdg python3-colorama
+sudo apt install -y podman dh-python make libqt5gui5 \
+    python3 python3-dev python3-venv python3-pip python3-stdeb
 ```
 
 Install poetry (you may need to add `~/.local/bin/` to your `PATH` first):
@@ -50,7 +51,7 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 python3-pip python3-setuptools python3-pyside2 python3-appdirs python3-click python3-pyxdg python3-colorama
+sudo dnf install -y rpm-build podman python3 python3-pip qt5-qtbase-gui
 ```
 
 Install poetry:

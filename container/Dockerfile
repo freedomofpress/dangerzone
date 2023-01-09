@@ -6,7 +6,6 @@ RUN apk -U upgrade && \
     ghostscript \
     graphicsmagick \
     libreoffice \
-    openjdk8 \
     poppler-utils \
     python3 \
     py3-magic \

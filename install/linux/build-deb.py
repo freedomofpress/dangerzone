@@ -31,8 +31,9 @@ def main():
         shutil.rmtree(deb_dist_path)
 
     print("* Building DEB package")
+    # This command also builds the Debian source package, and then creates the DEB
+    # package, meaning that we don't need to run `sdist_dsc` as well.
     run(["python3", "setup.py", "--command-packages=stdeb.command", "bdist_deb"])
-    run(["python3", "setup.py", "--command-packages=stdeb.command", "sdist_dsc"])
 
     print("")
     print("* To install run:")

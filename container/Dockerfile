@@ -9,7 +9,6 @@ RUN apk -U upgrade && \
     poppler-utils \
     python3 \
     py3-magic \
-    sudo \
     tesseract-ocr \
     tesseract-ocr-data-afr \
     tesseract-ocr-data-ara \

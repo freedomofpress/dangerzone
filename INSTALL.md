@@ -30,6 +30,13 @@ Dangerzone is available for:
     | sudo apt-key add -
   sudo apt update
   ```
+
+  Also, you need to install the `python-all` package, due to an `stdeb` bug that
+  existed before v0.9.1:
+
+  ```
+  sudo apt-get install python-all -y
+  ```
 </details>
 
 Add our repository following [these instructions](https://packagecloud.io/firstlookmedia/code/install#manual-deb), or by running this script:

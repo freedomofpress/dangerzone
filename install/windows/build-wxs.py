@@ -22,10 +22,6 @@ def build_data(dirname, dir_prefix, id_, name):
             else:
                 id_prefix = id_
 
-            # Skip lib/Pyside2/Examples folder
-            if "\\build\\exe.win-amd64-3.10\\lib\\PySide2\\examples" in dirname:
-                continue
-
             id_value = f"{id_prefix}{basename.capitalize().replace('-', '_')}"
             data["dirs"].append(
                 build_data(

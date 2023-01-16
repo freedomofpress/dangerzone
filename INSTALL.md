@@ -7,7 +7,6 @@ Dangerzone is available for:
 - Debian 11 (bullseye)
 - Fedora 37
 - Fedora 36
-- Fedora 35
 
 ### Ubuntu, Debian
 

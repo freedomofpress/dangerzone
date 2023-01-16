@@ -236,32 +236,6 @@ jobs:
             ./dev_scripts/env.py --distro fedora --version 36 run --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
-  ci-fedora-35:
-    machine:
-      image: ubuntu-2004:202111-01
-    steps:
-      - checkout
-      - run: *install-podman
-
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - restore_cache: *restore-cache
-      - run: *copy-image
-
-      - run:
-          name: Prepare Dangerzone environment
-          command: |
-            ./dev_scripts/env.py --distro fedora --version 35 build-dev
-
-      - run:
-          name: Run CI tests
-          command: |
-            ./dev_scripts/env.py --distro fedora --version 35 run --dev \
-                bash -c 'cd dangerzone; poetry run make test'
-
   ci-debian-bookworm:
     machine:
       image: ubuntu-2004:202111-01
@@ -366,20 +340,9 @@ jobs:
       - run: *copy-image
       - run: *build-rpm
 
-  build-fedora-35:
-    docker:
-      - image: fedora:35
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-rpm
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-rpm
-
   deploy-fedora:
     docker:
-      - image: fedora:35
+      - image: fedora:36
     resource_class: medium+
     steps:
       - run: *install-dependencies-rpm
@@ -405,12 +368,6 @@ jobs:
           environment:
             PACKAGE_TYPE: "rpm"
             PACKAGECLOUD_DISTRO: "fedora/36"
-          <<: *deploy-packagecloud
-      - run:
-          name: Deploy fedora/35
-          environment:
-            PACKAGE_TYPE: "rpm"
-            PACKAGECLOUD_DISTRO: "fedora/35"
           <<: *deploy-packagecloud
 
   deploy-debian:
@@ -499,9 +456,6 @@ workflows:
       - ci-fedora-36:
           requires:
             - build-container-image
-      - ci-fedora-35:
-          requires:
-            - build-container-image
       - build-ubuntu-kinetic:
           requires:
             - build-container-image
@@ -521,9 +475,6 @@ workflows:
           requires:
             - build-container-image
       - build-fedora-36:
-          requires:
-            - build-container-image
-      - build-fedora-35:
           requires:
             - build-container-image
 

@@ -105,11 +105,28 @@ args.override_parser_and_check_suspicious_options(cli_main)
 
 
 def setup_logging() -> None:
+    class EndUserLoggingFormatter(logging.Formatter):
+        """Prefixes any non-INFO log line with the log level"""
+
+        def format(self, record: logging.LogRecord) -> str:
+            if record.levelno == logging.INFO:
+                # Bypass formatter: print line directly
+                return record.getMessage()
+            else:
+                return super().format(record)
+
     if getattr(sys, "dangerzone_dev", False):
         fmt = "[%(levelname)-5s] %(message)s"
         logging.basicConfig(level=logging.DEBUG, format=fmt)
     else:
-        logging.basicConfig(level=logging.INFO, format="%(message)s")
+        # prefix non-INFO log lines with the respective log type
+        fmt = "%(levelname)s %(message)s"
+        formatter = EndUserLoggingFormatter(fmt=fmt)
+        ch = logging.StreamHandler()
+        ch.setFormatter(formatter)
+        logger = logging.getLogger()
+        logger.setLevel(logging.INFO)
+        logger.addHandler(ch)
 
 
 def display_banner() -> None:

@@ -5,8 +5,6 @@ import sys
 import time
 from typing import Callable, Optional
 
-from colorama import Fore, Style
-
 from ..document import Document
 from ..util import get_resource_path
 from .base import IsolationProvider
@@ -59,7 +57,7 @@ class Dummy(IsolationProvider):
         ]
 
         for (error, text, percentage) in progress:
-            self._print_progress(document, error, text, percentage)  # type: ignore [arg-type]
+            self.print_progress(document, error, text, percentage)  # type: ignore [arg-type]
             if stdout_callback:
                 stdout_callback(error, text, percentage)
             if error:
@@ -72,18 +70,6 @@ class Dummy(IsolationProvider):
             )
 
         return success
-
-    def _print_progress(
-        self, document: Document, error: bool, text: str, percentage: float
-    ) -> None:
-        s = Style.BRIGHT + Fore.YELLOW + f"[doc {document.id}] "
-        s += Fore.CYAN + f"{percentage}% "
-        if error:
-            s += Style.RESET_ALL + Fore.RED + text
-            log.error(s)
-        else:
-            s += Style.RESET_ALL + text
-            log.info(s)
 
     def get_max_parallel_conversions(self) -> int:
         return 1

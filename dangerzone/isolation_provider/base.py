@@ -3,6 +3,8 @@ import subprocess
 from abc import ABC, abstractmethod
 from typing import Callable, Optional
 
+from colorama import Fore, Style
+
 from ..document import Document
 
 log = logging.getLogger(__name__)
@@ -40,6 +42,18 @@ class IsolationProvider(ABC):
         stdout_callback: Optional[Callable] = None,
     ) -> bool:
         pass
+
+    def print_progress(
+        self, document: Document, error: bool, text: str, percentage: float
+    ) -> None:
+        s = Style.BRIGHT + Fore.YELLOW + f"[doc {document.id}] "
+        s += Fore.CYAN + f"{percentage}% "
+        if error:
+            s += Style.RESET_ALL + Fore.RED + text
+            log.error(s)
+        else:
+            s += Style.RESET_ALL + text
+            log.info(s)
 
     @abstractmethod
     def get_max_parallel_conversions(self) -> int:

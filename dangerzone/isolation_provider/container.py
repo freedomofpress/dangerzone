@@ -10,7 +10,6 @@ import tempfile
 from typing import Callable, List, Optional, Tuple
 
 import appdirs
-from colorama import Fore, Style
 
 from ..document import Document
 from ..util import get_resource_path, get_subprocess_startupinfo
@@ -142,15 +141,9 @@ class Container(IsolationProvider):
             log.error(error_message)
             return (True, error_message, -1)
 
-        s = Style.BRIGHT + Fore.YELLOW + f"[doc {document.id}] "
-        s += Fore.CYAN + f"{status['percentage']}% "
-        if status["error"]:
-            s += Style.RESET_ALL + Fore.RED + status["text"]
-            log.error(s)
-        else:
-            s += Style.RESET_ALL + status["text"]
-            log.info(s)
-
+        self.print_progress(
+            document, status["error"], status["text"], status["percentage"]
+        )
         return (status["error"], status["text"], status["percentage"])
 
     def exec(

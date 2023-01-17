@@ -1,4 +1,3 @@
-import concurrent.futures
 import gzip
 import json
 import logging
@@ -7,7 +6,9 @@ import platform
 import shutil
 import subprocess
 import sys
-from typing import Callable, List, Optional
+import traceback
+from concurrent.futures import Future, ThreadPoolExecutor
+from typing import Callable, Dict, List, Optional
 
 import appdirs
 import colorama
@@ -66,8 +67,24 @@ class DangerzoneCore(object):
             )
 
         max_jobs = container.get_max_parallel_conversions()
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_jobs) as executor:
-            executor.map(convert_doc, self.documents)
+        with ThreadPoolExecutor(max_workers=max_jobs) as executor:
+            conversions: Dict[Document, Future] = {}
+
+            # Start all parallel conversions
+            for document in self.get_unconverted_documents():
+                conversion = executor.submit(convert_doc, document)
+                conversions[document] = conversion
+
+            # Check the results to raise any exceptions that may have happened
+            for document in conversions:
+                try:
+                    conversion = conversions[document]
+                    conversion.result()
+                except Exception as e:
+                    log.error(
+                        f"Something unexpected happened when converting document '{document.id}': {e}"
+                    )
+                    traceback.print_exception(type(e), e, e.__traceback__)
 
     def get_unconverted_documents(self) -> List[Document]:
         return [doc for doc in self.documents if doc.is_unconverted()]

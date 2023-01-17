@@ -200,3 +200,6 @@ class Document:
         if not isinstance(other, Document):
             return False
         return self.input_filename == other.input_filename
+
+    def __hash__(self) -> int:
+        return hash(self.id)

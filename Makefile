@@ -8,11 +8,11 @@ lint-black-apply: ## apply black's source code formatting suggestions
 
 .PHONY: lint-isort
 lint-isort: ## check imports are organized, with isort
-	isort --check-only --skip dev_scripts/envs/** ./
+	isort --check-only --skip dev_scripts/envs ./
 
 .PHONY: lint-isort-apply
 lint-isort-apply: ## apply isort's imports organization suggestions
-	isort --skip dev_scripts/envs/** ./
+	isort --skip dev_scripts/envs ./
 
 MYPY_ARGS := --ignore-missing-imports \
 			 --disallow-incomplete-defs \

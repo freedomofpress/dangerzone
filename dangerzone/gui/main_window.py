@@ -11,8 +11,10 @@ from typing import List, Optional
 from colorama import Fore, Style
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from .. import errors, isolation_provider
+from .. import errors
 from ..document import SAFE_EXTENSION, Document
+from ..isolation_provider.container import Container, NoContainerTechException
+from ..isolation_provider.dummy import Dummy
 from ..util import get_resource_path, get_subprocess_startupinfo, get_version
 from .logic import Alert, DangerzoneGui
 
@@ -167,8 +169,11 @@ class WaitingWidget(QtWidgets.QWidget):
         state: Optional[str] = None
 
         try:
-            container_runtime = self.dangerzone.isolation_provider.get_runtime()
-        except isolation_provider.NoContainerTechException as e:
+            if isinstance(  # Sanity check
+                self.dangerzone.isolation_provider, Container
+            ):
+                container_runtime = self.dangerzone.isolation_provider.get_runtime()
+        except NoContainerTechException as e:
             log.error(str(e))
             state = "not_installed"
 

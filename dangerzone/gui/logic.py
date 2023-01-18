@@ -13,6 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 if platform.system() == "Linux":
     from xdg.DesktopEntry import DesktopEntry
 
+from ..isolation_provider.base import IsolationProvider
 from ..logic import DangerzoneCore
 from ..settings import Settings
 from ..util import get_resource_path

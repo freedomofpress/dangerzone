@@ -7,14 +7,14 @@ import platform
 import shutil
 import subprocess
 import tempfile
-from abc import ABC, abstractmethod
 from typing import Callable, List, Optional, Tuple
 
 import appdirs
 from colorama import Fore, Style
 
-from .document import Document
-from .util import get_resource_path, get_subprocess_startupinfo
+from ..document import Document
+from ..util import get_resource_path, get_subprocess_startupinfo
+from .base import IsolationProvider
 
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
@@ -22,6 +22,7 @@ if platform.system() == "Windows":
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # type: ignore [attr-defined]
 else:
     startupinfo = None
+
 
 log = logging.getLogger(__name__)
 
@@ -31,45 +32,7 @@ class NoContainerTechException(Exception):
         super().__init__(f"{container_tech} is not installed")
 
 
-class AbstractIsolationProvider(ABC):
-    """
-    Abstracts an isolation provider
-    """
-
-    @abstractmethod
-    def install(self) -> bool:
-        pass
-
-    def convert(
-        self,
-        document: Document,
-        ocr_lang: Optional[str],
-        stdout_callback: Optional[Callable] = None,
-    ) -> None:
-        document.mark_as_converting()
-        success = self._convert(document, ocr_lang, stdout_callback)
-        if success:
-            document.mark_as_safe()
-            if document.archive_after_conversion:
-                document.archive()
-        else:
-            document.mark_as_failed()
-
-    @abstractmethod
-    def _convert(
-        self,
-        document: Document,
-        ocr_lang: Optional[str],
-        stdout_callback: Optional[Callable] = None,
-    ) -> bool:
-        pass
-
-    @abstractmethod
-    def get_max_parallel_conversions(self) -> int:
-        pass
-
-
-class Container(AbstractIsolationProvider):
+class Container(IsolationProvider):
 
     # Name of the dangerzone container
     CONTAINER_NAME = "dangerzone.rocks/dangerzone"
@@ -355,75 +318,3 @@ class Container(AbstractIsolationProvider):
             n_cpu = int(n_cpu_str.strip())
 
         return 2 * n_cpu + 1
-
-
-# From global_common:
-
-# def validate_convert_to_pixel_output(self, common, output):
-#     """
-#     Take the output from the convert to pixels tasks and validate it. Returns
-#     a tuple like: (success (boolean), error_message (str))
-#     """
-#     max_image_width = 10000
-#     max_image_height = 10000
-
-#     # Did we hit an error?
-#     for line in output.split("\n"):
-#         if (
-#             "failed:" in line
-#             or "The document format is not supported" in line
-#             or "Error" in line
-#         ):
-#             return False, output
-
-#     # How many pages was that?
-#     num_pages = None
-#     for line in output.split("\n"):
-#         if line.startswith("Document has "):
-#             num_pages = line.split(" ")[2]
-#             break
-#     if not num_pages or not num_pages.isdigit() or int(num_pages) <= 0:
-#         return False, "Invalid number of pages returned"
-#     num_pages = int(num_pages)
-
-#     # Make sure we have the files we expect
-#     expected_filenames = []
-#     for i in range(1, num_pages + 1):
-#         expected_filenames += [
-#             f"page-{i}.rgb",
-#             f"page-{i}.width",
-#             f"page-{i}.height",
-#         ]
-#     expected_filenames.sort()
-#     actual_filenames = os.listdir(common.pixel_dir.name)
-#     actual_filenames.sort()
-
-#     if expected_filenames != actual_filenames:
-#         return (
-#             False,
-#             f"We expected these files:\n{expected_filenames}\n\nBut we got these files:\n{actual_filenames}",
-#         )
-
-#     # Make sure the files are the correct sizes
-#     for i in range(1, num_pages + 1):
-#         with open(f"{common.pixel_dir.name}/page-{i}.width") as f:
-#             w_str = f.read().strip()
-#         with open(f"{common.pixel_dir.name}/page-{i}.height") as f:
-#             h_str = f.read().strip()
-#         w = int(w_str)
-#         h = int(h_str)
-#         if (
-#             not w_str.isdigit()
-#             or not h_str.isdigit()
-#             or w <= 0
-#             or w > max_image_width
-#             or h <= 0
-#             or h > max_image_height
-#         ):
-#             return False, f"Page {i} has invalid geometry"
-
-#         # Make sure the RGB file is the correct size
-#         if os.path.getsize(f"{common.pixel_dir.name}/page-{i}.rgb") != w * h * 3:
-#             return False, f"Page {i} has an invalid RGB file size"
-
-#     return True, True

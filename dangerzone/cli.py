@@ -5,8 +5,10 @@ from typing import Any, Callable, List, Optional, TypeVar
 import click
 from colorama import Back, Fore, Style
 
-from . import args, errors, isolation_provider
+from . import args, errors
 from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION
+from .isolation_provider.container import Container
+from .isolation_provider.dummy import Dummy
 from .logic import DangerzoneCore
 from .util import get_version
 

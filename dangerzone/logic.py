@@ -14,6 +14,7 @@ import colorama
 
 from . import errors, isolation_provider
 from .document import Document
+from .isolation_provider.container import Container
 from .settings import Settings
 from .util import get_resource_path
 
@@ -41,7 +42,7 @@ class DangerzoneCore(object):
 
         self.documents: List[Document] = []
 
-        self.isolation_provider = isolation_provider.Container()
+        self.isolation_provider = Container()
 
     def add_document_from_filename(
         self,

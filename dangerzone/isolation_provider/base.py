@@ -26,7 +26,13 @@ class IsolationProvider(ABC):
         stdout_callback: Optional[Callable] = None,
     ) -> None:
         document.mark_as_converting()
-        success = self._convert(document, ocr_lang, stdout_callback)
+        try:
+            success = self._convert(document, ocr_lang, stdout_callback)
+        except Exception:
+            success = False
+            log.exception(
+                f"An exception occurred while converting document '{document.id}'"
+            )
         if success:
             document.mark_as_safe()
             if document.archive_after_conversion:

@@ -17,7 +17,7 @@ import sys
 import pytest
 from pkg_resources import parse_version
 
-from dangerzone.container import get_runtime_name
+from dangerzone.isolation_provider.container import Container
 
 PODMAN_MIN_VERSION = "4.3.0"
 
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     pytest_args = sys.argv[1:]  # exclude program names
 
-    if get_runtime_name() == "docker":
+    if Container.get_runtime_name() == "docker":
         run_tests_in_parallel(pytest_args)
     else:
         podman_ver_minimum_parallel = parse_version(PODMAN_MIN_VERSION)

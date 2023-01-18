@@ -39,7 +39,8 @@ class Container(IsolationProvider):
     def __init__(self) -> None:
         pass
 
-    def get_runtime_name(self) -> str:
+    @staticmethod
+    def get_runtime_name() -> str:
         if platform.system() == "Linux":
             runtime_name = "podman"
         else:
@@ -47,25 +48,27 @@ class Container(IsolationProvider):
             runtime_name = "docker"
         return runtime_name
 
-    def get_runtime(self) -> str:
-        container_tech = self.get_runtime_name()
+    @staticmethod
+    def get_runtime() -> str:
+        container_tech = Container.get_runtime_name()
         runtime = shutil.which(container_tech)
         if runtime is None:
             raise NoContainerTechException(container_tech)
         return runtime
 
-    def install(self) -> bool:
+    @staticmethod
+    def install() -> bool:
         """
         Make sure the podman container is installed. Linux only.
         """
-        if self.is_container_installed():
+        if Container.is_container_installed():
             return True
 
         # Load the container into podman
         log.info("Installing Dangerzone container image...")
 
         p = subprocess.Popen(
-            [self.get_runtime(), "load"],
+            [Container.get_runtime(), "load"],
             stdin=subprocess.PIPE,
             startupinfo=get_subprocess_startupinfo(),
         )
@@ -82,14 +85,15 @@ class Container(IsolationProvider):
                     break
         p.communicate()
 
-        if not self.is_container_installed():
+        if not Container.is_container_installed():
             log.error("Failed to install the container image")
             return False
 
         log.info("Container image installed")
         return True
 
-    def is_container_installed(self) -> bool:
+    @staticmethod
+    def is_container_installed() -> bool:
         """
         See if the podman container is installed. Linux only.
         """
@@ -101,12 +105,12 @@ class Container(IsolationProvider):
         installed = False
         found_image_id = subprocess.check_output(
             [
-                self.get_runtime(),
+                Container.get_runtime(),
                 "image",
                 "list",
                 "--format",
                 "{{.ID}}",
-                self.CONTAINER_NAME,
+                Container.CONTAINER_NAME,
             ],
             text=True,
             startupinfo=get_subprocess_startupinfo(),
@@ -122,7 +126,7 @@ class Container(IsolationProvider):
 
             try:
                 subprocess.check_output(
-                    [self.get_runtime(), "rmi", "--force", found_image_id],
+                    [Container.get_runtime(), "rmi", "--force", found_image_id],
                     startupinfo=get_subprocess_startupinfo(),
                 )
             except:

@@ -86,10 +86,19 @@ jobs:
       - run:
           name: Install dev. dependencies
           # Install only the necessary packages to run our linters.
+          # FIXME: We currently install Poetry from PyPI, due to an upstream
+          # Debian bug [1]. Once this bug is fixed, revert to installing
+          # Poetry from the Debian repos instead, which is more stable.
+          #
+          # Also, we pin the Poetry version to 1.2.2, to sidestep a Poetry bug
+          # [2] that currently exists in 1.3.
+          #
+          # [1]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1029156
+          # [2]: https://github.com/freedomofpress/dangerzone/issues/292#issuecomment-1351368122
           command: |
-            export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
             apt-get update
-            apt-get install -y make python3 python3-poetry --no-install-recommends
+            apt-get install -y make python3 python3-pip --no-install-recommends
+            pip install poetry==1.2.2
             poetry install --only lint
       - run:
           name: Run linters to enforce code style

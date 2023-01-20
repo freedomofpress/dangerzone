@@ -90,7 +90,7 @@ jobs:
           # Debian bug [1]. Once this bug is fixed, revert to installing
           # Poetry from the Debian repos instead, which is more stable.
           #
-          # Also, we pin the Poetry version to 1.2.2, to sidestep a Poetry bug
+          # Also, we run poetry with --no-ansi, to sidestep a Poetry bug
           # [2] that currently exists in 1.3.
           #
           # [1]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1029156
@@ -98,8 +98,8 @@ jobs:
           command: |
             apt-get update
             apt-get install -y make python3 python3-pip --no-install-recommends
-            pip install poetry==1.2.2
-            poetry install --only lint
+            pip install poetry
+            poetry install --no-ansi --only lint
       - run:
           name: Run linters to enforce code style
           command: poetry run make lint

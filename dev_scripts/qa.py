@@ -167,6 +167,8 @@ python3 -m pip install poetry
 
 Change to the `dangerzone` folder, and install the poetry dependencies:
 
+> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keying, disable the keyring with `keyring --disable` and run the command again.
+
 ```
 poetry install
 ```
@@ -212,6 +214,8 @@ python -m pip install poetry
 ```
 
 Change to the `dangerzone` folder, and install the poetry dependencies:
+
+> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keying, disable the keyring with `keyring --disable` and run the command again.
 
 ```
 poetry install

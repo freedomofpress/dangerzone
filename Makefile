@@ -40,7 +40,7 @@ lint-apply: lint-black-apply lint-isort-apply ## apply all the linter's suggesti
 
 .PHONY: test
 test:
-	./dev_scripts/pytest-wrapper.py -v --cov --ignore dev_scripts
+	python ./dev_scripts/pytest-wrapper.py -v --cov --ignore dev_scripts
 
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.

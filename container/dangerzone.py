@@ -20,7 +20,7 @@ import shutil
 import subprocess
 import sys
 import time
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Union
 
 import magic
 
@@ -220,7 +220,24 @@ class DangerzoneConverter:
             )
         self.percentage += 3
 
-        self.update_progress("Obtaining PDF metadata")
+        # Obtain number of pages
+        self.update_progress("Calculating number of pages")
+        self.num_pages: Union[None, int] = None
+
+        def get_num_pages(line: str) -> None:
+            search = re.search(r"^Pages:           (\d+)", line)
+            if search is not None:
+                self.num_pages = int(search.group(1))
+
+        run_command(
+            ["pdfinfo", pdf_filename],
+            error_message="PDF file is corrupted",
+            timeout_message=f"Extracting metadata from PDF timed out after 1 second",
+            timeout=1,
+            stdout_callback=get_num_pages,
+        )
+        if self.num_pages == None:
+            raise ValueError("Number of pages could not be extraced from PDF")
 
         def pdftoppm_progress_callback(line: str) -> None:
             """Function called for every line the 'pdftoppm'command outputs
@@ -286,7 +303,9 @@ class DangerzoneConverter:
             os.remove(ppm_filename)
 
         page_base = "/tmp/page"
+
         # Convert to PPM, which is essentially an RGB format
+        pdftoppm_timeout = 1.0 * self.num_pages  # type: ignore [operator]
         run_command(
             [
                 "pdftoppm",
@@ -295,8 +314,9 @@ class DangerzoneConverter:
                 "-progress",
             ],
             error_message="Conversion from PDF to PPM failed",
-            timeout_message=f"Error converting from PDF to PPM, pdftoppm timed out after {DEFAULT_TIMEOUT} seconds",
+            timeout_message=f"Error converting from PDF to PPM, pdftoppm timed out after {pdftoppm_timeout} seconds",
             stderr_callback=pdftoppm_progress_callback,
+            timeout=pdftoppm_timeout,
         )
 
         self.update_progress("Converted document to pixels")

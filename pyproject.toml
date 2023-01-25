@@ -30,7 +30,7 @@ pyinstaller = {version = "*", platform = "darwin"}
 black = "*"
 isort = "*"
 mypy = "*"
-PySide2-stubs = "*"
+types-PySide2 = "*"
 
 # Dependencies required for testing the code.
 [tool.poetry.group.test.dependencies]

@@ -176,13 +176,13 @@ class Alert(QtWidgets.QDialog):
         self.setLayout(layout)
 
     def clicked_ok(self) -> None:
-        self.done(QtWidgets.QDialog.Accepted)
+        self.done(int(QtWidgets.QDialog.Accepted))
 
     def clicked_extra(self) -> None:
         self.done(2)
 
     def clicked_cancel(self) -> None:
-        self.done(QtWidgets.QDialog.Rejected)
+        self.done(int(QtWidgets.QDialog.Rejected))
 
     def launch(self) -> int:
         return self.exec_()

@@ -46,7 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         header_label.setFont(self.dangerzone.fixed_font)
         header_label.setStyleSheet("QLabel { font-weight: bold; font-size: 50px; }")
         header_version_label = QtWidgets.QLabel(get_version())
-        header_version_label.setProperty("class", "version")  # type: ignore [arg-type]
+        header_version_label.setProperty("class", "version")
         header_version_label.setAlignment(QtCore.Qt.AlignBottom)
 
         header_layout = QtWidgets.QHBoxLayout()
@@ -363,7 +363,7 @@ class SettingsWidget(QtWidgets.QWidget):
         self.docs_selected_label = QtWidgets.QLabel("No documents selected")
         self.docs_selected_label.setAlignment(QtCore.Qt.AlignCenter)
         self.docs_selected_label.setContentsMargins(0, 0, 0, 20)
-        self.docs_selected_label.setProperty("class", "docs-selection")  # type: ignore [arg-type]
+        self.docs_selected_label.setProperty("class", "docs-selection")
 
         # Save safe version
         self.save_checkbox = QtWidgets.QCheckBox()
@@ -373,9 +373,7 @@ class SettingsWidget(QtWidgets.QWidget):
         self.safe_extension_label = QtWidgets.QLabel("Save as")
         self.safe_extension_filename = QtWidgets.QLabel("document")
         self.safe_extension_filename.setAlignment(QtCore.Qt.AlignRight)
-        self.safe_extension_filename.setProperty(
-            "style", "safe_extension_filename"  # type: ignore
-        )
+        self.safe_extension_filename.setProperty("style", "safe_extension_filename")
         self.safe_extension = QtWidgets.QLineEdit()
         self.safe_extension.setStyleSheet("margin-left: -6px;")  # no left margin
         self.safe_extension.textChanged.connect(self.update_ui)

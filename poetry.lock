@@ -602,25 +602,6 @@ files = [
 shiboken2 = "5.15.2.1"
 
 [[package]]
-name = "pyside2-stubs"
-version = "5.15.2.1.2"
-description = "PEP561 stub files for the *PySide2/Qt5 for Python* framework"
-category = "dev"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "PySide2-stubs-5.15.2.1.2.tar.gz", hash = "sha256:87b25aa47a4f99898e2282874e4f27411034780f6643461b1cf39b02b4937657"},
-    {file = "PySide2_stubs-5.15.2.1.2-py3-none-any.whl", hash = "sha256:2bbe78bab9ab015f6d38cbcdca24dd7d4c5180236bcb62e3eddadcd1a390fea8"},
-]
-
-[package.dependencies]
-mypy = ">=0.940"
-PySide2 = ">=5.11.0"
-
-[package.extras]
-dev = ["pytest"]
-
-[[package]]
 name = "pytest"
 version = "7.2.0"
 description = "pytest: simple powerful testing with Python"
@@ -848,6 +829,17 @@ files = [
 ]
 
 [[package]]
+name = "types-pyside2"
+version = "5.15.2.1.1"
+description = "The most accurate stubs for PySide2"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types_PySide2-5.15.2.1.1-py3-none-any.whl", hash = "sha256:50e7882de41328cca5e641be8c732ab3fd03bcf22fd97c9f0740990cd0b2be95"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.4.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -878,4 +870,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.7,<3.11"
-content-hash = "19e19811c8306bffc0f591f8eb231dd0281346057e1ecf295886824cda23fcb1"
+content-hash = "a9c6233aa53837d4ca3f46223226293b368e71cc89ffcf5a3f8f1851356189f1"

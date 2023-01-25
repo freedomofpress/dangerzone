@@ -60,11 +60,11 @@ aliases:
         echo "pushing: deb_dist/dangerzone_${VERSION}-1.dsc"
         package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "deb_dist/dangerzone_${VERSION}-1.dsc"
       elif [[ "${PACKAGE_TYPE}" == "rpm" ]]; then
-        echo "pushing: dist/dangerzone-${VERSION}-1.noarch.rpm"
-        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "dist/dangerzone-${VERSION}-1.noarch.rpm"
+        echo "pushing: dist/dangerzone-${VERSION}-2.noarch.rpm"
+        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "dist/dangerzone-${VERSION}-2.noarch.rpm"
         echo ""
-        echo "pushing: dist/dangerzone-${VERSION}-1.src.rpm"
-        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "dist/dangerzone-${VERSION}-1.src.rpm"
+        echo "pushing: dist/dangerzone-${VERSION}-2.src.rpm"
+        package_cloud push "firstlookmedia/code/${PACKAGECLOUD_DISTRO}" "dist/dangerzone-${VERSION}-2.src.rpm"
       fi
 
 jobs:
@@ -239,7 +239,7 @@ jobs:
 
   deploy-fedora:
     docker:
-      - image: fedora:35
+      - image: fedora:37
     resource_class: medium+
     steps:
       - run: *install-dependencies-rpm
@@ -263,82 +263,82 @@ jobs:
             PACKAGE_TYPE: "rpm"
             PACKAGECLOUD_DISTRO: "fedora/37"
           <<: *deploy-packagecloud
-      - run:
-          name: Deploy fedora/36
-          environment:
-            PACKAGE_TYPE: "rpm"
-            PACKAGECLOUD_DISTRO: "fedora/36"
-          <<: *deploy-packagecloud
-      - run:
-          name: Deploy fedora/35
-          environment:
-            PACKAGE_TYPE: "rpm"
-            PACKAGECLOUD_DISTRO: "fedora/35"
-          <<: *deploy-packagecloud
+      #- run:
+      #    name: Deploy fedora/36
+      #    environment:
+      #      PACKAGE_TYPE: "rpm"
+      #      PACKAGECLOUD_DISTRO: "fedora/36"
+      #    <<: *deploy-packagecloud
+      #- run:
+      #    name: Deploy fedora/35
+      #    environment:
+      #      PACKAGE_TYPE: "rpm"
+      #      PACKAGECLOUD_DISTRO: "fedora/35"
+      #    <<: *deploy-packagecloud
 
-  deploy-debian:
-    docker:
-      - image: debian:bullseye
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-      - run:
-          name: Install packagecloud.io
-          command: |
-            apt-get install -y ruby-dev rubygems
-            gem install -N rake
-            gem install -N package_cloud
-      - run:
-          name: Deploy debian/bullseye
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "debian/bullseye"
-          <<: *deploy-packagecloud
-      - run:
-          name: Deploy debian/bookworm
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "debian/bookworm"
-          <<: *deploy-packagecloud
+  #deploy-debian:
+  #  docker:
+  #    - image: debian:bullseye
+  #  resource_class: medium+
+  #  steps:
+  #    - run: *install-dependencies-deb
+  #    - checkout
+  #    - restore_cache: *restore-cache
+  #    - run: *copy-image
+  #    - run: *build-deb
+  #    - run:
+  #        name: Install packagecloud.io
+  #        command: |
+  #          apt-get install -y ruby-dev rubygems
+  #          gem install -N rake
+  #          gem install -N package_cloud
+  #    - run:
+  #        name: Deploy debian/bullseye
+  #        environment:
+  #          PACKAGE_TYPE: "deb"
+  #          PACKAGECLOUD_DISTRO: "debian/bullseye"
+  #        <<: *deploy-packagecloud
+  #    - run:
+  #        name: Deploy debian/bookworm
+  #        environment:
+  #          PACKAGE_TYPE: "deb"
+  #          PACKAGECLOUD_DISTRO: "debian/bookworm"
+  #        <<: *deploy-packagecloud
 
-  deploy-ubuntu:
-    docker:
-      - image: ubuntu:22.04
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-      - run:
-          name: Install packagecloud.io
-          command: |
-            apt-get install -y ruby-dev rubygems
-            gem install -N rake
-            gem install -N package_cloud
-      - run:
-          name: Deploy ubuntu/kinetic
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/kinetic"
-          <<: *deploy-packagecloud
-      - run:
-          name: Deploy ubuntu/jammy
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/jammy"
-          <<: *deploy-packagecloud
-      - run:
-          name: Deploy ubuntu/focal
-          environment:
-            PACKAGE_TYPE: "deb"
-            PACKAGECLOUD_DISTRO: "ubuntu/focal"
-          <<: *deploy-packagecloud
+  #deploy-ubuntu:
+  #  docker:
+  #    - image: ubuntu:22.04
+  #  resource_class: medium+
+  #  steps:
+  #    - run: *install-dependencies-deb
+  #    - checkout
+  #    - restore_cache: *restore-cache
+  #    - run: *copy-image
+  #    - run: *build-deb
+  #    - run:
+  #        name: Install packagecloud.io
+  #        command: |
+  #          apt-get install -y ruby-dev rubygems
+  #          gem install -N rake
+  #          gem install -N package_cloud
+  #    - run:
+  #        name: Deploy ubuntu/kinetic
+  #        environment:
+  #          PACKAGE_TYPE: "deb"
+  #          PACKAGECLOUD_DISTRO: "ubuntu/kinetic"
+  #        <<: *deploy-packagecloud
+  #    - run:
+  #        name: Deploy ubuntu/jammy
+  #        environment:
+  #          PACKAGE_TYPE: "deb"
+  #          PACKAGECLOUD_DISTRO: "ubuntu/jammy"
+  #        <<: *deploy-packagecloud
+  #    - run:
+  #        name: Deploy ubuntu/focal
+  #        environment:
+  #          PACKAGE_TYPE: "deb"
+  #          PACKAGECLOUD_DISTRO: "ubuntu/focal"
+  #        <<: *deploy-packagecloud
 
 workflows:
   version: 2
@@ -383,22 +383,22 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-      - deploy-ubuntu:
-          requires:
-            - build-container-image
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-      - deploy-debian:
-          requires:
-            - build-container-image
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+      #- deploy-ubuntu:
+      #    requires:
+      #      - build-container-image
+      #    filters:
+      #      tags:
+      #        only: /^v.*/
+      #      branches:
+      #        ignore: /.*/
+      #- deploy-debian:
+      #    requires:
+      #      - build-container-image
+      #    filters:
+      #      tags:
+      #        only: /^v.*/
+      #      branches:
+      #        ignore: /.*/
       - deploy-fedora:
           requires:
             - build-container-image

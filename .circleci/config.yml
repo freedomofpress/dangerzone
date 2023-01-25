@@ -182,16 +182,16 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
-  build-debian-bookworm:
-    docker:
-      - image: debian:bookworm
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
+  #build-debian-bookworm:
+  #  docker:
+  #    - image: debian:bookworm
+  #  resource_class: medium+
+  #  steps:
+  #    - run: *install-dependencies-deb
+  #    - checkout
+  #    - restore_cache: *restore-cache
+  #    - run: *copy-image
+  #    - run: *build-deb
 
   build-debian-bullseye:
     docker:
@@ -362,9 +362,9 @@ workflows:
       - build-debian-bullseye:
           requires:
             - build-container-image
-      - build-debian-bookworm:
-          requires:
-            - build-container-image
+      #- build-debian-bookworm:
+      #    requires:
+      #      - build-container-image
       - build-fedora-37:
           requires:
             - build-container-image

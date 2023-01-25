@@ -250,9 +250,12 @@ jobs:
       - run:
           name: Install packagecloud.io
           command: |
-            dnf module install -y ruby:2.7 # requires ruby 2.7
+            # Fedora 37 has ruby 3.1 instead of 2.7.
+            dnf module install -y ruby:3.1
             dnf --allowerasing -y distro-sync
-            dnf install -y ruby-devel
+            # In order to build some native libraries (e.g., unf_ext), we also
+            # need to install C++ build tools.
+            dnf install -y ruby-devel make automake gcc gcc-c++
             gem install package_cloud
       - run:
           name: Deploy fedora/37

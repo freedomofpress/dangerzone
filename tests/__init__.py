@@ -8,7 +8,7 @@ sys.dangerzone_dev = True  # type: ignore[attr-defined]
 from dangerzone.document import SAFE_EXTENSION
 
 SAMPLE_DIRECTORY = "test_docs"
-BASIC_SAMPLE = "sample.pdf"
+BASIC_SAMPLE = "sample-pdf.pdf"
 test_docs_dir = Path(__file__).parent.joinpath(SAMPLE_DIRECTORY)
 test_docs = [
     p

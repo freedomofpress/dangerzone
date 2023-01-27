@@ -48,7 +48,13 @@ def run_command(
     """
     if stdout_callback is None and stderr_callback is None:
         try:
-            subprocess.run(args, timeout=timeout, check=True)
+            subprocess.run(
+                args,
+                timeout=timeout,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=True,
+            )
         except subprocess.CalledProcessError as e:
             raise RuntimeError(error_message) from e
         except subprocess.TimeoutExpired as e:

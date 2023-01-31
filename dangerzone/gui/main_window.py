@@ -111,8 +111,13 @@ class MainWindow(QtWidgets.QMainWindow):
             ok_text="Abort conversions",
         )
         converting_docs = self.dangerzone.get_converting_documents()
+        failed_docs = self.dangerzone.get_failed_documents()
         if not converting_docs:
             e.accept()
+            if failed_docs:
+                self.dangerzone.app.exit(1)
+            else:
+                self.dangerzone.app.exit(0)
         else:
             accept_exit = alert_widget.exec_()
             if not accept_exit:
@@ -121,7 +126,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 e.accept()
 
-        self.dangerzone.app.quit()
+        self.dangerzone.app.exit(2)
 
 
 class InstallContainerThread(QtCore.QThread):

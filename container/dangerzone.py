@@ -25,11 +25,8 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import magic
 
-# timeout in seconds for any single subprocess
-DEFAULT_TIMEOUT: float = 120
-
-# timeout in seconds for compressing a single page of the final document
-COMPRESSION_TIMEOUT: float = 10
+TIMEOUT_PER_PAGE: float = 10  # (seconds)
+TIMEOUT_PER_MB: float = 10  # (seconds)
 
 
 async def read_stream(sr: asyncio.StreamReader, callback: Callable = None) -> bytes:
@@ -60,7 +57,7 @@ async def run_command(
     *,
     error_message: str,
     timeout_message: str,
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: Optional[float],
     stdout_callback: Callable = None,
     stderr_callback: Callable = None,
 ) -> Tuple[bytes, bytes]:
@@ -107,6 +104,29 @@ async def run_command(
 class DangerzoneConverter:
     def __init__(self) -> None:
         self.percentage: float = 0.0
+
+    def calculate_timeout(
+        self, size: float, pages: Optional[float] = None
+    ) -> Optional[float]:
+        """Calculate the timeout for a command.
+
+        The timeout calculation takes two factors in mind:
+
+        1. The size (in MiBs) of the dataset (document, multiple pages).
+        2. The number of pages in the dataset.
+
+        It then calculates proportional timeout values based on the above, and keeps the
+        large one.  This way, we can handle several corner cases:
+
+        * Documents with lots of pages, but small file size.
+        * Single images with large file size.
+        """
+        # Do not have timeouts lower than 10 seconds, if the file size is small, since
+        # we need to take into account the program's startup time as well.
+        timeout = max(TIMEOUT_PER_MB * size, 10)
+        if pages:
+            timeout = max(timeout, TIMEOUT_PER_PAGE * pages)
+        return timeout
 
     async def document_to_pixels(self) -> None:
 
@@ -187,6 +207,14 @@ class DangerzoneConverter:
         if mime_type not in conversions:
             raise ValueError("The document format is not supported")
 
+        # Get file size (in MiB)
+        size = os.path.getsize("/tmp/input_file") / 1024**2
+
+        # Calculate timeout for the first few file operations. The difference with the
+        # subsequent ones is that we don't know the number of pages, before we have a
+        # PDF at hand, so we rely on size heuristics.
+        timeout = self.calculate_timeout(size)
+
         # Convert input document to PDF
         conversion = conversions[mime_type]
         if conversion["type"] is None:
@@ -205,7 +233,11 @@ class DangerzoneConverter:
             await run_command(
                 args,
                 error_message="Conversion to PDF with LibreOffice failed",
-                timeout_message=f"Error converting document to PDF, LibreOffice timed out after {DEFAULT_TIMEOUT} seconds",
+                timeout_message=(
+                    "Error converting document to PDF, LibreOffice timed out after"
+                    f" {timeout} seconds"
+                ),
+                timeout=timeout,
             )
             pdf_filename = "/tmp/input_file.pdf"
         elif conversion["type"] == "convert":
@@ -219,7 +251,11 @@ class DangerzoneConverter:
             await run_command(
                 args,
                 error_message="Conversion to PDF with GraphicsMagick failed",
-                timeout_message=f"Error converting document to PDF, GraphicsMagick timed out after {DEFAULT_TIMEOUT} seconds",
+                timeout_message=(
+                    "Error converting document to PDF, GraphicsMagick timed out after"
+                    f" {timeout} seconds"
+                ),
+                timeout=timeout,
             )
             pdf_filename = "/tmp/input_file.pdf"
         else:
@@ -233,15 +269,20 @@ class DangerzoneConverter:
         stdout, _ = await run_command(
             ["pdfinfo", pdf_filename],
             error_message="PDF file is corrupted",
-            timeout_message=f"Extracting metadata from PDF timed out after 1 second",
-            timeout=1,
+            timeout_message=(
+                f"Extracting metadata from PDF timed out after {timeout} second"
+            ),
+            timeout=timeout,
         )
 
         search = re.search(r"Pages:\s*(\d+)\s*\n", stdout.decode())
         if search is not None:
-            self.num_pages: int = int(search.group(1))
+            num_pages: int = int(search.group(1))
         else:
             raise ValueError("Number of pages could not be extracted from PDF")
+
+        # Get a more precise timeout, based on the number of pages
+        timeout = self.calculate_timeout(size, num_pages)
 
         def pdftoppm_progress_callback(line: bytes) -> None:
             """Function called for every line the 'pdftoppm' command outputs
@@ -308,8 +349,6 @@ class DangerzoneConverter:
 
         page_base = "/tmp/page"
 
-        # Convert to PPM, which is essentially an RGB format
-        pdftoppm_timeout = 1.0 * self.num_pages
         await run_command(
             [
                 "pdftoppm",
@@ -318,9 +357,12 @@ class DangerzoneConverter:
                 "-progress",
             ],
             error_message="Conversion from PDF to PPM failed",
-            timeout_message=f"Error converting from PDF to PPM, pdftoppm timed out after {pdftoppm_timeout} seconds",
+            timeout_message=(
+                f"Error converting from PDF to PPM, pdftoppm timed out after {timeout}"
+                " seconds"
+            ),
             stderr_callback=pdftoppm_progress_callback,
-            timeout=pdftoppm_timeout,
+            timeout=timeout,
         )
 
         self.update_progress("Converted document to pixels")
@@ -337,6 +379,7 @@ class DangerzoneConverter:
         self.percentage = 50.0
 
         num_pages = len(glob.glob("/dangerzone/page-*.rgb"))
+        total_size = 0.0
 
         # Convert RGB files to PDF files
         percentage_per_page = 45.0 / num_pages
@@ -354,6 +397,11 @@ class DangerzoneConverter:
             with open(height_filename) as f:
                 height = f.read().strip()
 
+            # The first few operations happen on a per-page basis.
+            page_size = os.path.getsize(filename_base + ".rgb") / 1024**2
+            total_size += page_size
+            timeout = self.calculate_timeout(page_size, 1)
+
             if os.environ.get("OCR") == "1":  # OCR the document
                 self.update_progress(
                     f"Converting page {page}/{num_pages} from pixels to searchable PDF"
@@ -370,7 +418,11 @@ class DangerzoneConverter:
                         f"png:{png_filename}",
                     ],
                     error_message=f"Page {page}/{num_pages} conversion to PNG failed",
-                    timeout_message=f"Error converting pixels to PNG, convert timed out after {DEFAULT_TIMEOUT} seconds",
+                    timeout_message=(
+                        "Error converting pixels to PNG, convert timed out after"
+                        f" {timeout} seconds"
+                    ),
+                    timeout=timeout,
                 )
                 await run_command(
                     [
@@ -384,7 +436,11 @@ class DangerzoneConverter:
                         "pdf",
                     ],
                     error_message=f"Page {page}/{num_pages} OCR failed",
-                    timeout_message=f"Error converting PNG to searchable PDF, tesseract timed out after {DEFAULT_TIMEOUT} seconds",
+                    timeout_message=(
+                        "Error converting PNG to searchable PDF, tesseract timed out"
+                        f" after {timeout} seconds"
+                    ),
+                    timeout=timeout,
                 )
 
             else:  # Don't OCR
@@ -403,10 +459,18 @@ class DangerzoneConverter:
                         f"pdf:{pdf_filename}",
                     ],
                     error_message=f"Page {page}/{num_pages} conversion to PDF failed",
-                    timeout_message=f"Error converting RGB to PDF, convert timed out after {DEFAULT_TIMEOUT} seconds",
+                    timeout_message=(
+                        "Error converting RGB to PDF, convert timed out after"
+                        f" {timeout} seconds"
+                    ),
+                    timeout=timeout,
                 )
 
             self.percentage += percentage_per_page
+
+        # Next operations apply to the all the pages, so we need to recalculate the
+        # timeout.
+        timeout = self.calculate_timeout(total_size, num_pages)
 
         # Merge pages into a single PDF
         self.update_progress(f"Merging {num_pages} pages into a single PDF")
@@ -417,19 +481,24 @@ class DangerzoneConverter:
         await run_command(
             args,
             error_message="Merging pages into a single PDF failed",
-            timeout_message=f"Error merging pages into a single PDF, pdfunite timed out after {DEFAULT_TIMEOUT} seconds",
+            timeout_message=(
+                "Error merging pages into a single PDF, pdfunite timed out after"
+                f" {timeout} seconds"
+            ),
+            timeout=timeout,
         )
 
         self.percentage += 2
 
         # Compress
         self.update_progress("Compressing PDF")
-        compress_timeout = num_pages * COMPRESSION_TIMEOUT
         await run_command(
             ["ps2pdf", "/tmp/safe-output.pdf", "/tmp/safe-output-compressed.pdf"],
-            timeout_message=f"Error compressing PDF, ps2pdf timed out after {compress_timeout} seconds",
             error_message="Compressing PDF failed",
-            timeout=compress_timeout,
+            timeout_message=(
+                f"Error compressing PDF, ps2pdf timed out after {timeout} seconds"
+            ),
+            timeout=timeout,
         )
 
         self.percentage = 100.0

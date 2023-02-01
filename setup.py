@@ -29,7 +29,7 @@ dangerous PDFs, office documents, or images and converts them to safe PDFs. \
 It uses container technology to convert the documents within a secure sandbox.\
 """,
     url="https://github.com/freedomofpress/dangerzone",
-    packages=["dangerzone", "dangerzone.gui"],
+    packages=["dangerzone", "dangerzone.gui", "dangerzone.isolation_provider"],
     data_files=[
         (
             "share/applications",

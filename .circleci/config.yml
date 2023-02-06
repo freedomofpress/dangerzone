@@ -156,6 +156,10 @@ jobs:
             # https://github.com/python-poetry/poetry/issues/7184
             poetry install --no-ansi
       - run:
+          name: Install test dependencies
+          command: |
+            sudo apt-get install -y libqt5gui5 --no-install-recommends
+      - run:
           name: Prepare cache directory
           command: |
             sudo mkdir -p /caches

@@ -151,10 +151,10 @@ jobs:
       - run:
           name: Install poetry dependencies
           command: |
-            # Remove this pin once the upstream Poetry issue is fixed:
+            sudo pip3 install poetry
+            # This flag is important, due to an open upstream Poetry issue:
             # https://github.com/python-poetry/poetry/issues/7184
-            sudo pip3 install poetry==1.2.2
-            poetry install
+            poetry install --no-ansi
       - run:
           name: Prepare cache directory
           command: |

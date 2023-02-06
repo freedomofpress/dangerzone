@@ -223,6 +223,32 @@ jobs:
             ./dev_scripts/env.py --distro ubuntu --version 22.04 run --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
+  ci-fedora-37:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro fedora --version 37 build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro fedora --version 37 run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
   ci-fedora-36:
     machine:
       image: ubuntu-2004:202111-01
@@ -464,6 +490,9 @@ workflows:
           requires:
             - build-container-image
       - ci-debian-bookworm:
+          requires:
+            - build-container-image
+      - ci-fedora-37:
           requires:
             - build-container-image
       - ci-fedora-36:

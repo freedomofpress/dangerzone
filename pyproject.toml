@@ -6,11 +6,10 @@ authors = ["Micah Lee <micah.lee@theintercept.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
+python = ">=3.7,<3.12"
 click = "*"
 appdirs = "*"
-PySide2 = {version = "5.15.2.1", platform = "linux"}
-PySide6 = {version = "^6.4.1", markers = "sys_platform == 'win32' or sys_platform == 'darwin'"}
+PySide6 = "^6.4.1"
 colorama = "*"
 pyxdg = {version = "*", platform = "linux"}
 

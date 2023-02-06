@@ -14,7 +14,6 @@ import re
 import subprocess
 import sys
 
-import pytest
 from pkg_resources import parse_version
 
 from dangerzone.isolation_provider.container import Container
@@ -30,14 +29,22 @@ def get_podman_version():
     return version.split("-dev")[0]  # exclude "-dev" suffix from version
 
 
+def run_tests(pytest_args):
+    cmd = ["pytest"] + pytest_args
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError:
+        sys.exit(1)
+
+
 def run_tests_in_parallel(pytest_args):
-    args = pytest_args + ["-n", "4"]
-    exit_code = pytest.main(args)
+    print("running tests in parallel")
+    run_tests(pytest_args + ["-n", "4"])
 
 
 def run_tests_in_sequence(pytest_args):
     print("running tests sequentially")
-    exit_code = pytest.main(pytest_args)
+    run_tests(pytest_args)
 
 
 if __name__ == "__main__":

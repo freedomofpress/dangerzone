@@ -74,7 +74,7 @@ RUN dnf install -y rpm-build podman python3 make python3-pip qt5-qtbase-gui \
 
 # FIXME: Drop this fix after it's resolved upstream.
 # See https://github.com/freedomofpress/dangerzone/issues/286#issuecomment-1347149783
-RUN dnf reinstall -y shadow-utils && dnf clean all
+RUN rpm --restore shadow-utils
 
 RUN dnf install -y mupdf && dnf clean all
 """
@@ -120,7 +120,7 @@ RUN dnf install -y mupdf && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.
 # See https://github.com/freedomofpress/dangerzone/issues/286#issuecomment-1347149783
-RUN dnf reinstall -y shadow-utils && dnf clean all
+RUN rpm --restore shadow-utils
 """
 
 # The Dockerfile for building an environment with Dangerzone installed in it. Parts of

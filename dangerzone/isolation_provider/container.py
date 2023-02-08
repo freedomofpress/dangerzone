@@ -260,9 +260,9 @@ class Container(IsolationProvider):
         ]
         extra_args = [
             "-v",
-            f"{document.input_filename}:/tmp/input_file",
+            f"{document.input_filename}:/tmp/input_file:Z",
             "-v",
-            f"{pixel_dir}:/dangerzone",
+            f"{pixel_dir}:/dangerzone:Z",
             "-e",
             f"ENABLE_TIMEOUTS={self.enable_timeouts}",
         ]
@@ -280,9 +280,9 @@ class Container(IsolationProvider):
             ]
             extra_args = [
                 "-v",
-                f"{pixel_dir}:/dangerzone",
+                f"{pixel_dir}:/dangerzone:Z",
                 "-v",
-                f"{safe_dir}:/safezone",
+                f"{safe_dir}:/safezone:Z",
                 "-e",
                 f"OCR={ocr}",
                 "-e",

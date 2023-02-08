@@ -2,6 +2,7 @@ import gzip
 import json
 import logging
 import os
+import pathlib
 import pipes
 import platform
 import shutil
@@ -216,19 +217,40 @@ class Container(IsolationProvider):
         ocr_lang: Optional[str],
         stdout_callback: Optional[Callable] = None,
     ) -> bool:
+        # Create a temporary directory inside the cache directory for this run. Then,
+        # create some subdirectories for the various stages of the file conversion:
+        #
+        # * pixel: Where the RGB data will be stored
+        # * safe: Where the final PDF file will be stored
+        with tempfile.TemporaryDirectory(dir=get_tmp_dir()) as t:
+            tmp_dir = pathlib.Path(t)
+            pixel_dir = tmp_dir / "pixels"
+            pixel_dir.mkdir()
+            safe_dir = tmp_dir / "safe"
+            safe_dir.mkdir()
+
+            return self._convert_with_tmpdirs(
+                document=document,
+                pixel_dir=pixel_dir,
+                safe_dir=safe_dir,
+                ocr_lang=ocr_lang,
+                stdout_callback=stdout_callback,
+            )
+
+    def _convert_with_tmpdirs(
+        self,
+        document: Document,
+        pixel_dir: pathlib.Path,
+        safe_dir: pathlib.Path,
+        ocr_lang: Optional[str],
+        stdout_callback: Optional[Callable] = None,
+    ) -> bool:
         success = False
 
         if ocr_lang:
             ocr = "1"
         else:
             ocr = "0"
-
-        dz_tmp = get_tmp_dir()
-        tmpdir = tempfile.TemporaryDirectory(dir=dz_tmp)
-        pixel_dir = os.path.join(tmpdir.name, "pixels")
-        safe_dir = os.path.join(tmpdir.name, "safe")
-        os.makedirs(pixel_dir, exist_ok=True)
-        os.makedirs(safe_dir, exist_ok=True)
 
         # Convert document to pixels
         command = [
@@ -283,9 +305,6 @@ class Container(IsolationProvider):
 
                 # We did it
                 success = True
-
-        # Clean up
-        tmpdir.cleanup()
 
         return success
 

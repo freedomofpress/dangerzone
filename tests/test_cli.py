@@ -150,6 +150,10 @@ class TestCli(TestBase):
                 if tmp_path is not None:
                     os.chdir(cwd)
 
+                if tmp_dir.exists():
+                    stale_files = list(tmp_dir.iterdir())
+                    assert not stale_files
+
         return CLIResult.reclass_click_result(result, args)
 
 

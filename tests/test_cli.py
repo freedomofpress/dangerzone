@@ -10,6 +10,7 @@ import tempfile
 import traceback
 from pathlib import Path
 from typing import Sequence
+from unittest import mock
 
 import pytest
 from click.testing import CliRunner, Result
@@ -129,18 +130,25 @@ class TestCli(TestBase):
         if os.environ.get("DUMMY_CONVERSION", False):
             args = ("--unsafe-dummy-conversion", *args)
 
-        # TODO: Replace this with `contextlib.chdir()` [1], which was added in
-        # Python 3.11.
-        #
-        # [1]: # https://docs.python.org/3/library/contextlib.html#contextlib.chdir
-        try:
-            if tmp_path is not None:
-                cwd = os.getcwd()
-                os.chdir(tmp_path)
-            result = CliRunner().invoke(cli_main, args)
-        finally:
-            if tmp_path is not None:
-                os.chdir(cwd)
+        with tempfile.TemporaryDirectory() as t:
+            tmp_dir = Path(t)
+            # TODO: Replace this with `contextlib.chdir()` [1], which was added in
+            # Python 3.11.
+            #
+            # [1]: # https://docs.python.org/3/library/contextlib.html#contextlib.chdir
+            try:
+                if tmp_path is not None:
+                    cwd = os.getcwd()
+                    os.chdir(tmp_path)
+
+                with mock.patch(
+                    "dangerzone.isolation_provider.container.get_tmp_dir",
+                    return_value=t,
+                ):
+                    result = CliRunner().invoke(cli_main, args)
+            finally:
+                if tmp_path is not None:
+                    os.chdir(cwd)
 
         return CLIResult.reclass_click_result(result, args)
 

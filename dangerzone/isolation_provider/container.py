@@ -220,10 +220,13 @@ class Container(IsolationProvider):
         # Create a temporary directory inside the cache directory for this run. Then,
         # create some subdirectories for the various stages of the file conversion:
         #
+        # * unsafe: Where the input file will be copied
         # * pixel: Where the RGB data will be stored
         # * safe: Where the final PDF file will be stored
         with tempfile.TemporaryDirectory(dir=get_tmp_dir()) as t:
             tmp_dir = pathlib.Path(t)
+            unsafe_dir = tmp_dir / "unsafe"
+            unsafe_dir.mkdir()
             pixel_dir = tmp_dir / "pixels"
             pixel_dir.mkdir()
             safe_dir = tmp_dir / "safe"
@@ -231,6 +234,7 @@ class Container(IsolationProvider):
 
             return self._convert_with_tmpdirs(
                 document=document,
+                unsafe_dir=unsafe_dir,
                 pixel_dir=pixel_dir,
                 safe_dir=safe_dir,
                 ocr_lang=ocr_lang,
@@ -240,6 +244,7 @@ class Container(IsolationProvider):
     def _convert_with_tmpdirs(
         self,
         document: Document,
+        unsafe_dir: pathlib.Path,
         pixel_dir: pathlib.Path,
         safe_dir: pathlib.Path,
         ocr_lang: Optional[str],
@@ -252,6 +257,9 @@ class Container(IsolationProvider):
         else:
             ocr = "0"
 
+        copied_file = unsafe_dir / "input_file"
+        shutil.copyfile(f"{document.input_filename}", copied_file)
+
         # Convert document to pixels
         command = [
             "/usr/bin/python3",
@@ -260,7 +268,7 @@ class Container(IsolationProvider):
         ]
         extra_args = [
             "-v",
-            f"{document.input_filename}:/tmp/input_file:Z",
+            f"{copied_file}:/tmp/input_file:Z",
             "-v",
             f"{pixel_dir}:/dangerzone:Z",
             "-e",

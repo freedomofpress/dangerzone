@@ -188,11 +188,9 @@ class Container(IsolationProvider):
         container_runtime = self.get_runtime()
 
         if self.get_runtime_name() == "podman":
-            platform_args = []
             security_args = ["--security-opt", "no-new-privileges"]
             security_args += ["--userns", "keep-id"]
         else:
-            platform_args = ["--platform", "linux/amd64"]
             security_args = ["--security-opt=no-new-privileges:true"]
 
         # drop all linux kernel capabilities
@@ -203,7 +201,6 @@ class Container(IsolationProvider):
 
         args = (
             ["run", "--network", "none"]
-            + platform_args
             + user_args
             + security_args
             + prevent_leakage_args

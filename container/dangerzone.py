@@ -305,7 +305,10 @@ class DangerzoneConverter:
                 num_pages = int(num_pages_str)
                 page = int(page_str)
             except ValueError as e:
-                raise RuntimeError("Conversion from PDF to PPM failed") from e
+                # Ignore all non-progress related output, since pdftoppm sends
+                # everything to stderr and thus, errors can't be distinguished
+                # easily. We rely instead on the exit code.
+                return
 
             percentage_per_page = 45.0 / num_pages
             self.percentage += percentage_per_page

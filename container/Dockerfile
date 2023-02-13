@@ -8,6 +8,7 @@ RUN apk -U upgrade && \
     libreoffice \
     openjdk8 \
     poppler-utils \
+    poppler-data \
     python3 \
     py3-magic \
     tesseract-ocr \

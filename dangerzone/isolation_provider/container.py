@@ -36,8 +36,9 @@ class Container(IsolationProvider):
     # Name of the dangerzone container
     CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, enable_timeouts: bool) -> None:
+        self.enable_timeouts = 1 if enable_timeouts else 0
+        super().__init__()
 
     @staticmethod
     def get_runtime_name() -> str:
@@ -247,6 +248,8 @@ class Container(IsolationProvider):
             f"{document.input_filename}:/tmp/input_file",
             "-v",
             f"{pixel_dir}:/dangerzone",
+            "-e",
+            f"ENABLE_TIMEOUTS={self.enable_timeouts}",
         ]
         ret = self.exec_container(document, command, extra_args, stdout_callback)
         if ret != 0:
@@ -269,6 +272,8 @@ class Container(IsolationProvider):
                 f"OCR={ocr}",
                 "-e",
                 f"OCR_LANGUAGE={ocr_lang}",
+                "-e",
+                f"ENABLE_TIMEOUTS={self.enable_timeouts}",
             ]
             ret = self.exec_container(document, command, extra_args, stdout_callback)
             if ret != 0:

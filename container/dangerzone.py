@@ -121,6 +121,9 @@ class DangerzoneConverter:
         * Documents with lots of pages, but small file size.
         * Single images with large file size.
         """
+        if not int(os.environ.get("ENABLE_TIMEOUTS", 1)):
+            return None
+
         # Do not have timeouts lower than 10 seconds, if the file size is small, since
         # we need to take into account the program's startup time as well.
         timeout = max(TIMEOUT_PER_MB * size, 10)

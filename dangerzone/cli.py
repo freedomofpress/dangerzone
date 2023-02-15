@@ -36,6 +36,12 @@ def print_header(s: str) -> None:
 @click.option(
     "--unsafe-dummy-conversion", "dummy_conversion", flag_value=True, hidden=True
 )
+@click.option(
+    "--enable-timeouts / --disable-timeouts",
+    default=True,
+    show_default=True,
+    help="Enable/Disable timeouts during document conversion",
+)
 @click.argument(
     "filenames",
     required=True,
@@ -48,6 +54,7 @@ def print_header(s: str) -> None:
 def cli_main(
     output_filename: Optional[str],
     ocr_lang: Optional[str],
+    enable_timeouts: bool,
     filenames: List[str],
     archive: bool,
     dummy_conversion: bool,
@@ -57,7 +64,7 @@ def cli_main(
     if getattr(sys, "dangerzone_dev", False) and dummy_conversion:
         dangerzone = DangerzoneCore(Dummy())
     else:
-        dangerzone = DangerzoneCore(Container())
+        dangerzone = DangerzoneCore(Container(enable_timeouts=enable_timeouts))
 
     display_banner()
     if len(filenames) == 1 and output_filename:

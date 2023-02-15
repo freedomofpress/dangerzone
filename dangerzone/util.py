@@ -2,6 +2,24 @@ import pathlib
 import platform
 import subprocess
 import sys
+from typing import Optional
+
+import appdirs
+
+
+def get_config_dir() -> str:
+    return appdirs.user_config_dir("dangerzone")
+
+
+def get_tmp_dir() -> Optional[str]:
+    """Get the parent dir for the Dangerzone temporary dirs.
+
+    This function returns the parent directory where Dangerzone will store its temporary
+    directories. The default behavior is to let Python choose for us (e.g., in `/tmp`
+    for Linux), which is why we return None. However, we still need to define this
+    function in order to be able to set this dir via mocking in our tests.
+    """
+    return None
 
 
 def get_resource_path(filename: str) -> str:

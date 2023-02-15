@@ -9,10 +9,9 @@ import subprocess
 import sys
 from typing import Callable, List, Optional
 
-import appdirs
 import colorama
 
-from . import errors
+from . import errors, util
 from .document import Document
 from .isolation_provider.base import IsolationProvider
 from .settings import Settings
@@ -31,7 +30,7 @@ class DangerzoneCore(object):
         colorama.init(autoreset=True)
 
         # App data folder
-        self.appdata_path = appdirs.user_config_dir("dangerzone")
+        self.appdata_path = util.get_config_dir()
 
         # Languages supported by tesseract
         with open(get_resource_path("ocr-languages.json"), "r") as f:

@@ -9,10 +9,8 @@ import subprocess
 import tempfile
 from typing import Callable, List, Optional, Tuple
 
-import appdirs
-
 from ..document import Document
-from ..util import get_resource_path, get_subprocess_startupinfo
+from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
 from .base import IsolationProvider
 
 # Define startupinfo for subprocesses
@@ -225,9 +223,7 @@ class Container(IsolationProvider):
         else:
             ocr = "0"
 
-        dz_tmp = os.path.join(appdirs.user_config_dir("dangerzone"), "tmp")
-        os.makedirs(dz_tmp, exist_ok=True)
-
+        dz_tmp = get_tmp_dir()
         tmpdir = tempfile.TemporaryDirectory(dir=dz_tmp)
         pixel_dir = os.path.join(tmpdir.name, "pixels")
         safe_dir = os.path.join(tmpdir.name, "safe")

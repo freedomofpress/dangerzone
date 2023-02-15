@@ -120,7 +120,7 @@ class TestCli(TestBase):
         (i.e., perform `shlex.split()`), as this is prone to errors in Windows
         environments [1]. The user must perform the tokenizaton themselves.
 
-        [1]: https://stackoverflow.com/a/35900070c
+        [1]: https://stackoverflow.com/a/35900070
         """
         if isinstance(args, str):
             # Convert the single argument to a tuple, else Click will attempt
@@ -135,7 +135,7 @@ class TestCli(TestBase):
             # TODO: Replace this with `contextlib.chdir()` [1], which was added in
             # Python 3.11.
             #
-            # [1]: # https://docs.python.org/3/library/contextlib.html#contextlib.chdir
+            # [1]: https://docs.python.org/3/library/contextlib.html#contextlib.chdir
             try:
                 if tmp_path is not None:
                     cwd = os.getcwd()

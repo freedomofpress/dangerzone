@@ -64,7 +64,7 @@ if p == "Darwin":
         coll,
         name="Dangerzone.app",
         icon="../macos/dangerzone.icns",
-        bundle_identifier="media.firstlook.dangerzone",
+        bundle_identifier="press.freedom.dangerzone",
         info_plist={
             "NSHighResolutionCapable": True,
             "CFBundleShortVersionString": version,

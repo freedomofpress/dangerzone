@@ -82,7 +82,7 @@ def build_dir_xml(root, data):
             component_el,
             "RegistryValue",
             Root="HKCU",
-            Key="Software\First Look Media\Dangerzone",
+            Key="Software\Freedom of the Press Foundation\Dangerzone",
             Name="installed",
             Type="integer",
             Value="1",
@@ -161,7 +161,7 @@ def main():
         root_el,
         "Product",
         Name="Dangerzone",
-        Manufacturer="First Look Media",
+        Manufacturer="Freedom of the Press Foundation",
         Id="*",
         UpgradeCode="$(var.ProductUpgradeCode)",
         Language="1033",
@@ -174,7 +174,7 @@ def main():
         Id="*",
         Keywords="Installer",
         Description="Dangerzone $(var.ProductVersion) Installer",
-        Manufacturer="First Look Media",
+        Manufacturer="Freedom of the Press Foundation",
         InstallerVersion="100",
         Languages="1033",
         Compressed="yes",
@@ -195,7 +195,7 @@ def main():
         product_el,
         "Property",
         Id="ARPURLINFOABOUT",
-        Value="https://tech.firstlook.media",
+        Value="https://freedom.press",
     )
     ET.SubElement(product_el, "UIRef", Id="WixUI_Minimal")
     ET.SubElement(product_el, "UIRef", Id="WixUI_ErrorProgressText")

@@ -74,7 +74,9 @@ def main():
     if args.with_codesign:
         print("○ Code signing app bundle")
         identity_name_application = (
-            "Developer ID Application: FIRST LOOK PRODUCTIONS, INC. (P24U45L8P5)"
+            # FIXME: Update this line with the proper developer ID, once we know what
+            # that is.
+            "Developer ID Application: FREEDOM OF THE PRESS FOUNDATION, 501(c)(3)"
         )
         entitlements_plist_path = os.path.join(root, "install/macos/entitlements.plist")
 

@@ -19,8 +19,8 @@ def file_list(path):
 setuptools.setup(
     name="dangerzone",
     version=version,
-    author="Micah Lee",
-    author_email="micah.lee@theintercept.com",
+    author="Freedom of the Press Foundation",
+    author_email="info@freedom.press",
     license="MIT",
     description="Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs",
     long_description="""\
@@ -33,11 +33,11 @@ It uses container technology to convert the documents within a secure sandbox.\
     data_files=[
         (
             "share/applications",
-            ["install/linux/media.firstlook.dangerzone.desktop"],
+            ["install/linux/press.freedom.dangerzone.desktop"],
         ),
         (
             "share/icons/hicolor/64x64/apps",
-            ["install/linux/media.firstlook.dangerzone.png"],
+            ["install/linux/press.freedom.dangerzone.png"],
         ),
         ("share/dangerzone", file_list("share")),
     ],

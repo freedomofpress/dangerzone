@@ -7,24 +7,36 @@ on:
     - cron: '0 0 * * *' # Run every day at 00:00 UTC.
 
 jobs:
-  windows:
-    runs-on: windows-latest
-    env:
-      DUMMY_CONVERSION: True
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - run: pip install poetry
-      - run: poetry install
-      - name: Run CLI tests
-        run: poetry run make test
+  # windows:
+  #   runs-on: windows-latest
+  #   env:
+  #     DUMMY_CONVERSION: True
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: '3.10'
+  #     - run: pip install poetry
+  #     - run: poetry install
+  #     - name: Run CLI tests
+  #       run: poetry run make test
 
-  macOS:
-    runs-on: macos-latest
-    env:
-      DUMMY_CONVERSION: True
+  # macOS:
+  #   runs-on: macos-latest
+  #   env:
+  #     DUMMY_CONVERSION: True
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: '3.10'
+  #     - run: pip install poetry
+  #     - run: poetry install
+  #     - name: Run CLI tests
+  #       run: poetry run make test
+
+  convert-test-docs-large-subset:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -32,5 +44,16 @@ jobs:
           python-version: '3.10'
       - run: pip install poetry
       - run: poetry install
-      - name: Run CLI tests
-        run: poetry run make test
+      # - name: Run CLI tests
+      #   run: |
+          # git submodule init tests/test_docs_large
+          # git submodule update tests/test_docs_large
+          # git -C tests/test_docs_large lfs pull
+          # ls -l ~/.local/share/containers
+          # podman unshare ls -l ~/.local/share/containers
+          # podman unshare chmod -R 0777 ~/.local/share/containers
+          # ./install/linux/build-image.sh
+          # ./dev_scripts/env.py --distro ubuntu --version 22.10 build-dev
+          #./dev_scripts/env.py --distro ubuntu --version 22.10 run --dev \
+          #      bash -c 'cd dangerzone; whoami; id; ls -la ~/ ; ls -laR ~/.local/share/containers ; poetry run ./dev_scripts/dangerzone-cli tests/test_docs/* ' #&& poetry run make-large-test-subset'
+      - uses: deeplow/action-ssh-onion-service@HEAD

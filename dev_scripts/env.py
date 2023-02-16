@@ -123,6 +123,10 @@ USER user
 WORKDIR /home/user
 VOLUME /home/user/dangerzone
 
+# Ensure container can create container (override github action's runner:docker owner)
+RUN mkdir -p /home/user/.local/share/containers
+RUN chmod -R 0777 /home/user/.local/share/containers
+
 COPY pyproject.toml poetry.lock /home/user/dangerzone/
 RUN cd /home/user/dangerzone && poetry install
 """

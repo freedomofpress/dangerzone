@@ -18,7 +18,9 @@ test_docs = [
 ]
 
 # Pytest parameter decorators
-for_each_doc = pytest.mark.parametrize("doc", test_docs)
+for_each_doc = pytest.mark.parametrize(
+    "doc", test_docs, ids=[str(doc.name) for doc in test_docs]
+)
 
 
 class TestBase:

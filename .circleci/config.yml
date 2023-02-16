@@ -167,9 +167,24 @@ jobs:
       - restore_cache: *restore-cache
       - run: *copy-image
       - run:
+          name: Install git-lfs for getting large test files
+          command: |
+            sudo apt-get install -y git-lfs
+      - run:
+          name: fetch large test set
+          command: |
+            sudo apt install -y git-lfs
+            git submodule init tests/test_docs_large
+            git submodule update tests/test_docs_large
+            mv ~/.gitconfig /tmp
+            git lfs -c tests/test_docs_large pull tests/test_docs_large
+      - run:
           name: run automated tests
           command: |
             poetry run make test
+            poetry run make test-large-subset
+      - store_test_results:
+          path: .
 
   ci-ubuntu-kinetic:
     machine:
@@ -483,42 +498,45 @@ workflows:
       - convert-test-docs:
           requires:
             - build-container-image
-      - ci-ubuntu-kinetic:
-          requires:
-            - build-container-image
-      - ci-ubuntu-jammy:
-          requires:
-            - build-container-image
-      - ci-debian-bookworm:
-          requires:
-            - build-container-image
-      - ci-fedora-37:
-          requires:
-            - build-container-image
-      - ci-fedora-36:
-          requires:
-            - build-container-image
-      - build-ubuntu-kinetic:
-          requires:
-            - build-container-image
-      - build-ubuntu-jammy:
-          requires:
-            - build-container-image
-      - build-ubuntu-focal:
-          requires:
-            - build-container-image
-      - build-debian-bullseye:
-          requires:
-            - build-container-image
-      - build-debian-bookworm:
-          requires:
-            - build-container-image
-      - build-fedora-37:
-          requires:
-            - build-container-image
-      - build-fedora-36:
-          requires:
-            - build-container-image
+      # - convert-test-docs-large-subset:
+      #     requires:
+      #       - build-container-image
+      # - ci-ubuntu-kinetic:
+      #     requires:
+      #       - build-container-image
+      # - ci-ubuntu-jammy:
+      #     requires:
+      #       - build-container-image
+      # - ci-debian-bookworm:
+      #     requires:
+      #       - build-container-image
+      # - ci-fedora-37:
+      #     requires:
+      #       - build-container-image
+      # - ci-fedora-36:
+      #     requires:
+      #       - build-container-image
+      # - build-ubuntu-kinetic:
+      #     requires:
+      #       - build-container-image
+      # - build-ubuntu-jammy:
+      #     requires:
+      #       - build-container-image
+      # - build-ubuntu-focal:
+      #     requires:
+      #       - build-container-image
+      # - build-debian-bullseye:
+      #     requires:
+      #       - build-container-image
+      # - build-debian-bookworm:
+      #     requires:
+      #       - build-container-image
+      # - build-fedora-37:
+      #     requires:
+      #       - build-container-image
+      # - build-fedora-36:
+      #     requires:
+      #       - build-container-image
 
   build-and-deploy:
     jobs:

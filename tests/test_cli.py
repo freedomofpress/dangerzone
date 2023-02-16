@@ -9,7 +9,7 @@ import sys
 import tempfile
 import traceback
 from pathlib import Path
-from typing import Sequence
+from typing import Mapping, Sequence
 from unittest import mock
 
 import pytest
@@ -111,7 +111,10 @@ class CLIResult(Result):
 
 class TestCli(TestBase):
     def run_cli(
-        self, args: Sequence[str] | str = (), tmp_path: Path = None
+        self,
+        args: Sequence[str] | str = (),
+        tmp_path: Path = None,
+        env: Mapping[str, str] = None,
     ) -> CLIResult:
         """Run the CLI with the provided arguments.
 
@@ -145,7 +148,7 @@ class TestCli(TestBase):
                     "dangerzone.isolation_provider.container.get_tmp_dir",
                     return_value=t,
                 ):
-                    result = CliRunner().invoke(cli_main, args)
+                    result = CliRunner().invoke(cli_main, args, env=env)
             finally:
                 if tmp_path is not None:
                     os.chdir(cwd)

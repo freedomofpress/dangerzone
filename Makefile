@@ -40,7 +40,20 @@ lint-apply: lint-black-apply lint-isort-apply ## apply all the linter's suggesti
 
 .PHONY: test
 test:
-	python ./dev_scripts/pytest-wrapper.py -v --cov --ignore dev_scripts
+	python ./dev_scripts/pytest-wrapper.py -v --cov --ignore dev_scripts --ignore tests/test_large_set.py
+
+.PHONY: tests-large
+test-large:
+	python ./dev_scripts/pytest-wrapper.py tests/test_large_set.py::TestLargeSet -v  --junitxml=junit.xml
+
+.PHONY: tests-large-subset
+test-large-subset:
+	python ./dev_scripts/pytest-wrapper.py tests/test_large_set.py::TestLargeSet::test_short_up_to_100K -v --junitxml=/tmp/junit.xml
+
+test-large-train:  ## Train large test set
+	# find tests/test_docs_large/ -name "*.container_log" exec rm {} \;
+	python ./dev_scripts/pytest-wrapper.py tests/test_large_set.py::TestLargeSet -v  --junitxml=junit.xml --train
+
 
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.

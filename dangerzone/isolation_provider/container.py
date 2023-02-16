@@ -25,6 +25,8 @@ else:
 
 log = logging.getLogger(__name__)
 
+CONTAINER_LOG_EXT = "container_log"
+
 
 class NoContainerTechException(Exception):
     def __init__(self, container_tech: str) -> None:
@@ -62,6 +64,7 @@ class Container(IsolationProvider):
         """
         Make sure the podman container is installed. Linux only.
         """
+
         if Container.is_container_installed():
             return True
 
@@ -147,12 +150,12 @@ class Container(IsolationProvider):
 
         # Log to .log file
         if os.environ.get("DZ_LOG_CONTAINER", "no").lower() in ["yes", "true"]:
-            with open(f"{document.input_filename}.container_log", "a") as f:
+            with open(f"{document.input_filename}.{CONTAINER_LOG_EXT}", "a") as f:
                 f.write(f"{line.rstrip()}\n")
 
     def parse_progress(
         self, document: Document, line: str
-    ) -> None | Tuple[bool, str, int]:
+    ) -> Optional[Tuple[bool, str, int]]:
         """
         Parses a line returned by the container.
         """
@@ -326,6 +329,8 @@ class Container(IsolationProvider):
                 "-e",
                 f"ENABLE_TIMEOUTS={self.enable_timeouts}",
             ]
+            if getattr(sys, "dangerzone_dev", False):
+                extra_args += ["-e", f"DZ_DEBUG_CONTAINER=yes"]
             ret = self.exec_container(document, command, extra_args, stdout_callback)
             if ret != 0:
                 log.error("pixels-to-pdf failed")
@@ -341,6 +346,11 @@ class Container(IsolationProvider):
 
                 # We did it
                 success = True
+
+        if success:
+            self.log_container_output(document, "Result: SUCCESS")
+        else:
+            self.log_container_output(document, "Result: FAILURE")
 
         return success
 

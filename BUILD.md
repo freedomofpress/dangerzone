@@ -5,8 +5,8 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y podman dh-python make libqt5gui5 \
-    python3 python3-dev python3-venv python3-pip python3-stdeb
+sudo apt install -y podman dh-python build-essential fakeroot make libqt5gui5 \
+    python3 python3-dev python3-venv python3-pip python3-stdeb python3-all
 ```
 
 Install poetry (you may need to add `~/.local/bin/` to your `PATH` first):

@@ -60,7 +60,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends podman uidmap dh-python make \
-        libqt5gui5 python3 python3-dev python3-venv python3-pip python3-stdeb \
+        build-essential fakeroot libqt5gui5 python3 python3-dev python3-venv \
+        python3-pip python3-stdeb python3-all \
     && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
     && apt-get install -y --no-install-recommends mupdf \

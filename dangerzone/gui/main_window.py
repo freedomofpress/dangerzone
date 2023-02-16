@@ -399,10 +399,15 @@ class SettingsWidget(QtWidgets.QWidget):
         self.safe_extension_name_layout.addWidget(self.safe_extension_filename)
         self.safe_extension_name_layout.addWidget(self.safe_extension)
 
-        dot_pdf_regex = QtCore.QRegularExpression(r".*\.[Pp][Dd][Ff]")
-        self.safe_extension.setValidator(
-            QtGui.QRegularExpressionValidator(dot_pdf_regex)
-        )
+        # FIXME: Workaround for https://github.com/freedomofpress/dangerzone/issues/339.
+        # We should drop this once we drop Ubuntu Focal support.
+        if hasattr(QtGui, "QRegularExpressionValidator"):
+            dot_pdf_regex = QtCore.QRegularExpression(r".*\.[Pp][Dd][Ff]")
+            validator = QtGui.QRegularExpressionValidator(dot_pdf_regex)
+        else:
+            dot_pdf_regex = QtCore.QRegExp(r".*\.[Pp][Dd][Ff]")  # type: ignore [assignment]
+            validator = QtGui.QRegExpValidator(dot_pdf_regex)  # type: ignore [call-overload]
+        self.safe_extension.setValidator(validator)
         self.safe_extension_layout = QtWidgets.QHBoxLayout()
         self.safe_extension_layout.addWidget(self.save_checkbox)
         self.safe_extension_layout.addWidget(self.safe_extension_label)

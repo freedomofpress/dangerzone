@@ -762,6 +762,24 @@ class QADebianBased(QALinux):
         self.shell_run("./install/linux/build-deb.py")
 
 
+class QADebianBullseye(QADebianBased):
+
+    DISTRO = "debian"
+    VERSION = "bullseye"
+
+
+class QADebianBookworm(QADebianBased):
+
+    DISTRO = "debian"
+    VERSION = "bookworm"
+
+
+class QAUbuntu2004(QADebianBased):
+
+    DISTRO = "ubuntu"
+    VERSION = "20.04"
+
+
 class QAUbuntu2204(QADebianBased):
 
     DISTRO = "ubuntu"

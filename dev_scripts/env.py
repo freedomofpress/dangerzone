@@ -52,6 +52,24 @@ Run Dangerzone in the end-user environment:
 
 """
 
+# NOTE: For Ubuntu 20.04 specifically, we need to install some extra deps, mainly for
+# Podman. This needs to take place both in our dev and end-user environment. See the
+# corresponding note in our Installation section:
+#
+# https://github.com/freedomofpress/dangerzone/blob/main/INSTALL.md#ubuntu-debian
+DOCKERFILE_UBUNTU_2004_DEPS = r"""
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y python-all curl wget gnupg2 \
+    && rm -rf /var/lib/apt/lists/*
+RUN . /etc/os-release \
+    && sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' \
+        > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list" \
+    && wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- \
+        | apt-key add -
+"""
+
 # FIXME: Do we really need the python3-venv packages?
 # XXX: We install uidmap separately, because it is not a hard dependency for Podman, and
 # we use --no-install-recommends.
@@ -345,6 +363,10 @@ class Env:
         """Build a Linux environment and install tools for Dangerzone development."""
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_DEV_FEDORA_DEPS
+        elif self.distro == "ubuntu" and self.version == "20.04":
+            install_deps = (
+                DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
+            )
         else:
             install_deps = DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
 
@@ -379,6 +401,10 @@ class Env:
             install_cmd = "dnf install -y"
         else:
             install_deps = DOCKERFILE_BUILD_DEBIAN_DEPS
+            if self.distro == "ubuntu" and self.version == "20.04":
+                install_deps = (
+                    DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEBIAN_DEPS
+                )
             package = f"dangerzone_{version}-1_all.deb"
             package_src = git_root() / "deb_dist" / package
             package_dst = build_dir / package

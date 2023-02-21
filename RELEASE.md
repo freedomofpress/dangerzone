@@ -212,6 +212,40 @@ Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
 
 ## Linux release
 
+### Debian/Ubuntu
+
+Because the Debian packages do not contain compiled Python code for a specific
+Python version, we can create a single Debian package and use it for all of our
+Debian-based distros.
+
+Create a Debian Bookworm development environment. You can [follow the
+instructions in our build section](https://github.com/freedomofpress/dangerzone/blob/main/BUILD.md#debianubuntu),
+or create your own locally with:
+
+```sh
+./dev_scripts/env.py --distro debian --version bookworm build-dev
+./dev_scripts/env.py --distro debian --version bookworm run --dev bash
+cd dangerzone
+```
+
+Build the latest container:
+
+```sh
+./install/linux/build-image.sh
+```
+
+Create a .deb:
+
+```sh
+./install/linux/build-deb.py
+```
+
+Publish the .deb under `./deb_dist` to the
+[`freedomofpress/apt-tools-prod`](https://github.com/freedomofpress/apt-tools-prod)
+repo, by sending a PR. Follow the instructions in that repo on how to do so.
+
+### Fedora
+
 Linux binaries are automatically built and deployed to repositories when a new tag is pushed.
 
 ### Fedora

@@ -38,10 +38,25 @@ Dangerzone is available for:
   ```
 </details>
 
-Add our repository following [these instructions](https://packagecloud.io/firstlookmedia/code/install#manual-deb), or by running this script:
+Add our repository following these instructions:
 
+Download the GPG key for the repo:
+
+```sh
+gpg --keyserver hkps://keys.openpgp.org \
+    --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
+    --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
+sudo mkdir -p /etc/apt/keyrings/
+sudo mv fpf-apt-tools-archive-keyring.gpg /etc/apt/keyrings
 ```
-curl -s https://packagecloud.io/install/repositories/firstlookmedia/code/script.deb.sh | sudo bash
+
+Add the URL of the repo in your APT sources:
+
+```sh
+source /etc/os-release
+echo deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
+    https://packages.freedom.press/apt-tools-prod ${VERSION_CODENAME?} main \
+    | sudo tee /etc/apt/sources.list.d/fpf-apt-tools.list
 ```
 
 Install Dangerzone:
@@ -50,6 +65,22 @@ Install Dangerzone:
 sudo apt update
 sudo apt install -y dangerzone
 ```
+
+<details>
+  <summary><i>:memo: Expand this section for a security notice on third-party Debian repos</i></summary>
+  </br>
+
+  This section follows the official instructions on configuring [third-party
+  Debian repos](https://wiki.debian.org/DebianRepository/UseThirdParty).
+
+  To mitigate a class of attacks against our APT repo (e.g., injecting packages
+  signed with an attacker key), we add an additional step in our instructions to
+  verify the downloaded GPG key against its fingerprint.
+
+  Aside from these protections, the user needs to be aware that Debian packages
+  run as `root` during the installation phase, so they need to place some trust
+  on our signed Debian packages. This holds for any third-party Debian repo.
+</details>
 
 ### Fedora
 

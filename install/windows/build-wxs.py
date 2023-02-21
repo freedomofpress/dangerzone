@@ -22,6 +22,15 @@ def build_data(dirname, dir_prefix, id_, name):
             else:
                 id_prefix = id_
 
+            # Skip lib/PySide6/examples folder due to ilegal file names
+            if "\\build\\exe.win-amd64-3.10\\lib\\PySide6\\examples" in dirname:
+                continue
+
+            # Skip lib/PySide6/qml/QtQuick folder due to ilegal file names
+            # XXX Since we're not using Qml it should be no problem
+            if "\\build\\exe.win-amd64-3.10\\lib\\PySide6\\qml\\QtQuick" in dirname:
+                continue
+
             id_value = f"{id_prefix}{basename.capitalize().replace('-', '_')}"
             data["dirs"].append(
                 build_data(

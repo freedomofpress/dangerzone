@@ -20,6 +20,13 @@ jobs:
       - run: poetry install
       - name: Run CLI tests
         run: poetry run make test
+      # Taken from: https://github.com/orgs/community/discussions/27149#discussioncomment-3254829
+      - name: Set path for candle and light
+        run: echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" >> $GITHUB_PATH
+        shell: bash
+      - name: Build the MSI installer
+        # NOTE: This also builds the .exe internally.
+        run: poetry run .\install\windows\build-app.bat
 
   macOS:
     runs-on: macos-latest

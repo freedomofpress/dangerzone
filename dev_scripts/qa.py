@@ -156,14 +156,21 @@ Install dependencies:
 
 ```sh
 sudo apt install -y podman dh-python build-essential fakeroot make libqt5gui5 \
-    python3 python3-dev python3-venv python3-pip python3-stdeb python3-all
+    pipx python3 python3-dev python3-stdeb python3-all
 ```
 
-Install poetry (you may need to add `~/.local/bin/` to your `PATH` first):
+Install Poetry using `pipx` (recommended) and add it to your `$PATH`:
+
+_(See also a list of [alternative installation
+methods](https://python-poetry.org/docs/#installation))_
 
 ```sh
-python3 -m pip install poetry
+pipx ensurepath
+pipx install poetry
 ```
+
+After this, restart the terminal window, for the `poetry` command to be in your
+`$PATH`.
 
 Change to the `dangerzone` folder, and install the poetry dependencies:
 
@@ -204,13 +211,13 @@ CONTENT_BUILD_FEDORA = r"""## Fedora
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 python3-pip qt5-qtbase-gui
+sudo dnf install -y rpm-build podman python3 pipx qt5-qtbase-gui
 ```
 
-Install poetry:
+Install Poetry using `pipx`:
 
 ```sh
-python -m pip install poetry
+pipx install poetry
 ```
 
 Change to the `dangerzone` folder, and install the poetry dependencies:

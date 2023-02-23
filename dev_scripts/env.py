@@ -78,9 +78,18 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends podman uidmap dh-python make \
-        build-essential fakeroot libqt5gui5 python3 python3-dev python3-venv \
-        python3-pip python3-stdeb python3-all \
+        build-essential fakeroot libqt5gui5 pipx python3 python3-dev \
+        python3-venv python3-stdeb python3-all \
     && rm -rf /var/lib/apt/lists/*
+# NOTE: `pipx install poetry` fails on Ubuntu Focal, when installed through APT. By
+# installing the latest version, we sidestep this issue.
+RUN bash -c 'if [[ "$(pipx --version)" < "1" ]]; then \
+                apt-get update \
+                && apt-get remove -y pipx \
+                && apt-get install -y --no-install-recommends python3-pip \
+                && pip install pipx \
+                && rm -rf /var/lib/apt/lists/*; \
+              else true; fi'
 RUN apt-get update \
     && apt-get install -y --no-install-recommends mupdf \
     && rm -rf /var/lib/apt/lists/*
@@ -88,7 +97,7 @@ RUN apt-get update \
 
 # FIXME: Install Poetry on Fedora via package manager.
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
-RUN dnf install -y rpm-build podman python3 make python3-pip qt5-qtbase-gui \
+RUN dnf install -y rpm-build podman python3 pipx make qt5-qtbase-gui \
     && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.
@@ -103,8 +112,6 @@ RUN dnf install -y mupdf && dnf clean all
 DOCKERFILE_BUILD_DEV = r"""FROM {distro}:{version}
 
 {install_deps}
-
-RUN python3 -m pip install poetry
 
 #########################################
 # Create a non-root user to run Dangerzone
@@ -123,8 +130,14 @@ USER user
 WORKDIR /home/user
 VOLUME /home/user/dangerzone
 
+# Install Poetry under ~/.local/bin.
+# See https://github.com/freedomofpress/dangerzone/issues/351
+# FIXME: pipx install poetry does not work for Ubuntu Focal.
+ENV PATH="$PATH:/home/user/.local/bin"
+RUN pipx install poetry
+
 COPY pyproject.toml poetry.lock /home/user/dangerzone/
-RUN cd /home/user/dangerzone && poetry install
+RUN cd /home/user/dangerzone && poetry --no-ansi install
 """
 
 DOCKERFILE_BUILD_DEBIAN_DEPS = r"""
@@ -220,6 +233,10 @@ class Env:
         """Initialize an Env class based on some common parameters."""
         self.distro = distro
         self.version = version
+        # NOTE: We change "bullseye" to "bullseye-backports", since it contains `pipx`,
+        # which is not available through the original repos.
+        if self.distro == "debian" and self.version in ("bullseye", "11"):
+            self.version = "bullseye-backports"
 
         # Try to autodetect the runtime, if the user has not provided it.
         #

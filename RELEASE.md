@@ -46,11 +46,6 @@ and newer platforms, we have to do the following:
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Run only the CI tests in the rest of the Linux platforms:
-  - [ ] Create a new development environment with Poetry.
-  - [ ] Build the container image and ensure the development environment uses
-    the new image.
-  - [ ] Run the Dangerzone tests.
 
 ### Scenarios
 

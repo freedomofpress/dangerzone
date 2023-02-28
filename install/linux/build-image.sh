@@ -2,11 +2,13 @@
 
 set -e
 
+TAG=dangerzone.rocks/dangerzone:latest
+
 echo "Building container image"
-podman build container --tag dangerzone.rocks/dangerzone
+podman build container --tag $TAG
 
 echo "Saving and compressing container image"
-podman save dangerzone.rocks/dangerzone | gzip > share/container.tar.gz
+podman save $TAG | gzip > share/container.tar.gz
 
 echo "Looking up the image id"
-podman image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > share/image-id.txt
+podman images --filter=reference=$TAG > share/image-id.txt

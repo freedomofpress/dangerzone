@@ -11,7 +11,7 @@ def main():
             "build",
             "container",
             "--tag",
-            "dangerzone.rocks/dangerzone",
+            "dangerzone.rocks/dangerzone:latest",
         ]
     )
 
@@ -20,7 +20,7 @@ def main():
         [
             "docker",
             "save",
-            "dangerzone.rocks/dangerzone",
+            "dangerzone.rocks/dangerzone:latest",
         ],
         stdout=subprocess.PIPE,
     )
@@ -45,7 +45,7 @@ def main():
             "list",
             "--format",
             "{{.ID}}",
-            "dangerzone.rocks/dangerzone",
+            "dangerzone.rocks/dangerzone:latest",
         ],
         text=True,
     )

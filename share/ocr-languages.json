@@ -24,6 +24,7 @@
     "Frankish": "frk",
     "French, Middle (ca.1400-1600)": "frm",
     "Galician": "glg",
+    "Greek, Ancient, to 1453": "grc",
     "Hebrew": "heb",
     "Hindi": "hin",
     "Croatian": "hrv",
@@ -50,14 +51,16 @@
     "Russian": "rus",
     "Slovakian": "slk",
     "Spanish": "spa",
-    "Spanish": "spa_old",
+    "Spanish; Castilian - Old": "spa_old",
     "Albanian": "sqi",
     "Serbian": "srp",
     "Swahili": "swa",
     "Swedish": "swe",
     "Tamil": "tam",
     "Telugu": "tel",
+    "Filipino": "tgl",
     "Thai": "tha",
     "Turkish": "tur",
-    "Ukrainian": "ukr"
+    "Ukrainian": "ukr",
+    "Vietnamese": "vie"
 }

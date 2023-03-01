@@ -610,8 +610,8 @@ class SettingsWidget(QtWidgets.QWidget):
         # open the directory where the user last saved it
         dialog.setDirectory(self.dangerzone.output_dir)
 
-        # allow only the selection of directories
-        dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
+        # Allow only the selection of directories
+        dialog.setFileMode(QtWidgets.QFileDialog.Directory)
         dialog.setOption(QtWidgets.QFileDialog.ShowDirsOnly, True)
 
         if dialog.exec_() == QtWidgets.QFileDialog.Accepted:

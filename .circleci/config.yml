@@ -217,6 +217,32 @@ jobs:
             ./dev_scripts/env.py --distro ubuntu --version 22.04 run --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
+  ci-ubuntu-focal:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro ubuntu --version 20.04 build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro ubuntu --version 20.04 run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
   ci-fedora-37:
     machine:
       image: ubuntu-2004:202111-01
@@ -293,6 +319,32 @@ jobs:
           name: Run CI tests
           command: |
             ./dev_scripts/env.py --distro debian --version bookworm run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
+  ci-debian-bullseye:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro debian --version bullseye build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro debian --version bullseye run --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
   build-ubuntu-kinetic:
@@ -483,7 +535,13 @@ workflows:
       - ci-ubuntu-jammy:
           requires:
             - build-container-image
+      - ci-ubuntu-focal:
+          requires:
+            - build-container-image
       - ci-debian-bookworm:
+          requires:
+            - build-container-image
+      - ci-debian-bullseye:
           requires:
             - build-container-image
       - ci-fedora-37:

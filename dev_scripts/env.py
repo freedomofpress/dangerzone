@@ -371,7 +371,7 @@ class Env:
             print(" ".join(self.runtime_cmd + list(run_cmd)))
             return
 
-        dist_state.mkdir(exist_ok=True)
+        dist_state.mkdir(parents=True, exist_ok=True)
         (dist_state / "containers").mkdir(exist_ok=True)
         (dist_state / ".bash_history").touch(exist_ok=True)
         self.runtime_run(*run_cmd)

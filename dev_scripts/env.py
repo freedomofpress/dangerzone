@@ -380,7 +380,7 @@ class Env:
         """Build a Linux environment and install tools for Dangerzone development."""
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_DEV_FEDORA_DEPS
-        elif self.distro == "ubuntu" and self.version == "20.04":
+        elif self.distro == "ubuntu" and self.version in ("20.04", "focal"):
             install_deps = (
                 DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
             )
@@ -418,7 +418,7 @@ class Env:
             install_cmd = "dnf install -y"
         else:
             install_deps = DOCKERFILE_BUILD_DEBIAN_DEPS
-            if self.distro == "ubuntu" and self.version == "20.04":
+            if self.distro == "ubuntu" and self.version in ("20.04", "focal"):
                 install_deps = (
                     DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEBIAN_DEPS
                 )

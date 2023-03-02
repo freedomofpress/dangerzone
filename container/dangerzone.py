@@ -25,8 +25,9 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import magic
 
-TIMEOUT_PER_PAGE: float = 10  # (seconds)
-TIMEOUT_PER_MB: float = 10  # (seconds)
+TIMEOUT_PER_PAGE: float = 30  # (seconds)
+TIMEOUT_PER_MB: float = 30  # (seconds)
+TIMEOUT_MIN: float = 60  # (seconds)
 
 
 async def read_stream(sr: asyncio.StreamReader, callback: Callable = None) -> bytes:
@@ -126,7 +127,7 @@ class DangerzoneConverter:
 
         # Do not have timeouts lower than 10 seconds, if the file size is small, since
         # we need to take into account the program's startup time as well.
-        timeout = max(TIMEOUT_PER_MB * size, 10)
+        timeout = max(TIMEOUT_PER_MB * size, TIMEOUT_MIN)
         if pages:
             timeout = max(timeout, TIMEOUT_PER_PAGE * pages)
         return timeout

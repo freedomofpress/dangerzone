@@ -1,4 +1,58 @@
-# Change Log
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
+since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+- Feature: Add version info in the CLI and GUI ([issue #219](https://github.com/freedomofpress/dangerzone/issues/219))
+- Development: Improve CI stability and coverage
+  ([issue #292](https://github.com/freedomofpress/dangerzone/issues/292),
+   [issue #217](https://github.com/freedomofpress/dangerzone/issues/217),
+   [issue #229](https://github.com/freedomofpress/dangerzone/issues/229))
+- Development: Provide dev scripts for testing Dangerzone in a container and
+  running our QA pipeline
+  ([issue #286](https://github.com/freedomofpress/dangerzone/issues/286),
+   [issue #287](https://github.com/freedomofpress/dangerzone/issues/287))
+- Development: Support Dangerzone development on Fedora 37
+  ([issue #294](https://github.com/freedomofpress/dangerzone/issues/294))
+- Development: Allow running Mypy on MacOS M1 machines ([issue #177](https://github.com/freedomofpress/dangerzone/issues/177))
+- Development: Add dummy isolation provider for testing non-conversion-related
+  issues in virtualized Windows and MacOS, where Docker can't run, due to the
+  lack of nested virtualization ([issue #229](https://github.com/freedomofpress/dangerzone/issues/229))
+
+### Changed
+
+- Platform support: MacOS (Apple Silicon) native application with significant
+  performance boost ([issue #219](https://github.com/freedomofpress/dangerzone/issues/219))
+- Feature: Introduce PySide6 / Qt6 support on Windows, MacOS, and Linux (dev-only) ([issue #219](https://github.com/freedomofpress/dangerzone/issues/219))
+- Feature: Adjust conversion timeouts based on the document's pages/size, and
+  allow users to disable them with `--disable-timeouts` (available when you run
+  the Dangerzone from the terminal) ([issue #327](https://github.com/freedomofpress/dangerzone/issues/327))
+- Development: Update Linux instructions for development on Qubes
+
+### Removed
+
+- Platform support: Drop Fedora 35, since it's end-of-life ([issue #308](https://github.com/freedomofpress/dangerzone/issues/308))
+- Bug fix: Remove unused PDFtk and sudo libraries from the container image, to
+  lower its attack surface and reduce its size ([issue #232](https://github.com/freedomofpress/dangerzone/issues/232))
+
+### Fixed
+
+- Feature: Convert documents with non-standard permissions or SELinux labels ([issue #335](https://github.com/freedomofpress/dangerzone/issues/335))
+- Bug fix: Report exceptions during conversions ([issue #309](https://github.com/freedomofpress/dangerzone/issues/309))
+- Bug fix: (Windows) Fix Dangerzone description on "Open With" ([issue #283](https://github.com/freedomofpress/dangerzone/issues/283))
+- Bug fix: Remove document conversion artifacts when conversion fails and store
+  them on volatile memory instead of on a disk directory
+  ([issue #317](https://github.com/freedomofpress/dangerzone/issues/317))
+
+### Security
+
+- Bug fix: Do not print debug logs in end-user executables ([issue #316](https://github.com/freedomofpress/dangerzone/issues/316))
 
 ## Dangerzone 0.4.0
 

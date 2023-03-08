@@ -33,7 +33,11 @@ and newer platforms, we have to do the following:
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in macOS (M1/2 CPU) and make sure it works:
-  - [ ] Grab the app bundle that we built for macOS above and run it.
+  - [ ] Create a new development environment with Poetry.
+  - [ ] Build the container image and ensure the development environment uses
+    the new image.
+  - [ ] Run the Dangerzone tests.
+  - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in the most recent Ubuntu LTS platform (Ubuntu 22.04
   as of writing this) and make sure it works:
@@ -51,11 +55,6 @@ and newer platforms, we have to do the following:
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Run only the CI tests in the rest of the Linux platforms:
-  - [ ] Create a new development environment with Poetry.
-  - [ ] Build the container image and ensure the development environment uses
-    the new image.
-  - [ ] Run the Dangerzone tests.
 
 """
 

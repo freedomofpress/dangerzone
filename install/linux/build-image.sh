@@ -11,4 +11,4 @@ echo "Saving and compressing container image"
 podman save $TAG | gzip > share/container.tar.gz
 
 echo "Looking up the image id"
-podman images --filter=reference=$TAG > share/image-id.txt
+podman images -q --filter=reference=$TAG > share/image-id.txt

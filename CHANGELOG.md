@@ -24,6 +24,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Development: Add dummy isolation provider for testing non-conversion-related
   issues in virtualized Windows and MacOS, where Docker can't run, due to the
   lack of nested virtualization ([issue #229](https://github.com/freedomofpress/dangerzone/issues/229))
+- Add support for more MIME types that were previously disregarded ([issue #377](https://github.com/freedomofpress/dangerzone/issues/377))
 
 ### Changed
 

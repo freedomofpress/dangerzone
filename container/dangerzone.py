@@ -141,57 +141,66 @@ class DangerzoneConverter:
             # .docx
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "writer_pdf_Export",
             },
             # .doc
             "application/msword": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "writer_pdf_Export",
             },
             # .docm
             "application/vnd.ms-word.document.macroEnabled.12": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "writer_pdf_Export",
             },
             # .xlsx
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "calc_pdf_Export",
             },
             # .xls
             "application/vnd.ms-excel": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "calc_pdf_Export",
             },
             # .pptx
             "application/vnd.openxmlformats-officedocument.presentationml.presentation": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "impress_pdf_Export",
             },
             # .ppt
             "application/vnd.ms-powerpoint": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "impress_pdf_Export",
             },
             # .odt
             "application/vnd.oasis.opendocument.text": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "writer_pdf_Export",
             },
             # .odg
             "application/vnd.oasis.opendocument.graphics": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "impress_pdf_Export",
             },
             # .odp
             "application/vnd.oasis.opendocument.presentation": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "impress_pdf_Export",
             },
-            # .ops
+            # .ods
             "application/vnd.oasis.opendocument.spreadsheet": {
                 "type": "libreoffice",
-                "libreoffice_output_filter": "calc_pdf_Export",
+            },
+            # .ods / .ots
+            "application/vnd.oasis.opendocument.spreadsheet-template": {
+                "type": "libreoffice",
+            },
+            # .odt / .ott
+            "application/vnd.oasis.opendocument.text-template": {
+                "type": "libreoffice",
+            },
+            # At least .odt, .docx, .odg, .odp, .ods, and .pptx
+            "application/zip": {
+                "type": "libreoffice",
+            },
+            # At least .doc, .docx, .odg, .odp, .odt, .pdf, .ppt, .pptx, .xls, and .xlsx
+            "application/octet-stream": {
+                "type": "libreoffice",
+            },
+            # At least .doc, .ppt, and .xls
+            "application/x-ole-storage": {
+                "type": "libreoffice",
             },
             # .jpg
             "image/jpeg": {"type": "convert"},
@@ -230,7 +239,7 @@ class DangerzoneConverter:
                 "libreoffice",
                 "--headless",
                 "--convert-to",
-                f"pdf:{conversion['libreoffice_output_filter']}",
+                "pdf",
                 "--outdir",
                 "/tmp",
                 "/tmp/input_file",

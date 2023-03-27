@@ -133,7 +133,6 @@ class DangerzoneConverter:
         return timeout
 
     async def document_to_pixels(self) -> None:
-
         conversions: Dict[str, Dict[str, Optional[str]]] = {
             # .pdf
             "application/pdf": {"type": None},

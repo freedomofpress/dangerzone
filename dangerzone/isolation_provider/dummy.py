@@ -56,7 +56,7 @@ class Dummy(IsolationProvider):
             [False, "Safe PDF created", 100.0],
         ]
 
-        for (error, text, percentage) in progress:
+        for error, text, percentage in progress:
             self.print_progress(document, error, text, percentage)  # type: ignore [arg-type]
             if stdout_callback:
                 stdout_callback(error, text, percentage)

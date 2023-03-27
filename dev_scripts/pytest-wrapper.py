@@ -48,7 +48,6 @@ def run_tests_in_sequence(pytest_args):
 
 
 if __name__ == "__main__":
-
     pytest_args = sys.argv[1:]  # exclude program names
 
     if Container.get_runtime_name() == "docker":

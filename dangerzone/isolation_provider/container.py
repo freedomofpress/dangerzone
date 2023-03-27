@@ -31,7 +31,6 @@ class NoContainerTechException(Exception):
 
 
 class Container(IsolationProvider):
-
     # Name of the dangerzone container
     CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 
@@ -317,7 +316,6 @@ class Container(IsolationProvider):
         return success
 
     def get_max_parallel_conversions(self) -> int:
-
         # FIXME hardcoded 1 until timeouts are more limited and better handled
         # https://github.com/freedomofpress/dangerzone/issues/257
         return 1

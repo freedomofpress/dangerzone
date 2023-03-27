@@ -106,7 +106,6 @@ class DangerzoneGui(DangerzoneCore):
                     for filename in os.listdir(search_path):
                         full_filename = os.path.join(search_path, filename)
                         if os.path.splitext(filename)[1] == ".desktop":
-
                             # See which ones can open PDFs
                             desktop_entry = DesktopEntry(full_filename)
                             if (

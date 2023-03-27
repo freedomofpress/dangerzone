@@ -277,7 +277,6 @@ class ContentWidget(QtWidgets.QWidget):
 
     def documents_selected(self, new_docs: List[Document]) -> None:
         if not self.conversion_started:
-
             # assumed all files in batch are in the same directory
             first_doc = new_docs[0]
             output_dir = os.path.dirname(first_doc.input_filename)

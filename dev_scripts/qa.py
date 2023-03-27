@@ -769,31 +769,26 @@ class QADebianBased(QALinux):
 
 
 class QADebianBullseye(QADebianBased):
-
     DISTRO = "debian"
     VERSION = "bullseye"
 
 
 class QADebianBookworm(QADebianBased):
-
     DISTRO = "debian"
     VERSION = "bookworm"
 
 
 class QAUbuntu2004(QADebianBased):
-
     DISTRO = "ubuntu"
     VERSION = "20.04"
 
 
 class QAUbuntu2204(QADebianBased):
-
     DISTRO = "ubuntu"
     VERSION = "22.04"
 
 
 class QAUbuntu2210(QADebianBased):
-
     DISTRO = "ubuntu"
     VERSION = "22.10"
 
@@ -816,12 +811,10 @@ class QAFedora(QALinux):
 
 
 class QAFedora36(QAFedora):
-
     VERSION = "36"
 
 
 class QAFedora37(QAFedora):
-
     VERSION = "37"
 
 

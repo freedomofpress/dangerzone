@@ -105,4 +105,4 @@ def override_parser_and_check_suspicious_options(click_main: click.Command) -> N
         check_suspicious_options(args)
         return orig_parse_fn(ctx, args)
 
-    click_main.parse_args = custom_parse_fn  # type: ignore [assignment]
+    click_main.parse_args = custom_parse_fn  # type: ignore [method-assign]

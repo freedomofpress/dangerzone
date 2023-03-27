@@ -30,7 +30,9 @@ TIMEOUT_PER_MB: float = 30  # (seconds)
 TIMEOUT_MIN: float = 60  # (seconds)
 
 
-async def read_stream(sr: asyncio.StreamReader, callback: Callable = None) -> bytes:
+async def read_stream(
+    sr: asyncio.StreamReader, callback: Optional[Callable] = None
+) -> bytes:
     """Consume a byte stream line-by-line.
 
     Read all lines in a stream until EOF. If a user has passed a callback, call it for
@@ -59,8 +61,8 @@ async def run_command(
     error_message: str,
     timeout_message: str,
     timeout: Optional[float],
-    stdout_callback: Callable = None,
-    stderr_callback: Callable = None,
+    stdout_callback: Optional[Callable] = None,
+    stderr_callback: Optional[Callable] = None,
 ) -> Tuple[bytes, bytes]:
     """Run a command and get its output.
 

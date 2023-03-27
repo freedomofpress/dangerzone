@@ -33,8 +33,8 @@ class Document:
 
     def __init__(
         self,
-        input_filename: str = None,
-        output_filename: str = None,
+        input_filename: Optional[str] = None,
+        output_filename: Optional[str] = None,
         suffix: str = SAFE_EXTENSION,
         archive: bool = False,
     ) -> None:

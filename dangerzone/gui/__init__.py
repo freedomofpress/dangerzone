@@ -55,7 +55,7 @@ class Application(QtWidgets.QApplication):
 
             return self.original_event(event)
 
-        self.event = monkeypatch_event  # type: ignore [assignment]
+        self.event = monkeypatch_event  # type: ignore [method-assign]
 
 
 @click.command()

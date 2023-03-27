@@ -6,7 +6,7 @@ import shlex
 import subprocess
 import typing
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 from colorama import Fore
 
@@ -129,7 +129,7 @@ class Alert(QtWidgets.QDialog):
         message: str,
         ok_text: str = "Ok",
         has_cancel: bool = True,
-        extra_button_text: str = None,
+        extra_button_text: Optional[str] = None,
     ) -> None:
         super(Alert, self).__init__()
         self.dangerzone = dangerzone

@@ -28,7 +28,7 @@ class Dummy(IsolationProvider):
             )
 
     def install(self) -> bool:
-        pass
+        return True
 
     def _convert(
         self,

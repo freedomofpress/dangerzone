@@ -9,7 +9,7 @@ import sys
 import tempfile
 import traceback
 from pathlib import Path
-from typing import Sequence
+from typing import Optional, Sequence
 from unittest import mock
 
 import pytest
@@ -56,7 +56,9 @@ class CLIResult(Result):
             self.print_info()
             raise
 
-    def assert_failure(self, exit_code: int = None, message: str = None) -> None:
+    def assert_failure(
+        self, exit_code: Optional[int] = None, message: Optional[str] = None
+    ) -> None:
         """Assert that the command failed.
 
         By default, check that the command has returned with an exit code
@@ -111,7 +113,7 @@ class CLIResult(Result):
 
 class TestCli(TestBase):
     def run_cli(
-        self, args: Sequence[str] | str = (), tmp_path: Path = None
+        self, args: Sequence[str] | str = (), tmp_path: Optional[Path] = None
     ) -> CLIResult:
         """Run the CLI with the provided arguments.
 

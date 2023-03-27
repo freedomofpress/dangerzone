@@ -665,7 +665,7 @@ class ConvertTask(QtCore.QObject):
         self,
         dangerzone: DangerzoneGui,
         document: Document,
-        ocr_lang: str = None,
+        ocr_lang: Optional[str] = None,
     ) -> None:
         super(ConvertTask, self).__init__()
         self.document = document

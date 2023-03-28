@@ -238,6 +238,7 @@ class DangerzoneConverter:
             args = [
                 "libreoffice",
                 "--headless",
+                "--safe-mode",
                 "--convert-to",
                 "pdf",
                 "--outdir",

@@ -121,7 +121,9 @@ def main():
         "version.txt",
     )
     with open(version_filename) as f:
-        version = f.read().strip()
+        # Read the Dangerzone version from share/version.txt, and remove any potential
+        # -rc markers.
+        version = f.read().strip().split("-")[0]
 
     dist_dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),

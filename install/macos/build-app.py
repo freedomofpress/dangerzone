@@ -76,9 +76,7 @@ def sign_app_bundle(build_path, dist_path, app_path):
 
     print("○ Code signing app bundle")
     identity_name_application = (
-        # FIXME: Update this line with the proper developer ID, once we know what
-        # that is.
-        "Developer ID Application: FREEDOM OF THE PRESS FOUNDATION, 501(c)(3)"
+        "Apple Distribution: Freedom of the Press Foundation (94ZZGGGJ3W)"
     )
     entitlements_plist_path = os.path.join(root, "install/macos/entitlements.plist")
 

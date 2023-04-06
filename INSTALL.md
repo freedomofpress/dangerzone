@@ -53,17 +53,39 @@ sudo apt install -y dangerzone
 
 ### Fedora
 
-Add our repository following [these instructions](https://packagecloud.io/firstlookmedia/code/install#manual-rpm), or by running this script:
+Type the following commands in a terminal:
 
 ```
-curl -s https://packagecloud.io/install/repositories/firstlookmedia/code/script.rpm.sh | sudo bash
+sudo dnf config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
+sudo dnf install dangerzone
 ```
 
-Install Dangerzone:
+<details>
+<summary>Importing GPG key 0x22604281: ... Is this ok [y/N]:</summary>
 
+After some minutes of running the above command (depending on your internet speed) you'll be asked to confirm the fingerprint of our signing key. This is to make sure that in the case our servers are compromized your computer stays safe. It should look like this:
+
+```console
+--------------------------------------------------------------------------------
+Total                                           389 kB/s | 732 MB     32:07
+Dangerzone repository                           3.8 MB/s | 3.8 kB     00:00
+Importing GPG key 0x22604281:
+ Userid     : "Dangerzone Release Key <dangerzone-release-key@freedom.press>"
+ Fingerprint: DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281
+ From       : /etc/pki/rpm-gpg/RPM-GPG-dangerzone.pub
+Is this ok [y/N]:
 ```
-sudo dnf install -y dangerzone
-```
+
+> **Note**: If it does not show this fingerprint confirmation or the fingerprint does not match, it is possible that our servers were compromized. Be distrustful and reach out to us.
+
+The `Fingerprint` should be `DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281`. For extra security, you should confirm it matches the one at the bottom of our website ([dangerzone.rocks](https://dangerzone.rocks)) and our [Mastodon account](https://fosstodon.org/@dangerzone) bio.
+
+After confirming that it matches, type `y` (for yes) and the installation should proceed.
+
+
+</details>
+
+
 
 ## Build from source
 

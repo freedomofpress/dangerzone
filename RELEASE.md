@@ -212,6 +212,38 @@ Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
 
 Linux binaries are automatically built and deployed to repositories when a new tag is pushed.
 
+### Fedora
+
+> **NOTE**: This procedure will have to be done for every supported Fedora version.
+>
+> In this example, we'll use Fedora 37 as an example.
+
+Create a Fedora development environment. You can [follow the
+instructions in our build section](https://github.com/freedomofpress/dangerzone/blob/main/BUILD.md#fedora),
+or create your own locally with:
+
+```sh
+./dev_scripts/env.py --distro fedora --version 37 build-dev
+./dev_scripts/env.py --distro fedora --version 37 run --dev bash
+cd dangerzone
+```
+
+Build the latest container:
+
+```sh
+./install/linux/build-image.sh
+```
+
+Create a .rpm:
+
+```sh
+./install/linux/build-rpm.py
+```
+
+Publish the .rpm under `./dist` to the
+[`freedomofpress/yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod) repo, by sending a PR. Follow the instructions in that repo on how to do so.
+
+
 ## Publishing the release
 
 To publish the release:

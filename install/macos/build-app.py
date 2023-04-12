@@ -88,7 +88,7 @@ def sign_app_bundle(build_path, dist_path, app_path):
     print(f"○ Signed app bundle: {app_path}")
 
     # Detect if create-dmg is installed
-    if not os.path.exists("/usr/local/bin/create-dmg"):
+    if not shutil.which("create-dmg"):
         print("create-dmg is not installed, skipping creating a DMG")
         return
 

@@ -214,10 +214,6 @@ Linux binaries are automatically built and deployed to repositories when a new t
 
 ### Fedora
 
-Because the Fedora packages do not contain compiled Python code for a specific
-Python version, we can create a single Debian package and use it for all of our
-Debian-based distros.
-
 > **NOTE**: This procedure will have to be done for every supported Fedora version.
 >
 > In this example, we'll use Fedora 37 as an example.
@@ -245,7 +241,7 @@ Create a .rpm:
 ```
 
 Publish the .rpm under `./dist` to the
-[`freedomofpress/yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod) repo, but sending a PR. Follow the instructions in that repo on how to do so.
+[`freedomofpress/yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod) repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 
 ## Publishing the release

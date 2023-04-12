@@ -55,8 +55,6 @@ sudo apt install -y dangerzone
 
 ### 1. Add our repository
 
-Start by installing our repository. This allows you to
-
 Open a terminal window and type the following commands:
 
 ```
@@ -89,7 +87,7 @@ Importing GPG key 0x22604281:
 Is this ok [y/N]:
 ```
 
-> **Note**: If it does not show this fingerprint confirmation or the fingerprint does not match, it is possible that our servers were compromized. Be distrustful and reach our to us.
+> **Note**: If it does not show this fingerprint confirmation or the fingerprint does not match, it is possible that our servers were compromized. Be distrustful and reach out to us.
 
 The `Fingerprint` should be `DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281`. For extra security, you should confirm matches the one at the bottom of our website ([dangerzone.rocks](https://dangerzone.rocks)) and our [mastodon account](https://fosstodon.org/@dangerzone) bio.
 

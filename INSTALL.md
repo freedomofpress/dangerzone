@@ -53,21 +53,10 @@ sudo apt install -y dangerzone
 
 ### Fedora
 
-### 1. Add our repository
-
-Open a terminal window and type the following commands:
+Type the following commands in a terminal:
 
 ```
-gpg --keyserver hkps://keys.openpgp.org --recv-key "DE28 AB24 1FA4 8260 FAC9  B8BA A7C9 B385 2260 4281"
-gpg --export --armor A7C9B38522604281 | sudo tee /etc/pki/rpm-gpg/RPM-GPG-dangerzone.pub > /dev/null
-sudo yum-config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
-```
-
-
-### 2. Install Dangerzone
-
-
-```
+sudo dnf config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 sudo dnf install dangerzone
 ```
 

@@ -165,11 +165,13 @@ git checkout v$VERSION
 To make a macOS release, go to macOS build machine:
 
 - Build machine must have:
-  - macOS 10.14
-  - Apple-trusted `Developer ID Application: FIRST LOOK PRODUCTIONS, INC. (P24U45L8P5)` code-signing certificates installed
+  - Apple-trusted `Apple Development: Trevor Timm (TW4JVM8ZCU)` code-signing certificates installed
 - Verify and checkout the git tag for this release
 - Run `poetry install`
-- Run `poetry run ./install/macos/build-app.py --with-codesign`; this will make `dist/Dangerzone.dmg`
+- Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`
+- Run `poetry run ./install/macos/build-app.py --only-codesign`; this will make `dist/Dangerzone.dmg`
+  * You need to run this command as the account that has access to the code signing certificate
+  * You must run this command from the MacOS UI, from a terminal application.
 - Notarize it: `xcrun altool --notarize-app --primary-bundle-id "media.firstlook.dangerzone" -u "micah@firstlook.org" -p "$PASSWORD" --file dist/Dangerzone.dmg`
 - Wait for it to get approved, check status with: `xcrun altool --notarization-history 0 -u "micah@firstlook.org" -p "$PASSWORD"`
 - (If it gets rejected, you can see why with: `xcrun altool --notarization-info $REQUEST_UUID -u "micah@firstlook.org" -p "$PASSWORD"`)

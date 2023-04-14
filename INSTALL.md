@@ -78,7 +78,7 @@ Is this ok [y/N]:
 
 > **Note**: If it does not show this fingerprint confirmation or the fingerprint does not match, it is possible that our servers were compromized. Be distrustful and reach out to us.
 
-The `Fingerprint` should be `DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281`. For extra security, you should confirm matches the one at the bottom of our website ([dangerzone.rocks](https://dangerzone.rocks)) and our [mastodon account](https://fosstodon.org/@dangerzone) bio.
+The `Fingerprint` should be `DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281`. For extra security, you should confirm it matches the one at the bottom of our website ([dangerzone.rocks](https://dangerzone.rocks)) and our [Mastodon account](https://fosstodon.org/@dangerzone) bio.
 
 After confirming that it matches, type `y` (for yes) and the installation should proceed.
 

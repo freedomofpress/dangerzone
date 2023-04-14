@@ -19,7 +19,7 @@ def run(cmd):
     subprocess.run(cmd, cwd=root, check=True)
 
 
-def build_app_bundle():
+def build_app_bundle(build_path, dist_path, app_path):
     """
     Builds the Dangerzone.app bundle and saves it in dist/Dangerzone.app
     """

@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Dangerzone 0.4.1]
+## [Unreleased]
+
+## Dangerzone 0.4.1
 
 ### Added
 
@@ -28,7 +30,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Changed
 
-- Full release under FPF: signing keys have changed from the original developer Micah Lee / First Look Media to FPF's signing keys. Linux packages moved from PackageCloud to FPF's servers
+- Full release under Freedom of the Press Foundation: signing keys have changed from the original developer Micah Lee / First Look Media to FPF's signing keys. Linux packages moved from Packagecloud to FPF's servers
 - [Installation instructions updated](https://github.com/freedomofpress/dangerzone/blob/v0.4.1/INSTALL.md) to reflect change in key owership to FPF
 - Platform support: MacOS (Apple Silicon) native application with significant
   performance boost ([issue #50](https://github.com/freedomofpress/dangerzone/issues/50))

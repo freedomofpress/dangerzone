@@ -31,7 +31,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Full release under FPF: signing keys have changed from the original developer Micah Lee / First Look Media to FPF's signing keys. Linux packages moved from PackageCloud to FPF's servers
 - [Installation instructions updated](https://github.com/freedomofpress/dangerzone/blob/v0.4.1/INSTALL.md) to reflect change in key owership to FPF
 - Platform support: MacOS (Apple Silicon) native application with significant
-  performance boost ([issue #219](https://github.com/freedomofpress/dangerzone/issues/219))
+  performance boost ([issue #50](https://github.com/freedomofpress/dangerzone/issues/50))
 - Feature: Introduce PySide6 / Qt6 support on Windows, MacOS, and Linux (dev-only) ([issue #219](https://github.com/freedomofpress/dangerzone/issues/219))
 - Feature: Adjust conversion timeouts based on the document's pages/size, and
   allow users to disable them with `--disable-timeouts` (available when you run

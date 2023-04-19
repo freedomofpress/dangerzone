@@ -172,9 +172,15 @@ To make a macOS release, go to macOS build machine:
 - Run `poetry run ./install/macos/build-app.py --only-codesign`; this will make `dist/Dangerzone.dmg`
   * You need to run this command as the account that has access to the code signing certificate
   * You must run this command from the MacOS UI, from a terminal application.
-- Notarize it: `xcrun altool --notarize-app --primary-bundle-id "media.firstlook.dangerzone" -u "micah@firstlook.org" -p "$PASSWORD" --file dist/Dangerzone.dmg`
-- Wait for it to get approved, check status with: `xcrun altool --notarization-history 0 -u "micah@firstlook.org" -p "$PASSWORD"`
-- (If it gets rejected, you can see why with: `xcrun altool --notarization-info $REQUEST_UUID -u "micah@firstlook.org" -p "$PASSWORD"`)
+- Notarize it: `xcrun altool --notarize-app --primary-bundle-id "press.freedom.dangerzone" -u "<email>" --file dist/Dangerzone.dmg`
+  * You need to change the `<email>` in the above command with the email
+    associated with the Apple Developer ID.
+  * This command will ask you for a password. Prefer creating an application
+    password associated with your Apple Developer ID, which will be used
+    specifically for `altool`.
+- Wait for it to get approved, check status with: `xcrun altool --notarization-history 0 -u "<email>"`
+  * You will also receive an update in your email.
+- (If it gets rejected, you can see why with: `xcrun altool --notarization-info $REQUEST_UUID -u "<email>"`)
 - After it's approved, staple the ticket: `xcrun stapler staple dist/Dangerzone.dmg`
 
 This process ends up with the final file:

@@ -252,13 +252,9 @@ repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 ### Fedora
 
-Linux binaries are automatically built and deployed to repositories when a new tag is pushed.
-
-### Fedora
-
 > **NOTE**: This procedure will have to be done for every supported Fedora version.
 >
-> In this example, we'll use Fedora 37 as an example.
+> In this section, we'll use Fedora 37 as an example.
 
 Create a Fedora development environment. You can [follow the
 instructions in our build section](https://github.com/freedomofpress/dangerzone/blob/main/BUILD.md#fedora),

@@ -165,7 +165,7 @@ git checkout v$VERSION
 To make a macOS release, go to macOS build machine:
 
 - Build machine must have:
-  - Apple-trusted `Apple Development: Trevor Timm (TW4JVM8ZCU)` code-signing certificates installed
+  - Apple-trusted `Developer ID Application: Freedom of the Press Foundation (94ZZGGGJ3W)` code-signing certificates installed
 - Verify and checkout the git tag for this release
 - Run `poetry install`
 - Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`

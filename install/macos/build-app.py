@@ -75,7 +75,7 @@ def sign_app_bundle(build_path, dist_path, app_path):
     icon_path = os.path.join(root, "install", "macos", "dangerzone.icns")
 
     print("○ Code signing app bundle")
-    identity_name_application = "Apple Development: Trevor Timm (TW4JVM8ZCU)"
+    identity_name_application = "Developer ID Application: Freedom of the Press Foundation (94ZZGGGJ3W)"
     entitlements_plist_path = os.path.join(root, "install/macos/entitlements.plist")
 
     for path in itertools.chain(

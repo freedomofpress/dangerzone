@@ -27,6 +27,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   issues in virtualized Windows and MacOS, where Docker can't run, due to the
   lack of nested virtualization ([issue #229](https://github.com/freedomofpress/dangerzone/issues/229))
 - Add support for more MIME types that were previously disregarded ([issue #369](https://github.com/freedomofpress/dangerzone/issues/369))
+- Platform support: Add support for Fedora 38
 
 ### Changed
 

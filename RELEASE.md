@@ -38,7 +38,7 @@ and newer platforms, we have to do the following:
   - [ ] Run the Dangerzone tests.
   - [ ] Create a .deb package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Fedora platform (Fedora 37 as of
+- [ ] Create a test build in the most recent Fedora platform (Fedora 38 as of
   writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
@@ -254,15 +254,15 @@ repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 > **NOTE**: This procedure will have to be done for every supported Fedora version.
 >
-> In this section, we'll use Fedora 37 as an example.
+> In this section, we'll use Fedora 38 as an example.
 
 Create a Fedora development environment. You can [follow the
 instructions in our build section](https://github.com/freedomofpress/dangerzone/blob/main/BUILD.md#fedora),
 or create your own locally with:
 
 ```sh
-./dev_scripts/env.py --distro fedora --version 37 build-dev
-./dev_scripts/env.py --distro fedora --version 37 run --dev bash
+./dev_scripts/env.py --distro fedora --version 38 build-dev
+./dev_scripts/env.py --distro fedora --version 38 run --dev bash
 cd dangerzone
 ```
 

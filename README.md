@@ -43,3 +43,19 @@ Dangerzone can convert these types of document into safe PDFs:
 Dangerzone was inspired by [Qubes trusted PDF](https://blog.invisiblethings.org/2013/02/21/converting-untrusted-pdfs-into-trusted.html), but it works in non-Qubes operating systems. It uses containers as sandboxes instead of virtual machines (using Docker for macOS, Windows, and Debian/Ubuntu, and [podman](https://podman.io/) for Fedora).
 
 Set up a development environment by following [these instructions](/BUILD.md).
+
+## FAQ
+
+### "I get `invalid json returned from container` on MacOS Big Sur or newer (MacOS 11.x.x or higher)"
+
+You _may_ be attempting to convert a file in a directory to which Docker Desktop does not have access. Dangerzone for Mac requires Docker Desktop for conversion. Docker Desktop, in turn, requires permission from MacOS to access the directory in which your target file is located.
+
+To grant this permission:
+
+1. On MacOS 13, choose Apple menu > System Settings. On lower versions, choose System Preferences.
+2. Tap into Privacy & Security in the sidebar. (You may need to scroll down.)
+3. In the Privacy section, tap into Files & Folders. (Again, you may need to scroll down.)
+4. Scroll to the entry for Docker. Tap the > to expand the entry.
+5. Enable the toggle beside the directory where your file is present. For example, if the file to be converted is in the Downloads folder, enable the toggle beside Downloads.
+
+(Full Disk Access permission has a similar effect, but it's enough to give Docker access to _only_ the directory containing the intended file(s) to be converted. Full Disk is unnecessary. As of 2023.04.28, granting one of these permissions continues to be required for successful conversion. Apologies for the extra steps. Dangerzone depends on Docker, and the fix for this issue needs to come from upstream. Read more on [#371](https://github.com/freedomofpress/dangerzone/issues/371#issuecomment-1516863056).)

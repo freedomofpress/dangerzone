@@ -469,7 +469,7 @@ class SettingsWidget(QtWidgets.QWidget):
         open_layout.addStretch()
 
         # OCR document
-        self.ocr_checkbox = QtWidgets.QCheckBox("OCR document, language")
+        self.ocr_checkbox = QtWidgets.QCheckBox("OCR document language")
         self.ocr_combobox = QtWidgets.QComboBox()
         for k in self.dangerzone.ocr_languages:
             self.ocr_combobox.addItem(k, self.dangerzone.ocr_languages[k])

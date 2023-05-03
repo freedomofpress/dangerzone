@@ -311,7 +311,23 @@ class Env:
         # We need to retain our UID, because we are mounting the Dangerzone source to
         # the container.
         if self.runtime == "podman":
-            run_cmd += ["--userns", "keep-id"]
+            uidmaps = [
+                "--uidmap",
+                "1000:0:1",
+                "--uidmap",
+                "0:1:1000",
+                "--uidmap",
+                "1001:1001:64536",
+            ]
+            gidmaps = [
+                "--gidmap",
+                "1000:0:1",
+                "--gidmap",
+                "0:1:1000",
+                "--gidmap",
+                "1001:1001:64536",
+            ]
+            run_cmd += uidmaps + gidmaps
 
         # Compute container runtime arguments for GUI purposes.
         if gui:

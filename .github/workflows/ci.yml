@@ -41,3 +41,86 @@ jobs:
       - run: poetry install
       - name: Run CLI tests
         run: poetry run make test
+
+  build-deb:
+    runs-on: ubuntu-latest
+    env:
+      target: debian-bookworm
+      distro: debian
+      version: bookworm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Build dev environment
+        run: |
+          ./dev_scripts/env.py --distro ${{ env.distro }} \
+              --version ${{ env.version }} \
+              build-dev
+
+      - name: Build Dangerzone image
+        run: ./install/linux/build-image.sh
+
+      - name: Build Dangerzone .deb
+        run: |
+          ./dev_scripts/env.py --distro ${{ env.distro }} \
+              --version ${{ env.version }} \
+              run --dev ./dangerzone/install/linux/build-deb.py
+
+      - name: Upload Dangerzone .deb
+        uses: actions/upload-artifact@v3
+        with:
+          name: dangerzone.deb
+          path: "deb_dist/dangerzone_*_all.deb"
+
+  install-deb:
+    runs-on: ubuntu-latest
+    needs: build-deb
+    strategy:
+      matrix:
+        include:
+          - target: ubuntu-20.04
+            distro: ubuntu
+            version: "20.04"
+          - target: ubuntu-22.04
+            distro: ubuntu
+            version: "22.04"
+          - target: ubuntu-22.10
+            distro: ubuntu
+            version: "22.10"
+          - target: debian-bullseye
+            distro: debian
+            version: bullseye
+          - target: debian-bookworm
+            distro: debian
+            version: bookworm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Download Dangerzone .deb
+        uses: actions/download-artifact@v3
+        with:
+          name: dangerzone.deb
+          path: "deb_dist/"
+
+      - name: Create end-user environment on (${{ matrix.target }})
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              build
+
+      - name: Run a test command
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf

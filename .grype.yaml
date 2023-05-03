@@ -1,0 +1,43 @@
+# This configuration file will be used to track CVEs that we can ignore for the
+# latest release of Dangerzone, and offer our analysis.
+
+ignore:
+  # CVE-2023-1255
+  # =============
+  #
+  # NVD Entry: https://nvd.nist.gov/vuln/detail/CVE-2023-1255
+  # Verdict: Dangerzone is not affected. The rationale is the following:
+  #
+  #   1. This CVE affects software that performs encryption, typically disk
+  #      encryption, which is not the case for Dangerzone.
+  #      Also, the worst outcome
+  #   2. The NVD entry reports the severity of this CVE as "Medium", which is
+  #      yet another sign that we can ignore it.
+  #   3. The worst outcome is denial of service, which is acceptable in our
+  #      case.
+  - vulnerability: CVE-2023-1255
+
+  # CVE-2023-28879
+  # ==============
+  #
+  # NVD Entry: https://nvd.nist.gov/vuln/detail/CVE-2023-28879
+  # Write up: https://offsec.almond.consulting/ghostscript-cve-2023-28879.html
+  # Verdict: Dangerzone is not affected. The rationale is the following:
+  #
+  #   1. This CVE affects the PostScript interpreter of Ghostscript (i.e., .ps
+  #      files). This is evident from the write up, and the PoCs in GitHub:
+  #      https://github.com/AlmondOffSec/PoCs/tree/master/Ghostscript_rce
+  #   2. Dangerzone does not accept .ps files. The GUI does not allow users to
+  #      select them and, even if you force them through the CLI, Dangerone will
+  #      report that "The document format is not supported".
+  #   3. Depending on the document type, the first conversion command will
+  #      either be LibreOffice, GraphicsMagick, or pdftoppm. None of these
+  #      commands call a Ghostscript binary
+  #      (see here for the list of Ghostscript binaries:
+  #      https://pkgs.alpinelinux.org/contents?branch=edge&name=ghostscript&arch=x86&repo=main)
+  #   4. We tested out removing the GhostScript package from the container
+  #      image. We verified that the only place where a Ghostscript binary is
+  #      used is when compressing the final PDF (ps2pdf). The compression takes
+  #      place after the document has been converted to pixels, so the attacker
+  #      has no control over it.
+  - vulnerability: CVE-2023-28879

@@ -1,0 +1,70 @@
+name: Scan latest app and container
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *' # Run every day at 00:00 UTC.
+
+jobs:
+  security-scan-container:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build container image
+        run: docker build container --tag dangerzone.rocks/dangerzone:latest
+      # NOTE: Scan first without failing, else we won't be able to read the scan
+      # report.
+      - name: Scan container image (no fail)
+        uses: anchore/scan-action@v3
+        id: scan_container
+        with:
+          image: "dangerzone.rocks/dangerzone:latest"
+          fail-build: false
+          only-fixed: true
+          severity-cutoff: critical
+      - name: Upload container scan report
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ steps.scan_container.outputs.sarif }}
+          category: container
+      - name: Inspect container scan report
+        run: cat ${{ steps.scan_container.outputs.sarif }}
+      - name: Scan container image
+        uses: anchore/scan-action@v3
+        with:
+          image: "dangerzone.rocks/dangerzone:latest"
+          fail-build: true
+          only-fixed: true
+          severity-cutoff: critical
+
+  security-scan-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      # NOTE: Scan first without failing, else we won't be able to read the scan
+      # report.
+      - name: Scan application (no fail)
+        uses: anchore/scan-action@v3
+        id: scan_app
+        with:
+          path: "."
+          fail-build: false
+          only-fixed: true
+          severity-cutoff: critical
+      - name: Upload application scan report
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ steps.scan_app.outputs.sarif }}
+          category: app
+      - name: Inspect application scan report
+        run: cat ${{ steps.scan_app.outputs.sarif }}
+      - name: Scan application
+        uses: anchore/scan-action@v3
+        with:
+          path: "."
+          fail-build: true
+          only-fixed: true
+          severity-cutoff: critical

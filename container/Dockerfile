@@ -25,7 +25,7 @@ RUN apk -U upgrade && \
     tesseract-ocr-data-chr \
     tesseract-ocr-data-dan \
     tesseract-ocr-data-deu \
-    tesseract-ocr-data-ell \
+    tesseract-ocr-data-grc \
     tesseract-ocr-data-enm \
     tesseract-ocr-data-epo \
     tesseract-ocr-data-equ \

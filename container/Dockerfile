@@ -49,6 +49,7 @@ RUN apk -U upgrade && \
     tesseract-ocr-data-jpn \
     tesseract-ocr-data-kan \
     tesseract-ocr-data-kat \
+    tesseract-ocr-data-khm \
     tesseract-ocr-data-kor \
     tesseract-ocr-data-lav \
     tesseract-ocr-data-lit \

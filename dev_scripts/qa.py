@@ -173,7 +173,7 @@ After this, restart the terminal window, for the `poetry` command to be in your
 
 Change to the `dangerzone` folder, and install the poetry dependencies:
 
-> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keying, disable the keyring with `keyring --disable` and run the command again.
+> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
 
 ```
 poetry install
@@ -221,7 +221,7 @@ pipx install poetry
 
 Change to the `dangerzone` folder, and install the poetry dependencies:
 
-> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keying, disable the keyring with `keyring --disable` and run the command again.
+> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
 
 ```
 poetry install

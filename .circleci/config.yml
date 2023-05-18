@@ -273,32 +273,6 @@ jobs:
             ./dev_scripts/env.py --distro fedora --version 37 run --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
-  ci-fedora-36:
-    machine:
-      image: ubuntu-2004:202111-01
-    steps:
-      - checkout
-      - run: *install-podman
-
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - restore_cache: *restore-cache
-      - run: *copy-image
-
-      - run:
-          name: Prepare Dangerzone environment
-          command: |
-            ./dev_scripts/env.py --distro fedora --version 36 build-dev
-
-      - run:
-          name: Run CI tests
-          command: |
-            ./dev_scripts/env.py --distro fedora --version 36 run --dev \
-                bash -c 'cd dangerzone; poetry run make test'
-
   ci-debian-bookworm:
     machine:
       image: ubuntu-2004:202111-01
@@ -429,17 +403,6 @@ jobs:
       - run: *copy-image
       - run: *build-rpm
 
-  build-fedora-36:
-    docker:
-      - image: fedora:36
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-rpm
-      - checkout
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-rpm
-
 workflows:
   version: 2
 
@@ -471,9 +434,6 @@ workflows:
       - ci-fedora-37:
           requires:
             - build-container-image
-      - ci-fedora-36:
-          requires:
-            - build-container-image
       - build-ubuntu-kinetic:
           requires:
             - build-container-image
@@ -493,8 +453,5 @@ workflows:
           requires:
             - build-container-image
       - build-fedora-37:
-          requires:
-            - build-container-image
-      - build-fedora-36:
           requires:
             - build-container-image

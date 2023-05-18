@@ -7,6 +7,13 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased]
 
+### Added
+
+### Removed
+- Platform support: Drop Fedora 36, since it's end-of-life ([issues #420](https://github.com/freedomofpress/dangerzone/issues/420))
+
+### Fixed
+
 ### Security
 
 - Continuously scan our Python dependencies and container image for

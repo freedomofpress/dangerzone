@@ -810,10 +810,6 @@ class QAFedora(QALinux):
         )
 
 
-class QAFedora36(QAFedora):
-    VERSION = "36"
-
-
 class QAFedora37(QAFedora):
     VERSION = "37"
 

@@ -1,5 +1,7 @@
 FROM alpine:latest
 
+ARG TESSDATA_CHECKSUM=990fffb9b7a9b52dc9a2d053a9ef6852ca2b72bd8dfb22988b0b990a700fd3c7
+
 # Install dependencies
 RUN apk -U upgrade && \
     apk add \
@@ -11,71 +13,25 @@ RUN apk -U upgrade && \
     poppler-data \
     python3 \
     py3-magic \
-    tesseract-ocr \
-    tesseract-ocr-data-afr \
-    tesseract-ocr-data-ara \
-    tesseract-ocr-data-aze \
-    tesseract-ocr-data-bel \
-    tesseract-ocr-data-ben \
-    tesseract-ocr-data-bul \
-    tesseract-ocr-data-cat \
-    tesseract-ocr-data-ces \
-    tesseract-ocr-data-chi_sim \
-    tesseract-ocr-data-chi_tra \
-    tesseract-ocr-data-chr \
-    tesseract-ocr-data-dan \
-    tesseract-ocr-data-deu \
-    tesseract-ocr-data-grc \
-    tesseract-ocr-data-enm \
-    tesseract-ocr-data-epo \
-    tesseract-ocr-data-equ \
-    tesseract-ocr-data-est \
-    tesseract-ocr-data-eus \
-    tesseract-ocr-data-fin \
-    tesseract-ocr-data-fra \
-    tesseract-ocr-data-frk \
-    tesseract-ocr-data-frm \
-    tesseract-ocr-data-glg \
-    tesseract-ocr-data-grc \
-    tesseract-ocr-data-heb \
-    tesseract-ocr-data-hin \
-    tesseract-ocr-data-hrv \
-    tesseract-ocr-data-hun \
-    tesseract-ocr-data-ind \
-    tesseract-ocr-data-isl \
-    tesseract-ocr-data-ita \
-    tesseract-ocr-data-ita_old \
-    tesseract-ocr-data-jpn \
-    tesseract-ocr-data-kan \
-    tesseract-ocr-data-kat \
-    tesseract-ocr-data-kor \
-    tesseract-ocr-data-lav \
-    tesseract-ocr-data-lit \
-    tesseract-ocr-data-mal \
-    tesseract-ocr-data-mkd \
-    tesseract-ocr-data-mlt \
-    tesseract-ocr-data-msa \
-    tesseract-ocr-data-nld \
-    tesseract-ocr-data-nor \
-    tesseract-ocr-data-pol \
-    tesseract-ocr-data-por \
-    tesseract-ocr-data-ron \
-    tesseract-ocr-data-rus \
-    tesseract-ocr-data-slk \
-    tesseract-ocr-data-slv \
-    tesseract-ocr-data-spa \
-    tesseract-ocr-data-spa_old \
-    tesseract-ocr-data-sqi \
-    tesseract-ocr-data-srp \
-    tesseract-ocr-data-swa \
-    tesseract-ocr-data-swe \
-    tesseract-ocr-data-tam \
-    tesseract-ocr-data-tel \
-    tesseract-ocr-data-tgl \
-    tesseract-ocr-data-tha \
-    tesseract-ocr-data-tur \
-    tesseract-ocr-data-ukr \
-    tesseract-ocr-data-vie
+    tesseract-ocr
+
+# Download the trained models from the latest GitHub release of Tesseract, and
+# store them under /usr/share/tessdata. This is basically what distro packages
+# do under the hood.
+#
+# Because the GitHub release contains more files than just the trained models,
+# we use `find` to fetch only the '*.traineddata' files in the top directory.
+#
+# Before we untar the models, we also check if the checksum is the expected one.
+RUN mkdir tessdata && cd tessdata \
+    && TESSDATA_VERSION=$(wget -O- -nv https://api.github.com/repos/tesseract-ocr/tessdata/releases/latest \
+        | sed -n 's/^.*"tag_name": "\([0-9.]\+\)".*$/\1/p') \
+    && apk --purge del jq \
+    && wget https://github.com/tesseract-ocr/tessdata/archive/$TESSDATA_VERSION/tessdata-$TESSDATA_VERSION.tar.gz \
+    && echo "$TESSDATA_CHECKSUM  tessdata-$TESSDATA_VERSION.tar.gz" | sha256sum -c \
+    && tar -xzvf tessdata-$TESSDATA_VERSION.tar.gz -C . \
+    && find . -name '*.traineddata' -maxdepth 2 -exec cp {} /usr/share/tessdata \; \
+    && cd .. && rm -r tessdata
 
 COPY dangerzone.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/dangerzone.py

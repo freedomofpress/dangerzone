@@ -299,12 +299,29 @@ jobs:
             ./dev_scripts/env.py --distro debian --version bookworm run --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
+  # NOTE: Making CI tests work in Debian Bullseye requires some tip-toeing
+  # around certain Podman issues, as you'll see below. Read the following for
+  # more details:
+  #
+  # https://github.com/freedomofpress/dangerzone/issues/388
   ci-debian-bullseye:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2204:2023.04.2
     steps:
       - checkout
       - run: *install-podman
+      - run:
+          name: Configure Podman for Ubuntu 22.04
+          command: |
+            # This config circumvents the following issues:
+            # * https://github.com/containers/podman/issues/6368
+            # * https://github.com/containers/podman/issues/10987
+            mkdir -p ~/.config/containers
+            cat > ~/.config/containers/containers.conf \<<EOF
+            [engine]
+            cgroup_manager="cgroupfs"
+            events_logger="file"
+            EOF
 
       - run:
           name: Prepare cache directory
@@ -318,6 +335,22 @@ jobs:
           name: Prepare Dangerzone environment
           command: |
             ./dev_scripts/env.py --distro debian --version bullseye build-dev
+
+      - run:
+          name: Configure Podman for Debian Bullseye
+          command: |
+            # Copy the Podman config into the container image we created for the
+            # Dangerzone environment.
+            cp ~/.config/containers/containers.conf containers.conf
+            cat > Dockerfile.bullseye \<<EOF
+            FROM dangerzone.rocks/build/debian:bullseye-backports
+            RUN mkdir -p /home/user/.config/containers
+            COPY containers.conf /home/user/.config/containers/
+            EOF
+
+            # Create a new image from the Dangerzone environment and re-tag it.
+            podman build -t dangerzone.rocks/build/debian:bullseye-backports \
+                -f Dockerfile.bullseye .
 
       - run:
           name: Run CI tests

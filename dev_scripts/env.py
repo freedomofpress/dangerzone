@@ -71,15 +71,19 @@ RUN . /etc/os-release \
 """
 
 # FIXME: Do we really need the python3-venv packages?
-# XXX: We install uidmap separately, because it is not a hard dependency for Podman, and
-# we use --no-install-recommends.
 DOCKERFILE_BUILD_DEV_DEBIAN_DEPS = r"""
 ARG DEBIAN_FRONTEND=noninteractive
 
+# NOTE: Podman has several recommended packages that are actually essential for rootless
+# containers. Instead of specifying them by name, we can install Podman with all of its
+# recommendations, which increases the image size, but makes the environment less flaky.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends podman uidmap dh-python make \
-        build-essential fakeroot fuse-overlayfs libqt5gui5 pipx python3 python3-dev \
-        python3-venv python3-stdeb python3-all \
+    && apt-get install -y podman \
+    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends dh-python make build-essential \
+        fakeroot libqt5gui5 pipx python3 python3-dev python3-venv python3-stdeb \
+        python3-all \
     && rm -rf /var/lib/apt/lists/*
 # NOTE: `pipx install poetry` fails on Ubuntu Focal, when installed through APT. By
 # installing the latest version, we sidestep this issue.
@@ -143,7 +147,7 @@ RUN cd /home/user/dangerzone && poetry --no-ansi install
 DOCKERFILE_BUILD_DEBIAN_DEPS = r"""
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends mupdf fuse-overlayfs \
+    && apt-get install -y --no-install-recommends mupdf \
     && rm -rf /var/lib/apt/lists/*
 """
 

@@ -446,7 +446,7 @@ class ContentWidget(QtWidgets.QWidget):
         self.conversion_started = False
 
         # Doc selection widget
-        self.doc_selection_widget = DocSelectionWidget()
+        self.doc_selection_widget = DocSelectionWidget(self.dangerzone)
         self.doc_selection_widget.documents_selected.connect(self.documents_selected)
 
         # Settings
@@ -459,6 +459,9 @@ class ContentWidget(QtWidgets.QWidget):
         self.documents_list = DocumentsListWidget(self.dangerzone)
         self.documents_added.connect(self.documents_list.documents_added)
         self.settings_widget.start_clicked.connect(self.documents_list.start_conversion)
+        self.settings_widget.change_docs_clicked.connect(
+            self.doc_selection_widget.dangerous_doc_button_clicked
+        )
         self.documents_list.hide()
 
         # Layout
@@ -518,8 +521,9 @@ class ContentWidget(QtWidgets.QWidget):
 class DocSelectionWidget(QtWidgets.QWidget):
     documents_selected = QtCore.Signal(list)
 
-    def __init__(self) -> None:
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(DocSelectionWidget, self).__init__()
+        self.dangerzone = dangerzone
 
         # Dangerous document selection
         self.dangerous_doc_label = QtWidgets.QLabel()
@@ -545,21 +549,32 @@ class DocSelectionWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def dangerous_doc_button_clicked(self) -> None:
-        (filenames, _) = QtWidgets.QFileDialog.getOpenFileNames(
-            self,
-            "Open documents",
-            filter="Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.jpg *.jpeg *.gif *.png *.tif *.tiff)",
+        file_dialog = QtWidgets.QFileDialog()
+        file_dialog.setWindowTitle("Open Documents")
+        file_dialog.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
+        file_dialog.setNameFilters(
+            [
+                "Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.jpg *.jpeg *.gif *.png *.tif *.tiff)"
+            ]
         )
-        if filenames == []:
-            # no files selected
-            return
 
-        documents = [Document(filename) for filename in filenames]
-        self.documents_selected.emit(documents)
+        unconverted_docs = self.dangerzone.get_unconverted_documents()
+        if len(unconverted_docs) > 0:
+            # In case there were some already selected documents, open the dir of selected files
+            first_doc_dir = os.path.dirname(unconverted_docs[0].input_filename)
+            file_dialog.setDirectory(first_doc_dir)
+
+        if file_dialog.exec():
+            documents = [Document(filename) for filename in file_dialog.selectedFiles()]
+            self.documents_selected.emit(documents)
+        else:
+            # No files selected
+            pass
 
 
 class SettingsWidget(QtWidgets.QWidget):
     start_clicked = QtCore.Signal()
+    change_docs_clicked = QtCore.Signal()
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(SettingsWidget, self).__init__()
@@ -568,8 +583,9 @@ class SettingsWidget(QtWidgets.QWidget):
         # Num Docs Selected
         self.docs_selected_label = QtWidgets.QLabel("No documents selected")
         self.docs_selected_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.docs_selected_label.setContentsMargins(0, 0, 0, 20)
         self.docs_selected_label.setProperty("class", "docs-selection")
+        self.change_selection_button = QtWidgets.QPushButton("Change Selection")
+        self.change_selection_button.clicked.connect(self.change_docs_clicked.emit)
 
         # Save safe version
         self.save_checkbox = QtWidgets.QCheckBox()
@@ -684,7 +700,13 @@ class SettingsWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.docs_selected_label)
+        layout_docs_selected = QtWidgets.QHBoxLayout()
+        layout_docs_selected.addStretch()
+        layout_docs_selected.addWidget(self.docs_selected_label)
+        layout_docs_selected.addWidget(self.change_selection_button)
+        layout_docs_selected.addStretch()
+        layout.addLayout(layout_docs_selected)
+        layout.addSpacing(20)
         layout.addLayout(self.safe_extension_layout)
         layout.addLayout(save_group_box_layout)
         layout.addLayout(open_layout)

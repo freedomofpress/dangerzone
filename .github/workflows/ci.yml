@@ -119,6 +119,30 @@ jobs:
               --version ${{ matrix.version }} \
               build
 
+      - name: Configure Podman for Debian Bullseye specifically
+        if: matrix.target == 'debian-bullseye'
+        run: |
+          # Create a Podman config specifically for Bullseye (see #388).
+          mkdir bullseye_fix
+          cd bullseye_fix
+          cat > containers.conf <<EOF
+          [engine]
+          cgroup_manager="cgroupfs"
+          events_logger="file"
+          EOF
+
+          # Copy the Podman config into the container image we created for the
+          # Dangerzone environment.
+          cat > Dockerfile.bullseye <<EOF
+          FROM dangerzone.rocks/debian:bullseye-backports
+          RUN mkdir -p /home/user/.config/containers
+          COPY containers.conf /home/user/.config/containers/
+          EOF
+
+          # Create a new image from the Dangerzone environment and re-tag it.
+          podman build -t dangerzone.rocks/debian:bullseye-backports \
+              -f Dockerfile.bullseye .
+
       - name: Run a test command
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \

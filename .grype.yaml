@@ -10,7 +10,6 @@ ignore:
   #
   #   1. This CVE affects software that performs encryption, typically disk
   #      encryption, which is not the case for Dangerzone.
-  #      Also, the worst outcome
   #   2. The NVD entry reports the severity of this CVE as "Medium", which is
   #      yet another sign that we can ignore it.
   #   3. The worst outcome is denial of service, which is acceptable in our
@@ -41,3 +40,14 @@ ignore:
   #      place after the document has been converted to pixels, so the attacker
   #      has no control over it.
   - vulnerability: CVE-2023-28879
+
+  # CVE-2023-28322
+  # ==============
+  #
+  # NVD Entry: https://nvd.nist.gov/vuln/detail/CVE-2023-28322
+  # Verdict: Dangerzone is not affected. The rationale is the following:
+  #
+  #   1. The CVE targets `libcurl`, which to the best of our knowledge is not
+  #      used in the container.
+  #   2. The container is offline, so the attack does not apply to it.
+  - vulnerability: CVE-2023-28322

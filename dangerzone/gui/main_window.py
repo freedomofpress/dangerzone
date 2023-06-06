@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 import typing
 from multiprocessing.pool import ThreadPool
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from colorama import Fore, Style
 
@@ -471,46 +471,42 @@ class ContentWidget(QtWidgets.QWidget):
         layout.addWidget(self.doc_selection_widget, stretch=1)
         self.setLayout(layout)
 
-    def documents_selected(self, new_docs: List[Document]) -> None:
-        if not self.conversion_started:
-            # assumed all files in batch are in the same directory
-            first_doc = new_docs[0]
-            output_dir = os.path.dirname(first_doc.input_filename)
-            if not self.dangerzone.output_dir:
-                self.dangerzone.output_dir = output_dir
-            elif self.dangerzone.output_dir != output_dir:
-                Alert(
-                    self.dangerzone,
-                    message="Dangerzone does not support adding documents from multiple locations.\n\n The newly added documents were ignored.",
-                    has_cancel=False,
-                ).exec_()
-                return
-            else:
-                self.dangerzone.output_dir = output_dir
-
-            for doc in new_docs.copy():
-                try:
-                    self.dangerzone.add_document(doc)
-                except errors.AddedDuplicateDocumentException:
-                    new_docs.remove(doc)
-                    Alert(
-                        self.dangerzone,
-                        message=f"Document '{doc.input_filename}' has already been added for conversion.",
-                        has_cancel=False,
-                    ).exec_()
-
-            self.doc_selection_widget.hide()
-            self.settings_widget.show()
-
-            if len(new_docs) > 0:
-                self.documents_added.emit(new_docs)
-
-        else:
+    def documents_selected(self, docs: List[Document]) -> None:
+        if self.conversion_started:
             Alert(
                 self.dangerzone,
                 message="Dangerzone does not support adding documents after the conversion has started.",
                 has_cancel=False,
             ).exec_()
+            return
+
+        # Get previously selected documents
+        self.dangerzone.clear_documents()
+        self.documents_list.clear()
+
+        # Assumed all files in batch are in the same directory
+        first_doc = docs[0]
+        output_dir = os.path.dirname(first_doc.input_filename)
+        if not self.dangerzone.output_dir:
+            self.dangerzone.output_dir = output_dir
+        elif self.dangerzone.output_dir != output_dir:
+            Alert(
+                self.dangerzone,
+                message="Dangerzone does not support adding documents from multiple locations.\n\n The newly added documents were ignored.",
+                has_cancel=False,
+            ).exec_()
+            return
+        else:
+            self.dangerzone.output_dir = output_dir
+
+        for doc in docs:
+            self.dangerzone.add_document(doc)
+
+        self.doc_selection_widget.hide()
+        self.settings_widget.show()
+
+        if len(docs) > 0:
+            self.documents_added.emit(docs)
 
     def start_clicked(self) -> None:
         self.conversion_started = True
@@ -797,14 +793,14 @@ class SettingsWidget(QtWidgets.QWidget):
         else:
             self.start_button.setDisabled(True)
 
-    def documents_added(self, new_docs: List[Document]) -> None:
+    def documents_added(self, docs: List[Document]) -> None:
         self.save_location.setText(os.path.basename(self.dangerzone.output_dir))
         self.update_doc_n_labels()
 
         self.update_ui()
 
         # validations
-        self.check_writeable_archive_dir(new_docs)
+        self.check_writeable_archive_dir(docs)
 
     def update_doc_n_labels(self) -> None:
         """Updates labels dependent on the number of present documents"""
@@ -907,30 +903,38 @@ class DocumentsListWidget(QtWidgets.QListWidget):
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super().__init__()
         self.dangerzone = dangerzone
-        self.document_widgets: List[DocumentWidget] = []
+        self.docs_list: List[Document] = []
+        self.docs_list_widget_map: dict[Document, DocumentWidget] = {}
 
         # Initialize thread_pool only on the first conversion
         # to ensure docker-daemon detection logic runs first
         self.thread_pool_initized = False
 
-    def documents_added(self, new_docs: List[Document]) -> None:
-        for document in new_docs:
+    def clear(self) -> None:
+        self.docs_list = []
+        self.docs_list_widget_map = {}
+        super().clear()
+
+    def documents_added(self, docs: List[Document]) -> None:
+        for document in docs:
             item = QtWidgets.QListWidgetItem()
             item.setSizeHint(QtCore.QSize(500, 50))
             widget = DocumentWidget(self.dangerzone, document)
             self.addItem(item)
             self.setItemWidget(item, widget)
-            self.document_widgets.append(widget)
+
+            # Keep docs_list in sync with items list
+            self.docs_list.append(document)
+            self.docs_list_widget_map[document] = widget
 
     def start_conversion(self) -> None:
         if not self.thread_pool_initized:
             max_jobs = self.dangerzone.isolation_provider.get_max_parallel_conversions()
             self.thread_pool = ThreadPool(max_jobs)
 
-        for doc_widget in self.document_widgets:
-            task = ConvertTask(
-                self.dangerzone, doc_widget.document, self.get_ocr_lang()
-            )
+        for doc in self.docs_list:
+            task = ConvertTask(self.dangerzone, doc, self.get_ocr_lang())
+            doc_widget = self.docs_list_widget_map[doc]
             task.update.connect(doc_widget.update_progress)
             task.finished.connect(doc_widget.all_done)
             self.thread_pool.apply_async(task.convert_document)

@@ -199,4 +199,13 @@ class Document:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Document):
             return False
-        return self.input_filename == other.input_filename
+        return (
+            Path(self.input_filename).absolute()
+            == Path(other.input_filename).absolute()
+        )
+
+    def __hash__(self) -> int:
+        return hash(str(Path(self.input_filename).absolute()))
+
+    def __str__(self) -> str:
+        return self.input_filename

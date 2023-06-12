@@ -544,24 +544,25 @@ class DocSelectionWidget(QtWidgets.QWidget):
         layout.addStretch()
         self.setLayout(layout)
 
-    def dangerous_doc_button_clicked(self) -> None:
-        file_dialog = QtWidgets.QFileDialog()
-        file_dialog.setWindowTitle("Open Documents")
-        file_dialog.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
-        file_dialog.setNameFilters(
+        # Open Docs Dialog
+        self.file_dialog = QtWidgets.QFileDialog()
+        self.file_dialog.setWindowTitle("Open Documents")
+        self.file_dialog.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
+        self.file_dialog.setNameFilters(
             [
                 "Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.jpg *.jpeg *.gif *.png *.tif *.tiff)"
             ]
         )
 
+    def dangerous_doc_button_clicked(self) -> None:
         unconverted_docs = self.dangerzone.get_unconverted_documents()
         if len(unconverted_docs) > 0:
             # In case there were some already selected documents, open the dir of selected files
             first_doc_dir = os.path.dirname(unconverted_docs[0].input_filename)
-            file_dialog.setDirectory(first_doc_dir)
+            self.file_dialog.setDirectory(first_doc_dir)
 
-        if file_dialog.exec():
-            documents = [Document(filename) for filename in file_dialog.selectedFiles()]
+        if self.file_dialog.exec():
+            documents = [Document(filename) for filename in self.file_dialog.selectedFiles()]
             self.documents_selected.emit(documents)
         else:
             # No files selected

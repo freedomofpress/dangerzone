@@ -562,7 +562,9 @@ class DocSelectionWidget(QtWidgets.QWidget):
             self.file_dialog.setDirectory(first_doc_dir)
 
         if self.file_dialog.exec():
-            documents = [Document(filename) for filename in self.file_dialog.selectedFiles()]
+            documents = [
+                Document(filename) for filename in self.file_dialog.selectedFiles()
+            ]
             self.documents_selected.emit(documents)
         else:
             # No files selected

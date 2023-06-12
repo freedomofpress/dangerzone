@@ -9,6 +9,7 @@ from dangerzone.document import SAFE_EXTENSION
 
 SAMPLE_DIRECTORY = "test_docs"
 BASIC_SAMPLE = "sample-pdf.pdf"
+BASIC_SAMPLE2 = "sample-doc.doc"
 test_docs_dir = Path(__file__).parent.joinpath(SAMPLE_DIRECTORY)
 test_docs = [
     p
@@ -28,6 +29,11 @@ class TestBase:
 @pytest.fixture
 def sample_doc() -> str:
     return str(test_docs_dir.joinpath(BASIC_SAMPLE))
+
+
+@pytest.fixture
+def sample_doc2() -> str:
+    return str(test_docs_dir.joinpath(BASIC_SAMPLE2))
 
 
 @pytest.fixture

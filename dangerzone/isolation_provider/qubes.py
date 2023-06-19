@@ -49,7 +49,6 @@ class Qubes(IsolationProvider):
         self,
         document: Document,
         ocr_lang: Optional[str],
-        stdout_callback: Optional[Callable] = None,
     ) -> bool:
         success = False
 
@@ -121,14 +120,10 @@ class Qubes(IsolationProvider):
 
                 text = f"Converting page {page}/{n_pages} to pixels"
                 self.print_progress(document, False, text, percentage)
-                if stdout_callback:
-                    stdout_callback(False, text, percentage)
 
         # TODO handle leftover code input
         text = "Converted document to pixels"
         self.print_progress(document, False, text, percentage)
-        if stdout_callback:
-            stdout_callback(False, text, percentage)
 
         # FIXME pass OCR stuff properly (see #455)
         old_environ = dict(os.environ)
@@ -143,8 +138,6 @@ class Qubes(IsolationProvider):
         percentage = 100.0
         text = "Safe PDF created"
         self.print_progress(document, False, text, percentage)
-        if stdout_callback:
-            stdout_callback(False, text, percentage)
 
         # FIXME remove once the OCR args are no longer passed with env vars
         os.environ.clear()

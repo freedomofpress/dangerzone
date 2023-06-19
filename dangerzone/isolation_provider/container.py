@@ -133,27 +133,24 @@ class Container(IsolationProvider):
 
         return installed
 
-    def parse_progress(self, document: Document, line: str) -> Tuple[bool, str, int]:
+    def parse_progress(self, document: Document, line: str) -> None:
         """
         Parses a line returned by the container.
         """
         try:
             status = json.loads(line)
+            self.print_progress(
+                document, status["error"], status["text"], status["percentage"]
+            )
         except:
             error_message = f"Invalid JSON returned from container:\n\n\t {line}"
             log.error(error_message)
-            return (True, error_message, -1)
-
-        self.print_progress(
-            document, status["error"], status["text"], status["percentage"]
-        )
-        return (status["error"], status["text"], status["percentage"])
+            self.print_progress(document, True, error_message, -1)
 
     def exec(
         self,
         document: Document,
         args: List[str],
-        stdout_callback: Optional[Callable] = None,
     ) -> int:
         args_str = " ".join(pipes.quote(s) for s in args)
         log.info("> " + args_str)
@@ -169,9 +166,7 @@ class Container(IsolationProvider):
         ) as p:
             if p.stdout is not None:
                 for line in p.stdout:
-                    (error, text, percentage) = self.parse_progress(document, line)
-                    if stdout_callback:
-                        stdout_callback(error, text, percentage)
+                    self.parse_progress(document, line)
 
             p.communicate()
             return p.returncode
@@ -181,7 +176,6 @@ class Container(IsolationProvider):
         document: Document,
         command: List[str],
         extra_args: List[str] = [],
-        stdout_callback: Optional[Callable] = None,
     ) -> int:
         container_runtime = self.get_runtime()
 
@@ -208,13 +202,12 @@ class Container(IsolationProvider):
         )
 
         args = [container_runtime] + args
-        return self.exec(document, args, stdout_callback)
+        return self.exec(document, args)
 
     def _convert(
         self,
         document: Document,
         ocr_lang: Optional[str],
-        stdout_callback: Optional[Callable] = None,
     ) -> bool:
         # Create a temporary directory inside the cache directory for this run. Then,
         # create some subdirectories for the various stages of the file conversion:
@@ -237,7 +230,6 @@ class Container(IsolationProvider):
                 pixel_dir=pixel_dir,
                 safe_dir=safe_dir,
                 ocr_lang=ocr_lang,
-                stdout_callback=stdout_callback,
             )
 
     def _convert_with_tmpdirs(
@@ -247,7 +239,6 @@ class Container(IsolationProvider):
         pixel_dir: pathlib.Path,
         safe_dir: pathlib.Path,
         ocr_lang: Optional[str],
-        stdout_callback: Optional[Callable] = None,
     ) -> bool:
         success = False
 
@@ -273,7 +264,7 @@ class Container(IsolationProvider):
             "-e",
             f"ENABLE_TIMEOUTS={self.enable_timeouts}",
         ]
-        ret = self.exec_container(document, command, extra_args, stdout_callback)
+        ret = self.exec_container(document, command, extra_args)
         if ret != 0:
             log.error("documents-to-pixels failed")
         else:
@@ -297,7 +288,7 @@ class Container(IsolationProvider):
                 "-e",
                 f"ENABLE_TIMEOUTS={self.enable_timeouts}",
             ]
-            ret = self.exec_container(document, command, extra_args, stdout_callback)
+            ret = self.exec_container(document, command, extra_args)
             if ret != 0:
                 log.error("pixels-to-pdf failed")
             else:

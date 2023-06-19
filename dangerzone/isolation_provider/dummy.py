@@ -34,7 +34,6 @@ class Dummy(IsolationProvider):
         self,
         document: Document,
         ocr_lang: Optional[str],
-        stdout_callback: Optional[Callable] = None,
     ) -> bool:
         log.debug("Dummy converter started:")
         log.debug(
@@ -58,8 +57,6 @@ class Dummy(IsolationProvider):
 
         for error, text, percentage in progress:
             self.print_progress(document, error, text, percentage)  # type: ignore [arg-type]
-            if stdout_callback:
-                stdout_callback(error, text, percentage)
             if error:
                 success = False
             time.sleep(0.2)

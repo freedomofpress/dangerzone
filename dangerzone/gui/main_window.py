@@ -680,11 +680,11 @@ class ConvertTask(QtCore.QObject):
         self.dangerzone.isolation_provider.convert(
             self.document,
             self.ocr_lang,
-            self.stdout_callback,
+            self.progress_callback,
         )
         self.finished.emit(self.error)
 
-    def stdout_callback(self, error: bool, text: str, percentage: int) -> None:
+    def progress_callback(self, error: bool, text: str, percentage: int) -> None:
         if error:
             self.error = True
 

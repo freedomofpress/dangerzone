@@ -23,11 +23,12 @@ class IsolationProvider(ABC):
         self,
         document: Document,
         ocr_lang: Optional[str],
-        stdout_callback: Optional[Callable] = None,
+        progress_callback: Optional[Callable] = None,
     ) -> None:
+        self.progress_callback = progress_callback
         document.mark_as_converting()
         try:
-            success = self._convert(document, ocr_lang, stdout_callback)
+            success = self._convert(document, ocr_lang)
         except Exception:
             success = False
             log.exception(
@@ -45,7 +46,6 @@ class IsolationProvider(ABC):
         self,
         document: Document,
         ocr_lang: Optional[str],
-        stdout_callback: Optional[Callable] = None,
     ) -> bool:
         pass
 
@@ -60,6 +60,9 @@ class IsolationProvider(ABC):
         else:
             s += Style.RESET_ALL + text
             log.info(s)
+
+        if self.progress_callback:
+            self.progress_callback(error, text, percentage)
 
     @abstractmethod
     def get_max_parallel_conversions(self) -> int:

@@ -100,8 +100,9 @@ async def run_command(
 
 
 class DangerzoneConverter:
-    def __init__(self) -> None:
+    def __init__(self, progress_callback: Optional[Callable] = None) -> None:
         self.percentage: float = 0.0
+        self.progress_callback = progress_callback
 
     def calculate_timeout(
         self, size: float, pages: Optional[float] = None
@@ -134,7 +135,10 @@ class DangerzoneConverter:
         pass
 
     def update_progress(self, text: str, *, error: bool = False) -> None:
-        if not running_on_qubes():
+        if running_on_qubes():
+            if self.progress_callback:
+                self.progress_callback(error, text, int(self.percentage))
+        else:
             print(
                 json.dumps(
                     {"error": error, "text": text, "percentage": int(self.percentage)}

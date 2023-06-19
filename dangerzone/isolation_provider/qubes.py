@@ -131,9 +131,10 @@ class Qubes(IsolationProvider):
             os.environ["OCR"] = "1"
             os.environ["OCR_LANGUAGE"] = ocr_lang
 
-        asyncio.run(
-            PixelsToPDF().convert()
-        )  # TODO add progress updates on second stage
+        def print_progress_wrapper(error: bool, text: str, percentage: float) -> None:
+            self.print_progress(document, error, text, percentage)
+
+        asyncio.run(PixelsToPDF(progress_callback=print_progress_wrapper).convert())
 
         percentage = 100.0
         text = "Safe PDF created"

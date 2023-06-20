@@ -272,13 +272,13 @@ class DocumentToPixels(DangerzoneConverter):
 
         self.update_progress("Converted document to pixels")
 
-        # Move converted files into /dangerzone
+        # Move converted files into /tmp/dangerzone
         for filename in (
             glob.glob("/tmp/page-*.rgb")
             + glob.glob("/tmp/page-*.width")
             + glob.glob("/tmp/page-*.height")
         ):
-            shutil.move(filename, "/dangerzone")
+            shutil.move(filename, "/tmp/dangerzone")
 
 
 async def main() -> int:

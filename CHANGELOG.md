@@ -9,8 +9,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Added
 
+- Platform support: Alpha integration with Qubes OS ([issue #411](https://github.com/freedomofpress/dangerzone/issues/411))
+
 ### Removed
-- Platform support: Drop Fedora 36, since it's end-of-life ([issues #420](https://github.com/freedomofpress/dangerzone/issues/420))
+
+- Platform support: Drop Fedora 36, since it's end-of-life ([issue #420](https://github.com/freedomofpress/dangerzone/issues/420))
 
 ### Fixed
 

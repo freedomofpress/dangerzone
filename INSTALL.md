@@ -8,6 +8,7 @@ Dangerzone is available for:
 - Fedora 38
 - Fedora 37
 - Fedora 36
+- Qubes OS (alpha support)
 
 ### Ubuntu, Debian
 
@@ -117,8 +118,24 @@ After confirming that it matches, type `y` (for yes) and the installation should
 
 </details>
 
+### Qubes OS
 
+<details>
+  <summary><i>:memo: Expand this section if you want to use containers instead of disposable qubes.</i></summary>
+  </br>
+
+  Create a Debian or Fedora-based development standalone qube with at least
+  8GB of private storage space, and follow the relevant instructions above for
+  the respective template.
+
+  Remember to set the environment variable `DZ_USE_CONTAINERS=1`, before
+  executing Dangerzone.
+</details>
+
+> :warning: Native Qubes support is in alpha stage, so we don't have official
+> installation instructions yet. If you want to try out Dangerzone with native
+> Qubes support, check out our [build instructions](BUILD.md#qubes-os) instead.
 
 ## Build from source
 
-If you'd like to build from source, follow the [build instructions](https://github.com/freedomofpress/dangerzone/blob/master/BUILD.md).
+If you'd like to build from source, follow the [build instructions](BUILD.md).

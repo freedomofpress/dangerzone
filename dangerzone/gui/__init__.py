@@ -21,9 +21,11 @@ else:
         from PySide2 import QtCore, QtGui, QtWidgets
 
 from .. import args, errors
+from ..conversion.common import running_on_qubes
 from ..document import Document
 from ..isolation_provider.container import Container
 from ..isolation_provider.dummy import Dummy
+from ..isolation_provider.qubes import Qubes
 from ..util import get_resource_path, get_version
 from .logic import DangerzoneGui
 from .main_window import MainWindow
@@ -100,6 +102,9 @@ def gui_main(
     if getattr(sys, "dangerzone_dev", False) and dummy_conversion:
         dummy = Dummy()
         dangerzone = DangerzoneGui(app, isolation_provider=dummy)
+    elif running_on_qubes():
+        qubes = Qubes()
+        dangerzone = DangerzoneGui(app, isolation_provider=qubes)
     else:
         container = Container(enable_timeouts=enable_timeouts)
         dangerzone = DangerzoneGui(app, isolation_provider=container)

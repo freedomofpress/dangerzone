@@ -24,6 +24,7 @@ from .. import errors
 from ..document import SAFE_EXTENSION, Document
 from ..isolation_provider.container import Container, NoContainerTechException
 from ..isolation_provider.dummy import Dummy
+from ..isolation_provider.qubes import Qubes
 from ..util import get_resource_path, get_subprocess_startupinfo, get_version
 from .logic import Alert, DangerzoneGui
 
@@ -71,8 +72,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.waiting_widget: WaitingWidget = WaitingWidgetContainer(self.dangerzone)
             self.waiting_widget.finished.connect(self.waiting_finished)
 
-        elif isinstance(self.dangerzone.isolation_provider, Dummy):
-            # Don't wait with dummy converter
+        elif isinstance(self.dangerzone.isolation_provider, Dummy) or isinstance(
+            self.dangerzone.isolation_provider, Qubes
+        ):
+            # Don't wait with dummy converter and on Qubes.
             self.waiting_widget = WaitingWidget()
             self.dangerzone.is_waiting_finished = True
 

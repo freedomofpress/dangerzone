@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build container image
-        run: docker build container --tag dangerzone.rocks/dangerzone:latest
+        run: docker build dangerzone/ -f Dockerfile --tag dangerzone.rocks/dangerzone:latest
       # NOTE: Scan first without failing, else we won't be able to read the scan
       # report.
       - name: Scan container image (no fail)

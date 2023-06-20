@@ -24,13 +24,10 @@ MYPY_ARGS := --ignore-missing-imports \
 mypy-host:
 	mypy $(MYPY_ARGS) dangerzone
 
-mypy-container:
-	mypy $(MYPY_ARGS) container
-
 mypy-tests:
 	mypy $(MYPY_ARGS) tests
 
-mypy: mypy-host  mypy-container mypy-tests ## check type hints with mypy
+mypy: mypy-host mypy-tests ## check type hints with mypy
 
 .PHONY: lint
 lint: lint-black lint-isort mypy ## check the code with various linters

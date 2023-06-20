@@ -9,7 +9,9 @@ def main():
         [
             "docker",
             "build",
-            "container",
+            "dangerzone/",
+            "-f",
+            "Dockerfile",
             "--tag",
             "dangerzone.rocks/dangerzone:latest",
         ]

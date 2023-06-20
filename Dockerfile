@@ -33,8 +33,11 @@ RUN mkdir tessdata && cd tessdata \
     && find . -name '*.traineddata' -maxdepth 2 -exec cp {} /usr/share/tessdata \; \
     && cd .. && rm -r tessdata
 
-COPY dangerzone.py /usr/local/bin/
-RUN chmod +x /usr/local/bin/dangerzone.py
+ENV PYTHONPATH=/opt/dangerzone
+
+RUN mkdir -p /opt/dangerzone/dangerzone
+RUN touch /opt/dangerzone/dangerzone/__init__.py
+COPY conversion /opt/dangerzone/dangerzone/conversion
 
 # Add the unprivileged user
 RUN adduser -s /bin/sh -D dangerzone

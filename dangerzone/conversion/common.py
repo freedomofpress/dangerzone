@@ -17,6 +17,14 @@ TIMEOUT_PER_MB: float = 30  # (seconds)
 TIMEOUT_MIN: float = 60  # (seconds)
 
 
+def running_on_qubes() -> bool:
+    # https://www.qubes-os.org/faq/#what-is-the-canonical-way-to-detect-qubes-vm
+    if os.environ.get("DZ_USE_CONTAINERS", "0") == "0":
+        return os.path.exists("/usr/share/qubes/marker-vm")
+    else:
+        return False
+
+
 async def read_stream(
     sr: asyncio.StreamReader, callback: Optional[Callable] = None
 ) -> bytes:
@@ -126,9 +134,10 @@ class DangerzoneConverter:
         pass
 
     def update_progress(self, text: str, *, error: bool = False) -> None:
-        print(
-            json.dumps(
-                {"error": error, "text": text, "percentage": int(self.percentage)}
+        if not running_on_qubes():
+            print(
+                json.dumps(
+                    {"error": error, "text": text, "percentage": int(self.percentage)}
+                )
             )
-        )
-        sys.stdout.flush()
+            sys.stdout.flush()

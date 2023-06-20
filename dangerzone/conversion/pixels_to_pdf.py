@@ -12,7 +12,7 @@ import os
 import shutil
 import sys
 
-from .common import DangerzoneConverter, run_command
+from .common import DangerzoneConverter, run_command, running_on_qubes
 
 
 class PixelsToPDF(DangerzoneConverter):
@@ -146,8 +146,9 @@ class PixelsToPDF(DangerzoneConverter):
         self.update_progress("Safe PDF created")
 
         # Move converted files into /safezone
-        shutil.move("/tmp/safe-output.pdf", "/safezone")
-        shutil.move("/tmp/safe-output-compressed.pdf", "/safezone")
+        if not running_on_qubes():
+            shutil.move("/tmp/safe-output.pdf", "/safezone")
+            shutil.move("/tmp/safe-output-compressed.pdf", "/safezone")
 
 
 async def main() -> int:

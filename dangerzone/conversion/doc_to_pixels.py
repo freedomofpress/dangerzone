@@ -101,8 +101,11 @@ class DocumentToPixels(DangerzoneConverter):
         }
 
         # Detect MIME type
-        mime = magic.Magic(mime=True)
-        mime_type = mime.from_file("/tmp/input_file")
+        try:
+            mime = magic.Magic(mime=True)
+            mime_type = mime.from_file("/tmp/input_file")
+        except TypeError:
+            mime_type = magic.detect_from_filename("/tmp/input_file").mime_type
 
         # Validate MIME type
         if mime_type not in conversions:

@@ -12,7 +12,7 @@ import os
 import shutil
 import sys
 
-from .common import DangerzoneConverter, run_command, running_on_qubes
+from .common import DangerzoneConverter, running_on_qubes
 
 
 class PixelsToPDF(DangerzoneConverter):
@@ -47,7 +47,7 @@ class PixelsToPDF(DangerzoneConverter):
                 self.update_progress(
                     f"Converting page {page}/{num_pages} from pixels to searchable PDF"
                 )
-                await run_command(
+                await self.run_command(
                     [
                         "gm",
                         "convert",
@@ -65,7 +65,7 @@ class PixelsToPDF(DangerzoneConverter):
                     ),
                     timeout=timeout,
                 )
-                await run_command(
+                await self.run_command(
                     [
                         "tesseract",
                         png_filename,
@@ -88,7 +88,7 @@ class PixelsToPDF(DangerzoneConverter):
                 self.update_progress(
                     f"Converting page {page}/{num_pages} from pixels to PDF"
                 )
-                await run_command(
+                await self.run_command(
                     [
                         "gm",
                         "convert",
@@ -119,7 +119,7 @@ class PixelsToPDF(DangerzoneConverter):
         for page in range(1, num_pages + 1):
             args.append(f"/tmp/page-{page}.pdf")
         args.append(f"/tmp/safe-output.pdf")
-        await run_command(
+        await self.run_command(
             args,
             error_message="Merging pages into a single PDF failed",
             timeout_message=(
@@ -133,7 +133,7 @@ class PixelsToPDF(DangerzoneConverter):
 
         # Compress
         self.update_progress("Compressing PDF")
-        await run_command(
+        await self.run_command(
             ["ps2pdf", "/tmp/safe-output.pdf", "/tmp/safe-output-compressed.pdf"],
             error_message="Compressing PDF failed",
             timeout_message=(

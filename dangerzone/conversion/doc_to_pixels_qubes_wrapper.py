@@ -84,6 +84,9 @@ async def main() -> None:
             rgb_data = rgb_file.read()
             await write_bytes(rgb_data)
 
+    # Write debug information
+    await write_bytes(converter.captured_output, file=sys.stderr)
+
 
 if __name__ == "__main__":
     sys.exit(asyncio.run(main()))

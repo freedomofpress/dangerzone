@@ -28,6 +28,8 @@ CONVERTED_FILE_PATH = (
     "/tmp/safe-output-compressed.pdf"
 )
 
+MAX_CONVERSION_LOG_CHARS = 150 * 50  # up to ~150 lines of 50 characters
+
 
 def read_bytes(p: subprocess.Popen, buff_size: int) -> bytes:
     """Read bytes from stdout."""
@@ -38,6 +40,15 @@ def read_int(p: subprocess.Popen) -> int:
     """Read 2 bytes from stdout, and decode them as int."""
     untrusted_int = p.stdout.read(2)  # type: ignore [union-attr]
     return int.from_bytes(untrusted_int, signed=False)
+
+
+def read_debug_text(p: subprocess.Popen) -> str:
+    """Read arbitrarily long text (for debug purposes)"""
+    if p.stderr:
+        untrusted_text = p.stderr.read(MAX_CONVERSION_LOG_CHARS)
+        return untrusted_text.decode("ascii", errors="replace")
+    else:
+        return ""
 
 
 class Qubes(IsolationProvider):
@@ -75,6 +86,7 @@ class Qubes(IsolationProvider):
                     ["/usr/bin/qrexec-client-vm", "@dispvm:dz-dvm", "dz.ConvertDev"],
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
                 )
                 assert p.stdin is not None
 
@@ -89,6 +101,7 @@ class Qubes(IsolationProvider):
                     ["/usr/bin/qrexec-client-vm", "@dispvm:dz-dvm", "dz.Convert"],
                     stdin=f,
                     stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
                 )
 
             n_pages = read_int(p)
@@ -125,6 +138,10 @@ class Qubes(IsolationProvider):
         # TODO handle leftover code input
         text = "Converted document to pixels"
         self.print_progress_trusted(document, False, text, percentage)
+
+        if getattr(sys, "dangerzone_dev", False):
+            text = f"Conversion output (doc to pixels):\n{read_debug_text(p)}"
+            log.info(text)
 
         # FIXME pass OCR stuff properly (see #455)
         old_environ = dict(os.environ)

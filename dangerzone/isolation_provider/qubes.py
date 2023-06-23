@@ -145,7 +145,7 @@ class Qubes(IsolationProvider):
         if getattr(sys, "dangerzone_dev", False):
             untrusted_log = read_debug_text(p)
             log.info(
-                f"Conversion output (doc to pixels):\n{replace_control_chars(untrusted_log)}"
+                f"Conversion output (doc to pixels)\n{self.sanitize_conversion_str(untrusted_log)}"
             )
 
         # FIXME pass OCR stuff properly (see #455)

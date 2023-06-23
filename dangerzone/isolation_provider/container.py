@@ -295,7 +295,7 @@ class Container(IsolationProvider):
             with open(log_path, "r", encoding="ascii", errors="replace") as f:
                 untrusted_log = f.read(MAX_CONVERSION_LOG_CHARS)
             log.info(
-                f"Conversion output (doc to pixels):\n{replace_control_chars(untrusted_log)}"
+                f"Conversion output (doc to pixels):\n{self.sanitize_conversion_str(untrusted_log)}"
             )
 
         if ret != 0:

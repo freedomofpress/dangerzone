@@ -84,6 +84,14 @@ class IsolationProvider(ABC):
     def get_max_parallel_conversions(self) -> int:
         pass
 
+    def sanitize_conversion_str(self, untrusted_conversion_str: str) -> str:
+        conversion_string = replace_control_chars(untrusted_conversion_str)
+
+        # Add armor (gpg-style)
+        armor_start = "-----CONVERSION LOG START-----\n"
+        armor_end = "-----CONVERSION LOG END-----"
+        return armor_start + conversion_string + armor_end
+
 
 # From global_common:
 

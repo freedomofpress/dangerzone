@@ -143,8 +143,10 @@ class Qubes(IsolationProvider):
         self.print_progress_trusted(document, False, text, percentage)
 
         if getattr(sys, "dangerzone_dev", False):
-            text = f"Conversion output (doc to pixels):\n{read_debug_text(p)}"
-            log.info(text)
+            untrusted_log = read_debug_text(p)
+            log.info(
+                f"Conversion output (doc to pixels):\n{replace_control_chars(untrusted_log)}"
+            )
 
         # FIXME pass OCR stuff properly (see #455)
         old_environ = dict(os.environ)

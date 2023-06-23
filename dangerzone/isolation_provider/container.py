@@ -12,7 +12,12 @@ import tempfile
 from typing import Any, Callable, List, Optional, Tuple
 
 from ..document import Document
-from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
+from ..util import (
+    get_resource_path,
+    get_subprocess_startupinfo,
+    get_tmp_dir,
+    replace_control_chars,
+)
 from .base import MAX_CONVERSION_LOG_CHARS, IsolationProvider
 
 # Define startupinfo for subprocesses
@@ -288,9 +293,10 @@ class Container(IsolationProvider):
         if getattr(sys, "dangerzone_dev", False):
             log_path = pixel_dir / "captured_output.txt"
             with open(log_path, "r", encoding="ascii", errors="replace") as f:
-                log.info(
-                    f"Conversion output (doc to pixels):\n{f.read(MAX_CONVERSION_LOG_CHARS)}"
-                )
+                untrusted_log = f.read(MAX_CONVERSION_LOG_CHARS)
+            log.info(
+                f"Conversion output (doc to pixels):\n{replace_control_chars(untrusted_log)}"
+            )
 
         if ret != 0:
             log.error("documents-to-pixels failed")

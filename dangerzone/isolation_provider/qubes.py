@@ -22,13 +22,12 @@ log = logging.getLogger(__name__)
 from ..conversion.common import running_on_qubes
 from ..conversion.pixels_to_pdf import PixelsToPDF
 from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
+from .base import MAX_CONVERSION_LOG_CHARS
 
 CONVERTED_FILE_PATH = (
     # FIXME won't work for parallel conversions (see #454)
     "/tmp/safe-output-compressed.pdf"
 )
-
-MAX_CONVERSION_LOG_CHARS = 150 * 50  # up to ~150 lines of 50 characters
 
 
 def read_bytes(p: subprocess.Popen, buff_size: int) -> bytes:

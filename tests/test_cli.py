@@ -159,6 +159,10 @@ class TestCli:
                     stale_files = list(tmp_dir.iterdir())
                     assert not stale_files
 
+        # XXX Print stdout so that junitXML exports with output capturing
+        # actually include the stdout + stderr (they are combined into stdout)
+        print(result.stdout)
+
         return CLIResult.reclass_click_result(result, args)
 
 

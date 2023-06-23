@@ -1,18 +1,22 @@
+LARGE_TEST_REPO_DIR:=tests/test_docs_large
+GIT_DESC=$$(git describe)
+JUNIT_FLAGS := --capture=sys -o junit_logging=all
+
 .PHONY: lint-black
 lint-black: ## check python source code formatting issues, with black
-	black --check --diff --exclude dev_scripts/envs ./
+	black --check --diff --exclude dev_scripts/envs --exclude $(LARGE_TEST_REPO_DIR) ./
 
 .PHONY: lint-black-apply
 lint-black-apply: ## apply black's source code formatting suggestions
-	black --exclude dev_scripts/envs ./
+	black --exclude dev_scripts/envs --exclude $(LARGE_TEST_REPO_DIR) ./
 
 .PHONY: lint-isort
 lint-isort: ## check imports are organized, with isort
-	isort --check-only --skip dev_scripts/envs ./
+	isort --check-only --skip dev_scripts/envs --skip $(LARGE_TEST_REPO_DIR) ./
 
 .PHONY: lint-isort-apply
 lint-isort-apply: ## apply isort's imports organization suggestions
-	isort --skip dev_scripts/envs ./
+	isort --skip dev_scripts/envs --skip $(LARGE_TEST_REPO_DIR) ./
 
 MYPY_ARGS := --ignore-missing-imports \
 			 --disallow-incomplete-defs \
@@ -43,6 +47,22 @@ test:
 	pytest --co -q tests/gui | grep -v ' collected' | xargs -n 1 pytest -v
 	pytest -v --cov --ignore dev_scripts --ignore tests/gui --ignore tests/test_large_set.py
 
+
+.PHONY: test-large-requirements
+test-large-requirements:
+	@git-lfs --version || (echo "ERROR: you need to install 'git-lfs'" && false)
+	@xmllint --version || (echo "ERROR: you need to install 'xmllint'" && false)
+
+test-large-init: test-large-requirements
+	@echo "initializing 'test_docs_large' submodule"
+	git submodule init $(LARGE_TEST_REPO_DIR)
+	git submodule update $(LARGE_TEST_REPO_DIR)
+	git lfs pull $(LARGE_TEST_REPO_DIR)
+
+TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC).junit.xml
+.PHONY: tests-large
+test-large: test-large-init  ## Run large test set
+	python -m pytest tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)
 
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.

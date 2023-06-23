@@ -2,6 +2,14 @@
 
 This section documents the release process. Unless you're a dangerzone developer making a release, you'll probably never need to follow it.
 
+## Large document testing
+
+Parallel to the QA process, the release candidate should be put through the large document tests in a dedicated machine to run overnight.
+
+Follow the instructions in `docs/developer/TESTING.md` to run the tests.
+
+These tests will identify any regressions or progression in terms of document coverage.
+
 ## QA
 
 To ensure that new releases do not introduce regressions, and support existing

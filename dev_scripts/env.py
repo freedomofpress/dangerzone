@@ -70,6 +70,13 @@ RUN . /etc/os-release \
         | apt-key add -
 """
 
+# XXX: overcome the fact that ubuntu images (starting on 23.04) ship with the 'ubuntu'
+# user by default https://bugs.launchpad.net/cloud-images/+bug/2005129
+# Related issue https://github.com/freedomofpress/dangerzone/pull/461
+DOCKERFILE_UBUNTU_2304_REM_USER = r"""
+RUN touch /var/mail/ubuntu && chown ubuntu /var/mail/ubuntu && userdel -r ubuntu
+"""
+
 # FIXME: Do we really need the python3-venv packages?
 DOCKERFILE_BUILD_DEV_DEBIAN_DEPS = r"""
 ARG DEBIAN_FRONTEND=noninteractive
@@ -404,6 +411,10 @@ class Env:
             install_deps = (
                 DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
             )
+        elif self.distro == "ubuntu" and self.version in ("23.04", "lunar"):
+            install_deps = (
+                DOCKERFILE_UBUNTU_2304_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
+            )
         else:
             install_deps = DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
 
@@ -441,6 +452,10 @@ class Env:
             if self.distro == "ubuntu" and self.version in ("20.04", "focal"):
                 install_deps = (
                     DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEBIAN_DEPS
+                )
+            elif self.distro == "ubuntu" and self.version in ("23.04", "lunar"):
+                install_deps = (
+                    DOCKERFILE_UBUNTU_2304_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
                 )
             package = f"dangerzone_{version}-1_all.deb"
             package_src = git_root() / "deb_dist" / package

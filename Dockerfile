@@ -3,8 +3,8 @@ FROM alpine:latest
 ARG TESSDATA_CHECKSUM=990fffb9b7a9b52dc9a2d053a9ef6852ca2b72bd8dfb22988b0b990a700fd3c7
 
 # Install dependencies
-RUN apk -U upgrade && \
-    apk add \
+RUN apk --no-cache -U upgrade && \
+    apk --no-cache add \
     ghostscript \
     graphicsmagick \
     libreoffice \
@@ -26,7 +26,6 @@ RUN apk -U upgrade && \
 RUN mkdir tessdata && cd tessdata \
     && TESSDATA_VERSION=$(wget -O- -nv https://api.github.com/repos/tesseract-ocr/tessdata/releases/latest \
         | sed -n 's/^.*"tag_name": "\([0-9.]\+\)".*$/\1/p') \
-    && apk --purge del jq \
     && wget https://github.com/tesseract-ocr/tessdata/archive/$TESSDATA_VERSION/tessdata-$TESSDATA_VERSION.tar.gz \
     && echo "$TESSDATA_CHECKSUM  tessdata-$TESSDATA_VERSION.tar.gz" | sha256sum -c \
     && tar -xzvf tessdata-$TESSDATA_VERSION.tar.gz -C . \

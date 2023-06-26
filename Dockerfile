@@ -15,7 +15,7 @@ RUN apk --no-cache -U upgrade && \
     python3 \
     py3-magic \
     tesseract-ocr \
-    openjdk17-jre-headless
+    font-noto-cjk
 
 # Download the trained models from the latest GitHub release of Tesseract, and
 # store them under /usr/share/tessdata. This is basically what distro packages

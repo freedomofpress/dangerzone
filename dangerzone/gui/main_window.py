@@ -358,7 +358,7 @@ class DocSelectionWidget(QtWidgets.QWidget):
         (filenames, _) = QtWidgets.QFileDialog.getOpenFileNames(
             self,
             "Open documents",
-            filter="Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.jpg *.jpeg *.gif *.png *.tif *.tiff)",
+            filter="Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.hwp *.hwpx *.jpg *.jpeg *.gif *.png *.tif *.tiff)",
         )
         if filenames == []:
             # no files selected

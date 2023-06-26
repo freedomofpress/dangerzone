@@ -144,6 +144,20 @@ if p == "Darwin":
                     "CFBundleTypeRole": "Viewer",
                 },
                 {
+                    "CFBundleTypeExtensions": ["hwp", "hwpx"],
+                    "CFBundleTypeIconFile": "../macos/document.icns",
+                    "CFBundleTypeMIMETypes": [
+                        "application/vnd.hancom.hwp",
+                        "application/haansofthwp",
+                        "application/x-hwp",
+                        "application/vnd.hancom.hwpx",
+                        "application/haansofthwpx",
+                        "application/vnd.hancom.hwp",
+                    ],
+                    "CFBundleTypeName": "Hancom Office Document",
+                    "CFBundleTypeRole": "Viewer",
+                },
+                {
                     "CFBundleTypeExtensions": ["jpg", "jpeg"],
                     "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": ["image/jpeg"],

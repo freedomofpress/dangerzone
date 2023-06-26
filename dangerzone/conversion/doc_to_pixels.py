@@ -77,6 +77,23 @@ class DocumentToPixels(DangerzoneConverter):
             "application/vnd.oasis.opendocument.text-template": {
                 "type": "libreoffice",
             },
+            # .hwp
+            "application/vnd.hancom.hwp": {
+                "type": "libreoffice",
+            },
+            "application/haansofthwp": {
+                "type": "libreoffice",
+            },
+            "application/x-hwp": {
+                "type": "libreoffice",
+            },
+            # .hwpx
+            "application/vnd.hancom.hwpx": {
+                "type": "libreoffice",
+            },
+            "application/haansofthwpx": {
+                "type": "libreoffice",
+            },
             # At least .odt, .docx, .odg, .odp, .ods, and .pptx
             "application/zip": {
                 "type": "libreoffice",

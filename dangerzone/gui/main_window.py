@@ -553,7 +553,7 @@ class DocSelectionWidget(QtWidgets.QWidget):
         self.file_dialog.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
         self.file_dialog.setNameFilters(
             [
-                "Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.jpg *.jpeg *.gif *.png *.tif *.tiff)"
+                "Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.hwp *.hwpx *.jpg *.jpeg *.gif *.png *.tif *.tiff)"
             ]
         )
 

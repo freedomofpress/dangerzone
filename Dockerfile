@@ -14,7 +14,8 @@ RUN apk --no-cache -U upgrade && \
     poppler-data \
     python3 \
     py3-magic \
-    tesseract-ocr
+    tesseract-ocr \
+    font-noto-cjk
 
 # Download the trained models from the latest GitHub release of Tesseract, and
 # store them under /usr/share/tessdata. This is basically what distro packages

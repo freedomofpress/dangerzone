@@ -98,6 +98,9 @@ jobs:
           - target: debian-bookworm
             distro: debian
             version: bookworm
+          - target: debian-trixie
+            distro: debian
+            version: trixie
 
     steps:
       - name: Checkout

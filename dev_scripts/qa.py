@@ -778,6 +778,11 @@ class QADebianBookworm(QADebianBased):
     VERSION = "bookworm"
 
 
+class QADebianTrixie(QADebianBased):
+    DISTRO = "debian"
+    VERSION = "trixie"
+
+
 class QAUbuntu2004(QADebianBased):
     DISTRO = "ubuntu"
     VERSION = "20.04"

@@ -289,6 +289,33 @@ jobs:
             ./dev_scripts/env.py --distro fedora --version 37 run --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
+  ci-debian-trixie:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - run: *calculate-cache-key
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro debian --version trixie build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro debian --version trixie run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
   ci-debian-bookworm:
     machine:
       image: ubuntu-2004:202111-01
@@ -413,6 +440,18 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
+  build-debian-trixie:
+    docker:
+      - image: debian:trixie
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - run: *calculate-cache-key
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+
   build-debian-bookworm:
     docker:
       - image: debian:bookworm
@@ -480,6 +519,9 @@ workflows:
       - ci-ubuntu-focal:
           requires:
             - build-container-image
+      - ci-debian-trixie:
+          requires:
+            - build-container-image
       - ci-debian-bookworm:
           requires:
             - build-container-image
@@ -502,6 +544,9 @@ workflows:
           requires:
             - build-container-image
       - build-debian-bullseye:
+          requires:
+            - build-container-image
+      - build-debian-trixie:
           requires:
             - build-container-image
       - build-debian-bookworm:

@@ -10,6 +10,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 ### Added
 
 - Platform support: Alpha integration with Qubes OS ([issue #411](https://github.com/freedomofpress/dangerzone/issues/411))
+- Platform support: Debian Trixie (13)
 
 ### Removed
 

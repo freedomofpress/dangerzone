@@ -104,23 +104,13 @@ Create a .rpm:
 
 ## Qubes OS
 
-<details>
-  <summary><i>:memo: Expand this section if you want to use containers instead of disposable qubes.</i></summary>
-  </br>
-
-  Create a Debian or Fedora-based development standalone qube with at least
-  8GB of private storage space, and follow the relevant instructions above for
-  the respective template.
-
-  Remember to set the environment variable `DZ_USE_CONTAINERS=1`, before executing
-  Dangerzone.
-
-  Over time, you may need to increase disk space or prune outdated container
-  images if you run into build issues on this VM.
-</details>
 
 > :warning: Native Qubes support is in alpha stage, so the instructions below
 > require switching between qubes, and are subject to change.
+>
+> If you want to build Dangerzone on Qubes and use containers instead of disposable
+> qubes, please follow the intructions of Fedora / Debian instead.
+
 
 ### Initial Setup
 
@@ -248,10 +238,10 @@ can run the following commands in the `dz` app qube:
 poetry shell
 
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+QUBES_CONVERSION=1 ./dev_scripts/dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+QUBES_CONVERSION=1 ./dev_scripts/dangerzone
 ```
 
 Create a .rpm:

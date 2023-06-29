@@ -19,10 +19,7 @@ TIMEOUT_MIN: float = 60  # (seconds)
 
 def running_on_qubes() -> bool:
     # https://www.qubes-os.org/faq/#what-is-the-canonical-way-to-detect-qubes-vm
-    if os.environ.get("DZ_USE_CONTAINERS", "0") == "0":
-        return os.path.exists("/usr/share/qubes/marker-vm")
-    else:
-        return False
+    return os.path.exists("/usr/share/qubes/marker-vm")
 
 
 async def read_stream(

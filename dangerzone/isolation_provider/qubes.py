@@ -19,8 +19,9 @@ from .base import IsolationProvider
 
 log = logging.getLogger(__name__)
 
+from ..conversion.common import running_on_qubes
 from ..conversion.pixels_to_pdf import PixelsToPDF
-from ..util import get_subprocess_startupinfo, get_tmp_dir
+from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
 
 CONVERTED_FILE_PATH = (
     # FIXME won't work for parallel conversions (see #454)
@@ -173,3 +174,20 @@ class Qubes(IsolationProvider):
         bufsize_bytes = len(temp_file.getvalue()).to_bytes(4)
         wpipe.write(bufsize_bytes)
         wpipe.write(temp_file.getvalue())
+
+
+def is_qubes_native_conversion() -> bool:
+    """Returns True if the conversion should be run using Qubes OS's diposable
+    VMs and False if not."""
+    if running_on_qubes():
+        if getattr(sys, "dangerzone_dev", False):
+            return os.environ.get("QUBES_CONVERSION", "0") == "1"
+
+        # XXX If Dangerzone is installed check if container image was shipped
+        # This disambiguates if it is running a Qubes targetted build or not
+        # (Qubes-specific builds don't ship the container image)
+
+        compressed_container_path = get_resource_path("container.tar.gz")
+        return not os.path.exists(compressed_container_path)
+    else:
+        return False

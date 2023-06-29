@@ -6,11 +6,10 @@ import click
 from colorama import Back, Fore, Style
 
 from . import args, errors
-from .conversion.common import running_on_qubes
 from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
-from .isolation_provider.qubes import Qubes
+from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
 from .util import get_version
 
@@ -65,7 +64,7 @@ def cli_main(
 
     if getattr(sys, "dangerzone_dev", False) and dummy_conversion:
         dangerzone = DangerzoneCore(Dummy())
-    elif running_on_qubes():
+    elif is_qubes_native_conversion():
         dangerzone = DangerzoneCore(Qubes())
     else:
         dangerzone = DangerzoneCore(Container(enable_timeouts=enable_timeouts))

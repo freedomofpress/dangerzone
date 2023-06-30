@@ -46,7 +46,17 @@ Set up a development environment by following [these instructions](/BUILD.md).
 
 ## FAQ
 
+### "I'm experiencing an issue while using Dangerzone."
+
+Dangerzone gets updates to improve its features _and_ to fix problems. So, updating may be the simplest path to resolving the issue. Here is how to update:
+
+1. Check which version of Dangerzone you are currently usi: run Dangerzone, then look for the series of numbers to the left of the logo. It will look similar to `0.4.1`
+2. Now find the latest available version of Dangerzone: go to the [download page](https://dangerzone.rocks/#downloads). Look for the number displayed using the same format as in Step 1.
+3. Is the version on the Dangerzone download page higher than the version of your installed app? Go ahead and update.
+
 ### "I get `invalid json returned from container` on MacOS Big Sur or newer (MacOS 11.x.x or higher)"
+
+Are you using the latest Dangerzone?
 
 You _may_ be attempting to convert a file in a directory to which Docker Desktop does not have access. Dangerzone for Mac requires Docker Desktop for conversion. Docker Desktop, in turn, requires permission from MacOS to access the directory in which your target file is located.
 

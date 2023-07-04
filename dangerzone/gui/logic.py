@@ -122,19 +122,20 @@ class DangerzoneGui(DangerzoneCore):
         return pdf_viewers
 
 
-class Alert(QtWidgets.QDialog):
+class Dialog(QtWidgets.QDialog):
     def __init__(
         self,
         dangerzone: DangerzoneGui,
-        message: str,
+        title: str,
         ok_text: str = "Ok",
         has_cancel: bool = True,
+        cancel_text: str = "Cancel",
         extra_button_text: Optional[str] = None,
     ) -> None:
-        super(Alert, self).__init__()
+        super().__init__()
         self.dangerzone = dangerzone
 
-        self.setWindowTitle("dangerzone")
+        self.setWindowTitle(title)
         self.setWindowIcon(self.dangerzone.get_window_icon())
         self.setModal(True)
 
@@ -147,19 +148,7 @@ class Alert(QtWidgets.QDialog):
         )
         self.setWindowFlags(flags)
 
-        logo = QtWidgets.QLabel()
-        logo.setPixmap(
-            QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("icon.png")))
-        )
-
-        label = QtWidgets.QLabel()
-        label.setText(message)
-        label.setWordWrap(True)
-
-        message_layout = QtWidgets.QHBoxLayout()
-        message_layout.addWidget(logo)
-        message_layout.addSpacing(10)
-        message_layout.addWidget(label, stretch=1)
+        message_layout = self.create_layout()
 
         ok_button = QtWidgets.QPushButton(ok_text)
         ok_button.clicked.connect(self.clicked_ok)
@@ -173,7 +162,7 @@ class Alert(QtWidgets.QDialog):
         if extra_button_text:
             buttons_layout.addWidget(extra_button)
         if has_cancel:
-            cancel_button = QtWidgets.QPushButton("Cancel")
+            cancel_button = QtWidgets.QPushButton(cancel_text)
             cancel_button.clicked.connect(self.clicked_cancel)
             buttons_layout.addWidget(cancel_button)
 
@@ -182,6 +171,9 @@ class Alert(QtWidgets.QDialog):
         layout.addSpacing(10)
         layout.addLayout(buttons_layout)
         self.setLayout(layout)
+
+    def create_layout(self) -> QtWidgets.QBoxLayout:
+        raise NotImplementedError("Dangerzone dialogs must implement this method")
 
     def clicked_ok(self) -> None:
         self.done(int(QtWidgets.QDialog.Accepted))
@@ -194,3 +186,33 @@ class Alert(QtWidgets.QDialog):
 
     def launch(self) -> int:
         return self.exec_()
+
+
+class Alert(Dialog):
+    def __init__(  # type: ignore [no-untyped-def]
+        self,
+        *args,
+        message: str = "",
+        **kwargs,
+    ) -> None:
+        self.message = message
+        kwargs.setdefault("title", "dangerzone")
+        super().__init__(*args, **kwargs)
+
+    def create_layout(self) -> QtWidgets.QBoxLayout:
+        logo = QtWidgets.QLabel()
+        logo.setPixmap(
+            QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("icon.png")))
+        )
+
+        label = QtWidgets.QLabel()
+        label.setText(self.message)
+        label.setWordWrap(True)
+        label.setOpenExternalLinks(True)
+
+        message_layout = QtWidgets.QHBoxLayout()
+        message_layout.addWidget(logo)
+        message_layout.addSpacing(10)
+        message_layout.addWidget(label, stretch=1)
+
+        return message_layout

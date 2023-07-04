@@ -3,7 +3,10 @@ import logging
 import os
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from packaging import version
+
 from .document import SAFE_EXTENSION
+from .util import get_version
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +30,12 @@ class Settings:
             "open": True,
             "open_app": None,
             "safe_extension": SAFE_EXTENSION,
+            "updater_check": None,
+            "updater_last_check": None,  # last check in UNIX epoch (secs since 1970)
+            # FIXME: How to invalidate those if they change upstream?
+            "updater_latest_version": get_version(),
+            "updater_latest_changelog": "",
+            "updater_errors": 0,
         }
 
         self.load()
@@ -50,6 +59,9 @@ class Settings:
                 for key in self.default_settings:
                     if key not in self.settings:
                         self.settings[key] = self.default_settings[key]
+                    elif key == "updater_latest_version":
+                        if version.parse(get_version()) > version.parse(self.get(key)):
+                            self.set(key, get_version())
 
             except:
                 log.error("Error loading settings, falling back to default")

@@ -43,8 +43,16 @@ class Settings:
     def get(self, key: str) -> Any:
         return self.settings[key]
 
-    def set(self, key: str, val: Any) -> None:
+    def set(self, key: str, val: Any, autosave: bool = False) -> None:
+        old_val = self.get(key)
         self.settings[key] = val
+        if autosave and val != old_val:
+            self.save()
+
+    def get_updater_settings(self) -> Dict[str, Any]:
+        return {
+            key: val for key, val in self.settings.items() if key.startswith("updater_")
+        }
 
     def load(self) -> None:
         if os.path.isfile(self.settings_filename):

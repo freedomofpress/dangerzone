@@ -13,12 +13,12 @@ from colorama import Fore, Style
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
-    from PySide2 import QtCore, QtGui, QtWidgets
+    from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
 else:
     try:
-        from PySide6 import QtCore, QtGui, QtWidgets
+        from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
     except ImportError:
-        from PySide2 import QtCore, QtGui, QtWidgets
+        from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
@@ -26,15 +26,42 @@ from ..isolation_provider.container import Container, NoContainerTechException
 from ..isolation_provider.dummy import Dummy
 from ..isolation_provider.qubes import Qubes
 from ..util import get_resource_path, get_subprocess_startupinfo, get_version
-from .logic import Alert, DangerzoneGui
+from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
+from .updater import UpdateReport
 
 log = logging.getLogger(__name__)
+
+
+UPDATE_SUCCESS_MSG_INTRO = """\
+<p>A new Dangerzone version has been released.</p>
+<p>Please visit our <a href="https://dangerzone.rocks#downloads">downloads page</a> to install this
+update.</p>
+"""
+
+
+UPDATE_ERROR_MSG_INTRO = """\
+<p>Something went wrong while checking for Dangerzone updates:</p>
+"""
+
+
+UPDATE_ERROR_MSG_OUTRO = """\
+<p>You are strongly advised to visit our
+<a href="https://dangerzone.rocks#downloads">downloads page</a> and check for new
+updates manually, or consult our
+<a href=https://github.com/freedomofpress/dangerzone/wiki/Updates>wiki page</a> for
+common causes of errors. Alternatively, you can uncheck the "Check for updates" option
+in our menu, if you are in an air-gapped environment and have another way of learning
+about updates.</p>
+"""
+
+HAMBURGER_MENU_SIZE = 30
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(MainWindow, self).__init__()
         self.dangerzone = dangerzone
+        self.updater_error: Optional[str] = None
 
         self.setWindowTitle("Dangerzone")
         self.setWindowIcon(self.dangerzone.get_window_icon())
@@ -59,13 +86,52 @@ class MainWindow(QtWidgets.QMainWindow):
         header_version_label.setProperty("class", "version")
         header_version_label.setAlignment(QtCore.Qt.AlignBottom)
 
+        # Create the hamburger button, whose main purpose is to inform the user about
+        # updates.
+        self.hamburger_button = QtWidgets.QToolButton()
+        self.hamburger_button.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        self.hamburger_button.setIcon(
+            QtGui.QIcon(self.load_svg_image("hamburger_menu.svg"))
+        )
+        self.hamburger_button.setFixedSize(HAMBURGER_MENU_SIZE, HAMBURGER_MENU_SIZE)
+        self.hamburger_button.setIconSize(
+            QtCore.QSize(HAMBURGER_MENU_SIZE, HAMBURGER_MENU_SIZE)
+        )
+        # FIXME: Maybe remove the box around the icon as well
+        self.hamburger_button.setStyleSheet(
+            "QToolButton::menu-indicator { image: none; }"
+        )
+        self.hamburger_button.setArrowType(QtCore.Qt.ArrowType.NoArrow)
+
+        # Create the menu for the hamburger button
+        hamburger_menu = QtWidgets.QMenu(self.hamburger_button)
+        self.hamburger_button.setMenu(hamburger_menu)
+
+        # Add the "Check for updates" action
+        self.toggle_updates_action = hamburger_menu.addAction("Check for updates")
+        self.toggle_updates_action.triggered.connect(self.toggle_updates_triggered)
+        self.toggle_updates_action.setCheckable(True)
+        self.toggle_updates_action.setChecked(
+            bool(self.dangerzone.settings.get("updater_check"))
+        )
+
+        # Add the "Exit" action
+        hamburger_menu.addSeparator()
+        exit_action = hamburger_menu.addAction("Exit")
+        exit_action.triggered.connect(self.close)
+
         header_layout = QtWidgets.QHBoxLayout()
+        header_layout.addSpacing(
+            HAMBURGER_MENU_SIZE
+        )  # balance out hamburger to keep logo centered
         header_layout.addStretch()
         header_layout.addWidget(logo)
         header_layout.addSpacing(10)
         header_layout.addWidget(header_label)
         header_layout.addWidget(header_version_label)
         header_layout.addStretch()
+        header_layout.addWidget(self.hamburger_button)
+        header_layout.addSpacing(15)
 
         if isinstance(self.dangerzone.isolation_provider, Container):
             # Waiting widget replaces content widget while container runtime isn't available
@@ -101,6 +167,130 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(central_widget)
 
         self.show()
+
+    def load_svg_image(self, filename: str) -> QtGui.QPixmap:
+        """Load an SVG image from a filename.
+
+        This answer is basically taken from: https://stackoverflow.com/a/25689790
+        """
+        path = get_resource_path(filename)
+        svg_renderer = QtSvg.QSvgRenderer(path)
+        image = QtGui.QImage(64, 64, QtGui.QImage.Format_ARGB32)
+        # Set the ARGB to 0 to prevent rendering artifacts
+        image.fill(0x00000000)
+        svg_renderer.render(QtGui.QPainter(image))
+        pixmap = QtGui.QPixmap.fromImage(image)
+        return pixmap
+
+    def show_update_success(self) -> None:
+        """Inform the user about a new Dangerzone release."""
+        version = self.dangerzone.settings.get("updater_latest_version")
+        changelog = self.dangerzone.settings.get("updater_latest_changelog")
+
+        changelog_widget = CollapsibleBox("Changelog")
+        changelog_layout = QtWidgets.QVBoxLayout()
+        changelog_text_box = QtWidgets.QTextBrowser()
+        changelog_text_box.setHtml(changelog)
+        changelog_text_box.setOpenExternalLinks(True)
+        changelog_layout.addWidget(changelog_text_box)
+        changelog_widget.setContentLayout(changelog_layout)
+
+        update_widget = UpdateDialog(
+            self.dangerzone,
+            title=f"Dangerzone {version} has been released",
+            intro_msg=UPDATE_SUCCESS_MSG_INTRO,
+            middle_widget=changelog_widget,
+            epilogue_msg=None,
+            ok_text="Ok",
+            has_cancel=False,
+        )
+        update_widget.exec_()
+
+    def show_update_error(self) -> None:
+        """Inform the user about an error during update checks"""
+        assert self.updater_error is not None
+
+        error_widget = QtWidgets.QTextBrowser()
+        error_widget.setHtml(self.updater_error)
+
+        update_widget = UpdateDialog(
+            self.dangerzone,
+            title="Update check error",
+            intro_msg=UPDATE_ERROR_MSG_INTRO,
+            middle_widget=error_widget,
+            epilogue_msg=UPDATE_ERROR_MSG_OUTRO,
+            ok_text="Close",
+            has_cancel=False,
+        )
+        update_widget.exec_()
+
+    def toggle_updates_triggered(self) -> None:
+        """Change the underlying update check settings based on the user's choice."""
+        check = self.toggle_updates_action.isChecked()
+        self.dangerzone.settings.set("updater_check", check)
+        self.dangerzone.settings.save()
+
+    def handle_updates(self, report: UpdateReport) -> None:
+        """Handle update reports from the update checker thread.
+
+        See Updater.check_for_updates() to find the different types of reports that it
+        may send back, depending on the outcome of an update check.
+        """
+        # If there are no new updates, reset the error counter (if any) and return.
+        if report.empty():
+            self.dangerzone.settings.set("updater_errors", 0, autosave=True)
+            return
+
+        hamburger_menu = self.hamburger_button.menu()
+
+        if report.error:
+            log.error(f"Encountered an error during an update check: {report.error}")
+            errors = self.dangerzone.settings.get("updater_errors") + 1
+            self.dangerzone.settings.set("updater_errors", errors)
+            self.dangerzone.settings.save()
+            self.updater_error = report.error
+
+            # If we encounter more than three errors in a row, show a red notification
+            # bubble. This way, we don't inform the user about intermittent errors.
+            if errors < 3:
+                log.debug(
+                    f"Will not show an error yet since number of errors is low ({errors})"
+                )
+                return
+
+            self.hamburger_button.setIcon(
+                QtGui.QIcon(self.load_svg_image("hamburger_menu_update_error.svg"))
+            )
+            sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
+            # FIXME: Add red bubble next to the text.
+            error_action = QtGui.QAction("Update error", hamburger_menu)  # type: ignore [attr-defined]
+            error_action.triggered.connect(self.show_update_error)
+            hamburger_menu.insertAction(sep, error_action)
+        else:
+            log.debug(f"Handling new version: {report.version}")
+            self.dangerzone.settings.set("updater_latest_version", report.version)
+            self.dangerzone.settings.set("updater_latest_changelog", report.changelog)
+            self.dangerzone.settings.set("updater_errors", 0)
+
+            # FIXME: Save the settings to the filesystem only when they have really changed,
+            # maybe with a dirty bit.
+            self.dangerzone.settings.save()
+
+            self.hamburger_button.setIcon(
+                QtGui.QIcon(self.load_svg_image("hamburger_menu_update_success.svg"))
+            )
+
+            sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
+            # FIXME: Add green bubble next to the text.
+            success_action = QtGui.QAction("New version available", hamburger_menu)  # type: ignore [attr-defined]
+            success_action.setIcon(
+                QtGui.QIcon(self.load_svg_image("hamburger_menu_update_available.svg"))
+            )
+            success_action.triggered.connect(self.show_update_success)
+            hamburger_menu.insertAction(sep, success_action)
+
+    def register_update_handler(self, signal: QtCore.SignalInstance) -> None:
+        signal.connect(self.handle_updates)
 
     def waiting_finished(self) -> None:
         self.dangerzone.is_waiting_finished = True

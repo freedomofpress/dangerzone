@@ -29,6 +29,9 @@ from ..isolation_provider.qubes import Qubes
 from ..util import get_resource_path, get_version
 from .logic import DangerzoneGui
 from .main_window import MainWindow
+from .updater import UpdaterThread
+
+log = logging.getLogger(__name__)
 
 
 class Application(QtWidgets.QApplication):
@@ -117,6 +120,19 @@ def gui_main(
         window.content_widget.doc_selection_widget.documents_selected.emit(documents)
 
     window = MainWindow(dangerzone)
+
+    # Check for updates
+    log.debug("Setting up Dangezone updater")
+    updater = UpdaterThread(dangerzone)
+    window.register_update_handler(updater.finished)
+
+    log.debug("Consulting updater settings before checking for updates")
+    if updater.should_check_for_updates():
+        log.debug("Checking for updates")
+        updater.start()
+    else:
+        log.debug("Will not check for updates, based on updater settings")
+
     if filenames:
         open_files(filenames)
 

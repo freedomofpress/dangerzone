@@ -12,6 +12,9 @@ appdirs = "*"
 PySide6 = "^6.4.1"
 colorama = "*"
 pyxdg = {version = "*", platform = "linux"}
+requests = "*"
+markdown = "*"
+packaging = "*"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
@@ -31,6 +34,8 @@ black = "*"
 isort = "*"
 mypy = "*"
 types-PySide2 = "*"
+types-Markdown = "*"
+types-requests = "*"
 
 # Dependencies required for testing the code.
 [tool.poetry.group.test.dependencies]

@@ -54,7 +54,7 @@ def main():
 
     print("* Building RPM package")
     subprocess.run(
-        f"python3 setup.py bdist_rpm --requires='{platform_dependant_packages},python3-pyside2,python3-appdirs,python3-click,python3-pyxdg,python3-colorama'",
+        f"python3 setup.py bdist_rpm --requires='{platform_dependant_packages},python3-pyside2,python3-appdirs,python3-click,python3-pyxdg,python3-colorama,python3-requests,python3-markdown,python3-packaging'",
         shell=True,
         cwd=root,
         check=True,

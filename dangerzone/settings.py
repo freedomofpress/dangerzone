@@ -22,7 +22,12 @@ class Settings:
         self.settings_filename = os.path.join(
             self.dangerzone.appdata_path, "settings.json"
         )
-        self.default_settings: Dict[str, Any] = {
+        self.default_settings: Dict[str, Any] = self.generate_default_settings()
+        self.load()
+
+    @classmethod
+    def generate_default_settings(cls) -> Dict[str, Any]:
+        return {
             "save": True,
             "archive": True,
             "ocr": True,
@@ -37,8 +42,6 @@ class Settings:
             "updater_latest_changelog": "",
             "updater_errors": 0,
         }
-
-        self.load()
 
     def get(self, key: str) -> Any:
         return self.settings[key]

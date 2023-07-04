@@ -218,6 +218,49 @@ class Alert(Dialog):
         return message_layout
 
 
+class UpdateDialog(Dialog):
+    def __init__(  # type: ignore [no-untyped-def]
+        self,
+        *args,
+        intro_msg: Optional[str] = None,
+        middle_widget: Optional[QtWidgets.QWidget] = None,
+        epilogue_msg: Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        self.intro_msg = intro_msg
+        self.middle_widget = middle_widget
+        self.epilogue_msg = epilogue_msg
+        super().__init__(*args, **kwargs)
+
+    def create_layout(self) -> QtWidgets.QBoxLayout:
+        self.setMinimumWidth(500)
+        message_layout = QtWidgets.QVBoxLayout()
+
+        if self.intro_msg is not None:
+            intro = QtWidgets.QLabel()
+            intro.setText(self.intro_msg)
+            intro.setWordWrap(True)
+            intro.setAlignment(QtCore.Qt.AlignCenter)
+            intro.setOpenExternalLinks(True)
+            message_layout.addWidget(intro)
+            message_layout.addSpacing(10)
+
+        if self.middle_widget is not None:
+            self.middle_widget.setParent(self)
+            message_layout.addWidget(self.middle_widget)
+            message_layout.addSpacing(10)
+
+        if self.epilogue_msg is not None:
+            epilogue = QtWidgets.QLabel()
+            epilogue.setText(self.epilogue_msg)
+            epilogue.setWordWrap(True)
+            epilogue.setOpenExternalLinks(True)
+            message_layout.addWidget(epilogue)
+            message_layout.addSpacing(10)
+
+        return message_layout
+
+
 class CollapsibleBox(QtWidgets.QWidget):
     """Create a widget that can show/hide its contents when you click on it.
 

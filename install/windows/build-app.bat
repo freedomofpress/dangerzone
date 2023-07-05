@@ -6,8 +6,8 @@ REM build the exe
 python .\setup-windows.py build
 
 REM code sign dangerzone.exe
-signtool.exe sign /v /d "Dangerzone" /sha1 1a0345732140749bdaa03efe8591b2c2a036884c /tr http://timestamp.digicert.com build\exe.win-amd64-3.10\dangerzone.exe
-signtool.exe sign /v /d "Dangerzone" /sha1 1a0345732140749bdaa03efe8591b2c2a036884c /tr http://timestamp.digicert.com build\exe.win-amd64-3.10\dangerzone-cli.exe
+signtool.exe sign /v /d "Dangerzone" /sha1 1a0345732140749bdaa03efe8591b2c2a036884c /tr http://timestamp.digicert.com build\exe.win-amd64-3.11\dangerzone.exe
+signtool.exe sign /v /d "Dangerzone" /sha1 1a0345732140749bdaa03efe8591b2c2a036884c /tr http://timestamp.digicert.com build\exe.win-amd64-3.11\dangerzone-cli.exe
 
 REM build the wix file
 python install\windows\build-wxs.py > build\Dangerzone.wxs

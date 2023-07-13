@@ -8,7 +8,7 @@ from dangerzone.gui.main_window import *
 from dangerzone.gui.updater import UpdateReport, UpdaterThread
 from dangerzone.util import get_version
 
-from .. import sample_doc, sample_doc2
+from .. import sample_pdf, sample_doc
 from . import qt_updater, updater
 from .test_updater import default_updater_settings
 
@@ -106,12 +106,12 @@ def test_change_document_button(
     content_widget: ContentWidget,
     qtbot: QtBot,
     mocker: MockerFixture,
+    sample_pdf: str,
     sample_doc: str,
-    sample_doc2: str,
 ) -> None:
     # Setup first doc selection
     file_dialog_mock = mocker.MagicMock()
-    file_dialog_mock.selectedFiles.return_value = (sample_doc,)
+    file_dialog_mock.selectedFiles.return_value = (sample_pdf,)
     content_widget.doc_selection_widget.file_dialog = file_dialog_mock
 
     # Select first file
@@ -123,7 +123,7 @@ def test_change_document_button(
         file_dialog_mock.accept()
 
     # Setup doc change
-    file_dialog_mock.selectedFiles.return_value = (sample_doc2,)
+    file_dialog_mock.selectedFiles.return_value = (sample_doc,)
 
     # When clicking on "select docs" button
     with qtbot.waitSignal(content_widget.documents_added):
@@ -143,4 +143,4 @@ def test_change_document_button(
         for doc in content_widget.dangerzone.get_unconverted_documents()
     ]
     assert len(docs) is 1
-    assert docs[0] == sample_doc2
+    assert docs[0] == sample_doc

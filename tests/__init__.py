@@ -8,8 +8,8 @@ sys.dangerzone_dev = True  # type: ignore[attr-defined]
 from dangerzone.document import SAFE_EXTENSION
 
 SAMPLE_DIRECTORY = "test_docs"
-BASIC_SAMPLE = "sample-pdf.pdf"
-BASIC_SAMPLE2 = "sample-doc.doc"
+BASIC_SAMPLE_PDF = "sample-pdf.pdf"
+BASIC_SAMPLE_DOC = "sample-doc.doc"
 test_docs_dir = Path(__file__).parent.joinpath(SAMPLE_DIRECTORY)
 test_docs = [
     p
@@ -23,17 +23,17 @@ for_each_doc = pytest.mark.parametrize("doc", test_docs)
 
 
 class TestBase:
-    sample_doc = str(test_docs_dir.joinpath(BASIC_SAMPLE))
+    sample_doc = str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
+
+
+@pytest.fixture
+def sample_pdf() -> str:
+    return str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
 
 
 @pytest.fixture
 def sample_doc() -> str:
-    return str(test_docs_dir.joinpath(BASIC_SAMPLE))
-
-
-@pytest.fixture
-def sample_doc2() -> str:
-    return str(test_docs_dir.joinpath(BASIC_SAMPLE2))
+    return str(test_docs_dir.joinpath(BASIC_SAMPLE_DOC))
 
 
 @pytest.fixture

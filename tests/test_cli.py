@@ -19,7 +19,7 @@ from strip_ansi import strip_ansi
 from dangerzone.cli import cli_main, display_banner
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 
-from . import TestBase, for_each_doc
+from . import for_each_doc, sample_pdf
 
 # TODO explore any symlink edge cases
 # TODO simulate ctrl-c, ctrl-d, SIGINT/SIGKILL/SIGTERM... (man 7 signal), etc?
@@ -111,7 +111,7 @@ class CLIResult(Result):
         return desc
 
 
-class TestCli(TestBase):
+class TestCli:
     def run_cli(
         self, args: Sequence[str] | str = (), tmp_path: Optional[Path] = None
     ) -> CLIResult:
@@ -191,8 +191,8 @@ class TestCliBasic(TestCli):
 
 
 class TestCliConversion(TestCliBasic):
-    def test_invalid_lang(self) -> None:
-        result = self.run_cli([self.sample_doc, "--ocr-lang", "piglatin"])
+    def test_invalid_lang(self, sample_pdf: str) -> None:
+        result = self.run_cli([sample_pdf, "--ocr-lang", "piglatin"])
         result.assert_failure()
 
     @for_each_doc
@@ -200,21 +200,21 @@ class TestCliConversion(TestCliBasic):
         result = self.run_cli(str(doc))
         result.assert_success()
 
-    def test_output_filename(self) -> None:
+    def test_output_filename(self, sample_pdf: str) -> None:
         temp_dir = tempfile.mkdtemp(prefix="dangerzone-")
         output_filename = str(Path(temp_dir) / "safe.pdf")
-        result = self.run_cli([self.sample_doc, "--output-filename", output_filename])
+        result = self.run_cli([sample_pdf, "--output-filename", output_filename])
         result.assert_success()
 
-    def test_output_filename_spaces(self) -> None:
+    def test_output_filename_spaces(self, sample_pdf: str) -> None:
         temp_dir = tempfile.mkdtemp(prefix="dangerzone-")
         output_filename = str(Path(temp_dir) / "safe space.pdf")
-        result = self.run_cli([self.sample_doc, "--output-filename", output_filename])
+        result = self.run_cli([sample_pdf, "--output-filename", output_filename])
         result.assert_success()
 
-    def test_output_filename_new_dir(self) -> None:
+    def test_output_filename_new_dir(self, sample_pdf: str) -> None:
         output_filename = str(Path("fake-directory") / "my-output.pdf")
-        result = self.run_cli([self.sample_doc, "--output-filename", output_filename])
+        result = self.run_cli([sample_pdf, "--output-filename", output_filename])
         result.assert_failure()
 
     def test_sample_not_found(self) -> None:
@@ -222,8 +222,8 @@ class TestCliConversion(TestCliBasic):
         result = self.run_cli(input_filename)
         result.assert_failure()
 
-    def test_lang_eng(self) -> None:
-        result = self.run_cli([self.sample_doc, "--ocr-lang", "eng"])
+    def test_lang_eng(self, sample_pdf: str) -> None:
+        result = self.run_cli([sample_pdf, "--ocr-lang", "eng"])
         result.assert_success()
 
     @pytest.mark.parametrize(
@@ -234,43 +234,45 @@ class TestCliConversion(TestCliBasic):
             "spaces test.pdf",
         ],
     )
-    def test_filenames(self, filename: str, tmp_path: Path) -> None:
+    def test_filenames(self, filename: str, tmp_path: Path, sample_pdf: str) -> None:
         doc_path = str(Path(tmp_path).joinpath(filename))
-        shutil.copyfile(self.sample_doc, doc_path)
+        shutil.copyfile(sample_pdf, doc_path)
         result = self.run_cli(doc_path)
         result.assert_success()
         assert len(os.listdir(tmp_path)) == 2
 
-    def test_bulk(self, tmp_path: Path) -> None:
+    def test_bulk(self, tmp_path: Path, sample_pdf: str) -> None:
         filenames = ["1.pdf", "2.pdf", "3.pdf"]
         file_paths = []
         for filename in filenames:
             doc_path = str(tmp_path / filename)
-            shutil.copyfile(self.sample_doc, doc_path)
+            shutil.copyfile(sample_pdf, doc_path)
             file_paths.append(doc_path)
 
         result = self.run_cli(file_paths)
         result.assert_success()
         assert len(os.listdir(tmp_path)) == 2 * len(filenames)
 
-    def test_bulk_fail_on_output_filename(self, tmp_path: Path) -> None:
+    def test_bulk_fail_on_output_filename(
+        self, tmp_path: Path, sample_pdf: str
+    ) -> None:
         filenames = ["1.pdf", "2.pdf", "3.pdf"]
         file_paths = []
         for filename in filenames:
             doc_path = str(tmp_path / filename)
-            shutil.copyfile(self.sample_doc, doc_path)
+            shutil.copyfile(sample_pdf, doc_path)
             file_paths.append(doc_path)
 
         result = self.run_cli(['--output-filename="output.pdf"'] + file_paths)
         result.assert_failure()
 
-    def test_archive(self, tmp_path: Path) -> None:
+    def test_archive(self, tmp_path: Path, sample_pdf: str) -> None:
         test_string = "original file"
 
         original_doc_path = str(tmp_path / "doc.pdf")
         safe_doc_path = str(tmp_path / f"doc{SAFE_EXTENSION}")
         archived_doc_path = str(tmp_path / ARCHIVE_SUBDIR / "doc.pdf")
-        shutil.copyfile(self.sample_doc, original_doc_path)
+        shutil.copyfile(sample_pdf, original_doc_path)
 
         result = self.run_cli(["--archive", original_doc_path])
         result.assert_success()
@@ -280,16 +282,16 @@ class TestCliConversion(TestCliBasic):
         assert os.path.exists(archived_doc_path)
         assert os.path.exists(safe_doc_path)
 
-    def test_dummy_conversion(self, tmp_path: Path) -> None:
-        result = self.run_cli([self.sample_doc, "--unsafe-dummy-conversion"])
+    def test_dummy_conversion(self, tmp_path: Path, sample_pdf: str) -> None:
+        result = self.run_cli([sample_pdf, "--unsafe-dummy-conversion"])
         result.assert_success()
 
-    def test_dummy_conversion_bulk(self, tmp_path: Path) -> None:
+    def test_dummy_conversion_bulk(self, tmp_path: Path, sample_pdf: str) -> None:
         filenames = ["1.pdf", "2.pdf", "3.pdf"]
         file_paths = []
         for filename in filenames:
             doc_path = str(tmp_path / filename)
-            shutil.copyfile(self.sample_doc, doc_path)
+            shutil.copyfile(sample_pdf, doc_path)
             file_paths.append(doc_path)
 
         result = self.run_cli(["--unsafe-dummy-conversion", *file_paths])

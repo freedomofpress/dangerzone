@@ -8,7 +8,7 @@ from dangerzone.gui.main_window import *
 from dangerzone.gui.updater import UpdateReport, UpdaterThread
 from dangerzone.util import get_version
 
-from .. import sample_pdf, sample_doc
+from .. import sample_doc, sample_pdf
 from . import qt_updater, updater
 from .test_updater import default_updater_settings
 

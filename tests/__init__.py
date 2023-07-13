@@ -22,10 +22,6 @@ test_docs = [
 for_each_doc = pytest.mark.parametrize("doc", test_docs)
 
 
-class TestBase:
-    sample_doc = str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
-
-
 @pytest.fixture
 def sample_pdf() -> str:
     return str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))

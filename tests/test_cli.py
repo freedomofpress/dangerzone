@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import contextlib
 import copy
 import os
@@ -19,7 +20,7 @@ from strip_ansi import strip_ansi
 from dangerzone.cli import cli_main, display_banner
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 
-from . import for_each_doc, sample_pdf
+from . import TestBase, for_each_doc, for_each_external_doc, sample_pdf
 
 # TODO explore any symlink edge cases
 # TODO simulate ctrl-c, ctrl-d, SIGINT/SIGKILL/SIGTERM... (man 7 signal), etc?
@@ -295,6 +296,17 @@ class TestCliConversion(TestCliBasic):
             file_paths.append(doc_path)
 
         result = self.run_cli(["--unsafe-dummy-conversion", *file_paths])
+        result.assert_success()
+
+
+class TestExtraFormats(TestCli):
+    @for_each_external_doc("*hwp*")
+    def test_hancom_office(self, doc: str) -> None:
+        with tempfile.NamedTemporaryFile("wb", delete=False) as decoded_doc:
+            with open(doc, "rb") as encoded_doc:
+                decoded_doc.write(base64.b64decode(encoded_doc.read()))
+                decoded_doc.flush()
+        result = self.run_cli(str(decoded_doc.name))
         result.assert_success()
 
 

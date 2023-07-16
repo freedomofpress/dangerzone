@@ -1,15 +1,18 @@
 import sys
 from pathlib import Path
+from typing import Callable, List
 
 import pytest
 
+from dangerzone.document import SAFE_EXTENSION
+
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
 
-from dangerzone.document import SAFE_EXTENSION
 
 SAMPLE_DIRECTORY = "test_docs"
 BASIC_SAMPLE_PDF = "sample-pdf.pdf"
 BASIC_SAMPLE_DOC = "sample-doc.doc"
+SAMPLE_EXTERNAL_DIRECTORY = "test_docs_external"
 test_docs_dir = Path(__file__).parent.joinpath(SAMPLE_DIRECTORY)
 test_docs = [
     p
@@ -27,9 +30,38 @@ def sample_pdf() -> str:
     return str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
 
 
+# External Docs - base64 docs encoded for externally sourced documents
+# XXX to reduce the chance of accidentally opening them
+test_docs_external_dir = Path(__file__).parent.joinpath(SAMPLE_EXTERNAL_DIRECTORY)
+
+
 @pytest.fixture
 def sample_doc() -> str:
     return str(test_docs_dir.joinpath(BASIC_SAMPLE_DOC))
+
+
+def get_docs_external(pattern: str = "*") -> List[Path]:
+    if not pattern.endswith("*"):
+        pattern = f"{pattern}.b64"
+    return [
+        p
+        for p in test_docs_external_dir.rglob(pattern)
+        if p.is_file() and not (p.name.endswith(SAFE_EXTENSION))
+    ]
+
+
+# Pytest parameter decorators
+def for_each_external_doc(glob_pattern: str = "*") -> Callable:
+    test_docs_external = get_docs_external(glob_pattern)
+    return pytest.mark.parametrize(
+        "doc",
+        test_docs_external,
+        ids=[str(doc.name).rstrip(".b64") for doc in test_docs_external],
+    )
+
+
+class TestBase:
+    sample_doc = str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
 
 
 @pytest.fixture

@@ -80,19 +80,24 @@ class DocumentToPixels(DangerzoneConverter):
             # .hwp
             "application/vnd.hancom.hwp": {
                 "type": "libreoffice",
+                "libreoffice_ext": "h2orestart.oxt",
             },
             "application/haansofthwp": {
                 "type": "libreoffice",
+                "libreoffice_ext": "h2orestart.oxt",
             },
             "application/x-hwp": {
                 "type": "libreoffice",
+                "libreoffice_ext": "h2orestart.oxt",
             },
             # .hwpx
             "application/vnd.hancom.hwpx": {
                 "type": "libreoffice",
+                "libreoffice_ext": "h2orestart.oxt",
             },
             "application/haansofthwpx": {
                 "type": "libreoffice",
+                "libreoffice_ext": "h2orestart.oxt",
             },
             "application/hwp+zip": {
                 "type": "libreoffice",
@@ -144,6 +149,9 @@ class DocumentToPixels(DangerzoneConverter):
         if conversion["type"] is None:
             pdf_filename = "/tmp/input_file"
         elif conversion["type"] == "libreoffice":
+            libreoffice_ext = conversion.get("libreoffice_ext", None)
+            if libreoffice_ext:
+                await self.install_libreoffice_ext(libreoffice_ext)
             self.update_progress("Converting to PDF using LibreOffice")
             args = [
                 "libreoffice",
@@ -302,6 +310,21 @@ class DocumentToPixels(DangerzoneConverter):
             + glob.glob("/tmp/page-*.height")
         ):
             shutil.move(filename, "/tmp/dangerzone")
+
+    async def install_libreoffice_ext(self, libreoffice_ext: str) -> None:
+        self.update_progress(f"Installing LibreOffice extension '{libreoffice_ext}'")
+        unzip_args = [
+            "unzip",
+            "-d",
+            f"/usr/lib/libreoffice/share/extensions/{libreoffice_ext}/",
+            f"/libreoffice_ext/{libreoffice_ext}",
+        ]
+        await run_command(
+            unzip_args,
+            error_message="LibreOffice extension installation failed (unzipping)",
+            timeout_message="unzipping LibreOffice extension timed out 5 seconds",
+            timeout=5,
+        )
 
 
 async def main() -> int:

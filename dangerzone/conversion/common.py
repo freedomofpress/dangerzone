@@ -77,6 +77,10 @@ class DangerzoneConverter:
             stderr=asyncio.subprocess.PIPE,
         )
 
+        # Log command to debug log so we can trace back which errors
+        # are from each command
+        self.captured_output += f">>> {' '.join(args)}\n".encode()
+
         assert proc.stdout is not None
         assert proc.stderr is not None
 

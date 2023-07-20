@@ -79,7 +79,7 @@ class DangerzoneConverter:
 
         # Log command to debug log so we can trace back which errors
         # are from each command
-        self.captured_output += f">>> {' '.join(args)}\n".encode()
+        self.captured_output += f"[COMMAND] {' '.join(args)}\n".encode()
 
         assert proc.stdout is not None
         assert proc.stderr is not None

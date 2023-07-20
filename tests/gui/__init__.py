@@ -13,13 +13,23 @@ from dangerzone.gui.updater import UpdaterThread
 from dangerzone.isolation_provider.dummy import Dummy
 
 
+def get_qt_app() -> Application:
+    if Application.instance() is None:
+        return Application()
+    else:
+        return Application.instance()
+
+
 def generate_isolated_updater(
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
-    app_mocker: MockerFixture,
+    app_mocker: Optional[MockerFixture] = None,
 ) -> UpdaterThread:
     """Generate an Updater class with its own settings."""
-    app = app_mocker.MagicMock()
+    if app_mocker:
+        app = app_mocker.MagicMock()
+    else:
+        app = get_qt_app()
 
     dummy = Dummy()
     # XXX: We can monkey-patch global state without wrapping it in a context manager, or
@@ -38,3 +48,8 @@ def updater(
     tmp_path: Path, monkeypatch: MonkeyPatch, mocker: MockerFixture
 ) -> UpdaterThread:
     return generate_isolated_updater(tmp_path, monkeypatch, mocker)
+
+
+@pytest.fixture
+def qt_updater(tmp_path: Path, monkeypatch: MonkeyPatch) -> UpdaterThread:
+    return generate_isolated_updater(tmp_path, monkeypatch)

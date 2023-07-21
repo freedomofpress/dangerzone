@@ -187,7 +187,7 @@ class MainWindow(QtWidgets.QMainWindow):
         version = self.dangerzone.settings.get("updater_latest_version")
         changelog = self.dangerzone.settings.get("updater_latest_changelog")
 
-        changelog_widget = CollapsibleBox("Changelog")
+        changelog_widget = CollapsibleBox("What's New?")
         changelog_layout = QtWidgets.QVBoxLayout()
         changelog_text_box = QtWidgets.QTextBrowser()
         changelog_text_box.setHtml(changelog)

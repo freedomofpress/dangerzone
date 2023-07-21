@@ -149,21 +149,22 @@ class Dialog(QtWidgets.QDialog):
 
         message_layout = self.create_layout()
 
-        ok_button = QtWidgets.QPushButton(ok_text)
-        ok_button.clicked.connect(self.clicked_ok)
+        self.ok_button = QtWidgets.QPushButton(ok_text)
+        self.ok_button.clicked.connect(self.clicked_ok)
+
         if extra_button_text:
-            extra_button = QtWidgets.QPushButton(extra_button_text)
-            extra_button.clicked.connect(self.clicked_extra)
+            self.extra_button = QtWidgets.QPushButton(extra_button_text)
+            self.extra_button.clicked.connect(self.clicked_extra)
 
         buttons_layout = QtWidgets.QHBoxLayout()
         buttons_layout.addStretch()
-        buttons_layout.addWidget(ok_button)
+        buttons_layout.addWidget(self.ok_button)
         if extra_button_text:
-            buttons_layout.addWidget(extra_button)
+            buttons_layout.addWidget(self.extra_button)
         if has_cancel:
-            cancel_button = QtWidgets.QPushButton(cancel_text)
-            cancel_button.clicked.connect(self.clicked_cancel)
-            buttons_layout.addWidget(cancel_button)
+            self.cancel_button = QtWidgets.QPushButton(cancel_text)
+            self.cancel_button.clicked.connect(self.clicked_cancel)
+            buttons_layout.addWidget(self.cancel_button)
 
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(message_layout)

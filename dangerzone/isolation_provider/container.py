@@ -3,8 +3,8 @@ import json
 import logging
 import os
 import pathlib
-import pipes
 import platform
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -152,7 +152,7 @@ class Container(IsolationProvider):
         document: Document,
         args: List[str],
     ) -> int:
-        args_str = " ".join(pipes.quote(s) for s in args)
+        args_str = " ".join(shlex.quote(s) for s in args)
         log.info("> " + args_str)
 
         with subprocess.Popen(

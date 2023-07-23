@@ -1,6 +1,5 @@
 import logging
 import os
-import pipes
 import platform
 import shlex
 import subprocess
@@ -68,7 +67,7 @@ class DangerzoneGui(DangerzoneCore):
             args = ["open", "-a", "Preview.app", filename]
 
             # Run
-            args_str = " ".join(pipes.quote(s) for s in args)
+            args_str = " ".join(shlex.quote(s) for s in args)
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.run(args)
 
@@ -89,7 +88,7 @@ class DangerzoneGui(DangerzoneCore):
                     args[i] = filename
 
             # Open as a background process
-            args_str = " ".join(pipes.quote(s) for s in args)
+            args_str = " ".join(shlex.quote(s) for s in args)
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.Popen(args)
 

@@ -76,7 +76,7 @@ class UpdaterThread(QtCore.QThread):
     whoever has connected to it.
     """
 
-    finished = QtCore.Signal(dict)
+    finished = QtCore.Signal(UpdateReport)
 
     GH_RELEASE_URL = (
         "https://api.github.com/repos/freedomofpress/dangerzone/releases/latest"

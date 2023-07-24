@@ -140,7 +140,7 @@ jobs:
       - run:
           name: Install test dependencies
           command: |
-            sudo apt-get install -y libqt5gui5 --no-install-recommends
+            sudo apt-get install -y libqt5gui5 libxcb-cursor0 --no-install-recommends
       - run:
           name: Prepare cache directory
           command: |

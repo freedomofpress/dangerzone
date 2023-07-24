@@ -64,9 +64,9 @@ RUN apt-get update \
     && apt-get install -y python-all curl wget gnupg2 \
     && rm -rf /var/lib/apt/lists/*
 RUN . /etc/os-release \
-    && sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' \
+    && sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_$VERSION_ID/ /' \
         > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list" \
-    && wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- \
+    && wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_$VERSION_ID/Release.key -O- \
         | apt-key add -
 """
 
@@ -89,7 +89,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
     && apt-get install -y --no-install-recommends dh-python make build-essential \
-        fakeroot libqt5gui5 pipx python3 python3-dev python3-venv python3-stdeb \
+        fakeroot {qt_deps} pipx python3 python3-dev python3-venv python3-stdeb \
         python3-all \
     && rm -rf /var/lib/apt/lists/*
 # NOTE: `pipx install poetry` fails on Ubuntu Focal, when installed through APT. By
@@ -108,7 +108,7 @@ RUN apt-get update \
 
 # FIXME: Install Poetry on Fedora via package manager.
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
-RUN dnf install -y rpm-build podman python3 python3-setuptools pipx make qt5-qtbase-gui \
+RUN dnf install -y rpm-build podman python3 python3-setuptools pipx make qt6-qtbase-gui \
     && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.
@@ -407,16 +407,31 @@ class Env:
         """Build a Linux environment and install tools for Dangerzone development."""
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_DEV_FEDORA_DEPS
-        elif self.distro == "ubuntu" and self.version in ("20.04", "focal"):
-            install_deps = (
-                DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
-            )
-        elif self.distro == "ubuntu" and self.version in ("23.04", "lunar"):
-            install_deps = (
-                DOCKERFILE_UBUNTU_2304_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
-            )
         else:
+            # Use Qt6 in all of our Linux dev environments, and add a missing
+            # libxcb-cursor0 dependency
+            #
+            # See https://github.com/freedomofpress/dangerzone/issues/482
+            qt_deps = "libqt6gui6 libxcb-cursor0"
             install_deps = DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
+            if self.distro == "ubuntu" and self.version in ("20.04", "focal"):
+                qt_deps = "libqt5gui5 libxcb-cursor0"  # Ubuntu Focal has only Qt5.
+                install_deps = (
+                    DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
+                )
+            elif self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
+                # Ubuntu Jammy misses a dependency to `libxkbcommon-x11-0`, which we can
+                # install indirectly via `qt6-qpa-plugins`.
+                qt_deps += " qt6-qpa-plugins"
+            elif self.distro == "ubuntu" and self.version in ("23.04", "lunar"):
+                install_deps = (
+                    DOCKERFILE_UBUNTU_2304_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
+                )
+            elif self.distro == "debian" and self.version in ("bullseye-backports",):
+                # Debian Bullseye misses a dependency to libgl1.
+                qt_deps += " libgl1"
+
+            install_deps = install_deps.format(qt_deps=qt_deps)
 
         dockerfile = DOCKERFILE_BUILD_DEV.format(
             distro=self.distro, version=self.version, install_deps=install_deps

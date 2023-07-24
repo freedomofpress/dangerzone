@@ -14,6 +14,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Platform support: Ubuntu 23.04 (Lunar Lobster)
 - Inform about new updates on MacOS/Windows platforms, by periodically checking
   our GitHub releases page ([issue #189](https://github.com/freedomofpress/dangerzone/issues/189))
+- Development: Use Qt6 in our CI runners and dev environments ([issue #482](https://github.com/freedomofpress/dangerzone/issues/482))
 
 ### Removed
 

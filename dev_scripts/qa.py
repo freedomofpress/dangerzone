@@ -154,7 +154,7 @@ CONTENT_BUILD_DEBIAN_UBUNTU = r"""## Debian/Ubuntu
 Install dependencies:
 
 ```sh
-sudo apt install -y podman dh-python build-essential fakeroot make libqt5gui5 \
+sudo apt install -y podman dh-python build-essential fakeroot make libqt6gui6 \
     pipx python3 python3-dev python3-stdeb python3-all
 ```
 
@@ -210,7 +210,7 @@ CONTENT_BUILD_FEDORA = r"""## Fedora
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 pipx qt5-qtbase-gui
+sudo dnf install -y rpm-build podman python3 pipx qt6-qtbase-gui
 ```
 
 Install Poetry using `pipx`:

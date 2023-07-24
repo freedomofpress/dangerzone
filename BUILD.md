@@ -5,7 +5,7 @@
 Install dependencies:
 
 ```sh
-sudo apt install -y podman dh-python build-essential fakeroot make libqt5gui5 \
+sudo apt install -y podman dh-python build-essential fakeroot make libqt6gui6 \
     pipx python3 python3-dev python3-stdeb python3-all
 ```
 
@@ -60,7 +60,7 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 pipx qt5-qtbase-gui
+sudo dnf install -y rpm-build podman python3 pipx qt6-qtbase-gui
 ```
 
 Install Poetry using `pipx`:
@@ -174,7 +174,7 @@ specified qubes.
 1. Install dependencies:
 
    ```
-   sudo dnf install -y rpm-build pipx qt5-qtbase-gui libreoffice python3-magic \
+   sudo dnf install -y rpm-build pipx qt6-qtbase-gui libreoffice python3-magic \
        tesseract*
    ```
 

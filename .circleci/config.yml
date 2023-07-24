@@ -178,7 +178,7 @@ jobs:
       - run:
           name: Run CI tests
           command: |
-            ./dev_scripts/env.py --distro ubuntu --version 23.04 run --dev \
+            ./dev_scripts/env.py --distro ubuntu --version 23.04 run -g --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
   ci-ubuntu-kinetic:
@@ -205,7 +205,7 @@ jobs:
       - run:
           name: Run CI tests
           command: |
-            ./dev_scripts/env.py --distro ubuntu --version 22.10 run --dev \
+            ./dev_scripts/env.py --distro ubuntu --version 22.10 run -g --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
   ci-ubuntu-jammy:
@@ -232,7 +232,7 @@ jobs:
       - run:
           name: Run CI tests
           command: |
-            ./dev_scripts/env.py --distro ubuntu --version 22.04 run --dev \
+            ./dev_scripts/env.py --distro ubuntu --version 22.04 run -g --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
   ci-ubuntu-focal:
@@ -259,7 +259,7 @@ jobs:
       - run:
           name: Run CI tests
           command: |
-            ./dev_scripts/env.py --distro ubuntu --version 20.04 run --dev \
+            ./dev_scripts/env.py --distro ubuntu --version 20.04 run -g --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
   ci-fedora-38:
@@ -286,7 +286,7 @@ jobs:
       - run:
           name: Run CI tests
           command: |
-            ./dev_scripts/env.py --distro fedora --version 38 run --dev \
+            ./dev_scripts/env.py --distro fedora --version 38 run -g --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
   ci-fedora-37:
@@ -313,7 +313,7 @@ jobs:
       - run:
           name: Run CI tests
           command: |
-            ./dev_scripts/env.py --distro fedora --version 37 run --dev \
+            ./dev_scripts/env.py --distro fedora --version 37 run -g --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
   ci-debian-trixie:
@@ -340,7 +340,7 @@ jobs:
       - run:
           name: Run CI tests
           command: |
-            ./dev_scripts/env.py --distro debian --version trixie run --dev \
+            ./dev_scripts/env.py --distro debian --version trixie run -g --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
   ci-debian-bookworm:
@@ -367,7 +367,7 @@ jobs:
       - run:
           name: Run CI tests
           command: |
-            ./dev_scripts/env.py --distro debian --version bookworm run --dev \
+            ./dev_scripts/env.py --distro debian --version bookworm run -g --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
   # NOTE: Making CI tests work in Debian Bullseye requires some tip-toeing
@@ -427,7 +427,7 @@ jobs:
       - run:
           name: Run CI tests
           command: |
-            ./dev_scripts/env.py --distro debian --version bullseye run --dev \
+            ./dev_scripts/env.py --distro debian --version bullseye run -g --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
   build-ubuntu-lunar:

@@ -10,6 +10,7 @@ from _pytest.fixtures import FixtureRequest
 
 from dangerzone.document import SAFE_EXTENSION
 
+from .test_cli import TestCli
 
 test_docs_repo_dir = Path(__file__).parent / "test_docs_large"
 test_docs_dir = test_docs_repo_dir / "all_documents"
@@ -59,16 +60,27 @@ for_each_100M_doc = pytest.mark.parametrize(
 )
 
 
-
-class TestLargeSet():
+class TestLargeSet(TestCli):
     def run_doc_test(self, doc: Path, tmp_path: Path) -> None:
         output_file_path = str(tmp_path / "output.pdf")
-        p = subprocess.Popen([
-            "python", "dev_scripts/dangerzone-cli", "--output-filename", output_file_path, "--ocr-lang", "eng", str(doc)
-        ], stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        p = subprocess.Popen(
+            [
+                "python",
+                "dev_scripts/dangerzone-cli",
+                "--output-filename",
+                output_file_path,
+                "--ocr-lang",
+                "eng",
+                str(doc),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
         out, _ = p.communicate()
         from strip_ansi import strip_ansi
+
         print(strip_ansi(out.decode()))
+        assert p.returncode == 0
 
     @for_each_10K_doc
     def test_10K_docs(self, doc: Path, tmp_path: Path) -> None:

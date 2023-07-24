@@ -388,5 +388,6 @@ async def main() -> int:
             container_log.write(converter.captured_output)
     return error_code
 
+
 if __name__ == "__main__":
     sys.exit(asyncio.run(main()))

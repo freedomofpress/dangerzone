@@ -23,7 +23,8 @@ MYPY_ARGS := --ignore-missing-imports \
 			 --disallow-untyped-defs \
 			 --show-error-codes \
 			 --warn-unreachable \
-			 --warn-unused-ignores
+			 --warn-unused-ignores \
+			 --exclude $(LARGE_TEST_REPO_DIR)/*.py
 
 mypy-host:
 	mypy $(MYPY_ARGS) dangerzone
@@ -57,12 +58,13 @@ test-large-init: test-large-requirements
 	@echo "initializing 'test_docs_large' submodule"
 	git submodule init $(LARGE_TEST_REPO_DIR)
 	git submodule update $(LARGE_TEST_REPO_DIR)
-	git lfs pull $(LARGE_TEST_REPO_DIR)
+	cd $(LARGE_TEST_REPO_DIR) && $(MAKE) clone-docs
 
 TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC).junit.xml
 .PHONY: tests-large
 test-large: test-large-init  ## Run large test set
 	python -m pytest tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)
+	python $(TEST_LARGE_RESULTS)/report.py $(TEST_LARGE_RESULTS)
 
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.

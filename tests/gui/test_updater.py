@@ -3,9 +3,11 @@ import os
 import platform
 import sys
 import time
+import typing
 from pathlib import Path
 
 import pytest
+from PySide6 import QtCore
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
@@ -16,7 +18,7 @@ from dangerzone.gui import updater as updater_module
 from dangerzone.gui.updater import UpdateReport, UpdaterThread
 from dangerzone.util import get_version
 
-from . import generate_isolated_updater, updater
+from . import generate_isolated_updater, qt_updater, updater
 
 
 def default_updater_settings() -> dict:
@@ -191,9 +193,10 @@ def test_update_checks(
     mock_upstream_info = {"tag_name": f"v{get_version()}", "body": "changelog"}
 
     # Make requests.get().json() return the above dictionary.
-    requests_mock = mocker.MagicMock()
-    requests_mock().json.return_value = mock_upstream_info
-    monkeypatch.setattr(updater_module.requests, "get", requests_mock)
+    mocker.patch("dangerzone.gui.updater.requests.get")
+    requests_mock = updater_module.requests.get
+    requests_mock().status_code = 200  # type: ignore [call-arg]
+    requests_mock().json.return_value = mock_upstream_info  # type: ignore [attr-defined, call-arg]
 
     # Always assume that we can perform multiple update checks in a row.
     monkeypatch.setattr(updater, "_should_postpone_update_check", lambda: False)
@@ -211,9 +214,12 @@ def test_update_checks(
     )
 
     # Test 3 - Check that HTTP errors are converted to error reports.
-    requests_mock.side_effect = Exception("failed")
+    requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
     report = updater.check_for_updates()
-    assert_report_equal(report, UpdateReport(error="failed"))
+    error_msg = (
+        f"Encountered an exception while querying {updater.GH_RELEASE_URL}: failed"
+    )
+    assert_report_equal(report, UpdateReport(error=error_msg))
 
     # Test 4 - Check that cached version/changelog info do not trigger an update check.
     updater.dangerzone.settings.set("updater_latest_version", "99.9.9")
@@ -238,6 +244,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
 
     # # Make requests.get().json() return the version info that we want.
     mock_upstream_info = {"tag_name": "99.9.9", "body": "changelog"}
+    requests_mock().status_code = 200  # type: ignore [call-arg]
     requests_mock().json.return_value = mock_upstream_info  # type: ignore [attr-defined, call-arg]
 
     # Test 1: The first time Dangerzone checks for updates, the cooldown period should
@@ -289,4 +296,146 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     report = updater.check_for_updates()
     assert cooldown_spy.spy_return == False
     assert updater.dangerzone.settings.get("updater_last_check") == curtime
-    assert_report_equal(report, UpdateReport(error="failed"))
+    error_msg = (
+        f"Encountered an exception while querying {updater.GH_RELEASE_URL}: failed"
+    )
+    assert_report_equal(report, UpdateReport(error=error_msg))
+
+
+def test_update_errors(
+    updater: UpdaterThread, monkeypatch: MonkeyPatch, mocker: MockerFixture
+) -> None:
+    """Test update check errors."""
+    # Mock requests.get().
+    mocker.patch("dangerzone.gui.updater.requests.get")
+    requests_mock = updater_module.requests.get
+
+    # Always assume that we can perform multiple update checks in a row.
+    monkeypatch.setattr(updater, "_should_postpone_update_check", lambda: False)
+
+    # Test 1 - Check that request exceptions are being detected as errors.
+    requests_mock.side_effect = Exception("bad url")  # type: ignore [attr-defined]
+    report = updater.check_for_updates()
+    assert report.error is not None
+    assert "bad url" in report.error
+    assert "Encountered an exception" in report.error
+
+    # Test 2 - Check that non HTTP 200 responses are detected as errors.
+    class MockResponse500:
+        status_code = 500
+
+    requests_mock.return_value = MockResponse500()  # type: ignore [attr-defined]
+    requests_mock.side_effect = None  # type: ignore [attr-defined]
+    report = updater.check_for_updates()
+    assert report.error is not None
+    assert "Encountered an HTTP 500 error" in report.error
+
+    # Test 3 - Check that non JSON responses are detected as errors.
+    class MockResponseBadJSON:
+        status_code = 200
+
+        def json(self) -> dict:
+            return json.loads("bad json")
+
+    requests_mock.return_value = MockResponseBadJSON()  # type: ignore [attr-defined]
+    report = updater.check_for_updates()
+    assert report.error is not None
+    assert "Received a non-JSON response" in report.error
+
+    # Test 4 - Check that missing fields in JSON are detected as errors.
+    class MockResponseEmpty:
+        status_code = 200
+
+        def json(self) -> dict:
+            return {}
+
+    requests_mock.return_value = MockResponseEmpty()  # type: ignore [attr-defined]
+    report = updater.check_for_updates()
+    assert report.error is not None
+    assert "Missing required fields in JSON" in report.error
+
+    # Test 5 - Check invalid versions are reported
+    class MockResponseBadVersion:
+        status_code = 200
+
+        def json(self) -> dict:
+            return {"tag_name": "vbad_version", "body": "changelog"}
+
+    requests_mock.return_value = MockResponseBadVersion()  # type: ignore [attr-defined]
+    report = updater.check_for_updates()
+    assert report.error is not None
+    assert "Invalid version" in report.error
+
+    # Test 6 - Check invalid markdown is reported
+    class MockResponseBadMarkdown:
+        status_code = 200
+
+        def json(self) -> dict:
+            return {"tag_name": "v99.9.9", "body": ["bad", "markdown"]}
+
+    requests_mock.return_value = MockResponseBadMarkdown()  # type: ignore [attr-defined]
+    report = updater.check_for_updates()
+    assert report.error is not None
+
+    # Test 7 - Check that a valid response passes.
+    class MockResponseValid:
+        status_code = 200
+
+        def json(self) -> dict:
+            return {"tag_name": "v99.9.9", "body": "changelog"}
+
+    requests_mock.return_value = MockResponseValid()  # type: ignore [attr-defined]
+    report = updater.check_for_updates()
+    assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
+
+
+def test_update_check_prompt(
+    qtbot: QtBot,
+    qt_updater: UpdaterThread,
+    monkeypatch: MonkeyPatch,
+    mocker: MockerFixture,
+) -> None:
+    """Test that the prompt to enable update checks works properly."""
+    # Force Dangerzone to check immediately for updates
+    qt_updater.dangerzone.settings.set("updater_last_check", 0)
+
+    # Test 1 - Check that on the second run of Dangerzone, the user is prompted to
+    # choose if they want to enable update checks. By clicking on, we store this
+    # decision in the settings.
+    def click_ok() -> None:
+        dialog = qt_updater.dangerzone.app.activeWindow()
+        dialog.ok_button.click()  # type: ignore [attr-defined]
+
+    QtCore.QTimer.singleShot(500, click_ok)
+    res = qt_updater.should_check_for_updates()
+
+    assert res == True
+    assert qt_updater.check == True
+
+    # Test 2 - Same as the previous test, but check that clicking on cancel stores the
+    # opposite decision.
+    qt_updater.check = None
+
+    def click_cancel() -> None:
+        dialog = qt_updater.dangerzone.app.activeWindow()
+        dialog.cancel_button.click()  # type: ignore [attr-defined]
+
+    QtCore.QTimer.singleShot(500, click_cancel)
+    res = qt_updater.should_check_for_updates()
+
+    assert res == False
+    assert qt_updater.check == False
+
+    # Test 3 - Same as the previous test, but check that clicking on "X" does not store
+    # any decision.
+    qt_updater.check = None
+
+    def click_x() -> None:
+        dialog = qt_updater.dangerzone.app.activeWindow()
+        dialog.close()
+
+    QtCore.QTimer.singleShot(500, click_x)
+    res = qt_updater.should_check_for_updates()
+
+    assert res == False
+    assert qt_updater.check == None

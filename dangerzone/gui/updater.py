@@ -1,5 +1,6 @@
 """A module that contains the logic for checking for updates."""
 
+import json
 import logging
 import platform
 import sys
@@ -97,6 +98,7 @@ class UpdaterThread(QtCore.QThread):
     GH_RELEASE_URL = (
         "https://api.github.com/repos/freedomofpress/dangerzone/releases/latest"
     )
+    REQ_TIMEOUT = 15
 
     def __init__(self, dangerzone: DangerzoneGui):
         super().__init__()
@@ -201,14 +203,30 @@ class UpdaterThread(QtCore.QThread):
         to the users.
         """
         try:
-            # TODO: Set timeout.
-            info = requests.get(self.GH_RELEASE_URL).json()
+            res = requests.get(self.GH_RELEASE_URL, timeout=self.REQ_TIMEOUT)
         except Exception as e:
-            # TODO:: Handle errors.
-            raise
+            raise RuntimeError(
+                f"Encountered an exception while querying {self.GH_RELEASE_URL}: {e}"
+            )
 
-        version = info["tag_name"].lstrip("v")
-        changelog = markdown.markdown(info["body"])
+        if res.status_code != 200:
+            raise RuntimeError(
+                f"Encountered an HTTP {res.status_code} error while querying"
+                f" {self.GH_RELEASE_URL}"
+            )
+
+        try:
+            info = res.json()
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Received a non-JSON response from {self.GH_RELEASE_URL}")
+
+        try:
+            version = info["tag_name"].lstrip("v")
+            changelog = markdown.markdown(info["body"])
+        except KeyError as e:
+            raise ValueError(
+                f"Missing required fields in JSON response from {self.GH_RELEASE_URL}"
+            )
 
         return UpdateReport(version=version, changelog=changelog)
 

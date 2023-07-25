@@ -156,18 +156,19 @@ def test_user_prompts(
     #
     # When Dangerzone runs for a second time, users can be prompted to enable update
     # checks. Depending on their answer, we should either enable or disable them.
-    alert_mock = mocker.MagicMock()
-    monkeypatch.setattr(updater_module, "Alert", alert_mock)
+    mocker.patch("dangerzone.gui.updater.UpdateCheckPrompt")
+    prompt_mock = updater_module.UpdateCheckPrompt
+    prompt_mock().x_pressed = False
 
     # Check disabling update checks.
-    alert_mock().launch.return_value = False
+    prompt_mock().launch.return_value = False  # type: ignore [attr-defined]
     expected_settings["updater_check"] = False
     assert updater.should_check_for_updates() == False
     assert updater.dangerzone.settings.get_updater_settings() == expected_settings
 
     # Reset the "updater_check" field and check enabling update checks.
     updater.dangerzone.settings.set("updater_check", None)
-    alert_mock().launch.return_value = True
+    prompt_mock().launch.return_value = True  # type: ignore [attr-defined]
     expected_settings["updater_check"] = True
     assert updater.should_check_for_updates() == True
     assert updater.dangerzone.settings.get_updater_settings() == expected_settings
@@ -176,7 +177,7 @@ def test_user_prompts(
     #
     # From the third run onwards, users should never be prompted for enabling update
     # checks.
-    alert_mock.side_effect = RuntimeError("Should not be called")
+    prompt_mock().side_effect = RuntimeError("Should not be called")  # type: ignore [attr-defined]
     for check in [True, False]:
         updater.dangerzone.settings.set("updater_check", check)
         assert updater.should_check_for_updates() == check

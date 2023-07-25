@@ -43,6 +43,24 @@ about updates, check our
 UPDATE_CHECK_COOLDOWN_SECS = 60 * 60 * 12  # Check for updates at most every 12 hours.
 
 
+class UpdateCheckPrompt(Alert):
+    """The prompt that asks the users if they want to enable update checks."""
+
+    x_pressed = False
+
+    def closeEvent(self, event: QtCore.QEvent) -> None:
+        """Detect when a user has pressed "X" in the title bar.
+
+        This function is called when a user clicks on "X" in the title bar. We want to
+        differentiate between the user clicking on "Cancel" and clicking on "X", since
+        in the second case, we want to remind them again on the next run.
+
+        See: https://stackoverflow.com/questions/70851063/pyqt-differentiate-between-close-function-and-title-bar-close-x
+        """
+        self.x_pressed = True
+        event.accept()
+
+
 class UpdateReport:
     """A report for an update check."""
 
@@ -98,17 +116,20 @@ class UpdaterThread(QtCore.QThread):
     def check(self, val: bool) -> None:
         self.dangerzone.settings.set("updater_check", val, autosave=True)
 
-    def prompt_for_checks(self) -> bool:
+    def prompt_for_checks(self) -> Optional[bool]:
         """Ask the user if they want to be informed about Dangerzone updates."""
         log.debug("Prompting the user for update checks")
         # FIXME: Handle the case where a user clicks on "X", instead of explicitly
         # making a choice. We should probably ask them again on the next run.
-        check = Alert(
+        prompt = UpdateCheckPrompt(
             self.dangerzone,
             message=MSG_CONFIRM_UPDATE_CHECKS,
             ok_text="Yes",
             cancel_text="No",
-        ).launch()
+        )
+        check = prompt.launch()
+        if not check and prompt.x_pressed:
+            return None
         return bool(check)
 
     def should_check_for_updates(self) -> bool:
@@ -140,7 +161,7 @@ class UpdaterThread(QtCore.QThread):
         if self.check is None:
             log.debug("User has not been asked yet for update checks")
             self.check = self.prompt_for_checks()
-            return self.check
+            return bool(self.check)
         elif not self.check:
             log.debug("User has expressed that they don't want to check for updates")
             return False

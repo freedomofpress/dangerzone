@@ -26,8 +26,6 @@ from .logic import Alert, DangerzoneGui
 log = logging.getLogger(__name__)
 
 
-# TODO: Create a wiki page that explains how updates work for Dangerzone, before
-# merging this.
 MSG_CONFIRM_UPDATE_CHECKS = """\
 <p>Do you want to be notified about new Dangerzone releases?</p>
 

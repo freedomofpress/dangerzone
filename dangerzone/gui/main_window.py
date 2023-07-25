@@ -97,7 +97,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.hamburger_button.setIconSize(
             QtCore.QSize(HAMBURGER_MENU_SIZE, HAMBURGER_MENU_SIZE)
         )
-        # FIXME: Maybe remove the box around the icon as well
         self.hamburger_button.setStyleSheet(
             "QToolButton::menu-indicator { image: none; }"
         )
@@ -281,7 +280,6 @@ class MainWindow(QtWidgets.QMainWindow):
             )
 
             sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
-            # FIXME: Add green bubble next to the text.
             success_action = QtGui.QAction("New version available", hamburger_menu)  # type: ignore [attr-defined]
             success_action.setIcon(
                 QtGui.QIcon(self.load_svg_image("hamburger_menu_update_available.svg"))

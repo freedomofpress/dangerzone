@@ -455,7 +455,7 @@ class Env:
                 )
             elif self.distro == "ubuntu" and self.version in ("23.04", "lunar"):
                 install_deps = (
-                    DOCKERFILE_UBUNTU_2304_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
+                    DOCKERFILE_UBUNTU_2304_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS
                 )
             package = f"dangerzone_{version}-1_all.deb"
             package_src = git_root() / "deb_dist" / package

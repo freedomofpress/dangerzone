@@ -4,6 +4,7 @@ Dangerzone is available for:
 - Ubuntu 22.10 (kinetic)
 - Ubuntu 22.04 (jammy)
 - Ubuntu 20.04 (focal)
+- Debian 13 (trixie)
 - Debian 12 (bookworm)
 - Debian 11 (bullseye)
 - Fedora 38

@@ -181,33 +181,6 @@ jobs:
             ./dev_scripts/env.py --distro ubuntu --version 23.04 run -g --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
-  ci-ubuntu-kinetic:
-    machine:
-      image: ubuntu-2004:202111-01
-    steps:
-      - checkout
-      - run: *install-podman
-
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
-      - run: *copy-image
-
-      - run:
-          name: Prepare Dangerzone environment
-          command: |
-            ./dev_scripts/env.py --distro ubuntu --version 22.10 build-dev
-
-      - run:
-          name: Run CI tests
-          command: |
-            ./dev_scripts/env.py --distro ubuntu --version 22.10 run -g --dev \
-                bash -c 'cd dangerzone; poetry run make test'
-
   ci-ubuntu-jammy:
     machine:
       image: ubuntu-2004:202111-01
@@ -442,18 +415,6 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
-  build-ubuntu-kinetic:
-    docker:
-      - image: ubuntu:22.10
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-deb
-      - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-deb
-
   build-ubuntu-jammy:
     docker:
       - image: ubuntu:22.04
@@ -552,9 +513,6 @@ workflows:
       - ci-ubuntu-lunar:
           requires:
             - build-container-image
-      - ci-ubuntu-kinetic:
-          requires:
-            - build-container-image
       - ci-ubuntu-jammy:
           requires:
             - build-container-image
@@ -577,9 +535,6 @@ workflows:
           requires:
             - build-container-image
       - build-ubuntu-lunar:
-          requires:
-            - build-container-image
-      - build-ubuntu-kinetic:
           requires:
             - build-container-image
       - build-ubuntu-jammy:

@@ -19,6 +19,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 ### Removed
 
 - Platform support: Drop Fedora 36, since it's end-of-life ([issue #420](https://github.com/freedomofpress/dangerzone/issues/420))
+- Platform support: Drop Ubuntu 22.10 (Kinetic Kudu), since it's end-of-life ([issue #485](https://github.com/freedomofpress/dangerzone/issues/485))
 
 ### Fixed
 

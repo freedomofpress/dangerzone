@@ -1,7 +1,6 @@
 Dangerzone is available for:
 
 - Ubuntu 23.04 (lunar)
-- Ubuntu 22.10 (kinetic)
 - Ubuntu 22.04 (jammy)
 - Ubuntu 20.04 (focal)
 - Debian 13 (trixie)

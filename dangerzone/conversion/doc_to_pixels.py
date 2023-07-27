@@ -78,15 +78,34 @@ class DocumentToPixels(DangerzoneConverter):
                 "type": "libreoffice",
             },
             # .hwp
-            "application/haansofthwp": {
-                "type": "libreoffice",
-                "libreoffice_ext": "h2orestart.oxt",
-            },
+            # Commented MIMEs are not used in `file` and don't conform to the rules.
+            # Left them for just in case
+            # PR: https://github.com/freedomofpress/dangerzone/pull/460
+            # "application/haansofthwp": {
+            #    "type": "libreoffice",
+            #    "libreoffice_ext": "h2orestart.oxt",
+            # },
+            # "application/vnd.hancom.hwp": {
+            #    "type": "libreoffice",
+            #    "libreoffice_ext": "h2orestart.oxt",
+            # },
             "application/x-hwp": {
                 "type": "libreoffice",
                 "libreoffice_ext": "h2orestart.oxt",
             },
             # .hwpx
+            # "application/haansofthwpx": {
+            #    "type": "libreoffice",
+            #    "libreoffice_ext": "h2orestart.oxt",
+            # },
+            # "application/vnd.hancom.hwpx": {
+            #    "type": "libreoffice",
+            #    "libreoffice_ext": "h2orestart.oxt",
+            # },
+            "application/x-hwp+zip": {
+                "type": "libreoffice",
+                "libreoffice_ext": "h2orestart.oxt",
+            },
             "application/hwp+zip": {
                 "type": "libreoffice",
                 "libreoffice_ext": "h2orestart.oxt",
@@ -126,11 +145,12 @@ class DocumentToPixels(DangerzoneConverter):
             raise ValueError("The document format is not supported")
 
         # Temporary fix for the HWPX format
+        # Should be removed after new release of `file' (current release 5.44)
         if mime_type == "application/zip":
             file_type = magic.from_file("/tmp/input_file")
             hwpx_file_type = 'Zip data (MIME type "application/hwp+zip"?)'
             if file_type == hwpx_file_type:
-                mime_type = "application/hwp+zip"
+                mime_type = "application/x-hwp+zip"
 
         # Get file size (in MiB)
         size = os.path.getsize("/tmp/input_file") / 1024**2

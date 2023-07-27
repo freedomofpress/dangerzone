@@ -143,16 +143,19 @@ if p == "Darwin":
                     "CFBundleTypeName": "ODF Graphics Document",
                     "CFBundleTypeRole": "Viewer",
                 },
+                # Commented MIMEs are not used in `file` and don't conform to the rules.
+                # Left them for just in case
                 {
                     "CFBundleTypeExtensions": ["hwp", "hwpx"],
                     "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
-                        "application/vnd.hancom.hwp",
-                        "application/haansofthwp",
+                        #"application/vnd.hancom.hwp",
+                        #"application/haansofthwp",
                         "application/x-hwp",
-                        "application/vnd.hancom.hwpx",
-                        "application/haansofthwpx",
+                        #"application/vnd.hancom.hwpx",
+                        #"application/haansofthwpx",
                         "application/hwp+zip",
+                        "application/x-hwp+zip",
                     ],
                     "CFBundleTypeName": "Hancom Office Document",
                     "CFBundleTypeRole": "Viewer",

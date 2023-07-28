@@ -28,17 +28,18 @@ log = logging.getLogger(__name__)
 
 
 MSG_CONFIRM_UPDATE_CHECKS = """\
-<p>Do you want to be notified about new Dangerzone releases?</p>
+<p><b>Do you want to be notified about new Dangerzone releases?</b></p>
 
-<p>If <i>"Yes"</i>, Dangerzone will check GitHub for new releases on startup. If
-<i>"No"</i>, Dangerzone will make no network requests and won't inform you about new
-releases.</p>
+<p>If <i>"Yes"</i>, Dangerzone will check the
+<a href="https://github.com/freedomofpress/dangerzone/releases">latest releases page</a>
+in github.com on startup. If <i>"No"</i>, Dangerzone will make no network requests and
+won't inform you about new releases.</p>
 
 <p>If you prefer another way of getting notified about new releases, we suggest adding
 to your RSS reader our
 <a href="https://fosstodon.org/@dangerzone.rss">Mastodon feed</a>. For more information
-about updates, check our
-<a href="https://github.com/freedomofpress/dangerzone/wiki/Updates">wiki page</a>.</p>
+about updates, check
+<a href="https://github.com/freedomofpress/dangerzone/wiki/Updates">this webpage</a>.</p>
 """
 
 UPDATE_CHECK_COOLDOWN_SECS = 60 * 60 * 12  # Check for updates at most every 12 hours.
@@ -214,12 +215,12 @@ class UpdaterThread(QtCore.QThread):
             res = requests.get(self.GH_RELEASE_URL, timeout=self.REQ_TIMEOUT)
         except Exception as e:
             raise RuntimeError(
-                f"Encountered an exception while querying {self.GH_RELEASE_URL}: {e}"
+                f"Encountered an exception while checking {self.GH_RELEASE_URL}: {e}"
             )
 
         if res.status_code != 200:
             raise RuntimeError(
-                f"Encountered an HTTP {res.status_code} error while querying"
+                f"Encountered an HTTP {res.status_code} error while checking"
                 f" {self.GH_RELEASE_URL}"
             )
 

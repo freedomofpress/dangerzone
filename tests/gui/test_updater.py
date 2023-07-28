@@ -217,7 +217,7 @@ def test_update_checks(
     requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
     report = updater.check_for_updates()
     error_msg = (
-        f"Encountered an exception while querying {updater.GH_RELEASE_URL}: failed"
+        f"Encountered an exception while checking {updater.GH_RELEASE_URL}: failed"
     )
     assert_report_equal(report, UpdateReport(error=error_msg))
 
@@ -297,7 +297,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     assert cooldown_spy.spy_return == False
     assert updater.dangerzone.settings.get("updater_last_check") == curtime
     error_msg = (
-        f"Encountered an exception while querying {updater.GH_RELEASE_URL}: failed"
+        f"Encountered an exception while checking {updater.GH_RELEASE_URL}: failed"
     )
     assert_report_equal(report, UpdateReport(error=error_msg))
 

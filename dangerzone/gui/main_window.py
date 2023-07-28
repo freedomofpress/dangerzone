@@ -47,8 +47,8 @@ UPDATE_ERROR_MSG_INTRO = """\
 UPDATE_ERROR_MSG_OUTRO = """\
 <p>You are strongly advised to visit our
 <a href="https://dangerzone.rocks#downloads">downloads page</a> and check for new
-updates manually, or consult our
-<a href=https://github.com/freedomofpress/dangerzone/wiki/Updates>wiki page</a> for
+updates manually, or consult
+<a href=https://github.com/freedomofpress/dangerzone/wiki/Updates>this webpage</a> for
 common causes of errors. Alternatively, you can uncheck the "Check for updates" option
 in our menu, if you are in an air-gapped environment and have another way of learning
 about updates.</p>

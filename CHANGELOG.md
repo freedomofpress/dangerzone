@@ -27,6 +27,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Continuously scan our Python dependencies and container image for
   vulnerabilities ([issue #222](https://github.com/freedomofpress/dangerzone/issues/222))
+- Sanitize potentially unsafe characters from strings that are shown in a user's
+  terminal.
 
 ## Dangerzone 0.4.1
 

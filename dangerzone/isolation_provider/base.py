@@ -6,6 +6,7 @@ from typing import Callable, Optional
 from colorama import Fore, Style
 
 from ..document import Document
+from ..util import replace_control_chars
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class IsolationProvider(ABC):
     ) -> bool:
         pass
 
-    def print_progress(
+    def _print_progress(
         self, document: Document, error: bool, text: str, percentage: float
     ) -> None:
         s = Style.BRIGHT + Fore.YELLOW + f"[doc {document.id}] "
@@ -63,6 +64,19 @@ class IsolationProvider(ABC):
 
         if self.progress_callback:
             self.progress_callback(error, text, percentage)
+
+    def print_progress_trusted(
+        self, document: Document, error: bool, text: str, percentage: float
+    ) -> None:
+        return self._print_progress(document, error, text, percentage)
+
+    def print_progress(
+        self, document: Document, error: bool, untrusted_text: str, percentage: float
+    ) -> None:
+        text = replace_control_chars(untrusted_text)
+        return self.print_progress_trusted(
+            document, error, "UNTRUSTED> " + text, percentage
+        )
 
     @abstractmethod
     def get_max_parallel_conversions(self) -> int:

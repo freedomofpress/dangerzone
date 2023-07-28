@@ -8,10 +8,15 @@ import shlex
 import shutil
 import subprocess
 import tempfile
-from typing import Callable, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 from ..document import Document
-from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
+from ..util import (
+    get_resource_path,
+    get_subprocess_startupinfo,
+    get_tmp_dir,
+    replace_control_chars,
+)
 from .base import IsolationProvider
 
 # Define startupinfo for subprocesses
@@ -133,19 +138,37 @@ class Container(IsolationProvider):
 
         return installed
 
-    def parse_progress(self, document: Document, line: str) -> None:
+    def assert_field_type(self, val: Any, _type: object) -> None:
+        # XXX: Use a stricter check than isinstance because `bool` is a subclass of
+        # `int`.
+        #
+        # See https://stackoverflow.com/a/37888668
+        if not type(val) == _type:
+            raise ValueError("Status field has incorrect type")
+
+    def parse_progress(self, document: Document, untrusted_line: str) -> None:
         """
         Parses a line returned by the container.
         """
         try:
-            status = json.loads(line)
-            self.print_progress(
-                document, status["error"], status["text"], status["percentage"]
+            untrusted_status = json.loads(untrusted_line)
+
+            text = untrusted_status["text"]
+            self.assert_field_type(text, str)
+
+            error = untrusted_status["error"]
+            self.assert_field_type(error, bool)
+
+            percentage = untrusted_status["percentage"]
+            self.assert_field_type(percentage, int)
+
+            self.print_progress(document, error, text, percentage)
+        except Exception:
+            line = replace_control_chars(untrusted_line)
+            error_message = (
+                f"Invalid JSON returned from container:\n\n\tUNTRUSTED> {line}"
             )
-        except:
-            error_message = f"Invalid JSON returned from container:\n\n\t {line}"
-            log.error(error_message)
-            self.print_progress(document, True, error_message, -1)
+            self.print_progress_trusted(document, True, error_message, -1)
 
     def exec(
         self,
@@ -165,8 +188,8 @@ class Container(IsolationProvider):
             startupinfo=startupinfo,
         ) as p:
             if p.stdout is not None:
-                for line in p.stdout:
-                    self.parse_progress(document, line)
+                for untrusted_line in p.stdout:
+                    self.parse_progress(document, untrusted_line)
 
             p.communicate()
             return p.returncode

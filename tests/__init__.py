@@ -37,3 +37,24 @@ def unreadable_pdf(tmp_path: Path) -> str:
     file_path = tmp_path / "document.pdf"
     file_path.touch(mode=0o000)
     return str(file_path)
+
+
+@pytest.fixture
+def uncommon_text() -> str:
+    """Craft a string with Unicode characters that are considered not common.
+
+    Create a string that contains the following uncommon characters:
+
+    * ANSI escape sequences: \033[31;1;4m and \033[0m
+    * A Unicode character that resembles an English character: greek "X" (U+03A7)
+    * A Unicode control character that is not part of ASCII: zero-width joiner
+      (U+200D)
+    * An emoji: Cross Mark (U+274C)
+    """
+    return "\033[31;1;4m BaD TeΧt \u200d ❌ \033[0m"
+
+
+@pytest.fixture
+def sanitized_text() -> str:
+    """Return a sanitized version of the uncommon_text."""
+    return "_[31;1;4m BaD Te_t _ _ _[0m"

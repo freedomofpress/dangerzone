@@ -1,5 +1,6 @@
 import pathlib
 import platform
+import string
 import subprocess
 import sys
 from typing import Optional
@@ -62,3 +63,12 @@ def get_subprocess_startupinfo():  # type: ignore [no-untyped-def]
         return startupinfo
     else:
         return None
+
+
+def replace_control_chars(untrusted_str: str) -> str:
+    """Remove control characters from string. Protects a terminal emulator
+    from obcure control characters"""
+    sanitized_str = ""
+    for char in untrusted_str:
+        sanitized_str += char if char in string.printable else "_"
+    return sanitized_str

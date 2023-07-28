@@ -24,7 +24,7 @@ if platform.system() == "Linux":
 from ..isolation_provider.base import IsolationProvider
 from ..logic import DangerzoneCore
 from ..settings import Settings
-from ..util import get_resource_path
+from ..util import get_resource_path, replace_control_chars
 
 log = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class DangerzoneGui(DangerzoneCore):
             args = ["open", "-a", "Preview.app", filename]
 
             # Run
-            args_str = " ".join(shlex.quote(s) for s in args)
+            args_str = replace_control_chars(" ".join(shlex.quote(s) for s in args))
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.run(args)
 
@@ -88,7 +88,7 @@ class DangerzoneGui(DangerzoneCore):
                     args[i] = filename
 
             # Open as a background process
-            args_str = " ".join(shlex.quote(s) for s in args)
+            args_str = replace_control_chars(" ".join(shlex.quote(s) for s in args))
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.Popen(args)
 

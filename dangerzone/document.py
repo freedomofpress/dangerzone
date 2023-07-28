@@ -10,7 +10,7 @@ from typing import Optional
 
 import appdirs
 
-from . import errors
+from . import errors, util
 
 SAFE_EXTENSION = "-safe.pdf"
 ARCHIVE_SUBDIR = "unsafe"
@@ -156,7 +156,8 @@ class Document:
         return f"{os.path.splitext(self.input_filename)[0]}{self.suffix}"
 
     def announce_id(self) -> None:
-        log.info(f"Assigning ID '{self.id}' to doc '{self.input_filename}'")
+        sanitized_filename = util.replace_control_chars(self.input_filename)
+        log.info(f"Assigning ID '{self.id}' to doc '{sanitized_filename}'")
 
     def set_output_dir(self, path: str) -> None:
         # keep the same name

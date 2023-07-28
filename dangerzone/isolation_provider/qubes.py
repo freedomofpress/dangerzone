@@ -120,11 +120,11 @@ class Qubes(IsolationProvider):
                 percentage += percentage_per_page
 
                 text = f"Converting page {page}/{n_pages} to pixels"
-                self.print_progress(document, False, text, percentage)
+                self.print_progress_trusted(document, False, text, percentage)
 
         # TODO handle leftover code input
         text = "Converted document to pixels"
-        self.print_progress(document, False, text, percentage)
+        self.print_progress_trusted(document, False, text, percentage)
 
         # FIXME pass OCR stuff properly (see #455)
         old_environ = dict(os.environ)
@@ -133,13 +133,13 @@ class Qubes(IsolationProvider):
             os.environ["OCR_LANGUAGE"] = ocr_lang
 
         def print_progress_wrapper(error: bool, text: str, percentage: float) -> None:
-            self.print_progress(document, error, text, percentage)
+            self.print_progress_trusted(document, error, text, percentage)
 
         asyncio.run(PixelsToPDF(progress_callback=print_progress_wrapper).convert())
 
         percentage = 100.0
         text = "Safe PDF created"
-        self.print_progress(document, False, text, percentage)
+        self.print_progress_trusted(document, False, text, percentage)
 
         # FIXME remove once the OCR args are no longer passed with env vars
         os.environ.clear()

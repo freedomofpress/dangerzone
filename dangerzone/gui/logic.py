@@ -152,25 +152,35 @@ class Dialog(QtWidgets.QDialog):
         self.ok_button = QtWidgets.QPushButton(ok_text)
         self.ok_button.clicked.connect(self.clicked_ok)
 
+        self.extra_button: Optional[QtWidgets.QPushButton] = None
         if extra_button_text:
             self.extra_button = QtWidgets.QPushButton(extra_button_text)
             self.extra_button.clicked.connect(self.clicked_extra)
 
-        buttons_layout = QtWidgets.QHBoxLayout()
-        buttons_layout.addStretch()
-        buttons_layout.addWidget(self.ok_button)
-        if extra_button_text:
-            buttons_layout.addWidget(self.extra_button)
+        self.cancel_button: Optional[QtWidgets.QPushButton] = None
         if has_cancel:
             self.cancel_button = QtWidgets.QPushButton(cancel_text)
             self.cancel_button.clicked.connect(self.clicked_cancel)
-            buttons_layout.addWidget(self.cancel_button)
+
+        buttons_layout = self.create_buttons_layout()
 
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(message_layout)
         layout.addSpacing(10)
         layout.addLayout(buttons_layout)
         self.setLayout(layout)
+
+    def create_buttons_layout(self) -> QtWidgets.QHBoxLayout:
+        buttons_layout = QtWidgets.QHBoxLayout()
+        buttons_layout.addStretch()
+
+        buttons_layout.addWidget(self.ok_button)
+        if self.extra_button:
+            buttons_layout.addWidget(self.extra_button)
+        if self.cancel_button:
+            buttons_layout.addWidget(self.cancel_button)
+
+        return buttons_layout
 
     def create_layout(self) -> QtWidgets.QBoxLayout:
         raise NotImplementedError("Dangerzone dialogs must implement this method")

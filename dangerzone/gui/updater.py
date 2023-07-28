@@ -11,12 +11,12 @@ from typing import Any, Optional
 from packaging import version
 
 if typing.TYPE_CHECKING:
-    from PySide2 import QtCore
+    from PySide2 import QtCore, QtWidgets
 else:
     try:
-        from PySide6 import QtCore
+        from PySide6 import QtCore, QtWidgets
     except ImportError:
-        from PySide2 import QtCore
+        from PySide2 import QtCore, QtWidgets
 
 import markdown
 import requests
@@ -60,6 +60,14 @@ class UpdateCheckPrompt(Alert):
         """
         self.x_pressed = True
         event.accept()
+
+    def create_buttons_layout(self) -> QtWidgets.QHBoxLayout:
+        buttons_layout = QtWidgets.QHBoxLayout()
+        buttons_layout.addStretch()
+        assert self.cancel_button is not None
+        buttons_layout.addWidget(self.cancel_button)
+        buttons_layout.addWidget(self.ok_button)
+        return buttons_layout
 
 
 class UpdateReport:

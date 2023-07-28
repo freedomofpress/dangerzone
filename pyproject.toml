@@ -45,6 +45,9 @@ pytest-qt = "^4.2.0"
 pytest-cov = "^3.0.0"
 strip-ansi = "*"
 
+[tool.isort]
+profile = "black"
+
 [build-system]
 requires = ["poetry>=1.1.4"]
 build-backend = "poetry.masonry.api"

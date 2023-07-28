@@ -37,8 +37,8 @@ class Application(QtWidgets.QApplication):
     document_selected = QtCore.Signal(list)
     application_activated = QtCore.Signal()
 
-    def __init__(self) -> None:
-        super(Application, self).__init__()
+    def __init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+        super(Application, self).__init__(*args, **kwargs)
         self.setQuitOnLastWindowClosed(False)
         with open(get_resource_path("dangerzone.css"), "r") as f:
             style = f.read()

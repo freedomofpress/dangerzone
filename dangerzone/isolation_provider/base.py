@@ -53,12 +53,12 @@ class IsolationProvider(ABC):
         self, document: Document, error: bool, text: str, percentage: float
     ) -> None:
         s = Style.BRIGHT + Fore.YELLOW + f"[doc {document.id}] "
-        s += Fore.CYAN + f"{percentage}% "
+        s += Fore.CYAN + f"{percentage}% " + Style.RESET_ALL
         if error:
-            s += Style.RESET_ALL + Fore.RED + text
+            s += Fore.RED + text + Style.RESET_ALL
             log.error(s)
         else:
-            s += Style.RESET_ALL + text
+            s += text
             log.info(s)
 
         if self.progress_callback:

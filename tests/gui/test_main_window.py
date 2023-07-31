@@ -151,7 +151,8 @@ def test_update_detected(
     assert load_svg_spy.call_count == 2
     assert load_svg_spy.call_args_list[0].args[0] == "hamburger_menu_update_success.svg"
     assert (
-        load_svg_spy.call_args_list[1].args[0] == "hamburger_menu_update_available.svg"
+        load_svg_spy.call_args_list[1].args[0]
+        == "hamburger_menu_update_dot_available.svg"
     )
 
     # Check that new menu entries have been added.
@@ -283,6 +284,13 @@ def test_update_error(
     menu_actions_after = window.hamburger_button.menu().actions()
     assert len(menu_actions_after) == 5
     assert menu_actions_after[2:] == menu_actions_before
+
+    # Check that the hamburger icon has changed with the expected SVG image.
+    assert load_svg_spy.call_count == 2
+    assert load_svg_spy.call_args_list[0].args[0] == "hamburger_menu_update_error.svg"
+    assert (
+        load_svg_spy.call_args_list[1].args[0] == "hamburger_menu_update_dot_error.svg"
+    )
 
     error_action = menu_actions_after[0]
     assert error_action.text() == "Update error"

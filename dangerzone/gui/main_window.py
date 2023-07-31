@@ -263,6 +263,9 @@ class MainWindow(QtWidgets.QMainWindow):
             sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
             # FIXME: Add red bubble next to the text.
             error_action = QtGui.QAction("Update error", hamburger_menu)  # type: ignore [attr-defined]
+            error_action.setIcon(
+                QtGui.QIcon(self.load_svg_image("hamburger_menu_update_dot_error.svg"))
+            )
             error_action.triggered.connect(self.show_update_error)
             hamburger_menu.insertAction(sep, error_action)
         else:
@@ -282,7 +285,9 @@ class MainWindow(QtWidgets.QMainWindow):
             sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
             success_action = QtGui.QAction("New version available", hamburger_menu)  # type: ignore [attr-defined]
             success_action.setIcon(
-                QtGui.QIcon(self.load_svg_image("hamburger_menu_update_available.svg"))
+                QtGui.QIcon(
+                    self.load_svg_image("hamburger_menu_update_dot_available.svg")
+                )
             )
             success_action.triggered.connect(self.show_update_success)
             hamburger_menu.insertAction(sep, success_action)

@@ -40,11 +40,7 @@ update.</p>
 
 
 UPDATE_ERROR_MSG_INTRO = """\
-<p>Something went wrong while checking for Dangerzone updates:</p>
-"""
-
-
-UPDATE_ERROR_MSG_OUTRO = """\
+<p><b>Something went wrong while checking for Dangerzone updates.<b></p>
 <p>You are strongly advised to visit our
 <a href="https://dangerzone.rocks#downloads">downloads page</a> and check for new
 updates manually, or consult
@@ -53,6 +49,7 @@ common causes of errors. Alternatively, you can uncheck the "Check for updates" 
 in our menu, if you are in an air-gapped environment and have another way of learning
 about updates.</p>
 """
+
 
 HAMBURGER_MENU_SIZE = 30
 
@@ -209,15 +206,18 @@ class MainWindow(QtWidgets.QMainWindow):
         """Inform the user about an error during update checks"""
         assert self.updater_error is not None
 
-        error_widget = QtWidgets.QTextBrowser()
-        error_widget.setHtml(self.updater_error)
+        error_widget = CollapsibleBox("Error Details")
+        error_layout = QtWidgets.QVBoxLayout()
+        error_text_box = QtWidgets.QTextBrowser()
+        error_text_box.setHtml(self.updater_error)
+        error_layout.addWidget(error_text_box)
+        error_widget.setContentLayout(error_layout)
 
         update_widget = UpdateDialog(
             self.dangerzone,
             title="Update check error",
             intro_msg=UPDATE_ERROR_MSG_INTRO,
             middle_widget=error_widget,
-            epilogue_msg=UPDATE_ERROR_MSG_OUTRO,
             ok_text="Close",
             has_cancel=False,
         )

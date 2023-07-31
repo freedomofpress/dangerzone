@@ -308,9 +308,15 @@ def test_update_error(
         kwargs = update_dialog_spy.call_args.kwargs
         assert kwargs["title"] == "Update check error"
         assert "Something went wrong" in kwargs["intro_msg"]
-        assert "Encountered an exception" in kwargs["middle_widget"].toPlainText()
-        assert "failed" in kwargs["middle_widget"].toPlainText()
-        assert "dangerzone.rocks" in kwargs["epilogue_msg"]
+        assert "dangerzone.rocks" in kwargs["intro_msg"]
+        assert not kwargs["middle_widget"].toggle_button.isChecked()
+        collapsible_box = kwargs["middle_widget"]
+        text_browser = (
+            collapsible_box.layout().itemAt(1).widget().layout().itemAt(0).widget()
+        )
+        assert collapsible_box.toggle_button.text() == "Error Details"
+        assert "Encountered an exception" in text_browser.toPlainText()
+        assert "failed" in text_browser.toPlainText()
 
         dialog.close()
 

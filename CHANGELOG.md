@@ -5,16 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
+
+## Dangerzone 0.4.2
 
 ### Added
 
-- Feature: Add support for HWP/HWPX files (Hancom Office) ([issue #243](https://github.com/freedomofpress/dangerzone/issues/243), thanks to @OctopusET)
-- Platform support: Alpha integration with Qubes OS ([issue #411](https://github.com/freedomofpress/dangerzone/issues/411))
-- Platform support: Debian Trixie (13)
-- Platform support: Ubuntu 23.04 (Lunar Lobster)
 - Inform about new updates on MacOS/Windows platforms, by periodically checking
   our GitHub releases page ([issue #189](https://github.com/freedomofpress/dangerzone/issues/189))
+- Feature: Add support for HWP/HWPX files (Hancom Office) ([issue #243](https://github.com/freedomofpress/dangerzone/issues/243), thanks to [@OctopusET](https://github.com/OctopusET))
+- Allow users to change their document selection from the UI ([issue #428](https://github.com/freedomofpress/dangerzone/issues/428))
+- Add a note in our README for MacOS 11+ users blocked by SIP ([PR #401](https://github.com/freedomofpress/dangerzone/pull/401), thanks to [@keywordnew](https://github.com/keywordnew))
+- Platform support: Alpha integration with Qubes OS ([issue #411](https://github.com/freedomofpress/dangerzone/issues/411))
+- Platform support: Debian Trixie (13) ([issue #452](https://github.com/freedomofpress/dangerzone/issues/452))
+- Platform support: Ubuntu 23.04 (Lunar Lobster) ([issue #453](https://github.com/freedomofpress/dangerzone/issues/453))
 - Development: Use Qt6 in our CI runners and dev environments ([issue #482](https://github.com/freedomofpress/dangerzone/issues/482))
 
 ### Removed
@@ -24,12 +28,17 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Fixed
 
+- Add missing language detection (OCR) models ([issue #357](https://github.com/freedomofpress/dangerzone/issues/357))
+- Replace deprecated `pipes` module with `shlex` ([issue #373](https://github.com/freedomofpress/dangerzone/issues/373), thanks to [@OctopusET](https://github.com/OctopusET))
+- Shrink container image with `--no-cache` option on `apk` ([issue #459](https://github.com/freedomofpress/dangerzone/issues/459), thanks to [@OctopusET](https://github.com/OctopusET))
+
+
 ### Security
 
 - Continuously scan our Python dependencies and container image for
   vulnerabilities ([issue #222](https://github.com/freedomofpress/dangerzone/issues/222))
-- Sanitize potentially unsafe characters from strings that are shown in a user's
-  terminal.
+- Sanitize potentially unsafe characters from strings that are shown in the
+  GUI/terminal ([PR #491](https://github.com/freedomofpress/dangerzone/pull/491))
 
 ## Dangerzone 0.4.1
 

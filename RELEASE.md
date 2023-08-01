@@ -8,8 +8,10 @@ To ensure that new releases do not introduce regressions, and support existing
 and newer platforms, we have to do the following:
 
 - [ ] In `.circleci/config.yml`, add new platforms and remove obsolete platforms
+- [ ] Bump the Python dependencies using `poetry lock`
 - [ ] Make sure that the tip of the `main` branch passes the CI tests.
 - [ ] Create a test build in Windows and make sure it works:
+  - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
@@ -17,6 +19,7 @@ and newer platforms, we have to do the following:
   - [ ] Build and run the Dangerzone .exe
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in macOS (Intel CPU) and make sure it works:
+  - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
@@ -24,6 +27,7 @@ and newer platforms, we have to do the following:
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in macOS (M1/2 CPU) and make sure it works:
+  - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
@@ -158,7 +162,7 @@ _(Only for Qubes OS)_
 Run a conversion on Qubes and ensure that it uses disposable qubes by default.
 
 
-## Changelog, version, and signed git tag
+## Pre-release
 
 Before making a release, all of these should be complete:
 
@@ -180,6 +184,14 @@ If the tag verifies successfully and check it out:
 ```
 git checkout v$VERSION
 ```
+
+> [!IMPORTANT]
+> Because we don't have [reproducible builds](https://github.com/freedomofpress/dangerzone/issues/188)
+> yet, building the Dangerzone container image in various platforms would lead
+> to different container image IDs / hashes, due to different timestamps. To
+> avoid this issue, we should build the final container image for x86_64
+> architectures on **one** platform, and then copy it to the rest of the
+> platforms, before creating our .deb / .rpm / .msi / app bundles.
 
 ## macOS release
 
@@ -308,6 +320,11 @@ Publish the .rpm under `./dist` to the
 To publish the release:
 
 - Create a new release on GitHub, put the changelog in the description of the release, and upload the macOS and Windows installers
+- Upload the `container.tar.gz` i686 image that was created in the previous step
+
+  **Important:** Make sure that it's the same container image as the ones that
+  are shipped in other platforms (see our [Pre-release](#Pre-release) section)
+
 - Update the [Installing Dangerzone](INSTALL.md) page
 - Update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers
 - Update the brew cask release of Dangerzone with a [PR like this one](https://github.com/Homebrew/homebrew-cask/pull/116319)

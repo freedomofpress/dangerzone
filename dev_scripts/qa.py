@@ -17,8 +17,10 @@ To ensure that new releases do not introduce regressions, and support existing
 and newer platforms, we have to do the following:
 
 - [ ] In `.circleci/config.yml`, add new platforms and remove obsolete platforms
+- [ ] Bump the Python dependencies using `poetry lock`
 - [ ] Make sure that the tip of the `main` branch passes the CI tests.
 - [ ] Create a test build in Windows and make sure it works:
+  - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
@@ -26,6 +28,7 @@ and newer platforms, we have to do the following:
   - [ ] Build and run the Dangerzone .exe
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in macOS (Intel CPU) and make sure it works:
+  - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
@@ -33,6 +36,7 @@ and newer platforms, we have to do the following:
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in macOS (M1/2 CPU) and make sure it works:
+  - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.

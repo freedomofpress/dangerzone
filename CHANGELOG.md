@@ -9,6 +9,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Added
 
+- Feature: Add support for HWP/HWPX files (Hancom Office) ([issue #243](https://github.com/freedomofpress/dangerzone/issues/243), thanks to @OctopusET)
 - Platform support: Alpha integration with Qubes OS ([issue #411](https://github.com/freedomofpress/dangerzone/issues/411))
 - Platform support: Debian Trixie (13)
 - Platform support: Ubuntu 23.04 (Lunar Lobster)

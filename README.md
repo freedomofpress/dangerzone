@@ -12,9 +12,9 @@ _Read more about Dangerzone in the [official site](https://dangerzone.rocks/abou
 
 ## Getting started
 
-- Download [Dangerzone 0.4.1 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.4.1/Dangerzone-0.4.1-arm64.dmg)
-- Download [Dangerzone 0.4.1 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.4.1/Dangerzone-0.4.1-i686.dmg)
-- Download [Dangerzone 0.4.1 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.4.1/Dangerzone-0.4.1.msi)
+- Download [Dangerzone 0.4.2 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.4.2/Dangerzone-0.4.2-arm64.dmg)
+- Download [Dangerzone 0.4.2 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.4.2/Dangerzone-0.4.2-i686.dmg)
+- Download [Dangerzone 0.4.2 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.4.2/Dangerzone-0.4.2.msi)
 - See [installing Dangerzone](INSTALL.md) for Linux repositories
 
 You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`

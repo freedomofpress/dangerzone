@@ -9,6 +9,7 @@ def main():
         [
             "docker",
             "build",
+            "--pull",
             "dangerzone/",
             "-f",
             "Dockerfile",

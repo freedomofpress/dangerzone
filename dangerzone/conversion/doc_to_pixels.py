@@ -185,6 +185,12 @@ class DocumentToPixels(DangerzoneConverter):
                 timeout=timeout,
             )
             pdf_filename = "/tmp/input_file.pdf"
+            # XXX: Sometimes, LibreOffice can fail with status code 0. So, we need to
+            # always check if the file exists. See:
+            #
+            #     https://github.com/freedomofpress/dangerzone/issues/494
+            if not os.path.exists(pdf_filename):
+                raise ValueError("Conversion to PDF with LibreOffice failed")
         elif conversion["type"] == "convert":
             self.update_progress("Converting to PDF using GraphicsMagick")
             args = [

@@ -18,6 +18,10 @@ else:
     except ImportError:
         from PySide2 import QtCore, QtWidgets
 
+# XXX implict import for "markdown" module required for Cx_Freeze to build on Windows
+# See https://github.com/freedomofpress/dangerzone/issues/501
+import html.parser
+
 import markdown
 import requests
 

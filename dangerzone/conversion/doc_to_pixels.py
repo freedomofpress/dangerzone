@@ -134,11 +134,7 @@ class DocumentToPixels(DangerzoneConverter):
         }
 
         # Detect MIME type
-        try:
-            mime = magic.Magic(mime=True)
-            mime_type = mime.from_file("/tmp/input_file")
-        except TypeError:
-            mime_type = magic.detect_from_filename("/tmp/input_file").mime_type
+        mime_type = self.detect_mime_type("/tmp/input_file")
 
         # Validate MIME type
         if mime_type not in conversions:
@@ -147,7 +143,7 @@ class DocumentToPixels(DangerzoneConverter):
         # Temporary fix for the HWPX format
         # Should be removed after new release of `file' (current release 5.44)
         if mime_type == "application/zip":
-            file_type = magic.from_file("/tmp/input_file")
+            file_type = self.detect_mime_type("/tmp/input_file")
             hwpx_file_type = 'Zip data (MIME type "application/hwp+zip"?)'
             if file_type == hwpx_file_type:
                 mime_type = "application/x-hwp+zip"
@@ -341,6 +337,19 @@ class DocumentToPixels(DangerzoneConverter):
             timeout_message="unzipping LibreOffice extension timed out 5 seconds",
             timeout=5,
         )
+
+    def detect_mime_type(self, path: str) -> str:
+        """Detect MIME types in a platform-agnostic type.
+
+        Detect the MIME type of a file, either on Qubes or container platforms.
+        """
+        try:
+            mime = magic.Magic(mime=True)
+            mime_type = mime.from_file("/tmp/input_file")
+        except TypeError:
+            mime_type = magic.detect_from_filename("/tmp/input_file").mime_type
+
+        return mime_type
 
 
 async def main() -> int:

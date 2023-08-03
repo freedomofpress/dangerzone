@@ -4,6 +4,7 @@ import base64
 import contextlib
 import copy
 import os
+import platform
 import re
 import shutil
 import sys
@@ -19,6 +20,7 @@ from strip_ansi import strip_ansi
 
 from dangerzone.cli import cli_main, display_banner
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
+from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 
 from . import TestBase, for_each_doc, for_each_external_doc, sample_pdf
 
@@ -302,6 +304,8 @@ class TestCliConversion(TestCliBasic):
 class TestExtraFormats(TestCli):
     @for_each_external_doc("*hwp*")
     def test_hancom_office(self, doc: str) -> None:
+        if platform.machine() in ("arm64", "aarch64") or is_qubes_native_conversion():
+            pytest.skip("HWP / HWPX formats are not supported on this platform")
         with tempfile.NamedTemporaryFile("wb", delete=False) as decoded_doc:
             with open(doc, "rb") as encoded_doc:
                 decoded_doc.write(base64.b64decode(encoded_doc.read()))

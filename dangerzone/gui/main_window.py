@@ -24,7 +24,7 @@ from .. import errors
 from ..document import SAFE_EXTENSION, Document
 from ..isolation_provider.container import Container, NoContainerTechException
 from ..isolation_provider.dummy import Dummy
-from ..isolation_provider.qubes import Qubes
+from ..isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from ..util import get_resource_path, get_subprocess_startupinfo, get_version
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 from .updater import UpdateReport
@@ -551,9 +551,19 @@ class DocSelectionWidget(QtWidgets.QWidget):
         self.file_dialog = QtWidgets.QFileDialog()
         self.file_dialog.setWindowTitle("Open Documents")
         self.file_dialog.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
+
+        # XXX: We disable loading HWP/HWPX files on Qubes or MacOS M1 platforms, because
+        # H2ORestart does not work there. See:
+        #
+        # https://github.com/freedomofpress/dangerzone/issues/494
+        # https://github.com/freedomofpress/dangerzone/issues/498
+        hwp_filters = "*.hwp *.hwpx"
+        if platform.machine() in ("arm64", "aarch64") or is_qubes_native_conversion():
+            hwp_filters = ""
+
         self.file_dialog.setNameFilters(
             [
-                "Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods *.hwp *.hwpx *.jpg *.jpeg *.gif *.png *.tif *.tiff)"
+                f"Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods {hwp_filters} *.jpg *.jpeg *.gif *.png *.tif *.tiff)"
             ]
         )
 

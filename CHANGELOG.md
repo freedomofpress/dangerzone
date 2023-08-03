@@ -14,6 +14,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Inform about new updates on MacOS/Windows platforms, by periodically checking
   our GitHub releases page ([issue #189](https://github.com/freedomofpress/dangerzone/issues/189))
 - Feature: Add support for HWP/HWPX files (Hancom Office) ([issue #243](https://github.com/freedomofpress/dangerzone/issues/243), thanks to [@OctopusET](https://github.com/OctopusET))
+  * **NOTE:** This feature is not yet supported on MacOS with Apple Silicon CPU
+    or Qubes OS ([issue #494](https://github.com/freedomofpress/dangerzone/issues/494),
+     [issue #498](https://github.com/freedomofpress/dangerzone/issues/498))
 - Allow users to change their document selection from the UI ([issue #428](https://github.com/freedomofpress/dangerzone/issues/428))
 - Add a note in our README for MacOS 11+ users blocked by SIP ([PR #401](https://github.com/freedomofpress/dangerzone/pull/401), thanks to [@keywordnew](https://github.com/keywordnew))
 - Platform support: Alpha integration with Qubes OS ([issue #411](https://github.com/freedomofpress/dangerzone/issues/411))

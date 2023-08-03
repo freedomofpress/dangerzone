@@ -10,6 +10,7 @@ Here are the steps, with progress bar percentages:
 import asyncio
 import glob
 import os
+import platform
 import re
 import shutil
 import sys
@@ -17,7 +18,7 @@ from typing import Dict, Optional
 
 import magic
 
-from .common import DangerzoneConverter, run_command
+from .common import DangerzoneConverter, run_command, running_on_qubes
 
 
 class DocumentToPixels(DangerzoneConverter):
@@ -162,6 +163,19 @@ class DocumentToPixels(DangerzoneConverter):
             pdf_filename = "/tmp/input_file"
         elif conversion["type"] == "libreoffice":
             libreoffice_ext = conversion.get("libreoffice_ext", None)
+            # Disable conversion for HWP/HWPX on specific platforms. See:
+            #
+            #     https://github.com/freedomofpress/dangerzone/issues/494
+            #     https://github.com/freedomofpress/dangerzone/issues/498
+            if libreoffice_ext == "h2orestart.oxt" and platform.machine() in (
+                "arm64",
+                "aarch64",
+            ):
+                raise ValueError(
+                    "HWP / HWPX formats are not supported in ARM architectures"
+                )
+            if libreoffice_ext == "h2orestart.oxt" and running_on_qubes():
+                raise ValueError("HWP / HWPX formats are not supported in Qubes")
             if libreoffice_ext:
                 await self.install_libreoffice_ext(libreoffice_ext)
             self.update_progress("Converting to PDF using LibreOffice")

@@ -69,7 +69,7 @@ jobs:
         run: |
           ./dev_scripts/env.py --distro ${{ env.distro }} \
               --version ${{ env.version }} \
-              run --dev ./dangerzone/install/linux/build-deb.py
+              run --dev --no-gui ./dangerzone/install/linux/build-deb.py
 
       - name: Upload Dangerzone .deb
         uses: actions/upload-artifact@v3
@@ -151,3 +151,9 @@ jobs:
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
               run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf
+
+      - name: Check that the Dangerzone GUI imports work
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone --help

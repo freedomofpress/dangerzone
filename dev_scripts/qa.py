@@ -619,7 +619,7 @@ class QABase(abc.ABC):
             "",
             f"    cd {self.src}",
             f"    ./dev_scripts/env.py --distro {self.DISTRO} --version"
-            f" {self.VERSION} run -g bash",
+            f" {self.VERSION} run bash",
             "",
             "and run either `dangerzone` or `dangerzone-cli`",
         )

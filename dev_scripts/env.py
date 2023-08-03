@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import sys
 
-DEFAULT_GUI = False
+DEFAULT_GUI = True
 DEFAULT_USER = "user"
 DEFAULT_DRY = False
 DEFAULT_DEV = False
@@ -42,13 +42,13 @@ Run an interactive shell in the development or end-user environment:
 
 Run Dangerzone in the development environment:
 
-    env.py --distro ubuntu --version 22.04 run --dev --gui bash
+    env.py --distro ubuntu --version 22.04 run --dev bash
     user@dangerzone-dev:~$ cd dangerzone/
     user@dangerzone-dev:~$ poetry run ./dev/scripts/dangerzone
 
 Run Dangerzone in the end-user environment:
 
-    env.py --distro ubuntu --version 22.04 run --gui dangerzone
+    env.py --distro ubuntu --version 22.04 run dangerzone
 
 """
 
@@ -566,10 +566,10 @@ def parse_args():
     )
     parser_run.set_defaults(func=env_run)
     parser_run.add_argument(
-        "-g",
-        "--gui",
+        "--no-gui",
         default=DEFAULT_GUI,
-        action="store_true",
+        action="store_false",
+        dest="gui",
         help="Run command with GUI support",
     )
     parser_run.add_argument(

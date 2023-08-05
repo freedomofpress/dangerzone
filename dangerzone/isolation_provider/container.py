@@ -337,6 +337,13 @@ class Container(IsolationProvider):
                 # We did it
                 success = True
 
+        if getattr(sys, "dangerzone_dev", False):
+            log_path = safe_dir / "captured_output.txt"
+            with open(log_path, "r", encoding="ascii", errors="replace") as f:
+                untrusted_log = f.read(MAX_CONVERSION_LOG_CHARS)
+            text = f"Container output: (pixels to PDF)\n{self.sanitize_conversion_str(untrusted_log)}"
+            log.info(text)
+
         return success
 
     def get_max_parallel_conversions(self) -> int:

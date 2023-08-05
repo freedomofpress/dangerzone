@@ -156,11 +156,17 @@ async def main() -> int:
 
     try:
         await converter.convert()
+        error_code = 0  # Success!
+
     except (RuntimeError, TimeoutError, ValueError) as e:
         converter.update_progress(str(e), error=True)
-        return 1
-    else:
-        return 0  # Success!
+        error_code = 1
+
+    if not running_on_qubes():
+        # Write debug information (containers version)
+        with open("/safezone/captured_output.txt", "wb") as container_log:
+            container_log.write(converter.captured_output)
+    return error_code
 
 
 if __name__ == "__main__":

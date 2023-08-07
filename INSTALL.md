@@ -121,21 +121,11 @@ After confirming that it matches, type `y` (for yes) and the installation should
 
 ### Qubes OS
 
-<details>
-  <summary><i>:memo: Expand this section if you want to use containers instead of disposable qubes.</i></summary>
-  </br>
+> :warning: This section is for the experimental native Qubes support. If you want
+> to try out the stable Dangerzone version (which uses containers instead of virtual machines for isolation),
+> please follow the Fedora or Debian instructions and adapt them as needed.
 
-  Create a Debian or Fedora-based development standalone qube with at least
-  8GB of private storage space, and follow the relevant instructions above for
-  the respective template.
-
-  Remember to set the environment variable `DZ_USE_CONTAINERS=1`, before
-  executing Dangerzone.
-</details>
-
-> :warning: Native Qubes support is in alpha stage, so we don't have official
-> installation instructions yet. If you want to try out Dangerzone with native
-> Qubes support, check out our [build instructions](BUILD.md#qubes-os) instead.
+If you want to try the experimental native Qubes OS support for Dangerzone, check out our [build instructions](BUILD.md#qubes-os)
 
 ## Build from source
 

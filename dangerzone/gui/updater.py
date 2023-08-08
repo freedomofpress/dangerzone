@@ -72,6 +72,7 @@ class UpdateCheckPrompt(Alert):
         assert self.cancel_button is not None
         buttons_layout.addWidget(self.cancel_button)
         buttons_layout.addWidget(self.ok_button)
+        self.ok_button.setDefault(True)
         return buttons_layout
 
 

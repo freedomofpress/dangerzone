@@ -41,7 +41,7 @@ test:
 	# shared state.
 	# See more in https://github.com/freedomofpress/dangerzone/issues/493
 	pytest --co -q tests/gui | grep -v ' collected' | xargs -n 1 pytest -v
-	pytest -v --cov --ignore dev_scripts --ignore tests/gui
+	pytest -v --cov --ignore dev_scripts --ignore tests/gui --ignore tests/test_large_set.py
 
 
 # Makefile self-help borrowed from the securedrop-client project

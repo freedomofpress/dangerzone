@@ -12,12 +12,27 @@ _Read more about Dangerzone in the [official site](https://dangerzone.rocks/abou
 
 ## Getting started
 
+### MacOS
 - Download [Dangerzone 0.4.2 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.4.2/Dangerzone-0.4.2-arm64.dmg)
 - Download [Dangerzone 0.4.2 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.4.2/Dangerzone-0.4.2-i686.dmg)
-- Download [Dangerzone 0.4.2 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.4.2/Dangerzone-0.4.2.msi)
-- See [installing Dangerzone](INSTALL.md) for Linux repositories
 
 You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`
+
+> **Note**: you willl also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+> This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
+> create the secure environment.
+
+### Windows
+
+- Download [Dangerzone 0.4.2 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.4.2/Dangerzone-0.4.2.msi)
+
+> **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+> This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
+> create the secure environment.
+
+### Linux
+
+See [installing Dangerzone](INSTALL.md) for adding the Linux repositories to your system.
 
 ## Some features
 

@@ -1,5 +1,14 @@
-Dangerzone is available for:
+## MacOS
+See instructions on [README.md](README.md).
 
+## Windows
+See instructions on [README.md](README.md).
+
+## Linux
+On Linux, Dangerzone uses [Podman](https://podman.io/) instead of Docker Desktop for creating
+an isolated environment. It will be installed automatically when installing Dangerzone.
+
+Dangerzone is available for:
 - Ubuntu 23.04 (lunar)
 - Ubuntu 22.04 (jammy)
 - Ubuntu 20.04 (focal)

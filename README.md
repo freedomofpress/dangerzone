@@ -32,7 +32,7 @@ You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `bre
 
 ### Linux
 
-See [installing Dangerzone](INSTALL.md) for adding the Linux repositories to your system.
+See [installing Dangerzone](INSTALL.md#linux) for adding the Linux repositories to your system.
 
 ## Some features
 

@@ -1,8 +1,8 @@
 ## MacOS
-See instructions on [README.md](README.md).
+See instructions in [README.md](README.md#macos).
 
 ## Windows
-See instructions on [README.md](README.md).
+See instructions in [README.md](README.md#windows).
 
 ## Linux
 On Linux, Dangerzone uses [Podman](https://podman.io/) instead of Docker Desktop for creating

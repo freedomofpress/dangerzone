@@ -229,6 +229,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dangerzone.settings.set("updater_check", check)
         self.dangerzone.settings.save()
 
+    def refresh_updates_checkbox(self) -> None:
+        """Refreshes the "check for updates" checkbox according to the settings"""
+        check = self.dangerzone.settings.get("updater_check")
+        self.toggle_updates_action.setChecked(check)
+
     def handle_updates(self, report: UpdateReport) -> None:
         """Handle update reports from the update checker thread.
 

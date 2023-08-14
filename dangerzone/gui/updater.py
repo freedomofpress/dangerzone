@@ -108,6 +108,7 @@ class UpdaterThread(QtCore.QThread):
     """
 
     finished = QtCore.Signal(UpdateReport)
+    update_check_toggled = QtCore.Signal()
 
     GH_RELEASE_URL = (
         "https://api.github.com/repos/freedomofpress/dangerzone/releases/latest"
@@ -177,6 +178,7 @@ class UpdaterThread(QtCore.QThread):
         if self.check is None:
             log.debug("User has not been asked yet for update checks")
             self.check = self.prompt_for_checks()
+            self.update_check_toggled.emit()
             return bool(self.check)
         elif not self.check:
             log.debug("User has expressed that they don't want to check for updates")

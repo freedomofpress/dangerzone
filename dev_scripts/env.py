@@ -261,11 +261,8 @@ class Env:
             self.version = "bullseye-backports"
 
         # Try to autodetect the runtime, if the user has not provided it.
-        #
-        # FIXME: Typically Podman runs without sudo, whereas Docker with sudo, but this
-        # is not always the case. We may need to autodetect that as well.
         podman_cmd = ["podman"]
-        docker_cmd = ["sudo", "docker"]
+        docker_cmd = ["docker"]
         if not runtime:
             if shutil.which("podman"):
                 self.runtime = "podman"

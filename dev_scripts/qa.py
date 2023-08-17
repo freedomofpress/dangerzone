@@ -19,6 +19,9 @@ and newer platforms, we have to do the following:
 - [ ] In `.circleci/config.yml`, add new platforms and remove obsolete platforms
 - [ ] Bump the Python dependencies using `poetry lock`
 - [ ] Make sure that the tip of the `main` branch passes the CI tests.
+- [ ] Make sure that the Apple account has a valid application password and has
+      agreed to the latest Apple terms (see [macOS release](#macos-release)
+      section).
 - [ ] Create a test build in Windows and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.

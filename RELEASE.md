@@ -10,6 +10,9 @@ and newer platforms, we have to do the following:
 - [ ] In `.circleci/config.yml`, add new platforms and remove obsolete platforms
 - [ ] Bump the Python dependencies using `poetry lock`
 - [ ] Make sure that the tip of the `main` branch passes the CI tests.
+- [ ] Make sure that the Apple account has a valid application password and has
+      agreed to the latest Apple terms (see [macOS release](#macos-release)
+      section).
 - [ ] Create a test build in Windows and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.
@@ -199,6 +202,11 @@ To make a macOS release, go to macOS build machine:
 
 - Build machine must have:
   - Apple-trusted `Developer ID Application: Freedom of the Press Foundation (94ZZGGGJ3W)` code-signing certificates installed
+- Apple account must have:
+  - A valid application password for `altool` in the Keychain. You can verify
+    this by running: `xcrun altool --notarization-history 0 -u "<email>" -p "@keychain:altool"`
+  - Agreed to any new terms and conditions. You can find those if you visit
+    https://developer.apple.com and login with the proper Apple ID.
 - Verify and checkout the git tag for this release
 - Run `poetry install`
 - Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`

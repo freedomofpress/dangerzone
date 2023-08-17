@@ -205,15 +205,15 @@ To make a macOS release, go to macOS build machine:
 - Run `poetry run ./install/macos/build-app.py --only-codesign`; this will make `dist/Dangerzone.dmg`
   * You need to run this command as the account that has access to the code signing certificate
   * You must run this command from the MacOS UI, from a terminal application.
-- Notarize it: `xcrun altool --notarize-app --primary-bundle-id "press.freedom.dangerzone" -u "<email>" --file dist/Dangerzone.dmg`
+- Notarize it: `xcrun altool --notarize-app --primary-bundle-id "press.freedom.dangerzone" -u "<email>" -p "@keychain:altool" --file dist/Dangerzone.dmg`
   * You need to change the `<email>` in the above command with the email
     associated with the Apple Developer ID.
-  * This command will ask you for a password. Prefer creating an application
-    password associated with your Apple Developer ID, which will be used
-    specifically for `altool`.
-- Wait for it to get approved, check status with: `xcrun altool --notarization-history 0 -u "<email>"`
+  * This command assumes that you have created, and stored in the Keychain, an
+    application password associated with your Apple Developer ID, which will be
+    used specifically for `altool`.
+- Wait for it to get approved, check status with: `xcrun altool --notarization-history 0 -u "<email>" -p "@keychain:altool"`
   * You will also receive an update in your email.
-- (If it gets rejected, you can see why with: `xcrun altool --notarization-info $REQUEST_UUID -u "<email>"`)
+- (If it gets rejected, you can see why with: `xcrun altool --notarization-info $REQUEST_UUID -u "<email>" -p "@keychain:altool"`)
 - After it's approved, staple the ticket: `xcrun stapler staple dist/Dangerzone.dmg`
 
 This process ends up with the final file:

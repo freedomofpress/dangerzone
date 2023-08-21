@@ -123,7 +123,6 @@ def gui_main(
     # Check for updates
     log.debug("Setting up Dangezone updater")
     updater = UpdaterThread(dangerzone)
-    updater.update_check_toggled.connect(window.refresh_updates_checkbox)
     window.register_update_handler(updater.finished)
 
     log.debug("Consulting updater settings before checking for updates")

@@ -141,10 +141,7 @@ def test_linux_no_check(updater: UpdaterThread, monkeypatch: MonkeyPatch) -> Non
 
 
 def test_user_prompts(
-    qtbot: QtBot,
-    updater: UpdaterThread,
-    monkeypatch: MonkeyPatch,
-    mocker: MockerFixture,
+    updater: UpdaterThread, monkeypatch: MonkeyPatch, mocker: MockerFixture
 ) -> None:
     """Test prompting users to ask them if they want to enable update checks."""
     # First run
@@ -168,10 +165,8 @@ def test_user_prompts(
     # Check disabling update checks.
     prompt_mock().launch.return_value = False  # type: ignore [attr-defined]
     expected_settings["updater_check"] = False
-
-    with qtbot.waitSignal(updater.update_check_toggled) as blocker:
-        assert updater.should_check_for_updates() == False
-        assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    assert updater.should_check_for_updates() == False
+    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
 
     # Reset the "updater_check" field and check enabling update checks.
     updater.dangerzone.settings.set("updater_check", None)

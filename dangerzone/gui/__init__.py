@@ -132,6 +132,10 @@ def gui_main(
     else:
         log.debug("Will not check for updates, based on updater settings")
 
+    # Ensure the status of the toggle updates checkbox is updated, after the user is
+    # prompted to enable updates.
+    window.toggle_updates_action.setChecked(bool(updater.check))
+
     if filenames:
         open_files(filenames)
 

@@ -46,6 +46,7 @@ def read_debug_text(p: subprocess.Popen) -> str:
     """Read arbitrarily long text (for debug purposes)"""
     if p.stderr:
         untrusted_text = p.stderr.read(MAX_CONVERSION_LOG_CHARS)
+        p.stderr.close()
         return untrusted_text.decode("ascii", errors="replace")
     else:
         return ""
@@ -134,6 +135,9 @@ class Qubes(IsolationProvider):
 
                 text = f"Converting page {page}/{n_pages} to pixels"
                 self.print_progress_trusted(document, False, text, percentage)
+
+        # Ensure nothing else is read after all bitmaps are obtained
+        p.stdout.close()  # type: ignore [union-attr]
 
         # TODO handle leftover code input
         text = "Converted document to pixels"

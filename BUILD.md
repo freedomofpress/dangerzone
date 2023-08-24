@@ -188,6 +188,7 @@ Overview of the qubes you'll create:
 
    ```
    git clone https://github.com/freedomofpress/dangerzone
+   cd dangerzone
    ```
 
 2. Install Poetry using `pipx`:
@@ -196,7 +197,7 @@ Overview of the qubes you'll create:
    pipx install poetry
    ```
 
-3. Change to the `dangerzone` folder, and install the poetry dependencies:
+3. Install the poetry dependencies:
 
    ```
    poetry install

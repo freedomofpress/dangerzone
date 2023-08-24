@@ -233,7 +233,7 @@ Overview of the qubes you'll create:
    sudo cp ~/QubesIncoming/dz/qubes/* /rw/usrlocal/etc/qubes-rpc/
    ```
 
-3. Shutdown the `dz-dvm` template:
+3. Shutdown the `dz-dvm` qube:
 
    ```
    shutdown -h now

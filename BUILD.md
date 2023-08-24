@@ -122,19 +122,19 @@ specified qubes.
 1. Create a new Fedora **template** (`fedora-37-dz`) for Dangerzone development:
 
    ```
-   qvm-clone fedora-37 fedora-37-dz
+   qvm-clone fedora-38 fedora-38-dz
    ```
 
-   > :bulb: Alternatively, you can use your base Fedora 37 template in the
-   > following instructions. In that case, replace `fedora-37-dz` with
-   > `fedora-37` in the steps below.
+   > :bulb: Alternatively, you can use your base Fedora 38 template in the
+   > following instructions. In that case, replace `fedora-38-dz` with
+   > `fedora-38` in the steps below.
 
 2. Create a **disposable**, offline app qube (`dz-dvm`), based on the
-   `fedora-37-dz` template. This will be the qube where the documents will be
+   `fedora-38-dz` template. This will be the qube where the documents will be
    sanitized:
 
    ```
-   qvm-create --class AppVM --label red --template fedora-37-dz \
+   qvm-create --class AppVM --label red --template fedora-38-dz \
        --prop netvm="" --prop template_for_dispvms=True \
        dz-dvm
    ```
@@ -143,7 +143,7 @@ specified qubes.
    and initiating the sanitization process:
 
    ```
-   qvm-create --class AppVM --label red --template fedora-37-dz dz
+   qvm-create --class AppVM --label red --template fedora-38-dz dz
    ```
 
    > :bulb: Alternatively, you can use a different app qube for Dangerzone
@@ -159,7 +159,7 @@ specified qubes.
    dz.ConvertDev      *       @anyvm       @dispvm:dz-dvm  allow
    ```
 
-#### In the `fedora-37-dz` template
+#### In the `fedora-38-dz` template
 
 1. Install dependencies:
 
@@ -168,7 +168,7 @@ specified qubes.
        tesseract*
    ```
 
-2. Shutdown the `fedora-37-dz` template:
+2. Shutdown the `fedora-38-dz` template:
 
    ```
    shutdown -h now
@@ -254,7 +254,7 @@ For changes in the server side components, you can simply edit them locally,
 and they will be mirrored to the disposable qube through the `dz.ConvertDev`
 RPC call.
 
-The only reason to update the `fedora-37-dz` template from there on is if:
+The only reason to update the `fedora-38-dz` template from there on is if:
 1. The project requires new server-side components.
 2. The code for `dz.ConvertDev` needs to be updated. Copy the updated file
    as we've shown in the steps above.
@@ -263,20 +263,20 @@ The only reason to update the `fedora-37-dz` template from there on is if:
 
 If you want to test the .rpm you just created, you can do the following:
 
-On the `dz` app cube, copy the built `dangerzone.rpm` to `fedora-37-dz`
+On the `dz` app cube, copy the built `dangerzone.rpm` to `fedora-38-dz`
 template:
 
 ```
-qvm-copy-to-vm fedora-37-dz dist/dangerzone*.noarch.rpm
+qvm-copy-to-vm fedora-38-dz dist/dangerzone*.noarch.rpm
 ```
 
-On the `fedora-37-dz` template, install the copied .rpm:
+On the `fedora-38-dz` template, install the copied .rpm:
 
 ```
 sudo dnf install -y ~/QubesIncoming/dz/dangerzone-*.rpm
 ```
 
-Shutdown the `fedora-37-dz` template and the `dz` app qube, and then you can
+Shutdown the `fedora-38-dz` template and the `dz` app qube, and then you can
 refresh the applications on the `dz` qube, find Dangerzone in the list, and use
 it to convert a document.
 

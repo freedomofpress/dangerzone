@@ -117,9 +117,17 @@ Create a .rpm:
 The following steps must be completed once. Make sure you run them in the
 specified qubes.
 
-#### In `dom0`
+Overview of the qubes you'll create:
 
-1. Create a new Fedora **template** (`fedora-37-dz`) for Dangerzone development:
+>    | qube         |   type   | purpose |
+>    |--------------|----------|---------|
+>    | dz           | app qube | Dangerzone development |
+>    | dz-dvm       | app qube | offline diposable template for performing conversions
+>    | fedora-38-dz | template | template for the other two qubes
+
+#### In `dom0`:
+
+1. Create a new Fedora **template** (`fedora-38-dz`) for Dangerzone development:
 
    ```
    qvm-clone fedora-38 fedora-38-dz

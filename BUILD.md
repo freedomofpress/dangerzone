@@ -213,8 +213,10 @@ Overview of the qubes you'll create:
    sanitization (`dz-dvm`):
 
    ```
-   qvm-copy-to-vm dz-dvm qubes/
+   qvm-copy qubes/*
    ```
+
+   And then choose `dz-dvm` as the target.
 
 #### In the `dz-dvm` template
 

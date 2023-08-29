@@ -119,11 +119,11 @@ specified qubes.
 
 Overview of the qubes you'll create:
 
->    | qube         |   type   | purpose |
->    |--------------|----------|---------|
->    | dz           | app qube | Dangerzone development |
->    | dz-dvm       | app qube | offline diposable template for performing conversions
->    | fedora-38-dz | template | template for the other two qubes
+| qube         |   type   | purpose |
+|--------------|----------|---------|
+| dz           | app qube | Dangerzone development |
+| dz-dvm       | app qube | offline diposable template for performing conversions |
+| fedora-38-dz | template | template for the other two qubes |
 
 #### In `dom0`:
 

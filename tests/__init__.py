@@ -1,4 +1,5 @@
 import sys
+import zipfile
 from pathlib import Path
 from typing import Callable, List
 
@@ -13,7 +14,11 @@ SAMPLE_DIRECTORY = "test_docs"
 BASIC_SAMPLE_PDF = "sample-pdf.pdf"
 BASIC_SAMPLE_DOC = "sample-doc.doc"
 SAMPLE_EXTERNAL_DIRECTORY = "test_docs_external"
+SAMPLE_COMPRESSED_DIRECTORY = "test_docs_compressed"
+
 test_docs_dir = Path(__file__).parent.joinpath(SAMPLE_DIRECTORY)
+test_docs_compressed_dir = Path(__file__).parent.joinpath(SAMPLE_COMPRESSED_DIRECTORY)
+
 test_docs = [
     p
     for p in test_docs_dir.rglob("*")
@@ -71,6 +76,20 @@ def unreadable_pdf(tmp_path: Path) -> str:
     file_path = tmp_path / "document.pdf"
     file_path.touch(mode=0o000)
     return str(file_path)
+
+
+@pytest.fixture
+def pdf_11k_pages(tmp_path: Path) -> str:
+    """11K page document with pages of 1x1 px. Generated with the command:
+
+    gs -sDEVICE=pdfwrite -o sample-11k-pages.pdf -dDEVICEWIDTHPOINTS=1 -dDEVICEHEIGHTPOINTS=1 -c 11000 {showpage} repeat
+    """
+
+    filename = "sample-11k-pages.pdf"
+    zip_path = test_docs_compressed_dir / f"{filename}.zip"
+    with zipfile.ZipFile(zip_path, "r") as zip_file:
+        zip_file.extractall(tmp_path)
+    return str(tmp_path / filename)
 
 
 @pytest.fixture

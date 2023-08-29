@@ -2,7 +2,8 @@ import pytest
 
 from dangerzone.isolation_provider.qubes import Qubes
 
-from .. import sanitized_text, uncommon_text
+# XXX Fixtures used in abstract Test class need to be imported regardless
+from .. import pdf_11k_pages, sanitized_text, uncommon_text
 from .base import IsolationProviderTest
 
 

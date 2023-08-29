@@ -125,9 +125,8 @@ class Qubes(IsolationProvider):
             os.set_blocking(self.proc.stdout.fileno(), False)
 
             n_pages = read_int(self.proc.stdout, timeout)
-            if n_pages == 0:
-                # FIXME: Fail loudly in that case
-                return False
+            if n_pages == 0 or n_pages > errors.MAX_PAGES:
+                raise errors.MaxPagesException()
             if ocr_lang:
                 percentage_per_page = 50.0 / n_pages
             else:

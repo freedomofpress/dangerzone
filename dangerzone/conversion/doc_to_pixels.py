@@ -239,6 +239,9 @@ class DocumentToPixels(DangerzoneConverter):
         else:
             raise errors.NoPageCountException()
 
+        if num_pages > errors.MAX_PAGES:
+            raise errors.MaxPagesException()
+
         # Get a more precise timeout, based on the number of pages
         timeout = self.calculate_timeout(size, num_pages)
 

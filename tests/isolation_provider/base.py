@@ -2,10 +2,11 @@ import pytest
 from colorama import Style
 from pytest_mock import MockerFixture
 
+from dangerzone.conversion import errors
 from dangerzone.document import Document
 from dangerzone.isolation_provider import base
 
-from .. import sanitized_text, uncommon_text
+from .. import pdf_11k_pages, sanitized_text, uncommon_text
 
 
 class IsolationProviderTest:
@@ -48,3 +49,15 @@ class IsolationProviderTest:
             else:
                 assert log_info_spy.call_args[0][0].endswith(sanitized_text)
                 log_error_spy.assert_not_called()
+
+    def test_max_pages_received(
+        self,
+        pdf_11k_pages: str,
+        provider: base.IsolationProvider,
+        mocker: MockerFixture,
+    ) -> None:
+        provider.progress_callback = mocker.MagicMock()
+        doc = Document(pdf_11k_pages)
+        with pytest.raises(errors.MaxPagesException):
+            success = provider._convert(doc, ocr_lang=None)
+            assert not success

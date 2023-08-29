@@ -2,6 +2,7 @@ from typing import List, Optional, Type
 
 # XXX: errors start at 128 for conversion-related issues
 ERROR_SHIFT = 128
+MAX_PAGES = 10000
 
 
 class ConversionException(Exception):
@@ -51,6 +52,14 @@ class PagesException(ConversionException):
 class NoPageCountException(PagesException):
     error_code = ERROR_SHIFT + 41
     error_message = "Number of pages could not be extracted from PDF"
+
+
+class MaxPagesException(PagesException):
+    """Max number of pages enforced by the client (to fail early) but also the
+    server, which distrusts the client"""
+
+    error_code = ERROR_SHIFT + 42
+    error_message = f"Number of pages exceeds maximum ({MAX_PAGES})"
 
 
 class PDFtoPPMException(ConversionException):

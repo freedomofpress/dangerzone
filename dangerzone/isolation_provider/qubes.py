@@ -20,6 +20,7 @@ from .base import IsolationProvider
 log = logging.getLogger(__name__)
 
 from ..conversion.common import running_on_qubes
+from ..conversion.errors import exception_from_error_code
 from ..conversion.pixels_to_pdf import PixelsToPDF
 from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
 from .base import MAX_CONVERSION_LOG_CHARS
@@ -38,6 +39,8 @@ def read_bytes(p: subprocess.Popen, buff_size: int) -> bytes:
 def read_int(p: subprocess.Popen) -> int:
     """Read 2 bytes from stdout, and decode them as int."""
     untrusted_int = p.stdout.read(2)  # type: ignore [union-attr]
+    if untrusted_int == b"":
+        raise ValueError("Nothing read from stdout (expected an integer)")
     return int.from_bytes(untrusted_int, signed=False)
 
 
@@ -104,7 +107,12 @@ class Qubes(IsolationProvider):
                     stderr=subprocess.DEVNULL,
                 )
 
-            n_pages = read_int(p)
+            try:
+                n_pages = read_int(p)
+            except ValueError:
+                error_code = p.wait()
+                # XXX Reconstruct exception from error code
+                raise exception_from_error_code(error_code)  # type: ignore [misc]
             if n_pages == 0:
                 # FIXME: Fail loudly in that case
                 return False

@@ -13,10 +13,11 @@ import os
 import re
 import shutil
 import sys
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import magic
 
+from . import errors
 from .common import DangerzoneConverter, running_on_qubes
 
 
@@ -138,7 +139,7 @@ class DocumentToPixels(DangerzoneConverter):
 
         # Validate MIME type
         if mime_type not in conversions:
-            raise ValueError("The document format is not supported")
+            raise errors.DocFormatUnsupported()
 
         # Temporary fix for the HWPX format
         # Should be removed after new release of `file' (current release 5.44)
@@ -167,7 +168,7 @@ class DocumentToPixels(DangerzoneConverter):
             #     https://github.com/freedomofpress/dangerzone/issues/494
             #     https://github.com/freedomofpress/dangerzone/issues/498
             if libreoffice_ext == "h2orestart.oxt" and running_on_qubes():
-                raise ValueError("HWP / HWPX formats are not supported in Qubes")
+                raise errors.DocFormatUnsupportedHWPQubes()
             if libreoffice_ext:
                 await self.install_libreoffice_ext(libreoffice_ext)
             self.update_progress("Converting to PDF using LibreOffice")
@@ -196,7 +197,7 @@ class DocumentToPixels(DangerzoneConverter):
             #
             #     https://github.com/freedomofpress/dangerzone/issues/494
             if not os.path.exists(pdf_filename):
-                raise ValueError("Conversion to PDF with LibreOffice failed")
+                raise errors.LibreofficeFailure()
         elif conversion["type"] == "convert":
             self.update_progress("Converting to PDF using GraphicsMagick")
             args = [
@@ -216,7 +217,7 @@ class DocumentToPixels(DangerzoneConverter):
             )
             pdf_filename = "/tmp/input_file.pdf"
         else:
-            raise ValueError(
+            raise errors.InvalidGMConversion(
                 f"Invalid conversion type {conversion['type']} for MIME type {mime_type}"
             )
         self.percentage += 3
@@ -236,7 +237,7 @@ class DocumentToPixels(DangerzoneConverter):
         if search is not None:
             num_pages: int = int(search.group(1))
         else:
-            raise ValueError("Number of pages could not be extracted from PDF")
+            raise errors.NoPageCountException()
 
         # Get a more precise timeout, based on the number of pages
         timeout = self.calculate_timeout(size, num_pages)
@@ -283,7 +284,7 @@ class DocumentToPixels(DangerzoneConverter):
                 # Read the header
                 header = f.readline().decode().strip()
                 if header != "P6":
-                    raise ValueError("Invalid PPM header")
+                    raise errors.PDFtoPPMInvalidHeader()
 
                 # Save the width and height
                 dims = f.readline().decode().strip()
@@ -296,7 +297,7 @@ class DocumentToPixels(DangerzoneConverter):
                 maxval = int(f.readline().decode().strip())
                 # Check that the depth is 8
                 if maxval != 255:
-                    raise ValueError("Invalid PPM depth")
+                    raise errors.PDFtoPPMInvalidDepth()
 
                 data = f.read()
 
@@ -370,10 +371,11 @@ async def main() -> int:
     try:
         await converter.convert()
         error_code = 0  # Success!
-    except (RuntimeError, TimeoutError, ValueError) as e:
+    except errors.ConversionException as e:  # Expected Errors
+        error_code = e.error_code
+    except (RuntimeError, TimeoutError, ValueError) as e:  # Unexpected Errors
         converter.update_progress(str(e), error=True)
         error_code = 1
-
     if not running_on_qubes():
         # Write debug information (containers version)
         with open("/tmp/dangerzone/captured_output.txt", "wb") as container_log:

@@ -11,6 +11,7 @@ import sys
 import tempfile
 from typing import Any, Callable, List, Optional, Tuple
 
+from ..conversion.errors import exception_from_error_code
 from ..document import Document
 from ..util import (
     get_resource_path,
@@ -305,6 +306,9 @@ class Container(IsolationProvider):
 
         if ret != 0:
             log.error("documents-to-pixels failed")
+
+            # XXX Reconstruct exception from error code
+            raise exception_from_error_code(ret)  # type: ignore [misc]
         else:
             # TODO: validate convert to pixels output
 

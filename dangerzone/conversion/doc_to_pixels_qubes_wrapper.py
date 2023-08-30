@@ -6,6 +6,7 @@ import tempfile
 from pathlib import Path
 from typing import Optional, TextIO
 
+from . import errors
 from .doc_to_pixels import DocumentToPixels
 
 
@@ -67,8 +68,13 @@ async def main() -> None:
     with open("/tmp/input_file", "wb") as f:
         f.write(data)
 
-    converter = DocumentToPixels()
-    await converter.convert()
+    try:
+        converter = DocumentToPixels()
+        await converter.convert()
+    except errors.ConversionException as e:
+        sys.exit(e.error_code)
+    except (RuntimeError, TimeoutError, ValueError) as e:
+        sys.exit(1)
 
     num_pages = len(list(out_dir.glob("*.rgb")))
     await write_int(num_pages)

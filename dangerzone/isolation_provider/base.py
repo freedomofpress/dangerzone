@@ -5,6 +5,7 @@ from typing import Callable, Optional
 
 from colorama import Fore, Style
 
+from ..conversion.errors import ConversionException
 from ..document import Document
 from ..util import replace_control_chars
 
@@ -36,7 +37,10 @@ class IsolationProvider(ABC):
         document.mark_as_converting()
         try:
             success = self._convert(document, ocr_lang)
-        except Exception:
+        except ConversionException as e:
+            success = False
+            self.print_progress_trusted(document, True, e.error_message, 0)
+        except Exception as e:
             success = False
             log.exception(
                 f"An exception occurred while converting document '{document.id}'"

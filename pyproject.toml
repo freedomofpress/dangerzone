@@ -4,6 +4,12 @@ version = "0.4.2"
 description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
 authors = ["Freedom of the Press Foundation <info@freedom.press>", "Micah Lee <micah.lee@theintercept.com>"]
 license = "MIT"
+include = [
+    "share/",
+    "qubes/",
+    "install/linux/press.freedom.dangerzone.*",
+    "README.md"
+]
 
 [tool.poetry.dependencies]
 python = ">=3.7,<3.12"

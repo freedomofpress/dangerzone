@@ -28,7 +28,8 @@ aliases:
   - &install-dependencies-rpm
     name: Install dependencies (rpm)
     command: |
-      dnf install -y rpm-build python3 python3-setuptools
+      dnf install -y rpm-build python3 python3-devel python3-poetry-core pipx
+      pipx install poetry
 
   - &build-deb
     name: Build the .deb package
@@ -39,7 +40,7 @@ aliases:
   - &build-rpm
     name: Build the .rpm package
     command: |
-      ./install/linux/build-rpm.py
+      PATH=/root/.local/bin:$PATH ./install/linux/build-rpm.py
       ls -lh dist/
 
   - &calculate-cache-key

@@ -108,7 +108,8 @@ RUN apt-get update \
 
 # FIXME: Install Poetry on Fedora via package manager.
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
-RUN dnf install -y rpm-build podman python3 python3-setuptools pipx make qt6-qtbase-gui \
+RUN dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
+    pipx make qt6-qtbase-gui \
     && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.

@@ -60,7 +60,8 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 pipx qt6-qtbase-gui
+sudo dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
+    pipx qt6-qtbase-gui
 ```
 
 Install Poetry using `pipx`:
@@ -172,7 +173,8 @@ Overview of the qubes you'll create:
 1. Install dependencies:
 
    ```
-   sudo dnf install -y rpm-build pipx qt6-qtbase-gui libreoffice python3-magic \
+   sudo dnf install -y rpm-build podman python3 python3-devel \
+       python3-poetry-core pipx qt6-qtbase-gui libreoffice python3-magic \
        tesseract*
    ```
 

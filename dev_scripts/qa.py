@@ -236,7 +236,8 @@ CONTENT_BUILD_FEDORA = r"""## Fedora
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 pipx qt6-qtbase-gui
+sudo dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
+    pipx qt6-qtbase-gui
 ```
 
 Install Poetry using `pipx`:

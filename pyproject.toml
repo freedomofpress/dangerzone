@@ -51,5 +51,5 @@ skip = [".gitignore"]
 follow_links = false
 
 [build-system]
-requires = ["poetry>=1.1.4"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=1.2.0"]
+build-backend = "poetry.core.masonry.api"

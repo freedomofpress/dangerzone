@@ -7,17 +7,11 @@ import setuptools
 with open("share/version.txt") as f:
     version = f.read().strip()
 
-qubes_target = os.environ.get("QUBES_TARGET") == "1"
-if qubes_target:
-    print("Target: Qubes OS")
-
 
 def file_list(path):
     files = []
     for filename in os.listdir(path):
         if os.path.isfile(os.path.join(path, filename)):
-            if qubes_target and filename.endswith("container.tar.gz"):
-                continue  # ignore container when building a Qubes package
             files.append(os.path.join(path, filename))
     return files
 
@@ -34,9 +28,6 @@ def data_files_list():
         ),
         ("share/dangerzone", file_list("share")),
     ]
-    if qubes_target:
-        # Qubes RPC policy
-        data_files.append(("/etc/qubes-rpc/", ["qubes/dz.Convert"]))
     return data_files
 
 

@@ -133,6 +133,7 @@ dmypy.json
 deb_dist
 .DS_Store
 tests/test_docs/**/*-safe.pdf
+tests/test_docs_large/
 install/windows/Dangerzone.wxs
 share/container.tar
 share/container.tar.gz

@@ -3,18 +3,103 @@
 import argparse
 import inspect
 import os
+import pathlib
 import shutil
 import subprocess
-import sys
+import tempfile
 
-root = os.path.dirname(
-    os.path.dirname(
-        os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    )
-)
+root = pathlib.Path(__file__).parent.parent.parent
 
 with open(os.path.join(root, "share", "version.txt")) as f:
     version = f.read().strip()
+
+
+def remove_contents(d):
+    """Remove all the contents of a directory."""
+    for p in d.iterdir():
+        if p.is_file() or p.is_symlink():
+            p.unlink()
+        else:
+            shutil.rmtree(p)
+
+
+def build(qubes=False):
+    """Build an RPM package in a temporary directory.
+
+    The build process is the following:
+
+    1. Clean up any stale data from previous runs under ./dist. Note that this directory
+       is used by `poetry build` and `rpmbuild`.
+    2. Create the necessary RPM project structure under ./install/linux/rpm-build, and
+       use symlinks to point to ./dist, so that we don't need to move files explicitly.
+    3. Create a Python source distribution using `poetry build`. If we are building a
+       Qubes package and there is a container image under `share/`, stash it temporarily
+       under a different directory.
+    4. Build both binary and source RPMs using rpmbuild. Optionally, pass to the SPEC
+        `_qubes` flag, that denotes we want to build a package for Qubes.
+    """
+    build_dir = root / "install" / "linux" / "rpm-build"
+    dist_path = root / "dist"
+    specfile_name = "dangerzone.spec"
+    specfile_path = root / "install" / "linux" / specfile_name
+    sdist_name = f"dangerzone-{version}.tar.gz"
+
+    print("* Deleting old dist")
+    if os.path.exists(dist_path):
+        remove_contents(dist_path)
+    else:
+        dist_path.mkdir()
+
+    print(f"* Creating RPM project structure under {build_dir}")
+    for d in ["BUILD", "BUILDROOT", "RPMS", "SOURCES", "SPECS"]:
+        subdir = build_dir / d
+        subdir.mkdir(exist_ok=True)
+        remove_contents(subdir)
+
+    shutil.copy2(specfile_path, build_dir / "SPECS")
+    rpm_dir = build_dir / "RPMS" / "x86_64"
+    srpm_dir = build_dir / "SRPMS"
+    if srpm_dir.exists():
+        os.unlink(srpm_dir)
+    os.symlink(dist_path, rpm_dir)
+    os.symlink(dist_path, srpm_dir)
+
+    print("* Creating a Python sdist")
+    container_tar_gz = root / "share" / "container.tar.gz"
+    container_tar_gz_bak = root / "container.tar.gz.bak"
+    stash_container = qubes and container_tar_gz.exists()
+    if stash_container:
+        container_tar_gz.rename(container_tar_gz_bak)
+    try:
+        subprocess.run(["poetry", "build", "-f", "sdist"], cwd=root, check=True)
+        os.rename(dist_path / sdist_name, build_dir / "SOURCES" / sdist_name)
+    finally:
+        if stash_container:
+            container_tar_gz_bak.rename(container_tar_gz)
+
+    print("* Building RPM package")
+    cmd = [
+        "rpmbuild",
+        "-v",
+        "--define",
+        f"_topdir {build_dir}",
+        "-ba",
+        "--nodebuginfo",
+        f"{build_dir}/SPECS/dangerzone.spec",
+    ]
+
+    # In case of qubes, set the `%{_qubes}` SPEC variable to 1. See the dangerzone.spec
+    # file for more details on how that's used.
+    if qubes:
+        cmd += [
+            "--define",
+            f"_qubes 1",
+        ]
+    subprocess.run(cmd, check=True)
+
+    print("")
+    print("The following files have been created:")
+    print("\n".join([str(p) for p in dist_path.iterdir()]))
 
 
 def main():
@@ -24,45 +109,7 @@ def main():
     )
     args = parser.parse_args()
 
-    build_path = os.path.join(root, "build")
-    dist_path = os.path.join(root, "dist")
-
-    print("* Deleting old build and dist")
-    if os.path.exists(build_path):
-        shutil.rmtree(build_path)
-    if os.path.exists(dist_path):
-        shutil.rmtree(dist_path)
-
-    if args.qubes:
-        print("> Building for a Qubes system")
-        os.environ["QUBES_TARGET"] = "1"
-
-        # Server and Client package requirements are bundled together since
-        # we assume the server and client qubes are installed on the same
-        # template
-        platform_dependant_packages = ",".join(
-            [
-                # Server package requirements
-                "python3-magic",
-                "libreoffice",
-                # Client package requirements
-                "tesseract",  # FIXME add other languages
-            ]
-        )
-    else:
-        platform_dependant_packages = "podman"
-
-    print("* Building RPM package")
-    subprocess.run(
-        f"python3 setup.py bdist_rpm --requires='{platform_dependant_packages},python3-pyside2,python3-appdirs,python3-click,python3-pyxdg,python3-colorama,python3-requests,python3-markdown,python3-packaging'",
-        shell=True,
-        cwd=root,
-        check=True,
-    )
-
-    print("")
-    print("* To install run:")
-    print("sudo dnf install dist/dangerzone-{}-1.noarch.rpm".format(version))
+    build(args.qubes)
 
 
 if __name__ == "__main__":

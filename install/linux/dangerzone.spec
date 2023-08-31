@@ -77,12 +77,36 @@ convert the documents within a secure sandbox.
 
 %prep
 %autosetup -p1 -n dangerzone-%{version}
+
 # XXX: Replace the PySide6 dependency in the pyproject.toml file with PySide2,
 # since the former does not exist in Fedora. Once we can completely migrate to
 # Qt6, we should remove this. For more details, see:
 #
 #    https://github.com/freedomofpress/dangerzone/issues/211
 sed -i 's/^PySide6.*$/PySide2 = "*"/' pyproject.toml
+
+# XXX: Replace all [tool.poetry.group.*] references in pyproject.toml with
+# [tool.poetry.dev-dependencies], **ONLY** for Fedora 37.
+#
+# Fedora 37 ships python3-poetry-core v1.0.8. This version does not understand
+# the dependency groups that were added in v1.2.0 [1]. Therefore, we need to
+# dumb down the pyproject.toml file a bit, so that poetry-core can parse it.
+# Note that the dev dependencies are not consulted for the creation of the RPM
+# file, so doing so should be safe.
+#
+# The following sed invocations turn the various [tool.poetry.group.*] sections
+# into one large [tool.poetry.dev-dependencies] section. Then, they patch the
+# minimum required poetry-core version in pyproject.toml, to one that can be
+# satisfied from the Fedora 37 repos.
+#
+# TODO: Remove this workaround once Fedora 37 (fedora-37) is EOL.
+#
+# [1]: https://python-poetry.org/docs/managing-dependencies/#dependency-groups
+%if 0%{?fedora} == 37
+sed -i 's/^\[tool.poetry.group.package.*$/[tool.poetry.dev-dependencies]/' pyproject.toml
+sed -i '/^\[tool.poetry.group.*$/d' pyproject.toml
+sed -i 's/poetry-core>=1.2.0/poetry-core>=1.0.0/' pyproject.toml
+%endif
 
 %generate_buildrequires
 %pyproject_buildrequires -R

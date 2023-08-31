@@ -468,7 +468,7 @@ class Env:
         version = dz_version()
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_FEDORA_DEPS
-            package = f"dangerzone-{version}-1.noarch.rpm"
+            package = f"dangerzone-{version}-1.fc{self.version}.x86_64.rpm"
             package_src = git_root() / "dist" / package
             package_dst = build_dir / package
             install_cmd = "dnf install -y"

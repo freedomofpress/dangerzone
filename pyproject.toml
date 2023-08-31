@@ -47,6 +47,9 @@ strip-ansi = "*"
 
 [tool.isort]
 profile = "black"
+skip = [".gitignore"]
+# This is necessary due to https://github.com/PyCQA/isort/issues/1835
+follow_links = false
 
 [build-system]
 requires = ["poetry>=1.1.4"]

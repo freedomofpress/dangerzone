@@ -4,19 +4,19 @@ JUNIT_FLAGS := --capture=sys -o junit_logging=all
 
 .PHONY: lint-black
 lint-black: ## check python source code formatting issues, with black
-	black --check --diff --exclude dev_scripts/envs --exclude $(LARGE_TEST_REPO_DIR) ./
+	black --check --diff ./
 
 .PHONY: lint-black-apply
 lint-black-apply: ## apply black's source code formatting suggestions
-	black --exclude dev_scripts/envs --exclude $(LARGE_TEST_REPO_DIR) ./
+	black ./
 
 .PHONY: lint-isort
 lint-isort: ## check imports are organized, with isort
-	isort --check-only --skip dev_scripts/envs --skip $(LARGE_TEST_REPO_DIR) ./
+	isort --check --diff ./
 
 .PHONY: lint-isort-apply
 lint-isort-apply: ## apply isort's imports organization suggestions
-	isort --skip dev_scripts/envs --skip $(LARGE_TEST_REPO_DIR) ./
+	isort ./
 
 MYPY_ARGS := --ignore-missing-imports \
 			 --disallow-incomplete-defs \

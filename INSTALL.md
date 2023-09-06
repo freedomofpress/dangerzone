@@ -18,7 +18,7 @@ Dangerzone is available for:
 - Fedora 38
 - Fedora 37
 - Fedora 36
-- Qubes OS (alpha support)
+- Qubes OS (beta support)
 
 ### Ubuntu, Debian
 
@@ -132,11 +132,65 @@ After confirming that it matches, type `y` (for yes) and the installation should
 
 ### Qubes OS
 
-> :warning: This section is for the experimental native Qubes support. If you want
-> to try out the stable Dangerzone version (which uses containers instead of virtual machines for isolation),
-> please follow the Fedora or Debian instructions and adapt them as needed.
+> [!WARNING]
+> This section is for the beta version of native Qubes support. If you
+> want to try out the stable Dangerzone version (which uses containers instead
+> of virtual machines for isolation), please follow the Fedora or Debian
+> instructions and adapt them as needed.
 
-If you want to try the experimental native Qubes OS support for Dangerzone, check out our [build instructions](BUILD.md#qubes-os)
+> [!IMPORTANT]
+> This section will install Dangerzone in your **default template**
+> (`fedora-38` as of writing this). If you want to install it in a different
+> one, make sure to replace `fedora-38` with the template of your choice.
+
+The following steps must be completed once. Make sure you run them in the
+specified qubes.
+
+Overview of the qubes you'll create:
+
+| qube         |   type   | purpose |
+|--------------|----------|---------|
+| dz-dvm       | app qube | offline diposable template for performing conversions |
+
+#### In `dom0`:
+
+Create a **disposable**, offline app qube (`dz-dvm`), based on your default
+template. This will be the qube where the documents will be sanitized:
+
+```
+qvm-create --class AppVM --label red --template fedora-38 \
+    --prop netvm="" --prop template_for_dispvms=True \
+    dz-dvm
+```
+
+Add an RPC policy (`/etc/qubes/policy.d/50-dangerzone.policy`) that will
+allow launching a disposable qube (`dz-dvm`) when Dangerzone converts a
+document, with the following contents:
+
+```
+dz.Convert         *       @anyvm       @dispvm:dz-dvm  allow
+```
+
+#### In the `fedora-38` template
+
+Install Dangerzone:
+
+```
+sudo dnf config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
+sudo dnf install dangerzone-qubes
+```
+
+While Dangerzone gets installed, you will be prompted to accept a signing key.
+Expand the instructions in the [Verifying Dangerzone GPG key](#verifying-dangerzone-gpg-key)
+section to verify the key.
+
+Finally, shutdown the template and restart the qubes where you want to use
+Dangerzone in. Go to "Qube Settings" -> choose the "Applications" tab,
+click on "Refresh applications", and then move "Dangerzone" from the "Available"
+column to "Selected".
+
+You can now launch Dangerzone from the list of applications for your qube, and
+pass it a file to sanitize.
 
 ## Build from source
 

@@ -106,7 +106,7 @@ Create a .rpm:
 ## Qubes OS
 
 
-> :warning: Native Qubes support is in alpha stage, so the instructions below
+> :warning: Native Qubes support is in beta stage, so the instructions below
 > require switching between qubes, and are subject to change.
 >
 > If you want to build Dangerzone on Qubes and use containers instead of disposable

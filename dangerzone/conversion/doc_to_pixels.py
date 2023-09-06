@@ -10,7 +10,6 @@ Here are the steps, with progress bar percentages:
 import asyncio
 import glob
 import os
-import platform
 import re
 import shutil
 import sys
@@ -167,13 +166,6 @@ class DocumentToPixels(DangerzoneConverter):
             #
             #     https://github.com/freedomofpress/dangerzone/issues/494
             #     https://github.com/freedomofpress/dangerzone/issues/498
-            if libreoffice_ext == "h2orestart.oxt" and platform.machine() in (
-                "arm64",
-                "aarch64",
-            ):
-                raise ValueError(
-                    "HWP / HWPX formats are not supported in ARM architectures"
-                )
             if libreoffice_ext == "h2orestart.oxt" and running_on_qubes():
                 raise ValueError("HWP / HWPX formats are not supported in Qubes")
             if libreoffice_ext:

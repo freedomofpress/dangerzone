@@ -103,10 +103,12 @@ sudo dnf config-manager --add-repo=https://packages.freedom.press/yum-tools-prod
 sudo dnf install dangerzone
 ```
 
+##### Verifying Dangerzone GPG key
+
 <details>
 <summary>Importing GPG key 0x22604281: ... Is this ok [y/N]:</summary>
 
-After some minutes of running the above command (depending on your internet speed) you'll be asked to confirm the fingerprint of our signing key. This is to make sure that in the case our servers are compromized your computer stays safe. It should look like this:
+After some minutes of running the above command (depending on your internet speed) you'll be asked to confirm the fingerprint of our signing key. This is to make sure that in the case our servers are compromised your computer stays safe. It should look like this:
 
 ```console
 --------------------------------------------------------------------------------
@@ -119,7 +121,7 @@ Importing GPG key 0x22604281:
 Is this ok [y/N]:
 ```
 
-> **Note**: If it does not show this fingerprint confirmation or the fingerprint does not match, it is possible that our servers were compromized. Be distrustful and reach out to us.
+> **Note**: If it does not show this fingerprint confirmation or the fingerprint does not match, it is possible that our servers were compromised. Be distrustful and reach out to us.
 
 The `Fingerprint` should be `DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281`. For extra security, you should confirm it matches the one at the bottom of our website ([dangerzone.rocks](https://dangerzone.rocks)) and our [Mastodon account](https://fosstodon.org/@dangerzone) bio.
 

@@ -67,7 +67,7 @@ class Qubes(IsolationProvider):
     def _convert(
         self,
         document: Document,
-        ocr_lang: Optional[str],
+        ocr_lang: Optional[str] = None,
     ) -> bool:
         success = False
 

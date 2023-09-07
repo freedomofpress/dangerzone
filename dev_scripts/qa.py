@@ -62,20 +62,13 @@ and newer platforms, we have to do the following:
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Fedora template in Qubes OS (Fedora 38 as of
-  writing this) and make sure it works:
+- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 38 as
+  of writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
-  - [ ] Build the container image and ensure the development environment uses
-        the new image.
-  - [ ] Run the Dangerzone tests and confirm that the tests are ran using containers
-        instead of disposable qubes
-  - [ ] Run the Dangerzone tests with the env var `QUBES_CONVERSION=1` and confirm that
-        the tests are ran using diposable qubes instead of containers
-  - [ ] Create an .rpm with `./install/linux/build-rpm.py` package and
-        install it in a fedora qube and make sure conversions run with containers
-  - [ ] Create an .rpm with `./install/linux/build-rpm.py --qubes` package and
-        install it following the instructions in `BUILD.md`
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+  - [ ] Run the Dangerzone tests.
+  - [ ] Create a Qubes .rpm package and install it system-wide.
+  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below) and make sure
+    they spawn disposable qubes.
 """
 
 CONTENT_QA_SCENARIOS = r"""### Scenarios
@@ -167,12 +160,6 @@ $ podman images dangerzone.rocks/dangerzone:latest
 REPOSITORY                   TAG         IMAGE ID        CREATED       SIZE
 dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <different size>
 ```
-
-#### 10. Ensure in Qubes disposable qubes are used by default
-
-_(Only for Qubes OS)_
-
-Run a conversion on Qubes and ensure that it uses disposable qubes by default.
 """
 
 CONTENT_BUILD_DEBIAN_UBUNTU = r"""## Debian/Ubuntu

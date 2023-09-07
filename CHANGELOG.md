@@ -7,6 +7,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Unreleased
 
+### Added
+
+- Platform support: Beta integration with Qubes OS ([issue #412](https://github.com/freedomofpress/dangerzone/issues/412))
+
 ## Dangerzone 0.4.2
 
 ### Added

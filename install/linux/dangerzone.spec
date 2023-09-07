@@ -51,6 +51,19 @@ URL:            https://dangerzone.rocks
 Source0:        https://github.com/freedomofpress/dangerzone/archive/refs/tags/v%{version}.tar.gz#/dangerzone-%{version}.tar.gz
 
 ################################################################################
+# Package Replacements
+
+%if 0%{?_qubes}
+# Users who install Dangerzone with native Qubes support must uninstall
+# Dangerzone with container support.
+Conflicts:      dangerzone
+%else
+# Users who install Dangerzone with container support must uninstall Dangerzone
+# with native Qubes support.
+Conflicts:      dangerzone-qubes
+%endif
+
+################################################################################
 # Package Requirements
 
 # Base requirement for every Python package.

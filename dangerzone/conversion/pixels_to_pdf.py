@@ -11,12 +11,13 @@ import json
 import os
 import shutil
 import sys
+from typing import Optional
 
 from .common import DangerzoneConverter, running_on_qubes
 
 
 class PixelsToPDF(DangerzoneConverter):
-    async def convert(self) -> None:
+    async def convert(self, ocr_lang: Optional[str] = None) -> None:
         self.percentage = 50.0
 
         num_pages = len(glob.glob("/tmp/dangerzone/page-*.rgb"))
@@ -43,7 +44,7 @@ class PixelsToPDF(DangerzoneConverter):
             total_size += page_size
             timeout = self.calculate_timeout(page_size, 1)
 
-            if os.environ.get("OCR") == "1":  # OCR the document
+            if ocr_lang:  # OCR the document
                 self.update_progress(
                     f"Converting page {page}/{num_pages} from pixels to searchable PDF"
                 )
@@ -71,7 +72,7 @@ class PixelsToPDF(DangerzoneConverter):
                         png_filename,
                         ocr_filename,
                         "-l",
-                        os.environ.get("OCR_LANGUAGE"),  # type: ignore
+                        ocr_lang,
                         "--dpi",
                         "70",
                         "pdf",
@@ -152,10 +153,11 @@ class PixelsToPDF(DangerzoneConverter):
 
 
 async def main() -> int:
+    ocr_lang = os.environ.get("OCR_LANGUAGE") if os.environ.get("OCR") == "1" else None
     converter = PixelsToPDF()
 
     try:
-        await converter.convert()
+        await converter.convert(ocr_lang)
         error_code = 0  # Success!
 
     except (RuntimeError, TimeoutError, ValueError) as e:

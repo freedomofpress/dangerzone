@@ -176,24 +176,16 @@ class Qubes(IsolationProvider):
                 f"Conversion output (doc to pixels)\n{self.sanitize_conversion_str(untrusted_log)}"
             )
 
-        # FIXME pass OCR stuff properly (see #455)
-        old_environ = dict(os.environ)
-        if ocr_lang:
-            os.environ["OCR"] = "1"
-            os.environ["OCR_LANGUAGE"] = ocr_lang
-
         def print_progress_wrapper(error: bool, text: str, percentage: float) -> None:
             self.print_progress_trusted(document, error, text, percentage)
 
-        asyncio.run(PixelsToPDF(progress_callback=print_progress_wrapper).convert())
+        asyncio.run(
+            PixelsToPDF(progress_callback=print_progress_wrapper).convert(ocr_lang)
+        )
 
         percentage = 100.0
         text = "Safe PDF created"
         self.print_progress_trusted(document, False, text, percentage)
-
-        # FIXME remove once the OCR args are no longer passed with env vars
-        os.environ.clear()
-        os.environ.update(old_environ)
 
         shutil.move(CONVERTED_FILE_PATH, document.output_filename)
         success = True

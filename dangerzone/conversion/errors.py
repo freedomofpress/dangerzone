@@ -1,9 +1,11 @@
 from typing import List, Optional, Type
 
+# XXX: errors start at 128 for conversion-related issues
+ERROR_SHIFT = 128
 
 class ConversionException(Exception):
     error_message = "Unspecified error"
-    error_code = -1
+    error_code = ERROR_SHIFT
 
     def __init__(self, error_message: Optional[str] = None) -> None:
         if error_message:
@@ -19,22 +21,22 @@ class ConversionException(Exception):
 
 
 class DocFormatUnsupported(ConversionException):
-    error_code = 10
+    error_code = ERROR_SHIFT + 10
     error_message = "The document format is not supported"
 
 
 class DocFormatUnsupportedHWPQubes(DocFormatUnsupported):
-    error_code = 16
+    error_code = ERROR_SHIFT + 16
     error_message = "HWP / HWPX formats are not supported in Qubes"
 
 
 class LibreofficeFailure(ConversionException):
-    error_code = 20
+    error_code = ERROR_SHIFT + 20
     error_message = "Conversion to PDF with LibreOffice failed"
 
 
 class InvalidGMConversion(ConversionException):
-    error_code = 30
+    error_code = ERROR_SHIFT + 30
     error_message = "Invalid conversion (Graphics Magic)"
 
     def __init__(self, error_message: str) -> None:
@@ -42,26 +44,26 @@ class InvalidGMConversion(ConversionException):
 
 
 class PagesException(ConversionException):
-    error_code = 40
+    error_code = ERROR_SHIFT + 40
 
 
 class NoPageCountException(PagesException):
-    error_code = 41
+    error_code = ERROR_SHIFT + 41
     error_message = "Number of pages could not be extracted from PDF"
 
 
 class PDFtoPPMException(ConversionException):
-    error_code = 50
+    error_code = ERROR_SHIFT + 50
     error_message = "Error converting PDF to Pixels (pdftoppm)"
 
 
 class PDFtoPPMInvalidHeader(PDFtoPPMException):
-    error_code = 51
+    error_code = ERROR_SHIFT + 51
     error_message = "Error converting PDF to Pixels (Invalid PPM header)"
 
 
 class PDFtoPPMInvalidDepth(PDFtoPPMException):
-    error_code = 52
+    error_code = ERROR_SHIFT + 52
     error_message = "Error converting PDF to Pixels (Invalid PPM depth)"
 
 

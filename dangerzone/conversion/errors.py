@@ -3,6 +3,7 @@ from typing import List, Optional, Type
 # XXX: errors start at 128 for conversion-related issues
 ERROR_SHIFT = 128
 
+
 class ConversionException(Exception):
     error_message = "Unspecified error"
     error_code = ERROR_SHIFT
@@ -65,6 +66,11 @@ class PDFtoPPMInvalidHeader(PDFtoPPMException):
 class PDFtoPPMInvalidDepth(PDFtoPPMException):
     error_code = ERROR_SHIFT + 52
     error_message = "Error converting PDF to Pixels (Invalid PPM depth)"
+
+
+class UnexpectedConversionError(PDFtoPPMException):
+    error_code = ERROR_SHIFT + 100
+    error_message = "Some unxpected error occured while converting the document"
 
 
 def exception_from_error_code(error_code: int) -> Optional[ConversionException]:

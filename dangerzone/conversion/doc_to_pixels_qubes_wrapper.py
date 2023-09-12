@@ -72,9 +72,12 @@ async def main() -> None:
         converter = DocumentToPixels()
         await converter.convert()
     except errors.ConversionException as e:
+        await write_bytes(str(e).encode(), file=sys.stderr)
         sys.exit(e.error_code)
-    except (RuntimeError, TimeoutError, ValueError) as e:
-        sys.exit(1)
+    except Exception as e:
+        await write_bytes(str(e).encode(), file=sys.stderr)
+        error_code = errors.UnexpectedConversionError.error_code
+        sys.exit(error_code)
 
     num_pages = len(list(out_dir.glob("*.rgb")))
     await write_int(num_pages)

@@ -13,11 +13,17 @@ import zipfile
 from pathlib import Path
 from typing import IO, Callable, Optional
 
-from ..conversion.common import running_on_qubes
+from ..conversion.common import calculate_timeout, running_on_qubes
 from ..conversion.errors import exception_from_error_code
 from ..conversion.pixels_to_pdf import PixelsToPDF
 from ..document import Document
-from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
+from ..util import (
+    Stopwatch,
+    get_resource_path,
+    get_subprocess_startupinfo,
+    get_tmp_dir,
+    nonblocking_read,
+)
 from .base import MAX_CONVERSION_LOG_CHARS, IsolationProvider
 
 log = logging.getLogger(__name__)
@@ -27,28 +33,29 @@ CONVERTED_FILE_PATH = (
     "/tmp/safe-output-compressed.pdf"
 )
 
-
-def read_bytes(p: subprocess.Popen, buff_size: int) -> bytes:
-    """Read bytes from stdout."""
-    return p.stdout.read(buff_size)  # type: ignore [union-attr]
+# The maximum time a qube takes to start up.
+STARTUP_TIME_SECONDS = 5 * 60  # 5 minutes
 
 
-def read_int(p: subprocess.Popen) -> int:
-    """Read 2 bytes from stdout, and decode them as int."""
-    untrusted_int = p.stdout.read(2)  # type: ignore [union-attr]
-    if untrusted_int == b"":
-        raise ValueError("Nothing read from stdout (expected an integer)")
+def read_bytes(f: IO[bytes], size: int, timeout: float, exact: bool = True) -> bytes:
+    """Read bytes from a file-like object."""
+    buf = nonblocking_read(f, size, timeout)
+    if exact and len(buf) != size:
+        raise ValueError("Did not receive exact number of bytes")
+    return buf
+
+
+def read_int(f: IO[bytes], timeout: float) -> int:
+    """Read 2 bytes from a file-like object, and decode them as int."""
+    untrusted_int = read_bytes(f, 2, timeout)
     return int.from_bytes(untrusted_int, signed=False)
 
 
-def read_debug_text(p: subprocess.Popen) -> str:
+def read_debug_text(f: IO[bytes], size: int) -> str:
     """Read arbitrarily long text (for debug purposes)"""
-    if p.stderr:
-        untrusted_text = p.stderr.read(MAX_CONVERSION_LOG_CHARS)
-        p.stderr.close()
-        return untrusted_text.decode("ascii", errors="replace")
-    else:
-        return ""
+    timeout = calculate_timeout(size)
+    untrusted_text = read_bytes(f, size, timeout, exact=False)
+    return untrusted_text.decode("ascii", errors="replace")
 
 
 class Qubes(IsolationProvider):
@@ -104,12 +111,20 @@ class Qubes(IsolationProvider):
                     stderr=subprocess.DEVNULL,
                 )
 
+            # Get file size (in MiB)
+            size = os.path.getsize(document.input_filename) / 1024**2
+            timeout = calculate_timeout(size) + STARTUP_TIME_SECONDS
+
+            assert p.stdout is not None
+            os.set_blocking(p.stdout.fileno(), False)
+
             try:
-                n_pages = read_int(p)
+                n_pages = read_int(p.stdout, timeout)
             except ValueError:
                 error_code = p.wait()
                 # XXX Reconstruct exception from error code
                 raise exception_from_error_code(error_code)  # type: ignore [misc]
+
             if n_pages == 0:
                 # FIXME: Fail loudly in that case
                 return False
@@ -117,14 +132,19 @@ class Qubes(IsolationProvider):
                 percentage_per_page = 50.0 / n_pages
             else:
                 percentage_per_page = 100.0 / n_pages
+
+            timeout = calculate_timeout(size, n_pages)
+            sw = Stopwatch(timeout)
+            sw.start()
             for page in range(1, n_pages + 1):
                 # TODO handle too width > MAX_PAGE_WIDTH
                 # TODO handle too big height > MAX_PAGE_HEIGHT
-
-                width = read_int(p)
-                height = read_int(p)
+                width = read_int(p.stdout, timeout=sw.remaining)
+                height = read_int(p.stdout, timeout=sw.remaining)
                 untrusted_pixels = read_bytes(
-                    p, width * height * 3
+                    p.stdout,
+                    width * height * 3,
+                    timeout=sw.remaining,
                 )  # three color channels
 
                 # Wrapper code
@@ -141,14 +161,17 @@ class Qubes(IsolationProvider):
                 self.print_progress_trusted(document, False, text, percentage)
 
         # Ensure nothing else is read after all bitmaps are obtained
-        p.stdout.close()  # type: ignore [union-attr]
+        p.stdout.close()
 
         # TODO handle leftover code input
         text = "Converted document to pixels"
         self.print_progress_trusted(document, False, text, percentage)
 
         if getattr(sys, "dangerzone_dev", False):
-            untrusted_log = read_debug_text(p)
+            assert p.stderr is not None
+            os.set_blocking(p.stderr.fileno(), False)
+            untrusted_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
+            p.stderr.close()
             log.info(
                 f"Conversion output (doc to pixels)\n{self.sanitize_conversion_str(untrusted_log)}"
             )

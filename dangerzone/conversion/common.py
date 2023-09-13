@@ -22,6 +22,28 @@ def running_on_qubes() -> bool:
     return os.path.exists("/usr/share/qubes/marker-vm")
 
 
+def calculate_timeout(size: float, pages: Optional[float] = None) -> float:
+    """Calculate the timeout for a command.
+
+    The timeout calculation takes two factors in mind:
+
+    1. The size (in MiBs) of the dataset (document, multiple pages).
+    2. The number of pages in the dataset.
+
+    It then calculates proportional timeout values based on the above, and keeps the
+    large one.  This way, we can handle several corner cases:
+
+    * Documents with lots of pages, but small file size.
+    * Single images with large file size.
+    """
+    # Do not have timeouts lower than 10 seconds, if the file size is small, since
+    # we need to take into account the program's startup time as well.
+    timeout = max(TIMEOUT_PER_MB * size, TIMEOUT_MIN)
+    if pages:
+        timeout = max(timeout, TIMEOUT_PER_PAGE * pages)
+    return timeout
+
+
 class DangerzoneConverter:
     def __init__(self, progress_callback: Optional[Callable] = None) -> None:
         self.percentage: float = 0.0
@@ -111,28 +133,11 @@ class DangerzoneConverter:
     def calculate_timeout(
         self, size: float, pages: Optional[float] = None
     ) -> Optional[float]:
-        """Calculate the timeout for a command.
-
-        The timeout calculation takes two factors in mind:
-
-        1. The size (in MiBs) of the dataset (document, multiple pages).
-        2. The number of pages in the dataset.
-
-        It then calculates proportional timeout values based on the above, and keeps the
-        large one.  This way, we can handle several corner cases:
-
-        * Documents with lots of pages, but small file size.
-        * Single images with large file size.
-        """
+        """Calculate the timeout for a command."""
         if not int(os.environ.get("ENABLE_TIMEOUTS", 1)):
             return None
 
-        # Do not have timeouts lower than 10 seconds, if the file size is small, since
-        # we need to take into account the program's startup time as well.
-        timeout = max(TIMEOUT_PER_MB * size, TIMEOUT_MIN)
-        if pages:
-            timeout = max(timeout, TIMEOUT_PER_PAGE * pages)
-        return timeout
+        return calculate_timeout(size, pages)
 
     @abstractmethod
     async def convert(self) -> None:

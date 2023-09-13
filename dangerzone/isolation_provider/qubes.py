@@ -13,17 +13,14 @@ import zipfile
 from pathlib import Path
 from typing import IO, Callable, Optional
 
-from ..document import Document
-from ..util import get_resource_path
-from .base import IsolationProvider
-
-log = logging.getLogger(__name__)
-
 from ..conversion.common import running_on_qubes
 from ..conversion.errors import exception_from_error_code
 from ..conversion.pixels_to_pdf import PixelsToPDF
+from ..document import Document
 from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
-from .base import MAX_CONVERSION_LOG_CHARS
+from .base import MAX_CONVERSION_LOG_CHARS, IsolationProvider
+
+log = logging.getLogger(__name__)
 
 CONVERTED_FILE_PATH = (
     # FIXME won't work for parallel conversions (see #454)

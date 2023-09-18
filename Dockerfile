@@ -1,6 +1,6 @@
 FROM alpine:edge
 
-ARG TESSDATA_CHECKSUM=990fffb9b7a9b52dc9a2d053a9ef6852ca2b72bd8dfb22988b0b990a700fd3c7
+ARG TESSDATA_CHECKSUM=d0e3bb6f3b4e75748680524a1d116f2bfb145618f8ceed55b279d15098a530f9
 ARG H2ORESTART_CHECKSUM=5db816a1e57b510456633f55e693cb5ef3675ef8b35df4f31c90ab9d4c66071a
 
 # Install dependencies
@@ -26,11 +26,11 @@ RUN apk --no-cache -U upgrade && \
 #
 # Before we untar the models, we also check if the checksum is the expected one.
 RUN mkdir tessdata && cd tessdata \
-    && TESSDATA_VERSION=$(wget -O- -nv https://api.github.com/repos/tesseract-ocr/tessdata/releases/latest \
+    && TESSDATA_VERSION=$(wget -O- -nv https://api.github.com/repos/tesseract-ocr/tessdata_fast/releases/latest \
         | sed -n 's/^.*"tag_name": "\([0-9.]\+\)".*$/\1/p') \
-    && wget https://github.com/tesseract-ocr/tessdata/archive/$TESSDATA_VERSION/tessdata-$TESSDATA_VERSION.tar.gz \
-    && echo "$TESSDATA_CHECKSUM  tessdata-$TESSDATA_VERSION.tar.gz" | sha256sum -c \
-    && tar -xzvf tessdata-$TESSDATA_VERSION.tar.gz -C . \
+    && wget https://github.com/tesseract-ocr/tessdata_fast/archive/$TESSDATA_VERSION/tessdata_fast-$TESSDATA_VERSION.tar.gz \
+    && echo "$TESSDATA_CHECKSUM  tessdata_fast-$TESSDATA_VERSION.tar.gz" | sha256sum -c \
+    && tar -xzvf tessdata_fast-$TESSDATA_VERSION.tar.gz -C . \
     && find . -name '*.traineddata' -maxdepth 2 -exec cp {} /usr/share/tessdata \; \
     && cd .. && rm -r tessdata
 

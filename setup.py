@@ -41,7 +41,8 @@ setuptools.setup(
     long_description="""\
 Dangerzone is an open source desktop application that takes potentially \
 dangerous PDFs, office documents, or images and converts them to safe PDFs. \
-It uses container technology to convert the documents within a secure sandbox.\
+It uses disposable VMs on Qubes OS, or container technology in other OSes, to \
+convert the documents within a secure sandbox.
 """,
     url="https://github.com/freedomofpress/dangerzone",
     packages=[

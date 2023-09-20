@@ -70,7 +70,7 @@ class PDFtoPPMInvalidDepth(PDFtoPPMException):
 
 class UnexpectedConversionError(PDFtoPPMException):
     error_code = ERROR_SHIFT + 100
-    error_message = "Some unxpected error occured while converting the document"
+    error_message = "Some unexpected error occurred while converting the document"
 
 
 def exception_from_error_code(error_code: int) -> Optional[ConversionException]:

@@ -88,33 +88,13 @@ class Qubes(IsolationProvider):
         percentage = 0.0
 
         with open(document.input_filename, "rb") as f:
-            # TODO handle lack of memory to start qube
-            if getattr(sys, "dangerzone_dev", False):
-                # Use dz.ConvertDev RPC call instead, if we are in development mode.
-                # Basically, the change is that we also transfer the necessary Python
-                # code as a zipfile, before sending the doc that the user requested.
-                self.proc = subprocess.Popen(
-                    ["/usr/bin/qrexec-client-vm", "@dispvm:dz-dvm", "dz.ConvertDev"],
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                assert self.proc is not None
+            self.proc = self.qrexec_subprocess()
+            try:
                 assert self.proc.stdin is not None
-
-                # Send the dangerzone module first.
-                self.teleport_dz_module(self.proc.stdin)
-
-                # Finally, send the document, as in the normal case.
                 self.proc.stdin.write(f.read())
                 self.proc.stdin.close()
-            else:
-                self.proc = subprocess.Popen(
-                    ["/usr/bin/qrexec-client-vm", "@dispvm:dz-dvm", "dz.Convert"],
-                    stdin=f,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.DEVNULL,
-                )
+            except BrokenPipeError as e:
+                raise errors.InterruptedConversion()
 
             # Get file size (in MiB)
             size = os.path.getsize(document.input_filename) / 1024**2
@@ -206,6 +186,32 @@ class Qubes(IsolationProvider):
 
     def get_max_parallel_conversions(self) -> int:
         return 1
+
+    def qrexec_subprocess(self) -> subprocess.Popen:
+        dev_mode = getattr(sys, "dangerzone_dev", False) == True
+        if dev_mode:
+            # Use dz.ConvertDev RPC call instead, if we are in development mode.
+            # Basically, the change is that we also transfer the necessary Python
+            # code as a zipfile, before sending the doc that the user requested.
+            qrexec_policy = "dz.ConvertDev"
+            stderr = subprocess.PIPE
+        else:
+            qrexec_policy = "dz.Convert"
+            stderr = subprocess.DEVNULL
+
+        p = subprocess.Popen(
+            ["/usr/bin/qrexec-client-vm", "@dispvm:dz-dvm", qrexec_policy],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=stderr,
+        )
+
+        if dev_mode:
+            assert p.stdin is not None
+            # Send the dangerzone module first.
+            self.teleport_dz_module(p.stdin)
+
+        return p
 
     def teleport_dz_module(self, wpipe: IO[bytes]) -> None:
         """Send the dangerzone module to another qube, as a zipfile."""

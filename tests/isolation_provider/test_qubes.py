@@ -1,4 +1,9 @@
+import signal
+import subprocess
+import time
+
 import pytest
+from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
 from dangerzone.conversion import errors
@@ -54,3 +59,30 @@ class TestQubes(IsolationProviderTest):
         with pytest.raises(errors.MaxPageHeightException):
             success = provider._convert(Document(sample_bad_height), ocr_lang=None)
             assert not success
+
+    def test_out_of_ram(
+        self,
+        provider: Qubes,
+        mocker: MockerFixture,
+        monkeypatch: MonkeyPatch,
+        sample_doc: str,
+    ) -> None:
+        provider.progress_callback = mocker.MagicMock()
+
+        def qrexec_subprocess() -> subprocess.Popen:
+            p = subprocess.Popen(
+                # XXX error 126 simulates a qrexec-policy failure. Source:
+                # https://github.com/QubesOS/qubes-core-qrexec/blob/fdcbfd7/daemon/qrexec-daemon.c#L1022
+                ["exit 126"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=True,
+            )
+            return p
+
+        monkeypatch.setattr(provider, "qrexec_subprocess", qrexec_subprocess)
+
+        with pytest.raises(errors.QubesNotEnoughRAMError) as e:
+            doc = Document(sample_doc)
+            provider._convert(doc, ocr_lang=None)

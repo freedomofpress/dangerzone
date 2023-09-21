@@ -24,6 +24,14 @@ class ConversionException(Exception):
         return subclasses
 
 
+class QubesNotEnoughRAMError(ConversionException):
+    error_code = 126  # No ERROR_SHIFT since this is a qrexec error
+    error_message = (
+        "Your system does not have enough RAM available to start the conversion. "
+        "Please close some qubes or programs and try again."
+    )
+
+
 class DocFormatUnsupported(ConversionException):
     error_code = ERROR_SHIFT + 10
     error_message = "The document format is not supported"

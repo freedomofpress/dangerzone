@@ -54,6 +54,27 @@ async def write_int(num: int, file: TextIO = sys.stdout) -> None:
     return await asyncio.to_thread(_write_int, num, file=file)
 
 
+class QubesDocumentToPixels(DocumentToPixels):
+    # Override the write_page_* functions to stream data back to the caller, instead of
+    # writing it to separate files. This way, we have more accurate progress reports and
+    # client-side timeouts. See also:
+    #
+    # https://github.com/freedomofpress/dangerzone/issues/443
+    # https://github.com/freedomofpress/dangerzone/issues/557
+
+    async def write_page_count(self, count: int) -> None:
+        return await write_int(count)
+
+    async def write_page_width(self, width: int, filename: str) -> None:
+        return await write_int(width)
+
+    async def write_page_height(self, height: int, filename: str) -> None:
+        return await write_int(height)
+
+    async def write_page_data(self, data: bytes, filename: str) -> None:
+        return await write_bytes(data)
+
+
 async def main() -> None:
     out_dir = Path("/tmp/dangerzone")
     if out_dir.exists():
@@ -69,7 +90,7 @@ async def main() -> None:
         f.write(data)
 
     try:
-        converter = DocumentToPixels()
+        converter = QubesDocumentToPixels()
         await converter.convert()
     except errors.ConversionException as e:
         await write_bytes(str(e).encode(), file=sys.stderr)
@@ -78,20 +99,6 @@ async def main() -> None:
         await write_bytes(str(e).encode(), file=sys.stderr)
         error_code = errors.UnexpectedConversionError.error_code
         sys.exit(error_code)
-
-    num_pages = len(list(out_dir.glob("*.rgb")))
-    await write_int(num_pages)
-    for num_page in range(1, num_pages + 1):
-        page_base = out_dir / f"page-{num_page}"
-        with open(f"{page_base}.width", "r") as width_file:
-            width = int(width_file.read())
-        with open(f"{page_base}.height", "r") as height_file:
-            height = int(height_file.read())
-        await write_int(width)
-        await write_int(height)
-        with open(f"{page_base}.rgb", "rb") as rgb_file:
-            rgb_data = rgb_file.read()
-            await write_bytes(rgb_data)
 
     # Write debug information
     await write_bytes(converter.captured_output, file=sys.stderr)

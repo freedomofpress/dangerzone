@@ -68,6 +68,15 @@ class PDFtoPPMInvalidDepth(PDFtoPPMException):
     error_message = "Error converting PDF to Pixels (Invalid PPM depth)"
 
 
+class InterruptedConversion(ConversionException):
+    """Protocol received num of bytes different than expected"""
+
+    error_code = ERROR_SHIFT + 60
+    error_message = (
+        "Something interrupted the conversion and it could not be completed."
+    )
+
+
 class UnexpectedConversionError(PDFtoPPMException):
     error_code = ERROR_SHIFT + 100
     error_message = "Some unexpected error occurred while converting the document"

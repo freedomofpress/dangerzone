@@ -13,8 +13,8 @@ import zipfile
 from pathlib import Path
 from typing import IO, Callable, Optional
 
+from ..conversion import errors
 from ..conversion.common import calculate_timeout, running_on_qubes
-from ..conversion.errors import exception_from_error_code
 from ..conversion.pixels_to_pdf import PixelsToPDF
 from ..document import Document
 from ..util import (
@@ -41,7 +41,7 @@ def read_bytes(f: IO[bytes], size: int, timeout: float, exact: bool = True) -> b
     """Read bytes from a file-like object."""
     buf = nonblocking_read(f, size, timeout)
     if exact and len(buf) != size:
-        raise ValueError("Did not receive exact number of bytes")
+        raise errors.InterruptedConversion
     return buf
 
 
@@ -126,7 +126,7 @@ class Qubes(IsolationProvider):
 
             try:
                 n_pages = read_int(self.proc.stdout, timeout)
-            except ValueError:
+            except errors.InterruptedConversion:
                 error_code = p.wait()
                 # XXX Reconstruct exception from error code
                 raise exception_from_error_code(error_code)  # type: ignore [misc]

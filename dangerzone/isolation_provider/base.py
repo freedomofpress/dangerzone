@@ -78,7 +78,7 @@ class IsolationProvider(ABC):
     def print_progress_trusted(
         self, document: Document, error: bool, text: str, percentage: float
     ) -> None:
-        return self._print_progress(document, error, text, percentage)
+        return self._print_progress(document, error, text, int(percentage))
 
     def print_progress(
         self, document: Document, error: bool, untrusted_text: str, percentage: float

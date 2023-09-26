@@ -197,8 +197,10 @@ To make a macOS release, go to macOS build machine:
 - Build machine must have:
   - Apple-trusted `Developer ID Application: Freedom of the Press Foundation (94ZZGGGJ3W)` code-signing certificates installed
 - Apple account must have:
-  - A valid application password for `altool` in the Keychain. You can verify
-    this by running: `xcrun altool --notarization-history 0 -u "<email>" -p "@keychain:altool"`
+  - A valid application password for `notarytool` in the Keychain. You can verify
+    this by running: `xcrun notarytool history --apple-id "<email>" --keychain-profile "dz-notarytool-release-key"`. If you don't find it, you can add it to the Keychain by running
+    `xcrun notarytool store-credentials dz-notarytool-release-key --apple-id <email> --team-id <team ID>`
+    with the respective `email` and `team ID` (the latter can be obtained [here](https://developer.apple.com/help/account/manage-your-team/locate-your-team-id))
   - Agreed to any new terms and conditions. You can find those if you visit
     https://developer.apple.com and login with the proper Apple ID.
 - Verify and checkout the git tag for this release
@@ -207,15 +209,17 @@ To make a macOS release, go to macOS build machine:
 - Run `poetry run ./install/macos/build-app.py --only-codesign`; this will make `dist/Dangerzone.dmg`
   * You need to run this command as the account that has access to the code signing certificate
   * You must run this command from the MacOS UI, from a terminal application.
-- Notarize it: `xcrun altool --notarize-app --primary-bundle-id "press.freedom.dangerzone" -u "<email>" -p "@keychain:altool" --file dist/Dangerzone.dmg`
+- Notarize it: `xcrun notarytool submit --apple-id "<email>" --keychain-profile "dz-notarytool-release-key" dist/Dangerzone.dmg`
+  * In the end you'll get a `REQUEST_UUID`, which identifies the submission. Keep it to check on its status.
   * You need to change the `<email>` in the above command with the email
     associated with the Apple Developer ID.
   * This command assumes that you have created, and stored in the Keychain, an
     application password associated with your Apple Developer ID, which will be
-    used specifically for `altool`.
-- Wait for it to get approved, check status with: `xcrun altool --notarization-history 0 -u "<email>" -p "@keychain:altool"`
+    used specifically for `notarytool`.
+- Wait for it to get approved, check status with: `xcrun notarytool info <REQUEST_UUID> --apple-id "<email>" --keychain-profile "dz-notarytool-release-key"`
+  * If it gets rejected, you should be able to see why with the same command
+    (or use the `log` option for a more verbose JSON output)
   * You will also receive an update in your email.
-- (If it gets rejected, you can see why with: `xcrun altool --notarization-info $REQUEST_UUID -u "<email>" -p "@keychain:altool"`)
 - After it's approved, staple the ticket: `xcrun stapler staple dist/Dangerzone.dmg`
 
 This process ends up with the final file:

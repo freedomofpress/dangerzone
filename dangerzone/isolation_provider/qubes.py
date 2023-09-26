@@ -183,10 +183,6 @@ class Qubes(IsolationProvider):
             PixelsToPDF(progress_callback=print_progress_wrapper).convert(ocr_lang)
         )
 
-        percentage = 100.0
-        text = "Safe PDF created"
-        self.print_progress_trusted(document, False, text, percentage)
-
         shutil.move(CONVERTED_FILE_PATH, document.output_filename)
         success = True
 

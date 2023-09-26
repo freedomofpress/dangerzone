@@ -22,6 +22,27 @@ from .common import DangerzoneConverter, running_on_qubes
 
 
 class DocumentToPixels(DangerzoneConverter):
+    # XXX: These functions write page data and metadata to a separate file. For now,
+    # they act as an anchor point for Qubes to stream back page data/metadata in
+    # real time. In the future, they will be completely replaced by their streaming
+    # counterparts. See:
+    #
+    # https://github.com/freedomofpress/dangerzone/issues/443
+    async def write_page_count(self, count: int) -> None:
+        pass
+
+    async def write_page_width(self, width: int, filename: str) -> None:
+        with open(filename, "w") as f:
+            f.write(str(width))
+
+    async def write_page_height(self, height: int, filename: str) -> None:
+        with open(filename, "w") as f:
+            f.write(str(height))
+
+    async def write_page_data(self, data: bytes, filename: str) -> None:
+        with open(filename, "wb") as f:
+            f.write(data)
+
     async def convert(self) -> None:
         conversions: Dict[str, Dict[str, Optional[str]]] = {
             # .pdf
@@ -242,10 +263,12 @@ class DocumentToPixels(DangerzoneConverter):
         if num_pages > errors.MAX_PAGES:
             raise errors.MaxPagesException()
 
+        await self.write_page_count(num_pages)
+
         # Get a more precise timeout, based on the number of pages
         timeout = self.calculate_timeout(size, num_pages)
 
-        def pdftoppm_progress_callback(line: bytes) -> None:
+        async def pdftoppm_progress_callback(line: bytes) -> None:
             """Function called for every line the 'pdftoppm' command outputs
 
             Sample pdftoppm output:
@@ -292,10 +315,8 @@ class DocumentToPixels(DangerzoneConverter):
                 # Save the width and height
                 dims = f.readline().decode().strip()
                 width, height = dims.split()
-                with open(width_filename, "w") as width_file:
-                    width_file.write(width)
-                with open(height_filename, "w") as height_file:
-                    height_file.write(height)
+                await self.write_page_width(int(width), width_filename)
+                await self.write_page_height(int(height), height_filename)
 
                 maxval = int(f.readline().decode().strip())
                 # Check that the depth is 8
@@ -305,8 +326,7 @@ class DocumentToPixels(DangerzoneConverter):
                 data = f.read()
 
             # Save pixel data
-            with open(rgb_filename, "wb") as f:
-                f.write(data)
+            await self.write_page_data(data, rgb_filename)
 
             # Delete the ppm file
             os.remove(ppm_filename)

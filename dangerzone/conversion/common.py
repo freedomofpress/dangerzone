@@ -67,7 +67,7 @@ class DangerzoneConverter:
             line = await sr.readline()
             self.captured_output += line
             if callback is not None:
-                callback(line)
+                await callback(line)
             buf += line
         return buf
 

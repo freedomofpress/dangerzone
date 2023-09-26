@@ -61,6 +61,10 @@ def read_debug_text(f: IO[bytes], size: int) -> str:
 class Qubes(IsolationProvider):
     """Uses a disposable qube for performing the conversion"""
 
+    def __init__(self) -> None:
+        self.proc: Optional[subprocess.Popen] = None
+        super().__init__()
+
     def install(self) -> bool:
         return True
 
@@ -89,22 +93,23 @@ class Qubes(IsolationProvider):
                 # Use dz.ConvertDev RPC call instead, if we are in development mode.
                 # Basically, the change is that we also transfer the necessary Python
                 # code as a zipfile, before sending the doc that the user requested.
-                p = subprocess.Popen(
+                self.proc = subprocess.Popen(
                     ["/usr/bin/qrexec-client-vm", "@dispvm:dz-dvm", "dz.ConvertDev"],
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                 )
-                assert p.stdin is not None
+                assert self.proc is not None
+                assert self.proc.stdin is not None
 
                 # Send the dangerzone module first.
-                self.teleport_dz_module(p.stdin)
+                self.teleport_dz_module(self.proc.stdin)
 
                 # Finally, send the document, as in the normal case.
-                p.stdin.write(f.read())
-                p.stdin.close()
+                self.proc.stdin.write(f.read())
+                self.proc.stdin.close()
             else:
-                p = subprocess.Popen(
+                self.proc = subprocess.Popen(
                     ["/usr/bin/qrexec-client-vm", "@dispvm:dz-dvm", "dz.Convert"],
                     stdin=f,
                     stdout=subprocess.PIPE,
@@ -115,11 +120,12 @@ class Qubes(IsolationProvider):
             size = os.path.getsize(document.input_filename) / 1024**2
             timeout = calculate_timeout(size) + STARTUP_TIME_SECONDS
 
-            assert p.stdout is not None
-            os.set_blocking(p.stdout.fileno(), False)
+            assert self.proc is not None
+            assert self.proc.stdout is not None
+            os.set_blocking(self.proc.stdout.fileno(), False)
 
             try:
-                n_pages = read_int(p.stdout, timeout)
+                n_pages = read_int(self.proc.stdout, timeout)
             except ValueError:
                 error_code = p.wait()
                 # XXX Reconstruct exception from error code
@@ -139,10 +145,10 @@ class Qubes(IsolationProvider):
             for page in range(1, n_pages + 1):
                 # TODO handle too width > MAX_PAGE_WIDTH
                 # TODO handle too big height > MAX_PAGE_HEIGHT
-                width = read_int(p.stdout, timeout=sw.remaining)
-                height = read_int(p.stdout, timeout=sw.remaining)
+                width = read_int(self.proc.stdout, timeout=sw.remaining)
+                height = read_int(self.proc.stdout, timeout=sw.remaining)
                 untrusted_pixels = read_bytes(
-                    p.stdout,
+                    self.proc.stdout,
                     width * height * 3,
                     timeout=sw.remaining,
                 )  # three color channels
@@ -161,17 +167,17 @@ class Qubes(IsolationProvider):
                 self.print_progress_trusted(document, False, text, percentage)
 
         # Ensure nothing else is read after all bitmaps are obtained
-        p.stdout.close()
+        self.proc.stdout.close()
 
         # TODO handle leftover code input
         text = "Converted document to pixels"
         self.print_progress_trusted(document, False, text, percentage)
 
         if getattr(sys, "dangerzone_dev", False):
-            assert p.stderr is not None
-            os.set_blocking(p.stderr.fileno(), False)
-            untrusted_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
-            p.stderr.close()
+            assert self.proc.stderr is not None
+            os.set_blocking(self.proc.stderr.fileno(), False)
+            untrusted_log = read_debug_text(self.proc.stderr, MAX_CONVERSION_LOG_CHARS)
+            self.proc.stderr.close()
             log.info(
                 f"Conversion output (doc to pixels)\n{self.sanitize_conversion_str(untrusted_log)}"
             )

@@ -63,10 +63,8 @@ class DangerzoneConverter:
         if they know its encoding.
         """
         buf = b""
-        while True:
+        while not sr.at_eof():
             line = await sr.readline()
-            if sr.at_eof():
-                break
             self.captured_output += line
             if callback is not None:
                 callback(line)

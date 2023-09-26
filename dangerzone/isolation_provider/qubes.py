@@ -68,7 +68,7 @@ class Qubes(IsolationProvider):
     def install(self) -> bool:
         return True
 
-    def _convert(
+    def __convert(
         self,
         document: Document,
         ocr_lang: Optional[str] = None,
@@ -124,13 +124,7 @@ class Qubes(IsolationProvider):
             assert self.proc.stdout is not None
             os.set_blocking(self.proc.stdout.fileno(), False)
 
-            try:
-                n_pages = read_int(self.proc.stdout, timeout)
-            except errors.InterruptedConversion:
-                error_code = p.wait()
-                # XXX Reconstruct exception from error code
-                raise exception_from_error_code(error_code)  # type: ignore [misc]
-
+            n_pages = read_int(self.proc.stdout, timeout)
             if n_pages == 0:
                 # FIXME: Fail loudly in that case
                 return False
@@ -193,6 +187,19 @@ class Qubes(IsolationProvider):
         success = True
 
         return success
+
+    def _convert(
+        self,
+        document: Document,
+        ocr_lang: Optional[str] = None,
+    ) -> bool:
+        try:
+            return self.__convert(document, ocr_lang)
+        except errors.InterruptedConversion:
+            assert self.proc is not None
+            error_code = self.proc.wait(3)
+            # XXX Reconstruct exception from error code
+            raise errors.exception_from_error_code(error_code)  # type: ignore [misc]
 
     def get_max_parallel_conversions(self) -> int:
         return 1

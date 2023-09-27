@@ -82,6 +82,13 @@ class MaxPageHeightException(PagesException):
     error_message = f"A page exceeded the maximum height."
 
 
+class PageCountMismatch(PagesException):
+    error_code = ERROR_SHIFT + 46
+    error_message = (
+        "The final document does not have the same page count as the original one"
+    )
+
+
 class PDFtoPPMException(ConversionException):
     error_code = ERROR_SHIFT + 50
     error_message = "Error converting PDF to Pixels (pdftoppm)"

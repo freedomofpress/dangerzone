@@ -349,15 +349,21 @@ class DocumentToPixels(DangerzoneConverter):
             timeout=timeout,
         )
 
-        self.update_progress("Converted document to pixels")
-
-        # Move converted files into /tmp/dangerzone
-        for filename in (
+        final_files = (
             glob.glob("/tmp/page-*.rgb")
             + glob.glob("/tmp/page-*.width")
             + glob.glob("/tmp/page-*.height")
-        ):
+        )
+
+        # XXX: Sanity check to avoid situations like #560.
+        if not running_on_qubes() and len(final_files) != 3 * num_pages:
+            raise errors.PageCountMismatch()
+
+        # Move converted files into /tmp/dangerzone
+        for filename in final_files:
             shutil.move(filename, "/tmp/dangerzone")
+
+        self.update_progress("Converted document to pixels")
 
     async def install_libreoffice_ext(self, libreoffice_ext: str) -> None:
         self.update_progress(f"Installing LibreOffice extension '{libreoffice_ext}'")

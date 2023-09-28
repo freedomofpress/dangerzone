@@ -12,6 +12,8 @@ from colorama import Fore
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtWidgets
+
+    from . import Application
 else:
     try:
         from PySide6 import QtCore, QtGui, QtWidgets
@@ -35,7 +37,7 @@ class DangerzoneGui(DangerzoneCore):
     """
 
     def __init__(
-        self, app: QtWidgets.QApplication, isolation_provider: IsolationProvider
+        self, app: "Application", isolation_provider: IsolationProvider
     ) -> None:
         super().__init__(isolation_provider)
 

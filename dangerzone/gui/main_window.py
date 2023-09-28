@@ -162,6 +162,11 @@ class MainWindow(QtWidgets.QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+        # Set the OS color mode as a property on the MainWindow, which is the closest
+        # thing we have to a top-level container element akin to an HTML `<body>`.
+        # This allows us to make QSS rules conditional on the OS color mode.
+        self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
+
         self.show()
 
     def load_svg_image(self, filename: str) -> QtGui.QPixmap:

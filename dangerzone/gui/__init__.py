@@ -1,3 +1,4 @@
+import enum
 import functools
 import logging
 import os
@@ -33,6 +34,18 @@ from .updater import UpdaterThread
 log = logging.getLogger(__name__)
 
 
+class OSColorMode(enum.Enum):
+    """
+    Operating system color mode, e.g. Light or Dark Mode on macOS 10.14+ or Windows 10+.
+
+    The enum values are used as the names of Qt properties that will be selected by QSS
+    property selectors to set color-mode-specific style rules.
+    """
+
+    LIGHT = "light"
+    DARK = "dark"
+
+
 class Application(QtWidgets.QApplication):
     document_selected = QtCore.Signal(list)
     application_activated = QtCore.Signal()
@@ -60,6 +73,23 @@ class Application(QtWidgets.QApplication):
             return self.original_event(event)
 
         self.event = monkeypatch_event  # type: ignore [method-assign]
+
+        self.os_color_mode = self.infer_os_color_mode()
+        log.debug(f"Inferred system color scheme as {self.os_color_mode}")
+
+    def infer_os_color_mode(self) -> OSColorMode:
+        """
+        Qt 6.5+ explicitly provides the OS color scheme via QStyleHints.colorScheme(),
+        but we still need to support PySide2/Qt 5, so instead we infer the OS color
+        scheme from the default palette.
+        """
+        text_color, window_color = (
+            self.palette().color(role)
+            for role in (QtGui.QPalette.WindowText, QtGui.QPalette.Window)
+        )
+        if text_color.lightness() > window_color.lightness():
+            return OSColorMode.DARK
+        return OSColorMode.LIGHT
 
 
 @click.command()

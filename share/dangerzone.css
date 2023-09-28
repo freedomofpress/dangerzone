@@ -5,7 +5,7 @@ QLineEdit {
     padding: 3px;
 }
 
-QWidget {
+MainWindow[OSColorMode="light"] QWidget {
     color: black;
 }
 
@@ -19,6 +19,9 @@ QLabel[style="safe_extension_filename"] {
     border-style: solid;
     border-color: #c8c8c8;
     padding: 4px 0px 4px 4px;
+}
+
+MainWindow[OSColorMode="light"] QLabel[style="safe_extension_filename"] {
     background: white;
     color: grey;
 }

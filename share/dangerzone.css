@@ -26,6 +26,11 @@ MainWindow[OSColorMode="light"] QLabel[style="safe_extension_filename"] {
     color: grey;
 }
 
+MainWindow[OSColorMode="dark"] QLabel[style="safe_extension_filename"] {
+    background: black;
+    color: grey;
+}
+
 QLabel.docs-selection {
     font-size: 18px;
 }

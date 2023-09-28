@@ -47,6 +47,16 @@ def sample_doc() -> str:
     return str(test_docs_dir.joinpath(BASIC_SAMPLE_DOC))
 
 
+@pytest.fixture
+def sample_bad_height() -> str:
+    return str(test_docs_dir.joinpath("sample_bad_max_height.pdf"))
+
+
+@pytest.fixture
+def sample_bad_width() -> str:
+    return str(test_docs_dir.joinpath("sample_bad_max_width.pdf"))
+
+
 def get_docs_external(pattern: str = "*") -> List[Path]:
     if not pattern.endswith("*"):
         pattern = f"{pattern}.b64"

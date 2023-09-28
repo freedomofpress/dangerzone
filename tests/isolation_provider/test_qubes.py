@@ -7,7 +7,14 @@ from dangerzone.isolation_provider.base import IsolationProvider
 from dangerzone.isolation_provider.qubes import Qubes, running_on_qubes
 
 # XXX Fixtures used in abstract Test class need to be imported regardless
-from .. import pdf_11k_pages, sample_doc, sanitized_text, uncommon_text
+from .. import (
+    pdf_11k_pages,
+    sample_bad_height,
+    sample_bad_width,
+    sample_doc,
+    sanitized_text,
+    uncommon_text,
+)
 from .base import IsolationProviderTest
 
 
@@ -31,4 +38,19 @@ class TestQubes(IsolationProviderTest):
         doc = Document(sample_doc)
         with pytest.raises(errors.MaxPagesException):
             success = provider._convert(doc, ocr_lang=None)
+            assert not success
+
+    def test_max_dimensions(
+        self,
+        sample_bad_width: str,
+        sample_bad_height: str,
+        provider: Qubes,
+        mocker: MockerFixture,
+    ) -> None:
+        provider.progress_callback = mocker.MagicMock()
+        with pytest.raises(errors.MaxPageWidthException):
+            success = provider._convert(Document(sample_bad_width), ocr_lang=None)
+            assert not success
+        with pytest.raises(errors.MaxPageHeightException):
+            success = provider._convert(Document(sample_bad_height), ocr_lang=None)
             assert not success

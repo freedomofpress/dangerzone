@@ -3,6 +3,8 @@ from typing import List, Optional, Type
 # XXX: errors start at 128 for conversion-related issues
 ERROR_SHIFT = 128
 MAX_PAGES = 10000
+MAX_PAGE_WIDTH = 10000
+MAX_PAGE_HEIGHT = 10000
 
 
 class ConversionException(Exception):
@@ -60,6 +62,16 @@ class MaxPagesException(PagesException):
 
     error_code = ERROR_SHIFT + 42
     error_message = f"Number of pages exceeds maximum ({MAX_PAGES})"
+
+
+class MaxPageWidthException(PagesException):
+    error_code = ERROR_SHIFT + 44
+    error_message = f"A page exceeded the maximum width."
+
+
+class MaxPageHeightException(PagesException):
+    error_code = ERROR_SHIFT + 45
+    error_message = f"A page exceeded the maximum height."
 
 
 class PDFtoPPMException(ConversionException):

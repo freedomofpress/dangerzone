@@ -136,15 +136,19 @@ class Qubes(IsolationProvider):
             sw = Stopwatch(timeout)
             sw.start()
             for page in range(1, n_pages + 1):
-                # TODO handle too width > MAX_PAGE_WIDTH
-                # TODO handle too big height > MAX_PAGE_HEIGHT
                 width = read_int(self.proc.stdout, timeout=sw.remaining)
                 height = read_int(self.proc.stdout, timeout=sw.remaining)
+                if not (1 <= width <= errors.MAX_PAGE_WIDTH):
+                    raise errors.MaxPageWidthException()
+                if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
+                    raise errors.MaxPageHeightException()
+
+                num_pixels = width * height * 3  # three color channels
                 untrusted_pixels = read_bytes(
                     self.proc.stdout,
-                    width * height * 3,
+                    num_pixels,
                     timeout=sw.remaining,
-                )  # three color channels
+                )
 
                 # Wrapper code
                 with open(f"/tmp/dangerzone/page-{page}.width", "w") as f_width:

@@ -53,7 +53,8 @@ Dangerzone can convert these types of document into safe PDFs:
 - ODF Graphics (`.odg`)
 - Hancom HWP (Hangul Word Processor) (`.hwp`, `.hwpx`)
   * Not supported on
-    [Qubes OS](https://github.com/freedomofpress/dangerzone/issues/494)
+    [MacOS with Apple Silicon CPU](https://github.com/freedomofpress/dangerzone/issues/498)
+    or [Qubes OS](https://github.com/freedomofpress/dangerzone/issues/494)
 - Jpeg (`.jpg`, `.jpeg`)
 - GIF (`.gif`)
 - PNG (`.png`)

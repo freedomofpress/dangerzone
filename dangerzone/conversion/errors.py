@@ -27,8 +27,8 @@ class ConversionException(Exception):
 class QubesNotEnoughRAMError(ConversionException):
     error_code = 126  # No ERROR_SHIFT since this is a qrexec error
     error_message = (
-        "Your system does not have enough RAM available to start the conversion. "
-        "Please close some qubes or programs and try again."
+        "Could not start a disposable qube for the file conversion. "
+        "More information should have shown up on the top-right corner of your screen."
     )
 
 

@@ -162,9 +162,11 @@ class Qubes(IsolationProvider):
         def print_progress_wrapper(error: bool, text: str, percentage: float) -> None:
             self.print_progress_trusted(document, error, text, percentage)
 
-        asyncio.run(
-            PixelsToPDF(progress_callback=print_progress_wrapper).convert(ocr_lang)
-        )
+        converter = PixelsToPDF(progress_callback=print_progress_wrapper)
+        try:
+            asyncio.run(converter.convert(ocr_lang))
+        except (RuntimeError, TimeoutError, ValueError) as e:
+            raise errors.UnexpectedConversionError(str(e))
 
         shutil.move(CONVERTED_FILE_PATH, document.output_filename)
         success = True

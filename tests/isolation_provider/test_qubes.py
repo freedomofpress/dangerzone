@@ -83,6 +83,6 @@ class TestQubes(IsolationProviderTest):
 
         monkeypatch.setattr(provider, "qrexec_subprocess", qrexec_subprocess)
 
-        with pytest.raises(errors.QubesNotEnoughRAMError) as e:
+        with pytest.raises(errors.QubesQrexecFailed) as e:
             doc = Document(sample_doc)
             provider._convert(doc, ocr_lang=None)

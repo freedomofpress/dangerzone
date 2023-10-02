@@ -254,7 +254,7 @@ class DocumentToPixels(DangerzoneConverter):
             timeout=timeout,
         )
 
-        search = re.search(r"Pages:\s*(\d+)\s*\n", stdout.decode())
+        search = re.search(r"^Pages:\s*(\d+)\s*\n", stdout.decode(), re.MULTILINE)
         if search is not None:
             num_pages: int = int(search.group(1))
         else:

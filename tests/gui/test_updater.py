@@ -98,7 +98,7 @@ def test_post_0_4_2_settings(
     """
     # Store the settings of Dangerzone 0.4.2 to the filesystem.
     old_settings = settings.Settings.generate_default_settings()
-    old_settings["updater_latest_version"] == "0.4.2"
+    old_settings["updater_latest_version"] = "0.4.2"
     save_settings(tmp_path, old_settings)
 
     # Mimic an upgrade to version 0.4.3, by making Dangerzone report that the current

@@ -165,6 +165,7 @@ Before making a release, all of these should be complete:
 
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
+- [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] Update version and download links in `README.md`, and screenshot if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
 - [ ] There must be a PGP-signed git tag for the version, e.g. for dangerzone 0.1.0, the tag must be `v0.1.0`

@@ -135,6 +135,7 @@ class Dialog(QtWidgets.QDialog):
     ) -> None:
         super().__init__()
         self.dangerzone = dangerzone
+        self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
 
         self.setWindowTitle(title)
         self.setWindowIcon(self.dangerzone.get_window_icon())

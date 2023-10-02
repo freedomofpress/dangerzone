@@ -9,6 +9,10 @@ MainWindow[OSColorMode="light"] QWidget {
     color: black;
 }
 
+QDialog[OSColorMode="light"] QWidget {
+    color: black;
+}
+
 /*
  * QLabel left-adjacent to a QLineEdit to give the illusion
  * that it is part of it, but just not editable

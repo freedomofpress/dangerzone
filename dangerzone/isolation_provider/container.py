@@ -352,7 +352,7 @@ class Container(IsolationProvider):
                 with open(log_path, "r", encoding="ascii", errors="replace") as f:
                     text = (
                         f"Container output: (pixels to PDF)\n"
-                        f"{PIXELS_TO_PDF_LOG_START}{f.read()}{PIXELS_TO_PDF_LOG_END}"
+                        f"{PIXELS_TO_PDF_LOG_START}\n{f.read()}{PIXELS_TO_PDF_LOG_END}"
                     )
                     log.info(text)
 

@@ -24,7 +24,12 @@ from ..util import (
     get_tmp_dir,
     nonblocking_read,
 )
-from .base import MAX_CONVERSION_LOG_CHARS, IsolationProvider
+from .base import (
+    MAX_CONVERSION_LOG_CHARS,
+    PIXELS_TO_PDF_LOG_END,
+    PIXELS_TO_PDF_LOG_START,
+    IsolationProvider,
+)
 
 log = logging.getLogger(__name__)
 
@@ -167,6 +172,14 @@ class Qubes(IsolationProvider):
             asyncio.run(converter.convert(ocr_lang))
         except (RuntimeError, TimeoutError, ValueError) as e:
             raise errors.UnexpectedConversionError(str(e))
+        finally:
+            if getattr(sys, "dangerzone_dev", False):
+                out = converter.captured_output.decode()
+                text = (
+                    f"Conversion output: (pixels to PDF)\n"
+                    f"{PIXELS_TO_PDF_LOG_START}\n{out}{PIXELS_TO_PDF_LOG_END}"
+                )
+                log.info(text)
 
         shutil.move(CONVERTED_FILE_PATH, document.output_filename)
         success = True

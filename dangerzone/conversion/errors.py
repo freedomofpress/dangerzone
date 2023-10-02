@@ -24,7 +24,7 @@ class ConversionException(Exception):
         return subclasses
 
 
-class QubesNotEnoughRAMError(ConversionException):
+class QubesConversionStartFailed(ConversionException):
     error_code = 126  # No ERROR_SHIFT since this is a qrexec error
     error_message = (
         "Could not start a disposable qube for the file conversion. "

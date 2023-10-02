@@ -7,9 +7,48 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Unreleased
 
+## Dangerzone 0.5.0
+
 ### Added
 
 - Platform support: Beta integration with Qubes OS ([issue #412](https://github.com/freedomofpress/dangerzone/issues/412))
+- Add client-side timeouts in Qubes ([issue #446](https://github.com/freedomofpress/dangerzone/issues/446))
+- Add installation instructions for Qubes ([issue #431](https://github.com/freedomofpress/dangerzone/issues/431))
+- Development: Add tests that run Dangerzone against a pool of roughly 11K documents ([PR #386](https://github.com/freedomofpress/dangerzone/pull/386))
+- Development: Grab the output of commands when in development mode ([issue #319](https://github.com/freedomofpress/dangerzone/issues/319))
+
+### Fixed
+
+- Fix a bug that was introduced in version 0.4.1 and could potentially lead to
+  excluding the last page of the sanitized document ([issue #560](https://github.com/freedomofpress/dangerzone/issues/560))
+- Fix the parsing of a document's page count ([issue #565](https://github.com/freedomofpress/dangerzone/issues/565))
+- Platform support: Fix broken Dangerzone upgrades in Fedora ([issue #514](https://github.com/freedomofpress/dangerzone/issues/514))
+- Make progress reports in Qubes real-time ([issue #557](https://github.com/freedomofpress/dangerzone/issues/557))
+- Improve the handling of various runtime errors in Qubes ([issue #430](https://github.com/freedomofpress/dangerzone/issues/430))
+- Pass OCR parameters properly in Qubes ([issue #455](https://github.com/freedomofpress/dangerzone/issues/455))
+- Fix dark mode support ([issue #550](https://github.com/freedomofpress/dangerzone/issues/550),
+  thanks to [@garrettr](https://github.com/garrettr))
+- Development: Switch from the deprecated `bdist_rpm` toolchain to the more
+  modern RPM SPEC files, when building Fedora packages ([issue #298](https://github.com/freedomofpress/dangerzone/issues/298))
+- Development: Make our dev scripts properly invoke Docker in MacOS / windows
+  ([issue #519](https://github.com/freedomofpress/dangerzone/issues/519))
+
+### Changed
+
+- Shave off ~300MiB from our container image, using the fast variant of the
+  Tesseract OCR language models ([issue #545](https://github.com/freedomofpress/dangerzone/issues/545))
+- When a user is asked to enable updates, make "Yes" the default option ([issue #507](https://github.com/freedomofpress/dangerzone/issues/507))
+- Use Fedora 38 as a template in our Qubes build instructions ([PR #533](https://github.com/freedomofpress/dangerzone/issues/533))
+- Improve the installation docs for newcomers ([issue #475](https://github.com/freedomofpress/dangerzone/issues/475))
+- Development: Explain how to get the application password from the MacOS keychain ([issue #522](https://github.com/freedomofpress/dangerzone/issues/522))
+
+### Removed
+
+- Remove the `dangerzone-container` executable, since it was not used in practice by any user ([PR #538](https://github.com/freedomofpress/dangerzone/issues/538))
+
+### Security
+
+- Do not allow attackers to show error or log messages to Qubes users ([issue #456](https://github.com/freedomofpress/dangerzone/issues/456))
 
 ## Dangerzone 0.4.2
 

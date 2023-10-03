@@ -67,6 +67,8 @@ and newer platforms, we have to do the following:
   - [ ] Create a new development environment with Poetry.
   - [ ] Run the Dangerzone tests.
   - [ ] Create a Qubes .rpm package and install it system-wide.
+  - [ ] Ensure that the Dangerzone application appears in the "Applications"
+    tab.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below) and make sure
     they spawn disposable qubes.
 """

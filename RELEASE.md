@@ -66,6 +66,8 @@ and newer platforms, we have to do the following:
   - [ ] Create a new development environment with Poetry.
   - [ ] Run the Dangerzone tests.
   - [ ] Create a Qubes .rpm package and install it system-wide.
+  - [ ] Ensure that the Dangerzone application appears in the "Applications"
+    tab.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below) and make sure
     they spawn disposable qubes.
 
@@ -88,6 +90,8 @@ prompt the user to start Docker Desktop.
 
 #### 3. Dangerzone successfully installs the container image
 
+_(Not for Qubes)_
+
 Remove the Dangerzone container image from Docker/Podman. Then run Dangerzone.
 Danerzone should install the container image successfully.
 
@@ -103,6 +107,9 @@ Run Dangerzone and convert the `tests/test_docs/sample_bad_pdf.pdf` document.
 Dangerzone should fail gracefully, by reporting that the operation failed, and
 showing the last error message.
 
+_(Only for Qubes)_ The only message that the user should see is: "The document
+format is not supported", without any untrusted strings.
+
 #### 6. Dangerzone succeeds in converting multiple documents
 
 Run Dangerzone against a list of documents, and tick all options. Ensure that:
@@ -110,7 +117,7 @@ Run Dangerzone against a list of documents, and tick all options. Ensure that:
 * Attempting to close the window while converting asks the user if they want to
   abort the conversions.
 * Conversions are completed successfully.
-* Conversions show individual progress.
+* Conversions show individual progress in real-time (double-check for Qubes).
 * _(Only for Linux)_ The resulting files open with the PDF viewer of our choice.
 * OCR seems to have detected characters in the PDF files.
 * The resulting files have been saved with the proper suffix, in the proper
@@ -131,7 +138,22 @@ _(Only for Windows and MacOS)_
 Go to a directory with office documents, right-click on one, and click on "Open
 With". We should be able to open the file with Dangerzone, and then convert it.
 
-#### 9. Updating Dangerzone handles external state correctly.
+#### 9. Dangerzone shows helpful errors for setup issues on Qubes
+
+_(Only for Qubes)_
+
+Check what errors does Dangerzone throw in the following scenarios. The errors
+should point the user to the Qubes notifications in the top-right corner:
+
+1. The `dz-dvm` template does not exist. We can trigger this scenario by
+   temporarily renaming this template.
+2. The Dangerzone RPC policy does not exist. We can trigger this scenario by
+   temporarily renaming the `dz.Convert` policy.
+3. The `dz-dvm` disposable Qube cannot start due to insufficient resources. We
+   can trigger this scenario by temporarily increasing the minimum required RAM
+   of the `dz-dvm` template to more than the available amount.
+
+#### 10. Updating Dangerzone handles external state correctly.
 
 _(Applies to Linux/Windows/MacOS. For MacOS/Windows, it requires an installer
 for the new version)_

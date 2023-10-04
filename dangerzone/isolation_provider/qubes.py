@@ -33,11 +33,6 @@ from .base import (
 
 log = logging.getLogger(__name__)
 
-CONVERTED_FILE_PATH = (
-    # FIXME won't work for parallel conversions (see #454)
-    "/tmp/safe-output-compressed.pdf"
-)
-
 # The maximum time a qube takes to start up.
 STARTUP_TIME_SECONDS = 5 * 60  # 5 minutes
 
@@ -76,20 +71,12 @@ class Qubes(IsolationProvider):
     def __convert(
         self,
         document: Document,
+        tempdir: str,
         ocr_lang: Optional[str] = None,
     ) -> bool:
         success = False
 
-        # FIXME won't work on windows, nor with multi-conversion
-        out_dir = Path("/tmp/dangerzone")
-        if out_dir.exists():
-            shutil.rmtree(out_dir)
-        out_dir.mkdir()
-
-        # Reset hard-coded state
-        if os.path.exists(CONVERTED_FILE_PATH):
-            os.remove(CONVERTED_FILE_PATH)
-
+        Path(f"{tempdir}/dangerzone").mkdir()
         percentage = 0.0
 
         with open(document.input_filename, "rb") as f:
@@ -136,11 +123,11 @@ class Qubes(IsolationProvider):
                 )
 
                 # Wrapper code
-                with open(f"/tmp/dangerzone/page-{page}.width", "w") as f_width:
+                with open(f"{tempdir}/dangerzone/page-{page}.width", "w") as f_width:
                     f_width.write(str(width))
-                with open(f"/tmp/dangerzone/page-{page}.height", "w") as f_height:
+                with open(f"{tempdir}/dangerzone/page-{page}.height", "w") as f_height:
                     f_height.write(str(height))
-                with open(f"/tmp/dangerzone/page-{page}.rgb", "wb") as f_rgb:
+                with open(f"{tempdir}/dangerzone/page-{page}.rgb", "wb") as f_rgb:
                     f_rgb.write(untrusted_pixels)
 
                 percentage += percentage_per_page
@@ -169,7 +156,7 @@ class Qubes(IsolationProvider):
 
         converter = PixelsToPDF(progress_callback=print_progress_wrapper)
         try:
-            asyncio.run(converter.convert(ocr_lang))
+            asyncio.run(converter.convert(ocr_lang, tempdir))
         except (RuntimeError, TimeoutError, ValueError) as e:
             raise errors.UnexpectedConversionError(str(e))
         finally:
@@ -181,7 +168,7 @@ class Qubes(IsolationProvider):
                 )
                 log.info(text)
 
-        shutil.move(CONVERTED_FILE_PATH, document.output_filename)
+        shutil.move(f"{tempdir}/safe-output-compressed.pdf", document.output_filename)
         success = True
 
         return success
@@ -192,7 +179,8 @@ class Qubes(IsolationProvider):
         ocr_lang: Optional[str] = None,
     ) -> bool:
         try:
-            return self.__convert(document, ocr_lang)
+            with tempfile.TemporaryDirectory() as t:
+                return self.__convert(document, t, ocr_lang)
         except errors.InterruptedConversion:
             assert self.proc is not None
             error_code = self.proc.wait(3)

@@ -33,16 +33,25 @@ class DocumentToPixels(DangerzoneConverter):
         pass
 
     async def write_page_width(self, width: int, filename: str) -> None:
-        with open(filename, "w") as f:
-            f.write(str(width))
+        try:
+            with open(filename, "w") as f:
+                f.write(str(width))
+        except OSError:
+            raise errors.ServerOutOfTempSpaceError()
 
     async def write_page_height(self, height: int, filename: str) -> None:
-        with open(filename, "w") as f:
-            f.write(str(height))
+        try:
+            with open(filename, "w") as f:
+                f.write(str(height))
+        except OSError:
+            raise errors.ServerOutOfTempSpaceError()
 
     async def write_page_data(self, data: bytes, filename: str) -> None:
-        with open(filename, "wb") as f:
-            f.write(data)
+        try:
+            with open(filename, "wb") as f:
+                f.write(data)
+        except OSError:
+            raise errors.ServerOutOfTempSpaceError()
 
     async def convert(self) -> None:
         conversions: Dict[str, Dict[str, Optional[str]]] = {
@@ -410,13 +419,18 @@ async def main() -> int:
         error_code = 0  # Success!
     except errors.ConversionException as e:  # Expected Errors
         error_code = e.error_code
+    except OSError:
+        raise errors.ServerOutOfTempSpaceError()
     except Exception as e:
         converter.update_progress(str(e), error=True)
         error_code = errors.UnexpectedConversionError.error_code
     if not running_on_qubes():
-        # Write debug information (containers version)
-        with open("/tmp/dangerzone/captured_output.txt", "wb") as container_log:
-            container_log.write(converter.captured_output)
+        try:
+            # Write debug information (containers version)
+            with open("/tmp/dangerzone/captured_output.txt", "wb") as container_log:
+                container_log.write(converter.captured_output)
+        except OSError:
+            error_code = errors.ServerOutOfTempSpaceError.error_code
     return error_code
 
 

@@ -113,6 +113,17 @@ class InterruptedConversion(ConversionException):
     )
 
 
+class OutOfSpaceError(ConversionException):
+    error_code = ERROR_SHIFT + 70
+
+
+class ServerOutOfTempSpaceError(OutOfSpaceError):
+    """The server ran out of space"""
+
+    error_code = ERROR_SHIFT + 71
+    error_message = "The isolated environment where the document conversion take space ran out of space"
+
+
 class UnexpectedConversionError(PDFtoPPMException):
     error_code = ERROR_SHIFT + 100
     error_message = "Some unexpected error occurred while converting the document"

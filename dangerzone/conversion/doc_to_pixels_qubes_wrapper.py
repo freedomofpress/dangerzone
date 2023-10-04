@@ -95,6 +95,9 @@ async def main() -> None:
     except errors.ConversionException as e:
         await write_bytes(str(e).encode(), file=sys.stderr)
         sys.exit(e.error_code)
+    except OSError:
+        error_code = errors.ServerOutOfTempSpaceError.error_code
+        sys.exit(error_code)
     except Exception as e:
         await write_bytes(str(e).encode(), file=sys.stderr)
         error_code = errors.UnexpectedConversionError.error_code

@@ -17,22 +17,26 @@ from .common import DangerzoneConverter, running_on_qubes
 
 
 class PixelsToPDF(DangerzoneConverter):
-    async def convert(self, ocr_lang: Optional[str] = None) -> None:
+    async def convert(
+        self, ocr_lang: Optional[str] = None, tempdir: Optional[str] = None
+    ) -> None:
         self.percentage = 50.0
+        if tempdir is None:
+            tempdir = "/tmp"
 
-        num_pages = len(glob.glob("/tmp/dangerzone/page-*.rgb"))
+        num_pages = len(glob.glob(f"{tempdir}/dangerzone/page-*.rgb"))
         total_size = 0.0
 
         # Convert RGB files to PDF files
         percentage_per_page = 45.0 / num_pages
         for page in range(1, num_pages + 1):
-            filename_base = f"/tmp/dangerzone/page-{page}"
+            filename_base = f"{tempdir}/dangerzone/page-{page}"
             rgb_filename = f"{filename_base}.rgb"
             width_filename = f"{filename_base}.width"
             height_filename = f"{filename_base}.height"
-            png_filename = f"/tmp/page-{page}.png"
-            ocr_filename = f"/tmp/page-{page}"
-            pdf_filename = f"/tmp/page-{page}.pdf"
+            png_filename = f"{tempdir}/page-{page}.png"
+            ocr_filename = f"{tempdir}/page-{page}"
+            pdf_filename = f"{tempdir}/page-{page}.pdf"
 
             with open(width_filename) as f:
                 width = f.read().strip()
@@ -118,8 +122,8 @@ class PixelsToPDF(DangerzoneConverter):
         self.update_progress(f"Merging {num_pages} pages into a single PDF")
         args = ["pdfunite"]
         for page in range(1, num_pages + 1):
-            args.append(f"/tmp/page-{page}.pdf")
-        args.append(f"/tmp/safe-output.pdf")
+            args.append(f"{tempdir}/page-{page}.pdf")
+        args.append(f"{tempdir}/safe-output.pdf")
         await self.run_command(
             args,
             error_message="Merging pages into a single PDF failed",
@@ -135,7 +139,11 @@ class PixelsToPDF(DangerzoneConverter):
         # Compress
         self.update_progress("Compressing PDF")
         await self.run_command(
-            ["ps2pdf", "/tmp/safe-output.pdf", "/tmp/safe-output-compressed.pdf"],
+            [
+                "ps2pdf",
+                f"{tempdir}/safe-output.pdf",
+                f"{tempdir}/safe-output-compressed.pdf",
+            ],
             error_message="Compressing PDF failed",
             timeout_message=(
                 f"Error compressing PDF, ps2pdf timed out after {timeout} seconds"
@@ -148,8 +156,8 @@ class PixelsToPDF(DangerzoneConverter):
 
         # Move converted files into /safezone
         if not running_on_qubes():
-            shutil.move("/tmp/safe-output.pdf", "/safezone")
-            shutil.move("/tmp/safe-output-compressed.pdf", "/safezone")
+            shutil.move(f"{tempdir}/safe-output.pdf", "/safezone")
+            shutil.move(f"{tempdir}/safe-output-compressed.pdf", "/safezone")
 
 
 async def main() -> int:

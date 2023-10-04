@@ -124,6 +124,15 @@ class ServerOutOfTempSpaceError(OutOfSpaceError):
     error_message = "The isolated environment where the document conversion take space ran out of space"
 
 
+class ClientOutOfTMPSpaceError(OutOfSpaceError):
+    """The client ran out of space"""
+
+    error_code = ERROR_SHIFT + 72
+    error_message = (
+        "You computer ran out of temporary storage space during the document conversion"
+    )
+
+
 class UnexpectedConversionError(PDFtoPPMException):
     error_code = ERROR_SHIFT + 100
     error_message = "Some unexpected error occurred while converting the document"

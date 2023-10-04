@@ -135,14 +135,16 @@ class Qubes(IsolationProvider):
                     timeout=sw.remaining,
                 )
 
-                # Wrapper code
-                with open(f"/tmp/dangerzone/page-{page}.width", "w") as f_width:
-                    f_width.write(str(width))
-                with open(f"/tmp/dangerzone/page-{page}.height", "w") as f_height:
-                    f_height.write(str(height))
-                with open(f"/tmp/dangerzone/page-{page}.rgb", "wb") as f_rgb:
-                    f_rgb.write(untrusted_pixels)
-
+                try:
+                    # Wrapper code
+                    with open(f"/tmp/dangerzone/page-{page}.width", "w") as f_width:
+                        f_width.write(str(width))
+                    with open(f"/tmp/dangerzone/page-{page}.height", "w") as f_height:
+                        f_height.write(str(height))
+                    with open(f"/tmp/dangerzone/page-{page}.rgb", "wb") as f_rgb:
+                        f_rgb.write(untrusted_pixels)
+                except OSError:
+                    raise errors.ClientOutOfTMPSpaceError()
                 percentage += percentage_per_page
 
                 text = f"Converting page {page}/{n_pages} to pixels"

@@ -268,7 +268,7 @@ install -m 644 share/* %{buildroot}/usr/share/dangerzone
 # /etc/qubes-rpc.
 %if 0%{?_qubes}
 install -m 755 -d %{buildroot}/etc/qubes-rpc
-install -m 644 qubes/* %{buildroot}/etc/qubes-rpc
+install -m 755 qubes/* %{buildroot}/etc/qubes-rpc
 %endif
 
 # The following files are included in the top level of the Python source

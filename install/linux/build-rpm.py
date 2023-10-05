@@ -59,8 +59,7 @@ def build(qubes=False):
     shutil.copy2(specfile_path, build_dir / "SPECS")
     rpm_dir = build_dir / "RPMS" / "x86_64"
     srpm_dir = build_dir / "SRPMS"
-    if srpm_dir.exists():
-        os.unlink(srpm_dir)
+    srpm_dir.unlink(missing_ok=True)
     os.symlink(dist_path, rpm_dir)
     os.symlink(dist_path, srpm_dir)
 

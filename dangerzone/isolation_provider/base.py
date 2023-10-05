@@ -39,12 +39,13 @@ class IsolationProvider(ABC):
             success = self._convert(document, ocr_lang)
         except ConversionException as e:
             success = False
-            self.print_progress_trusted(document, True, e.error_message, 0)
+            self.print_progress_trusted(document, True, str(e), 0)
         except Exception as e:
             success = False
             log.exception(
                 f"An exception occurred while converting document '{document.id}'"
             )
+            self.print_progress_trusted(document, True, str(e), 0)
         if success:
             document.mark_as_safe()
             if document.archive_after_conversion:

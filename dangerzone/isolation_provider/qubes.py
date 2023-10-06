@@ -99,15 +99,15 @@ class Qubes(IsolationProvider):
             n_pages = read_int(self.proc.stdout, timeout)
             if n_pages == 0 or n_pages > errors.MAX_PAGES:
                 raise errors.MaxPagesException()
-            if ocr_lang:
-                percentage_per_page = 50.0 / n_pages
-            else:
-                percentage_per_page = 100.0 / n_pages
+            percentage_per_page = 50.0 / n_pages
 
             timeout = calculate_timeout(size, n_pages)
             sw = Stopwatch(timeout)
             sw.start()
             for page in range(1, n_pages + 1):
+                text = f"Converting page {page}/{n_pages} to pixels"
+                self.print_progress_trusted(document, False, text, percentage)
+
                 width = read_int(self.proc.stdout, timeout=sw.remaining)
                 height = read_int(self.proc.stdout, timeout=sw.remaining)
                 if not (1 <= width <= errors.MAX_PAGE_WIDTH):
@@ -131,9 +131,6 @@ class Qubes(IsolationProvider):
                     f_rgb.write(untrusted_pixels)
 
                 percentage += percentage_per_page
-
-                text = f"Converting page {page}/{n_pages} to pixels"
-                self.print_progress_trusted(document, False, text, percentage)
 
         # Ensure nothing else is read after all bitmaps are obtained
         self.proc.stdout.close()

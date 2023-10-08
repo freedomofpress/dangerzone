@@ -43,6 +43,12 @@ aliases:
       PATH=/root/.local/bin:$PATH ./install/linux/build-rpm.py
       ls -lh dist/
 
+  - &build-rpm-qubes
+    name: Build the Qubes .rpm package
+    command: |
+      PATH=/root/.local/bin:$PATH ./install/linux/build-rpm.py --qubes
+      ls -lh dist/
+
   - &calculate-cache-key
     name: Caculating container cache key
     command: |
@@ -488,6 +494,7 @@ jobs:
       - restore_cache: *restore-cache
       - run: *copy-image
       - run: *build-rpm
+      - run: *build-rpm-qubes
 
   build-fedora-37:
     docker:
@@ -500,6 +507,7 @@ jobs:
       - restore_cache: *restore-cache
       - run: *copy-image
       - run: *build-rpm
+      - run: *build-rpm-qubes
 
 workflows:
   version: 2

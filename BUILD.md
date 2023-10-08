@@ -97,6 +97,10 @@ poetry shell
 ./dev_scripts/dangerzone
 ```
 
+> [!NOTE]
+> Prefer running the following command in a Fedora development environment,
+> created by `./dev_script/env.py`.
+
 Create a .rpm:
 
 ```sh
@@ -258,6 +262,10 @@ QUBES_CONVERSION=1 ./dev_scripts/dangerzone
 ```
 
 Create a .rpm:
+
+> [!NOTE]
+> Prefer running the following command in a Fedora development environment,
+> created by `./dev_script/env.py`.
 
 ```sh
 ./install/linux/build-rpm.py --qubes

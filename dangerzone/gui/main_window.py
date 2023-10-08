@@ -488,24 +488,20 @@ class ContentWidget(QtWidgets.QWidget):
             ).exec_()
             return
 
-        # Get previously selected documents
-        self.dangerzone.clear_documents()
-        self.documents_list.clear()
-
-        # Assumed all files in batch are in the same directory
-        first_doc = docs[0]
-        output_dir = os.path.dirname(first_doc.input_filename)
-        if not self.dangerzone.output_dir:
-            self.dangerzone.output_dir = output_dir
-        elif self.dangerzone.output_dir != output_dir:
+        # Ensure all files in batch are in the same directory
+        dirnames = {os.path.dirname(doc.input_filename) for doc in docs}
+        if len(dirnames) > 1:
             Alert(
                 self.dangerzone,
                 message="Dangerzone does not support adding documents from multiple locations.\n\n The newly added documents were ignored.",
                 has_cancel=False,
             ).exec_()
             return
-        else:
-            self.dangerzone.output_dir = output_dir
+
+        # Clear previously selected documents
+        self.dangerzone.clear_documents()
+        self.documents_list.clear()
+        self.dangerzone.output_dir = list(dirnames)[0]
 
         for doc in docs:
             self.dangerzone.add_document(doc)

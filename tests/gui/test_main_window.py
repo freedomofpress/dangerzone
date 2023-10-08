@@ -1,3 +1,6 @@
+import os
+import pathlib
+import shutil
 import time
 import typing
 
@@ -335,6 +338,7 @@ def test_change_document_button(
     mocker: MockerFixture,
     sample_pdf: str,
     sample_doc: str,
+    tmp_path: pathlib.Path,
 ) -> None:
     # Setup first doc selection
     file_dialog_mock = mocker.MagicMock()
@@ -350,7 +354,9 @@ def test_change_document_button(
         file_dialog_mock.accept()
 
     # Setup doc change
-    file_dialog_mock.selectedFiles.return_value = (sample_doc,)
+    shutil.copy(sample_doc, tmp_path)
+    tmp_sample_doc = tmp_path / os.path.basename(sample_doc)
+    file_dialog_mock.selectedFiles.return_value = (tmp_sample_doc,)
 
     # When clicking on "select docs" button
     with qtbot.waitSignal(content_widget.documents_added):
@@ -370,4 +376,4 @@ def test_change_document_button(
         for doc in content_widget.dangerzone.get_unconverted_documents()
     ]
     assert len(docs) is 1
-    assert docs[0] == sample_doc
+    assert docs[0] == str(tmp_sample_doc)

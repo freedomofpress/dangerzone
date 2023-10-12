@@ -22,11 +22,19 @@ pipx install poetry
 After this, restart the terminal window, for the `poetry` command to be in your
 `$PATH`.
 
+
+Clone this repository:
+
+```
+git clone https://github.com/freedomofpress/dangerzone/
+```
+
 Change to the `dangerzone` folder, and install the poetry dependencies:
 
 > **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
 
 ```
+cd dangerzone
 poetry install
 ```
 
@@ -70,11 +78,18 @@ Install Poetry using `pipx`:
 pipx install poetry
 ```
 
+Clone this repository:
+
+```
+git clone https://github.com/freedomofpress/dangerzone/
+```
+
 Change to the `dangerzone` folder, and install the poetry dependencies:
 
 > **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
 
 ```
+cd dangerzone
 poetry install
 ```
 
@@ -307,6 +322,13 @@ Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Make s
 
 Install the latest version of Python 3.11 [from python.org](https://www.python.org/downloads/macos/), and make sure `/Library/Frameworks/Python.framework/Versions/3.11/bin` is in your `PATH`.
 
+Clone this repository:
+
+```
+git clone https://github.com/freedomofpress/dangerzone/
+cd dangerzone
+```
+
 Install Python dependencies:
 
 ```sh
@@ -368,9 +390,16 @@ Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
 python -m pip install poetry
 ```
 
+Install git from [here](https://git-scm.com/download/win), open a Windows terminal (`cmd.exe`) and clone this repository:
+
+```
+git clone https://github.com/freedomofpress/dangerzone/
+```
+
 Change to the `dangerzone` folder, and install the poetry dependencies:
 
 ```
+cd dangerzone
 poetry install
 ```
 

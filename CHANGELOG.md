@@ -12,6 +12,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 ### Added
 
 - Platform support: Beta integration with Qubes OS ([issue #412](https://github.com/freedomofpress/dangerzone/issues/412))
+- Platform support: Ubuntu 23.10 (Mantic Minotaur) ([issue #601](https://github.com/freedomofpress/dangerzone/issues/601))
 - Add client-side timeouts in Qubes ([issue #446](https://github.com/freedomofpress/dangerzone/issues/446))
 - Add installation instructions for Qubes ([issue #431](https://github.com/freedomofpress/dangerzone/issues/431))
 - Development: Add tests that run Dangerzone against a pool of roughly 11K documents ([PR #386](https://github.com/freedomofpress/dangerzone/pull/386))

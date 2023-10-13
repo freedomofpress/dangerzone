@@ -92,6 +92,9 @@ jobs:
           - target: ubuntu-23.04
             distro: ubuntu
             version: "23.04"
+          - target: ubuntu-23.10
+            distro: ubuntu
+            version: "23.10"
           - target: debian-bullseye
             distro: debian
             version: bullseye

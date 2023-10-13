@@ -73,7 +73,7 @@ RUN . /etc/os-release \
 # XXX: overcome the fact that ubuntu images (starting on 23.04) ship with the 'ubuntu'
 # user by default https://bugs.launchpad.net/cloud-images/+bug/2005129
 # Related issue https://github.com/freedomofpress/dangerzone/pull/461
-DOCKERFILE_UBUNTU_2304_REM_USER = r"""
+DOCKERFILE_UBUNTU_REM_USER = r"""
 RUN touch /var/mail/ubuntu && chown ubuntu /var/mail/ubuntu && userdel -r ubuntu
 """
 
@@ -432,9 +432,14 @@ class Env:
                 # Ubuntu Jammy misses a dependency to `libxkbcommon-x11-0`, which we can
                 # install indirectly via `qt6-qpa-plugins`.
                 qt_deps += " qt6-qpa-plugins"
-            elif self.distro == "ubuntu" and self.version in ("23.04", "lunar"):
+            elif self.distro == "ubuntu" and self.version in (
+                "23.04",
+                "23.10",
+                "lunar",
+                "mantic",
+            ):
                 install_deps = (
-                    DOCKERFILE_UBUNTU_2304_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
+                    DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
                 )
             elif self.distro == "debian" and self.version in ("bullseye-backports",):
                 # Debian Bullseye misses a dependency to libgl1.
@@ -478,10 +483,13 @@ class Env:
                 install_deps = (
                     DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEBIAN_DEPS
                 )
-            elif self.distro == "ubuntu" and self.version in ("23.04", "lunar"):
-                install_deps = (
-                    DOCKERFILE_UBUNTU_2304_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS
-                )
+            elif self.distro == "ubuntu" and self.version in (
+                "23.04",
+                "23.10",
+                "lunar",
+                "mantic",
+            ):
+                install_deps = DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS
             package = f"dangerzone_{version}-1_all.deb"
             package_src = git_root() / "deb_dist" / package
             package_dst = build_dir / package

@@ -164,8 +164,9 @@ class UpdaterThread(QtCore.QThread):
         # TODO: Disable updates for Homebrew installations.
         if platform.system() == "Linux" and not getattr(sys, "dangerzone_dev", False):
             log.debug("Running on Linux, disabling updates")
-            self.check = False
-            return False
+            if not self.check:  # if not overidden by user
+                self.check = False
+                return False
 
         log.debug("Checking if first run of Dangerzone")
         if self.dangerzone.settings.get("updater_last_check") is None:

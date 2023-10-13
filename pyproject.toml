@@ -52,7 +52,7 @@ strip-ansi = "*"
 
 [tool.isort]
 profile = "black"
-extend_skip = [".gitignore"]
+skip_gitignore = true
 # This is necessary due to https://github.com/PyCQA/isort/issues/1835
 follow_links = false
 

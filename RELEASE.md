@@ -158,9 +158,20 @@ should point the user to the Qubes notifications in the top-right corner:
 _(Applies to Linux/Windows/MacOS. For MacOS/Windows, it requires an installer
 for the new version)_
 
-Install the previous version of Dangerzone system-wide. Open the Dangerzone
-application and enable some non-default settings. Close the Dangerzone
-application and get the container image for that version. For example
+Install the previous version of Dangerzone system-wide:
+
+* For MacOS/Windows, use the version from the website.
+* For Linux, uninstall Dangerzone from your test environment, and install the
+  previous version using our [installation instructions](INSTALL.md). Also,
+  keep in mind the following:
+  - In order to run commands as root, execute into the container as root with
+    `podman exec -it -u root <container ID> bash`.
+  - If you encounter a GPG error, run the `dirmngr` command to create the
+    necessary directories.
+
+Open the Dangerzone application and enable some non-default settings. Close the
+Dangerzone application and get the container image for that version. For
+example:
 
 ```
 $ podman images dangerzone.rocks/dangerzone:latest
@@ -170,10 +181,11 @@ dangerzone.rocks/dangerzone  latest      <image ID>    <date>        <size>
 
 _(use `docker` on Windows/MacOS)_
 
-Install the new version of Dangerzone system-wide. Open the Dangerzone
-application and make sure that the previously enabled settings still show up.
-Also, ensure that Dangerzone reports that the new image has been installed, and
-verify that it's different from the old one by doing:
+Install the new version of Dangerzone system-wide. For Linux, copy the package
+back into the container. Open the Dangerzone application and make sure that the
+previously enabled settings still show up.  Also, ensure that Dangerzone reports
+that the new image has been installed, and verify that it's different from the
+old one by doing:
 
 ```
 $ podman images dangerzone.rocks/dangerzone:latest

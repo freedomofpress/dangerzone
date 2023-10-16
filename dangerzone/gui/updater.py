@@ -32,11 +32,11 @@ log = logging.getLogger(__name__)
 
 
 MSG_CONFIRM_UPDATE_CHECKS = """\
-<p><b>Do you want to be notified about new Dangerzone releases?</b></p>
+<p><b>Do you want Dangerzone to automatically check for updates?</b></p>
 
-<p>If <i>"Yes"</i>, Dangerzone will check the
+<p>If you accept, Dangerzone will check the
 <a href="https://github.com/freedomofpress/dangerzone/releases">latest releases page</a>
-in github.com on startup. If <i>"No"</i>, Dangerzone will make no network requests and
+in github.com on startup. Otherwise it will make no network requests and
 won't inform you about new releases.</p>
 
 <p>If you prefer another way of getting notified about new releases, we suggest adding
@@ -140,8 +140,8 @@ class UpdaterThread(QtCore.QThread):
         prompt = UpdateCheckPrompt(
             self.dangerzone,
             message=MSG_CONFIRM_UPDATE_CHECKS,
-            ok_text="Yes",
-            cancel_text="No",
+            ok_text="Check Automatically",
+            cancel_text="Don't Check",
         )
         check = prompt.launch()
         if not check and prompt.x_pressed:

@@ -400,8 +400,22 @@ def test_update_check_prompt(
     qt_updater.dangerzone.settings.set("updater_last_check", 0)
 
     # Test 1 - Check that on the second run of Dangerzone, the user is prompted to
-    # choose if they want to enable update checks. By clicking on, we store this
-    # decision in the settings.
+    # choose if they want to enable update checks.
+    def check_button_labels() -> None:
+        dialog = qt_updater.dangerzone.app.activeWindow()
+        assert dialog.ok_button.text() == "Check Automatically"  # type: ignore [attr-defined]
+        assert dialog.cancel_button.text() == "Don't Check"  # type: ignore [attr-defined]
+        dialog.ok_button.click()  # type: ignore [attr-defined]
+
+    QtCore.QTimer.singleShot(500, check_button_labels)
+    res = qt_updater.should_check_for_updates()
+
+    assert res == True
+
+    # Test 2 - Check that when the user chooses to enable update checks, we
+    # store that decision in the settings.
+    qt_updater.check = None
+
     def click_ok() -> None:
         dialog = qt_updater.dangerzone.app.activeWindow()
         dialog.ok_button.click()  # type: ignore [attr-defined]
@@ -412,7 +426,7 @@ def test_update_check_prompt(
     assert res == True
     assert qt_updater.check == True
 
-    # Test 2 - Same as the previous test, but check that clicking on cancel stores the
+    # Test 3 - Same as the previous test, but check that clicking on cancel stores the
     # opposite decision.
     qt_updater.check = None
 
@@ -426,7 +440,7 @@ def test_update_check_prompt(
     assert res == False
     assert qt_updater.check == False
 
-    # Test 3 - Same as the previous test, but check that clicking on "X" does not store
+    # Test 4 - Same as the previous test, but check that clicking on "X" does not store
     # any decision.
     qt_updater.check = None
 

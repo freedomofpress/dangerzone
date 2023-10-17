@@ -29,6 +29,12 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Pass OCR parameters properly in Qubes ([issue #455](https://github.com/freedomofpress/dangerzone/issues/455))
 - Fix dark mode support ([issue #550](https://github.com/freedomofpress/dangerzone/issues/550),
   thanks to [@garrettr](https://github.com/garrettr))
+- Fix issue where on Linux the update check (which exists so unsupported distros can still check for updates) once toggled would become unchecked upon restarting Dangerzone ([issue #513](https://github.com/freedomofpress/dangerzone/issues/513))
+- Fix issue where changing document selection to a file from a different directory would lead to an error ([issue #581](https://github.com/freedomofpress/dangerzone/issues/581))
+- Qubes: in the cli version "Safe PDF created" would be shown twice ([issue #555](https://github.com/freedomofpress/dangerzone/issues/555))
+- Qubes: in the cli version the percentage is now rounded to the unit ([issue #553](https://github.com/freedomofpress/dangerzone/issues/553))
+- Qubes: clean up temporary files ([issue #575](https://github.com/freedomofpress/dangerzone/issues/575))
+- Qubes: do not open document if the conversion failed ([issue #581](https://github.com/freedomofpress/dangerzone/issues/581))
 - Development: Switch from the deprecated `bdist_rpm` toolchain to the more
   modern RPM SPEC files, when building Fedora packages ([issue #298](https://github.com/freedomofpress/dangerzone/issues/298))
 - Development: Make our dev scripts properly invoke Docker in MacOS / windows

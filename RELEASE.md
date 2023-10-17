@@ -369,7 +369,10 @@ repo.
 To publish the release:
 
 - [ ] Create a new release on GitHub, put the changelog in the description of the release, and upload the macOS and Windows installers
+  * You can use `./dev_scripts/upload-asset.py`, if you want to upload an asset
+    using an access token.
 - [ ] Upload the `container.tar.gz` i686 image that was created in the previous step
+
   **Important:** Make sure that it's the same container image as the ones that
   are shipped in other platforms (see our [Pre-release](#Pre-release) section)
 

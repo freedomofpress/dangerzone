@@ -194,7 +194,7 @@ Overview of the qubes you'll create:
    ```
    sudo dnf install -y rpm-build podman python3 python3-devel \
        python3-poetry-core pipx qt6-qtbase-gui libreoffice python3-magic \
-       tesseract*
+       python3-keyring tesseract*
    ```
 
 2. Shutdown the `fedora-38-dz` template:
@@ -251,7 +251,7 @@ Overview of the qubes you'll create:
 2. Move the files we copied in the previous step to their proper place:
 
    ```
-   sudo cp ~/QubesIncoming/dz/qubes/* /rw/usrlocal/etc/qubes-rpc/
+   sudo cp ~/QubesIncoming/dz/* /rw/usrlocal/etc/qubes-rpc/
    ```
 
 3. Shutdown the `dz-dvm` qube:

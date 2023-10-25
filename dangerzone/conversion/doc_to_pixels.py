@@ -288,8 +288,27 @@ class DocumentToPixels(DangerzoneConverter):
         else:
             timeout_per_batch = timeout / (int(num_pages / PAGE_BATCH_SIZE) + 1)
         for first_page, last_page in batch_iterator(num_pages):
-            await self.pdf_to_rgb(first_page, last_page, pdf_filename, timeout_per_batch)
-            await self.send_rgb_files(first_page, last_page, num_pages)
+            # XXX send data from the previous loop's conversion to
+            # always be able to process and send data at the same time
+            if first_page == 1:  # If in first pass
+                await self.pdf_to_rgb(
+                    first_page, last_page, pdf_filename, timeout_per_batch
+                )
+                delayed_send_rgb_files = self.send_rgb_files(
+                    first_page, last_page, num_pages
+                )
+            else:
+                await asyncio.gather(
+                    self.pdf_to_rgb(
+                        first_page, last_page, pdf_filename, timeout_per_batch
+                    ),
+                    delayed_send_rgb_files,
+                )
+                delayed_send_rgb_files = self.send_rgb_files(
+                    first_page, last_page, num_pages
+                )
+
+        await delayed_send_rgb_files
 
         final_files = (
             glob.glob("/tmp/page-*.rgb")

@@ -137,6 +137,10 @@ After confirming that it matches, type `y` (for yes) and the installation should
 > want to try out the stable Dangerzone version (which uses containers instead
 > of virtual machines for isolation), please follow the Fedora or Debian
 > instructions and adapt them as needed.
+>
+> **If you followed these instructions before October 25, 2023, please read [this security advisory](docs/advisories/2023-10-25.md).**
+> This notice will be removed with the 1.0.0 release of Dangerzone.
+
 
 > [!IMPORTANT]
 > This section will install Dangerzone in your **default template**
@@ -160,7 +164,7 @@ template. This will be the qube where the documents will be sanitized:
 ```
 qvm-create --class AppVM --label red --template fedora-38 \
     --prop netvm="" --prop template_for_dispvms=True \
-    dz-dvm
+    --prop default_dispvm='' dz-dvm
 ```
 
 Add an RPC policy (`/etc/qubes/policy.d/50-dangerzone.policy`) that will
@@ -191,6 +195,7 @@ column to "Selected".
 
 You can now launch Dangerzone from the list of applications for your qube, and
 pass it a file to sanitize.
+
 
 ## Build from source
 

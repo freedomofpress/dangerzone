@@ -10,11 +10,13 @@ import subprocess
 import sys
 import time
 from abc import abstractmethod
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, Generator, List, Optional, Tuple, Union
 
 TIMEOUT_PER_PAGE: float = 30  # (seconds)
 TIMEOUT_PER_MB: float = 30  # (seconds)
 TIMEOUT_MIN: float = 60  # (seconds)
+
+PAGE_BATCH_SIZE = 50  # number of pages to be processed simulatenously
 
 
 def running_on_qubes() -> bool:
@@ -42,6 +44,16 @@ def calculate_timeout(size: float, pages: Optional[float] = None) -> float:
     if pages:
         timeout = max(timeout, TIMEOUT_PER_PAGE * pages)
     return timeout
+
+
+def batch_iterator(num_pages: int) -> Generator[Tuple[int, int], None, None]:
+    """Iterates over batches of PAGE_BATCH_SIZE pages"""
+    for first_page in range(1, num_pages + 1, PAGE_BATCH_SIZE):
+        if first_page + PAGE_BATCH_SIZE >= num_pages:  # Last batch
+            last_page = num_pages
+        else:
+            last_page = first_page + PAGE_BATCH_SIZE - 1
+        yield (first_page, last_page)
 
 
 class DangerzoneConverter:

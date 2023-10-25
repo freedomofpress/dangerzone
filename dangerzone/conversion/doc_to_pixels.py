@@ -19,7 +19,14 @@ from typing import Dict, List, Optional
 import magic
 
 from . import errors
-from .common import DangerzoneConverter, running_on_qubes
+from .common import (
+    PAGE_BATCH_SIZE,
+    DangerzoneConverter,
+    batch_iterator,
+    running_on_qubes,
+)
+
+PAGE_BASE = "/tmp/page"
 
 
 class DocumentToPixels(DangerzoneConverter):
@@ -276,39 +283,70 @@ class DocumentToPixels(DangerzoneConverter):
         # Get a more precise timeout, based on the number of pages
         timeout = self.calculate_timeout(size, num_pages)
 
-        async def pdftoppm_progress_callback(line: bytes) -> None:
-            """Function called for every line the 'pdftoppm' command outputs
+        if timeout is None:
+            timeout_per_batch = None
+        else:
+            timeout_per_batch = timeout / (int(num_pages / PAGE_BATCH_SIZE) + 1)
+        for first_page, last_page in batch_iterator(num_pages):
+            await self.pdf_to_rgb(first_page, last_page, pdf_filename, timeout_per_batch)
+            await self.send_rgb_files(first_page, last_page, num_pages)
 
-            Sample pdftoppm output:
+        final_files = (
+            glob.glob("/tmp/page-*.rgb")
+            + glob.glob("/tmp/page-*.width")
+            + glob.glob("/tmp/page-*.height")
+        )
 
-                $ pdftoppm sample.pdf  /tmp/safe -progress
-                1 4 /tmp/safe-1.ppm
-                2 4 /tmp/safe-2.ppm
-                3 4 /tmp/safe-3.ppm
-                4 4 /tmp/safe-4.ppm
+        # XXX: Sanity check to avoid situations like #560.
+        if not running_on_qubes() and len(final_files) != 3 * num_pages:
+            raise errors.PageCountMismatch()
 
-            Each successful line is in the format "{page} {page_num} {ppm_filename}"
-            """
-            try:
-                (page_str, num_pages_str, _) = line.decode().split()
-                num_pages = int(num_pages_str)
-                page = int(page_str)
-            except ValueError as e:
-                # Ignore all non-progress related output, since pdftoppm sends
-                # everything to stderr and thus, errors can't be distinguished
-                # easily. We rely instead on the exit code.
-                return
+        # Move converted files into /tmp/dangerzone
+        for filename in final_files:
+            shutil.move(filename, "/tmp/dangerzone")
 
+        self.update_progress("Converted document to pixels")
+
+    async def pdf_to_rgb(
+        self,
+        first_page: int,
+        last_page: int,
+        pdf_filename: str,
+        timeout: Optional[float],
+    ) -> None:
+        await self.run_command(
+            [
+                "pdftoppm",
+                pdf_filename,
+                PAGE_BASE,
+                "-progress",
+                "-f",
+                str(first_page),
+                "-l",
+                str(last_page),
+            ],
+            error_message="Conversion from PDF to PPM failed",
+            timeout_message=(
+                f"Error converting from PDF to PPM, pdftoppm timed out after {timeout}"
+                " seconds"
+            ),
+            timeout=timeout,
+        )
+
+    async def send_rgb_files(
+        self, first_page: int, last_page: int, num_pages: int
+    ) -> None:
+        for page in range(first_page, last_page + 1):
             percentage_per_page = 45.0 / num_pages
             self.percentage += percentage_per_page
-            self.update_progress(f"Converting page {page}/{num_pages} to pixels")
+            self.update_progress(f"Converting pages {page}/{num_pages} to pixels")
 
-            zero_padding = "0" * (len(num_pages_str) - len(page_str))
-            ppm_filename = f"{page_base}-{zero_padding}{page}.ppm"
-            rgb_filename = f"{page_base}-{page}.rgb"
-            width_filename = f"{page_base}-{page}.width"
-            height_filename = f"{page_base}-{page}.height"
-            filename_base = f"{page_base}-{page}"
+            zero_padding = "0" * (len(str(num_pages)) - len(str(page)))
+            ppm_filename = f"{PAGE_BASE}-{zero_padding}{page}.ppm"
+            rgb_filename = f"{PAGE_BASE}-{page}.rgb"
+            width_filename = f"{PAGE_BASE}-{page}.width"
+            height_filename = f"{PAGE_BASE}-{page}.height"
+            filename_base = f"{PAGE_BASE}-{page}"
 
             with open(ppm_filename, "rb") as f:
                 # NOTE: PPM files have multiple ways of writing headers.
@@ -338,40 +376,6 @@ class DocumentToPixels(DangerzoneConverter):
 
             # Delete the ppm file
             os.remove(ppm_filename)
-
-        page_base = "/tmp/page"
-
-        await self.run_command(
-            [
-                "pdftoppm",
-                pdf_filename,
-                page_base,
-                "-progress",
-            ],
-            error_message="Conversion from PDF to PPM failed",
-            timeout_message=(
-                f"Error converting from PDF to PPM, pdftoppm timed out after {timeout}"
-                " seconds"
-            ),
-            stderr_callback=pdftoppm_progress_callback,
-            timeout=timeout,
-        )
-
-        final_files = (
-            glob.glob("/tmp/page-*.rgb")
-            + glob.glob("/tmp/page-*.width")
-            + glob.glob("/tmp/page-*.height")
-        )
-
-        # XXX: Sanity check to avoid situations like #560.
-        if not running_on_qubes() and len(final_files) != 3 * num_pages:
-            raise errors.PageCountMismatch()
-
-        # Move converted files into /tmp/dangerzone
-        for filename in final_files:
-            shutil.move(filename, "/tmp/dangerzone")
-
-        self.update_progress("Converted document to pixels")
 
     async def install_libreoffice_ext(self, libreoffice_ext: str) -> None:
         self.update_progress(f"Installing LibreOffice extension '{libreoffice_ext}'")

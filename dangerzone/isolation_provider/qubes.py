@@ -76,7 +76,6 @@ class Qubes(IsolationProvider):
     ) -> bool:
         success = False
 
-        Path(f"{tempdir}/dangerzone").mkdir()
         percentage = 0.0
 
         with open(document.input_filename, "rb") as f:
@@ -122,13 +121,9 @@ class Qubes(IsolationProvider):
                     timeout=sw.remaining,
                 )
 
-                # Wrapper code
-                with open(f"{tempdir}/dangerzone/page-{page}.width", "w") as f_width:
-                    f_width.write(str(width))
-                with open(f"{tempdir}/dangerzone/page-{page}.height", "w") as f_height:
-                    f_height.write(str(height))
-                with open(f"{tempdir}/dangerzone/page-{page}.rgb", "wb") as f_rgb:
-                    f_rgb.write(untrusted_pixels)
+                self.convert_pixels_to_png(
+                    tempdir, page, width, height, rgb_data=untrusted_pixels
+                )
 
                 percentage += percentage_per_page
 
@@ -165,7 +160,9 @@ class Qubes(IsolationProvider):
                 )
                 log.info(text)
 
-        shutil.move(f"{tempdir}/safe-output-compressed.pdf", document.output_filename)
+        shutil.move(
+            Path(tempdir) / "safe-output-compressed.pdf", document.output_filename
+        )
         success = True
 
         return success

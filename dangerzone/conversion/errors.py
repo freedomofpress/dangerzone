@@ -104,6 +104,11 @@ class PDFtoPPMInvalidDepth(PDFtoPPMException):
     error_message = "Error converting PDF to Pixels (Invalid PPM depth)"
 
 
+class PPMtoPNGError(ConversionException):
+    error_code = ERROR_SHIFT + 55
+    error_message = "Document page could not be reassembled from individual pixels"
+
+
 class InterruptedConversion(ConversionException):
     """Protocol received num of bytes different than expected"""
 

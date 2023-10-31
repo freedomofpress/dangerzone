@@ -1,11 +1,14 @@
+import io
 import logging
 import subprocess
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Callable, Optional
 
 from colorama import Fore, Style
+from PIL import Image, UnidentifiedImageError
 
-from ..conversion.errors import ConversionException
+from ..conversion import errors
 from ..document import Document
 from ..util import replace_control_chars
 
@@ -37,7 +40,7 @@ class IsolationProvider(ABC):
         document.mark_as_converting()
         try:
             success = self._convert(document, ocr_lang)
-        except ConversionException as e:
+        except errors.ConversionException as e:
             success = False
             self.print_progress_trusted(document, True, str(e), 0)
         except Exception as e:
@@ -100,6 +103,21 @@ class IsolationProvider(ABC):
         armor_start = f"{DOC_TO_PIXELS_LOG_START}\n"
         armor_end = DOC_TO_PIXELS_LOG_END
         return armor_start + conversion_string + armor_end
+
+    def convert_pixels_to_png(
+        self, tempdir: str, page: int, width: int, height: int, rgb_data: bytes
+    ) -> None:
+        """
+        Reconstruct PPM files and save as PNG to save space
+        """
+        ppm_header = f"P6\n{width} {height}\n255\n".encode()
+        ppm_data = io.BytesIO(ppm_header + rgb_data)
+        png_path = Path(tempdir) / f"page-{page}.png"
+
+        try:
+            Image.open(ppm_data).save(png_path, "PNG")
+        except UnidentifiedImageError as e:
+            raise errors.PPMtoPNGError() from e
 
 
 # From global_common:

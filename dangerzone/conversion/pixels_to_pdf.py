@@ -18,33 +18,22 @@ from .common import DangerzoneConverter, running_on_qubes
 
 class PixelsToPDF(DangerzoneConverter):
     async def convert(
-        self, ocr_lang: Optional[str] = None, tempdir: Optional[str] = None
+        self, ocr_lang: Optional[str] = None, tempdir: Optional[str] = "/tmp"
     ) -> None:
         self.percentage = 50.0
-        if tempdir is None:
-            tempdir = "/tmp"
 
-        num_pages = len(glob.glob(f"{tempdir}/dangerzone/page-*.rgb"))
+        num_pages = len(glob.glob(f"{tempdir}/page-*.png"))
         total_size = 0.0
 
         # Convert RGB files to PDF files
         percentage_per_page = 45.0 / num_pages
         for page in range(1, num_pages + 1):
-            filename_base = f"{tempdir}/dangerzone/page-{page}"
-            rgb_filename = f"{filename_base}.rgb"
-            width_filename = f"{filename_base}.width"
-            height_filename = f"{filename_base}.height"
-            png_filename = f"{tempdir}/page-{page}.png"
-            ocr_filename = f"{tempdir}/page-{page}"
-            pdf_filename = f"{tempdir}/page-{page}.pdf"
-
-            with open(width_filename) as f:
-                width = f.read().strip()
-            with open(height_filename) as f:
-                height = f.read().strip()
+            filename_base = f"{tempdir}/page-{page}"
+            png_filename = f"{filename_base}.png"
+            pdf_filename = f"{filename_base}.pdf"
 
             # The first few operations happen on a per-page basis.
-            page_size = os.path.getsize(filename_base + ".rgb") / 1024**2
+            page_size = os.path.getsize(png_filename) / 1024**2
             total_size += page_size
             timeout = self.calculate_timeout(page_size, 1)
 
@@ -54,27 +43,9 @@ class PixelsToPDF(DangerzoneConverter):
                 )
                 await self.run_command(
                     [
-                        "gm",
-                        "convert",
-                        "-size",
-                        f"{width}x{height}",
-                        "-depth",
-                        "8",
-                        f"rgb:{rgb_filename}",
-                        f"png:{png_filename}",
-                    ],
-                    error_message=f"Page {page}/{num_pages} conversion to PNG failed",
-                    timeout_message=(
-                        "Error converting pixels to PNG, convert timed out after"
-                        f" {timeout} seconds"
-                    ),
-                    timeout=timeout,
-                )
-                await self.run_command(
-                    [
                         "tesseract",
                         png_filename,
-                        ocr_filename,
+                        filename_base,
                         "-l",
                         ocr_lang,
                         "--dpi",
@@ -97,11 +68,7 @@ class PixelsToPDF(DangerzoneConverter):
                     [
                         "gm",
                         "convert",
-                        "-size",
-                        f"{width}x{height}",
-                        "-depth",
-                        "8",
-                        f"rgb:{rgb_filename}",
+                        f"png:{png_filename}",
                         f"pdf:{pdf_filename}",
                     ],
                     error_message=f"Page {page}/{num_pages} conversion to PDF failed",
@@ -111,6 +78,9 @@ class PixelsToPDF(DangerzoneConverter):
                     ),
                     timeout=timeout,
                 )
+
+            # remove PNG file when it is no longer needed
+            os.remove(png_filename)
 
             self.percentage += percentage_per_page
 
@@ -165,7 +135,7 @@ async def main() -> int:
     converter = PixelsToPDF()
 
     try:
-        await converter.convert(ocr_lang)
+        await converter.convert(ocr_lang, tempdir="/tmp/dangerzone")
         error_code = 0  # Success!
 
     except (RuntimeError, TimeoutError, ValueError) as e:

@@ -1,3 +1,4 @@
+import glob
 import gzip
 import json
 import logging
@@ -11,7 +12,7 @@ import sys
 import tempfile
 from typing import Any, Callable, List, Optional, Tuple
 
-from ..conversion.errors import exception_from_error_code
+from ..conversion import errors
 from ..document import Document
 from ..util import (
     get_resource_path,
@@ -304,11 +305,31 @@ class Container(IsolationProvider):
                 f"Conversion output (doc to pixels):\n{self.sanitize_conversion_str(untrusted_log)}"
             )
 
+        num_pages = len(glob.glob(f"{pixel_dir}/page-*.rgb"))
+        for page in range(1, num_pages + 1):
+            filename_base = f"{pixel_dir}/page-{page}"
+            rgb_filename = f"{filename_base}.rgb"
+            width_filename = f"{filename_base}.width"
+            height_filename = f"{filename_base}.height"
+            with open(width_filename) as f:
+                width = int(f.read().strip())
+            with open(height_filename) as f:
+                height = int(f.read().strip())
+            with open(rgb_filename, "rb") as rgb_f:
+                untrusted_pixels = rgb_f.read()
+                self.convert_pixels_to_png(
+                    str(pixel_dir), page, width, height, rgb_data=untrusted_pixels
+                )
+
+            os.remove(rgb_filename)
+            os.remove(width_filename)
+            os.remove(height_filename)
+
         if ret != 0:
             log.error("documents-to-pixels failed")
 
             # XXX Reconstruct exception from error code
-            raise exception_from_error_code(ret)  # type: ignore [misc]
+            raise errors.exception_from_error_code(ret)  # type: ignore [misc]
         else:
             # TODO: validate convert to pixels output
 

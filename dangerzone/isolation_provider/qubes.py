@@ -109,10 +109,6 @@ class Qubes(IsolationProvider):
 
                 width = read_int(self.proc.stdout, timeout=sw.remaining)
                 height = read_int(self.proc.stdout, timeout=sw.remaining)
-                if not (1 <= width <= errors.MAX_PAGE_WIDTH):
-                    raise errors.MaxPageWidthException()
-                if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
-                    raise errors.MaxPageHeightException()
 
                 num_pixels = width * height * 3  # three color channels
                 untrusted_pixels = read_bytes(

@@ -118,6 +118,11 @@ class InterruptedConversion(ConversionException):
     )
 
 
+class PixelFilesMismatch(ConversionException):
+    error_code = ERROR_SHIFT + 70
+    error_message = "The number of pages received is different than expected"
+
+
 class UnexpectedConversionError(PDFtoPPMException):
     error_code = ERROR_SHIFT + 100
     error_message = "Some unexpected error occurred while converting the document"

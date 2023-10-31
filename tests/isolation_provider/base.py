@@ -9,7 +9,13 @@ from dangerzone.document import Document
 from dangerzone.isolation_provider import base
 from dangerzone.isolation_provider.qubes import running_on_qubes
 
-from .. import pdf_11k_pages, sanitized_text, uncommon_text
+from .. import (
+    pdf_11k_pages,
+    sample_bad_height,
+    sample_bad_width,
+    sanitized_text,
+    uncommon_text,
+)
 
 
 @pytest.mark.skipif(
@@ -67,4 +73,19 @@ class IsolationProviderTest:
         doc = Document(pdf_11k_pages)
         with pytest.raises(errors.MaxPagesException):
             success = provider._convert(doc, ocr_lang=None)
+            assert not success
+
+    def test_max_dimensions(
+        self,
+        sample_bad_width: str,
+        sample_bad_height: str,
+        provider: base.IsolationProvider,
+        mocker: MockerFixture,
+    ) -> None:
+        provider.progress_callback = mocker.MagicMock()
+        with pytest.raises(errors.MaxPageWidthException):
+            success = provider._convert(Document(sample_bad_width), ocr_lang=None)
+            assert not success
+        with pytest.raises(errors.MaxPageHeightException):
+            success = provider._convert(Document(sample_bad_height), ocr_lang=None)
             assert not success

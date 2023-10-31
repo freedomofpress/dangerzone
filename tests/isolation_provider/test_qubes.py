@@ -45,21 +45,6 @@ class TestQubes(IsolationProviderTest):
             success = provider._convert(doc, ocr_lang=None)
             assert not success
 
-    def test_max_dimensions(
-        self,
-        sample_bad_width: str,
-        sample_bad_height: str,
-        provider: Qubes,
-        mocker: MockerFixture,
-    ) -> None:
-        provider.progress_callback = mocker.MagicMock()
-        with pytest.raises(errors.MaxPageWidthException):
-            success = provider._convert(Document(sample_bad_width), ocr_lang=None)
-            assert not success
-        with pytest.raises(errors.MaxPageHeightException):
-            success = provider._convert(Document(sample_bad_height), ocr_lang=None)
-            assert not success
-
     def test_out_of_ram(
         self,
         provider: Qubes,

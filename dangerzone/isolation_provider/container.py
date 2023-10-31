@@ -306,6 +306,8 @@ class Container(IsolationProvider):
             )
 
         num_pages = len(glob.glob(f"{pixel_dir}/page-*.rgb"))
+        self.verify_received_pixel_files(pixel_dir, num_pages)
+
         for page in range(1, num_pages + 1):
             filename_base = f"{pixel_dir}/page-{page}"
             rgb_filename = f"{filename_base}.rgb"
@@ -378,6 +380,25 @@ class Container(IsolationProvider):
                     log.info(text)
 
         return success
+
+    def verify_received_pixel_files(
+        self, pixel_dir: pathlib.Path, num_pages: int
+    ) -> None:
+        """Make sure we have the files we expect"""
+
+        expected_filenames = ["captured_output.txt"]
+        for i in range(1, num_pages + 1):
+            expected_filenames += [
+                f"page-{i}.rgb",
+                f"page-{i}.width",
+                f"page-{i}.height",
+            ]
+        expected_filenames.sort()
+        actual_filenames = os.listdir(pixel_dir)
+        actual_filenames.sort()
+
+        if expected_filenames != actual_filenames:
+            raise errors.PixelFilesMismatch()
 
     def get_max_parallel_conversions(self) -> int:
         # FIXME hardcoded 1 until timeouts are more limited and better handled

@@ -9,7 +9,13 @@ from dangerzone.document import Document
 from dangerzone.isolation_provider.container import Container
 
 # XXX Fixtures used in abstract Test class need to be imported regardless
-from .. import pdf_11k_pages, sanitized_text, uncommon_text
+from .. import (
+    pdf_11k_pages,
+    sample_bad_height,
+    sample_bad_width,
+    sanitized_text,
+    uncommon_text,
+)
 from .base import IsolationProviderTest
 
 

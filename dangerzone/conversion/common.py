@@ -56,6 +56,14 @@ def batch_iterator(num_pages: int) -> Generator[Tuple[int, int], None, None]:
         yield (first_page, last_page)
 
 
+def get_batch_timeout(timeout: Optional[float], num_pages: int) -> Optional[float]:
+    if timeout is None:
+        return None
+    else:
+        num_batches = int(num_pages / PAGE_BATCH_SIZE)
+        return timeout / num_batches
+
+
 class DangerzoneConverter:
     def __init__(self, progress_callback: Optional[Callable] = None) -> None:
         self.percentage: float = 0.0

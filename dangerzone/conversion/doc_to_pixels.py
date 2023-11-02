@@ -23,6 +23,7 @@ from .common import (
     PAGE_BATCH_SIZE,
     DangerzoneConverter,
     batch_iterator,
+    get_batch_timeout,
     running_on_qubes,
 )
 
@@ -283,10 +284,7 @@ class DocumentToPixels(DangerzoneConverter):
         # Get a more precise timeout, based on the number of pages
         timeout = self.calculate_timeout(size, num_pages)
 
-        if timeout is None:
-            timeout_per_batch = None
-        else:
-            timeout_per_batch = timeout / (int(num_pages / PAGE_BATCH_SIZE) + 1)
+        timeout_per_batch = get_batch_timeout(timeout, num_pages)
         for first_page, last_page in batch_iterator(num_pages):
             # XXX send data from the previous loop's conversion to
             # always be able to process and send data at the same time

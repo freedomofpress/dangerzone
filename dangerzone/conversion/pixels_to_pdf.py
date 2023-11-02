@@ -13,7 +13,12 @@ import shutil
 import sys
 from typing import Optional
 
-from .common import DangerzoneConverter, running_on_qubes
+from .common import (
+    DangerzoneConverter,
+    batch_iterator,
+    get_batch_timeout,
+    running_on_qubes,
+)
 
 
 class PixelsToPDF(DangerzoneConverter):
@@ -89,20 +94,29 @@ class PixelsToPDF(DangerzoneConverter):
         timeout = self.calculate_timeout(total_size, num_pages)
 
         # Merge pages into a single PDF
+        timeout_per_batch = get_batch_timeout(timeout, num_pages)
         self.update_progress(f"Merging {num_pages} pages into a single PDF")
-        args = ["pdfunite"]
-        for page in range(1, num_pages + 1):
-            args.append(f"{tempdir}/page-{page}.pdf")
-        args.append(f"{tempdir}/safe-output.pdf")
-        await self.run_command(
-            args,
-            error_message="Merging pages into a single PDF failed",
-            timeout_message=(
-                "Error merging pages into a single PDF, pdfunite timed out after"
-                f" {timeout} seconds"
-            ),
-            timeout=timeout,
-        )
+        for first_page, last_page in batch_iterator(num_pages):
+            args = ["pdfunite"]
+            accumulator = f"{tempdir}/safe-output.pdf"  # PDF which accumulates pages
+            accumulator_temp = f"{tempdir}/safe-output_tmp.pdf"
+            if first_page > 1:  # Append at the beginning
+                args.append(accumulator)
+            for page in range(first_page, last_page + 1):
+                args.append(f"{tempdir}/page-{page}.pdf")
+            args.append(accumulator_temp)
+            await self.run_command(
+                args,
+                error_message="Merging pages into a single PDF failed",
+                timeout_message=(
+                    "Error merging pages into a single PDF, pdfunite timed out after"
+                    f" {timeout_per_batch} seconds"
+                ),
+                timeout=timeout_per_batch,
+            )
+            for page in range(first_page, last_page + 1):
+                os.remove(f"{tempdir}/page-{page}.pdf")
+            os.rename(accumulator_temp, accumulator)
 
         self.percentage += 2
 

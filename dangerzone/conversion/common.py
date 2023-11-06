@@ -60,7 +60,7 @@ def get_batch_timeout(timeout: Optional[float], num_pages: int) -> Optional[floa
     if timeout is None:
         return None
     else:
-        num_batches = int(num_pages / PAGE_BATCH_SIZE)
+        num_batches = int(num_pages / PAGE_BATCH_SIZE) + 1
         return timeout / num_batches
 
 

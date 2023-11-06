@@ -72,6 +72,7 @@ BuildRequires:  python3-devel
 %if 0%{?_qubes}
 # Qubes-only requirements
 Requires:       python3-magic
+Requires:       python3-pillow
 Requires:       libreoffice
 Requires:       tesseract
 # Explicitly require every tesseract model:

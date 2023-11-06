@@ -68,7 +68,7 @@ class Qubes(IsolationProvider):
     def install(self) -> bool:
         return True
 
-    def __convert(
+    def _convert_with_tmpdirs(
         self,
         document: Document,
         tempdir: str,
@@ -177,7 +177,7 @@ class Qubes(IsolationProvider):
     ) -> bool:
         try:
             with tempfile.TemporaryDirectory() as t:
-                return self.__convert(document, t, ocr_lang)
+                return self._convert_with_tmpdirs(document, t, ocr_lang)
         except errors.InterruptedConversion:
             assert self.proc is not None
             error_code = self.proc.wait(3)

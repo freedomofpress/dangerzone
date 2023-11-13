@@ -7,7 +7,6 @@ ARG H2ORESTART_CHECKSUM=5db816a1e57b510456633f55e693cb5ef3675ef8b35df4f31c90ab9d
 RUN apk --no-cache -U upgrade && \
     apk --no-cache add \
     ghostscript \
-    graphicsmagick \
     libreoffice \
     openjdk8 \
     poppler-utils \
@@ -16,6 +15,10 @@ RUN apk --no-cache -U upgrade && \
     py3-magic \
     tesseract-ocr \
     font-noto-cjk
+
+RUN apk --no-cache add --virtual .builddeps g++ gcc make python3-dev py3-pip \
+     && pip install --upgrade PyMuPDF \
+     && apk del .builddeps  # FIXME freeze w/ hashes
 
 # Download the trained models from the latest GitHub release of Tesseract, and
 # store them under /usr/share/tessdata. This is basically what distro packages

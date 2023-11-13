@@ -15,6 +15,7 @@ import shutil
 import sys
 from typing import Dict, List, Optional
 
+import fitz
 import magic
 
 from . import errors
@@ -267,87 +268,23 @@ class DocumentToPixels(DangerzoneConverter):
 
         # Get a more precise timeout, based on the number of pages
         timeout = self.calculate_timeout(size, num_pages)
-
-        async def pdftoppm_progress_callback(line: bytes) -> None:
-            """Function called for every line the 'pdftoppm' command outputs
-
-            Sample pdftoppm output:
-
-                $ pdftoppm sample.pdf  /tmp/safe -progress
-                1 4 /tmp/safe-1.ppm
-                2 4 /tmp/safe-2.ppm
-                3 4 /tmp/safe-3.ppm
-                4 4 /tmp/safe-4.ppm
-
-            Each successful line is in the format "{page} {page_num} {ppm_filename}"
-            """
-            try:
-                (page_str, num_pages_str, _) = line.decode().split()
-                num_pages = int(num_pages_str)
-                page = int(page_str)
-            except ValueError as e:
-                # Ignore all non-progress related output, since pdftoppm sends
-                # everything to stderr and thus, errors can't be distinguished
-                # easily. We rely instead on the exit code.
-                return
-
-            percentage_per_page = 45.0 / num_pages
-            self.percentage += percentage_per_page
-            self.update_progress(f"Converting page {page}/{num_pages} to pixels")
-
-            zero_padding = "0" * (len(num_pages_str) - len(page_str))
-            ppm_filename = f"{page_base}-{zero_padding}{page}.ppm"
-            rgb_filename = f"{page_base}-{page}.rgb"
-            width_filename = f"{page_base}-{page}.width"
-            height_filename = f"{page_base}-{page}.height"
-            filename_base = f"{page_base}-{page}"
-
-            with open(ppm_filename, "rb") as f:
-                # NOTE: PPM files have multiple ways of writing headers.
-                # For our specific case we parse it expecting the header format that ppmtopdf produces
-                # More info on PPM headers: https://people.uncw.edu/tompkinsj/112/texnh/assignments/imageFormat.html
-
-                # Read the header
-                header = f.readline().decode().strip()
-                if header != "P6":
-                    raise errors.PDFtoPPMInvalidHeader()
-
-                # Save the width and height
-                dims = f.readline().decode().strip()
-                width, height = dims.split()
-                await self.write_page_width(int(width), width_filename)
-                await self.write_page_height(int(height), height_filename)
-
-                maxval = int(f.readline().decode().strip())
-                # Check that the depth is 8
-                if maxval != 255:
-                    raise errors.PDFtoPPMInvalidDepth()
-
-                data = f.read()
-
-            # Save pixel data
-            await self.write_page_data(data, rgb_filename)
-
-            # Delete the ppm file
-            os.remove(ppm_filename)
-
+        percentage_per_page = 45.0 / num_pages
         page_base = "/tmp/page"
+        doc = fitz.open(pdf_filename)
+        for page in doc:
+            # TODO check if page.number is doc-controlled
+            page_num = page.number + 1  # pages start in 1
+            rgb_filename = f"{page_base}-{page_num}.rgb"
+            width_filename = f"{page_base}-{page_num}.width"
+            height_filename = f"{page_base}-{page_num}.height"
 
-        await self.run_command(
-            [
-                "pdftoppm",
-                pdf_filename,
-                page_base,
-                "-progress",
-            ],
-            error_message="Conversion from PDF to PPM failed",
-            timeout_message=(
-                f"Error converting from PDF to PPM, pdftoppm timed out after {timeout}"
-                " seconds"
-            ),
-            stderr_callback=pdftoppm_progress_callback,
-            timeout=timeout,
-        )
+            self.percentage += percentage_per_page
+            self.update_progress(f"Converting page {page_num}/{num_pages} to pixels")
+            pix = page.get_pixmap(dpi=150)
+            rgb_buf = pix.samples_mv
+            await self.write_page_width(pix.width, width_filename)
+            await self.write_page_height(pix.height, height_filename)
+            await self.write_page_data(rgb_buf, rgb_filename)
 
         final_files = (
             glob.glob("/tmp/page-*.rgb")

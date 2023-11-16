@@ -250,8 +250,6 @@ class DocumentToPixels(DangerzoneConverter):
             raise errors.MaxPagesException()
         await self.write_page_count(doc.page_count)
 
-        # Get a more precise timeout, based on the number of pages
-        timeout = self.calculate_timeout(size, doc.page_count)
         percentage_per_page = 45.0 / doc.page_count
         page_base = "/tmp/page"
         for page in doc.pages():

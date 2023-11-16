@@ -245,33 +245,16 @@ class DocumentToPixels(DangerzoneConverter):
         self.percentage += 3
 
         # Obtain number of pages
-        self.update_progress("Calculating number of pages")
-        stdout, _ = await self.run_command(
-            ["pdfinfo", pdf_filename],
-            error_message="PDF file is corrupted",
-            timeout_message=(
-                f"Extracting metadata from PDF timed out after {timeout} second"
-            ),
-            timeout=timeout,
-        )
-
-        search = re.search(r"^Pages:\s*(\d+)\s*\n", stdout.decode(), re.MULTILINE)
-        if search is not None:
-            num_pages: int = int(search.group(1))
-        else:
-            raise errors.NoPageCountException()
-
-        if num_pages > errors.MAX_PAGES:
+        doc = fitz.open(pdf_filename)
+        if doc.page_count > errors.MAX_PAGES:
             raise errors.MaxPagesException()
-
-        await self.write_page_count(num_pages)
+        await self.write_page_count(doc.page_count)
 
         # Get a more precise timeout, based on the number of pages
-        timeout = self.calculate_timeout(size, num_pages)
-        percentage_per_page = 45.0 / num_pages
+        timeout = self.calculate_timeout(size, doc.page_count)
+        percentage_per_page = 45.0 / doc.page_count
         page_base = "/tmp/page"
-        doc = fitz.open(pdf_filename)
-        for page in doc:
+        for page in doc.pages():
             # TODO check if page.number is doc-controlled
             page_num = page.number + 1  # pages start in 1
             rgb_filename = f"{page_base}-{page_num}.rgb"
@@ -279,7 +262,9 @@ class DocumentToPixels(DangerzoneConverter):
             height_filename = f"{page_base}-{page_num}.height"
 
             self.percentage += percentage_per_page
-            self.update_progress(f"Converting page {page_num}/{num_pages} to pixels")
+            self.update_progress(
+                f"Converting page {page_num}/{doc.page_count} to pixels"
+            )
             pix = page.get_pixmap(dpi=150)
             rgb_buf = pix.samples_mv
             await self.write_page_width(pix.width, width_filename)
@@ -293,7 +278,7 @@ class DocumentToPixels(DangerzoneConverter):
         )
 
         # XXX: Sanity check to avoid situations like #560.
-        if not running_on_qubes() and len(final_files) != 3 * num_pages:
+        if not running_on_qubes() and len(final_files) != 3 * doc.page_count:
             raise errors.PageCountMismatch()
 
         # Move converted files into /tmp/dangerzone

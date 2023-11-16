@@ -146,14 +146,14 @@ class DocumentToPixels(DangerzoneConverter):
                 "type": "libreoffice",
             },
             # .jpg
-            "image/jpeg": {"type": "convert"},
+            "image/jpeg": {"type": None},
             # .gif
-            "image/gif": {"type": "convert"},
+            "image/gif": {"type": None},
             # .png
-            "image/png": {"type": "convert"},
+            "image/png": {"type": None},
             # .tif
-            "image/tiff": {"type": "convert"},
-            "image/x-tiff": {"type": "convert"},
+            "image/tiff": {"type": None},
+            "image/x-tiff": {"type": None},
         }
 
         # Detect MIME type
@@ -182,7 +182,7 @@ class DocumentToPixels(DangerzoneConverter):
         # Convert input document to PDF
         conversion = conversions[mime_type]
         if conversion["type"] is None:
-            pdf_filename = "/tmp/input_file"
+            doc = fitz.open("/tmp/input_file", filetype=mime_type)
         elif conversion["type"] == "libreoffice":
             libreoffice_ext = conversion.get("libreoffice_ext", None)
             # Disable conversion for HWP/HWPX on specific platforms. See:
@@ -220,24 +220,7 @@ class DocumentToPixels(DangerzoneConverter):
             #     https://github.com/freedomofpress/dangerzone/issues/494
             if not os.path.exists(pdf_filename):
                 raise errors.LibreofficeFailure()
-        elif conversion["type"] == "convert":
-            self.update_progress("Converting to PDF using GraphicsMagick")
-            args = [
-                "gm",
-                "convert",
-                "/tmp/input_file",
-                "/tmp/input_file.pdf",
-            ]
-            await self.run_command(
-                args,
-                error_message="Conversion to PDF with GraphicsMagick failed",
-                timeout_message=(
-                    "Error converting document to PDF, GraphicsMagick timed out after"
-                    f" {timeout} seconds"
-                ),
-                timeout=timeout,
-            )
-            pdf_filename = "/tmp/input_file.pdf"
+            doc = fitz.open(pdf_filename)
         else:
             raise errors.InvalidGMConversion(
                 f"Invalid conversion type {conversion['type']} for MIME type {mime_type}"
@@ -245,7 +228,6 @@ class DocumentToPixels(DangerzoneConverter):
         self.percentage += 3
 
         # Obtain number of pages
-        doc = fitz.open(pdf_filename)
         if doc.page_count > errors.MAX_PAGES:
             raise errors.MaxPagesException()
         await self.write_page_count(doc.page_count)

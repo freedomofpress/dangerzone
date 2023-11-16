@@ -72,6 +72,7 @@ BuildRequires:  python3-devel
 %if 0%{?_qubes}
 # Qubes-only requirements (server-side)
 Requires:       python3-magic
+Requires:       python3-PyMuPDF
 Requires:       libreoffice
 # Qubes-only requirements (client-side)
 Requires:       GraphicsMagick

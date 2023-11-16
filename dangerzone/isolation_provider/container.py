@@ -324,6 +324,8 @@ class Container(IsolationProvider):
                 "-v",
                 f"{safe_dir}:/safezone:Z",
                 "-e",
+                "TESSDATA_PREFIX=/usr/share/tessdata",
+                "-e",
                 f"OCR={ocr}",
                 "-e",
                 f"OCR_LANGUAGE={ocr_lang}",

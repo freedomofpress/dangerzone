@@ -44,6 +44,13 @@ def calculate_timeout(size: float, pages: Optional[float] = None) -> float:
     return timeout
 
 
+def get_tessdata_dir() -> str:
+    if running_on_qubes():
+        return "/usr/share/tesseract/tessdata/"
+    else:
+        return "/usr/share/tessdata/"
+
+
 class DangerzoneConverter:
     def __init__(self, progress_callback: Optional[Callable] = None) -> None:
         self.percentage: float = 0.0

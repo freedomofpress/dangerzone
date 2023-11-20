@@ -296,14 +296,6 @@ class Container(IsolationProvider):
         ]
         ret = self.exec_container(document, command, extra_args)
 
-        if getattr(sys, "dangerzone_dev", False):
-            log_path = pixel_dir / "captured_output.txt"
-            with open(log_path, "r", encoding="ascii", errors="replace") as f:
-                untrusted_log = f.read(MAX_CONVERSION_LOG_CHARS)
-            log.info(
-                f"Conversion output (doc to pixels):\n{self.sanitize_conversion_str(untrusted_log)}"
-            )
-
         if ret != 0:
             log.error("documents-to-pixels failed")
 
@@ -347,16 +339,6 @@ class Container(IsolationProvider):
 
                 # We did it
                 success = True
-
-        if getattr(sys, "dangerzone_dev", False):
-            log_path = safe_dir / "captured_output.txt"
-            if log_path.exists():  # If first stage failed this may not exist
-                with open(log_path, "r", encoding="ascii", errors="replace") as f:
-                    text = (
-                        f"Container output: (pixels to PDF)\n"
-                        f"{PIXELS_TO_PDF_LOG_START}\n{f.read()}{PIXELS_TO_PDF_LOG_END}"
-                    )
-                    log.info(text)
 
         return success
 

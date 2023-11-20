@@ -309,10 +309,6 @@ async def main() -> int:
     except Exception as e:
         converter.update_progress(str(e), error=True)
         error_code = errors.UnexpectedConversionError.error_code
-    if not running_on_qubes():
-        # Write debug information (containers version)
-        with open("/tmp/dangerzone/captured_output.txt", "wb") as container_log:
-            container_log.write(converter.captured_output)
     return error_code
 
 

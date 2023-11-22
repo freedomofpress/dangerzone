@@ -34,7 +34,7 @@ def main():
         say(f"Importing the conversion module")
         sys.path.insert(0, t.name)
 
-        from dangerzone.conversion.doc_to_pixels_qubes_wrapper import main
+        from dangerzone.conversion.doc_to_pixels import main
         return asyncio.run(main())
 
 

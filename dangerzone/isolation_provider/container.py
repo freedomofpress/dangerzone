@@ -2,16 +2,14 @@ import gzip
 import json
 import logging
 import os
-import pathlib
 import platform
 import shlex
 import shutil
 import subprocess
 import sys
-import tempfile
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, List, Optional
 
-from ..conversion.errors import exception_from_error_code
+from ..conversion import errors
 from ..document import Document
 from ..util import (
     get_resource_path,
@@ -19,12 +17,7 @@ from ..util import (
     get_tmp_dir,
     replace_control_chars,
 )
-from .base import (
-    MAX_CONVERSION_LOG_CHARS,
-    PIXELS_TO_PDF_LOG_END,
-    PIXELS_TO_PDF_LOG_START,
-    IsolationProvider,
-)
+from .base import IsolationProvider
 
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
@@ -45,6 +38,7 @@ class NoContainerTechException(Exception):
 class Container(IsolationProvider):
     # Name of the dangerzone container
     CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+    STARTUP_TIME_SECONDS = 5
 
     def __init__(self, enable_timeouts: bool) -> None:
         self.enable_timeouts = 1 if enable_timeouts else 0
@@ -179,34 +173,24 @@ class Container(IsolationProvider):
 
     def exec(
         self,
-        document: Document,
         args: List[str],
-    ) -> int:
+    ) -> subprocess.Popen:
         args_str = " ".join(shlex.quote(s) for s in args)
         log.info("> " + args_str)
 
-        with subprocess.Popen(
+        return subprocess.Popen(
             args,
-            stdin=None,
+            stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            bufsize=1,
-            universal_newlines=True,
+            stderr=self.proc_stderr,
             startupinfo=startupinfo,
-        ) as p:
-            if p.stdout is not None:
-                for untrusted_line in p.stdout:
-                    self.parse_progress(document, untrusted_line)
-
-            p.communicate()
-            return p.returncode
+        )
 
     def exec_container(
         self,
-        document: Document,
         command: List[str],
         extra_args: List[str] = [],
-    ) -> int:
+    ) -> subprocess.Popen:
         container_runtime = self.get_runtime()
 
         if self.get_runtime_name() == "podman":
@@ -218,6 +202,7 @@ class Container(IsolationProvider):
         # drop all linux kernel capabilities
         security_args += ["--cap-drop", "all"]
         user_args = ["-u", "dangerzone"]
+        enable_stdin = ["-i"]
 
         prevent_leakage_args = ["--rm"]
 
@@ -226,60 +211,55 @@ class Container(IsolationProvider):
             + user_args
             + security_args
             + prevent_leakage_args
+            + enable_stdin
             + extra_args
             + [self.CONTAINER_NAME]
             + command
         )
 
         args = [container_runtime] + args
-        return self.exec(document, args)
+        return self.exec(args)
 
-    def _convert(
-        self,
-        document: Document,
-        ocr_lang: Optional[str],
-    ) -> bool:
-        # Create a temporary directory inside the cache directory for this run. Then,
-        # create some subdirectories for the various stages of the file conversion:
-        #
-        # * unsafe: Where the input file will be copied
-        # * pixel: Where the RGB data will be stored
-        # * safe: Where the final PDF file will be stored
-        with tempfile.TemporaryDirectory(dir=get_tmp_dir()) as t:
-            tmp_dir = pathlib.Path(t)
-            unsafe_dir = tmp_dir / "unsafe"
-            unsafe_dir.mkdir()
-            pixel_dir = tmp_dir / "pixels"
-            pixel_dir.mkdir()
-            safe_dir = tmp_dir / "safe"
-            safe_dir.mkdir()
+    def pixels_to_pdf(
+        self, document: Document, tempdir: str, ocr_lang: Optional[str]
+    ) -> None:
+        # Convert pixels to safe PDF
+        command = [
+            "/usr/bin/python3",
+            "-m",
+            "dangerzone.conversion.pixels_to_pdf",
+        ]
+        extra_args = [
+            "-v",
+            f"{tempdir}:/safezone:Z",
+            "-e",
+            "TESSDATA_PREFIX=/usr/share/tessdata",
+            "-e",
+            f"OCR={0 if ocr_lang is None else 1}",
+            "-e",
+            f"OCR_LANGUAGE={ocr_lang}",
+            "-e",
+            f"ENABLE_TIMEOUTS={self.enable_timeouts}",
+        ]
 
-            return self._convert_with_tmpdirs(
-                document=document,
-                unsafe_dir=unsafe_dir,
-                pixel_dir=pixel_dir,
-                safe_dir=safe_dir,
-                ocr_lang=ocr_lang,
-            )
-
-    def _convert_with_tmpdirs(
-        self,
-        document: Document,
-        unsafe_dir: pathlib.Path,
-        pixel_dir: pathlib.Path,
-        safe_dir: pathlib.Path,
-        ocr_lang: Optional[str],
-    ) -> bool:
-        success = False
-
-        if ocr_lang:
-            ocr = "1"
+        pixels_to_pdf_proc = self.exec_container(command, extra_args)
+        for line in pixels_to_pdf_proc.stdout:
+            self.parse_progress(document, line)
+        error_code = pixels_to_pdf_proc.wait()
+        if error_code != 0:
+            log.error("pixels-to-pdf failed")
+            raise errors.exception_from_error_code(error_code)  # type: ignore [misc]
         else:
-            ocr = "0"
+            # Move the final file to the right place
+            if os.path.exists(document.output_filename):
+                os.remove(document.output_filename)
 
-        copied_file = unsafe_dir / "input_file"
-        shutil.copyfile(f"{document.input_filename}", copied_file)
+            container_output_filename = os.path.join(
+                tempdir, "safe-output-compressed.pdf"
+            )
+            shutil.move(container_output_filename, document.output_filename)
 
+    def start_doc_to_pixels_proc(self) -> subprocess.Popen:
         # Convert document to pixels
         command = [
             "/usr/bin/python3",
@@ -287,60 +267,10 @@ class Container(IsolationProvider):
             "dangerzone.conversion.doc_to_pixels",
         ]
         extra_args = [
-            "-v",
-            f"{copied_file}:/tmp/input_file:Z",
-            "-v",
-            f"{pixel_dir}:/tmp/dangerzone:Z",
             "-e",
             f"ENABLE_TIMEOUTS={self.enable_timeouts}",
         ]
-        ret = self.exec_container(document, command, extra_args)
-
-        if ret != 0:
-            log.error("documents-to-pixels failed")
-
-            # XXX Reconstruct exception from error code
-            raise exception_from_error_code(ret)  # type: ignore [misc]
-        else:
-            # TODO: validate convert to pixels output
-
-            # Convert pixels to safe PDF
-            command = [
-                "/usr/bin/python3",
-                "-m",
-                "dangerzone.conversion.pixels_to_pdf",
-            ]
-            extra_args = [
-                "-v",
-                f"{pixel_dir}:/tmp/dangerzone:Z",
-                "-v",
-                f"{safe_dir}:/safezone:Z",
-                "-e",
-                "TESSDATA_PREFIX=/usr/share/tessdata",
-                "-e",
-                f"OCR={ocr}",
-                "-e",
-                f"OCR_LANGUAGE={ocr_lang}",
-                "-e",
-                f"ENABLE_TIMEOUTS={self.enable_timeouts}",
-            ]
-            ret = self.exec_container(document, command, extra_args)
-            if ret != 0:
-                log.error("pixels-to-pdf failed")
-            else:
-                # Move the final file to the right place
-                if os.path.exists(document.output_filename):
-                    os.remove(document.output_filename)
-
-                container_output_filename = os.path.join(
-                    safe_dir, "safe-output-compressed.pdf"
-                )
-                shutil.move(container_output_filename, document.output_filename)
-
-                # We did it
-                success = True
-
-        return success
+        return self.exec_container(command, extra_args)
 
     def get_max_parallel_conversions(self) -> int:
         # FIXME hardcoded 1 until timeouts are more limited and better handled

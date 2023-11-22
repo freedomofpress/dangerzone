@@ -22,12 +22,12 @@ class PixelsToPDF(DangerzoneConverter):
     ) -> None:
         self.percentage = 50.0
         if tempdir is None:
-            tempdir = "/tmp"
+            tempdir = "/safezone"
 
         # XXX lazy loading of fitz module to avoid import issues on non-Qubes systems
         import fitz
 
-        num_pages = len(glob.glob(f"{tempdir}/dangerzone/page-*.rgb"))
+        num_pages = len(glob.glob(f"{tempdir}/pixels/page-*.rgb"))
         total_size = 0.0
 
         safe_doc = fitz.Document()
@@ -35,7 +35,7 @@ class PixelsToPDF(DangerzoneConverter):
         # Convert RGB files to PDF files
         percentage_per_page = 45.0 / num_pages
         for page_num in range(1, num_pages + 1):
-            filename_base = f"{tempdir}/dangerzone/page-{page_num}"
+            filename_base = f"{tempdir}/pixels/page-{page_num}"
             rgb_filename = f"{filename_base}.rgb"
             width_filename = f"{filename_base}.width"
             height_filename = f"{filename_base}.height"
@@ -89,6 +89,18 @@ class PixelsToPDF(DangerzoneConverter):
             safe_pdf_path = f"/safezone/safe-output-compressed.pdf"
 
         safe_doc.save(safe_pdf_path, deflate_images=True)
+
+    def update_progress(self, text: str, *, error: bool = False) -> None:
+        if running_on_qubes():
+            if self.progress_callback:
+                self.progress_callback(error, text, int(self.percentage))
+        else:
+            print(
+                json.dumps(
+                    {"error": error, "text": text, "percentage": int(self.percentage)}
+                )
+            )
+            sys.stdout.flush()
 
 
 async def main() -> int:

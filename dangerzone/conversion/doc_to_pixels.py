@@ -13,7 +13,7 @@ import os
 import re
 import shutil
 import sys
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TextIO
 
 import fitz
 import magic
@@ -23,26 +23,17 @@ from .common import DEFAULT_DPI, DangerzoneConverter, running_on_qubes
 
 
 class DocumentToPixels(DangerzoneConverter):
-    # XXX: These functions write page data and metadata to a separate file. For now,
-    # they act as an anchor point for Qubes to stream back page data/metadata in
-    # real time. In the future, they will be completely replaced by their streaming
-    # counterparts. See:
-    #
-    # https://github.com/freedomofpress/dangerzone/issues/443
     async def write_page_count(self, count: int) -> None:
-        pass
+        return await self.write_int(count)
 
-    async def write_page_width(self, width: int, filename: str) -> None:
-        with open(filename, "w") as f:
-            f.write(str(width))
+    async def write_page_width(self, width: int) -> None:
+        return await self.write_int(width)
 
-    async def write_page_height(self, height: int, filename: str) -> None:
-        with open(filename, "w") as f:
-            f.write(str(height))
+    async def write_page_height(self, height: int) -> None:
+        return await self.write_int(height)
 
-    async def write_page_data(self, data: bytes, filename: str) -> None:
-        with open(filename, "wb") as f:
-            f.write(data)
+    async def write_page_data(self, data: bytes) -> None:
+        return await self.write_bytes(data)
 
     async def convert(self) -> None:
         conversions: Dict[str, Dict[str, Optional[str]]] = {
@@ -241,9 +232,6 @@ class DocumentToPixels(DangerzoneConverter):
         for page in doc.pages():
             # TODO check if page.number is doc-controlled
             page_num = page.number + 1  # pages start in 1
-            rgb_filename = f"{page_base}-{page_num}.rgb"
-            width_filename = f"{page_base}-{page_num}.width"
-            height_filename = f"{page_base}-{page_num}.height"
 
             self.percentage += percentage_per_page
             self.update_progress(
@@ -251,23 +239,9 @@ class DocumentToPixels(DangerzoneConverter):
             )
             pix = page.get_pixmap(dpi=DEFAULT_DPI)
             rgb_buf = pix.samples_mv
-            await self.write_page_width(pix.width, width_filename)
-            await self.write_page_height(pix.height, height_filename)
-            await self.write_page_data(rgb_buf, rgb_filename)
-
-        final_files = (
-            glob.glob("/tmp/page-*.rgb")
-            + glob.glob("/tmp/page-*.width")
-            + glob.glob("/tmp/page-*.height")
-        )
-
-        # XXX: Sanity check to avoid situations like #560.
-        if not running_on_qubes() and len(final_files) != 3 * doc.page_count:
-            raise errors.PageCountMismatch()
-
-        # Move converted files into /tmp/dangerzone
-        for filename in final_files:
-            shutil.move(filename, "/tmp/dangerzone")
+            await self.write_page_width(pix.width)
+            await self.write_page_height(pix.height)
+            await self.write_page_data(rgb_buf)
 
         self.update_progress("Converted document to pixels")
 
@@ -298,18 +272,28 @@ class DocumentToPixels(DangerzoneConverter):
         return mime_type
 
 
-async def main() -> int:
-    converter = DocumentToPixels()
+async def main() -> None:
+    try:
+        data = await DocumentToPixels.read_bytes()
+    except EOFError:
+        sys.exit(1)
+
+    with open("/tmp/input_file", "wb") as f:
+        f.write(data)
 
     try:
+        converter = DocumentToPixels()
         await converter.convert()
-        error_code = 0  # Success!
-    except errors.ConversionException as e:  # Expected Errors
-        error_code = e.error_code
+    except errors.ConversionException as e:
+        await DocumentToPixels.write_bytes(str(e).encode(), file=sys.stderr)
+        sys.exit(e.error_code)
     except Exception as e:
-        converter.update_progress(str(e), error=True)
+        await DocumentToPixels.write_bytes(str(e).encode(), file=sys.stderr)
         error_code = errors.UnexpectedConversionError.error_code
-    return error_code
+        sys.exit(error_code)
+
+    # Write debug information
+    await DocumentToPixels.write_bytes(converter.captured_output, file=sys.stderr)
 
 
 if __name__ == "__main__":

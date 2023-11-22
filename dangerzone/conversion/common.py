@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 from abc import abstractmethod
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, TextIO, Tuple, Union
 
 TIMEOUT_PER_PAGE: float = 30  # (seconds)
 TIMEOUT_PER_MB: float = 30  # (seconds)
@@ -57,6 +57,49 @@ class DangerzoneConverter:
         self.percentage: float = 0.0
         self.progress_callback = progress_callback
         self.captured_output: bytes = b""
+
+    @classmethod
+    def _read_bytes(cls) -> bytes:
+        """Read bytes from the stdin."""
+        data = sys.stdin.buffer.read()
+        if data is None:
+            raise EOFError
+        return data
+
+    @classmethod
+    def _write_bytes(cls, data: bytes, file: TextIO = sys.stdout) -> None:
+        file.buffer.write(data)
+
+    @classmethod
+    def _write_text(cls, text: str, file: TextIO = sys.stdout) -> None:
+        cls._write_bytes(text.encode(), file=file)
+
+    @classmethod
+    def _write_int(cls, num: int, file: TextIO = sys.stdout) -> None:
+        cls._write_bytes(num.to_bytes(2, signed=False), file=file)
+
+    # ==== ASYNC METHODS ====
+    # We run sync methods in async wrappers, because pure async methods are more difficult:
+    # https://stackoverflow.com/a/52702646
+    #
+    # In practice, because they are I/O bound and we don't have many running concurrently,
+    # they shouldn't cause a problem.
+
+    @classmethod
+    async def read_bytes(cls) -> bytes:
+        return await asyncio.to_thread(cls._read_bytes)
+
+    @classmethod
+    async def write_bytes(cls, data: bytes, file: TextIO = sys.stdout) -> None:
+        return await asyncio.to_thread(cls._write_bytes, data, file=file)
+
+    @classmethod
+    async def write_text(cls, text: str, file: TextIO = sys.stdout) -> None:
+        return await asyncio.to_thread(cls._write_text, text, file=file)
+
+    @classmethod
+    async def write_int(cls, num: int, file: TextIO = sys.stdout) -> None:
+        return await asyncio.to_thread(cls._write_int, num, file=file)
 
     async def read_stream(
         self, sr: asyncio.StreamReader, callback: Optional[Callable] = None
@@ -150,13 +193,4 @@ class DangerzoneConverter:
         pass
 
     def update_progress(self, text: str, *, error: bool = False) -> None:
-        if running_on_qubes():
-            if self.progress_callback:
-                self.progress_callback(error, text, int(self.percentage))
-        else:
-            print(
-                json.dumps(
-                    {"error": error, "text": text, "percentage": int(self.percentage)}
-                )
-            )
-            sys.stdout.flush()
+        pass

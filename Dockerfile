@@ -77,10 +77,5 @@ COPY conversion /opt/dangerzone/dangerzone/conversion
 RUN adduser -s /bin/sh -D dangerzone
 USER dangerzone
 
-# /tmp/input_file is where the first convert expects the input file to be, and
-# /tmp where it will write the pixel files
-#
-# /dangerzone is where the second script expects files to be put by the first one
-#
-# /safezone is where the wrapper eventually moves the sanitized files.
-VOLUME /dangerzone /tmp/input_file /safezone
+# /safezone is a directory through which Pixels to PDF receives files
+VOLUME /safezone

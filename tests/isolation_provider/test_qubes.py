@@ -69,7 +69,7 @@ class TestQubes(IsolationProviderTest):
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
 
-        def qrexec_subprocess() -> subprocess.Popen:
+        def start_doc_to_pixels_proc() -> subprocess.Popen:
             p = subprocess.Popen(
                 # XXX error 126 simulates a qrexec-policy failure. Source:
                 # https://github.com/QubesOS/qubes-core-qrexec/blob/fdcbfd7/daemon/qrexec-daemon.c#L1022
@@ -81,7 +81,9 @@ class TestQubes(IsolationProviderTest):
             )
             return p
 
-        monkeypatch.setattr(provider, "qrexec_subprocess", qrexec_subprocess)
+        monkeypatch.setattr(
+            provider, "start_doc_to_pixels_proc", start_doc_to_pixels_proc
+        )
 
         with pytest.raises(errors.QubesQrexecFailed) as e:
             doc = Document(sample_doc)

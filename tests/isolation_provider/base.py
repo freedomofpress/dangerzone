@@ -13,7 +13,8 @@ from .. import pdf_11k_pages, sanitized_text, uncommon_text
 
 
 @pytest.mark.skipif(
-    os.environ.get("DUMMY_CONVERSION", False), reason="dummy conversions not supported"
+    os.environ.get("DUMMY_CONVERSION", False),
+    reason="dummy conversions not supported",
 )
 @pytest.mark.skipif(not running_on_qubes(), reason="Not on a Qubes system")
 class IsolationProviderTest:

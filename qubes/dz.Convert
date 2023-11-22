@@ -1,2 +1,2 @@
 #!/bin/sh
-python -m dangerzone.conversion.doc_to_pixels_qubes_wrapper
+python -m dangerzone.conversion.doc_to_pixels

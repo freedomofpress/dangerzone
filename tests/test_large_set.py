@@ -50,7 +50,9 @@ for_each_10K_doc = pytest.mark.parametrize(
 
 class TestLargeSet(TestCli):
     def run_doc_test(self, doc: Path, tmp_path: Path) -> None:
-        output_file_path = str(tmp_path / "output.pdf")
+        output_dir_path = doc.parent / "output_files"
+        os.makedirs(output_dir_path, exist_ok=True)
+        output_file_path = output_dir_path / f"{doc.name}-safe.pdf"
         p = subprocess.Popen(
             [
                 "python",

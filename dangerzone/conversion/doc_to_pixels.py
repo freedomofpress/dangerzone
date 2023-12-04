@@ -19,7 +19,7 @@ import fitz
 import magic
 
 from . import errors
-from .common import DangerzoneConverter, running_on_qubes
+from .common import DEFAULT_DPI, DangerzoneConverter, running_on_qubes
 
 
 class DocumentToPixels(DangerzoneConverter):
@@ -245,7 +245,7 @@ class DocumentToPixels(DangerzoneConverter):
             self.update_progress(
                 f"Converting page {page_num}/{doc.page_count} to pixels"
             )
-            pix = page.get_pixmap(dpi=150)
+            pix = page.get_pixmap(dpi=DEFAULT_DPI)
             rgb_buf = pix.samples_mv
             await self.write_page_width(pix.width, width_filename)
             await self.write_page_height(pix.height, height_filename)

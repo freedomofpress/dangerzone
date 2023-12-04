@@ -15,7 +15,7 @@ from typing import Optional
 
 import fitz
 
-from .common import DangerzoneConverter, get_tessdata_dir, running_on_qubes
+from .common import DEFAULT_DPI, DangerzoneConverter, get_tessdata_dir, running_on_qubes
 
 
 class PixelsToPDF(DangerzoneConverter):
@@ -52,6 +52,7 @@ class PixelsToPDF(DangerzoneConverter):
             pixmap = fitz.Pixmap(
                 fitz.Colorspace(fitz.CS_RGB), width, height, untrusted_rgb_data, False
             )
+            pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
             if ocr_lang:  # OCR the document
                 self.update_progress(
                     f"Converting page {page_num}/{num_pages} from pixels to searchable PDF"

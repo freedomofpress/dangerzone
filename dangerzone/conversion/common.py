@@ -15,6 +15,7 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 TIMEOUT_PER_PAGE: float = 30  # (seconds)
 TIMEOUT_PER_MB: float = 30  # (seconds)
 TIMEOUT_MIN: float = 60  # (seconds)
+DEFAULT_DPI = 150  # Pixels per inch
 
 
 def running_on_qubes() -> bool:

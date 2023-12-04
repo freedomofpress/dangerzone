@@ -7,6 +7,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Unreleased
 
+## Fixed
+- Fix mismatched between between original document and converted one ([issue #626](https://github.com/freedomofpress/dangerzone/issues/)). This does not affect the quality of the final document.
+
 ### Changed
 
 - Feature: Add support for HWP/HWPX files (Hancom Office) for macOS Apple Silicon devices ([issue #498](https://github.com/freedomofpress/dangerzone/issues/498), thanks to [@OctopusET](https://github.com/OctopusET))

@@ -171,14 +171,6 @@ class DocumentToPixels(DangerzoneConverter):
             if file_type == hwpx_file_type:
                 mime_type = "application/x-hwp+zip"
 
-        # Get file size (in MiB)
-        size = os.path.getsize("/tmp/input_file") / 1024**2
-
-        # Calculate timeout for the first few file operations. The difference with the
-        # subsequent ones is that we don't know the number of pages, before we have a
-        # PDF at hand, so we rely on size heuristics.
-        timeout = self.calculate_timeout(size)
-
         # Convert input document to PDF
         conversion = conversions[mime_type]
         if conversion["type"] is None:
@@ -207,11 +199,6 @@ class DocumentToPixels(DangerzoneConverter):
             await self.run_command(
                 args,
                 error_message="Conversion to PDF with LibreOffice failed",
-                timeout_message=(
-                    "Error converting document to PDF, LibreOffice timed out after"
-                    f" {timeout} seconds"
-                ),
-                timeout=timeout,
             )
             pdf_filename = "/tmp/input_file.pdf"
             # XXX: Sometimes, LibreOffice can fail with status code 0. So, we need to
@@ -278,8 +265,6 @@ class DocumentToPixels(DangerzoneConverter):
         await self.run_command(
             unzip_args,
             error_message="LibreOffice extension installation failed (unzipping)",
-            timeout_message="unzipping LibreOffice extension timed out 5 seconds",
-            timeout=5,
         )
 
     def detect_mime_type(self, path: str) -> str:

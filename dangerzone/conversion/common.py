@@ -84,8 +84,8 @@ class DangerzoneConverter:
         args: List[str],
         *,
         error_message: str,
-        timeout_message: str,
-        timeout: Optional[float],
+        timeout_message: Optional[str] = None,
+        timeout: Optional[float] = None,
         stdout_callback: Optional[Callable] = None,
         stderr_callback: Optional[Callable] = None,
     ) -> Tuple[bytes, bytes]:

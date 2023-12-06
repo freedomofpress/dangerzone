@@ -23,7 +23,7 @@ jobs:
         with:
           image: "dangerzone.rocks/dangerzone:latest"
           fail-build: false
-          only-fixed: true
+          only-fixed: false
           severity-cutoff: critical
       - name: Upload container scan report
         uses: github/codeql-action/upload-sarif@v2
@@ -37,7 +37,7 @@ jobs:
         with:
           image: "dangerzone.rocks/dangerzone:latest"
           fail-build: true
-          only-fixed: true
+          only-fixed: false
           severity-cutoff: critical
 
   security-scan-app:
@@ -59,7 +59,7 @@ jobs:
         with:
           path: "."
           fail-build: false
-          only-fixed: true
+          only-fixed: false
           severity-cutoff: critical
       - name: Upload application scan report
         uses: github/codeql-action/upload-sarif@v2
@@ -73,5 +73,5 @@ jobs:
         with:
           path: "."
           fail-build: true
-          only-fixed: true
+          only-fixed: false
           severity-cutoff: critical

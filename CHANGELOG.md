@@ -13,6 +13,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Use more descriptive button labels in update check prompt ([issue #527](https://github.com/freedomofpress/dangerzone/issues/527), thanks to [@garrettr](https://github.com/garrettr))
 
+### Removed
+
+- Platform support: Drop Fedora 37, since it reached end-of-life ([issue #637](https://github.com/freedomofpress/dangerzone/issues/637))
+
 ### Security
 
 - [Security advisory 2023-12-07](https://github.com/freedomofpress/dangerzone/blob/main/docs/advisories/2023-12-07.md): Protect our container image against

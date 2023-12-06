@@ -7,6 +7,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Unreleased
 
+### Changed
+
+- Make our macOS entitlements stricter, by enabling App Sandbox ([issue #638](https://github.com/freedomofpress/dangerzone/issues/638))
+
 ## Dangerzone 0.5.0
 
 ### Added

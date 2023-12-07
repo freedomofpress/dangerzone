@@ -15,9 +15,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Security
 
-- Protect our container image against CVE-2023-43115, by updating GhostScript to version 10.02.0. Note that this CVE affects the **untrusted** environment where the conversion of the document to pixels takes place. Dangerzone operates under the assumption that this environment will eventually get exploited, which is why it protects the users in depth by running this environment in a hardened container, as a defense in depth measure. We are not aware of any container escape that impacts our users' security, but it's highly recommended to update to the latest Dangerzone version.
-
-- Security advisory 2023-10-25: prevent dz-dvm network via dispVMs. This was officially communicated on the advisory date and is only included here since this is the first release since it was announced.
+- [Security advisory 2023-12-07](https://github.com/freedomofpress/dangerzone/blob/main/docs/advisories/2023-12-07.md): Protect our container image against
+  CVE-2023-43115, by updating GhostScript to version 10.02.0.
+- [Security advisory 2023-10-25](https://github.com/freedomofpress/dangerzone/blob/main/docs/advisories/2023-10-25.md): prevent dz-dvm network via dispVMs. This was
+  officially communicated on the advisory date and is only included here since
+  this is the first release since it was announced.
 
 ## Dangerzone 0.5.0
 

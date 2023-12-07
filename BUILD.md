@@ -213,9 +213,8 @@ The following instructions require typing commands in a terminal in dom0.
    cd dangerzone
    ```
 
-2. Change to the `dangerzone` folder and copy the Qubes RPC calls into the
-   template for the **disposable** qube that will be used for document
-   sanitization (`dz-dvm`):
+2. Copy the Qubes RPC calls into the template for the **disposable** qube
+   that will be used for document sanitization (`dz-dvm`):
 
    ```
    qvm-copy qubes/*

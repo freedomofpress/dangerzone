@@ -147,6 +147,8 @@ Overview of the qubes you'll create:
 
 #### In `dom0`:
 
+The following instructions require typing commands in a terminal in dom0.
+
 1. Create a new Fedora **template** (`fedora-38-dz`) for Dangerzone development:
 
    ```

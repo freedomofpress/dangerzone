@@ -157,9 +157,8 @@ Overview of the qubes you'll create:
    > following instructions. In that case, replace `fedora-38-dz` with
    > `fedora-38` in the steps below.
 
-2. Create a **disposable**, offline app qube (`dz-dvm`), based on the
-   `fedora-38-dz` template. This will be the qube where the documents will be
-   sanitized:
+2. Create an offline disposable template (app qube) called `dz-dvm`, based on the `fedora-38-dz`
+   template. This will be the qube where the documents will be sanitized:
 
    ```
    qvm-create --class AppVM --label red --template fedora-38-dz \

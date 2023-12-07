@@ -70,9 +70,13 @@ Conflicts:      dangerzone-qubes
 BuildRequires:  python3-devel
 
 %if 0%{?_qubes}
-# Qubes-only requirements
+# Qubes-only requirements (server-side)
 Requires:       python3-magic
 Requires:       libreoffice
+# Qubes-only requirements (client-side)
+Requires:       GraphicsMagick
+Requires:       ghostscript
+Requires:       poppler-utils
 Requires:       tesseract
 # Explicitly require every tesseract model:
 # See: https://github.com/freedomofpress/dangerzone/issues/431

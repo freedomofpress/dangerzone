@@ -164,8 +164,8 @@ The following instructions require typing commands in a terminal in dom0.
 
    ```
    qvm-create --class AppVM --label red --template fedora-38-dz \
-       --prop netvm="" --prop template_for_dispvms=True \
-       dz-dvm
+       --prop netvm=""  --prop template_for_dispvms=True \
+       --prop default_dispvm='' dz-dvm
    ```
 
 3. Create an **app** qube (`dz`) that will be used for Dangerzone development

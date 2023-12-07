@@ -188,23 +188,13 @@ The following instructions require typing commands in a terminal in dom0.
    dz.ConvertDev      *       @anyvm       @dispvm:dz-dvm  allow
    ```
 
-#### In the `fedora-38-dz` template
-
-1. Install dependencies:
-
-   ```
-   sudo dnf install -y rpm-build podman python3 python3-devel \
-       python3-poetry-core pipx qt6-qtbase-gui libreoffice python3-magic \
-       python3-keyring tesseract*
-   ```
-
-2. Shutdown the `fedora-38-dz` template:
-
-   ```
-   shutdown -h now
-   ```
-
 #### In the `dz` app qube
+
+In the following steps you'll setup the development environment and
+install a dangerzone build. This will make the development faster since it
+loads the server code dynamically each time it's run, instead of having
+to build and install a server package each time the developer wants to
+test it.
 
 1. Clone the Dangerzone project:
 
@@ -213,35 +203,28 @@ The following instructions require typing commands in a terminal in dom0.
    cd dangerzone
    ```
 
-2. Copy the Qubes RPC calls into the template for the **disposable** qube
-   that will be used for document sanitization (`dz-dvm`):
+2. Follow the Fedora instructions for setting up the development environment
 
-   ```
-   qvm-copy qubes/*
-   ```
+3. Build a dangerzone `.rpm` for qubes with the command
 
-   And then choose `dz-dvm` as the target.
-
-#### In the `dz-dvm` template
-
-1. Create the directory that will contain the Dangerzone RPC calls, if it does
-   not exist already:
-
-   ```
-   sudo mkdir -p /rw/usrlocal/etc/qubes-rpc/
+   ```sh
+   ./install/linux/build-rpm.py --qubes
    ```
 
-2. Move the files we copied in the previous step to their proper place:
+4. Copy the produced `.rpm` file into `fedora-38-dz`
+   ```sh
+   qvm-copy dist/*.x86_64.rpm
+   ```
 
-   ```
-   sudo cp ~/QubesIncoming/dz/* /rw/usrlocal/etc/qubes-rpc/
+#### In the `fedora-38-dz` template
+
+1. Install the `.rpm` package you just copied
+
+   ```sh
+   sudo dnf install ~/QubesIncoming/dz/*.rpm
    ```
 
-3. Shutdown the `dz-dvm` qube:
-
-   ```
-   shutdown -h now
-   ```
+2. Shutdown the `fedora-38-dz` template
 
 ### Developing Dangerzone
 
@@ -272,31 +255,10 @@ For changes in the server side components, you can simply edit them locally,
 and they will be mirrored to the disposable qube through the `dz.ConvertDev`
 RPC call.
 
-The only reason to update the `fedora-38-dz` template from there on is if:
+The only reason to build a new Qubes RPM and install it in the `fedora-38-dz`
+template for development is if:
 1. The project requires new server-side components.
-2. The code for `dz.ConvertDev` needs to be updated. Copy the updated file
-   as we've shown in the steps above.
-
-### Installing Dangerzone system-wide
-
-If you want to test the .rpm you just created, you can do the following:
-
-On the `dz` app cube, copy the built `dangerzone.rpm` to `fedora-38-dz`
-template:
-
-```
-qvm-copy-to-vm fedora-38-dz dist/dangerzone*.noarch.rpm
-```
-
-On the `fedora-38-dz` template, install the copied .rpm:
-
-```
-sudo dnf install -y ~/QubesIncoming/dz/dangerzone-*.rpm
-```
-
-Shutdown the `fedora-38-dz` template and the `dz` app qube, and then you can
-refresh the applications on the `dz` qube, find Dangerzone in the list, and use
-it to convert a document.
+2. The code for `qubes/dz.ConvertDev` needs to be updated.
 
 ## macOS
 

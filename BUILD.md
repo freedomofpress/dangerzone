@@ -245,21 +245,20 @@ The following instructions require typing commands in a terminal in dom0.
 
 ### Developing Dangerzone
 
-From here on, developing Dangerzone is similar as in other Linux platforms. You
-can run the following commands in the `dz` app qube:
+From here on, developing Dangerzone is similar to Fedora. The only differences
+are that you need to set the environment variable `QUBES_CONVERSION=1` when
+you wish to test the Qubes conversion, run the following commands on the `dz` development qube:
 
 ```sh
-# start a shell in the virtual environment
-poetry shell
 
 # run the CLI
-QUBES_CONVERSION=1 ./dev_scripts/dangerzone-cli --help
+QUBES_CONVERSION=1 poetry run ./dev_scripts/dangerzone-cli --help
 
 # run the GUI
-QUBES_CONVERSION=1 ./dev_scripts/dangerzone
+QUBES_CONVERSION=1 poetry run ./dev_scripts/dangerzone
 ```
 
-Create a .rpm:
+And when creating a `.rpm` you'll need to enable the `--qubes` flag.
 
 > [!NOTE]
 > Prefer running the following command in a Fedora development environment,

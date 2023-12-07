@@ -213,24 +213,7 @@ The following instructions require typing commands in a terminal in dom0.
    cd dangerzone
    ```
 
-2. Install Poetry using `pipx`:
-
-   ```sh
-   pipx install poetry
-   ```
-
-3. Install the poetry dependencies:
-
-   ```
-   poetry install
-   ```
-
-   > **Note**: due to an issue with
-   > [poetry](https://github.com/python-poetry/poetry/issues/1917), if it
-   > prompts for your keyring, disable the keyring with `keyring --disable` and
-   > run the command again.
-
-4. Change to the `dangerzone` folder and copy the Qubes RPC calls into the
+2. Change to the `dangerzone` folder and copy the Qubes RPC calls into the
    template for the **disposable** qube that will be used for document
    sanitization (`dz-dvm`):
 

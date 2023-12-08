@@ -9,6 +9,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Dangerzone 0.5.1
 
+### Fixed
+
+- Our Qubes RPM package was missing critical dependencies for the conversion of a document from pixels to PDF ([issue #647](https://github.com/freedomofpress/dangerzone/issues/647))
+
 ### Changed
 
 - Use more descriptive button labels in update check prompt ([issue #527](https://github.com/freedomofpress/dangerzone/issues/527), thanks to [@garrettr](https://github.com/garrettr))

@@ -553,15 +553,13 @@ class DocSelectionWidget(QtWidgets.QWidget):
         self.file_dialog.setWindowTitle("Open Documents")
         self.file_dialog.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
 
-        # XXX: We disable loading HWP/HWPX files on Qubes or MacOS M1 platforms, because
-        # H2ORestart does not work there. See:
+        # XXX: We disable loading HWP/HWPX files on Qubes, because H2ORestart does not work there.
+        # See:
         #
         # https://github.com/freedomofpress/dangerzone/issues/494
-        # https://github.com/freedomofpress/dangerzone/issues/498
         hwp_filters = "*.hwp *.hwpx"
-        if platform.machine() in ("arm64", "aarch64") or is_qubes_native_conversion():
+        if is_qubes_native_conversion():
             hwp_filters = ""
-
         self.file_dialog.setNameFilters(
             [
                 f"Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods {hwp_filters} *.jpg *.jpeg *.gif *.png *.tif *.tiff)"

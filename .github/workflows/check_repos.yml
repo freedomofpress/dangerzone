@@ -1,0 +1,88 @@
+# Test official instructions for installing Dangerzone
+# ====================================================
+#
+# The installation instructions have been copied from our INSTALL.md file.
+# NOTE: When you change either place, please make sure to keep the two files in
+# sync.
+# NOTE: Because the commands run as root, the use of sudo is not necessary.
+name: Test official instructions for installing Dangerzone
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run every day at 00:00 UTC.
+
+jobs:
+  install-from-apt-repo:
+    name: "Install Dangerzone on ${{ matrix.distro}} ${{ matrix.version }}"
+    runs-on: ubuntu-latest
+    container: ${{ matrix.distro }}:${{ matrix.version }}
+    strategy:
+      matrix:
+        include:
+          - distro: ubuntu
+            version: "23.10"  # mantic
+          - distro: ubuntu
+            version: "23.04"  # lunar
+          - distro: ubuntu
+            version: "22.04"  # jammy
+          - distro: ubuntu
+            version: "20.04"  # focal
+          - distro: debian
+            version: "trixie"  # 13
+          - distro: debian
+            version: "12"  # bookworm
+          - distro: debian
+            version: "11"  # bullseye
+    steps:
+      - name: Add Podman repo for Ubuntu Focal
+        if: matrix.distro == 'ubuntu' && matrix.version == 20.04
+        run: |
+          apt-get update && apt-get -y install curl wget gnupg2
+          . /etc/os-release
+          sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' \
+            > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
+          wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- \
+            | apt-key add -
+          apt update
+          apt-get install python-all -y
+
+      - name: Add GPG key for the packages.freedom.press
+        run: |
+          apt-get update && apt-get install -y gnupg2 ca-certificates
+          dirmngr  # NOTE: This is a command that's necessary only in containers
+          gpg --keyserver hkps://keys.openpgp.org \
+              --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
+              --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
+          mkdir -p /etc/apt/keyrings/
+          mv fpf-apt-tools-archive-keyring.gpg /etc/apt/keyrings
+
+      - name: Add packages.freedom.press to our APT sources
+        run: |
+          . /etc/os-release
+          echo deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
+              https://packages.freedom.press/apt-tools-prod ${VERSION_CODENAME?} main \
+              | tee /etc/apt/sources.list.d/fpf-apt-tools.list
+
+      - name: Install Dangerzone
+        run: |
+          apt update
+          apt install -y dangerzone
+
+  install-from-yum-repo:
+    name: "Install Dangerzone on ${{ matrix.distro}} ${{ matrix.version }}"
+    runs-on: ubuntu-latest
+    container: ${{ matrix.distro }}:${{ matrix.version }}
+    strategy:
+      matrix:
+        include:
+          - distro: fedora
+            version: 38
+    steps:
+      - name: Add packages.freedom.press to our YUM sources
+        run: |
+          dnf install -y 'dnf-command(config-manager)'
+          dnf config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
+
+      - name: Install Dangerzone
+        # FIXME: We add the `-y` flag here, in lieu of a better way to check the
+        # Dangerzone signature.
+        run: dnf install -y dangerzone

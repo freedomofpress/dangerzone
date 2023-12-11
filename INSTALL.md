@@ -32,8 +32,8 @@ Dangerzone is available for:
   copied from the [official Podman blog](https://podman.io/new/2021/06/16/new.html):
 
   ```bash
-  sudo apt-get install curl wget gnupg2 -y
-  source /etc/os-release
+  sudo apt-get update && sudo apt-get install curl wget gnupg2 -y
+  . /etc/os-release
   sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' \
     > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
   wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- \
@@ -54,6 +54,7 @@ Add our repository following these instructions:
 Download the GPG key for the repo:
 
 ```sh
+sudo apt-get update && sudo apt-get install gnupg2 ca-certificates -y
 gpg --keyserver hkps://keys.openpgp.org \
     --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
     --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
@@ -64,7 +65,7 @@ sudo mv fpf-apt-tools-archive-keyring.gpg /etc/apt/keyrings
 Add the URL of the repo in your APT sources:
 
 ```sh
-source /etc/os-release
+. /etc/os-release
 echo deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
     https://packages.freedom.press/apt-tools-prod ${VERSION_CODENAME?} main \
     | sudo tee /etc/apt/sources.list.d/fpf-apt-tools.list
@@ -98,6 +99,7 @@ sudo apt install -y dangerzone
 Type the following commands in a terminal:
 
 ```
+sudo dnf install 'dnf-command(config-manager)'
 sudo dnf config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 sudo dnf install dangerzone
 ```

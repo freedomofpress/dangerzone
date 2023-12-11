@@ -146,7 +146,7 @@ sequentially, are completed successfully, and we see their progress.
 
 #### 8. Dangerzone can open a document for conversion via right-click -> "Open With"
 
-_(Only for Windows and MacOS)_
+_(Only for Windows, MacOS and Qubes)_
 
 Go to a directory with office documents, right-click on one, and click on "Open
 With". We should be able to open the file with Dangerzone, and then convert it.

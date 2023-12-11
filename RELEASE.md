@@ -214,8 +214,7 @@ dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <differen
 
 ## macOS release
 
-To make a macOS release, go to macOS build machine:
-
+### First Time Signing Machine Setup
 - Build machine must have:
   - Apple-trusted `Developer ID Application: Freedom of the Press Foundation (94ZZGGGJ3W)` code-signing certificates installed
 - Apple account must have:
@@ -225,6 +224,8 @@ To make a macOS release, go to macOS build machine:
     with the respective `email` and `team ID` (the latter can be obtained [here](https://developer.apple.com/help/account/manage-your-team/locate-your-team-id))
   - Agreed to any new terms and conditions. You can find those if you visit
     https://developer.apple.com and login with the proper Apple ID.
+
+### Releasing and Signing
 - Verify and checkout the git tag for this release
 - Run `poetry install`
 - Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`

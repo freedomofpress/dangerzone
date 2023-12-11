@@ -2,6 +2,25 @@
 
 This section documents the release process. Unless you're a dangerzone developer making a release, you'll probably never need to follow it.
 
+## Pre-release
+
+Before making a release, all of these should be complete:
+
+- [ ] Update `version` in `pyproject.toml`
+- [ ] Update `share/version.txt`
+- [ ] Update the "Version" field in `install/linux/dangerzone.spec`
+- [ ] Update version and download links in `README.md`, and screenshot if necessary
+- [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
+- [ ] There must be a PGP-signed git tag for the version, e.g. for dangerzone 0.1.0, the tag must be `v0.1.0`
+
+> [!IMPORTANT]
+> Because we don't have [reproducible builds](https://github.com/freedomofpress/dangerzone/issues/188)
+> yet, building the Dangerzone container image in various platforms would lead
+> to different container image IDs / hashes, due to different timestamps. To
+> avoid this issue, we should build the final container image for x86_64
+> architectures on **one** platform, and then copy it to the rest of the
+> platforms, before creating our .deb / .rpm / .msi / app bundles.
+
 ## Large document testing
 
 Parallel to the QA process, the release candidate should be put through the large document tests in a dedicated machine to run overnight.
@@ -192,38 +211,6 @@ $ podman images dangerzone.rocks/dangerzone:latest
 REPOSITORY                   TAG         IMAGE ID        CREATED       SIZE
 dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <different size>
 ```
-
-## Pre-release
-
-Before making a release, all of these should be complete:
-
-- [ ] Update `version` in `pyproject.toml`
-- [ ] Update `share/version.txt`
-- [ ] Update the "Version" field in `install/linux/dangerzone.spec`
-- [ ] Update version and download links in `README.md`, and screenshot if necessary
-- [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
-- [ ] There must be a PGP-signed git tag for the version, e.g. for dangerzone 0.1.0, the tag must be `v0.1.0`
-
-Before making a release, verify the release git tag:
-
-```
-git fetch
-git tag -v v$VERSION
-```
-
-If the tag verifies successfully and check it out:
-
-```
-git checkout v$VERSION
-```
-
-> [!IMPORTANT]
-> Because we don't have [reproducible builds](https://github.com/freedomofpress/dangerzone/issues/188)
-> yet, building the Dangerzone container image in various platforms would lead
-> to different container image IDs / hashes, due to different timestamps. To
-> avoid this issue, we should build the final container image for x86_64
-> architectures on **one** platform, and then copy it to the rest of the
-> platforms, before creating our .deb / .rpm / .msi / app bundles.
 
 ## macOS release
 

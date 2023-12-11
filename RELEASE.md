@@ -212,9 +212,11 @@ REPOSITORY                   TAG         IMAGE ID        CREATED       SIZE
 dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <different size>
 ```
 
-## macOS Release
+## Release
 
-### First Time Signing Machine Setup
+### macOS Release
+
+#### First Time Signing Machine Setup
 - Build machine must have:
   - Apple-trusted `Developer ID Application: Freedom of the Press Foundation (94ZZGGGJ3W)` code-signing certificates installed
 - Apple account must have:
@@ -225,7 +227,7 @@ dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <differen
   - Agreed to any new terms and conditions. You can find those if you visit
     https://developer.apple.com and login with the proper Apple ID.
 
-### Releasing and Signing
+#### Releasing and Signing
 - Verify and checkout the git tag for this release
 - Run `poetry install`
 - Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`
@@ -253,9 +255,9 @@ dist/Dangerzone.dmg
 
 Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
 
-## Windows Release
+### Windows Release
 
-### First Time Windows 11 VM Build Machine Setup
+#### First Time Windows 11 VM Build Machine Setup
 
 - Download a VirtualBox VM image for Windows from here: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/ and import it into VirtualBox. Also install the Oracle VM VirtualBox Extension Pack.
 - Install updates
@@ -265,7 +267,7 @@ Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
   - Install the Windows SDK from here: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/ and add `C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool` to the path (you'll need it for `signtool.exe`)
   - You'll also need the Windows codesigning certificate installed on the VM
 
-### Releasing and Signing
+#### Releasing and Signing
 
 - Verify and checkout the git tag for this release
 - Run `poetry install`
@@ -277,9 +279,9 @@ Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
 
 Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
 
-## Linux release
+### Linux release
 
-### Debian/Ubuntu
+#### Debian/Ubuntu
 
 Because the Debian packages do not contain compiled Python code for a specific
 Python version, we can create a single Debian package and use it for all of our
@@ -311,7 +313,7 @@ Publish the .deb under `./deb_dist` to the
 [`freedomofpress/apt-tools-prod`](https://github.com/freedomofpress/apt-tools-prod)
 repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
-### Fedora
+#### Fedora
 
 > **NOTE**: This procedure will have to be done for every supported Fedora version.
 >
@@ -342,7 +344,7 @@ Create a .rpm:
 Publish the .rpm under `./dist` to the
 [`freedomofpress/yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod) repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
-#### Qubes
+##### Qubes
 
 Create a .rpm for Qubes:
 

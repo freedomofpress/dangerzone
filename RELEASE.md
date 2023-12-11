@@ -230,24 +230,24 @@ dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <differen
     https://developer.apple.com and login with the proper Apple ID.
 
 #### Releasing and Signing
-- Verify and checkout the git tag for this release
-- Run `poetry install`
-- Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`
-- Run `poetry run ./install/macos/build-app.py --only-codesign`; this will make `dist/Dangerzone.dmg`
+- [ ] Verify and checkout the git tag for this release
+- [ ] Run `poetry install`
+- [ ] Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`
+- [ ] Run `poetry run ./install/macos/build-app.py --only-codesign`; this will make `dist/Dangerzone.dmg`
   * You need to run this command as the account that has access to the code signing certificate
   * You must run this command from the MacOS UI, from a terminal application.
-- Notarize it: `xcrun notarytool submit --apple-id "<email>" --keychain-profile "dz-notarytool-release-key" dist/Dangerzone.dmg`
+- [ ] Notarize it: `xcrun notarytool submit --apple-id "<email>" --keychain-profile "dz-notarytool-release-key" dist/Dangerzone.dmg`
   * In the end you'll get a `REQUEST_UUID`, which identifies the submission. Keep it to check on its status.
   * You need to change the `<email>` in the above command with the email
     associated with the Apple Developer ID.
   * This command assumes that you have created, and stored in the Keychain, an
     application password associated with your Apple Developer ID, which will be
     used specifically for `notarytool`.
-- Wait for it to get approved, check status with: `xcrun notarytool info <REQUEST_UUID> --apple-id "<email>" --keychain-profile "dz-notarytool-release-key"`
+- [ ] Wait for it to get approved, check status with: `xcrun notarytool info <REQUEST_UUID> --apple-id "<email>" --keychain-profile "dz-notarytool-release-key"`
   * If it gets rejected, you should be able to see why with the same command
     (or use the `log` option for a more verbose JSON output)
   * You will also receive an update in your email.
-- After it's approved, staple the ticket: `xcrun stapler staple dist/Dangerzone.dmg`
+- [ ] After it's approved, staple the ticket: `xcrun stapler staple dist/Dangerzone.dmg`
 
 This process ends up with the final file:
 
@@ -271,13 +271,13 @@ Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
 
 #### Releasing and Signing
 
-- Verify and checkout the git tag for this release
-- Run `poetry install`
-- Copy the container image into the VM
+- [ ] Verify and checkout the git tag for this release
+- [ ] Run `poetry install`
+- [ ] Copy the container image into the VM
   > [!IMPORTANT]
   > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar.gz` and `share/image-id.txt` from the host into the `share` folder in the VM
-- Run `poetry run .\install\windows\build-app.bat`
-- When you're done you will have `dist\Dangerzone.msi`
+- [ ] Run `poetry run .\install\windows\build-app.bat`
+- [ ] When you're done you will have `dist\Dangerzone.msi`
 
 Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
 
@@ -361,13 +361,12 @@ repo.
 
 To publish the release:
 
-- Create a new release on GitHub, put the changelog in the description of the release, and upload the macOS and Windows installers
-- Upload the `container.tar.gz` i686 image that was created in the previous step
-
+- [ ] Create a new release on GitHub, put the changelog in the description of the release, and upload the macOS and Windows installers
+- [ ] Upload the `container.tar.gz` i686 image that was created in the previous step
   **Important:** Make sure that it's the same container image as the ones that
   are shipped in other platforms (see our [Pre-release](#Pre-release) section)
 
-- Update the [Installing Dangerzone](INSTALL.md) page
-- Update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers
-- Update the brew cask release of Dangerzone with a [PR like this one](https://github.com/Homebrew/homebrew-cask/pull/116319)
-- Toot release announcement on our mastodon account @dangerzone@fosstodon.org
+- [ ] Update the [Installing Dangerzone](INSTALL.md) page
+- [ ] Update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers
+- [ ] Update the brew cask release of Dangerzone with a [PR like this one](https://github.com/Homebrew/homebrew-cask/pull/116319)
+- [ ] Toot release announcement on our mastodon account @dangerzone@fosstodon.org

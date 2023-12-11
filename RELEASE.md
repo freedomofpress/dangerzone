@@ -265,14 +265,13 @@ Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
   - Install the Windows SDK from here: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/ and add `C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool` to the path (you'll need it for `signtool.exe`)
   - You'll also need the Windows codesigning certificate installed on the VM
 
-### Build the container image
-
-Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar.gz` and `share/image-id.txt` from the host into the `share` folder in the VM
-
-### Build the Dangerzone binary and installer
+### Releasing and Signing
 
 - Verify and checkout the git tag for this release
 - Run `poetry install`
+- Copy the container image into the VM
+  > [!IMPORTANT]
+  > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar.gz` and `share/image-id.txt` from the host into the `share` folder in the VM
 - Run `poetry run .\install\windows\build-app.bat`
 - When you're done you will have `dist\Dangerzone.msi`
 

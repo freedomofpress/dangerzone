@@ -21,7 +21,7 @@ Before making a release, all of these should be complete:
 > architectures on **one** platform, and then copy it to the rest of the
 > platforms, before creating our .deb / .rpm / .msi / app bundles.
 
-## Large document testing
+## Large Document Testing
 
 Parallel to the QA process, the release candidate should be put through the large document tests in a dedicated machine to run overnight.
 
@@ -212,7 +212,7 @@ REPOSITORY                   TAG         IMAGE ID        CREATED       SIZE
 dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <different size>
 ```
 
-## macOS release
+## macOS Release
 
 ### First Time Signing Machine Setup
 - Build machine must have:
@@ -253,9 +253,9 @@ dist/Dangerzone.dmg
 
 Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
 
-## Windows release
+## Windows Release
 
-### Set up a Windows 11 VM for making releases
+### First Time Windows 11 VM Build Machine Setup
 
 - Download a VirtualBox VM image for Windows from here: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/ and import it into VirtualBox. Also install the Oracle VM VirtualBox Extension Pack.
 - Install updates
@@ -353,7 +353,7 @@ Create a .rpm for Qubes:
 and similarly publish it to the [`freedomofpress/yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod)
 repo.
 
-## Publishing the release
+## Publishing the Release
 
 To publish the release:
 

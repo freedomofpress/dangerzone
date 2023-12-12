@@ -89,7 +89,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
     && apt-get install -y --no-install-recommends dh-python make build-essential \
-        fakeroot {qt_deps} pipx python3 python3-dev python3-venv python3-stdeb \
+        git fakeroot {qt_deps} pipx python3 python3-dev python3-venv python3-stdeb \
         python3-all \
     && rm -rf /var/lib/apt/lists/*
 # NOTE: `pipx install poetry` fails on Ubuntu Focal, when installed through APT. By
@@ -108,7 +108,7 @@ RUN apt-get update \
 
 # FIXME: Install Poetry on Fedora via package manager.
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
-RUN dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
+RUN dnf install -y git rpm-build podman python3 python3-devel python3-poetry-core \
     pipx make qt6-qtbase-gui \
     && dnf clean all
 

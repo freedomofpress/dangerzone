@@ -218,7 +218,7 @@ dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <differen
 
 ### macOS Release
 
-#### First Time Signing Machine Setup
+#### Initial Setup
 - Build machine must have:
   - Apple-trusted `Developer ID Application: Freedom of the Press Foundation (94ZZGGGJ3W)` code-signing certificates installed
 - Apple account must have:
@@ -259,7 +259,7 @@ Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
 
 ### Windows Release
 
-#### First Time Windows 11 VM Build Machine Setup
+#### Initial Setup
 
 - Download a VirtualBox VM image for Windows from here: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/ and import it into VirtualBox. Also install the Oracle VM VirtualBox Extension Pack.
 - Install updates

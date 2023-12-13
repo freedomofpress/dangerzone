@@ -258,6 +258,7 @@ dist/Dangerzone.dmg
 Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
 
 ### Windows Release
+The Windows release is performed in a Windows 11 virtual machine as opposed to a physical one.
 
 #### Initial Setup
 

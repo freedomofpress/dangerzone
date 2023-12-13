@@ -17,7 +17,7 @@ RUN apk --no-cache -U upgrade && \
     font-noto-cjk
 
 RUN apk --no-cache add --virtual .builddeps g++ gcc make python3-dev py3-pip \
-     && pip install --upgrade PyMuPDF \
+     && pip install --break-system-packages --upgrade PyMuPDF \
      && apk del .builddeps  # FIXME freeze w/ hashes
 
 # Download the trained models from the latest GitHub release of Tesseract, and

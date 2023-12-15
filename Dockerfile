@@ -19,7 +19,7 @@ RUN apk --no-cache -U upgrade && \
 
 # Install PyMuPDF via hash-checked requirements file
 COPY ${REQUIREMENTS_TXT} /tmp/requirements.txt
-RUN apk --no-cache add --virtual .builddeps g++ gcc make python3-dev py3-pip \
+RUN apk --no-cache add --virtual .builddeps linux-headers g++ gcc make python3-dev py3-pip \
      && pip install --break-system-packages --require-hashes -r /tmp/requirements.txt \
      && apk del .builddeps
 

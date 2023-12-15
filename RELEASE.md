@@ -309,7 +309,7 @@ cd dangerzone
 Build the latest container:
 
 ```sh
-./install/linux/build-image.sh
+python3 ./install/common/build-image.py
 ```
 
 Create a .deb:
@@ -341,7 +341,7 @@ cd dangerzone
 Build the latest container:
 
 ```sh
-./install/linux/build-image.sh
+python3 ./install/common/build-image.py
 ```
 
 Create a .rpm:

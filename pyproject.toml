@@ -51,7 +51,10 @@ pytest-cov = "^3.0.0"
 strip-ansi = "*"
 
 [tool.poetry.group.qubes.dependencies]
-pymupdf = "^1.23.7"
+pymupdf = "^1.23.6"
+
+[tool.poetry.group.container.dependencies]
+pymupdf = "1.23.6"
 
 [tool.isort]
 profile = "black"

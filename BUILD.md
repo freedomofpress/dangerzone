@@ -41,7 +41,7 @@ poetry install
 Build the latest container:
 
 ```sh
-./install/linux/build-image.sh
+python3 ./install/common/build-image.py
 ```
 
 Run from source tree:
@@ -96,7 +96,7 @@ poetry install
 Build the latest container:
 
 ```sh
-./install/linux/build-image.sh
+python3 ./install/common/build-image.py
 ```
 
 Run from source tree:
@@ -292,7 +292,7 @@ brew install create-dmg
 Build the dangerzone container image:
 
 ```sh
-./install/macos/build-image.sh
+python3 ./install/common/build-image.py
 ```
 
 Run from source tree:
@@ -353,7 +353,7 @@ poetry install
 Build the dangerzone container image:
 
 ```sh
-python .\install\windows\build-image.py
+python3 .\install\common\build-image.py
 ```
 
 After that you can launch dangerzone during development with:

@@ -2,6 +2,7 @@ FROM alpine:latest
 
 ARG TESSDATA_CHECKSUM=d0e3bb6f3b4e75748680524a1d116f2bfb145618f8ceed55b279d15098a530f9
 ARG H2ORESTART_CHECKSUM=5db816a1e57b510456633f55e693cb5ef3675ef8b35df4f31c90ab9d4c66071a
+ARG REQUIREMENTS_TXT
 
 # Install dependencies
 RUN apk --no-cache -U upgrade && \
@@ -16,9 +17,11 @@ RUN apk --no-cache -U upgrade && \
     tesseract-ocr \
     font-noto-cjk
 
+# Install PyMuPDF via hash-checked requirements file
+COPY ${REQUIREMENTS_TXT} /tmp/requirements.txt
 RUN apk --no-cache add --virtual .builddeps g++ gcc make python3-dev py3-pip \
-     && pip install --break-system-packages --upgrade PyMuPDF \
-     && apk del .builddeps  # FIXME freeze w/ hashes
+     && pip install --break-system-packages --require-hashes -r /tmp/requirements.txt \
+     && apk del .builddeps
 
 # Download the trained models from the latest GitHub release of Tesseract, and
 # store them under /usr/share/tessdata. This is basically what distro packages

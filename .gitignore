@@ -138,3 +138,4 @@ install/windows/Dangerzone.wxs
 share/container.tar
 share/container.tar.gz
 share/image-id.txt
+container/container-pip-requirements.txt

@@ -63,7 +63,7 @@ jobs:
               build-dev
 
       - name: Build Dangerzone image
-        run: ./install/linux/build-image.sh
+        run: python3 ./install/common/build-image.py
 
       - name: Build Dangerzone .deb
         run: |

@@ -237,7 +237,7 @@ poetry install
 Build the latest container:
 
 ```sh
-./install/linux/build-image.sh
+python3 ./install/common/build-image.py
 ```
 
 Run from source tree:
@@ -293,7 +293,7 @@ poetry install
 Build the latest container:
 
 ```sh
-./install/linux/build-image.sh
+python3 ./install/common/build-image.py
 ```
 
 Run from source tree:
@@ -351,7 +351,7 @@ poetry install
 Build the dangerzone container image:
 
 ```sh
-python .\install\windows\build-image.py
+python3 .\install\common\build-image.py
 ```
 
 After that you can launch dangerzone during development with:
@@ -723,7 +723,7 @@ class QAWindows(QABase):
 
     @QABase.task("Build Dangerzone container image", ref=REF_BUILD, auto=True)
     def build_image(self):
-        self.run("python", r".\install\windows\build-image.py")
+        self.run("python", r".\install\common\build-image.py")
 
     @classmethod
     def get_id(cls):
@@ -782,7 +782,7 @@ class QALinux(QABase):
 
     @QABase.task("Build Dangerzone image", ref="REF_BUILD", auto=True)
     def build_container_image(self):
-        self.shell_run("./install/linux/build-image.sh")
+        self.shell_run("python3 ./install/common/build-image.py")
         # FIXME: We need to automate this part, simply by checking that the created
         # image is in `share/image-id.txt`.
         self.prompt("Ensure that the environment uses the created image")

@@ -347,7 +347,7 @@ Create a .rpm:
 Publish the .rpm under `./dist` to the
 [`freedomofpress/yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod) repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
-##### Qubes
+#### Qubes
 
 Create a .rpm for Qubes:
 

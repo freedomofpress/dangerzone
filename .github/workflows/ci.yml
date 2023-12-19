@@ -62,6 +62,9 @@ jobs:
               --version ${{ env.version }} \
               build-dev
 
+      - name: Install container build dependencies
+        run: sudo apt install pipx && pipx install poetry
+
       - name: Build Dangerzone image
         run: python3 ./install/common/build-image.py
 

@@ -72,9 +72,13 @@ def main():
 
 
 def export_container_pip_dependencies():
-    container_requirements_txt = subprocess.check_output(
-        ["poetry", "export", "--only", "container"], universal_newlines=True
-    )
+    try:
+        container_requirements_txt = subprocess.check_output(
+            ["poetry", "export", "--only", "container"], universal_newlines=True
+        )
+    except subprocess.CalledProcessError as e:
+        print("FAILURE", e.returncode, e.output)
+    print(f"REQUIREMENTS: {container_requirements_txt}")
     # XXX Export container dependencies and exclude pymupdfb since it is not needed in container
     req_txt_pymupdfb_stripped = container_requirements_txt.split("pymupdfb")[0]
     with open(Path(BUILD_CONTEXT) / REQUIREMENTS_TXT, "w") as f:

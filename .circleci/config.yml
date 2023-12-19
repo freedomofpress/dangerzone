@@ -95,23 +95,27 @@ jobs:
           command: ./dev_scripts/qa.py --check-refs
 
   build-container-image:
-    working_directory: /app
-    docker:
-      - image: docker:dind
+    machine:
+      image: ubuntu-2004:202111-01
     steps:
       - checkout
+      - run: *install-podman
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
       - run: *calculate-cache-key
       - restore_cache: *restore-cache
-      - setup_remote_docker
+      # setup_remote_docker
       - run:
           name: Build Dangerzone image
           command: |
             if [ -f "/caches/container.tar.gz" ]; then
               echo "Already cached, skipping"
             else
-              docker build dangerzone/ -f Dockerfile \
-              --cache-from=dangerzone.rocks/dangerzone \
-              --tag dangerzone.rocks/dangerzone
+              sudo pip3 install poetry
+              python3 ./install/common/build-image.py
             fi
       - run:
           name: Save Dangerzone image and image-id.txt to cache
@@ -120,9 +124,9 @@ jobs:
               echo "Already cached, skipping"
             else
               mkdir -p /caches
-              docker save -o /caches/container.tar dangerzone.rocks/dangerzone
+              podman save -o /caches/container.tar dangerzone.rocks/dangerzone
               gzip -f /caches/container.tar
-              docker image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
+              podman image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
             fi
       - run: *calculate-cache-key
       - save_cache:

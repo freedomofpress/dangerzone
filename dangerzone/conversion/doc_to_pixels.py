@@ -174,7 +174,10 @@ class DocumentToPixels(DangerzoneConverter):
         # Convert input document to PDF
         conversion = conversions[mime_type]
         if conversion["type"] is None:
-            doc = fitz.open("/tmp/input_file", filetype=mime_type)
+            try:
+                doc = fitz.open("/tmp/input_file", filetype=mime_type)
+            except (ValueError, fitz.FileDataError):
+                raise errors.DocCorruptedException()
         elif conversion["type"] == "libreoffice":
             libreoffice_ext = conversion.get("libreoffice_ext", None)
             # Disable conversion for HWP/HWPX on specific platforms. See:
@@ -207,11 +210,13 @@ class DocumentToPixels(DangerzoneConverter):
             #     https://github.com/freedomofpress/dangerzone/issues/494
             if not os.path.exists(pdf_filename):
                 raise errors.LibreofficeFailure()
-            doc = fitz.open(pdf_filename)
+            try:
+                doc = fitz.open(pdf_filename)
+            except (ValueError, fitz.FileDataError):
+                raise errors.DocCorruptedException()
         else:
-            raise errors.InvalidGMConversion(
-                f"Invalid conversion type {conversion['type']} for MIME type {mime_type}"
-            )
+            # NOTE: This should never be reached
+            raise errors.DocFormatUnsupported()
         self.percentage += 3
 
         # Obtain number of pages

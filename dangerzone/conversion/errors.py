@@ -47,12 +47,9 @@ class LibreofficeFailure(ConversionException):
     error_message = "Conversion to PDF with LibreOffice failed"
 
 
-class InvalidGMConversion(ConversionException):
+class DocCorruptedException(ConversionException):
     error_code = ERROR_SHIFT + 30
-    error_message = "Invalid conversion (Graphics Magic)"
-
-    def __init__(self, error_message: str) -> None:
-        super(error_message)
+    error_message = "The document appears to be corrupted and could not be opened"
 
 
 class PagesException(ConversionException):
@@ -89,21 +86,6 @@ class PageCountMismatch(PagesException):
     )
 
 
-class PDFtoPPMException(ConversionException):
-    error_code = ERROR_SHIFT + 50
-    error_message = "Error converting PDF to Pixels (pdftoppm)"
-
-
-class PDFtoPPMInvalidHeader(PDFtoPPMException):
-    error_code = ERROR_SHIFT + 51
-    error_message = "Error converting PDF to Pixels (Invalid PPM header)"
-
-
-class PDFtoPPMInvalidDepth(PDFtoPPMException):
-    error_code = ERROR_SHIFT + 52
-    error_message = "Error converting PDF to Pixels (Invalid PPM depth)"
-
-
 class InterruptedConversion(ConversionException):
     """Protocol received num of bytes different than expected"""
 
@@ -113,7 +95,7 @@ class InterruptedConversion(ConversionException):
     )
 
 
-class UnexpectedConversionError(PDFtoPPMException):
+class UnexpectedConversionError(ConversionException):
     error_code = ERROR_SHIFT + 100
     error_message = "Some unexpected error occurred while converting the document"
 

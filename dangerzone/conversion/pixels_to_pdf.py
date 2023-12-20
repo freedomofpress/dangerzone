@@ -13,8 +13,6 @@ import shutil
 import sys
 from typing import Optional
 
-import fitz
-
 from .common import DEFAULT_DPI, DangerzoneConverter, get_tessdata_dir, running_on_qubes
 
 
@@ -25,6 +23,9 @@ class PixelsToPDF(DangerzoneConverter):
         self.percentage = 50.0
         if tempdir is None:
             tempdir = "/tmp"
+
+        # XXX lazy loading of fitz module to avoid import issues on non-Qubes systems
+        import fitz
 
         num_pages = len(glob.glob(f"{tempdir}/dangerzone/page-*.rgb"))
         total_size = 0.0

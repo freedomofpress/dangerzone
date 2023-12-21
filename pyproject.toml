@@ -50,6 +50,9 @@ pytest-qt = "^4.2.0"
 pytest-cov = "^3.0.0"
 strip-ansi = "*"
 
+[tool.poetry.group.qubes.dependencies]
+pymupdf = "^1.23.7"
+
 [tool.isort]
 profile = "black"
 skip_gitignore = true

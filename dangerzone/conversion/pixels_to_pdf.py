@@ -86,7 +86,7 @@ class PixelsToPDF(DangerzoneConverter):
         else:
             safe_pdf_path = f"/safezone/safe-output-compressed.pdf"
 
-        safe_doc.save(safe_pdf_path, deflate_images=True)
+        safe_doc.save(safe_pdf_path)
 
 
 async def main() -> int:

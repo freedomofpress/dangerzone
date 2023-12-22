@@ -1,5 +1,6 @@
 import platform
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -16,16 +17,30 @@ def test_ocr_ommisions() -> None:
     # Create the command that will list all the installed languages in the container
     # image.
     runtime = Container.get_runtime()
-    command = [runtime, "run", Container.CONTAINER_NAME, "tesseract", "--list-langs"]
+    command = [
+        runtime,
+        "run",
+        Container.CONTAINER_NAME,
+        "find",
+        "/usr/share/tessdata/",
+        "-name",
+        "*.traineddata",
+    ]
 
     # Run the command, strip any extra whitespace, and remove the following first line
     # from the result:
     #
     #     List of available languages in "/usr/share/tessdata/" ...
-    installed_langs = set(
+    installed_langs_filenames = (
         subprocess.run(command, text=True, check=True, stdout=subprocess.PIPE)
         .stdout.strip()
-        .split("\n")[1:]
+        .split("\n")
+    )
+    installed_langs = set(
+        [
+            Path(filename).name.split(".traineddata")[0]
+            for filename in installed_langs_filenames
+        ]
     )
 
     # Remove the "osd" and "equ" languages from the list of installed languages, since

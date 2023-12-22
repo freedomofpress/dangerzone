@@ -55,14 +55,10 @@ FROM alpine:latest
 # Install dependencies
 RUN apk --no-cache -U upgrade && \
     apk --no-cache add \
-    ghostscript \
     libreoffice \
     openjdk8 \
-    poppler-utils \
-    poppler-data \
     python3 \
     py3-magic \
-    tesseract-ocr \
     font-noto-cjk
 
 COPY --from=pymupdf-build /usr/lib/python3.11/site-packages/fitz/ /usr/lib/python3.11/site-packages/fitz

@@ -151,7 +151,7 @@ def gui_main(
     window = MainWindow(dangerzone)
 
     # Check for updates
-    log.debug("Setting up Dangezone updater")
+    log.debug("Setting up Dangerzone updater")
     updater = UpdaterThread(dangerzone)
     window.register_update_handler(updater.finished)
 

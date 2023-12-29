@@ -1,0 +1,60 @@
+name: Scan released app and container (Trivy)
+on:
+  push:
+  schedule:
+    - cron: '0 0 * * *' # Run every day at 00:00 UTC.
+
+jobs:
+  security-scan-container:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download container image for the latest release
+        run: |
+          VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | jq -r '.tag_name')
+          wget https://github.com/freedomofpress/dangerzone/releases/download/${VERSION}/container.tar.gz
+      - name: Scan container image
+        uses: aquasecurity/trivy-action@master
+        with:
+          input: /github/workspace/container.tar.gz
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL
+      - name: Upload container scan report
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+          category: container
+      - name: Inspect container scan report
+        if: always()
+        run: cat trivy-results.sarif
+
+  security-scan-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Checkout the latest released tag
+        run: |
+          VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | jq -r '.tag_name')
+          git checkout $VERSION
+      - name: Scan application
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL
+      - name: Upload application scan report
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+          category: app
+      - name: Inspect application scan report
+        if: always()
+        run: cat trivy-results.sarif

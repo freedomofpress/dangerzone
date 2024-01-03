@@ -36,7 +36,7 @@ Version:        0.5.1
 Release:        1%{?dist}
 Summary:        Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs
 
-License:        MIT
+License:        AGPL-3.0
 URL:            https://dangerzone.rocks
 
 # XXX: rpmbuild attempts to find a tarball in SOURCES using the basename in the

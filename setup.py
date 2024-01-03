@@ -36,7 +36,7 @@ setuptools.setup(
     version=version,
     author="Freedom of the Press Foundation",
     author_email="info@freedom.press",
-    license="MIT",
+    license="AGPL-3.0",
     description="Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs",
     long_description="""\
 Dangerzone is an open source desktop application that takes potentially \

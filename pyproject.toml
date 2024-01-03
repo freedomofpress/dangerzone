@@ -3,7 +3,7 @@ name = "dangerzone"
 version = "0.5.1"
 description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
 authors = ["Freedom of the Press Foundation <info@freedom.press>", "Micah Lee <micah.lee@theintercept.com>"]
-license = "MIT"
+license = "AGPL-3.0"
 include = [
     "share/",
     "qubes/",

@@ -62,6 +62,14 @@ Dangerzone was inspired by [Qubes trusted PDF](https://blog.invisiblethings.org/
 
 Set up a development environment by following [these instructions](/BUILD.md).
 
+
+# License and Copyright
+
+Licensed under the AGPLv3: [https://opensource.org/licenses/agpl-3.0](https://opensource.org/licenses/agpl-3.0)
+
+Copyright (c) 2022-2024 Freedom of the Press Foundation and Dangerzone contributors
+Copyright (c) 2020-2021 First Look Media
+
 ## FAQ
 
 ### "I'm experiencing an issue while using Dangerzone."

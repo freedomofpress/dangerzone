@@ -1,7 +1,9 @@
+import argparse
 import gzip
 import os
 import platform
 import subprocess
+import sys
 from pathlib import Path
 
 BUILD_CONTEXT = "dangerzone/"
@@ -14,13 +16,27 @@ elif platform.system() == "Linux":
 
 
 def main():
-    print("exporting container pip dependencies")
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--runtime",
+        choices=["docker", "podman"],
+        default=CONTAINER_RUNTIME,
+        help=f"The container runtime for building the image (default: {CONTAINER_RUNTIME})",
+    )
+    parser.add_argument(
+        "--no-save",
+        action="store_true",
+        help="Do not save the container image as a tarball in share/container.tar.gz",
+    )
+    args = parser.parse_args()
+
+    print("Exporting container pip dependencies")
     export_container_pip_dependencies()
 
     print("Building container image")
     subprocess.run(
         [
-            CONTAINER_RUNTIME,
+            args.runtime,
             "build",
             "--pull",
             BUILD_CONTEXT,
@@ -33,32 +49,32 @@ def main():
         ]
     )
 
-    print("Saving container image")
-    cmd = subprocess.Popen(
-        [
-            CONTAINER_RUNTIME,
-            "save",
-            TAG,
-        ],
-        stdout=subprocess.PIPE,
-    )
+    if not args.no_save:
+        print("Saving container image")
+        cmd = subprocess.Popen(
+            [
+                CONTAINER_RUNTIME,
+                "save",
+                TAG,
+            ],
+            stdout=subprocess.PIPE,
+        )
 
-    print("Compressing container image")
-    chunk_size = 4 << 12
-    with gzip.open("share/container.tar.gz", "wb") as gzip_f:
-        while True:
-            chunk = cmd.stdout.read(chunk_size)
-            if len(chunk) > 0:
-                gzip_f.write(chunk)
-            else:
-                break
-
-    cmd.wait(5)
+        print("Compressing container image")
+        chunk_size = 4 << 20
+        with gzip.open("share/container.tar.gz", "wb") as gzip_f:
+            while True:
+                chunk = cmd.stdout.read(chunk_size)
+                if len(chunk) > 0:
+                    gzip_f.write(chunk)
+                else:
+                    break
+        cmd.wait(5)
 
     print("Looking up the image id")
     image_id = subprocess.check_output(
         [
-            CONTAINER_RUNTIME,
+            args.runtime,
             "image",
             "list",
             "--format",
@@ -86,4 +102,4 @@ def export_container_pip_dependencies():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

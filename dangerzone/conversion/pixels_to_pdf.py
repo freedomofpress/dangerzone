@@ -58,19 +58,21 @@ class PixelsToPDF(DangerzoneConverter):
                 self.update_progress(
                     f"Converting page {page_num}/{num_pages} from pixels to searchable PDF"
                 )
-                ocr_pdf_bytes = pixmap.pdfocr_tobytes(
+                page_pdf_bytes = pixmap.pdfocr_tobytes(
                     compress=True,
                     language=ocr_lang,
                     tessdata=get_tessdata_dir(),
                 )
-                ocr_pdf = fitz.open("pdf", ocr_pdf_bytes)
-                safe_doc.insert_pdf(ocr_pdf)
+                ocr_pdf = fitz.open("pdf", page_pdf_bytes)
             else:  # Don't OCR
                 self.update_progress(
                     f"Converting page {page_num}/{num_pages} from pixels to PDF"
                 )
-                safe_doc.insert_file(pixmap)
+                page_doc = fitz.Document()
+                page_doc.insert_file(pixmap)
+                page_pdf_bytes = page_doc.tobytes(deflate_images=True)
 
+            safe_doc.insert_pdf(fitz.open("pdf", page_pdf_bytes))
             self.percentage += percentage_per_page
 
         # Next operations apply to the all the pages, so we need to recalculate the

@@ -36,7 +36,7 @@ class Qubes(IsolationProvider):
         self, document: Document, tempdir: str, ocr_lang: Optional[str]
     ) -> None:
         def print_progress_wrapper(error: bool, text: str, percentage: float) -> None:
-            self.print_progress_trusted(document, error, text, percentage)
+            self.print_progress(document, error, text, percentage)
 
         converter = PixelsToPDF(progress_callback=print_progress_wrapper)
         try:

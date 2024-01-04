@@ -87,13 +87,13 @@ class IsolationProvider(ABC):
             exception = errors.exception_from_error_code(error_code)
             document.mark_as_failed()
         except errors.ConversionException as e:
-            self.print_progress_trusted(document, True, str(e), 0)
+            self.print_progress(document, True, str(e), 0)
             document.mark_as_failed()
         except Exception as e:
             log.exception(
                 f"An exception occurred while converting document '{document.id}'"
             )
-            self.print_progress_trusted(document, True, str(e), 0)
+            self.print_progress(document, True, str(e), 0)
             document.mark_as_failed()
 
     def doc_to_pixels(self, document: Document, tempdir: str) -> None:
@@ -125,7 +125,7 @@ class IsolationProvider(ABC):
             sw.start()
             for page in range(1, n_pages + 1):
                 text = f"Converting page {page}/{n_pages} to pixels"
-                self.print_progress_trusted(document, False, text, percentage)
+                self.print_progress(document, False, text, percentage)
 
                 width = read_int(self.proc.stdout, timeout=sw.remaining)
                 height = read_int(self.proc.stdout, timeout=sw.remaining)
@@ -156,7 +156,7 @@ class IsolationProvider(ABC):
 
         # TODO handle leftover code input
         text = "Converted document to pixels"
-        self.print_progress_trusted(document, False, text, percentage)
+        self.print_progress(document, False, text, percentage)
 
         if getattr(sys, "dangerzone_dev", False):
             assert self.proc.stderr is not None
@@ -173,11 +173,11 @@ class IsolationProvider(ABC):
     ) -> None:
         pass
 
-    def _print_progress(
+    def print_progress(
         self, document: Document, error: bool, text: str, percentage: float
     ) -> None:
         s = Style.BRIGHT + Fore.YELLOW + f"[doc {document.id}] "
-        s += Fore.CYAN + f"{percentage}% " + Style.RESET_ALL
+        s += Fore.CYAN + f"{int(percentage)}% " + Style.RESET_ALL
         if error:
             s += Fore.RED + text + Style.RESET_ALL
             log.error(s)
@@ -187,19 +187,6 @@ class IsolationProvider(ABC):
 
         if self.progress_callback:
             self.progress_callback(error, text, percentage)
-
-    def print_progress_trusted(
-        self, document: Document, error: bool, text: str, percentage: float
-    ) -> None:
-        return self._print_progress(document, error, text, int(percentage))
-
-    def print_progress(
-        self, document: Document, error: bool, untrusted_text: str, percentage: float
-    ) -> None:
-        text = replace_control_chars(untrusted_text)
-        return self.print_progress_trusted(
-            document, error, "UNTRUSTED> " + text, percentage
-        )
 
     @abstractmethod
     def get_max_parallel_conversions(self) -> int:

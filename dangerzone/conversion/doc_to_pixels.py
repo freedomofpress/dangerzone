@@ -35,6 +35,9 @@ class DocumentToPixels(DangerzoneConverter):
     async def write_page_data(self, data: bytes) -> None:
         return await self.write_bytes(data)
 
+    def update_progress(self, text: str, *, error: bool = False) -> None:
+        print(text, file=sys.stderr)
+
     async def convert(self) -> None:
         conversions: Dict[str, Dict[str, Optional[str]]] = {
             # .pdf

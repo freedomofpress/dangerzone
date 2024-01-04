@@ -11,12 +11,7 @@ from typing import Any, List, Optional
 
 from ..conversion import errors
 from ..document import Document
-from ..util import (
-    get_resource_path,
-    get_subprocess_startupinfo,
-    get_tmp_dir,
-    replace_control_chars,
-)
+from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
 from .base import IsolationProvider
 
 # Define startupinfo for subprocesses
@@ -147,29 +142,22 @@ class Container(IsolationProvider):
         if not type(val) == _type:
             raise ValueError("Status field has incorrect type")
 
-    def parse_progress(self, document: Document, untrusted_line: str) -> None:
+    def parse_progress_trusted(self, document: Document, line: str) -> None:
         """
         Parses a line returned by the container.
         """
         try:
-            untrusted_status = json.loads(untrusted_line)
-
-            text = untrusted_status["text"]
+            status = json.loads(line)
+            text = status["text"]
             self.assert_field_type(text, str)
-
-            error = untrusted_status["error"]
+            error = status["error"]
             self.assert_field_type(error, bool)
-
-            percentage = untrusted_status["percentage"]
-            self.assert_field_type(percentage, int)
-
+            percentage = status["percentage"]
+            self.assert_field_type(percentage, float)
             self.print_progress(document, error, text, percentage)
         except Exception:
-            line = replace_control_chars(untrusted_line)
-            error_message = (
-                f"Invalid JSON returned from container:\n\n\tUNTRUSTED> {line}"
-            )
-            self.print_progress_trusted(document, True, error_message, -1)
+            error_message = f"Invalid JSON returned from container:\n\n\t {line}"
+            self.print_progress(document, True, error_message, -1)
 
     def exec(
         self,
@@ -243,8 +231,9 @@ class Container(IsolationProvider):
         ]
 
         pixels_to_pdf_proc = self.exec_container(command, extra_args)
-        for line in pixels_to_pdf_proc.stdout:
-            self.parse_progress(document, line)
+        if pixels_to_pdf_proc.stdout:
+            for line in pixels_to_pdf_proc.stdout:
+                self.parse_progress_trusted(document, line.decode())
         error_code = pixels_to_pdf_proc.wait()
         if error_code != 0:
             log.error("pixels-to-pdf failed")

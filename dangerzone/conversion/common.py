@@ -192,5 +192,6 @@ class DangerzoneConverter:
     async def convert(self) -> None:
         pass
 
-    def update_progress(self, text: str, *, error: bool = False) -> None:
+    @abstractmethod
+    def update_progress(self, text: str) -> None:
         pass

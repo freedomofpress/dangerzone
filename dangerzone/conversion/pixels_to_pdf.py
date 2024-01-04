@@ -93,11 +93,11 @@ class PixelsToPDF(DangerzoneConverter):
     def update_progress(self, text: str, *, error: bool = False) -> None:
         if running_on_qubes():
             if self.progress_callback:
-                self.progress_callback(error, text, int(self.percentage))
+                self.progress_callback(error, text, self.percentage)
         else:
             print(
                 json.dumps(
-                    {"error": error, "text": text, "percentage": int(self.percentage)}
+                    {"error": error, "text": text, "percentage": self.percentage}
                 )
             )
             sys.stdout.flush()

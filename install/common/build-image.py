@@ -33,12 +33,21 @@ def main():
     print("Exporting container pip dependencies")
     export_container_pip_dependencies()
 
+    print("Pulling base image")
+    subprocess.run(
+        [
+            args.runtime,
+            "pull",
+            "alpine:latest",
+        ],
+        check=True,
+    )
+
     print("Building container image")
     subprocess.run(
         [
             args.runtime,
             "build",
-            "--pull",
             BUILD_CONTEXT,
             "--build-arg",
             f"REQUIREMENTS_TXT={REQUIREMENTS_TXT}",

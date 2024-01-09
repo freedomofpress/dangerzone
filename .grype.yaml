@@ -2,3 +2,24 @@
 # latest release of Dangerzone, and offer our analysis.
 
 ignore:
+  # CVE-2023-7104
+  # =============
+  #
+  # NVD Entry: https://nvd.nist.gov/vuln/detail/CVE-2023-7104
+  # Verdict: Dangerzone is not affected. The rationale is the following:
+  #
+  #   1. This CVE affects malicious/corrupted SQLite DBs.
+  #   2. Databases can be loaded either via LibreOffice Calc or Base. Files for
+  #      the latter are not a valid input to Dangerzone.
+  #   3. Based on the LibreOffice Calc guide [1], users can only refer to
+  #      external databases, not embed them in a spreadsheet.
+  #   4. The actual CVSS score for this vulnerability is High, according to
+  #      NIST, not Critical.
+  #
+  # [1]: From https://wiki.documentfoundation.org/images/f/f4/CG75-CalcGuide.pdf:
+  #
+  #      > The possible data sources for the pivot table are a Calc spreadsheet
+  #      > or an external data source that is registered in LibreOffice. [...]
+  #      > A registered data source is a connection to data held in a database
+  #      > outside of LibreOffice.
+  - vulnerability: CVE-2023-7104

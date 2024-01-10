@@ -237,7 +237,7 @@ class Container(IsolationProvider):
         error_code = pixels_to_pdf_proc.wait()
         if error_code != 0:
             log.error("pixels-to-pdf failed")
-            raise errors.exception_from_error_code(error_code)  # type: ignore [misc]
+            raise errors.exception_from_error_code(error_code)
         else:
             # Move the final file to the right place
             if os.path.exists(document.output_filename):

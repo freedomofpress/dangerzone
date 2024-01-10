@@ -18,14 +18,15 @@ from .. import pdf_11k_pages, sanitized_text, uncommon_text
 )
 @pytest.mark.skipif(not running_on_qubes(), reason="Not on a Qubes system")
 class IsolationProviderTest:
-    def test_max_pages_received(
+    def test_max_pages_server_enforcement(
         self,
         pdf_11k_pages: str,
         provider: base.IsolationProvider,
         mocker: MockerFixture,
+        tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
         doc = Document(pdf_11k_pages)
-        with pytest.raises(errors.MaxPagesException):
-            success = provider._convert(doc, ocr_lang=None)
-            assert not success
+        with pytest.raises(errors.ConverterProcException):
+            provider.doc_to_pixels(doc, tmpdir)
+            assert provider.get_proc_exception() == errors.MaxPagesException

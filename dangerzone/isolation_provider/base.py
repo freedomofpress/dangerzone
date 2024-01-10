@@ -27,7 +27,7 @@ def read_bytes(f: IO[bytes], size: int, timeout: float, exact: bool = True) -> b
     """Read bytes from a file-like object."""
     buf = nonblocking_read(f, size, timeout)
     if exact and len(buf) != size:
-        raise errors.InterruptedConversion
+        raise errors.ConverterProcException()
     return buf
 
 
@@ -80,11 +80,9 @@ class IsolationProvider(ABC):
             document.mark_as_safe()
             if document.archive_after_conversion:
                 document.archive()
-        except errors.InterruptedConversion:
-            assert self.proc is not None
-            error_code = self.proc.wait(3)
-            # XXX Reconstruct exception from error code
-            exception = errors.exception_from_error_code(error_code)
+        except errors.ConverterProcException:
+            exception = self.get_proc_exception()
+            self.print_progress(document, True, str(exception), 0)
             document.mark_as_failed()
         except errors.ConversionException as e:
             self.print_progress(document, True, str(e), 0)
@@ -105,7 +103,7 @@ class IsolationProvider(ABC):
                 self.proc.stdin.write(f.read())
                 self.proc.stdin.close()
             except BrokenPipeError as e:
-                raise errors.InterruptedConversion()
+                raise errors.ConverterProcException()
 
             # Get file size (in MiB)
             size = os.path.getsize(document.input_filename) / 1024**2
@@ -187,6 +185,12 @@ class IsolationProvider(ABC):
 
         if self.progress_callback:
             self.progress_callback(error, text, percentage)
+
+    def get_proc_exception(self) -> Exception:
+        """Returns an exception associated with a process exit code"""
+        assert self.proc
+        error_code = self.proc.wait(3)
+        return errors.exception_from_error_code(error_code)
 
     @abstractmethod
     def get_max_parallel_conversions(self) -> int:

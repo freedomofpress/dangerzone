@@ -30,11 +30,12 @@ def provider() -> Qubes:
 
 @pytest.mark.skipif(not running_on_qubes(), reason="Not on a Qubes system")
 class TestQubes(IsolationProviderTest):
-    def test_max_pages_client_side_enforcement(
+    def test_max_pages_client_enforcement(
         self,
         sample_doc: str,
         provider: Qubes,
         mocker: MockerFixture,
+        tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
         mocker.patch(
@@ -42,8 +43,7 @@ class TestQubes(IsolationProviderTest):
         )  # sample_doc has 4 pages > 1
         doc = Document(sample_doc)
         with pytest.raises(errors.MaxPagesException):
-            success = provider._convert(doc, ocr_lang=None)
-            assert not success
+            provider.doc_to_pixels(doc, tmpdir)
 
     def test_max_dimensions(
         self,
@@ -51,14 +51,13 @@ class TestQubes(IsolationProviderTest):
         sample_bad_height: str,
         provider: Qubes,
         mocker: MockerFixture,
+        tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
         with pytest.raises(errors.MaxPageWidthException):
-            success = provider._convert(Document(sample_bad_width), ocr_lang=None)
-            assert not success
+            provider.doc_to_pixels(Document(sample_bad_width), tmpdir)
         with pytest.raises(errors.MaxPageHeightException):
-            success = provider._convert(Document(sample_bad_height), ocr_lang=None)
-            assert not success
+            provider.doc_to_pixels(Document(sample_bad_height), tmpdir)
 
     def test_out_of_ram(
         self,
@@ -66,6 +65,7 @@ class TestQubes(IsolationProviderTest):
         mocker: MockerFixture,
         monkeypatch: MonkeyPatch,
         sample_doc: str,
+        tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
 
@@ -85,6 +85,7 @@ class TestQubes(IsolationProviderTest):
             provider, "start_doc_to_pixels_proc", start_doc_to_pixels_proc
         )
 
-        with pytest.raises(errors.QubesQrexecFailed) as e:
+        with pytest.raises(errors.ConverterProcException) as e:
             doc = Document(sample_doc)
-            provider._convert(doc, ocr_lang=None)
+            provider.doc_to_pixels(doc, tmpdir)
+            assert provider.get_proc_exception() == errors.QubesQrexecFailed

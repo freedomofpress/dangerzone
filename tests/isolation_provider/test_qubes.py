@@ -30,35 +30,6 @@ def provider() -> Qubes:
 
 @pytest.mark.skipif(not running_on_qubes(), reason="Not on a Qubes system")
 class TestQubes(IsolationProviderTest):
-    def test_max_pages_client_enforcement(
-        self,
-        sample_doc: str,
-        provider: Qubes,
-        mocker: MockerFixture,
-        tmpdir: str,
-    ) -> None:
-        provider.progress_callback = mocker.MagicMock()
-        mocker.patch(
-            "dangerzone.conversion.errors.MAX_PAGES", 1
-        )  # sample_doc has 4 pages > 1
-        doc = Document(sample_doc)
-        with pytest.raises(errors.MaxPagesException):
-            provider.doc_to_pixels(doc, tmpdir)
-
-    def test_max_dimensions(
-        self,
-        sample_bad_width: str,
-        sample_bad_height: str,
-        provider: Qubes,
-        mocker: MockerFixture,
-        tmpdir: str,
-    ) -> None:
-        provider.progress_callback = mocker.MagicMock()
-        with pytest.raises(errors.MaxPageWidthException):
-            provider.doc_to_pixels(Document(sample_bad_width), tmpdir)
-        with pytest.raises(errors.MaxPageHeightException):
-            provider.doc_to_pixels(Document(sample_bad_height), tmpdir)
-
     def test_out_of_ram(
         self,
         provider: Qubes,

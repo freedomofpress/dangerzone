@@ -7,7 +7,7 @@ ARG REQUIREMENTS_TXT
 
 # Install PyMuPDF via hash-checked requirements file
 COPY ${REQUIREMENTS_TXT} /tmp/requirements.txt
-RUN apk --no-cache add linux-headers g++ linux-headers gcc make python3-dev py3-pip
+RUN apk --no-cache add linux-headers g++ linux-headers gcc make python3-dev py3-pip clang-dev
 RUN pip install --break-system-packages --require-hashes -r /tmp/requirements.txt
 
 

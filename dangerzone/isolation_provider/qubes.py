@@ -97,7 +97,7 @@ class Qubes(IsolationProvider):
         # 1. The size of the Python zipfile, so that the server can know when to
         #    stop.
         # 2. The Python zipfile itself.
-        bufsize_bytes = len(temp_file.getvalue()).to_bytes(4)
+        bufsize_bytes = len(temp_file.getvalue()).to_bytes(4, "big")
         wpipe.write(bufsize_bytes)
         wpipe.write(temp_file.getvalue())
 

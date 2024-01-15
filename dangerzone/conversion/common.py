@@ -76,7 +76,7 @@ class DangerzoneConverter:
 
     @classmethod
     def _write_int(cls, num: int, file: TextIO = sys.stdout) -> None:
-        cls._write_bytes(num.to_bytes(2, signed=False), file=file)
+        cls._write_bytes(num.to_bytes(2, "big", signed=False), file=file)
 
     # ==== ASYNC METHODS ====
     # We run sync methods in async wrappers, because pure async methods are more difficult:

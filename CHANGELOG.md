@@ -7,7 +7,12 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Unreleased
 
+### Added
+
+- Platform support: Fedora 39 ([issue #606](https://github.com/freedomofpress/dangerzone/issues/606))
+
 ## Fixed
+
 - Fix mismatched between between original document and converted one ([issue #626](https://github.com/freedomofpress/dangerzone/issues/)). This does not affect the quality of the final document.
 - Capitalize "dangerzone" on the application as well as on the Linux desktop shortcut, thanks to [@sudwhiwdh](https://github.com/sudwhiwdh)
 

@@ -54,7 +54,7 @@ and newer platforms, we have to do the following:
   - [ ] Run the Dangerzone tests.
   - [ ] Create a .deb package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Fedora platform (Fedora 38 as of
+- [ ] Create a test build in the most recent Fedora platform (Fedora 39 as of
   writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
@@ -893,6 +893,10 @@ class QAFedora(QALinux):
         self.container_run(
             "./dangerzone/install/linux/build-rpm.py",
         )
+
+
+class QAFedora39(QAFedora):
+    VERSION = "39"
 
 
 class QAFedora38(QAFedora):

@@ -16,6 +16,7 @@ Dangerzone is available for:
 - Debian 13 (trixie)
 - Debian 12 (bookworm)
 - Debian 11 (bullseye)
+- Fedora 39
 - Fedora 38
 - Qubes OS (beta support)
 

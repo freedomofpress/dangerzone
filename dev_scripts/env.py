@@ -527,19 +527,21 @@ def env_run(args):
         sys.exit(1)
 
     env = Env.from_args(args)
-    env.run(args.command, gui=args.gui, user=args.user, dry=args.dry, dev=args.dev)
+    return env.run(
+        args.command, gui=args.gui, user=args.user, dry=args.dry, dev=args.dev
+    )
 
 
 def env_build_dev(args):
     """Invoke the 'build-dev' command based on the CLI args."""
     env = Env.from_args(args)
-    env.build_dev(show_dockerfile=args.show_dockerfile)
+    return env.build_dev(show_dockerfile=args.show_dockerfile)
 
 
 def env_build(args):
     """Invoke the 'build' command based on the CLI args."""
     env = Env.from_args(args)
-    env.build(show_dockerfile=args.show_dockerfile)
+    return env.build(show_dockerfile=args.show_dockerfile)
 
 
 def parse_args():

@@ -1,17 +1,55 @@
 #!/usr/bin/env python3
 
 import argparse
+import functools
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
+import urllib.request
 
 DEFAULT_GUI = True
 DEFAULT_USER = "user"
 DEFAULT_DRY = False
 DEFAULT_DEV = False
 DEFAULT_SHOW_DOCKERFILE = False
+DEFAULT_DOWNLOAD_PYSIDE6 = False
+
+PYSIDE6_RPM = "python3-pyside6-{pyside6_version}-1.fc{fedora_version}.x86_64.rpm"
+PYSIDE6_URL = (
+    "https://packages.freedom.press/yum-tools-prod/dangerzone/f{fedora_version}/%s"
+    % PYSIDE6_RPM
+)
+
+PYSIDE6_DL_MESSAGE = """\
+Downloading PySide6 RPM from:
+
+    {pyside6_url}
+
+into the following local path:
+
+    {pyside6_local_path}
+
+The RPM is over 100 MB, so this operation may take a while...
+"""
+
+PYSIDE6_NOT_FOUND_ERROR = """\
+The following package is not present in your system:
+
+    {pyside6_local_path}
+
+You can build it locally and copy it in the expected path, following the instructions
+in:
+
+    https://github.com/freedomofpress/python3-pyside6-rpm
+
+Alternatively, you can rerun the command adding the '--download-pyside6' flag, which
+will download it from:
+
+    {pyside6_url}
+"""
 
 # The Linux distributions that we currently support.
 # FIXME: Add a version mapping to avoid mistakes.
@@ -166,6 +204,11 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 """
 
+DOCKERFILE_BUILD_FEDORA_39_DEPS = r"""
+COPY {pyside6_rpm} /tmp/pyside6.rpm
+RUN dnf install -y /tmp/pyside6.rpm
+"""
+
 DOCKERFILE_BUILD_FEDORA_DEPS = r"""
 RUN dnf install -y mupdf && dnf clean all
 
@@ -249,6 +292,86 @@ def dz_version():
     """Get the current Dangerzone version."""
     with open(git_root() / "share/version.txt") as f:
         return f.read().strip()
+
+
+class PySide6Manager:
+    """Provision PySide6 RPMs in our Dangerzone environments.
+
+    This class holds all the logic around checking and downloading PySide RPMs. It can
+    detect the PySide6 version that the project requires, check if an RPM is present
+    under "/dist", and download it.
+    """
+
+    def __init__(self, distro_name, distro_version):
+        if distro_name != "fedora":
+            raise RuntimeError("Managing PySide6 RPMs is available only in Fedora")
+        self.distro_name = distro_name
+        self.distro_version = distro_version
+
+    @property
+    @functools.lru_cache
+    def version(self):
+        """Retrieve the PySide6 version from poetry.lock.
+
+        Read the poetry.lock file, and grep the version of the PySide6 library. The
+        results of this method call are cached, so we can call it repeatedly without any
+        performance cost.
+        """
+        # FIXME: I don't like regexes, but problem is that `tomllib` is not present in
+        # Python < 3.11. So, since we don't want to rely on an external library yet, we
+        # have to resort to regexes. Note that the regex we choose uses Shiboken6,
+        # mainly because the PySide6 package and its version are in different lines.
+        with open(git_root() / "poetry.lock") as f:
+            toml = f.read()
+            match = re.search(r'^shiboken6 = "([\d.]+)"$', toml, re.MULTILINE)
+            return match.groups()[0]
+
+    @property
+    def rpm_name(self):
+        """The name of the PySide6 RPM."""
+        return PYSIDE6_RPM.format(
+            pyside6_version=self.version, fedora_version=self.distro_version
+        )
+
+    @property
+    def rpm_url(self):
+        """The URL of the PySide6 RPM, as hosted in FPF's RPM repo."""
+        return PYSIDE6_URL.format(
+            pyside6_version=self.version,
+            fedora_version=self.distro_version,
+        )
+
+    @property
+    def rpm_local_path(self):
+        """The local path where this script will look for the PySide6 RPM."""
+        return git_root() / "dist" / self.rpm_name
+
+    @property
+    def is_rpm_present(self):
+        """Check if PySide6 RPM is present in the user's system."""
+        return self.rpm_local_path.exists()
+
+    def download_rpm(self):
+        """Download PySide6 from FPF's RPM repo."""
+        print(
+            PYSIDE6_DL_MESSAGE.format(
+                pyside6_url=self.rpm_url,
+                pyside6_local_path=self.rpm_local_path,
+            ),
+            file=sys.stderr,
+        )
+        try:
+            with urllib.request.urlopen(self.rpm_url) as r, open(
+                self.rpm_local_path, "wb"
+            ) as f:
+                shutil.copyfileobj(r, f)
+        except:
+            # NOTE: We purposefully catch all exceptions, since we want to catch Ctrl-C
+            # as well.
+            print("Download interrupted, removing file", file=sys.stderr)
+            self.rpm_local_path.unlink()
+            raise
+        print("PySide6 was downloaded successfully", file=sys.stderr)
 
 
 class Env:
@@ -469,7 +592,11 @@ class Env:
         image = image_name_build(self.distro, self.version)
         self.runtime_run("build", "-t", image, build_dir)
 
-    def build(self, show_dockerfile=DEFAULT_SHOW_DOCKERFILE):
+    def build(
+        self,
+        show_dockerfile=DEFAULT_SHOW_DOCKERFILE,
+        download_pyside6=DEFAULT_DOWNLOAD_PYSIDE6,
+    ):
         """Build a Linux environment and install Dangerzone in it."""
         build_dir = distro_build(self.distro, self.version)
         version = dz_version()
@@ -479,6 +606,30 @@ class Env:
             package_src = git_root() / "dist" / package
             package_dst = build_dir / package
             install_cmd = "dnf install -y"
+
+            # NOTE: For Fedora 39+ onward, we check if a PySide6 RPM package exists in
+            # the user's system. If not, we either throw an error or download it from
+            # FPF's repo, according to the user's choice.
+            # FIXME: Unconditionally check for PySide6, once Fedora 38 is no longer
+            # supported.
+            if self.version != "38":
+                pyside6 = PySide6Manager(self.distro, self.version)
+                if not pyside6.is_rpm_present:
+                    if download_pyside6:
+                        pyside6.download_rpm()
+                    else:
+                        print(
+                            PYSIDE6_NOT_FOUND_ERROR.format(
+                                pyside6_local_path=pyside6.rpm_local_path,
+                                pyside6_url=pyside6.rpm_url,
+                            ),
+                            file=sys.stderr,
+                        )
+                        return 1
+                shutil.copy(pyside6.rpm_local_path, build_dir / pyside6.rpm_name)
+                install_deps = (
+                    DOCKERFILE_BUILD_FEDORA_DEPS + DOCKERFILE_BUILD_FEDORA_39_DEPS
+                ).format(pyside6_rpm=pyside6.rpm_name)
         else:
             install_deps = DOCKERFILE_BUILD_DEBIAN_DEPS
             if self.distro == "ubuntu" and self.version in ("20.04", "focal"):
@@ -541,7 +692,10 @@ def env_build_dev(args):
 def env_build(args):
     """Invoke the 'build' command based on the CLI args."""
     env = Env.from_args(args)
-    return env.build(show_dockerfile=args.show_dockerfile)
+    return env.build(
+        show_dockerfile=args.show_dockerfile,
+        download_pyside6=args.download_pyside6,
+    )
 
 
 def parse_args():
@@ -630,6 +784,12 @@ def parse_args():
         default=DEFAULT_SHOW_DOCKERFILE,
         action="store_true",
         help="Do not build, only show the Dockerfile",
+    )
+    parser_build.add_argument(
+        "--download-pyside6",
+        default=DEFAULT_DOWNLOAD_PYSIDE6,
+        action="store_true",
+        help="Download PySide6 from FPF's RPM repo",
     )
 
     return parser.parse_args()

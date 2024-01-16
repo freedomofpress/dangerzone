@@ -805,6 +805,7 @@ class QALinux(QABase):
             "--version",
             self.VERSION,
             "build",
+            "--download-pyside6",
         )
 
     @classmethod

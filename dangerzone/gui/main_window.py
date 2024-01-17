@@ -76,7 +76,7 @@ class MainWindow(QtWidgets.QMainWindow):
         logo.setPixmap(
             QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("icon.png")))
         )
-        header_label = QtWidgets.QLabel("dangerzone")
+        header_label = QtWidgets.QLabel("Dangerzone")
         header_label.setFont(self.dangerzone.fixed_font)
         header_label.setStyleSheet("QLabel { font-weight: bold; font-size: 50px; }")
         header_version_label = QtWidgets.QLabel(get_version())

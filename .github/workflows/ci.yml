@@ -163,3 +163,46 @@ jobs:
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
               run dangerzone --help
+
+  build-install-rpm:
+    name: "Build and install a Dangerzone RPM on Fedora ${{matrix.version}}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - version: "38"
+          - version: "39"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build dev environment
+        run: |
+          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
+              build-dev
+
+      - name: Build Dangerzone image
+        run: |
+          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
+              run --dev --no-gui \
+              bash -c 'cd /home/user/dangerzone && python3 ./install/common/build-image.py'
+
+      - name: Build Dangerzone .rpm
+        run: |
+          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
+              run --dev --no-gui ./dangerzone/install/linux/build-rpm.py
+
+      - name: Build end-user environment
+        run: |
+          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
+              build --download-pyside6
+
+      - name: Run a test command
+        run: |
+          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf
+
+      - name: Check that the Dangerzone GUI imports work
+        run: |
+          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
+              run dangerzone --help

@@ -4,11 +4,12 @@ version = "0.5.1"
 description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
 authors = ["Freedom of the Press Foundation <info@freedom.press>", "Micah Lee <micah.lee@theintercept.com>"]
 license = "AGPL-3.0"
+# NOTE: See also https://github.com/freedomofpress/dangerzone/issues/677
 include = [
-    "share/",
-    "qubes/",
-    "install/linux/press.freedom.dangerzone.*",
-    "README.md"
+    { path = "share/*", format = "sdist" },
+    { path = "qubes/*", format = "sdist" },
+    { path = "install/linux/press.freedom.dangerzone.*", format = "sdist" },
+    { path = "README.md", format = "sdist" },
 ]
 
 [tool.poetry.dependencies]

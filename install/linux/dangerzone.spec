@@ -254,13 +254,6 @@ install -m 755 -d %{buildroot}/etc/qubes-rpc
 install -m 755 qubes/* %{buildroot}/etc/qubes-rpc
 %endif
 
-# The following files are included in the top level of the Python source
-# distribution, but they are moved in other places in the final RPM package.
-# They are considered stale, so remove them to appease the RPM check that
-# ensures there are no unhandled files.
-rm %{buildroot}/%{python3_sitelib}/README.md
-rm -r %{buildroot}%{python3_sitelib}/install
-
 %files -f %{pyproject_files}
 /usr/bin/dangerzone
 /usr/bin/dangerzone-cli

@@ -51,6 +51,7 @@ def build(qubes=False):
         dist_path.mkdir()
 
     print(f"* Creating RPM project structure under {build_dir}")
+    build_dir.mkdir(exist_ok=True)
     for d in ["BUILD", "BUILDROOT", "RPMS", "SOURCES", "SPECS"]:
         subdir = build_dir / d
         subdir.mkdir(exist_ok=True)

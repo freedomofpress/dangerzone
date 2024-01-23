@@ -246,7 +246,9 @@ sed -i 's/^PySide6.*$/PySide2 = "*"/' pyproject.toml
 install -m 755 -d %{buildroot}/usr/share/
 install -m 755 -d %{buildroot}/usr/share/applications/
 install -m 755 -d %{buildroot}/usr/share/dangerzone/
-install -m 644 install/linux/* %{buildroot}/usr/share/applications/
+install -m 755 -d %{buildroot}/usr/share/pixmaps/
+install -m 644 install/linux/press.freedom.dangerzone.desktop %{buildroot}/usr/share/applications/
+install -m 644 install/linux/press.freedom.dangerzone.png %{buildroot}/usr/share/pixmaps/
 install -m 644 share/* %{buildroot}/usr/share/dangerzone
 
 # In case we create a package for Qubes, add some extra files under

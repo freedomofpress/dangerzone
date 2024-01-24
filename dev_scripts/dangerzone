@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Load dangerzone module and resources from the source code tree
 import os
 import sys
 
+# XXX workaround lack of tessdata path arg for PyMuPDF < v1.22.5
+# for context see https://github.com/freedomofpress/dangerzone/issues/682
+os.environ["TESSDATA_PREFIX"] = os.environ.get("TESSDATA_PREFIX", "/usr/share/tesseract/tessdata")
+
+# Load dangerzone module and resources from the source code tree
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.dangerzone_dev = True
 

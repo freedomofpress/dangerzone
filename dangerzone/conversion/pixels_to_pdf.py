@@ -57,11 +57,19 @@ class PixelsToPDF(DangerzoneConverter):
                 self.update_progress(
                     f"Converting page {page_num}/{num_pages} from pixels to searchable PDF"
                 )
-                page_pdf_bytes = pixmap.pdfocr_tobytes(
-                    compress=True,
-                    language=ocr_lang,
-                    tessdata=get_tessdata_dir(),
-                )
+                if int(fitz.version[2]) >= 20230621000001:
+                    page_pdf_bytes = pixmap.pdfocr_tobytes(
+                        compress=True,
+                        language=ocr_lang,
+                        tessdata=get_tessdata_dir(),
+                    )
+                else:
+                    # XXX method signature changed in v1.22.5 to add tessdata arg
+                    # TODO remove after oldest distro has PyMuPDF >= v1.22.5
+                    page_pdf_bytes = pixmap.pdfocr_tobytes(
+                        compress=True,
+                        language=ocr_lang,
+                    )
                 ocr_pdf = fitz.open("pdf", page_pdf_bytes)
             else:  # Don't OCR
                 self.update_progress(

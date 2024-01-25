@@ -3,8 +3,7 @@ import platform
 import string
 import subprocess
 import sys
-import time
-from typing import Optional, Self
+from typing import Optional
 
 import appdirs
 
@@ -73,61 +72,3 @@ def replace_control_chars(untrusted_str: str) -> str:
     for char in untrusted_str:
         sanitized_str += char if char in string.printable else "_"
     return sanitized_str
-
-
-class Stopwatch:
-    """A simple stopwatch implementation.
-
-    This class offers a very simple stopwatch implementation, with the following
-    interface:
-
-    * self.start(): Start the stopwatch.
-    * self.stop(): Stop the stopwatch.
-    * self.elapsed: Measure the time from now since when the stopwatch started. If the
-      stopwatch has stopped, measure the time until stopped.
-    * self.remaining: If the user has provided a timeout, measure the time remaining
-      until the timeout expires. Will raise a TimeoutError if the timeout has been
-      surpassed.
-
-    This class can also be used as a context manager.
-    """
-
-    def __init__(self, timeout: Optional[float] = None) -> None:
-        self.timeout = timeout
-        self.start_time: Optional[float] = None
-        self.end_time: Optional[float] = None
-
-    @property
-    def elapsed(self) -> float:
-        """Check how much time has passed since the start of the stopwatch."""
-        if self.start_time is None:
-            raise RuntimeError("The stopwatch has not started yet")
-        return (self.end_time or time.monotonic()) - self.start_time
-
-    @property
-    def remaining(self) -> float:
-        """Check how much time remains until the timeout expires (if provided)."""
-        if self.timeout is None:
-            raise RuntimeError("Cannot calculate remaining time without timeout")
-
-        remaining = self.timeout - self.elapsed
-
-        if remaining < 0:
-            raise TimeoutError(
-                "Timeout ({timeout}s) has been surpassed by {-remaining}s"
-            )
-
-        return remaining
-
-    def __enter__(self) -> "Stopwatch":
-        self.start_time = time.monotonic()
-        return self
-
-    def start(self) -> None:
-        self.__enter__()
-
-    def __exit__(self, *args: list) -> None:
-        self.end_time = time.monotonic()
-
-    def stop(self) -> None:
-        self.__exit__()

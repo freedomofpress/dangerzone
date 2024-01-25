@@ -22,7 +22,7 @@ from .base import IsolationProviderTest
 
 @pytest.fixture
 def provider() -> Container:
-    return Container(enable_timeouts=False)
+    return Container()
 
 
 class TestContainer(IsolationProviderTest):

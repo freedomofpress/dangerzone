@@ -12,37 +12,13 @@ import time
 from abc import abstractmethod
 from typing import Callable, Dict, List, Optional, TextIO, Tuple, Union
 
-TIMEOUT_PER_PAGE: float = 30  # (seconds)
-TIMEOUT_PER_MB: float = 30  # (seconds)
-TIMEOUT_MIN: float = 60  # (seconds)
 DEFAULT_DPI = 150  # Pixels per inch
+INT_BYTES = 2
 
 
 def running_on_qubes() -> bool:
     # https://www.qubes-os.org/faq/#what-is-the-canonical-way-to-detect-qubes-vm
     return os.path.exists("/usr/share/qubes/marker-vm")
-
-
-def calculate_timeout(size: float, pages: Optional[float] = None) -> float:
-    """Calculate the timeout for a command.
-
-    The timeout calculation takes two factors in mind:
-
-    1. The size (in MiBs) of the dataset (document, multiple pages).
-    2. The number of pages in the dataset.
-
-    It then calculates proportional timeout values based on the above, and keeps the
-    large one.  This way, we can handle several corner cases:
-
-    * Documents with lots of pages, but small file size.
-    * Single images with large file size.
-    """
-    # Do not have timeouts lower than 10 seconds, if the file size is small, since
-    # we need to take into account the program's startup time as well.
-    timeout = max(TIMEOUT_PER_MB * size, TIMEOUT_MIN)
-    if pages:
-        timeout = max(timeout, TIMEOUT_PER_PAGE * pages)
-    return timeout
 
 
 def get_tessdata_dir() -> str:
@@ -76,7 +52,7 @@ class DangerzoneConverter:
 
     @classmethod
     def _write_int(cls, num: int, file: TextIO = sys.stdout) -> None:
-        cls._write_bytes(num.to_bytes(2, "big", signed=False), file=file)
+        cls._write_bytes(num.to_bytes(INT_BYTES, "big", signed=False), file=file)
 
     # ==== ASYNC METHODS ====
     # We run sync methods in async wrappers, because pure async methods are more difficult:
@@ -127,8 +103,6 @@ class DangerzoneConverter:
         args: List[str],
         *,
         error_message: str,
-        timeout_message: Optional[str] = None,
-        timeout: Optional[float] = None,
         stdout_callback: Optional[Callable] = None,
         stderr_callback: Optional[Callable] = None,
     ) -> Tuple[bytes, bytes]:
@@ -138,7 +112,6 @@ class DangerzoneConverter:
         output in bytes.
 
         :raises RuntimeError: if the process returns a non-zero exit status
-        :raises TimeoutError: if the process times out
         """
         # Start the provided command, and return a handle. The command will run in the
         # background.
@@ -164,12 +137,9 @@ class DangerzoneConverter:
             self.read_stream(proc.stderr, stderr_callback)
         )
 
-        # Wait until the command has finished, for a specific timeout. Then, verify that the
-        # command has completed successfully. In any other case, raise an exception.
-        try:
-            ret = await asyncio.wait_for(proc.wait(), timeout=timeout)
-        except asyncio.exceptions.TimeoutError:
-            raise TimeoutError(timeout_message)
+        # Wait until the command has finished. Then, verify that the command
+        # has completed successfully. In any other case, raise an exception.
+        ret = await proc.wait()
         if ret != 0:
             raise RuntimeError(error_message)
 
@@ -178,15 +148,6 @@ class DangerzoneConverter:
         stdout = await stdout_task
         stderr = await stderr_task
         return (stdout, stderr)
-
-    def calculate_timeout(
-        self, size: float, pages: Optional[float] = None
-    ) -> Optional[float]:
-        """Calculate the timeout for a command."""
-        if not int(os.environ.get("ENABLE_TIMEOUTS", 1)):
-            return None
-
-        return calculate_timeout(size, pages)
 
     @abstractmethod
     async def convert(self) -> None:

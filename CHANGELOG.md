@@ -21,6 +21,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Feature: Add support for HWP/HWPX files (Hancom Office) for macOS Apple Silicon devices ([issue #498](https://github.com/freedomofpress/dangerzone/issues/498), thanks to [@OctopusET](https://github.com/OctopusET))
 - Replace Dangerzone document rendering engine from pdftoppm PyMuPDF, essentially replacing a variety of tools (gm / tesseract / pdfunite / ps2pdf) ([issue #658](https://github.com/freedomofpress/dangerzone/issues/658))
 
+### Removed
+
+- Removed timeouts ([issue #687](https://github.com/freedomofpress/dangerzone/issues/687))
+
 ## Dangerzone 0.5.1
 
 ### Fixed

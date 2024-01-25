@@ -49,7 +49,7 @@ def test_ocr_ommisions() -> None:
     installed_langs -= {"osd", "equ"}
 
     # Grab the languages that Dangerzone offers to the user through the GUI/CLI.
-    offered_langs = set(DangerzoneCore(Container(True)).ocr_languages.values())
+    offered_langs = set(DangerzoneCore(Container()).ocr_languages.values())
 
     # Ensure that both the installed languages and the ones we offer to the user are the
     # same.

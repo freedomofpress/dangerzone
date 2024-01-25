@@ -49,7 +49,6 @@ class PixelsToPDF(DangerzoneConverter):
             # The first few operations happen on a per-page basis.
             page_size = len(untrusted_rgb_data)
             total_size += page_size
-            timeout = self.calculate_timeout(page_size, 1)
             pixmap = fitz.Pixmap(
                 fitz.Colorspace(fitz.CS_RGB), width, height, untrusted_rgb_data, False
             )
@@ -74,10 +73,6 @@ class PixelsToPDF(DangerzoneConverter):
 
             safe_doc.insert_pdf(fitz.open("pdf", page_pdf_bytes))
             self.percentage += percentage_per_page
-
-        # Next operations apply to the all the pages, so we need to recalculate the
-        # timeout.
-        timeout = self.calculate_timeout(total_size, num_pages)
 
         self.percentage = 100.0
         self.update_progress("Safe PDF created")
@@ -110,7 +105,7 @@ async def main() -> int:
     try:
         await converter.convert(ocr_lang)
         return 0
-    except (RuntimeError, TimeoutError, ValueError) as e:
+    except (RuntimeError, ValueError) as e:
         converter.update_progress(str(e), error=True)
         return 1
 

@@ -33,11 +33,6 @@ class NoContainerTechException(Exception):
 class Container(IsolationProvider):
     # Name of the dangerzone container
     CONTAINER_NAME = "dangerzone.rocks/dangerzone"
-    STARTUP_TIME_SECONDS = 5
-
-    def __init__(self, enable_timeouts: bool) -> None:
-        self.enable_timeouts = 1 if enable_timeouts else 0
-        super().__init__()
 
     @staticmethod
     def get_runtime_name() -> str:
@@ -227,8 +222,6 @@ class Container(IsolationProvider):
             f"OCR={0 if ocr_lang is None else 1}",
             "-e",
             f"OCR_LANGUAGE={ocr_lang}",
-            "-e",
-            f"ENABLE_TIMEOUTS={self.enable_timeouts}",
         ]
 
         pixels_to_pdf_proc = self.exec_container(command, extra_args)
@@ -256,14 +249,10 @@ class Container(IsolationProvider):
             "-m",
             "dangerzone.conversion.doc_to_pixels",
         ]
-        extra_args = [
-            "-e",
-            f"ENABLE_TIMEOUTS={self.enable_timeouts}",
-        ]
-        return self.exec_container(command, extra_args)
+        return self.exec_container(command)
 
     def get_max_parallel_conversions(self) -> int:
-        # FIXME hardcoded 1 until timeouts are more limited and better handled
+        # FIXME hardcoded 1 until length conversions are better handled
         # https://github.com/freedomofpress/dangerzone/issues/257
         return 1
 

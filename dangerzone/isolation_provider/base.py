@@ -10,9 +10,9 @@ from typing import IO, Callable, Optional
 from colorama import Fore, Style
 
 from ..conversion import errors
-from ..conversion.common import calculate_timeout
+from ..conversion.common import INT_BYTES
 from ..document import Document
-from ..util import Stopwatch, nonblocking_read, replace_control_chars
+from ..util import replace_control_chars
 
 log = logging.getLogger(__name__)
 
@@ -23,35 +23,32 @@ PIXELS_TO_PDF_LOG_START = "----- PIXELS TO PDF LOG START -----"
 PIXELS_TO_PDF_LOG_END = "----- PIXELS TO PDF LOG END -----"
 
 
-def read_bytes(f: IO[bytes], size: int, timeout: float, exact: bool = True) -> bytes:
+def read_bytes(f: IO[bytes], size: int, exact: bool = True) -> bytes:
     """Read bytes from a file-like object."""
-    buf = nonblocking_read(f, size, timeout)
+    buf = f.read(size)
     if exact and len(buf) != size:
         raise errors.InterruptedConversionException()
     return buf
 
 
-def read_int(f: IO[bytes], timeout: float) -> int:
+def read_int(f: IO[bytes]) -> int:
     """Read 2 bytes from a file-like object, and decode them as int."""
-    untrusted_int = read_bytes(f, 2, timeout)
-    if len(untrusted_int) != 2:
+    untrusted_int = f.read(INT_BYTES)
+    if len(untrusted_int) != INT_BYTES:
         raise errors.InterruptedConversionException()
     return int.from_bytes(untrusted_int, "big", signed=False)
 
 
 def read_debug_text(f: IO[bytes], size: int) -> str:
     """Read arbitrarily long text (for debug purposes)"""
-    timeout = calculate_timeout(size)
-    untrusted_text = read_bytes(f, size, timeout, exact=False)
-    return untrusted_text.decode("ascii", errors="replace")
+    untrusted_text = f.read(size).decode("ascii", errors="replace")
+    return replace_control_chars(untrusted_text)
 
 
 class IsolationProvider(ABC):
     """
     Abstracts an isolation provider
     """
-
-    STARTUP_TIME_SECONDS = 0  # The maximum time it takes a the provider to start up.
 
     def __init__(self) -> None:
         if getattr(sys, "dangerzone_dev", False) == True:
@@ -105,28 +102,18 @@ class IsolationProvider(ABC):
             except BrokenPipeError as e:
                 raise errors.ConverterProcException(p)
 
-            # Get file size (in MiB)
-            size = os.path.getsize(document.input_filename) / 1024**2
-            timeout = calculate_timeout(size) + self.STARTUP_TIME_SECONDS
-
-            assert p is not None
-            assert p.stdout is not None
-            os.set_blocking(p.stdout.fileno(), False)
-
-            n_pages = read_int(p.stdout, timeout)
+            assert p.stdout
+            n_pages = read_int(p.stdout)
             if n_pages == 0 or n_pages > errors.MAX_PAGES:
                 raise errors.MaxPagesException()
             percentage_per_page = 50.0 / n_pages
 
-            timeout = calculate_timeout(size, n_pages)
-            sw = Stopwatch(timeout)
-            sw.start()
             for page in range(1, n_pages + 1):
                 text = f"Converting page {page}/{n_pages} to pixels"
                 self.print_progress(document, False, text, percentage)
 
-                width = read_int(p.stdout, timeout=sw.remaining)
-                height = read_int(p.stdout, timeout=sw.remaining)
+                width = read_int(p.stdout)
+                height = read_int(p.stdout)
                 if not (1 <= width <= errors.MAX_PAGE_WIDTH):
                     raise errors.MaxPageWidthException()
                 if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
@@ -136,7 +123,6 @@ class IsolationProvider(ABC):
                 untrusted_pixels = read_bytes(
                     p.stdout,
                     num_pixels,
-                    timeout=sw.remaining,
                 )
 
                 # Wrapper code
@@ -157,8 +143,7 @@ class IsolationProvider(ABC):
         self.print_progress(document, False, text, percentage)
 
         if getattr(sys, "dangerzone_dev", False):
-            assert p.stderr is not None
-            os.set_blocking(p.stderr.fileno(), False)
+            assert p.stderr
             untrusted_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
             p.stderr.close()
             log.info(

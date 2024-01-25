@@ -23,8 +23,6 @@ log = logging.getLogger(__name__)
 class Qubes(IsolationProvider):
     """Uses a disposable qube for performing the conversion"""
 
-    STARTUP_TIME_SECONDS = 5 * 60  # 5 minutes
-
     def install(self) -> bool:
         return True
 
@@ -37,7 +35,7 @@ class Qubes(IsolationProvider):
         converter = PixelsToPDF(progress_callback=print_progress_wrapper)
         try:
             asyncio.run(converter.convert(ocr_lang, tempdir))
-        except (RuntimeError, TimeoutError, ValueError) as e:
+        except (RuntimeError, ValueError) as e:
             raise errors.UnexpectedConversionError(str(e))
         finally:
             if getattr(sys, "dangerzone_dev", False):

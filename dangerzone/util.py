@@ -1,12 +1,10 @@
-import os
 import pathlib
 import platform
-import selectors
 import string
 import subprocess
 import sys
 import time
-from typing import IO, Optional, Union
+from typing import Optional, Self
 
 import appdirs
 
@@ -133,66 +131,3 @@ class Stopwatch:
 
     def stop(self) -> None:
         self.__exit__()
-
-
-def nonblocking_read(fd: Union[IO[bytes], int], size: int, timeout: float) -> bytes:
-    """Opinionated read function for non-blocking fds.
-
-    This function offers a blocking interface for reading non-blocking fds. Unlike
-    the common `os.read()` function, this function accepts a timeout argument as well.
-
-    If the file descriptor has not reached EOF and this function has not read all the
-    requested bytes before the timeout expiration, it will raise a TimeoutError. Note
-    that partial reads do not affect the timeout duration, and thus this function may
-    return a TimeoutError, even if it has read some bytes.
-
-    If the file descriptor has reached EOF, this function may return less than the
-    requested number of bytes, which is the same behavior as `os.read()`.
-    """
-    if not isinstance(fd, int):
-        fd = fd.fileno()
-
-    # Validate the provided arguments.
-    if os.get_blocking(fd):
-        raise ValueError("Expected a non-blocking file descriptor")
-    if size <= 0:
-        raise ValueError(f"Expected a positive size value (got {size})")
-    if timeout <= 0:
-        raise ValueError(f"Expected a positive timeout value (got {timeout})")
-
-    # Register this file descriptor only for read. Also, start the timer for the
-    # timeout.
-    sel = selectors.DefaultSelector()
-    sel.register(fd, selectors.EVENT_READ)
-
-    buf = b""
-    sw = Stopwatch(timeout)
-    sw.start()
-
-    # Wait on `select()` until:
-    #
-    # 1. The timeout expired. In that case, `select()` will return an empty event ([]).
-    # 2. The file descriptor returns EOF. In that case, `os.read()` will return an empty
-    #    buffer ("").
-    # 3. We have read all the bytes we requested.
-    while True:
-        events = sel.select(sw.remaining)
-        if not events:
-            raise TimeoutError(f"Timeout expired while reading {len(buf)}/{size} bytes")
-
-        chunk = os.read(fd, size)
-        buf += chunk
-        if chunk == b"":
-            # EOF
-            break
-
-        # Recalculate the remaining timeout and size arguments.
-        size -= len(chunk)
-
-        assert size >= 0
-        if size == 0:
-            # We have read everything
-            break
-
-    sel.close()
-    return buf

@@ -1,7 +1,9 @@
 import os
+import subprocess
 
 import pytest
 from colorama import Style
+from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
 from dangerzone.conversion import errors
@@ -30,13 +32,25 @@ class IsolationProviderTest:
         pdf_11k_pages: str,
         provider: base.IsolationProvider,
         mocker: MockerFixture,
+        monkeypatch: MonkeyPatch,
         tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
         doc = Document(pdf_11k_pages)
-        with pytest.raises(errors.ConverterProcException):
+
+        proc = None
+        provider.old_start_doc_to_pixels_proc = provider.start_doc_to_pixels_proc  # type: ignore [attr-defined]
+
+        def start_doc_to_pixels_proc() -> subprocess.Popen:
+            proc = provider.old_start_doc_to_pixels_proc()  # type: ignore [attr-defined]
+            return proc
+
+        monkeypatch.setattr(
+            provider, "start_doc_to_pixels_proc", start_doc_to_pixels_proc
+        )
+        with pytest.raises(errors.InterruptedConversionException):
             provider.doc_to_pixels(doc, tmpdir)
-            assert provider.get_proc_exception() == errors.MaxPagesException
+            assert provider.get_proc_exception(proc) == errors.MaxPagesException  # type: ignore [arg-type]
 
     def test_max_pages_client_enforcement(
         self,

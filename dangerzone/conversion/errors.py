@@ -1,3 +1,4 @@
+import subprocess
 from typing import List, Optional, Type, Union
 
 # XXX: errors start at 128 for conversion-related issues
@@ -5,6 +6,23 @@ ERROR_SHIFT = 128
 MAX_PAGES = 10000
 MAX_PAGE_WIDTH = 10000
 MAX_PAGE_HEIGHT = 10000
+
+
+class InterruptedConversionException(Exception):
+    """Data received was less than expected"""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "Something interrupted the conversion and it could not be completed."
+        )
+
+
+class ConverterProcException(Exception):
+    """Some exception occurred in the converter"""
+
+    def __init__(self, proc: subprocess.Popen) -> None:
+        self.proc = proc
+        super().__init__()
 
 
 class ConversionException(Exception):
@@ -83,15 +101,6 @@ class PageCountMismatch(PagesException):
     error_code = ERROR_SHIFT + 46
     error_message = (
         "The final document does not have the same page count as the original one"
-    )
-
-
-class ConverterProcException(ConversionException):
-    """Some exception occurred in the converter"""
-
-    error_code = ERROR_SHIFT + 60
-    error_message = (
-        "Something interrupted the conversion and it could not be completed."
     )
 
 

@@ -25,10 +25,6 @@ class Qubes(IsolationProvider):
 
     STARTUP_TIME_SECONDS = 5 * 60  # 5 minutes
 
-    def __init__(self) -> None:
-        self.proc: Optional[subprocess.Popen] = None
-        super().__init__()
-
     def install(self) -> bool:
         return True
 

@@ -198,6 +198,27 @@ CONTENT_BUILD_DEBIAN_UBUNTU = r"""## Debian/Ubuntu
 
 Install dependencies:
 
+<details>
+  <summary><i>:memo: Expand this section if you are on Ubuntu 22.04 (Jammy).</i></summary>
+  </br>
+
+  The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug
+  that gets triggered by Dangerzone
+  (more details in https://github.com/freedomofpress/dangerzone/issues/685).
+  If you want to run Dangerzone from source, you are advised to install a
+  patched `conmon` version. A simple way to do so is to enable the Debian
+  Bullseye Proposed Updates repo, just for the `conmon` package:
+
+  ```bash
+  sudo cp ./dev_scripts/oldstable-pu-ubuntu.sources /etc/apt/sources.list.d/
+  sudo cp ./dev_scripts/oldstable-pu.pref /etc/apt/preferences.d/
+  ```
+
+  Alternatively, you can install a `conmon` version higher than `v2.0.25` from
+  any repo you prefer.
+
+</details>
+
 ```sh
 sudo apt install -y podman dh-python build-essential fakeroot make libqt6gui6 \
     pipx python3 python3-dev python3-stdeb python3-all

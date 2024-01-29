@@ -1,0 +1,7 @@
+Package: *
+Pin: release a=oldstable-proposed-updates
+Pin-Priority: 100
+
+Package: conmon
+Pin: release a=oldstable-proposed-updates
+Pin-Priority: 500

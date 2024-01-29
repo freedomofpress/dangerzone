@@ -115,6 +115,14 @@ DOCKERFILE_UBUNTU_REM_USER = r"""
 RUN touch /var/mail/ubuntu && chown ubuntu /var/mail/ubuntu && userdel -r ubuntu
 """
 
+# On Ubuntu Jammy / Debian Bullseye, use a different conmon version, as acquired from
+# Debian's oldstable proposed updates. For more details, read:
+# https://github.com/freedomofpress/dangerzone/issues/685
+DOCKERFILE_CONMON_UPDATE = r"""
+COPY oldstable-pu.sources /etc/apt/sources.list.d/
+COPY oldstable-pu.pref /etc/apt/preferences.d/
+"""
+
 # FIXME: Do we really need the python3-venv packages?
 DOCKERFILE_BUILD_DEV_DEBIAN_DEPS = r"""
 ARG DEBIAN_FRONTEND=noninteractive
@@ -557,6 +565,11 @@ class Env:
                 # Ubuntu Jammy misses a dependency to `libxkbcommon-x11-0`, which we can
                 # install indirectly via `qt6-qpa-plugins`.
                 qt_deps += " qt6-qpa-plugins"
+                # Ubuntu Jammy and Debian Bullseye require a more up-to-date conmon
+                # package (see https://github.com/freedomofpress/dangerzone/issues/685)
+                install_deps = (
+                    DOCKERFILE_CONMON_UPDATE + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
+                )
             elif self.distro == "ubuntu" and self.version in (
                 "23.04",
                 "23.10",
@@ -569,6 +582,11 @@ class Env:
             elif self.distro == "debian" and self.version in ("bullseye-backports",):
                 # Debian Bullseye misses a dependency to libgl1.
                 qt_deps += " libgl1"
+                # Ubuntu Jammy and Debian Bullseye require a more up-to-date conmon
+                # package (see https://github.com/freedomofpress/dangerzone/issues/685)
+                install_deps = (
+                    DOCKERFILE_CONMON_UPDATE + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
+                )
 
             install_deps = install_deps.format(qt_deps=qt_deps)
 
@@ -586,6 +604,12 @@ class Env:
         shutil.copy(git_root() / "pyproject.toml", build_dir)
         shutil.copy(git_root() / "poetry.lock", build_dir)
         shutil.copy(git_root() / "dev_scripts" / "storage.conf", build_dir)
+        if self.distro in ("debian", "ubuntu"):
+            shutil.copy(git_root() / "dev_scripts" / "oldstable-pu.pref", build_dir)
+            shutil.copy(
+                git_root() / "dev_scripts" / f"oldstable-pu-{self.distro}.sources",
+                build_dir / "oldstable-pu.sources",
+            )
         with open(build_dir / "Dockerfile", mode="w") as f:
             f.write(dockerfile)
 
@@ -636,6 +660,12 @@ class Env:
                 install_deps = (
                     DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEBIAN_DEPS
                 )
+            elif (self.distro == "ubuntu" and self.version in ("22.04", "jammy")) or (
+                self.distro == "debian" and self.version in ("bullseye-backports",)
+            ):
+                # Ubuntu Jammy and Debian Bullseye require a more up-to-date conmon
+                # package (see https://github.com/freedomofpress/dangerzone/issues/685)
+                install_deps = DOCKERFILE_CONMON_UPDATE + DOCKERFILE_BUILD_DEBIAN_DEPS
             elif self.distro == "ubuntu" and self.version in (
                 "23.04",
                 "23.10",
@@ -664,6 +694,12 @@ class Env:
         # Populate the build context.
         shutil.copy(package_src, package_dst)
         shutil.copy(git_root() / "dev_scripts" / "storage.conf", build_dir)
+        if self.distro in ("debian", "ubuntu"):
+            shutil.copy(git_root() / "dev_scripts" / "oldstable-pu.pref", build_dir)
+            shutil.copy(
+                git_root() / "dev_scripts" / f"oldstable-pu-{self.distro}.sources",
+                build_dir / "oldstable-pu.sources",
+            )
         with open(build_dir / "Dockerfile", mode="w") as f:
             f.write(dockerfile)
 

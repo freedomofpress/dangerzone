@@ -1,0 +1,4 @@
+Types: deb
+URIs: http://deb.debian.org/debian/
+Suites: oldstable-proposed-updates
+Components: main

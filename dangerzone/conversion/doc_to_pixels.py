@@ -47,7 +47,7 @@ class DocumentToPixels(DangerzoneConverter):
     async def convert(self) -> None:
         conversions: Dict[str, Dict[str, Optional[str]]] = {
             # .pdf
-            "application/pdf": {"type": None},
+            "application/pdf": {"type": "PyMuPDF"},
             # .docx
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
                 "type": "libreoffice",
@@ -146,14 +146,14 @@ class DocumentToPixels(DangerzoneConverter):
                 "type": "libreoffice",
             },
             # .jpg
-            "image/jpeg": {"type": None},
+            "image/jpeg": {"type": "PyMuPDF"},
             # .gif
-            "image/gif": {"type": None},
+            "image/gif": {"type": "PyMuPDF"},
             # .png
-            "image/png": {"type": None},
+            "image/png": {"type": "PyMuPDF"},
             # .tif
-            "image/tiff": {"type": None},
-            "image/x-tiff": {"type": None},
+            "image/tiff": {"type": "PyMuPDF"},
+            "image/x-tiff": {"type": "PyMuPDF"},
         }
 
         # Detect MIME type
@@ -173,7 +173,7 @@ class DocumentToPixels(DangerzoneConverter):
 
         # Convert input document to PDF
         conversion = conversions[mime_type]
-        if conversion["type"] is None:
+        if conversion["type"] == "PyMuPDF":
             try:
                 doc = fitz.open("/tmp/input_file", filetype=mime_type)
             except (ValueError, fitz.FileDataError):

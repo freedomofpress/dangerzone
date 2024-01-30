@@ -145,6 +145,18 @@ class DocumentToPixels(DangerzoneConverter):
             "application/x-ole-storage": {
                 "type": "libreoffice",
             },
+            # .epub
+            "application/epub+zip": {"type": "PyMuPDF"},
+            # .svg
+            "image/svg+xml": {"type": "PyMuPDF"},
+            # .bmp
+            "image/bmp": {"type": "PyMuPDF"},
+            # .pnm
+            "image/x-portable-anymap": {"type": "PyMuPDF"},
+            # .pbm
+            "image/x-portable-bitmap": {"type": "PyMuPDF"},
+            # .ppm
+            "image/x-portable-pixmap": {"type": "PyMuPDF"},
             # .jpg
             "image/jpeg": {"type": "PyMuPDF"},
             # .gif

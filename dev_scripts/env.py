@@ -82,10 +82,12 @@ DOCKERFILE_BUILD_DEV_DEBIAN_DEPS = r"""
 ARG DEBIAN_FRONTEND=noninteractive
 
 # NOTE: Podman has several recommended packages that are actually essential for rootless
-# containers. Instead of specifying them by name, we can install Podman with all of its
-# recommendations, which increases the image size, but makes the environment less flaky.
+# containers. However, certain Podman versions (e.g., in Debian Trixie) bring Systemd in
+# as a recommended dependency. The latter is a cause for problems, so we prefer to
+# install only a subset of the recommended Podman packages. See also:
+# https://github.com/freedomofpress/dangerzone/issues/689
 RUN apt-get update \
-    && apt-get install -y podman \
+    && apt-get install -y --no-install-recommends podman uidmap slirp4netns \
     && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
     && apt-get install -y --no-install-recommends dh-python make build-essential \

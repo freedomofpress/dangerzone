@@ -6,6 +6,7 @@ This section documents the release process. Unless you're a dangerzone developer
 
 Before making a release, all of these should be complete:
 
+- [ ] [Add new Linux platforms and remove obsolete ones](#add-new-platforms-and-remove-obsolete-ones)
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
@@ -20,6 +21,32 @@ Before making a release, all of these should be complete:
   ```
   **Note**: release candidates are suffixed by `-rcX`.
 
+## Add new platforms and remove obsolete ones
+
+Our currently supported Linux OSes are Debian, Ubuntu, Fedora (we treat Qubes OS
+as a special case of Fedora, release-wise). For each of these platforms, we need
+to check if a new version has been added, or if an existing one is now EOL
+(https://endoflife.date/ is handy for this purpose).
+
+In case of a new version:
+
+1. Add it in our CI workflows, to test if that version works.
+   * See `.circleci/config.yml` and `.github/workflows/ci.yml`, as well as
+     `dev_scripts/env.py` and `dev_scripts/qa.py`.
+2. Do a test of this version locally with `dev_scripta/qa.py`. Focus on the
+   GUI part, since the basic functionality is already tested by our CI
+   workflows.
+3. Add the new version in our `INSTALL.md` document, and drop a line in our
+   `CHANGELOG.md`.
+4. If that version is a new stable release, update the `RELEASE.md` and
+   `BUILD.md` files where necesary.
+4. Send a PR with the above changes.
+
+In case of an EOL version:
+
+1. Remove any mention to this version from our repo.
+   * Consult the previous paragraph, but also `grep` your way around.
+2. Add a notice in our `CHANGELOG.md` about the version removal.
 
 ## Large Document Testing
 
@@ -34,7 +61,6 @@ These tests will identify any regressions or progression in terms of document co
 To ensure that new releases do not introduce regressions, and support existing
 and newer platforms, we have to do the following:
 
-- [ ] In `.circleci/config.yml`, add new platforms and remove obsolete platforms
 - [ ] Bump the Python dependencies using `poetry lock`
 - [ ] Make sure that the tip of the `main` branch passes the CI tests.
 - [ ] Make sure that the Apple account has a valid application password and has

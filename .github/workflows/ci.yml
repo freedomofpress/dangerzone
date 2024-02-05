@@ -192,6 +192,12 @@ jobs:
           ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
               run --dev --no-gui ./dangerzone/install/linux/build-rpm.py
 
+      # Reclaim some space in this step, now that the dev environment is no
+      # longer necessary. Previously, we encountered out-of-space issues while
+      # running this CI job.
+      - name: Reclaim some storage space
+        run: podman system reset -f
+
       - name: Build end-user environment
         run: |
           ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \

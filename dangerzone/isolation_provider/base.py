@@ -52,7 +52,6 @@ class IsolationProvider(ABC):
     STARTUP_TIME_SECONDS = 0  # The maximum time it takes a the provider to start up.
 
     def __init__(self) -> None:
-        self.percentage = 0.0
         self.proc: Optional[subprocess.Popen] = None
 
         if getattr(sys, "dangerzone_dev", False) == True:
@@ -98,6 +97,7 @@ class IsolationProvider(ABC):
             document.mark_as_failed()
 
     def doc_to_pixels(self, document: Document, tempdir: str) -> None:
+        percentage = 0.0
         with open(document.input_filename, "rb") as f:
             self.proc = self.start_doc_to_pixels_proc()
             try:
@@ -125,7 +125,7 @@ class IsolationProvider(ABC):
             sw.start()
             for page in range(1, n_pages + 1):
                 text = f"Converting page {page}/{n_pages} to pixels"
-                self.print_progress_trusted(document, False, text, self.percentage)
+                self.print_progress_trusted(document, False, text, percentage)
 
                 width = read_int(self.proc.stdout, timeout=sw.remaining)
                 height = read_int(self.proc.stdout, timeout=sw.remaining)
@@ -149,14 +149,14 @@ class IsolationProvider(ABC):
                 with open(f"{tempdir}/pixels/page-{page}.rgb", "wb") as f_rgb:
                     f_rgb.write(untrusted_pixels)
 
-                self.percentage += percentage_per_page
+                percentage += percentage_per_page
 
         # Ensure nothing else is read after all bitmaps are obtained
         self.proc.stdout.close()
 
         # TODO handle leftover code input
         text = "Converted document to pixels"
-        self.print_progress_trusted(document, False, text, self.percentage)
+        self.print_progress_trusted(document, False, text, percentage)
 
         if getattr(sys, "dangerzone_dev", False):
             assert self.proc.stderr is not None

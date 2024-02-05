@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""
-Here are the steps, with progress bar percentages:
-
-- 0%-3%: Convert document into a PDF (skipped if the input file is a PDF)
-- 3%-5%: Split PDF into individual pages, and count those pages
-- 5%-50%: Convert each page into pixels (each page takes 45/n%, where n is the number of pages)
-"""
-
 import asyncio
 import glob
 import os
@@ -223,20 +215,17 @@ class DocumentToPixels(DangerzoneConverter):
         else:
             # NOTE: This should never be reached
             raise errors.DocFormatUnsupported()
-        self.percentage += 3
 
         # Obtain number of pages
         if doc.page_count > errors.MAX_PAGES:
             raise errors.MaxPagesException()
         await self.write_page_count(doc.page_count)
 
-        percentage_per_page = 45.0 / doc.page_count
         page_base = "/tmp/page"
         for page in doc.pages():
             # TODO check if page.number is doc-controlled
             page_num = page.number + 1  # pages start in 1
 
-            self.percentage += percentage_per_page
             self.update_progress(
                 f"Converting page {page_num}/{doc.page_count} to pixels"
             )

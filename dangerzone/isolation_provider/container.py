@@ -217,8 +217,6 @@ class Container(IsolationProvider):
             "-v",
             f"{tempdir}:/safezone:Z",
             "-e",
-            "TESSDATA_PREFIX=/usr/share/tessdata",
-            "-e",
             f"OCR={0 if ocr_lang is None else 1}",
             "-e",
             f"OCR_LANGUAGE={ocr_lang}",

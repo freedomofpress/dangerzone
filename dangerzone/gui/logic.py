@@ -113,9 +113,9 @@ class DangerzoneGui(DangerzoneCore):
                                 "application/pdf" in desktop_entry.getMimeTypes()
                                 and desktop_entry.getName() != "dangerzone"
                             ):
-                                pdf_viewers[
-                                    desktop_entry.getName()
-                                ] = desktop_entry.getExec()
+                                pdf_viewers[desktop_entry.getName()] = (
+                                    desktop_entry.getExec()
+                                )
 
                 except FileNotFoundError:
                     pass

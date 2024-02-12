@@ -24,6 +24,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 ### Removed
 
 - Removed timeouts ([issue #687](https://github.com/freedomofpress/dangerzone/issues/687))
+- Platform support: Drop Ubuntu 23.04 (Lunar Lobster), since it's end-of-life ([issue #705](https://github.com/freedomofpress/dangerzone/issues/705))
 
 ## Dangerzone 0.5.1
 

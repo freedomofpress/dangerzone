@@ -92,9 +92,6 @@ jobs:
           - target: ubuntu-22.04
             distro: ubuntu
             version: "22.04"
-          - target: ubuntu-23.04
-            distro: ubuntu
-            version: "23.04"
           - target: ubuntu-23.10
             distro: ubuntu
             version: "23.10"

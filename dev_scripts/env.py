@@ -574,9 +574,7 @@ class Env:
                     DOCKERFILE_CONMON_UPDATE + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
                 )
             elif self.distro == "ubuntu" and self.version in (
-                "23.04",
                 "23.10",
-                "lunar",
                 "mantic",
             ):
                 install_deps = (
@@ -662,9 +660,7 @@ class Env:
                 # package (see https://github.com/freedomofpress/dangerzone/issues/685)
                 install_deps = DOCKERFILE_CONMON_UPDATE + DOCKERFILE_BUILD_DEBIAN_DEPS
             elif self.distro == "ubuntu" and self.version in (
-                "23.04",
                 "23.10",
-                "lunar",
                 "mantic",
             ):
                 install_deps = DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS

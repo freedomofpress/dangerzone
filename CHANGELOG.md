@@ -7,6 +7,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Unreleased
 
+## Dangerzone 0.6.0
+
 ### Added
 
 - Platform support: Fedora 39 ([issue #606](https://github.com/freedomofpress/dangerzone/issues/606))

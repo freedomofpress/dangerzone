@@ -12,16 +12,22 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 ### Added
 
 - Platform support: Fedora 39 ([issue #606](https://github.com/freedomofpress/dangerzone/issues/606))
+- Add new file formats: epub svg and several image formats (BMP, PNM, BPM, PPM) ([issue #697](https://github.com/freedomofpress/dangerzone/issues/697))
 
 ## Fixed
 
 - Fix mismatched between between original document and converted one ([issue #626](https://github.com/freedomofpress/dangerzone/issues/)). This does not affect the quality of the final document.
-- Capitalize "dangerzone" on the application as well as on the Linux desktop shortcut, thanks to [@sudwhiwdh](https://github.com/sudwhiwdh)
+- Capitalize "dangerzone" on the application as well as on the Linux desktop shortcut, thanks to [@sudwhiwdh](https://github.com/sudwhiwdh) [#676](https://github.com/freedomofpress/dangerzone/pull/676)
+- Fedora (Linux): Add missing Dangerzone logo on application launcher ([issue #645](https://github.com/freedomofpress/dangerzone/issues/645))
+- Prevent document conversion from failing due to lack of space in the converter. This affected mainly systems with low computing resources such as Qubes OS ([issue #574](https://github.com/freedomofpress/dangerzone/issues/574))
 
 ### Changed
 
 - Feature: Add support for HWP/HWPX files (Hancom Office) for macOS Apple Silicon devices ([issue #498](https://github.com/freedomofpress/dangerzone/issues/498), thanks to [@OctopusET](https://github.com/OctopusET))
 - Replace Dangerzone document rendering engine from pdftoppm PyMuPDF, essentially replacing a variety of tools (gm / tesseract / pdfunite / ps2pdf) ([issue #658](https://github.com/freedomofpress/dangerzone/issues/658))
+- Changed project license from MIT to AGPLv3 (related to [issue #658](https://github.com/freedomofpress/dangerzone/issues/658))
+- Containers: stream pages instead of mounting directories. For users in practice this doesn't change much, but it opens up technical possibilities that go from security to usability. ([issue #443](https://github.com/freedomofpress/dangerzone/issues/443))
+- Ubuntu Jammy (Linux): add external depedency (provided by the Dangerzone repository) which fixes podman crashing during standar stream I/O ([issue #685](https://github.com/freedomofpress/dangerzone/issues/685))
 
 ### Removed
 

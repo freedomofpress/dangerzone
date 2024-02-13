@@ -1,0 +1,7 @@
+Package: *
+Pin: origin "packages.freedom.press/apt-tools-prod"
+Pin-Priority: 100
+
+Package: conmon
+Pin: origin "packages.freedom.press/apt-tools-prod"
+Pin-Priority: 500

@@ -115,12 +115,15 @@ DOCKERFILE_UBUNTU_REM_USER = r"""
 RUN touch /var/mail/ubuntu && chown ubuntu /var/mail/ubuntu && userdel -r ubuntu
 """
 
-# On Ubuntu Jammy, use a different conmon version, as acquired from
-# Debian's oldstable proposed updates. For more details, read:
+# On Ubuntu Jammy, use a different conmon version, as acquired from our apt-tools-prod
+# repo. For more details, read:
 # https://github.com/freedomofpress/dangerzone/issues/685
 DOCKERFILE_CONMON_UPDATE = r"""
-COPY oldstable-pu.sources /etc/apt/sources.list.d/
-COPY oldstable-pu.pref /etc/apt/preferences.d/
+RUN apt-get update \
+    && apt-get install -y ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY apt-tools-prod.sources /etc/apt/sources.list.d/
+COPY apt-tools-prod.pref /etc/apt/preferences.d/
 """
 
 # FIXME: Do we really need the python3-venv packages?
@@ -599,11 +602,10 @@ class Env:
         shutil.copy(git_root() / "pyproject.toml", build_dir)
         shutil.copy(git_root() / "poetry.lock", build_dir)
         shutil.copy(git_root() / "dev_scripts" / "storage.conf", build_dir)
-        if self.distro == "ubuntu":
-            shutil.copy(git_root() / "dev_scripts" / "oldstable-pu.pref", build_dir)
+        if self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
+            shutil.copy(git_root() / "dev_scripts" / "apt-tools-prod.pref", build_dir)
             shutil.copy(
-                git_root() / "dev_scripts" / f"oldstable-pu-{self.distro}.sources",
-                build_dir / "oldstable-pu.sources",
+                git_root() / "dev_scripts" / "apt-tools-prod.sources", build_dir
             )
         with open(build_dir / "Dockerfile", mode="w") as f:
             f.write(dockerfile)
@@ -687,11 +689,10 @@ class Env:
         # Populate the build context.
         shutil.copy(package_src, package_dst)
         shutil.copy(git_root() / "dev_scripts" / "storage.conf", build_dir)
-        if self.distro == "ubuntu":
-            shutil.copy(git_root() / "dev_scripts" / "oldstable-pu.pref", build_dir)
+        if self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
+            shutil.copy(git_root() / "dev_scripts" / "apt-tools-prod.pref", build_dir)
             shutil.copy(
-                git_root() / "dev_scripts" / f"oldstable-pu-{self.distro}.sources",
-                build_dir / "oldstable-pu.sources",
+                git_root() / "dev_scripts" / "apt-tools-prod.sources", build_dir
             )
         with open(build_dir / "Dockerfile", mode="w") as f:
             f.write(dockerfile)

@@ -20,6 +20,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Capitalize "dangerzone" on the application as well as on the Linux desktop shortcut, thanks to [@sudwhiwdh](https://github.com/sudwhiwdh) [#676](https://github.com/freedomofpress/dangerzone/pull/676)
 - Fedora (Linux): Add missing Dangerzone logo on application launcher ([issue #645](https://github.com/freedomofpress/dangerzone/issues/645))
 - Prevent document conversion from failing due to lack of space in the converter. This affected mainly systems with low computing resources such as Qubes OS ([issue #574](https://github.com/freedomofpress/dangerzone/issues/574))
+- Add a missing dependency to our Apple Silicon container image, which affected dev environments only, thanks to [@prateekj117](https://github.com/prateekj117) ([#671](https://github.com/freedomofpress/dangerzone/pull/671))
 
 ### Changed
 

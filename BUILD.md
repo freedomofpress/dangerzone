@@ -12,12 +12,12 @@ Install dependencies:
   that gets triggered by Dangerzone
   (more details in https://github.com/freedomofpress/dangerzone/issues/685).
   If you want to run Dangerzone from source, you are advised to install a
-  patched `conmon` version. A simple way to do so is to enable the Debian
-  Bullseye Proposed Updates repo, just for the `conmon` package:
+  patched `conmon` version. A simple way to do so is to enable our
+  apt-tools-prod repo, just for the `conmon` package:
 
   ```bash
-  sudo cp ./dev_scripts/oldstable-pu-ubuntu.sources /etc/apt/sources.list.d/
-  sudo cp ./dev_scripts/oldstable-pu.pref /etc/apt/preferences.d/
+  sudo cp ./dev_scripts/apt-tools-prod.sources /etc/apt/sources.list.d/
+  sudo cp ./dev_scripts/apt-tools-prod.pref /etc/apt/preferences.d/
   ```
 
   Alternatively, you can install a `conmon` version higher than `v2.0.25` from

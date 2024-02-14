@@ -131,7 +131,7 @@ and newer platforms, we have to do the following:
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 38 as
+- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 39 as
   of writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
   - [ ] Run the Dangerzone tests.

@@ -751,6 +751,15 @@ class QAWindows(QABase):
     def build_image(self):
         self.run("python", r".\install\common\build-image.py")
 
+    @QABase.task("Run tests", ref="REF_BUILD", auto=True)
+    def run_tests(self):
+        # NOTE: Windows does not have Makefile by default.
+        self.run("poetry", "run", "pytest", "-v", "--ignore", r"tests\test_large_set.py")
+
+    @QABase.task("Build Dangerzone .exe", ref="REF_BUILD", auto=True)
+    def build_dangerzone_exe(self):
+        self.run("poetry", "run", "python", r".\setup-windows.py", "build")
+
     @classmethod
     def get_id(cls):
         return "windows"
@@ -759,6 +768,8 @@ class QAWindows(QABase):
         self.install_docker()
         self.install_poetry()
         self.build_image()
+        self.run_tests()
+        self.build_dangerzone_exe()
 
 
 class QALinux(QABase):

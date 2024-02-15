@@ -106,7 +106,7 @@ class IsolationProvider(ABC):
             n_pages = read_int(p.stdout)
             if n_pages == 0 or n_pages > errors.MAX_PAGES:
                 raise errors.MaxPagesException()
-            percentage_per_page = 50.0 / n_pages
+            percentage_per_page = 49.0 / n_pages
 
             for page in range(1, n_pages + 1):
                 text = f"Converting page {page}/{n_pages} to pixels"

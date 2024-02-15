@@ -724,6 +724,13 @@ class QAWindows(QABase):
 
     REF_BUILD = Reference("BUILD.md", content=CONTENT_BUILD_WINDOWS)
 
+    def _consume_stdin(self):
+        # NOTE: We can't use select() on Windows. See:
+        # https://docs.python.org/3/library/select.html#select.select
+        import msvcrt
+        while msvcrt.kbhit():
+            msvcrt.getch()
+
     @QABase.task("Install and Run Docker Desktop", ref=REF_BUILD)
     def install_docker(self):
         logger.info("Checking if Docker Desktop is installed and running")

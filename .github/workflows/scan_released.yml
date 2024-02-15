@@ -26,7 +26,7 @@ jobs:
           only-fixed: false
           severity-cutoff: critical
       - name: Upload container scan report
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.scan_container.outputs.sarif }}
           category: container
@@ -62,7 +62,7 @@ jobs:
           only-fixed: false
           severity-cutoff: critical
       - name: Upload application scan report
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.scan_app.outputs.sarif }}
           category: app

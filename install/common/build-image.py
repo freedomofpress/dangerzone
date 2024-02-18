@@ -55,7 +55,8 @@ def main():
             "Dockerfile",
             "--tag",
             TAG,
-        ]
+        ],
+        check=True,
     )
 
     if not args.no_save:

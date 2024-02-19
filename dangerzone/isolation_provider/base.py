@@ -69,9 +69,11 @@ class IsolationProvider(ABC):
         self.progress_callback = progress_callback
         document.mark_as_converting()
         try:
+            conversion_proc = self.start_doc_to_pixels_proc()
             with tempfile.TemporaryDirectory() as t:
                 Path(f"{t}/pixels").mkdir()
-                self.doc_to_pixels(document, t)
+                self.doc_to_pixels(document, t, conversion_proc)
+                conversion_proc.wait(3)
                 # TODO: validate convert to pixels output
                 self.pixels_to_pdf(document, t, ocr_lang)
             document.mark_as_safe()
@@ -91,10 +93,11 @@ class IsolationProvider(ABC):
             self.print_progress(document, True, str(e), 0)
             document.mark_as_failed()
 
-    def doc_to_pixels(self, document: Document, tempdir: str) -> None:
+    def doc_to_pixels(
+        self, document: Document, tempdir: str, p: subprocess.Popen
+    ) -> None:
         percentage = 0.0
         with open(document.input_filename, "rb") as f:
-            p = self.start_doc_to_pixels_proc()
             try:
                 assert p.stdin is not None
                 p.stdin.write(f.read())

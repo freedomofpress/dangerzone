@@ -8,21 +8,11 @@ MAX_PAGE_WIDTH = 10000
 MAX_PAGE_HEIGHT = 10000
 
 
-class InterruptedConversionException(Exception):
-    """Data received was less than expected"""
-
-    def __init__(self) -> None:
-        super().__init__(
-            "Something interrupted the conversion and it could not be completed."
-        )
-
-
 class ConverterProcException(Exception):
     """Some exception occurred in the converter"""
 
-    def __init__(self, proc: subprocess.Popen) -> None:
-        self.proc = proc
-        super().__init__()
+    def __init__(self) -> None:
+        super().__init__("The process spawned for the conversion has exited early")
 
 
 class ConversionException(Exception):

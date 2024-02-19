@@ -48,7 +48,7 @@ class IsolationProviderTest:
         monkeypatch.setattr(
             provider, "start_doc_to_pixels_proc", start_doc_to_pixels_proc
         )
-        with pytest.raises(errors.InterruptedConversionException):
+        with pytest.raises(errors.ConverterProcException):
             provider.doc_to_pixels(doc, tmpdir)
             assert provider.get_proc_exception(proc) == errors.MaxPagesException  # type: ignore [arg-type]
 

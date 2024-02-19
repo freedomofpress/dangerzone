@@ -27,7 +27,7 @@ def read_bytes(f: IO[bytes], size: int, exact: bool = True) -> bytes:
     """Read bytes from a file-like object."""
     buf = f.read(size)
     if exact and len(buf) != size:
-        raise errors.InterruptedConversionException()
+        raise errors.ConverterProcException()
     return buf
 
 
@@ -35,7 +35,7 @@ def read_int(f: IO[bytes]) -> int:
     """Read 2 bytes from a file-like object, and decode them as int."""
     untrusted_int = f.read(INT_BYTES)
     if len(untrusted_int) != INT_BYTES:
-        raise errors.InterruptedConversionException()
+        raise errors.ConverterProcException()
     return int.from_bytes(untrusted_int, "big", signed=False)
 
 
@@ -80,7 +80,7 @@ class IsolationProvider(ABC):
             if document.archive_after_conversion:
                 document.archive()
         except errors.ConverterProcException as e:
-            exception = self.get_proc_exception(e.proc)
+            exception = self.get_proc_exception(conversion_proc)
             self.print_progress(document, True, str(exception), 0)
             document.mark_as_failed()
         except errors.ConversionException as e:
@@ -103,7 +103,7 @@ class IsolationProvider(ABC):
                 p.stdin.write(f.read())
                 p.stdin.close()
             except BrokenPipeError as e:
-                raise errors.ConverterProcException(p)
+                raise errors.ConverterProcException()
 
             assert p.stdout
             n_pages = read_int(p.stdout)

@@ -32,25 +32,15 @@ class IsolationProviderTest:
         pdf_11k_pages: str,
         provider: base.IsolationProvider,
         mocker: MockerFixture,
-        monkeypatch: MonkeyPatch,
         tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
         doc = Document(pdf_11k_pages)
 
-        proc = None
-        provider.old_start_doc_to_pixels_proc = provider.start_doc_to_pixels_proc  # type: ignore [attr-defined]
-
-        def start_doc_to_pixels_proc() -> subprocess.Popen:
-            proc = provider.old_start_doc_to_pixels_proc()  # type: ignore [attr-defined]
-            return proc
-
-        monkeypatch.setattr(
-            provider, "start_doc_to_pixels_proc", start_doc_to_pixels_proc
-        )
+        p = provider.start_doc_to_pixels_proc()
         with pytest.raises(errors.ConverterProcException):
-            provider.doc_to_pixels(doc, tmpdir)
-            assert provider.get_proc_exception(proc) == errors.MaxPagesException  # type: ignore [arg-type]
+            provider.doc_to_pixels(doc, tmpdir, p)
+            assert provider.get_proc_exception(p) == errors.MaxPagesException
 
     def test_max_pages_client_enforcement(
         self,
@@ -64,8 +54,9 @@ class IsolationProviderTest:
             "dangerzone.conversion.errors.MAX_PAGES", 1
         )  # sample_doc has 4 pages > 1
         doc = Document(sample_doc)
+        p = provider.start_doc_to_pixels_proc()
         with pytest.raises(errors.MaxPagesException):
-            provider.doc_to_pixels(doc, tmpdir)
+            provider.doc_to_pixels(doc, tmpdir, p)
 
     def test_max_dimensions(
         self,
@@ -76,7 +67,10 @@ class IsolationProviderTest:
         tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
+        p = provider.start_doc_to_pixels_proc()
         with pytest.raises(errors.MaxPageWidthException):
-            provider.doc_to_pixels(Document(sample_bad_width), tmpdir)
+            provider.doc_to_pixels(Document(sample_bad_width), tmpdir, p)
+
+        p = provider.start_doc_to_pixels_proc()
         with pytest.raises(errors.MaxPageHeightException):
-            provider.doc_to_pixels(Document(sample_bad_height), tmpdir)
+            provider.doc_to_pixels(Document(sample_bad_height), tmpdir, p)

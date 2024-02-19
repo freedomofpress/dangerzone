@@ -175,10 +175,9 @@ Dangerzone. Dangerzone should show the settings that the user chose.
 
 Run Dangerzone and convert the `tests/test_docs/sample_bad_pdf.pdf` document.
 Dangerzone should fail gracefully, by reporting that the operation failed, and
-showing the last error message.
+showing the following error message:
 
-_(Only for Qubes)_ The only message that the user should see is: "The document
-format is not supported", without any untrusted strings.
+> The document format is not supported
 
 #### 6. Dangerzone succeeds in converting multiple documents
 

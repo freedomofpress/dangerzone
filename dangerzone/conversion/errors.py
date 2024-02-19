@@ -106,4 +106,4 @@ def exception_from_error_code(
     for cls in ConversionException.get_subclasses():
         if cls.error_code == error_code:
             return cls()
-    raise ValueError(f"Unknown error code '{error_code}'")
+    return UnexpectedConversionError(f"Unknown error code '{error_code}'")

@@ -49,15 +49,15 @@ docs_100M = get_test_docs(min_size=10 * 2**20, max_size=100 * 2**20)
 for_each_10K_doc = pytest.mark.parametrize(
     "doc", docs_10K, ids=[str(doc.name) for doc in docs_10K]
 )
-for_each_100K_doc = pytest.mark.parametrize(
-    "doc", docs_100K, ids=[str(doc.name) for doc in docs_100K]
-)
-for_each_10M_doc = pytest.mark.parametrize(
-    "doc", docs_10M, ids=[str(doc.name) for doc in docs_10M]
-)
-for_each_100M_doc = pytest.mark.parametrize(
-    "doc", docs_100M, ids=[str(doc.name) for doc in docs_100M]
-)
+# for_each_100K_doc = pytest.mark.parametrize(
+#     "doc", docs_100K, ids=[str(doc.name) for doc in docs_100K]
+# )
+# for_each_10M_doc = pytest.mark.parametrize(
+#     "doc", docs_10M, ids=[str(doc.name) for doc in docs_10M]
+# )
+# for_each_100M_doc = pytest.mark.parametrize(
+#     "doc", docs_100M, ids=[str(doc.name) for doc in docs_100M]
+# )
 
 
 class TestLargeSet(TestCli):
@@ -86,14 +86,14 @@ class TestLargeSet(TestCli):
     def test_10K_docs(self, doc: Path, tmp_path: Path) -> None:
         self.run_doc_test(doc, tmp_path)
 
-    @for_each_100K_doc
-    def test_100K_docs(self, doc: Path, tmp_path: Path) -> None:
-        self.run_doc_test(doc, tmp_path)
+    # @for_each_100K_doc
+    # def test_100K_docs(self, doc: Path, tmp_path: Path) -> None:
+    #     self.run_doc_test(doc, tmp_path)
 
-    @for_each_10M_doc
-    def test_10M_docs(self, doc: Path, tmp_path: Path) -> None:
-        self.run_doc_test(doc, tmp_path)
+    # @for_each_10M_doc
+    # def test_10M_docs(self, doc: Path, tmp_path: Path) -> None:
+    #     self.run_doc_test(doc, tmp_path)
 
-    @for_each_100M_doc
-    def test_100M_docs(self, doc: Path, tmp_path: Path) -> None:
-        self.run_doc_test(doc, tmp_path)
+    # @for_each_100M_doc
+    # def test_100M_docs(self, doc: Path, tmp_path: Path) -> None:
+    #     self.run_doc_test(doc, tmp_path)

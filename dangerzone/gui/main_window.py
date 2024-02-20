@@ -885,7 +885,8 @@ class SettingsWidget(QtWidgets.QWidget):
 
 class ConvertTask(QtCore.QObject):
     finished = QtCore.Signal(bool)
-    update = QtCore.Signal(bool, str, int)
+    update_progress = QtCore.Signal(bool, str, int)
+    update_preview = QtCore.Signal(int, int, bytes)
 
     def __init__(
         self,
@@ -904,6 +905,7 @@ class ConvertTask(QtCore.QObject):
             self.document,
             self.ocr_lang,
             self.progress_callback,
+            self.preview_callback,
         )
         self.finished.emit(self.error)
 
@@ -911,7 +913,10 @@ class ConvertTask(QtCore.QObject):
         if error:
             self.error = True
 
-        self.update.emit(error, text, percentage)
+        self.update_progress.emit(error, text, percentage)
+
+    def preview_callback(self, width: int, height: int, data: bytes) -> None:
+        self.update_preview.emit(width, height, data)
 
 
 class DocumentsListWidget(QtWidgets.QListWidget):
@@ -933,7 +938,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
     def documents_added(self, docs: List[Document]) -> None:
         for document in docs:
             item = QtWidgets.QListWidgetItem()
-            item.setSizeHint(QtCore.QSize(500, 50))
+            item.setSizeHint(QtCore.QSize(500, 800))
             widget = DocumentWidget(self.dangerzone, document)
             self.addItem(item)
             self.setItemWidget(item, widget)
@@ -950,7 +955,8 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         for doc in self.docs_list:
             task = ConvertTask(self.dangerzone, doc, self.get_ocr_lang())
             doc_widget = self.docs_list_widget_map[doc]
-            task.update.connect(doc_widget.update_progress)
+            task.update_progress.connect(doc_widget.update_progress)
+            task.update_preview.connect(doc_widget.update_preview)
             task.finished.connect(doc_widget.all_done)
             self.thread_pool.apply_async(task.convert_document)
 
@@ -1005,13 +1011,22 @@ class DocumentWidget(QtWidgets.QWidget):
         self.progress.setRange(0, 100)
         self.progress.setValue(0)
 
+        # Preview
+        self.doc_preview = QtWidgets.QLabel()
+        self.doc_preview.setAlignment(
+            QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft
+        )
+
         # Layout
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.status_image)
         layout.addWidget(self.dangerous_doc_label)
         layout.addWidget(self.progress)
         layout.addWidget(self.error_label)
-        self.setLayout(layout)
+        layout2 = QtWidgets.QVBoxLayout()
+        layout2.addLayout(layout)
+        layout2.addWidget(self.doc_preview)
+        self.setLayout(layout2)
 
     def update_progress(self, error: bool, text: str, percentage: int) -> None:
         self.update_status_image()
@@ -1024,6 +1039,16 @@ class DocumentWidget(QtWidgets.QWidget):
         else:
             self.progress.setToolTip(text)
             self.progress.setValue(percentage)
+
+    def update_preview(self, width: int, height: int, data: bytes) -> None:
+        log.debug(f"UPDATTING PREVIEW {width}, {height}")
+        # with open("tests/test_docs/sample-ppm.ppm", 'rb') as ppm_file:
+        ppm_header = f"P6\n{width} {height}\n255\n".encode('ascii')
+        ppm_data = ppm_header + data
+        log.info(ppm_data[:20])
+        pix = QtGui.QPixmap()
+        pix.loadFromData(ppm_data)
+        self.doc_preview.setPixmap(pix)
 
     def load_status_image(self, filename: str) -> QtGui.QPixmap:
         path = get_resource_path(filename)

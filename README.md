@@ -59,7 +59,7 @@ Dangerzone can convert these types of document into safe PDFs:
 - GIF (`.gif`)
 - PNG (`.png`)
 - SVG (`.svg`)
-- other image formats (`.bmp`, `.pnm`, `pbm`, `ppm`)
+- other image formats (`.bmp`, `.pnm`, `.pbm`, `.ppm`)
 
 Dangerzone was inspired by [Qubes trusted PDF](https://blog.invisiblethings.org/2013/02/21/converting-untrusted-pdfs-into-trusted.html), but it works in non-Qubes operating systems. It uses containers as sandboxes instead of virtual machines (using Docker for macOS and Windows, and [podman](https://podman.io/) on Linux).
 

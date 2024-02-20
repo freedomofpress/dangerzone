@@ -562,7 +562,9 @@ class DocSelectionWidget(QtWidgets.QWidget):
             hwp_filters = ""
         self.file_dialog.setNameFilters(
             [
-                f"Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt *.odg *.odp *.ods {hwp_filters} *.epub *.jpg *.jpeg *.gif *.png *.tif *.tiff *.bpm *.pnm *.pbm *.ppm)"
+                "Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt"
+                f" *.odg *.odp *.ods {hwp_filters} *.epub *.jpg *.jpeg *.gif *.png"
+                " *.tif *.tiff *.bmp *.pnm *.pbm *.ppm *.svg)"
             ]
         )
 

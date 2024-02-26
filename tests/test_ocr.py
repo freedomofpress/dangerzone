@@ -16,10 +16,9 @@ from dangerzone.logic import DangerzoneCore
 def test_ocr_ommisions() -> None:
     # Create the command that will list all the installed languages in the container
     # image.
-    runtime = Container.get_runtime()
-    command = [
-        runtime,
-        "run",
+    command = [Container.get_runtime(), "run"]
+    command += Container.get_runtime_security_args()
+    command += [
         Container.CONTAINER_NAME,
         "find",
         "/usr/share/tessdata/",

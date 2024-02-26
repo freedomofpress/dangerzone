@@ -52,6 +52,22 @@ class Container(IsolationProvider):
         return runtime
 
     @staticmethod
+    def get_runtime_security_args() -> List[str]:
+        if Container.get_runtime_name() == "podman":
+            security_args = ["--log-driver", "none"]
+            security_args += ["--security-opt", "no-new-privileges"]
+        else:
+            security_args = ["--security-opt=no-new-privileges:true"]
+            # Needed for running rootlesskit, which gVisor uses. cf:
+            # https://github.com/rootless-containers/rootlesskit/issues/172
+            # gVisor imposes a seccomp-bpf filter on itself that is tighter
+            # than Docker's default, so overall the set of host kernel
+            # syscalls that are exposed is not increased by this option.
+            security_args += ["--security-opt=seccomp=unconfined"]
+            security_args += ["--security-opt=apparmor=unconfined"]
+        return security_args
+
+    @staticmethod
     def install() -> bool:
         """
         Make sure the podman container is installed. Linux only.
@@ -175,24 +191,11 @@ class Container(IsolationProvider):
         extra_args: List[str] = [],
     ) -> subprocess.Popen:
         container_runtime = self.get_runtime()
-
-        if self.get_runtime_name() == "podman":
-            security_args = ["--log-driver", "none"]
-            security_args += ["--security-opt", "no-new-privileges"]
-            security_args += ["--userns", "keep-id"]
-        else:
-            security_args = ["--security-opt=no-new-privileges:true"]
-
-        # drop all linux kernel capabilities
-        security_args += ["--cap-drop", "all"]
-        user_args = ["-u", "dangerzone"]
+        security_args = self.get_runtime_security_args()
         enable_stdin = ["-i"]
-
         prevent_leakage_args = ["--rm"]
-
         args = (
-            ["run", "--network", "none"]
-            + user_args
+            ["run", "--network=none"]
             + security_args
             + prevent_leakage_args
             + enable_stdin
@@ -200,7 +203,6 @@ class Container(IsolationProvider):
             + [self.CONTAINER_NAME]
             + command
         )
-
         args = [container_runtime] + args
         return self.exec(args)
 

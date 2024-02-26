@@ -50,7 +50,7 @@ RUN mkdir /libreoffice_ext && cd libreoffice_ext \
 ###########################################
 # Dangerzone image
 
-FROM alpine:latest
+FROM alpine:latest AS dangerzone-image
 
 # Install dependencies
 RUN apk --no-cache -U upgrade && \
@@ -59,7 +59,8 @@ RUN apk --no-cache -U upgrade && \
     openjdk8 \
     python3 \
     py3-magic \
-    font-noto-cjk
+    font-noto-cjk \
+    su-exec
 
 COPY --from=pymupdf-build /usr/lib/python3.11/site-packages/fitz/ /usr/lib/python3.11/site-packages/fitz
 COPY --from=tessdata-dl /usr/share/tessdata/ /usr/share/tessdata
@@ -67,15 +68,38 @@ COPY --from=h2orestart-dl /libreoffice_ext/ /libreoffice_ext
 
 RUN install -dm777 "/usr/lib/libreoffice/share/extensions/"
 
-ENV PYTHONPATH=/opt/dangerzone
-
 RUN mkdir -p /opt/dangerzone/dangerzone
 RUN touch /opt/dangerzone/dangerzone/__init__.py
 COPY conversion /opt/dangerzone/dangerzone/conversion
 
-# Add the unprivileged user
-RUN adduser -s /bin/sh -D dangerzone
-USER dangerzone
+# Add the unprivileged user.
+# NOTE: A tmpfs will be mounted over /home/dangerzone directory,
+# so nothing within it from the image will be persisted.
+RUN adduser -s /bin/true -h /home/dangerzone -D dangerzone
+
+###########################################
+# gVisor wrapper image
+
+FROM alpine:latest
+RUN apk --no-cache -U upgrade && \
+    apk --no-cache add \
+    python3 \
+    su-exec
+RUN mkdir --mode=0755 -p /dangerzone-image/rootfs
+COPY --from=dangerzone-image / /dangerzone-image/rootfs
+RUN ARCH="$(uname -m)"; \
+    URL="https://storage.googleapis.com/gvisor/releases/release/latest/${ARCH}"; \
+    wget "${URL}/runsc" "${URL}/runsc.sha512" && \
+    sha512sum -c runsc.sha512 && \
+    rm -f runsc.sha512 && \
+    chmod 555 runsc && \
+    mv runsc /usr/bin/
+COPY gvisor_wrapper/entrypoint.py gvisor_wrapper/sandboxed_entrypoint.sh /
+RUN mv sandboxed_entrypoint.sh /dangerzone-image/rootfs/sandboxed_entrypoint.sh && \
+    chmod 555 /entrypoint.py /dangerzone-image/rootfs/sandboxed_entrypoint.sh && \
+    mkdir -p /wrapped-safezone /var/run/runsc
 
 # /safezone is a directory through which Pixels to PDF receives files
 VOLUME /safezone
+
+ENTRYPOINT ["/entrypoint.py"]

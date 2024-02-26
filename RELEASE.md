@@ -419,7 +419,8 @@ repo.
 To publish the release:
 
 - [ ] Run container scan on the produced container images (some time may have passed since the artifacts were built)
-- [ ] Create a new release on GitHub, put the changelog in the description of the release, and upload the macOS and Windows installers
+- [ ] Create a new release on GitHub and upload the macOS and Windows installers.
+  * Copy the release notes text from the template at [`docs/templates/release-notes`](https://github.com/freedomofpress/dangerzone/tree/main/docs/templates/)
   * You can use `./dev_scripts/upload-asset.py`, if you want to upload an asset
     using an access token.
 - [ ] Upload the `container.tar.gz` i686 image that was created in the previous step

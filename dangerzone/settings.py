@@ -13,6 +13,8 @@ log = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from .logic import DangerzoneCore
 
+SETTINGS_FILENAME: str = "settings.json"
+
 
 class Settings:
     settings: Dict[str, Any]
@@ -20,7 +22,7 @@ class Settings:
     def __init__(self, dangerzone: "DangerzoneCore") -> None:
         self.dangerzone = dangerzone
         self.settings_filename = os.path.join(
-            self.dangerzone.appdata_path, "settings.json"
+            self.dangerzone.appdata_path, SETTINGS_FILENAME
         )
         self.default_settings: Dict[str, Any] = self.generate_default_settings()
         self.load()

@@ -18,6 +18,7 @@ from dangerzone.gui import updater as updater_module
 from dangerzone.gui.updater import UpdateReport, UpdaterThread
 from dangerzone.util import get_version
 
+from ..test_settings import default_settings_0_4_1, save_settings
 from . import generate_isolated_updater, qt_updater, updater
 
 
@@ -32,26 +33,6 @@ def default_updater_settings() -> dict:
         for key, val in settings.Settings.generate_default_settings().items()
         if key.startswith("updater_")
     }
-
-
-def default_settings_0_4_1() -> dict:
-    """Get the default settings for the 0.4.1 Dangerzone release."""
-    return {
-        "save": True,
-        "archive": True,
-        "ocr": True,
-        "ocr_language": "English",
-        "open": True,
-        "open_app": None,
-        "safe_extension": "-safe.pdf",
-    }
-
-
-def save_settings(tmp_path: Path, settings: dict) -> None:
-    """Mimic the way Settings save a dictionary to a settings.json file."""
-    settings_filename = tmp_path / "settings.json"
-    with open(settings_filename, "w") as settings_file:
-        json.dump(settings, settings_file, indent=4)
 
 
 def assert_report_equal(report1: UpdateReport, report2: UpdateReport) -> None:

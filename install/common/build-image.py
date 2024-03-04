@@ -31,55 +31,54 @@ def main():
     args = parser.parse_args()
 
     print("Exporting container pip dependencies")
-    export_container_pip_dependencies()
-
-    print("Pulling base image")
-    subprocess.run(
-        [
-            args.runtime,
-            "pull",
-            "alpine:latest",
-        ],
-        check=True,
-    )
-
-    print("Building container image")
-    subprocess.run(
-        [
-            args.runtime,
-            "build",
-            BUILD_CONTEXT,
-            "--build-arg",
-            f"REQUIREMENTS_TXT={REQUIREMENTS_TXT}",
-            "-f",
-            "Dockerfile",
-            "--tag",
-            TAG,
-        ],
-        check=True,
-    )
-
-    if not args.no_save:
-        print("Saving container image")
-        cmd = subprocess.Popen(
+    with ContainerPipDependencies():
+        print("Pulling base image")
+        subprocess.run(
             [
-                CONTAINER_RUNTIME,
-                "save",
-                TAG,
+                args.runtime,
+                "pull",
+                "alpine:latest",
             ],
-            stdout=subprocess.PIPE,
+            check=True,
         )
 
-        print("Compressing container image")
-        chunk_size = 4 << 20
-        with gzip.open("share/container.tar.gz", "wb") as gzip_f:
-            while True:
-                chunk = cmd.stdout.read(chunk_size)
-                if len(chunk) > 0:
-                    gzip_f.write(chunk)
-                else:
-                    break
-        cmd.wait(5)
+        print("Building container image")
+        subprocess.run(
+            [
+                args.runtime,
+                "build",
+                BUILD_CONTEXT,
+                "--build-arg",
+                f"REQUIREMENTS_TXT={REQUIREMENTS_TXT}",
+                "-f",
+                "Dockerfile",
+                "--tag",
+                TAG,
+            ],
+            check=True,
+        )
+
+        if not args.no_save:
+            print("Saving container image")
+            cmd = subprocess.Popen(
+                [
+                    CONTAINER_RUNTIME,
+                    "save",
+                    TAG,
+                ],
+                stdout=subprocess.PIPE,
+            )
+
+            print("Compressing container image")
+            chunk_size = 4 << 20
+            with gzip.open("share/container.tar.gz", "wb") as gzip_f:
+                while True:
+                    chunk = cmd.stdout.read(chunk_size)
+                    if len(chunk) > 0:
+                        gzip_f.write(chunk)
+                    else:
+                        break
+            cmd.wait(5)
 
     print("Looking up the image id")
     image_id = subprocess.check_output(
@@ -97,18 +96,25 @@ def main():
         f.write(image_id)
 
 
-def export_container_pip_dependencies():
-    try:
-        container_requirements_txt = subprocess.check_output(
-            ["poetry", "export", "--only", "container"], universal_newlines=True
-        )
-    except subprocess.CalledProcessError as e:
-        print("FAILURE", e.returncode, e.output)
-    print(f"REQUIREMENTS: {container_requirements_txt}")
-    # XXX Export container dependencies and exclude pymupdfb since it is not needed in container
-    req_txt_pymupdfb_stripped = container_requirements_txt.split("pymupdfb")[0]
-    with open(Path(BUILD_CONTEXT) / REQUIREMENTS_TXT, "w") as f:
-        f.write(req_txt_pymupdfb_stripped)
+class ContainerPipDependencies:
+    """Generates PIP dependencies within container"""
+
+    def __enter__(self):
+        try:
+            container_requirements_txt = subprocess.check_output(
+                ["poetry", "export", "--only", "container"], universal_newlines=True
+            )
+        except subprocess.CalledProcessError as e:
+            print("FAILURE", e.returncode, e.output)
+        print(f"REQUIREMENTS: {container_requirements_txt}")
+        # XXX Export container dependencies and exclude pymupdfb since it is not needed in container
+        req_txt_pymupdfb_stripped = container_requirements_txt.split("pymupdfb")[0]
+        with open(Path(BUILD_CONTEXT) / REQUIREMENTS_TXT, "w") as f:
+            f.write(req_txt_pymupdfb_stripped)
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        print("Leaving the context...")
+        os.remove(Path(BUILD_CONTEXT) / REQUIREMENTS_TXT)
 
 
 if __name__ == "__main__":

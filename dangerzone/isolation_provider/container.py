@@ -12,7 +12,7 @@ from typing import Any, List, Optional
 from ..conversion import errors
 from ..document import Document
 from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
-from .base import IsolationProvider
+from .base import PIXELS_TO_PDF_LOG_END, PIXELS_TO_PDF_LOG_START, IsolationProvider
 
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
@@ -227,6 +227,17 @@ class Container(IsolationProvider):
             for line in pixels_to_pdf_proc.stdout:
                 self.parse_progress_trusted(document, line.decode())
         error_code = pixels_to_pdf_proc.wait()
+
+        # In case of a dev run, log everything from the second container.
+        if getattr(sys, "dangerzone_dev", False):
+            assert pixels_to_pdf_proc.stderr
+            out = pixels_to_pdf_proc.stderr.read().decode()
+            text = (
+                f"Conversion output: (pixels to PDF)\n"
+                f"{PIXELS_TO_PDF_LOG_START}\n{out}\n{PIXELS_TO_PDF_LOG_END}"
+            )
+            log.info(text)
+
         if error_code != 0:
             log.error("pixels-to-pdf failed")
             raise errors.exception_from_error_code(error_code)

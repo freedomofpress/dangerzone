@@ -28,6 +28,13 @@ def main():
         action="store_true",
         help="Do not save the container image as a tarball in share/container.tar.gz",
     )
+    parser.add_argument(
+        "--compress-level",
+        type=int,
+        choices=range(0, 10),
+        default=9,
+        help="The Gzip compression level, from 0 (lowest) to 9 (highest, default)",
+    )
     args = parser.parse_args()
 
     print("Exporting container pip dependencies")
@@ -71,7 +78,11 @@ def main():
 
             print("Compressing container image")
             chunk_size = 4 << 20
-            with gzip.open("share/container.tar.gz", "wb") as gzip_f:
+            with gzip.open(
+                "share/container.tar.gz",
+                "wb",
+                compresslevel=args.compress_level,
+            ) as gzip_f:
                 while True:
                     chunk = cmd.stdout.read(chunk_size)
                     if len(chunk) > 0:

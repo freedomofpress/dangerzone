@@ -80,16 +80,24 @@ class Qubes(IsolationProvider):
     def teleport_dz_module(self, wpipe: IO[bytes]) -> None:
         """Send the dangerzone module to another qube, as a zipfile."""
         # Grab the absolute file path of the dangerzone module.
-        import dangerzone.conversion as _conv
+        import dangerzone as _dz
 
-        _conv_path = Path(inspect.getfile(_conv)).parent
+        _conv_path = Path(_dz.conversion.__file__).parent
+        _src_root = Path(_dz.__file__).parent.parent
         temp_file = io.BytesIO()
 
-        # Create a Python zipfile that contains all the files of the dangerzone module.
-        with zipfile.PyZipFile(temp_file, "w") as z:
+        with zipfile.ZipFile(temp_file, "w") as z:
             z.mkdir("dangerzone/")
             z.writestr("dangerzone/__init__.py", "")
-            z.writepy(str(_conv_path), basename="dangerzone/")
+            import dangerzone.conversion
+
+            conv_path = Path(dangerzone.conversion.__file__).parent
+            for root, _, files in os.walk(_conv_path):
+                for file in files:
+                    if file.endswith(".py"):
+                        file_path = os.path.join(root, file)
+                        relative_path = os.path.relpath(file_path, _src_root)
+                        z.write(file_path, relative_path)
 
         # Send the following data:
         # 1. The size of the Python zipfile, so that the server can know when to

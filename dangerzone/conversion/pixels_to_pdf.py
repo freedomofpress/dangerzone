@@ -6,7 +6,9 @@ Here are the steps, with progress bar percentages:
 - 95%-100%: Compress the final PDF
 """
 import asyncio
+import contextlib
 import glob
+import io
 import json
 import os
 import shutil
@@ -49,9 +51,14 @@ class PixelsToPDF(DangerzoneConverter):
             # The first few operations happen on a per-page basis.
             page_size = len(untrusted_rgb_data)
             total_size += page_size
-            pixmap = fitz.Pixmap(
-                fitz.Colorspace(fitz.CS_RGB), width, height, untrusted_rgb_data, False
-            )
+            with contextlib.redirect_stdout(io.StringIO()):
+                pixmap = fitz.Pixmap(
+                    fitz.Colorspace(fitz.CS_RGB),
+                    width,
+                    height,
+                    untrusted_rgb_data,
+                    False,
+                )
             pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
             if ocr_lang:  # OCR the document
                 self.update_progress(

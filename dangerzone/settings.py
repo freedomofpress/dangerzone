@@ -47,7 +47,10 @@ class Settings:
         return self.settings[key]
 
     def set(self, key: str, val: Any, autosave: bool = False) -> None:
-        old_val = self.get(key)
+        try:
+            old_val = self.get(key)
+        except KeyError:
+            old_val = None
         self.settings[key] = val
         if autosave and val != old_val:
             self.save()

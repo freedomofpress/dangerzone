@@ -290,10 +290,7 @@ test it.
    cd dangerzone
    ```
 
-2. Follow the Fedora instructions for setting up the development environment with the particularity of running the following instead of `poetry install`:
-   ```
-   poetry install --with qubes
-   ```
+2. Follow the Fedora instructions for setting up the development environment.
 
 3. Build a dangerzone `.rpm` for qubes with the command
 

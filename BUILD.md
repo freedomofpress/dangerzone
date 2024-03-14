@@ -258,7 +258,7 @@ test it.
 
 2. Follow the Fedora instructions for setting up the development environment with the particularity of running the following instead of `poetry install`:
    ```
-   poetry install --with qubes
+   poetry install
    ```
 
 3. Build a dangerzone `.rpm` for qubes with the command

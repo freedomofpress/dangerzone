@@ -289,6 +289,12 @@ Build the latest container:
 python3 ./install/common/build-image.py
 ```
 
+Download the OCR language data:
+
+```sh
+python3 ./install/common/download-tessdata.py
+```
+
 Run from source tree:
 
 ```sh
@@ -367,6 +373,12 @@ Build the latest container:
 python3 ./install/common/build-image.py
 ```
 
+Download the OCR language data:
+
+```sh
+python3 ./install/common/download-tessdata.py
+```
+
 Run from source tree:
 
 ```sh
@@ -423,6 +435,12 @@ Build the dangerzone container image:
 
 ```sh
 python3 .\install\common\build-image.py
+```
+
+Download the OCR language data:
+
+```sh
+python3 .\install\common\download-tessdata.py
 ```
 
 After that you can launch dangerzone during development with:

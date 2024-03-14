@@ -54,7 +54,7 @@ aliases:
     command: |
       mkdir -p /caches/
       cd dangerzone/conversion/
-      cat common.py doc_to_pixels.py pixels_to_pdf.py | sha1sum | cut -d' ' -f1 > /caches/cache-id.txt
+      cat common.py doc_to_pixels.py | sha1sum | cut -d' ' -f1 > /caches/cache-id.txt
       cd ../../
 
   - &restore-cache

@@ -79,7 +79,7 @@ class TestQubes(IsolationProviderTest):
         )
         with pytest.raises(errors.ConverterProcException):
             doc = Document(sample_doc)
-            provider.doc_to_pixels(doc, tmpdir, proc)
+            provider._convert(doc, None, proc)
             assert provider.get_proc_exception(proc) == errors.QubesQrexecFailed
 
 

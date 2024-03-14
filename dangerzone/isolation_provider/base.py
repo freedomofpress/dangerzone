@@ -225,17 +225,6 @@ class IsolationProvider(ABC):
         text = "Converted document"
         self.print_progress(document, False, text, percentage)
 
-        if getattr(sys, "dangerzone_dev", False):
-            assert p.stderr
-            debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
-            p.stderr.close()
-            log.info(
-                "Conversion output (doc to pixels)\n"
-                f"{DOC_TO_PIXELS_LOG_START}\n"
-                f"{debug_log}"  # no need for an extra newline here
-                f"{DOC_TO_PIXELS_LOG_END}"
-            )
-
     @abstractmethod
     def pixels_to_pdf(
         self, document: Document, tempdir: str, ocr_lang: Optional[str]
@@ -356,6 +345,15 @@ class IsolationProvider(ABC):
                 document, p, timeout_grace=timeout_grace, timeout_force=timeout_force
             )
 
+            if getattr(sys, "dangerzone_dev", False):
+                assert p.stderr
+                debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
+                log.info(
+					"Conversion output (doc to pixels)\n"
+					f"{DOC_TO_PIXELS_LOG_START}\n"
+					f"{debug_log}"  # no need for an extra newline here
+					f"{DOC_TO_PIXELS_LOG_END}"
+                )
 
 # From global_common:
 

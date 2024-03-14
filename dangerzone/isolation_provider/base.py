@@ -22,8 +22,6 @@ log = logging.getLogger(__name__)
 MAX_CONVERSION_LOG_CHARS = 150 * 50  # up to ~150 lines of 50 characters
 DOC_TO_PIXELS_LOG_START = "----- DOC TO PIXELS LOG START -----"
 DOC_TO_PIXELS_LOG_END = "----- DOC TO PIXELS LOG END -----"
-PIXELS_TO_PDF_LOG_START = "----- PIXELS TO PDF LOG START -----"
-PIXELS_TO_PDF_LOG_END = "----- PIXELS TO PDF LOG END -----"
 
 TIMEOUT_EXCEPTION = 15
 TIMEOUT_GRACE = 15
@@ -222,17 +220,6 @@ class IsolationProvider(ABC):
         text = "Successfully converted document"
         self.print_progress(document, False, text, 100)
 
-        if getattr(sys, "dangerzone_dev", False):
-            assert p.stderr
-            debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
-            p.stderr.close()
-            log.info(
-                "Conversion output (doc to pixels)\n"
-                f"{DOC_TO_PIXELS_LOG_START}\n"
-                f"{debug_log}"  # no need for an extra newline here
-                f"{DOC_TO_PIXELS_LOG_END}"
-            )
-
     @abstractmethod
     def pixels_to_pdf(
         self, document: Document, tempdir: str, ocr_lang: Optional[str]
@@ -353,6 +340,18 @@ class IsolationProvider(ABC):
                 document, p, timeout_grace=timeout_grace, timeout_force=timeout_force
             )
 
+            # Read the stderr of the process only if:
+            # * Dev mode is enabled.
+            # * The process has exited (else we risk hanging).
+            if getattr(sys, "dangerzone_dev", False) and p.poll() is not None:
+                assert p.stderr
+                debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
+                log.info(
+                    "Conversion output (doc to pixels)\n"
+                    f"{DOC_TO_PIXELS_LOG_START}\n"
+                    f"{debug_log}"  # no need for an extra newline here
+                    f"{DOC_TO_PIXELS_LOG_END}"
+                )
 
 # From global_common:
 

@@ -17,6 +17,7 @@ python = ">=3.9,<3.13"
 click = "*"
 appdirs = "*"
 PySide6 = "^6.7.1"
+PyMuPDF = "^1.23.3"  # The version in Fedora 39
 colorama = "*"
 pyxdg = {version = "*", platform = "linux"}
 requests = "*"
@@ -50,9 +51,6 @@ pytest-mock = "^3.10.0"
 pytest-qt = "^4.2.0"
 pytest-cov = "^5.0.0"
 strip-ansi = "*"
-
-[tool.poetry.group.qubes.dependencies]
-pymupdf = "^1.23.6"
 
 [tool.poetry.group.container.dependencies]
 pymupdf = "^1.24.10"

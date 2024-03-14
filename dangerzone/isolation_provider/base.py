@@ -10,12 +10,13 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import IO, Callable, Iterator, Optional
 
+import fitz
 from colorama import Fore, Style
 
 from ..conversion import errors
-from ..conversion.common import INT_BYTES
+from ..conversion.common import DEFAULT_DPI, INT_BYTES
 from ..document import Document
-from ..util import replace_control_chars
+from ..util import get_tessdata_dir, replace_control_chars
 
 log = logging.getLogger(__name__)
 
@@ -111,8 +112,7 @@ class IsolationProvider(ABC):
             with tempfile.TemporaryDirectory() as t:
                 Path(f"{t}/pixels").mkdir()
                 with self.doc_to_pixels_proc(document) as conversion_proc:
-                    self.doc_to_pixels(document, t, conversion_proc)
-                self.pixels_to_pdf(document, t, ocr_lang)
+                    self._convert(document, t, ocr_lang, conversion_proc)
             document.mark_as_safe()
             if document.archive_after_conversion:
                 document.archive()
@@ -126,8 +126,42 @@ class IsolationProvider(ABC):
             self.print_progress(document, True, str(e), 0)
             document.mark_as_failed()
 
-    def doc_to_pixels(
-        self, document: Document, tempdir: str, p: subprocess.Popen
+    def _pixels_to_pdf(
+        self,
+        untrusted_data: bytes,
+        untrusted_width: int,
+        untrusted_height: int,
+        ocr_lang: Optional[str],
+    ) -> fitz.Document:
+        """Convert a byte array of RGB pixels into a PDF page, optionally with OCR."""
+        pixmap = fitz.Pixmap(
+            fitz.Colorspace(fitz.CS_RGB),
+            untrusted_width,
+            untrusted_height,
+            untrusted_data,
+            False,
+        )
+        pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
+
+        if ocr_lang:  # OCR the document
+            page_pdf_bytes = pixmap.pdfocr_tobytes(
+                compress=True,
+                language=ocr_lang,
+                tessdata=get_tessdata_dir(),
+            )
+        else:  # Don't OCR
+            page_doc = fitz.Document()
+            page_doc.insert_file(pixmap)
+            page_pdf_bytes = page_doc.tobytes(deflate_images=True)
+
+        return fitz.open("pdf", page_pdf_bytes)
+
+    def _convert(
+        self,
+        document: Document,
+        tempdir: str,
+        ocr_lang: Optional[str],
+        p: subprocess.Popen,
     ) -> None:
         percentage = 0.0
         with open(document.input_filename, "rb") as f:
@@ -142,10 +176,13 @@ class IsolationProvider(ABC):
             n_pages = read_int(p.stdout)
             if n_pages == 0 or n_pages > errors.MAX_PAGES:
                 raise errors.MaxPagesException()
-            percentage_per_page = 49.0 / n_pages
+            step = 100 / n_pages / 2
+
+            safe_doc = fitz.Document()
 
             for page in range(1, n_pages + 1):
                 text = f"Converting page {page}/{n_pages} to pixels"
+                percentage += step
                 self.print_progress(document, False, text, percentage)
 
                 width = read_int(p.stdout)
@@ -161,21 +198,31 @@ class IsolationProvider(ABC):
                     num_pixels,
                 )
 
-                # Wrapper code
-                with open(f"{tempdir}/pixels/page-{page}.width", "w") as f_width:
-                    f_width.write(str(width))
-                with open(f"{tempdir}/pixels/page-{page}.height", "w") as f_height:
-                    f_height.write(str(height))
-                with open(f"{tempdir}/pixels/page-{page}.rgb", "wb") as f_rgb:
-                    f_rgb.write(untrusted_pixels)
+                if ocr_lang:
+                    text = (
+                        f"Converting page {page}/{n_pages} from pixels to"
+                        " searchable PDF"
+                    )
+                else:
+                    text = f"Converting page {page}/{n_pages} from pixels to PDF"
+                percentage += step
+                self.print_progress(document, False, text, percentage)
 
-                percentage += percentage_per_page
+                page_pdf = self._pixels_to_pdf(
+                    untrusted_pixels,
+                    width,
+                    height,
+                    ocr_lang,
+                )
+                safe_doc.insert_pdf(page_pdf)
 
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()
 
+        safe_doc.save(document.output_filename)
+
         # TODO handle leftover code input
-        text = "Converted document to pixels"
+        text = "Converted document"
         self.print_progress(document, False, text, percentage)
 
         if getattr(sys, "dangerzone_dev", False):

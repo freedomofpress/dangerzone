@@ -1,24 +1,15 @@
 import gzip
-import json
 import logging
 import os
 import platform
 import shlex
 import shutil
 import subprocess
-import sys
-from typing import Any, List, Optional, Tuple
+from typing import List, Tuple
 
-from ..conversion import errors
 from ..document import Document
-from ..util import get_tmp_dir  # NOQA : required for mocking in our tests.
 from ..util import get_resource_path, get_subprocess_startupinfo
-from .base import (
-    PIXELS_TO_PDF_LOG_END,
-    PIXELS_TO_PDF_LOG_START,
-    IsolationProvider,
-    terminate_process_group,
-)
+from .base import IsolationProvider, terminate_process_group
 
 TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
 
@@ -234,31 +225,6 @@ class Container(IsolationProvider):
         """Unique container name for the pixels-to-pdf phase."""
         return f"dangerzone-pixels-to-pdf-{document.id}"
 
-    def assert_field_type(self, val: Any, _type: object) -> None:
-        # XXX: Use a stricter check than isinstance because `bool` is a subclass of
-        # `int`.
-        #
-        # See https://stackoverflow.com/a/37888668
-        if type(val) is not _type:
-            raise ValueError("Status field has incorrect type")
-
-    def parse_progress_trusted(self, document: Document, line: str) -> None:
-        """
-        Parses a line returned by the container.
-        """
-        try:
-            status = json.loads(line)
-            text = status["text"]
-            self.assert_field_type(text, str)
-            error = status["error"]
-            self.assert_field_type(error, bool)
-            percentage = status["percentage"]
-            self.assert_field_type(percentage, float)
-            self.print_progress(document, error, text, percentage)
-        except Exception:
-            error_message = f"Invalid JSON returned from container:\n\n\t {line}"
-            self.print_progress(document, True, error_message, -1)
-
     def exec(
         self,
         args: List[str],
@@ -336,84 +302,6 @@ class Container(IsolationProvider):
             log.exception(
                 f"Unexpected error occurred while killing container '{name}': {str(e)}"
             )
-
-    def pixels_to_pdf(
-        self, document: Document, tempdir: str, ocr_lang: Optional[str]
-    ) -> None:
-        # Convert pixels to safe PDF
-        command = [
-            "/usr/bin/python3",
-            "-m",
-            "dangerzone.conversion.pixels_to_pdf",
-        ]
-        extra_args = [
-            "-v",
-            f"{tempdir}:/safezone:Z",
-            "-e",
-            f"OCR={0 if ocr_lang is None else 1}",
-            "-e",
-            f"OCR_LANGUAGE={ocr_lang}",
-        ]
-        # XXX: Until #748 gets merged, we have to run our pixels to PDF phase in a
-        # container, which involves mounting two temp dirs. This does not bode well with
-        # gVisor for two reasons:
-        #
-        # 1. Our gVisor integration chroot()s into /home/dangerzone/dangerzone-image/rootfs,
-        #    meaning that the location of the temp dirs must be relevant to that path.
-        # 2. Reading and writing to these temp dirs requires permissions which are not
-        #    available to the user within gVisor's user namespace.
-        #
-        # For these reasons, and because the pixels to PDF phase is more trusted (and
-        # will soon stop being containerized), we circumvent gVisor support by doing the
-        # following:
-        #
-        # 1. Override our entrypoint script with a no-op command (/usr/bin/env).
-        # 2. Set the PYTHONPATH so that we can import the Python code within
-        #    /home/dangerzone/dangerzone-image/rootfs
-        # 3. Run the container as the root user, so that it can always write to the
-        #    mounted directories. This container is trusted, so running as root has no
-        #    impact to the security of Dangerzone.
-        img_root = "/home/dangerzone/dangerzone-image/rootfs"
-        extra_args += [
-            "--entrypoint",
-            "/usr/bin/env",
-            "-e",
-            f"PYTHONPATH={img_root}/opt/dangerzone:{img_root}/usr/lib/python3.12/site-packages",
-            "-e",
-            f"TESSDATA_PREFIX={img_root}/usr/share/tessdata",
-            "-u",
-            "root",
-        ]
-
-        name = self.pixels_to_pdf_container_name(document)
-        pixels_to_pdf_proc = self.exec_container(command, name, extra_args)
-        if pixels_to_pdf_proc.stdout:
-            for line in pixels_to_pdf_proc.stdout:
-                self.parse_progress_trusted(document, line.decode())
-        error_code = pixels_to_pdf_proc.wait()
-
-        # In case of a dev run, log everything from the second container.
-        if getattr(sys, "dangerzone_dev", False):
-            assert pixels_to_pdf_proc.stderr
-            out = pixels_to_pdf_proc.stderr.read().decode()
-            text = (
-                f"Conversion output: (pixels to PDF)\n"
-                f"{PIXELS_TO_PDF_LOG_START}\n{out}\n{PIXELS_TO_PDF_LOG_END}"
-            )
-            log.info(text)
-
-        if error_code != 0:
-            log.error("pixels-to-pdf failed")
-            raise errors.exception_from_error_code(error_code)
-        else:
-            # Move the final file to the right place
-            if os.path.exists(document.output_filename):
-                os.remove(document.output_filename)
-
-            container_output_filename = os.path.join(
-                tempdir, "safe-output-compressed.pdf"
-            )
-            shutil.move(container_output_filename, document.output_filename)
 
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
         # Convert document to pixels

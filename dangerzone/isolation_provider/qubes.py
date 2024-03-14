@@ -131,7 +131,7 @@ class Qubes(IsolationProvider):
 
 
 def is_qubes_native_conversion() -> bool:
-    """Returns True if the conversion should be run using Qubes OS's diposable
+    """Returns True if the conversion should be run using Qubes OS's disposable
     VMs and False if not."""
     if running_on_qubes():
         if getattr(sys, "dangerzone_dev", False):

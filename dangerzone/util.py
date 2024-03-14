@@ -45,6 +45,38 @@ def get_resource_path(filename: str) -> str:
     return str(resource_path)
 
 
+def get_tessdata_dir() -> pathlib.Path:
+    if getattr(sys, "dangerzone_dev", False) or platform.system() in (
+        "Windows",
+        "Darwin",
+    ):
+        # Always use the tessdata path from the Dangerzone ./share directory, for
+        # development builds, or in Windows/macOS platforms.
+        return pathlib.Path(get_resource_path("tessdata"))
+
+    # In case of Linux systems, grab the Tesseract data from any of the following
+    # locations. We have found some of the locations through trial and error, whereas
+    # others are taken from the docs:
+    #
+    #     [...] Possibilities are /usr/share/tesseract-ocr/tessdata or
+    #     /usr/share/tessdata or /usr/share/tesseract-ocr/4.00/tessdata. [1]
+    #
+    # [1] https://tesseract-ocr.github.io/tessdoc/Installation.html
+    tessdata_dirs = [
+        pathlib.Path("/usr/share/tessdata/"),  # on some Debian
+        pathlib.Path("/usr/share/tesseract/tessdata/"),  # on Fedora
+        pathlib.Path("/usr/share/tesseract-ocr/tessdata/"),  # ? (documented)
+        pathlib.Path("/usr/share/tesseract-ocr/4.00/tessdata/"),  # on Ubuntu Focal
+        pathlib.Path("/usr/share/tesseract-ocr/5/tessdata/"),  # on Debian Trixie
+    ]
+
+    for dir in tessdata_dirs:
+        if dir.is_dir():
+            return dir
+
+    raise RuntimeError("Tesseract language data are not installed in the system")
+
+
 def get_version() -> str:
     try:
         with open(get_resource_path("version.txt")) as f:

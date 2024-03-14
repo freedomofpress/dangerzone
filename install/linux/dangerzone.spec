@@ -72,13 +72,15 @@ BuildRequires:  python3-devel
 %if 0%{?_qubes}
 # Qubes-only requirements (server-side)
 Requires:       python3-magic
-Requires:       python3-PyMuPDF
 Requires:       libreoffice
-# Qubes-only requirements (client-side)
-Requires:       GraphicsMagick
-Requires:       ghostscript
-Requires:       poppler-utils
-Requires:       tesseract
+%else
+# Container-only requirements
+Requires:       podman
+%endif
+
+# FIXME: Is it autodetected?
+Requires:       python3-PyMuPDF
+
 # Explicitly require every tesseract model:
 # See: https://github.com/freedomofpress/dangerzone/issues/431
 Requires:       tesseract-langpack-afr
@@ -204,10 +206,6 @@ Requires:       tesseract-langpack-uzb_cyrl
 Requires:       tesseract-langpack-vie
 Requires:       tesseract-langpack-yid
 Requires:       tesseract-langpack-yor
-%else
-# Container-only requirements
-Requires:       podman
-%endif
 
 %description
 Dangerzone is an open source desktop application that takes potentially

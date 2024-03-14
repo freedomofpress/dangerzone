@@ -11,10 +11,9 @@ from typing import IO, Optional
 
 from ..conversion import errors
 from ..conversion.common import running_on_qubes
-from ..conversion.pixels_to_pdf import PixelsToPDF
 from ..document import Document
 from ..util import get_resource_path
-from .base import PIXELS_TO_PDF_LOG_END, PIXELS_TO_PDF_LOG_START, IsolationProvider
+from .base import IsolationProvider
 
 log = logging.getLogger(__name__)
 
@@ -24,28 +23,6 @@ class Qubes(IsolationProvider):
 
     def install(self) -> bool:
         return True
-
-    def pixels_to_pdf(
-        self, document: Document, tempdir: str, ocr_lang: Optional[str]
-    ) -> None:
-        def print_progress_wrapper(error: bool, text: str, percentage: float) -> None:
-            self.print_progress(document, error, text, percentage)
-
-        converter = PixelsToPDF(progress_callback=print_progress_wrapper)
-        try:
-            asyncio.run(converter.convert(ocr_lang, tempdir))
-        except (RuntimeError, ValueError) as e:
-            raise errors.UnexpectedConversionError(str(e))
-        finally:
-            if getattr(sys, "dangerzone_dev", False):
-                out = converter.captured_output.decode()
-                text = (
-                    f"Conversion output: (pixels to PDF)\n"
-                    f"{PIXELS_TO_PDF_LOG_START}\n{out}{PIXELS_TO_PDF_LOG_END}"
-                )
-                log.info(text)
-
-        shutil.move(f"{tempdir}/safe-output-compressed.pdf", document.output_filename)
 
     def get_max_parallel_conversions(self) -> int:
         return 1

@@ -53,6 +53,60 @@ about updates.</p>
 HAMBURGER_MENU_SIZE = 30
 
 
+def load_svg_image(filename: str, width: int, height: int) -> QtGui.QPixmap:
+    """Load an SVG image from a filename.
+
+    This answer is basically taken from: https://stackoverflow.com/a/25689790
+    """
+    path = get_resource_path(filename)
+    svg_renderer = QtSvg.QSvgRenderer(path)
+    image = QtGui.QImage(width, height, QtGui.QImage.Format_ARGB32)
+    # Set the ARGB to 0 to prevent rendering artifacts
+    image.fill(0x00000000)
+    svg_renderer.render(QtGui.QPainter(image))
+    pixmap = QtGui.QPixmap.fromImage(image)
+    return pixmap
+
+
+def get_supported_extensions() -> List[str]:
+    supported_ext = [
+        ".pdf",
+        ".docx",
+        ".doc",
+        ".docm",
+        ".xlsx",
+        ".xls",
+        ".pptx",
+        ".ppt",
+        ".odt",
+        ".odg",
+        ".odp",
+        ".ods",
+        ".epub",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".png",
+        ".tif",
+        ".tiff",
+        ".bmp",
+        ".pnm",
+        ".pbm",
+        ".ppm",
+        ".svg",
+    ]
+
+    # XXX: We disable loading HWP/HWPX files on Qubes, because H2ORestart does not work there.
+    # See:
+    #
+    # https://github.com/freedomofpress/dangerzone/issues/494
+    hwp_filters = [".hwp", ".hwpx"]
+    if is_qubes_native_conversion():
+        supported_ext += hwp_filters
+
+    return supported_ext
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(MainWindow, self).__init__()
@@ -87,7 +141,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.hamburger_button = QtWidgets.QToolButton()
         self.hamburger_button.setPopupMode(QtWidgets.QToolButton.InstantPopup)
         self.hamburger_button.setIcon(
-            QtGui.QIcon(self.load_svg_image("hamburger_menu.svg"))
+            QtGui.QIcon(load_svg_image("hamburger_menu.svg", width=64, height=64))
         )
         self.hamburger_button.setFixedSize(HAMBURGER_MENU_SIZE, HAMBURGER_MENU_SIZE)
         self.hamburger_button.setIconSize(
@@ -167,20 +221,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
 
         self.show()
-
-    def load_svg_image(self, filename: str) -> QtGui.QPixmap:
-        """Load an SVG image from a filename.
-
-        This answer is basically taken from: https://stackoverflow.com/a/25689790
-        """
-        path = get_resource_path(filename)
-        svg_renderer = QtSvg.QSvgRenderer(path)
-        image = QtGui.QImage(64, 64, QtGui.QImage.Format_ARGB32)
-        # Set the ARGB to 0 to prevent rendering artifacts
-        image.fill(0x00000000)
-        svg_renderer.render(QtGui.QPainter(image))
-        pixmap = QtGui.QPixmap.fromImage(image)
-        return pixmap
 
     def show_update_success(self) -> None:
         """Inform the user about a new Dangerzone release."""
@@ -262,13 +302,21 @@ class MainWindow(QtWidgets.QMainWindow):
                 return
 
             self.hamburger_button.setIcon(
-                QtGui.QIcon(self.load_svg_image("hamburger_menu_update_error.svg"))
+                QtGui.QIcon(
+                    load_svg_image(
+                        "hamburger_menu_update_error.svg", width=64, height=64
+                    )
+                )
             )
             sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
             # FIXME: Add red bubble next to the text.
             error_action = QAction("Update error", hamburger_menu)
             error_action.setIcon(
-                QtGui.QIcon(self.load_svg_image("hamburger_menu_update_dot_error.svg"))
+                QtGui.QIcon(
+                    load_svg_image(
+                        "hamburger_menu_update_dot_error.svg", width=64, height=64
+                    )
+                )
             )
             error_action.triggered.connect(self.show_update_error)
             hamburger_menu.insertAction(sep, error_action)
@@ -283,14 +331,20 @@ class MainWindow(QtWidgets.QMainWindow):
             self.dangerzone.settings.save()
 
             self.hamburger_button.setIcon(
-                QtGui.QIcon(self.load_svg_image("hamburger_menu_update_success.svg"))
+                QtGui.QIcon(
+                    load_svg_image(
+                        "hamburger_menu_update_success.svg", width=64, height=64
+                    )
+                )
             )
 
             sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
             success_action = QAction("New version available", hamburger_menu)
             success_action.setIcon(
                 QtGui.QIcon(
-                    self.load_svg_image("hamburger_menu_update_dot_available.svg")
+                    load_svg_image(
+                        "hamburger_menu_update_dot_available.svg", width=64, height=64
+                    )
                 )
             )
             success_action.triggered.connect(self.show_update_success)
@@ -455,6 +509,10 @@ class ContentWidget(QtWidgets.QWidget):
         # Doc selection widget
         self.doc_selection_widget = DocSelectionWidget(self.dangerzone)
         self.doc_selection_widget.documents_selected.connect(self.documents_selected)
+        self.doc_selection_wrapper = DocSelectionDropFrame(
+            self.dangerzone, self.doc_selection_widget
+        )
+        self.doc_selection_wrapper.documents_selected.connect(self.documents_selected)
 
         # Settings
         self.settings_widget = SettingsWidget(self.dangerzone)
@@ -475,7 +533,7 @@ class ContentWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.settings_widget, stretch=1)
         layout.addWidget(self.documents_list, stretch=1)
-        layout.addWidget(self.doc_selection_widget, stretch=1)
+        layout.addWidget(self.doc_selection_wrapper, stretch=1)
         self.setLayout(layout)
 
     def documents_selected(self, docs: List[Document]) -> None:
@@ -505,7 +563,7 @@ class ContentWidget(QtWidgets.QWidget):
         for doc in docs:
             self.dangerzone.add_document(doc)
 
-        self.doc_selection_widget.hide()
+        self.doc_selection_wrapper.hide()
         self.settings_widget.show()
 
         if len(docs) > 0:
@@ -551,20 +609,8 @@ class DocSelectionWidget(QtWidgets.QWidget):
         self.file_dialog = QtWidgets.QFileDialog()
         self.file_dialog.setWindowTitle("Open Documents")
         self.file_dialog.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
-
-        # XXX: We disable loading HWP/HWPX files on Qubes, because H2ORestart does not work there.
-        # See:
-        #
-        # https://github.com/freedomofpress/dangerzone/issues/494
-        hwp_filters = "*.hwp *.hwpx"
-        if is_qubes_native_conversion():
-            hwp_filters = ""
         self.file_dialog.setNameFilters(
-            [
-                "Documents (*.pdf *.docx *.doc *.docm *.xlsx *.xls *.pptx *.ppt *.odt"
-                f" *.odg *.odp *.ods {hwp_filters} *.epub *.jpg *.jpeg *.gif *.png"
-                " *.tif *.tiff *.bmp *.pnm *.pbm *.ppm *.svg)"
-            ]
+            ["Documents (*" + " *".join(get_supported_extensions()) + ")"]
         )
 
     def dangerous_doc_button_clicked(self) -> None:
@@ -582,6 +628,103 @@ class DocSelectionWidget(QtWidgets.QWidget):
         else:
             # No files selected
             pass
+
+
+class DocSelectionDropFrame(QtWidgets.QFrame):
+    """
+    HACK Docs selecting widget "drag-n-drop" border widget
+    The border frame doesn't show around the whole widget
+    unless there is another widget wrapping it
+    """
+
+    documents_selected = QtCore.Signal(list)
+
+    def __init__(
+        self, dangerzone: DangerzoneGui, docs_selection_widget: DocSelectionWidget
+    ) -> None:
+        super().__init__()
+
+        self.dangerzone = dangerzone
+        self.docs_selection_widget = docs_selection_widget
+
+        # Drag and drop functionality
+        self.setAcceptDrops(True)
+
+        self.document_image_text = QtWidgets.QLabel(
+            "Drag and drop\ndocuments here\n\nor"
+        )
+        self.document_image_text.setAlignment(QtCore.Qt.AlignCenter)
+        self.document_image = QtWidgets.QLabel()
+        self.document_image.setAlignment(QtCore.Qt.AlignCenter)
+        self.document_image.setPixmap(
+            load_svg_image("document.svg", width=20, height=24)
+        )
+
+        self.center_layout = QtWidgets.QVBoxLayout()
+        self.center_layout.addWidget(self.document_image)
+        self.center_layout.addWidget(self.document_image_text)
+        self.center_layout.addWidget(self.docs_selection_widget)
+
+        self.drop_layout = QtWidgets.QVBoxLayout()
+        self.drop_layout.addStretch()
+        self.drop_layout.addLayout(self.center_layout)
+        self.drop_layout.addStretch()
+
+        self.setLayout(self.drop_layout)
+
+    def dragEnterEvent(self, ev: QtGui.QDragEnterEvent) -> None:
+        ev.accept()
+
+    def dragLeaveEvent(self, ev: QtGui.QDragLeaveEvent) -> None:
+        ev.accept()
+
+    def dropEvent(self, ev: QtGui.QDropEvent) -> None:
+        ev.setDropAction(QtCore.Qt.CopyAction)
+        documents = []
+        supported_exts = get_supported_extensions()
+        for url_path in ev.mimeData().urls():
+            doc_path = url_path.toLocalFile()
+            doc_ext = os.path.splitext(doc_path)[1]
+            if doc_ext in supported_exts:
+                documents += [Document(doc_path)]
+
+        # Ignore anything dropped that's not a file (e.g. text)
+        if len(documents) == 0:
+            return
+
+        # Ignore when all dropped files are unsupported
+        total_dragged_docs = len(ev.mimeData().urls())
+        num_unsupported_docs = total_dragged_docs - len(documents)
+
+        if num_unsupported_docs == total_dragged_docs:
+            return
+
+        # Confirm with user when _some_ docs were ignored
+        if num_unsupported_docs > 0:
+            if not self.prompt_continue_without(num_unsupported_docs):
+                return
+        self.documents_selected.emit(documents)
+
+    def prompt_continue_without(self, num_unsupported_docs: int) -> int:
+        """
+        Prompt the user if they want to convert even though some files are not
+        supported.
+        """
+        if num_unsupported_docs == 1:
+            text = "1 file is not supported."
+            ok_text = "Continue without this file"
+        else:  # plural
+            text = f"{num_unsupported_docs} files are not supported."
+            ok_text = "Continue without these files"
+
+        alert_widget = Alert(
+            self.dangerzone,
+            message=f"{text}\nThe supported extensions are: "
+            + ", ".join(get_supported_extensions()),
+            ok_text=ok_text,
+        )
+
+        return alert_widget.exec_()
 
 
 class SettingsWidget(QtWidgets.QWidget):

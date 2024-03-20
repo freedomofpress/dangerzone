@@ -209,21 +209,26 @@ Run Dangerzone against a list of documents, and tick all options. Ensure that:
   location.
 * The original files have been saved in the `unsafe/` directory.
 
-#### 8. Dangerzone CLI succeeds in converting multiple documents
+#### 8. Dangerzone is able to handle drag-n-drop
+
+Run Dangerzone against a set of documents that you drag-n-drop. Files should be
+added and conversion should run without issue.
+
+#### 9. Dangerzone CLI succeeds in converting multiple documents
 
 _(Only for Windows and Linux)_
 
 Run Dangerzone CLI against a list of documents. Ensure that conversions happen
 sequentially, are completed successfully, and we see their progress.
 
-#### 9. Dangerzone can open a document for conversion via right-click -> "Open With"
+#### 10. Dangerzone can open a document for conversion via right-click -> "Open With"
 
 _(Only for Windows, MacOS and Qubes)_
 
 Go to a directory with office documents, right-click on one, and click on "Open
 With". We should be able to open the file with Dangerzone, and then convert it.
 
-#### 10. Dangerzone shows helpful errors for setup issues on Qubes
+#### 11. Dangerzone shows helpful errors for setup issues on Qubes
 
 _(Only for Qubes)_
 

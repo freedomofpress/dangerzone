@@ -14,6 +14,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   * Prevent attacker from becoming root within the container ([#224](https://github.com/freedomofpress/dangerzone/issues/224))
   * Use a restricted seccomp profile ([#225](https://github.com/freedomofpress/dangerzone/issues/225))
   * Make use of user namespaces ([#228](https://github.com/freedomofpress/dangerzone/issues/228))
+- Files can now be drag-n-dropped to Dangerzone ([issue #409](https://github.com/freedomofpress/dangerzone/issues/409))
 
 ### Fixed
 

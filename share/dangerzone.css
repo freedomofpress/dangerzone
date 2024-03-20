@@ -13,6 +13,11 @@ QDialog[OSColorMode="light"] QWidget {
     color: black;
 }
 
+DocSelectionDropFrame{
+    border: 2px dashed rgb(193, 193, 193);
+    border-radius: 5px;
+    margin: 5px;
+}
 /*
  * QLabel left-adjacent to a QLineEdit to give the illusion
  * that it is part of it, but just not editable

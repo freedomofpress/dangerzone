@@ -393,8 +393,8 @@ poetry shell
 ### If you want to build the installer
 
 * Go to https://dotnet.microsoft.com/download/dotnet-framework and download and install .NET Framework 3.5 SP1 Runtime. I downloaded `dotnetfx35.exe`.
-* Go to https://wixtoolset.org/releases/ and download and install WiX toolset. I downloaded `wix311.exe`.
-* Add `C:\Program Files (x86)\WiX Toolset v3.11\bin` to the path ([instructions](https://web.archive.org/web/20230221104142/https://windowsloop.com/how-to-add-to-windows-path/)).
+* Go to https://wixtoolset.org/releases/ and download and install WiX toolset. I downloaded `wix314.exe`.
+* Add `C:\Program Files (x86)\WiX Toolset v3.14\bin` to the path ([instructions](https://web.archive.org/web/20230221104142/https://windowsloop.com/how-to-add-to-windows-path/)).
 
 ### If you want to sign binaries with Authenticode
 

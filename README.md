@@ -24,7 +24,7 @@ You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `bre
 
 ### Windows
 
-- Download [Dangerzone 0.6.0 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.6.0/Dangerzone-0.6.0.msi)
+- Download [Dangerzone 0.6.0 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.6.0/Dangerzone-0.6.0-1.msi)
 
 > **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 > This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to

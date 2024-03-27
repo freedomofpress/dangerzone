@@ -228,31 +228,6 @@ class Container(IsolationProvider):
         """Unique container name for the pixels-to-pdf phase."""
         return f"dangerzone-pixels-to-pdf-{document.id}"
 
-    def assert_field_type(self, val: Any, _type: object) -> None:
-        # XXX: Use a stricter check than isinstance because `bool` is a subclass of
-        # `int`.
-        #
-        # See https://stackoverflow.com/a/37888668
-        if type(val) is not _type:
-            raise ValueError("Status field has incorrect type")
-
-    def parse_progress_trusted(self, document: Document, line: str) -> None:
-        """
-        Parses a line returned by the container.
-        """
-        try:
-            status = json.loads(line)
-            text = status["text"]
-            self.assert_field_type(text, str)
-            error = status["error"]
-            self.assert_field_type(error, bool)
-            percentage = status["percentage"]
-            self.assert_field_type(percentage, float)
-            self.print_progress(document, error, text, percentage)
-        except Exception:
-            error_message = f"Invalid JSON returned from container:\n\n\t {line}"
-            self.print_progress(document, True, error_message, -1)
-
     def exec(
         self,
         args: List[str],

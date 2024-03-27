@@ -134,7 +134,7 @@ class IsolationProvider(ABC):
                 tessdata=get_tessdata_dir(),
             )
 
-    def _pixels_to_pdf(
+    def pixels_to_pdf_page(
         self,
         untrusted_data: bytes,
         untrusted_width: int,
@@ -212,7 +212,7 @@ class IsolationProvider(ABC):
                 percentage += step
                 self.print_progress(document, False, text, percentage)
 
-                page_pdf = self._pixels_to_pdf(
+                page_pdf = self.pixels_to_pdf_page(
                     untrusted_pixels,
                     width,
                     height,

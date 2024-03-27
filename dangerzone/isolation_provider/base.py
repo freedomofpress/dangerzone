@@ -126,6 +126,51 @@ class IsolationProvider(ABC):
             self.print_progress(document, True, str(e), 0)
             document.mark_as_failed()
 
+    def ocr_page(self, pixmap: fitz.Pixmap, ocr_lang: str) -> bytes:
+        """Get a single page as pixels, OCR it, and return a PDF as bytes.
+
+        This operation is particularly tricky, since we have to handle various PyMuPDF
+        versions.
+        """
+        if int(fitz.version[2]) >= 20230621000001:
+            return pixmap.pdfocr_tobytes(
+                compress=True,
+                language=ocr_lang,
+                tessdata=get_tessdata_dir(),
+            )
+        else:
+            # XXX: In PyMuPDF v1.22.5, the function signature of
+            # `pdfocr_tobytes()` / `pdfocr_save()` was extended with an argument
+            # to explicitly set the Tesseract data dir [1].
+            #
+            # In earlier versions, the PyMuPDF developers recommend setting this
+            # path via the TESSDATA_PREFIX environment variable. In practice,
+            # this environment variable is read at import time, so subsequent
+            # changes to the environment variable are not tracked [2].
+            #
+            # To make things worse, any attempt to alter the internal attribute
+            # (`fitz.TESSDATA_PREFIX`) makes no difference as well, when using
+            # the OCR functions. That's due to the way imports work in `fitz`,
+            # where somehow the internal `fitz.fitz` module is shadowed.
+            #
+            # A hacky solution is to grab the `fitz.fitz` module from
+            # `sys.modules`, and set there the TESSDATA_PREFIX variable. We can
+            # get away with this hack because we have a proper solution for
+            # subsequent PyMuPDF versions, and we know that nothing will change
+            # in older versions.
+            #
+            # TODO: Remove after oldest distro has PyMuPDF >= v1.22.5
+            #
+            # [1]: https://pymupdf.readthedocs.io/en/latest/pixmap.html#Pixmap.pdfocr_save
+            # [2]: https://github.com/pymupdf/PyMuPDF/blob/0368e56cfa6afb55bcf6c726e7f51a2a16a5ccba/fitz/fitz.i#L308
+            sys.modules["fitz.fitz"].TESSDATA_PREFIX = get_tessdata_dir()  # type: ignore [attr-defined]
+
+            return pixmap.pdfocr_tobytes(
+                compress=True,
+                language=ocr_lang,
+                tessdata=get_tessdata_dir(),
+            )
+
     def _pixels_to_pdf(
         self,
         untrusted_data: bytes,
@@ -144,11 +189,7 @@ class IsolationProvider(ABC):
         pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
 
         if ocr_lang:  # OCR the document
-            page_pdf_bytes = pixmap.pdfocr_tobytes(
-                compress=True,
-                language=ocr_lang,
-                tessdata=get_tessdata_dir(),
-            )
+            page_pdf_bytes = self.ocr_page(pixmap, ocr_lang)
         else:  # Don't OCR
             page_doc = fitz.Document()
             page_doc.insert_file(pixmap)

@@ -78,9 +78,6 @@ Requires:       libreoffice
 Requires:       podman
 %endif
 
-# FIXME: Is it autodetected?
-Requires:       python3-PyMuPDF
-
 # Explicitly require every tesseract model:
 # See: https://github.com/freedomofpress/dangerzone/issues/431
 Requires:       tesseract-langpack-afr

@@ -7,12 +7,11 @@ import shlex
 import shutil
 import subprocess
 import sys
-from typing import Any, List, Optional
+from typing import Any, List
 
-from ..conversion import errors
 from ..document import Document
 from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
-from .base import PIXELS_TO_PDF_LOG_END, PIXELS_TO_PDF_LOG_START, IsolationProvider
+from .base import IsolationProvider
 
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
@@ -129,31 +128,6 @@ class Container(IsolationProvider):
 
         return installed
 
-    def assert_field_type(self, val: Any, _type: object) -> None:
-        # XXX: Use a stricter check than isinstance because `bool` is a subclass of
-        # `int`.
-        #
-        # See https://stackoverflow.com/a/37888668
-        if not type(val) == _type:
-            raise ValueError("Status field has incorrect type")
-
-    def parse_progress_trusted(self, document: Document, line: str) -> None:
-        """
-        Parses a line returned by the container.
-        """
-        try:
-            status = json.loads(line)
-            text = status["text"]
-            self.assert_field_type(text, str)
-            error = status["error"]
-            self.assert_field_type(error, bool)
-            percentage = status["percentage"]
-            self.assert_field_type(percentage, float)
-            self.print_progress(document, error, text, percentage)
-        except Exception:
-            error_message = f"Invalid JSON returned from container:\n\n\t {line}"
-            self.print_progress(document, True, error_message, -1)
-
     def exec(
         self,
         args: List[str],
@@ -179,7 +153,6 @@ class Container(IsolationProvider):
         if self.get_runtime_name() == "podman":
             security_args = ["--log-driver", "none"]
             security_args += ["--security-opt", "no-new-privileges"]
-            security_args += ["--userns", "keep-id"]
         else:
             security_args = ["--security-opt=no-new-privileges:true"]
 
@@ -203,53 +176,6 @@ class Container(IsolationProvider):
 
         args = [container_runtime] + args
         return self.exec(args)
-
-    def pixels_to_pdf(
-        self, document: Document, tempdir: str, ocr_lang: Optional[str]
-    ) -> None:
-        # Convert pixels to safe PDF
-        command = [
-            "/usr/bin/python3",
-            "-m",
-            "dangerzone.conversion.pixels_to_pdf",
-        ]
-        extra_args = [
-            "-v",
-            f"{tempdir}:/safezone:Z",
-            "-e",
-            f"OCR={0 if ocr_lang is None else 1}",
-            "-e",
-            f"OCR_LANGUAGE={ocr_lang}",
-        ]
-
-        pixels_to_pdf_proc = self.exec_container(command, extra_args)
-        if pixels_to_pdf_proc.stdout:
-            for line in pixels_to_pdf_proc.stdout:
-                self.parse_progress_trusted(document, line.decode())
-        error_code = pixels_to_pdf_proc.wait()
-
-        # In case of a dev run, log everything from the second container.
-        if getattr(sys, "dangerzone_dev", False):
-            assert pixels_to_pdf_proc.stderr
-            out = pixels_to_pdf_proc.stderr.read().decode()
-            text = (
-                f"Conversion output: (pixels to PDF)\n"
-                f"{PIXELS_TO_PDF_LOG_START}\n{out}\n{PIXELS_TO_PDF_LOG_END}"
-            )
-            log.info(text)
-
-        if error_code != 0:
-            log.error("pixels-to-pdf failed")
-            raise errors.exception_from_error_code(error_code)
-        else:
-            # Move the final file to the right place
-            if os.path.exists(document.output_filename):
-                os.remove(document.output_filename)
-
-            container_output_filename = os.path.join(
-                tempdir, "safe-output-compressed.pdf"
-            )
-            shutil.move(container_output_filename, document.output_filename)
 
     def start_doc_to_pixels_proc(self) -> subprocess.Popen:
         # Convert document to pixels

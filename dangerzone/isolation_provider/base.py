@@ -65,8 +65,10 @@ class IsolationProvider(ABC):
         document: Document,
         ocr_lang: Optional[str],
         progress_callback: Optional[Callable] = None,
+        preview_callback: Optional[Callable] = None,
     ) -> None:
         self.progress_callback = progress_callback
+        self.preview_callback = preview_callback
         document.mark_as_converting()
         try:
             conversion_proc = self.start_doc_to_pixels_proc()
@@ -127,6 +129,10 @@ class IsolationProvider(ABC):
                     p.stdout,
                     num_pixels,
                 )
+
+                # Preview
+                if self.preview_callback:
+                    self.preview_callback(width, height, untrusted_pixels)
 
                 # Wrapper code
                 with open(f"{tempdir}/pixels/page-{page}.width", "w") as f_width:

@@ -88,20 +88,50 @@ _(Only for MacOS / Windows)_
 Stop the Docker Desktop application. Then run Dangerzone. Dangerzone should
 prompt the user to start Docker Desktop.
 
-#### 3. Dangerzone successfully installs the container image
 
-_(Not for Qubes)_
+#### 3. Updating Dangerzone handles external state correctly.
+
+_(Applies to Windows/MacOS)_
+
+Install the previous version of Dangerzone, downloaded from the website.
+
+Open the Dangerzone application and enable some non-default settings.
+**If there are new settings, make sure to change those as well**.
+
+Close the Dangerzone application and get the container image for that
+version. For example:
+
+```
+$ docker images dangerzone.rocks/dangerzone:latest
+REPOSITORY                   TAG         IMAGE ID      CREATED       SIZE
+dangerzone.rocks/dangerzone  latest      <image ID>    <date>        <size>
+```
+
+Then run the version under QA and ensure that the settings remain changed.
+
+Afterwards check that new docker image was installed by running the same command
+and seeing the following differences:
+
+```
+$ docker images dangerzone.rocks/dangerzone:latest
+REPOSITORY                   TAG         IMAGE ID        CREATED       SIZE
+dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <different size>
+```
+
+#### 4. Dangerzone successfully installs the container image
+
+_(Linux)_
 
 Remove the Dangerzone container image from Docker/Podman. Then run Dangerzone.
-Danerzone should install the container image successfully.
+Dangerzone should install the container image successfully.
 
-#### 4. Dangerzone retains the settings of previous runs
+#### 5. Dangerzone retains the settings of previous runs
 
 Run Dangerzone and make some changes in the settings (e.g., change the OCR
 language, toggle whether to open the document after conversion, etc.). Restart
 Dangerzone. Dangerzone should show the settings that the user chose.
 
-#### 5. Dangerzone reports failed conversions
+#### 6. Dangerzone reports failed conversions
 
 Run Dangerzone and convert the `tests/test_docs/sample_bad_pdf.pdf` document.
 Dangerzone should fail gracefully, by reporting that the operation failed, and
@@ -109,7 +139,7 @@ showing the following error message:
 
 > The document format is not supported
 
-#### 6. Dangerzone succeeds in converting multiple documents
+#### 7. Dangerzone succeeds in converting multiple documents
 
 Run Dangerzone against a list of documents, and tick all options. Ensure that:
 * Conversions take place sequentially.
@@ -123,21 +153,21 @@ Run Dangerzone against a list of documents, and tick all options. Ensure that:
   location.
 * The original files have been saved in the `unsafe/` directory.
 
-#### 7. Dangerzone CLI succeeds in converting multiple documents
+#### 8. Dangerzone CLI succeeds in converting multiple documents
 
 _(Only for Windows and Linux)_
 
 Run Dangerzone CLI against a list of documents. Ensure that conversions happen
 sequentially, are completed successfully, and we see their progress.
 
-#### 8. Dangerzone can open a document for conversion via right-click -> "Open With"
+#### 9. Dangerzone can open a document for conversion via right-click -> "Open With"
 
 _(Only for Windows, MacOS and Qubes)_
 
 Go to a directory with office documents, right-click on one, and click on "Open
 With". We should be able to open the file with Dangerzone, and then convert it.
 
-#### 9. Dangerzone shows helpful errors for setup issues on Qubes
+#### 10. Dangerzone shows helpful errors for setup issues on Qubes
 
 _(Only for Qubes)_
 
@@ -151,46 +181,6 @@ should point the user to the Qubes notifications in the top-right corner:
 3. The `dz-dvm` disposable Qube cannot start due to insufficient resources. We
    can trigger this scenario by temporarily increasing the minimum required RAM
    of the `dz-dvm` template to more than the available amount.
-
-#### 10. Updating Dangerzone handles external state correctly.
-
-_(Applies to Linux/Windows/MacOS. For MacOS/Windows, it requires an installer
-for the new version)_
-
-Install the previous version of Dangerzone system-wide:
-
-* For MacOS/Windows, use the version from the website.
-* For Linux, uninstall Dangerzone from your test environment, and install the
-  previous version using our [installation instructions](INSTALL.md). Also,
-  keep in mind the following:
-  - In order to run commands as root, execute into the container as root with
-    `podman exec -it -u root <container ID> bash`.
-  - If you encounter a GPG error, run the `dirmngr` command to create the
-    necessary directories.
-
-Open the Dangerzone application and enable some non-default settings. Close the
-Dangerzone application and get the container image for that version. For
-example:
-
-```
-$ podman images dangerzone.rocks/dangerzone:latest
-REPOSITORY                   TAG         IMAGE ID      CREATED       SIZE
-dangerzone.rocks/dangerzone  latest      <image ID>    <date>        <size>
-```
-
-_(use `docker` on Windows/MacOS)_
-
-Install the new version of Dangerzone system-wide. For Linux, copy the package
-back into the container. Open the Dangerzone application and make sure that the
-previously enabled settings still show up.  Also, ensure that Dangerzone reports
-that the new image has been installed, and verify that it's different from the
-old one by doing:
-
-```
-$ podman images dangerzone.rocks/dangerzone:latest
-REPOSITORY                   TAG         IMAGE ID        CREATED       SIZE
-dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <different size>
-```
 """
 
 CONTENT_BUILD_DEBIAN_UBUNTU = r"""## Debian/Ubuntu

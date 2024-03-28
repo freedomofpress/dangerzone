@@ -93,7 +93,7 @@ prompt the user to start Docker Desktop.
 _(Not for Qubes)_
 
 Remove the Dangerzone container image from Docker/Podman. Then run Dangerzone.
-Danerzone should install the container image successfully.
+Dangerzone should install the container image successfully.
 
 #### 4. Dangerzone retains the settings of previous runs
 

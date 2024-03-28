@@ -150,7 +150,7 @@ Create a .rpm:
 > require switching between qubes, and are subject to change.
 >
 > If you want to build Dangerzone on Qubes and use containers instead of disposable
-> qubes, please follow the intructions of Fedora / Debian instead.
+> qubes, please follow the instructions of Fedora / Debian instead.
 
 
 ### Initial Setup
@@ -163,7 +163,7 @@ Overview of the qubes you'll create:
 | qube         |   type   | purpose |
 |--------------|----------|---------|
 | dz           | app qube | Dangerzone development |
-| dz-dvm       | app qube | offline diposable template for performing conversions |
+| dz-dvm       | app qube | offline disposable template for performing conversions |
 | fedora-38-dz | template | template for the other two qubes |
 
 #### In `dom0`:
@@ -224,7 +224,7 @@ test it.
    cd dangerzone
    ```
 
-2. Follow the Fedora instructions for setting up the development environment with the particularlity of running the following instead of `poetry install`:
+2. Follow the Fedora instructions for setting up the development environment with the particularity of running the following instead of `poetry install`:
    ```
    poetry install --with qubes
    ```

@@ -35,13 +35,13 @@ In case of a new version:
 1. Add it in our CI workflows, to test if that version works.
    * See `.circleci/config.yml` and `.github/workflows/ci.yml`, as well as
      `dev_scripts/env.py` and `dev_scripts/qa.py`.
-2. Do a test of this version locally with `dev_scripta/qa.py`. Focus on the
+2. Do a test of this version locally with `dev_scripts/qa.py`. Focus on the
    GUI part, since the basic functionality is already tested by our CI
    workflows.
 3. Add the new version in our `INSTALL.md` document, and drop a line in our
    `CHANGELOG.md`.
 4. If that version is a new stable release, update the `RELEASE.md` and
-   `BUILD.md` files where necesary.
+   `BUILD.md` files where necessary.
 4. Send a PR with the above changes.
 
 In case of an EOL version:
@@ -163,7 +163,7 @@ prompt the user to start Docker Desktop.
 _(Not for Qubes)_
 
 Remove the Dangerzone container image from Docker/Podman. Then run Dangerzone.
-Danerzone should install the container image successfully.
+Dangerzone should install the container image successfully.
 
 #### 4. Dangerzone retains the settings of previous runs
 

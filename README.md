@@ -18,7 +18,7 @@ _Read more about Dangerzone in the [official site](https://dangerzone.rocks/abou
 
 You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`
 
-> **Note**: you willl also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+> **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 > This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
 > create the secure environment.
 

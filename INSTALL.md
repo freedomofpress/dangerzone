@@ -155,7 +155,7 @@ Overview of the qubes you'll create:
 
 | qube         |   type   | purpose |
 |--------------|----------|---------|
-| dz-dvm       | app qube | offline diposable template for performing conversions |
+| dz-dvm       | app qube | offline disposable template for performing conversions |
 
 #### In `dom0`:
 

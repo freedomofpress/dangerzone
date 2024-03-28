@@ -214,12 +214,15 @@ class IsolationProvider(ABC):
             n_pages = read_int(p.stdout)
             if n_pages == 0 or n_pages > errors.MAX_PAGES:
                 raise errors.MaxPagesException()
-            step = 100 / n_pages / 2
+            step = 100 / n_pages
 
             safe_doc = fitz.Document()
 
             for page in range(1, n_pages + 1):
-                text = f"Converting page {page}/{n_pages} to pixels"
+                searchable = "searchable " if ocr_lang else ""
+                text = (
+                    f"Converting page {page}/{n_pages} from pixels to {searchable}PDF"
+                )
                 percentage += step
                 self.print_progress(document, False, text, percentage)
 
@@ -236,15 +239,7 @@ class IsolationProvider(ABC):
                     num_pixels,
                 )
 
-                if ocr_lang:
-                    text = (
-                        f"Converting page {page}/{n_pages} from pixels to"
-                        " searchable PDF"
-                    )
-                else:
-                    text = f"Converting page {page}/{n_pages} from pixels to PDF"
                 percentage += step
-                self.print_progress(document, False, text, percentage)
 
                 page_pdf = self.pixels_to_pdf_page(
                     untrusted_pixels,

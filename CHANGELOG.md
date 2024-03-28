@@ -7,6 +7,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Unreleased
 
+### Added
+- Drag and drop functionality ([issue #409](https://github.com/freedomofpress/dangerzone/issues/409))
+
+
 ## Dangerzone 0.6.0
 
 ### Added

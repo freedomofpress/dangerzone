@@ -68,11 +68,6 @@ class Dummy(IsolationProvider):
         if document.archive_after_conversion:
             document.archive()
 
-    def pixels_to_pdf(
-        self, document: Document, tempdir: str, ocr_lang: Optional[str]
-    ) -> None:
-        pass
-
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
         dummy_cmd = ["python3", "-c", "print('The cake is a lie')"]
         return subprocess.Popen(

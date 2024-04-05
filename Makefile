@@ -61,7 +61,7 @@ test-large-init: test-large-requirements
 	cd $(LARGE_TEST_REPO_DIR) && $(MAKE) clone-docs
 
 TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC).junit.xml
-.PHONY: tests-large
+.PHONY: test-large
 test-large: test-large-init  ## Run large test set
 	python -m pytest --tb=no tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)
 	python $(TEST_LARGE_RESULTS)/report.py $(TEST_LARGE_RESULTS)

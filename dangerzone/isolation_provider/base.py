@@ -22,6 +22,7 @@ DOC_TO_PIXELS_LOG_END = "----- DOC TO PIXELS LOG END -----"
 PIXELS_TO_PDF_LOG_START = "----- PIXELS TO PDF LOG START -----"
 PIXELS_TO_PDF_LOG_END = "----- PIXELS TO PDF LOG END -----"
 
+TIMEOUT_EXCEPTION = 15
 
 def read_bytes(f: IO[bytes], size: int, exact: bool = True) -> bytes:
     """Read bytes from a file-like object."""
@@ -174,9 +175,23 @@ class IsolationProvider(ABC):
         if self.progress_callback:
             self.progress_callback(error, text, percentage)
 
-    def get_proc_exception(self, p: subprocess.Popen) -> Exception:
+    def get_proc_exception(
+        self, p: subprocess.Popen, timeout: int = TIMEOUT_EXCEPTION
+    ) -> Exception:
         """Returns an exception associated with a process exit code"""
-        error_code = p.wait(3)
+        try:
+            error_code = p.wait(timeout)
+        except subprocess.TimeoutExpired:
+            return errors.UnexpectedConversionError(
+                "Encountered an I/O error during document to pixels conversion,"
+                f" but the conversion process is still running after {timeout} seconds"
+                f" (PID: {p.pid})"
+            )
+        except Exception:
+            return errors.UnexpectedConversionError(
+                "Encountered an I/O error during document to pixels conversion,"
+                f" but the status of the conversion process is unknown (PID: {p.pid})"
+            )
         return errors.exception_from_error_code(error_code)
 
     @abstractmethod

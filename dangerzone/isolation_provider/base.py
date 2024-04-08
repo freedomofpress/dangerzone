@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import os
 import subprocess
@@ -5,7 +6,7 @@ import sys
 import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import IO, Callable, Optional
+from typing import IO, Callable, Iterator, Optional
 
 from colorama import Fore, Style
 
@@ -23,6 +24,9 @@ PIXELS_TO_PDF_LOG_START = "----- PIXELS TO PDF LOG START -----"
 PIXELS_TO_PDF_LOG_END = "----- PIXELS TO PDF LOG END -----"
 
 TIMEOUT_EXCEPTION = 15
+TIMEOUT_GRACE = 15
+TIMEOUT_FORCE = 5
+
 
 def read_bytes(f: IO[bytes], size: int, exact: bool = True) -> bytes:
     """Read bytes from a file-like object."""
@@ -70,20 +74,14 @@ class IsolationProvider(ABC):
         self.progress_callback = progress_callback
         document.mark_as_converting()
         try:
-            conversion_proc = self.start_doc_to_pixels_proc(document)
             with tempfile.TemporaryDirectory() as t:
                 Path(f"{t}/pixels").mkdir()
-                self.doc_to_pixels(document, t, conversion_proc)
-                conversion_proc.wait(3)
-                # TODO: validate convert to pixels output
+                with self.doc_to_pixels_proc(document) as conversion_proc:
+                    self.doc_to_pixels(document, t, conversion_proc)
                 self.pixels_to_pdf(document, t, ocr_lang)
             document.mark_as_safe()
             if document.archive_after_conversion:
                 document.archive()
-        except errors.ConverterProcException as e:
-            exception = self.get_proc_exception(conversion_proc)
-            self.print_progress(document, True, str(exception), 0)
-            document.mark_as_failed()
         except errors.ConversionException as e:
             self.print_progress(document, True, str(e), 0)
             document.mark_as_failed()
@@ -216,6 +214,66 @@ class IsolationProvider(ABC):
     ) -> None:
         """Terminate gracefully the process started for the doc-to-pixels phase."""
         pass
+
+    def ensure_stop_doc_to_pixels_proc(
+        self,
+        document: Document,
+        p: subprocess.Popen,
+        timeout_grace: int = TIMEOUT_GRACE,
+        timeout_force: int = TIMEOUT_FORCE,
+    ) -> None:
+        """Stop the conversion process, or ensure it has exited.
+
+        This method should be called when we want to verify that the doc-to-pixels
+        process has exited, or terminate it ourselves. The termination should happen as
+        gracefully as possible, and we should not block indefinitely until the process
+        has exited.
+        """
+        # Check if the process completed.
+        ret = p.poll()
+        if ret is not None:
+            return
+
+        # At this point, the process is still running. This may be benign, as we haven't
+        # waited for it yet. Terminate it gracefully.
+        self.terminate_doc_to_pixels_proc(document, p)
+        try:
+            p.wait(timeout_grace)
+        except subprocess.TimeoutExpired:
+            log.warning(
+                f"Conversion process did not terminate gracefully after {timeout_grace}"
+                " seconds. Killing it forcefully..."
+            )
+
+            # Forcefully kill the running process.
+            p.kill()
+            try:
+                p.wait(timeout_force)
+            except subprocess.TimeoutExpired:
+                log.warning(
+                    "Conversion process did not terminate forcefully after"
+                    f" {timeout_force} seconds. Resources may linger..."
+                )
+
+    @contextlib.contextmanager
+    def doc_to_pixels_proc(
+        self,
+        document: Document,
+        timeout_exception: int = TIMEOUT_EXCEPTION,
+        timeout_grace: int = TIMEOUT_GRACE,
+        timeout_force: int = TIMEOUT_FORCE,
+    ) -> Iterator[subprocess.Popen]:
+        """Start a conversion process, pass it to the caller, and then clean it up."""
+        p = self.start_doc_to_pixels_proc(document)
+        try:
+            yield p
+        except errors.ConverterProcException as e:
+            exception = self.get_proc_exception(p, timeout_exception)
+            raise exception from e
+        finally:
+            self.ensure_stop_doc_to_pixels_proc(
+                document, p, timeout_grace=timeout_grace, timeout_force=timeout_force
+            )
 
 
 # From global_common:

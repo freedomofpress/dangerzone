@@ -10,7 +10,7 @@ jobs:
   windows:
     runs-on: windows-latest
     env:
-      DUMMY_CONVERSION: True
+      DUMMY_CONVERSION: 1
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -31,7 +31,7 @@ jobs:
   macOS:
     runs-on: macos-latest
     env:
-      DUMMY_CONVERSION: True
+      DUMMY_CONVERSION: 1
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4

@@ -77,5 +77,10 @@ class Dummy(IsolationProvider):
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
         return subprocess.Popen("True")
 
+    def terminate_doc_to_pixels_proc(
+        self, document: Document, p: subprocess.Popen
+    ) -> None:
+        pass
+
     def get_max_parallel_conversions(self) -> int:
         return 1

@@ -215,6 +215,28 @@ class Container(IsolationProvider):
         args = [container_runtime] + args
         return self.exec(args)
 
+    def kill_container(self, name: str) -> None:
+        """Terminate a spawned container.
+
+        We choose to terminate spawned containers using the `kill` action that the
+        container runtime provides, instead of terminating the process that spawned
+        them. The reason is that this process is not always tied to the underlying
+        container. For instance, in Docker containers, this process is actually
+        connected to the Docker daemon, and killing it will just close the associated
+        standard streams.
+        """
+        container_runtime = self.get_runtime()
+        cmd = [container_runtime, "kill", name]
+        try:
+            subprocess.run(cmd, capture_output=True, check=True)
+        except subprocess.CalledProcessError as e:
+            log.warning(f"Failed to kill container {name}: {str(e)}")
+            log.warning(f"Output from the kill command: {e.output}")
+        except Exception as e:
+            log.exception(
+                f"Unexpected error occurred while killing container {name}: {str(e)}"
+            )
+
     def pixels_to_pdf(
         self, document: Document, tempdir: str, ocr_lang: Optional[str]
     ) -> None:
@@ -272,6 +294,11 @@ class Container(IsolationProvider):
         ]
         name = self.doc_to_pixels_container_name(document)
         return self.exec_container(command, name=name)
+
+    def terminate_doc_to_pixels_proc(
+        self, document: Document, p: subprocess.Popen
+    ) -> None:
+        self.kill_container(self.doc_to_pixels_container_name(document))
 
     def get_max_parallel_conversions(self) -> int:
         # FIXME hardcoded 1 until length conversions are better handled

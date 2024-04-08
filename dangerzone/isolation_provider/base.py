@@ -195,6 +195,13 @@ class IsolationProvider(ABC):
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
         pass
 
+    @abstractmethod
+    def terminate_doc_to_pixels_proc(
+        self, document: Document, p: subprocess.Popen
+    ) -> None:
+        """Terminate gracefully the process started for the doc-to-pixels phase."""
+        pass
+
 
 # From global_common:
 

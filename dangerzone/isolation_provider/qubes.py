@@ -77,6 +77,32 @@ class Qubes(IsolationProvider):
 
         return p
 
+    def terminate_doc_to_pixels_proc(
+        self, document: Document, p: subprocess.Popen
+    ) -> None:
+        """Terminate a spawned disposable qube.
+
+        Qubes does not offer a way out of the box to terminate disposable Qubes from
+        domU [1]. Our best bet is to close the standard streams of the process, and hope
+        that the disposable qube will attempt to read/write to them, and thus receive an
+        EOF.
+
+        There are two ways we can do the above; close the standard streams explicitly,
+        or terminate the process. The problem with the latter is that terminating
+        `qrexec-client-vm` happens immediately, and we no longer have a way to learn if
+        the disposable qube actually terminated. That's why we prefer closing the
+        standard streams explicitly, so that we can afterwards use `Popen.wait()` to
+        learn if the qube terminated.
+
+        [1]: https://github.com/freedomofpress/dangerzone/issues/563#issuecomment-2034803232
+        """
+        if p.stdin:
+            p.stdin.close()
+        if p.stdout:
+            p.stdout.close()
+        if p.stderr:
+            p.stderr.close()
+
     def teleport_dz_module(self, wpipe: IO[bytes]) -> None:
         """Send the dangerzone module to another qube, as a zipfile."""
         # Grab the absolute file path of the dangerzone module.

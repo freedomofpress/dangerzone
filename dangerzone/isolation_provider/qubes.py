@@ -51,7 +51,7 @@ class Qubes(IsolationProvider):
     def get_max_parallel_conversions(self) -> int:
         return 1
 
-    def start_doc_to_pixels_proc(self) -> subprocess.Popen:
+    def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
         dev_mode = getattr(sys, "dangerzone_dev", False) == True
         if dev_mode:
             # Use dz.ConvertDev RPC call instead, if we are in development mode.

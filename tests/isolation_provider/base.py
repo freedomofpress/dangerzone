@@ -37,7 +37,7 @@ class IsolationProviderTest:
         provider.progress_callback = mocker.MagicMock()
         doc = Document(pdf_11k_pages)
 
-        p = provider.start_doc_to_pixels_proc()
+        p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.ConverterProcException):
             provider.doc_to_pixels(doc, tmpdir, p)
             assert provider.get_proc_exception(p) == errors.MaxPagesException
@@ -54,7 +54,7 @@ class IsolationProviderTest:
             "dangerzone.conversion.errors.MAX_PAGES", 1
         )  # sample_doc has 4 pages > 1
         doc = Document(sample_doc)
-        p = provider.start_doc_to_pixels_proc()
+        p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.MaxPagesException):
             provider.doc_to_pixels(doc, tmpdir, p)
 
@@ -67,10 +67,12 @@ class IsolationProviderTest:
         tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
-        p = provider.start_doc_to_pixels_proc()
+        doc = Document(sample_bad_width)
+        p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.MaxPageWidthException):
-            provider.doc_to_pixels(Document(sample_bad_width), tmpdir, p)
+            provider.doc_to_pixels(doc, tmpdir, p)
 
-        p = provider.start_doc_to_pixels_proc()
+        doc = Document(sample_bad_height)
+        p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.MaxPageHeightException):
-            provider.doc_to_pixels(Document(sample_bad_height), tmpdir, p)
+            provider.doc_to_pixels(doc, tmpdir, p)

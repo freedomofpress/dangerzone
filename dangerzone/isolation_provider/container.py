@@ -251,7 +251,7 @@ class Container(IsolationProvider):
             )
             shutil.move(container_output_filename, document.output_filename)
 
-    def start_doc_to_pixels_proc(self) -> subprocess.Popen:
+    def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
         # Convert document to pixels
         command = [
             "/usr/bin/python3",

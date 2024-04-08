@@ -69,7 +69,7 @@ class IsolationProvider(ABC):
         self.progress_callback = progress_callback
         document.mark_as_converting()
         try:
-            conversion_proc = self.start_doc_to_pixels_proc()
+            conversion_proc = self.start_doc_to_pixels_proc(document)
             with tempfile.TemporaryDirectory() as t:
                 Path(f"{t}/pixels").mkdir()
                 self.doc_to_pixels(document, t, conversion_proc)
@@ -192,7 +192,7 @@ class IsolationProvider(ABC):
         return armor_start + conversion_string + armor_end
 
     @abstractmethod
-    def start_doc_to_pixels_proc(self) -> subprocess.Popen:
+    def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
         pass
 
 

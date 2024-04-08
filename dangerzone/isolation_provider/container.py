@@ -129,6 +129,14 @@ class Container(IsolationProvider):
 
         return installed
 
+    def doc_to_pixels_container_name(self, document: Document) -> str:
+        """Unique container name for the doc-to-pixels phase."""
+        return f"dangerzone-doc-to-pixels-{document.id}"
+
+    def pixels_to_pdf_container_name(self, document: Document) -> str:
+        """Unique container name for the pixels-to-pdf phase."""
+        return f"dangerzone-pixels-to-pdf-{document.id}"
+
     def assert_field_type(self, val: Any, _type: object) -> None:
         # XXX: Use a stricter check than isinstance because `bool` is a subclass of
         # `int`.
@@ -172,6 +180,7 @@ class Container(IsolationProvider):
     def exec_container(
         self,
         command: List[str],
+        name: str,
         extra_args: List[str] = [],
     ) -> subprocess.Popen:
         container_runtime = self.get_runtime()
@@ -187,6 +196,7 @@ class Container(IsolationProvider):
         security_args += ["--cap-drop", "all"]
         user_args = ["-u", "dangerzone"]
         enable_stdin = ["-i"]
+        set_name = ["--name", name]
 
         prevent_leakage_args = ["--rm"]
 
@@ -196,6 +206,7 @@ class Container(IsolationProvider):
             + security_args
             + prevent_leakage_args
             + enable_stdin
+            + set_name
             + extra_args
             + [self.CONTAINER_NAME]
             + command
@@ -222,7 +233,8 @@ class Container(IsolationProvider):
             f"OCR_LANGUAGE={ocr_lang}",
         ]
 
-        pixels_to_pdf_proc = self.exec_container(command, extra_args)
+        name = self.pixels_to_pdf_container_name(document)
+        pixels_to_pdf_proc = self.exec_container(command, name, extra_args)
         if pixels_to_pdf_proc.stdout:
             for line in pixels_to_pdf_proc.stdout:
                 self.parse_progress_trusted(document, line.decode())
@@ -258,7 +270,8 @@ class Container(IsolationProvider):
             "-m",
             "dangerzone.conversion.doc_to_pixels",
         ]
-        return self.exec_container(command)
+        name = self.doc_to_pixels_container_name(document)
+        return self.exec_container(command, name=name)
 
     def get_max_parallel_conversions(self) -> int:
         # FIXME hardcoded 1 until length conversions are better handled

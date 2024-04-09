@@ -902,6 +902,11 @@ class QAUbuntu2310(QADebianBased):
     VERSION = "23.10"
 
 
+class QAUbuntu2404(QADebianBased):
+    DISTRO = "ubuntu"
+    VERSION = "24.04"
+
+
 class QAFedora(QALinux):
     """Base class for Fedora distros.
 
@@ -917,6 +922,10 @@ class QAFedora(QALinux):
         self.container_run(
             "./dangerzone/install/linux/build-rpm.py",
         )
+
+
+class QAFedora40(QAFedora):
+    VERSION = "40"
 
 
 class QAFedora39(QAFedora):

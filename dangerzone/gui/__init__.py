@@ -56,6 +56,21 @@ class Application(QtWidgets.QApplication):
         with open(get_resource_path("dangerzone.css"), "r") as f:
             style = f.read()
         self.setStyleSheet(style)
+
+        # Needed under certain windowing systems to match the application to the
+        # desktop entry in order to display the correct application name and icon
+        # and to allow identifying windows that belong to the application (e.g.
+        # under Wayland it sets the correct app ID). The value is the name of the
+        # Dangerzone .desktop file.
+        self.setDesktopFileName("press.freedom.dangerzone")
+
+        # In some combinations of window managers and OSes, if we don't set an
+        # application name, then the window manager may report it as `python3` or
+        # `__init__.py`. Always set this to `dangerzone`, which corresponds to the
+        # executable name as well.
+        # See: https://github.com/freedomofpress/dangerzone/issues/402
+        self.setApplicationName("dangerzone")
+
         self.original_event = self.event
 
         def monkeypatch_event(arg__1: QtCore.QEvent) -> bool:

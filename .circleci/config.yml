@@ -165,6 +165,33 @@ jobs:
           command: |
             poetry run make test
 
+  ci-ubuntu-noble:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - run: *calculate-cache-key
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro ubuntu --version 24.04 build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro ubuntu --version 24.04 run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
   ci-ubuntu-mantic:
     machine:
       image: ubuntu-2004:202111-01
@@ -414,6 +441,18 @@ jobs:
             ./dev_scripts/env.py --distro debian --version bullseye run --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
+  build-ubuntu-noble:
+    docker:
+      - image: ubuntu:24.04
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-deb
+      - checkout
+      - run: *calculate-cache-key
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-deb
+
   build-ubuntu-mantic:
     docker:
       - image: ubuntu:23.10
@@ -524,6 +563,9 @@ workflows:
       - convert-test-docs:
           requires:
             - build-container-image
+      - ci-ubuntu-noble:
+          requires:
+            - build-container-image
       - ci-ubuntu-mantic:
           requires:
             - build-container-image
@@ -548,6 +590,13 @@ workflows:
       - ci-fedora-38:
           requires:
             - build-container-image
+      # FIXME: Currently disabled because `stdeb` does not work with Python
+      # 3.12, which is the default in Ubuntu Noble. See also:
+      # https://github.com/freedomofpress/dangerzone/issues/773
+      #
+      #- build-ubuntu-noble:
+      #    requires:
+      #      - build-container-image
       - build-ubuntu-mantic:
           requires:
             - build-container-image

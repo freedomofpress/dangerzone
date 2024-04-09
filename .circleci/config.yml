@@ -273,6 +273,33 @@ jobs:
             ./dev_scripts/env.py --distro ubuntu --version 20.04 run --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
+  ci-fedora-40:
+    machine:
+      image: ubuntu-2004:202111-01
+    steps:
+      - checkout
+      - run: *install-podman
+
+      - run:
+          name: Prepare cache directory
+          command: |
+            sudo mkdir -p /caches
+            sudo chown -R $USER:$USER /caches
+      - run: *calculate-cache-key
+      - restore_cache: *restore-cache
+      - run: *copy-image
+
+      - run:
+          name: Prepare Dangerzone environment
+          command: |
+            ./dev_scripts/env.py --distro fedora --version 40 build-dev
+
+      - run:
+          name: Run CI tests
+          command: |
+            ./dev_scripts/env.py --distro fedora --version 40 run --dev \
+                bash -c 'cd dangerzone; poetry run make test'
+
   ci-fedora-39:
     machine:
       image: ubuntu-2004:202111-01
@@ -526,6 +553,19 @@ jobs:
       - run: *copy-image
       - run: *build-deb
 
+  build-fedora-40:
+    docker:
+      - image: fedora:40
+    resource_class: medium+
+    steps:
+      - run: *install-dependencies-rpm
+      - checkout
+      - run: *calculate-cache-key
+      - restore_cache: *restore-cache
+      - run: *copy-image
+      - run: *build-rpm
+      - run: *build-rpm-qubes
+
   build-fedora-39:
     docker:
       - image: fedora:39
@@ -584,6 +624,9 @@ workflows:
       - ci-debian-bullseye:
           requires:
             - build-container-image
+      - ci-fedora-40:
+          requires:
+            - build-container-image
       - ci-fedora-39:
           requires:
             - build-container-image
@@ -613,6 +656,9 @@ workflows:
           requires:
             - build-container-image
       - build-debian-bookworm:
+          requires:
+            - build-container-image
+      - build-fedora-40:
           requires:
             - build-container-image
       - build-fedora-39:

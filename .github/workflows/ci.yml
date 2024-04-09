@@ -95,6 +95,9 @@ jobs:
           - target: ubuntu-23.10
             distro: ubuntu
             version: "23.10"
+          - target: ubuntu-24.04
+            distro: ubuntu
+            version: "24.04"
           - target: debian-bullseye
             distro: debian
             version: bullseye
@@ -169,6 +172,7 @@ jobs:
         include:
           - version: "38"
           - version: "39"
+          - version: "40"
     steps:
       - name: Checkout
         uses: actions/checkout@v4

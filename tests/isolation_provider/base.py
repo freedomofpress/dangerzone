@@ -20,6 +20,8 @@ from .. import (
     uncommon_text,
 )
 
+TIMEOUT_STARTUP = 60  # Timeout in seconds until the conversion sandbox starts.
+
 
 @pytest.mark.skipif(
     os.environ.get("DUMMY_CONVERSION", False),
@@ -76,3 +78,179 @@ class IsolationProviderTest:
         p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.MaxPageHeightException):
             provider.doc_to_pixels(doc, tmpdir, p)
+
+
+class IsolationProviderTermination:
+    """Test various termination-related scenarios.
+
+    Test how the isolation provider code handles various uncommon scenarios, where the
+    conversion process may still linger:
+    1. Successfully completed conversions
+    2. Successful conversions that linger for a little longer.
+    3. Successful conversions that linger and must be killed.
+    4. Successful conversions that linger and cannot be killed.
+    5. Failed conversions that have completed.
+    6. Failed conversions that still linger.
+    """
+
+    def test_completed(
+        self,
+        provider_wait: base.IsolationProvider,
+        mocker: MockerFixture,
+    ) -> None:
+        # Check that we don't need to terminate any process, if the conversion completes
+        # successfully.
+        doc = Document()
+        provider_wait.progress_callback = mocker.MagicMock()
+        get_proc_exception_spy = mocker.spy(provider_wait, "get_proc_exception")
+        terminate_proc_spy = mocker.spy(provider_wait, "terminate_doc_to_pixels_proc")
+        popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
+
+        with provider_wait.doc_to_pixels_proc(doc) as proc:
+            assert proc.stdin
+            proc.stdin.close()
+            proc.wait(TIMEOUT_STARTUP)
+
+        get_proc_exception_spy.assert_not_called()
+        terminate_proc_spy.assert_not_called()
+        popen_kill_spy.assert_not_called()
+        assert proc.poll() is not None
+
+    def test_linger_terminate(
+        self,
+        provider_wait: base.IsolationProvider,
+        mocker: MockerFixture,
+    ) -> None:
+        # Check that successful conversions that linger for a little while are
+        # terminated gracefully.
+        doc = Document()
+        provider_wait.progress_callback = mocker.MagicMock()
+        get_proc_exception_spy = mocker.spy(provider_wait, "get_proc_exception")
+        terminate_proc_spy = mocker.spy(provider_wait, "terminate_doc_to_pixels_proc")
+        popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
+
+        with provider_wait.doc_to_pixels_proc(doc) as proc:
+            # We purposefully do nothing here, so that the process remains running.
+            pass
+
+        get_proc_exception_spy.assert_not_called()
+        terminate_proc_spy.assert_called()
+        popen_kill_spy.assert_not_called()
+        assert proc.poll() is not None
+
+    def test_linger_kill(
+        self,
+        provider_wait: base.IsolationProvider,
+        mocker: MockerFixture,
+    ) -> None:
+        # Check that successful conversions that cannot be terminated gracefully, are
+        # killed forcefully.
+        doc = Document()
+        get_proc_exception_spy = mocker.spy(provider_wait, "get_proc_exception")
+        # We mock the terminate_doc_to_pixels_proc() method, so that the process must be
+        # killed.
+        terminate_proc_mock = mocker.patch.object(
+            provider_wait, "terminate_doc_to_pixels_proc", return_value=None
+        )
+        popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
+
+        with provider_wait.doc_to_pixels_proc(doc, timeout_grace=0) as proc:
+            pass
+
+        get_proc_exception_spy.assert_not_called()
+        terminate_proc_mock.assert_called()
+        popen_kill_spy.assert_called()
+        assert proc.poll() is not None
+
+    def test_linger_unkillable(
+        self,
+        provider_wait: base.IsolationProvider,
+        mocker: MockerFixture,
+    ) -> None:
+        # Check that if a conversion process cannot be killed, at least it will not
+        # block the operation.
+        doc = Document()
+        get_proc_exception_spy = mocker.spy(provider_wait, "get_proc_exception")
+        # We mock both the terminate_doc_to_pixels_proc() method, and our kill
+        # invocation, so that the process will seem as unkillable.
+        terminate_proc_orig = provider_wait.terminate_doc_to_pixels_proc
+        terminate_proc_mock = mocker.patch.object(
+            provider_wait, "terminate_doc_to_pixels_proc", return_value=None
+        )
+        popen_kill_mock = mocker.patch.object(
+            subprocess.Popen, "kill", return_value=None
+        )
+
+        with provider_wait.doc_to_pixels_proc(
+            doc, timeout_grace=0, timeout_force=0
+        ) as proc:
+            pass
+
+        get_proc_exception_spy.assert_not_called()
+        terminate_proc_mock.assert_called()
+        popen_kill_mock.assert_called()
+        assert proc.poll() is None
+
+        # Reset the function to the original state.
+        provider_wait.terminate_doc_to_pixels_proc = terminate_proc_orig  # type: ignore [method-assign]
+
+        # Really kill the spawned process, so that it doesn't linger after the tests
+        # complete.
+        provider_wait.ensure_stop_doc_to_pixels_proc(doc, proc)
+        assert proc.poll() is not None
+
+    def test_failed(
+        self,
+        provider_wait: base.IsolationProvider,
+        mocker: MockerFixture,
+    ) -> None:
+        # Check that we don't need to terminate any process, if the conversion fails.
+        # However, we should be able to get the return code.
+        doc = Document()
+        provider_wait.progress_callback = mocker.MagicMock()
+        get_proc_exception_spy = mocker.spy(provider_wait, "get_proc_exception")
+        terminate_proc_spy = mocker.spy(provider_wait, "terminate_doc_to_pixels_proc")
+        popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
+
+        with pytest.raises(errors.DocFormatUnsupported):
+            with provider_wait.doc_to_pixels_proc(doc, timeout_exception=0) as proc:
+                assert proc.stdin
+                # Sending an invalid file to the conversion process should report it as
+                # an unsupported format.
+                proc.stdin.write(b"A" * 9)
+                proc.stdin.close()
+                proc.wait(TIMEOUT_STARTUP)
+                raise errors.ConverterProcException
+
+        get_proc_exception_spy.assert_called()
+        assert isinstance(
+            get_proc_exception_spy.spy_return, errors.DocFormatUnsupported
+        )
+        terminate_proc_spy.assert_not_called()
+        popen_kill_spy.assert_not_called()
+        assert proc.poll() is not None
+
+    def test_failed_linger(
+        self,
+        provider_wait: base.IsolationProvider,
+        mocker: MockerFixture,
+    ) -> None:
+        # Check that if the failed process has not exited, the error code that will be
+        # returned is UnexpectedExceptionError.
+        doc = Document()
+        provider_wait.progress_callback = mocker.MagicMock()
+        get_proc_exception_spy = mocker.spy(provider_wait, "get_proc_exception")
+        terminate_proc_spy = mocker.spy(provider_wait, "terminate_doc_to_pixels_proc")
+        popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
+
+        with pytest.raises(errors.UnexpectedConversionError):
+            with provider_wait.doc_to_pixels_proc(doc, timeout_exception=0) as proc:
+                raise errors.ConverterProcException
+
+        get_proc_exception_spy.assert_called()
+        assert isinstance(
+            get_proc_exception_spy.spy_return, errors.UnexpectedConversionError
+        )
+        terminate_proc_spy.assert_called()
+        popen_kill_spy.assert_not_called()
+        assert proc.poll() is not None

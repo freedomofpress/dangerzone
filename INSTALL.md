@@ -9,12 +9,14 @@ On Linux, Dangerzone uses [Podman](https://podman.io/) instead of Docker Desktop
 an isolated environment. It will be installed automatically when installing Dangerzone.
 
 Dangerzone is available for:
+- Ubuntu 24.04 (noble)
 - Ubuntu 23.10 (mantic)
 - Ubuntu 22.04 (jammy)
 - Ubuntu 20.04 (focal)
 - Debian 13 (trixie)
 - Debian 12 (bookworm)
 - Debian 11 (bullseye)
+- Fedora 40
 - Fedora 39
 - Fedora 38
 - Qubes OS (beta support)

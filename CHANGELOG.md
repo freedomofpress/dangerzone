@@ -7,6 +7,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Unreleased
 
+### Added
+
+- Platform support: Ubuntu 24.04 and Fedora 40 ([issue #762](https://github.com/freedomofpress/dangerzone/issues/762))
+
 ## Dangerzone 0.6.0
 
 ### Added

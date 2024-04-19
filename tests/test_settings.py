@@ -74,12 +74,13 @@ def test_new_default_setting(tmp_path: Path, mocker: MockerFixture) -> None:
     settings.save()
 
     # Ensure new default setting is imported into settings
-    with mocker.patch(
+    mocker.patch(
         "dangerzone.settings.Settings.generate_default_settings",
         return_value={"mock_setting": 1},
-    ):
-        settings2 = Settings(dz_core)
-        assert settings2.get("mock_setting") == 1
+    )
+
+    settings2 = Settings(dz_core)
+    assert settings2.get("mock_setting") == 1
 
 
 def test_new_settings_added(tmp_path: Path, mocker: MockerFixture) -> None:

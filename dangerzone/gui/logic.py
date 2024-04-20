@@ -198,7 +198,7 @@ class Dialog(QtWidgets.QDialog):
         self.done(int(QtWidgets.QDialog.Rejected))
 
     def launch(self) -> int:
-        return self.exec_()
+        return self.exec()
 
 
 class Alert(Dialog):

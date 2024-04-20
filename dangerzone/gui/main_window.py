@@ -205,7 +205,7 @@ class MainWindow(QtWidgets.QMainWindow):
             ok_text="Ok",
             has_cancel=False,
         )
-        update_widget.exec_()
+        update_widget.launch()
 
     def show_update_error(self) -> None:
         """Inform the user about an error during update checks"""
@@ -226,7 +226,7 @@ class MainWindow(QtWidgets.QMainWindow):
             ok_text="Close",
             has_cancel=False,
         )
-        update_widget.exec_()
+        update_widget.launch()
 
     def toggle_updates_triggered(self) -> None:
         """Change the underlying update check settings based on the user's choice."""
@@ -320,7 +320,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 self.dangerzone.app.exit(0)
         else:
-            accept_exit = alert_widget.exec_()
+            accept_exit = alert_widget.launch()
             if not accept_exit:
                 e.ignore()
                 return
@@ -485,7 +485,7 @@ class ContentWidget(QtWidgets.QWidget):
                 self.dangerzone,
                 message="Dangerzone does not support adding documents after the conversion has started.",
                 has_cancel=False,
-            ).exec_()
+            ).launch()
             return
 
         # Ensure all files in batch are in the same directory
@@ -495,7 +495,7 @@ class ContentWidget(QtWidgets.QWidget):
                 self.dangerzone,
                 message="Dangerzone does not support adding documents from multiple locations.\n\n The newly added documents were ignored.",
                 has_cancel=False,
-            ).exec_()
+            ).launch()
             return
 
         # Clear previously selected documents
@@ -841,7 +841,7 @@ class SettingsWidget(QtWidgets.QWidget):
         dialog.setFileMode(QtWidgets.QFileDialog.Directory)
         dialog.setOption(QtWidgets.QFileDialog.ShowDirsOnly, True)
 
-        if dialog.exec_() == QtWidgets.QFileDialog.Accepted:
+        if dialog.exec() == QtWidgets.QFileDialog.Accepted:
             selected_dir = dialog.selectedFiles()[0]
             if selected_dir is not None:
                 self.dangerzone.output_dir = str(selected_dir)

@@ -57,6 +57,26 @@ Dangerzone is available for:
   </tr>
 </table>
 
+<table>
+  <tr>
+    <td>
+<details>
+  <summary><i>:information_source: Backport notice for Ubuntu 24.04 (Noble) users regarding the <code>conmon</code> package</i></summary>
+  </br>
+
+  The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug
+  that gets triggered by Dangerzone
+  (more details in https://github.com/freedomofpress/dangerzone/issues/685).
+  To fix this, we provide our own `conmon` package through our APT repo, which
+  was built with the following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
+  This package is essentially a backport of the `conmon` package
+  [provided](https://packages.debian.org/source/oldstable/conmon) by Debian
+  Bullseye.
+</details>
+    </td>
+  </tr>
+</table>
+
 Add our repository following these instructions:
 
 Download the GPG key for the repo:
@@ -109,6 +129,23 @@ sudo apt install -y dangerzone
 </table>
 
 ### Fedora
+
+<table>
+  <tr>
+    <td>
+<details>
+  <summary><i>:information_source: Backport notice for Fedora users regarding the <code>python3-pyside6</code> package</i></summary>
+  </br>
+
+  Fedora 39+ onwards does not provide official Python bindings for Qt. For
+  this reason, we provide our own `python3-pyside6` package (see
+  [build instructions](https://github.com/freedomofpress/maint-dangerzone-pyside6))
+  from our YUM repo. For a deeper dive on this subject, you may read
+  [this issue](https://github.com/freedomofpress/dangerzone/issues/211#issuecomment-1827777122).
+</details>
+    </td>
+  </tr>
+</table>
 
 Type the following commands in a terminal:
 

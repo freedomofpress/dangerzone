@@ -187,6 +187,9 @@ CONTENT_BUILD_DEBIAN_UBUNTU = r"""## Debian/Ubuntu
 
 Install dependencies:
 
+<table>
+  <tr>
+      <td>
 <details>
   <summary><i>:memo: Expand this section if you are on Ubuntu 22.04 (Jammy).</i></summary>
   </br>
@@ -203,10 +206,15 @@ Install dependencies:
   sudo cp ./dev_scripts/apt-tools-prod.pref /etc/apt/preferences.d/
   ```
 
+  The `conmon` package provided in the above repo was built with the
+  following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
   Alternatively, you can install a `conmon` version higher than `v2.0.25` from
   any repo you prefer.
 
 </details>
+    </td>
+  </tr>
+</table>
 
 ```sh
 sudo apt install -y podman dh-python build-essential fakeroot make libqt6gui6 \

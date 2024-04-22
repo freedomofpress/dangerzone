@@ -262,6 +262,7 @@ should point the user to the Qubes notifications in the top-right corner:
     https://developer.apple.com and login with the proper Apple ID.
 
 #### Releasing and Signing
+- [ ] Verify and install the latest supported Python version from [python.org](https://www.python.org/downloads/macos/)
 - [ ] Verify and checkout the git tag for this release
 - [ ] Run `poetry install`
 - [ ] Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`

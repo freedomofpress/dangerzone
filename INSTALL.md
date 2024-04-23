@@ -23,6 +23,9 @@ Dangerzone is available for:
 
 ### Ubuntu, Debian
 
+<table>
+  <tr>
+    <td>
 <details>
   <summary><i>:memo: Expand this section if you are on Ubuntu 20.04 (Focal).</i></summary>
   </br>
@@ -50,6 +53,9 @@ Dangerzone is available for:
   sudo apt-get install python-all -y
   ```
 </details>
+    </td>
+  </tr>
+</table>
 
 Add our repository following these instructions:
 
@@ -80,6 +86,9 @@ sudo apt update
 sudo apt install -y dangerzone
 ```
 
+<table>
+  <tr>
+    <td>
 <details>
   <summary><i>:memo: Expand this section for a security notice on third-party Debian repos</i></summary>
   </br>
@@ -95,6 +104,9 @@ sudo apt install -y dangerzone
   run as `root` during the installation phase, so they need to place some trust
   on our signed Debian packages. This holds for any third-party Debian repo.
 </details>
+    </td>
+  </tr>
+</table>
 
 ### Fedora
 
@@ -108,8 +120,12 @@ sudo dnf install dangerzone
 
 ##### Verifying Dangerzone GPG key
 
+<table>
+  <tr>
+    <td>
 <details>
 <summary>Importing GPG key 0x22604281: ... Is this ok [y/N]:</summary>
+</br>
 
 After some minutes of running the above command (depending on your internet speed) you'll be asked to confirm the fingerprint of our signing key. This is to make sure that in the case our servers are compromised your computer stays safe. It should look like this:
 
@@ -130,8 +146,10 @@ The `Fingerprint` should be `DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281`.
 
 After confirming that it matches, type `y` (for yes) and the installation should proceed.
 
-
 </details>
+    </td>
+  </tr>
+</table>
 
 ### Qubes OS
 

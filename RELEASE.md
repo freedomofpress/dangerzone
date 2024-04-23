@@ -395,6 +395,9 @@ repo.
 To publish the release:
 
 - [ ] Run container scan on the produced container images (some time may have passed since the artifacts were built)
+- [ ] Collect the assets in a single directory, calculate their SHA-256 hashes, and sign them.
+  * You can use `./dev_scripts/sign-assets.py`, if you want to automate this
+    task.
 - [ ] Create a new **draft** release on GitHub and upload the macOS and Windows installers.
   * Copy the release notes text from the template at [`docs/templates/release-notes`](https://github.com/freedomofpress/dangerzone/tree/main/docs/templates/)
   * You can use `./dev_scripts/upload-asset.py`, if you want to upload an asset
@@ -404,7 +407,8 @@ To publish the release:
   **Important:** Make sure that it's the same container image as the ones that
   are shipped in other platforms (see our [Pre-release](#Pre-release) section)
 
-- [ ] Update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers
+- [ ] Upload the detached signatures (.asc) and checksum file.
+- [ ] Update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers and signatures
 - [ ] Update the brew cask release of Dangerzone with a [PR like this one](https://github.com/Homebrew/homebrew-cask/pull/116319)
 - [ ] Update version and download links in `README.md`
 

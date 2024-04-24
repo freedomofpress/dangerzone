@@ -6,15 +6,15 @@ This section documents the release process. Unless you're a dangerzone developer
 
 Before making a release, all of these should be complete:
 
+- [ ] Copy the entirety of these instructions onto a new issue and call it **QA and Release version \<VERSION\>**
 - [ ] [Add new Linux platforms and remove obsolete ones](#add-new-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock`
 - [ ] [Check for new PySide6 versions](#check-for-new-pyside6-versions)
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
-- [ ] Update version and download links in `README.md`, and screenshot if necessary
+- [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
-- [ ] Copy the entirety of these instructions onto a new issue and call it **QA and Release version \<VERSION\>**
 - [ ] Create a PGP-signed git tag for the version, e.g. for dangerzone `v0.1.0`, the is created with:
 
   ```
@@ -23,7 +23,7 @@ Before making a release, all of these should be complete:
   ```
   **Note**: release candidates are suffixed by `-rcX`.
 
-## Add new platforms and remove obsolete ones
+## Add new Linux platforms and remove obsolete ones
 
 Our currently supported Linux OSes are Debian, Ubuntu, Fedora (we treat Qubes OS
 as a special case of Fedora, release-wise). For each of these platforms, we need
@@ -409,7 +409,7 @@ repo.
 To publish the release:
 
 - [ ] Run container scan on the produced container images (some time may have passed since the artifacts were built)
-- [ ] Create a new release on GitHub and upload the macOS and Windows installers.
+- [ ] Create a new **draft** release on GitHub and upload the macOS and Windows installers.
   * Copy the release notes text from the template at [`docs/templates/release-notes`](https://github.com/freedomofpress/dangerzone/tree/main/docs/templates/)
   * You can use `./dev_scripts/upload-asset.py`, if you want to upload an asset
     using an access token.
@@ -418,7 +418,11 @@ To publish the release:
   **Important:** Make sure that it's the same container image as the ones that
   are shipped in other platforms (see our [Pre-release](#Pre-release) section)
 
-- [ ] Update the [Installing Dangerzone](INSTALL.md) page
 - [ ] Update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers
 - [ ] Update the brew cask release of Dangerzone with a [PR like this one](https://github.com/Homebrew/homebrew-cask/pull/116319)
+- [ ] Update version and download links in `README.md`
+
+## Post-release
+
 - [ ] Toot release announcement on our mastodon account @dangerzone@fosstodon.org
+- [ ] Extend the `check_repos.yml` CI test for the newly added platforms

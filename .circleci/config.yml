@@ -86,7 +86,7 @@ jobs:
           command: |
             apt-get update
             apt-get install -y git make python3 python3-poetry --no-install-recommends
-            poetry install --no-ansi --only lint
+            poetry install --no-ansi --only lint,test
       - run:
           name: Run linters to enforce code style
           command: poetry run make lint

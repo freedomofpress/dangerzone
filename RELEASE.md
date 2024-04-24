@@ -9,7 +9,7 @@ Before making a release, all of these should be complete:
 - [ ] Copy the entirety of these instructions onto a new issue and call it **QA and Release version \<VERSION\>**
 - [ ] [Add new Linux platforms and remove obsolete ones](#add-new-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock`
-- [ ] [Check for new PySide6 versions](#check-for-new-pyside6-versions)
+- [ ] [Check for official PySide6 versions](#check-for-official-pyside6-versions)
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
@@ -50,29 +50,15 @@ In case of an EOL version:
    * Consult the previous paragraph, but also `grep` your way around.
 2. Add a notice in our `CHANGELOG.md` about the version removal.
 
-## Check for new PySide6 versions
+## Check for official PySide6 versions
 
-When a new PySide6 version has been released, we will get notified  because the
-nightly CI tests on `freedomofpres/python3-pyside6-rpm` will start failing.
+PySide6 6.7.0 is available from the Fedora Rawhide repo, and we expect that a
+similar version will be pushed soon to the rest of the stable releases. Prior to
+a release, we should check if this has happened already. Once this happens, we
+should update our CI tests accordingly, and remove this notice.
 
-Even if we miss these notifications, we will see failing builds in the
-Dangerzone repo once we update our `poetry.lock` file. More specifically,
-`./dev_scripts/env.py --distro fedora [...]  build` will start failing, because
-it won't be able to find a PySide6 RPM for the new version.
-
-The Dangerzone maintainer should do the following:
-
-1. Check the changelog for the new PySide6 version, and ensure it doesn't
-   introduce a breaking change.
-2. Clone locally the https://github.com/freedomofpress/python3-pyside6-rpm repo.
-3. Bump the PySide6 version and create a new PySide6 RPM for the supported
-   Fedora versions.
-4. Copy it under the `dist/` directory of the Dangerzone repo.
-5. Create an end-user build environment with `./dev_scripts/env.py --distro fedora [...]  build`
-6. Test that the Dangerzone UI works properly.
-7. Ship the new PySide6 RPMs in our Fedora repo
-   (https://github.com/freedomofpress/yum-tools-prod)
-8. Send a PR to the Dangerzone repo, with the new `poetry.lock` file.
+For more info, read:
+https://github.com/freedomofpress/maint-dangerzone-pyside6/issues/5
 
 ## Large Document Testing
 

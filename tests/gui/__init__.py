@@ -14,10 +14,10 @@ from dangerzone.isolation_provider.dummy import Dummy
 
 
 def get_qt_app() -> Application:
-    if Application.instance() is None:
+    if Application.instance() is None:  # type: ignore [call-arg]
         return Application()
     else:
-        return Application.instance()
+        return Application.instance()  # type: ignore [call-arg]
 
 
 def generate_isolated_updater(

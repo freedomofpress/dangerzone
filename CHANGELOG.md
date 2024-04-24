@@ -7,9 +7,21 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Unreleased
 
+## Dangerzone 0.6.1
+
 ### Added
 
 - Platform support: Ubuntu 24.04 and Fedora 40 ([issue #762](https://github.com/freedomofpress/dangerzone/issues/762))
+
+### Fixed
+
+- Make OCR work again in Qubes Fedora 38 templates ([issue #737](https://github.com/freedomofpress/dangerzone/issues/737))
+- Make .svg / .bmp files selectable when browsing files via the Dangerzone GUI ([#722](https://github.com/freedomofpress/dangerzone/pull/722))
+
+### Changed
+
+- Use the newest reimplementation of the PyMuPDF rendering enging (`fitz`) ([issue #700](https://github.com/freedomofpress/dangerzone/issues/700))
+- Development: Build Dangerzone using the latest Wix 3.14 release ([#746](https://github.com/freedomofpress/dangerzone/pull/746)
 
 ## Dangerzone 0.6.0
 

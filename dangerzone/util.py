@@ -3,6 +3,7 @@ import platform
 import string
 import subprocess
 import sys
+import unicodedata
 from typing import Optional
 
 import appdirs
@@ -67,8 +68,27 @@ def get_subprocess_startupinfo():  # type: ignore [no-untyped-def]
 
 def replace_control_chars(untrusted_str: str) -> str:
     """Remove control characters from string. Protects a terminal emulator
-    from obcure control characters"""
+    from obscure control characters.
+
+    Control characters are replaced by � U+FFFD Replacement Character.
+    """
+
+    def is_safe(chr: str) -> bool:
+        """Return whether Unicode character is safe to print in a terminal
+        emulator, based on its General Category.
+
+        The following General Category values are considered unsafe:
+
+        * C* - all control character categories (Cc, Cf, Cs, Co, Cn)
+        * Zl - U+2028 LINE SEPARATOR only
+        * Zp - U+2029 PARAGRAPH SEPARATOR only
+        """
+        categ = unicodedata.category(chr)
+        if categ.startswith("C") or categ in ("Zl", "Zp"):
+            return False
+        return True
+
     sanitized_str = ""
     for char in untrusted_str:
-        sanitized_str += char if char in string.printable else "_"
+        sanitized_str += char if is_safe(char) else "�"
     return sanitized_str

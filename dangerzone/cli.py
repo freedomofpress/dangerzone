@@ -11,7 +11,7 @@ from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
-from .util import get_version
+from .util import get_version, replace_control_chars
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -98,7 +98,7 @@ def cli_main(
     if documents_safe != []:
         print_header("Safe PDF(s) created successfully")
         for document in documents_safe:
-            click.echo(document.output_filename)
+            click.echo(replace_control_chars(document.output_filename))
 
         if archive:
             print_header(
@@ -108,7 +108,7 @@ def cli_main(
     if documents_failed != []:
         print_header("Failed to convert document(s)")
         for document in documents_failed:
-            click.echo(document.input_filename)
+            click.echo(replace_control_chars(document.input_filename))
         sys.exit(1)
     else:
         sys.exit(0)

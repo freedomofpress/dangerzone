@@ -4,6 +4,7 @@ import base64
 import contextlib
 import copy
 import os
+import platform
 import re
 import shutil
 import sys
@@ -21,7 +22,15 @@ from dangerzone.cli import cli_main, display_banner
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 
-from . import TestBase, for_each_doc, for_each_external_doc, sample_pdf
+from . import (
+    TestBase,
+    for_each_doc,
+    for_each_external_doc,
+    sample_bad_height,
+    sample_pdf,
+    uncommon_filename,
+    uncommon_text,
+)
 
 # TODO explore any symlink edge cases
 # TODO simulate ctrl-c, ctrl-d, SIGINT/SIGKILL/SIGTERM... (man 7 signal), etc?
@@ -212,9 +221,11 @@ class TestCliConversion(TestCliBasic):
         result = self.run_cli([sample_pdf, "--output-filename", output_filename])
         result.assert_success()
 
-    def test_output_filename_spaces(self, sample_pdf: str) -> None:
+    def test_output_filename_uncommon(
+        self, sample_pdf: str, uncommon_filename: str
+    ) -> None:
         temp_dir = tempfile.mkdtemp(prefix="dangerzone-")
-        output_filename = str(Path(temp_dir) / "safe space.pdf")
+        output_filename = str(Path(temp_dir) / uncommon_filename)
         result = self.run_cli([sample_pdf, "--output-filename", output_filename])
         result.assert_success()
 
@@ -228,6 +239,23 @@ class TestCliConversion(TestCliBasic):
         result = self.run_cli(input_filename)
         result.assert_failure()
 
+    @pytest.mark.skipif(
+        os.environ.get("DUMMY_CONVERSION", False),
+        reason="real conversion required to test conversion failure",
+    )
+    def test_failure_filename_uncommon(
+        self,
+        tmp_path: Path,
+        sample_bad_height: str,
+        uncommon_filename: str,
+    ) -> None:
+        """Ensure printing failed document path with uncommon Unicode chars works."""
+        doc_path = str(tmp_path / uncommon_filename)
+        shutil.copyfile(sample_bad_height, doc_path)
+        result = self.run_cli(doc_path)
+        result.assert_failure()
+        assert not isinstance(result.exception, UnicodeEncodeError)
+
     def test_lang_eng(self, sample_pdf: str) -> None:
         result = self.run_cli([sample_pdf, "--ocr-lang", "eng"])
         result.assert_success()
@@ -238,6 +266,13 @@ class TestCliConversion(TestCliBasic):
             "“Curly_Quotes”.pdf",  # issue 144
             "Оригинал.pdf",
             "spaces test.pdf",
+            pytest.param(
+                "surrogate_escape_\udcf0.pdf",  # issue 768
+                marks=pytest.mark.skipif(
+                    platform.system() == "Darwin",
+                    reason="filename not supported on macOS",
+                ),
+            ),
         ],
     )
     def test_filenames(self, filename: str, tmp_path: Path, sample_pdf: str) -> None:

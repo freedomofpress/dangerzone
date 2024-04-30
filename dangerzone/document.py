@@ -145,6 +145,8 @@ class Document:
         new_file_path = archive_dir / old_file_path.name
         log.debug(f"Archiving doc {self.id} to {new_file_path}")
         Path.mkdir(archive_dir, exist_ok=True)
+        # On Windows, moving the file will fail if it already exists.
+        new_file_path.unlink(missing_ok=True)
         old_file_path.rename(new_file_path)
 
     @property

@@ -97,24 +97,28 @@ def test_archive_unwriteable_dir(tmp_path: Path) -> None:
 
 
 def test_archive(mocker: MagicMock, tmp_path: Path) -> None:
-    test_string = "original file"
     original_doc_path = str(tmp_path / "doc.pdf")
     archived_doc_path = str(tmp_path / ARCHIVE_SUBDIR / "doc.pdf")
 
-    # write some content for later verifying content integrity
-    with open(original_doc_path, "w") as f:
-        f.write(test_string)
+    # Perform the archival operation two times: one with no archive dir, and one with an
+    # archive dir.
+    test_strings = ["original file 1", "original file 2"]
+    for test_string in test_strings:
+        # write some content for later verifying content integrity
+        with open(original_doc_path, "w") as f:
+            f.write(test_string)
 
-    d = Document(original_doc_path, archive=True)
-    d.archive()
+        # archive the document
+        d = Document(original_doc_path, archive=True)
+        d.archive()
 
-    # original document has been moved to unsafe/doc.pdf
-    assert not os.path.exists(original_doc_path)
-    assert os.path.exists(archived_doc_path)
+        # original document has been moved to unsafe/doc.pdf
+        assert not os.path.exists(original_doc_path)
+        assert os.path.exists(archived_doc_path)
 
-    # make sure it is the original file by comparing its content
-    with open(archived_doc_path) as f:
-        assert f.read() == test_string
+        # make sure it is the proper file by comparing its content
+        with open(archived_doc_path) as f:
+            assert f.read() == test_string
 
 
 def test_set_output_dir(sample_pdf: str, tmp_path: Path) -> None:

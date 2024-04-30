@@ -66,11 +66,14 @@ def get_subprocess_startupinfo():  # type: ignore [no-untyped-def]
         return None
 
 
-def replace_control_chars(untrusted_str: str) -> str:
+def replace_control_chars(untrusted_str: str, keep_newlines: bool = False) -> str:
     """Remove control characters from string. Protects a terminal emulator
     from obscure control characters.
 
     Control characters are replaced by � U+FFFD Replacement Character.
+
+    If a user wants to keep the newline character (e.g., because they are sanitizing a
+    multi-line text), they must pass `keep_newlines=True`.
     """
 
     def is_safe(chr: str) -> bool:
@@ -90,5 +93,8 @@ def replace_control_chars(untrusted_str: str) -> str:
 
     sanitized_str = ""
     for char in untrusted_str:
-        sanitized_str += char if is_safe(char) else "�"
+        if (keep_newlines and char == "\n") or is_safe(char):
+            sanitized_str += char
+        else:
+            sanitized_str += "�"
     return sanitized_str

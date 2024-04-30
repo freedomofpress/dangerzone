@@ -30,3 +30,8 @@ def test_replace_control_chars(uncommon_text: str, sanitized_text: str) -> None:
     assert util.replace_control_chars(uncommon_text) == sanitized_text
     assert util.replace_control_chars("normal text") == "normal text"
     assert util.replace_control_chars("") == ""
+    assert util.replace_control_chars("multi-line\ntext") == "multi-line�text"
+    assert (
+        util.replace_control_chars("multi-line\ntext", keep_newlines=True)
+        == "multi-line\ntext"
+    )

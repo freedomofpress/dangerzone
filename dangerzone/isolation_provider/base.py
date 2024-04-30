@@ -45,9 +45,9 @@ def read_int(f: IO[bytes]) -> int:
 
 
 def read_debug_text(f: IO[bytes], size: int) -> str:
-    """Read arbitrarily long text (for debug purposes)"""
+    """Read arbitrarily long text (for debug purposes), and sanitize it."""
     untrusted_text = f.read(size).decode("ascii", errors="replace")
-    return replace_control_chars(untrusted_text)
+    return replace_control_chars(untrusted_text, keep_newlines=True)
 
 
 class IsolationProvider(ABC):

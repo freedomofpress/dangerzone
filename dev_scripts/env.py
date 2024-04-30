@@ -608,6 +608,7 @@ class Env:
     ):
         """Build a Linux environment and install Dangerzone in it."""
         build_dir = distro_build(self.distro, self.version)
+        os.makedirs(build_dir, exist_ok=True)
         version = dz_version()
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_FEDORA_DEPS
@@ -671,8 +672,6 @@ class Env:
         if show_dockerfile:
             print(dockerfile)
             return
-
-        os.makedirs(build_dir, exist_ok=True)
 
         # Populate the build context.
         shutil.copy(package_src, package_dst)

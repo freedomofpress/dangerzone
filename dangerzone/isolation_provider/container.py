@@ -228,7 +228,12 @@ class Container(IsolationProvider):
         container_runtime = self.get_runtime()
         cmd = [container_runtime, "kill", name]
         try:
-            subprocess.run(cmd, capture_output=True, check=True)
+            subprocess.run(
+                cmd,
+                capture_output=True,
+                check=True,
+                startupinfo=get_subprocess_startupinfo(),
+            )
         except subprocess.CalledProcessError as e:
             log.warning(f"Failed to kill container {name}: {str(e)}")
             log.warning(f"Output from the kill command: {e.output}")

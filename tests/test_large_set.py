@@ -1,6 +1,7 @@
 import os
 import re
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import List
@@ -23,7 +24,7 @@ FORMATS_REGEX = (
 def ensure_test_data_exists() -> None:
     if len(os.listdir(test_docs_repo_dir)) == 0:
         print("Test data repository it empty. Skipping large tests.")
-        exit(1)
+        sys.exit(1)
 
 
 def get_test_docs(min_size: int, max_size: int) -> List[Path]:

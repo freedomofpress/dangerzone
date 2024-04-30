@@ -7,6 +7,7 @@ import itertools
 import os
 import shutil
 import subprocess
+import sys
 
 root = os.path.dirname(
     os.path.dirname(
@@ -69,7 +70,7 @@ def sign_app_bundle(build_path, dist_path, app_path):
     # Detect if create-dmg is installed
     if not os.path.exists(app_path):
         print(f"ERROR: Dangerzone.app not found in {app_path}.")
-        exit(1)
+        sys.exit(1)
 
     dmg_path = os.path.join(dist_path, "Dangerzone.dmg")
     icon_path = os.path.join(root, "install", "macos", "dangerzone.icns")

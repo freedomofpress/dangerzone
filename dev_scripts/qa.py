@@ -430,7 +430,7 @@ class Reference:
                 " to date with the respective doc section, and then update the cached"
                 " section in this file."
             )
-            exit(1)
+            sys.exit(1)
 
     def find_section_text(self, md_text):
         """Find a section's content in a provided Markdown string."""
@@ -978,7 +978,7 @@ def parse_args():
 
     if not args.check_refs and not args.platform:
         parser.print_help(sys.stderr)
-        exit(1)
+        sys.exit(1)
 
     return args
 

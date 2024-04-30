@@ -67,7 +67,7 @@ def cli_main(
         dangerzone.add_document_from_filename(filenames[0], output_filename, archive)
     elif len(filenames) > 1 and output_filename:
         click.echo("--output-filename can only be used with one input file.")
-        exit(1)
+        sys.exit(1)
     else:
         for filename in filenames:
             dangerzone.add_document_from_filename(filename, archive=archive)
@@ -83,7 +83,7 @@ def cli_main(
             click.echo("Invalid OCR language code. Valid language codes:")
             for lang in dangerzone.ocr_languages:
                 click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}")
-            exit(1)
+            sys.exit(1)
 
     # Ensure container is installed
     dangerzone.isolation_provider.install()

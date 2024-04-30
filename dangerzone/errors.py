@@ -107,6 +107,6 @@ def handle_document_errors(func: F) -> F:
                 msg = "An exception occured while validating a document"
                 log.exception(msg)
             click.echo(str(e))
-            exit(1)
+            sys.exit(1)
 
     return cast(F, wrapper)

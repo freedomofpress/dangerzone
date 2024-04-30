@@ -1,5 +1,6 @@
 import functools
 import os
+import sys
 from typing import List, Optional, Tuple
 
 import click
@@ -86,7 +87,7 @@ def check_suspicious_options(args: List[str]) -> None:
             f" current working directory: {filenames_str}"
         )
         click.echo(msg)
-        exit(1)
+        sys.exit(1)
 
 
 def override_parser_and_check_suspicious_options(click_main: click.Command) -> None:

@@ -10,6 +10,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 ### Fixed
 
 - Fix a deprecation warning in PySide6, thanks to [@naglis](https://github.com/naglis) ([issue #595](https://github.com/freedomofpress/dangerzone/issues/595))
+- Make update notifications work in systems with PySide2, thanks to [@naglis](https://github.com/naglis) ([issue #788](https://github.com/freedomofpress/dangerzone/issues/788))
 
 ## Dangerzone 0.6.1
 

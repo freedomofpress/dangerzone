@@ -14,11 +14,14 @@ from colorama import Fore, Style
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
+    from PySide2.QtWidgets import QAction
 else:
     try:
         from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
+        from PySide6.QtGui import QAction
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
+        from PySide2.QtWidgets import QAction
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
@@ -267,7 +270,7 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
             # FIXME: Add red bubble next to the text.
-            error_action = QtGui.QAction("Update error", hamburger_menu)  # type: ignore [attr-defined]
+            error_action = QAction("Update error", hamburger_menu)
             error_action.setIcon(
                 QtGui.QIcon(self.load_svg_image("hamburger_menu_update_dot_error.svg"))
             )
@@ -288,7 +291,7 @@ class MainWindow(QtWidgets.QMainWindow):
             )
 
             sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
-            success_action = QtGui.QAction("New version available", hamburger_menu)  # type: ignore [attr-defined]
+            success_action = QAction("New version available", hamburger_menu)
             success_action.setIcon(
                 QtGui.QIcon(
                     self.load_svg_image("hamburger_menu_update_dot_available.svg")

@@ -111,7 +111,7 @@ class DangerzoneGui(DangerzoneCore):
                             desktop_entry = DesktopEntry(full_filename)
                             if (
                                 "application/pdf" in desktop_entry.getMimeTypes()
-                                and desktop_entry.getName() != "dangerzone"
+                                and "dangerzone" not in desktop_entry.getName().lower()
                             ):
                                 pdf_viewers[desktop_entry.getName()] = (
                                     desktop_entry.getExec()

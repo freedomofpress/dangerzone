@@ -228,18 +228,16 @@ class Container(IsolationProvider):
         container_runtime = self.get_runtime()
         cmd = [container_runtime, "kill", name]
         try:
+            # We do not check the exit code of the process here, since the container may
+            # have stopped right before invoking this command. In that case, the
+            # command's output will contain some error messages, so we capture them in
+            # order to silence them.
             subprocess.run(
-                cmd,
-                capture_output=True,
-                check=True,
-                startupinfo=get_subprocess_startupinfo(),
+                cmd, capture_output=True, startupinfo=get_subprocess_startupinfo()
             )
-        except subprocess.CalledProcessError as e:
-            log.warning(f"Failed to kill container {name}: {str(e)}")
-            log.warning(f"Output from the kill command: {e.output}")
         except Exception as e:
             log.exception(
-                f"Unexpected error occurred while killing container {name}: {str(e)}"
+                f"Unexpected error occurred while killing container '{name}': {str(e)}"
             )
 
     def pixels_to_pdf(
@@ -303,7 +301,33 @@ class Container(IsolationProvider):
     def terminate_doc_to_pixels_proc(
         self, document: Document, p: subprocess.Popen
     ) -> None:
+        # There are two steps to gracefully terminate a conversion process:
+        # 1. Kill the container, and check that it has exited.
+        # 2. Gracefully terminate the conversion process, in case it's stuck on I/O
+        #
+        # See also https://github.com/freedomofpress/dangerzone/issues/791
         self.kill_container(self.doc_to_pixels_container_name(document))
+        p.terminate()
+
+    def ensure_stop_doc_to_pixels_proc(  # type: ignore [no-untyped-def]
+        self, document: Document, *args, **kwargs
+    ) -> None:
+        super().ensure_stop_doc_to_pixels_proc(document, *args, **kwargs)
+
+        # Check if the container no longer exists, either because we successfully killed
+        # it, or because it exited on its own. We operate under the assumption that
+        # after a podman kill / docker kill invocation, this will likely be the case,
+        # else the container runtime (Docker/Podman) has experienced a problem, and we
+        # should report it.
+        container_runtime = self.get_runtime()
+        name = self.doc_to_pixels_container_name(document)
+        all_containers = subprocess.run(
+            [container_runtime, "ps", "-a"],
+            capture_output=True,
+            startupinfo=get_subprocess_startupinfo(),
+        )
+        if name in all_containers.stdout.decode():
+            log.warning(f"Container '{name}' did not stop gracefully")
 
     def get_max_parallel_conversions(self) -> int:
         # FIXME hardcoded 1 until length conversions are better handled

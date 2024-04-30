@@ -123,15 +123,23 @@ def uncommon_text() -> str:
 def uncommon_filename(uncommon_text: str) -> str:
     """Craft a filename with Unicode characters that are considered not common.
 
-    We reuse the same uncommon string as above, with a small exception for macOS.
-    Because the APFS filesystem in macOS accepts only UTF-8 encoded strings [1], we
-    cannot create a filename with invalid Unicode characters. So, in order to test the
-    rest of the corner cases, we replace U+DCF0 with an empty string.
+    We reuse the same uncommon string as above, with a small exception for macOS and
+    Windows.
+
+    Because the NTFS filesystem in Windows and APFS filesystem in macOS accept only
+    UTF-8 encoded strings [1], we cannot create a filename with invalid Unicode
+    characters. So, in order to test the rest of the corner cases, we replace U+DCF0
+    with an empty string.
+
+    Windows has the extra restriction that it cannot have escape characters in
+    filenames, so we replace the ASCII Escape character (\033 / U+001B) as well.
 
     [1]: https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations
     """
     if platform.system() == "Darwin":
         uncommon_text = uncommon_text.replace("\udcf0", "")
+    elif platform.system() == "Windows":
+        uncommon_text = uncommon_text.replace("\udcf0", "").replace("\033", "")
     return uncommon_text + ".pdf"
 
 

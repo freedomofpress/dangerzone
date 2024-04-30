@@ -120,7 +120,7 @@ dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <differen
 
 #### 4. Dangerzone successfully installs the container image
 
-_(Linux)_
+_(Only for Linux)_
 
 Remove the Dangerzone container image from Docker/Podman. Then run Dangerzone.
 Dangerzone should install the container image successfully.

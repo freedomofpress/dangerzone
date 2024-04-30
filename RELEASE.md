@@ -15,7 +15,7 @@ Before making a release, all of these should be complete:
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
-- [ ] Create a PGP-signed git tag for the version, e.g. for dangerzone `v0.1.0`, the is created with:
+- [ ] Create a PGP-signed git tag for the version, e.g., for dangerzone `v0.1.0`:
 
   ```
   git tag -s v0.1.0
@@ -176,7 +176,7 @@ dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <differen
 
 #### 4. Dangerzone successfully installs the container image
 
-_(Linux)_
+_(Only for Linux)_
 
 Remove the Dangerzone container image from Docker/Podman. Then run Dangerzone.
 Dangerzone should install the container image successfully.

@@ -146,10 +146,13 @@ class IsolationProvider(ABC):
 
         if getattr(sys, "dangerzone_dev", False):
             assert p.stderr
-            untrusted_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
+            debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
             p.stderr.close()
             log.info(
-                f"Conversion output (doc to pixels)\n{self.sanitize_conversion_str(untrusted_log)}"
+                "Conversion output (doc to pixels)\n"
+                f"{DOC_TO_PIXELS_LOG_START}\n"
+                f"{debug_log}"  # no need for an extra newline here
+                f"{DOC_TO_PIXELS_LOG_END}"
             )
 
     @abstractmethod
@@ -195,14 +198,6 @@ class IsolationProvider(ABC):
     @abstractmethod
     def get_max_parallel_conversions(self) -> int:
         pass
-
-    def sanitize_conversion_str(self, untrusted_conversion_str: str) -> str:
-        conversion_string = replace_control_chars(untrusted_conversion_str)
-
-        # Add armor (gpg-style)
-        armor_start = f"{DOC_TO_PIXELS_LOG_START}\n"
-        armor_end = DOC_TO_PIXELS_LOG_END
-        return armor_start + conversion_string + armor_end
 
     @abstractmethod
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:

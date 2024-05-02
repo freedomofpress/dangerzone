@@ -48,7 +48,7 @@ types-requests = "*"
 pytest = "^7.1.2"
 pytest-mock = "^3.10.0"
 pytest-qt = "^4.2.0"
-pytest-cov = "^3.0.0"
+pytest-cov = "^5.0.0"
 strip-ansi = "*"
 
 [tool.poetry.group.qubes.dependencies]

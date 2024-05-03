@@ -17,6 +17,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Make OCR work again in Qubes Fedora 38 templates ([issue #737](https://github.com/freedomofpress/dangerzone/issues/737))
 - Make .svg / .bmp files selectable when browsing files via the Dangerzone GUI ([#722](https://github.com/freedomofpress/dangerzone/pull/722))
+- Linux: Allow opening multiple files at once, when selecting them from the user's file manager ([issue #797](https://github.com/freedomofpress/dangerzone/issues/797))
 
 ### Changed
 

@@ -2,7 +2,7 @@
 Name=Dangerzone
 GenericName=Dangerzone
 Comment=Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF
-Exec=dangerzone %u
+Exec=dangerzone %F
 Terminal=false
 Type=Application
 Icon=press.freedom.dangerzone

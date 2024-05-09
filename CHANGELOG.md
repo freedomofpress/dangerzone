@@ -15,9 +15,13 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Fixed
 
+- Fix "Timeout after 3 seconds" errors ([issue #749](https://github.com/freedomofpress/dangerzone/issues/749))
 - Make OCR work again in Qubes Fedora 38 templates ([issue #737](https://github.com/freedomofpress/dangerzone/issues/737))
 - Make .svg / .bmp files selectable when browsing files via the Dangerzone GUI ([#722](https://github.com/freedomofpress/dangerzone/pull/722))
-- Linux: Allow opening multiple files at once, when selecting them from the user's file manager ([issue #797](https://github.com/freedomofpress/dangerzone/issues/797))
+- Linux: Show the proper application name and icon for Dangerzone, in the user's window manager, thanks to [@naglis](https://github.com/naglis) ([issue #402](https://github.com/freedomofpress/dangerzone/issues/402))
+- Linux: Allow opening multiple files at once, when selecting them from the user's file manager, thanks to [@naglis](https://github.com/naglis) ([issue #797](https://github.com/freedomofpress/dangerzone/issues/797))
+- Linux: Do not include Dangerzone in the list of available PDF viewers, thanks to [@naglis](https://github.com/naglis) ([issue #790](https://github.com/freedomofpress/dangerzone/issues/790))
+- Linux: Handle filenames with invalid Unicode characters in the Dangerzone CLI, thanks to [@naglis](https://github.com/naglis) ([issue #768](https://github.com/freedomofpress/dangerzone/issues/768))
 
 ### Changed
 

@@ -4,11 +4,18 @@
 FROM alpine:latest as pymupdf-build
 
 ARG REQUIREMENTS_TXT
+ARG MUPDF_TGZ_VERSION="1.24.1"
+ARG MUPDF_TGZ_CHECKSUM="5840308280a2be7bd55f5e8a0b5a3ab8839689fa389a48a91433dcabd465be4d"
+
+RUN wget "https://mupdf.com/downloads/archive/mupdf-$MUPDF_TGZ_VERSION-source.tar.gz" \
+    && echo "$MUPDF_TGZ_CHECKSUM  mupdf-$MUPDF_TGZ_VERSION-source.tar.gz" | sha256sum -c \
+    && tar -xzvf mupdf-$MUPDF_TGZ_VERSION-source.tar.gz
 
 # Install PyMuPDF via hash-checked requirements file
 COPY ${REQUIREMENTS_TXT} /tmp/requirements.txt
 RUN apk --no-cache add linux-headers g++ linux-headers gcc make python3-dev py3-pip clang-dev
-RUN pip install --break-system-packages --require-hashes -r /tmp/requirements.txt
+RUN PYMUPDF_SETUP_MUPDF_BUILD="/mupdf-$MUPDF_TGZ_VERSION-source/" \
+    pip -vvv install --break-system-packages --require-hashes -r /tmp/requirements.txt
 
 
 ###########################################

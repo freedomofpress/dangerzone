@@ -19,6 +19,8 @@ jobs:
       matrix:
         include:
           - distro: ubuntu
+            version: "24.04"  # noble
+          - distro: ubuntu
             version: "23.10"  # mantic
           - distro: ubuntu
             version: "22.04"  # jammy
@@ -76,6 +78,8 @@ jobs:
             version: 38
           - distro: fedora
             version: 39
+          - distro: fedora
+            version: 40
     steps:
       - name: Add packages.freedom.press to our YUM sources
         run: |

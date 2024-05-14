@@ -80,6 +80,10 @@ Copyright (c) 2020-2021 First Look Media
 
 ## FAQ
 
+### Has Dangerzone received a security audit?
+
+Yes, Dangerzone received its [first security audit](https://freedom.press/news/dangerzone-receives-favorable-audit/) by [Include Security](https://includesecurity.com/) in December 2023. The audit was generally favorable, as it didn't identify any high-risk findings, except for 3 low-risk and 7 informational findings.
+
 ### "I'm experiencing an issue while using Dangerzone."
 
 Dangerzone gets updates to improve its features _and_ to fix problems. So, updating may be the simplest path to resolving the issue which brought you here. Here is how to update:

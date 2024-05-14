@@ -73,6 +73,11 @@ Licensed under the AGPLv3: [https://opensource.org/licenses/agpl-3.0](https://op
 Copyright (c) 2022-2024 Freedom of the Press Foundation and Dangerzone contributors
 Copyright (c) 2020-2021 First Look Media
 
+## See also
+
+* [GIJN Toolbox: Cutting-Edge — and Free — Online Investigative Tools You Can Try Right Now](https://gijn.org/stories/cutting-edge-free-online-investigative-tools/)
+* [When security matters: working with Qubes OS at the Guardian](https://www.theguardian.com/info/2024/apr/04/when-security-matters-working-with-qubes-os-at-the-guardian)
+
 ## FAQ
 
 ### "I'm experiencing an issue while using Dangerzone."

@@ -58,8 +58,8 @@ jobs:
       - name: Add packages.freedom.press to our APT sources
         run: |
           . /etc/os-release
-          echo deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
-              https://packages.freedom.press/apt-tools-prod ${VERSION_CODENAME?} main \
+          echo "deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
+              https://packages.freedom.press/apt-tools-prod ${VERSION_CODENAME?} main" \
               | tee /etc/apt/sources.list.d/fpf-apt-tools.list
 
       - name: Install Dangerzone

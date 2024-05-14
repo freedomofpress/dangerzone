@@ -94,8 +94,8 @@ Add the URL of the repo in your APT sources:
 
 ```sh
 . /etc/os-release
-echo deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
-    https://packages.freedom.press/apt-tools-prod ${VERSION_CODENAME?} main \
+echo "deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
+    https://packages.freedom.press/apt-tools-prod ${VERSION_CODENAME?} main" \
     | sudo tee /etc/apt/sources.list.d/fpf-apt-tools.list
 ```
 

@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import Any, Callable, List, Optional, TypeVar
+from typing import List, Optional
 
 import click
 from colorama import Back, Fore, Style

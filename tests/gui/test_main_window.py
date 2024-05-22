@@ -2,9 +2,8 @@ import os
 import pathlib
 import shutil
 import time
-import typing
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore
 from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
@@ -15,7 +14,6 @@ from dangerzone.gui import updater as updater_module
 from dangerzone.gui.logic import DangerzoneGui
 from dangerzone.gui.main_window import ContentWidget
 from dangerzone.gui.updater import UpdateReport, UpdaterThread
-from dangerzone.util import get_version
 
 from .. import sample_doc, sample_pdf
 from . import qt_updater as updater

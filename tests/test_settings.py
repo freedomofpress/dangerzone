@@ -1,4 +1,3 @@
-import collections
 import json
 import os
 from pathlib import Path
@@ -7,7 +6,7 @@ from unittest.mock import PropertyMock
 import pytest
 from pytest_mock import MockerFixture
 
-from dangerzone.settings import *
+from dangerzone.settings import SETTINGS_FILENAME, Settings
 
 
 def default_settings_0_4_1() -> dict:

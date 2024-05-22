@@ -1,10 +1,7 @@
 import asyncio
-import glob
 import os
-import re
-import shutil
 import sys
-from typing import Dict, List, Optional, TextIO
+from typing import Dict, Optional
 
 import fitz
 import magic

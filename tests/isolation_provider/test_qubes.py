@@ -1,6 +1,5 @@
 import os
 import pathlib
-import signal
 import subprocess
 import time
 
@@ -10,7 +9,6 @@ from pytest_mock import MockerFixture
 
 from dangerzone.conversion import errors
 from dangerzone.document import Document
-from dangerzone.isolation_provider.base import IsolationProvider
 from dangerzone.isolation_provider.qubes import (
     Qubes,
     is_qubes_native_conversion,

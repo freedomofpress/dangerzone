@@ -1,6 +1,5 @@
 import pathlib
 import platform
-import string
 import subprocess
 import sys
 import unicodedata

@@ -6,7 +6,7 @@ import platform
 import sys
 import time
 import typing
-from typing import Any, Optional
+from typing import Optional
 
 from packaging import version
 
@@ -20,7 +20,7 @@ else:
 
 # XXX implict import for "markdown" module required for Cx_Freeze to build on Windows
 # See https://github.com/freedomofpress/dangerzone/issues/501
-import html.parser
+import html.parser  # noqa: F401
 
 import markdown
 import requests

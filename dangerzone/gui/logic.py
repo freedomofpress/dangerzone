@@ -25,7 +25,6 @@ if platform.system() == "Linux":
 
 from ..isolation_provider.base import IsolationProvider
 from ..logic import DangerzoneCore
-from ..settings import Settings
 from ..util import get_resource_path, replace_control_chars
 
 log = logging.getLogger(__name__)

@@ -1,12 +1,6 @@
 import concurrent.futures
-import gzip
 import json
 import logging
-import pathlib
-import platform
-import shutil
-import subprocess
-import sys
 from typing import Callable, List, Optional
 
 import colorama

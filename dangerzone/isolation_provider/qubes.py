@@ -51,7 +51,7 @@ class Qubes(IsolationProvider):
         return 1
 
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
-        dev_mode = getattr(sys, "dangerzone_dev", False) == True
+        dev_mode = getattr(sys, "dangerzone_dev", False) is True
         if dev_mode:
             # Use dz.ConvertDev RPC call instead, if we are in development mode.
             # Basically, the change is that we also transfer the necessary Python

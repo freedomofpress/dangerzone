@@ -58,7 +58,7 @@ def test_default_menu(
 
     toggle_updates_action.trigger()
     assert not toggle_updates_action.isChecked()
-    assert updater.dangerzone.settings.get("updater_check") == False
+    assert updater.dangerzone.settings.get("updater_check") is False
 
 
 def test_no_update(
@@ -365,13 +365,13 @@ def test_change_document_button(
         file_dialog_mock.accept()
 
     # Then two dialogs should have been open
-    assert file_dialog_mock.exec.call_count is 2
-    assert file_dialog_mock.selectedFiles.call_count is 2
+    assert file_dialog_mock.exec.call_count == 2
+    assert file_dialog_mock.selectedFiles.call_count == 2
 
     # Then the final document should be only the second one
     docs = [
         doc.input_filename
         for doc in content_widget.dangerzone.get_unconverted_documents()
     ]
-    assert len(docs) is 1
+    assert len(docs) == 1
     assert docs[0] == str(tmp_sample_doc)

@@ -55,7 +55,7 @@ class IsolationProvider(ABC):
     """
 
     def __init__(self) -> None:
-        if getattr(sys, "dangerzone_dev", False) == True:
+        if getattr(sys, "dangerzone_dev", False) is True:
             self.proc_stderr = subprocess.PIPE
         else:
             self.proc_stderr = subprocess.DEVNULL

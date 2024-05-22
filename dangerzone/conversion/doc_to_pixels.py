@@ -217,7 +217,6 @@ class DocumentToPixels(DangerzoneConverter):
             raise errors.MaxPagesException()
         await self.write_page_count(doc.page_count)
 
-        page_base = "/tmp/page"
         for page in doc.pages():
             # TODO check if page.number is doc-controlled
             page_num = page.number + 1  # pages start in 1

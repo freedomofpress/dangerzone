@@ -114,9 +114,6 @@ class Qubes(IsolationProvider):
         with zipfile.ZipFile(temp_file, "w") as z:
             z.mkdir("dangerzone/")
             z.writestr("dangerzone/__init__.py", "")
-            import dangerzone.conversion
-
-            conv_path = Path(dangerzone.conversion.__file__).parent
             for root, _, files in os.walk(_conv_path):
                 for file in files:
                     if file.endswith(".py"):

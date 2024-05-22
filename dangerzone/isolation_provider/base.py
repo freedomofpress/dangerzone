@@ -100,7 +100,7 @@ class IsolationProvider(ABC):
                 assert p.stdin is not None
                 p.stdin.write(f.read())
                 p.stdin.close()
-            except BrokenPipeError as e:
+            except BrokenPipeError:
                 raise errors.ConverterProcException()
 
             assert p.stdout

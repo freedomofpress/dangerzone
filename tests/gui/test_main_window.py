@@ -86,7 +86,7 @@ def test_no_update(
 
     menu_actions_before = window.hamburger_button.menu().actions()
 
-    with qtbot.waitSignal(updater.finished) as blocker:
+    with qtbot.waitSignal(updater.finished):
         updater.start()
 
     # Check that the callback function gets an empty report.
@@ -126,7 +126,7 @@ def test_update_detected(
 
     menu_actions_before = window.hamburger_button.menu().actions()
 
-    with qtbot.waitSignal(updater.finished) as blocker:
+    with qtbot.waitSignal(updater.finished):
         updater.start()
 
     menu_actions_after = window.hamburger_button.menu().actions()
@@ -190,7 +190,7 @@ def test_update_detected(
 
         # Collapse the "What's New" section and ensure that the dialog's height
         # increases.
-        with qtbot.waitSignal(collapsible_box.toggle_animation.finished) as blocker:
+        with qtbot.waitSignal(collapsible_box.toggle_animation.finished):
             collapsible_box.toggle_button.click()
 
         assert dialog.sizeHint().height() > height_initial
@@ -198,7 +198,7 @@ def test_update_detected(
 
         # Uncollapse the "What's New" section, and ensure that the dialog's height gets
         # back to the original value.
-        with qtbot.waitSignal(collapsible_box.toggle_animation.finished) as blocker:
+        with qtbot.waitSignal(collapsible_box.toggle_animation.finished):
             collapsible_box.toggle_button.click()
 
         assert dialog.sizeHint().height() == height_initial
@@ -236,7 +236,7 @@ def test_update_error(
 
     menu_actions_before = window.hamburger_button.menu().actions()
 
-    with qtbot.waitSignal(updater.finished) as blocker:
+    with qtbot.waitSignal(updater.finished):
         updater.start()
 
     menu_actions_after = window.hamburger_button.menu().actions()
@@ -262,7 +262,7 @@ def test_update_error(
 
     # Test 2 - Check that the second error does not notify the user either.
     updater.dangerzone.settings.set("updater_last_check", 0)
-    with qtbot.waitSignal(updater.finished) as blocker:
+    with qtbot.waitSignal(updater.finished):
         updater.start()
 
     assert load_svg_spy.call_count == 0
@@ -279,7 +279,7 @@ def test_update_error(
 
     # Test 3 - Check that a third error shows a new menu entry.
     updater.dangerzone.settings.set("updater_last_check", 0)
-    with qtbot.waitSignal(updater.finished) as blocker:
+    with qtbot.waitSignal(updater.finished):
         updater.start()
 
     menu_actions_after = window.hamburger_button.menu().actions()

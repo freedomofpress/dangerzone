@@ -83,16 +83,16 @@ def main():
     )
     parser.add_argument(
         "--tag",
-        help=f"use the release with this tag",
+        help="use the release with this tag",
     )
     parser.add_argument(
         "--release-id",
-        help=f"use the release with this ID",
+        help="use the release with this ID",
     )
     parser.add_argument(
         "--draft",
         action="store_true",
-        help=f"use the latest draft release",
+        help="use the latest draft release",
     )
     parser.add_argument(
         "file",
@@ -116,7 +116,7 @@ def main():
     elif args.release_id:
         release_id = args.release_id
     else:
-        log.debug(f"Getting the ID of the latest draft release")
+        log.debug("Getting the ID of the latest draft release")
         release_id = get_latest_draft_release(token)
         log.debug(f"The latest draft release has ID '{release_id}'")
 

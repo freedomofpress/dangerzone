@@ -206,7 +206,7 @@ class UpdaterThread(QtCore.QThread):
         current_time = self._get_now_timestamp()
         last_check = self.dangerzone.settings.get("updater_last_check")
         if current_time < last_check + UPDATE_CHECK_COOLDOWN_SECS:
-            log.debug(f"Cooling down update checks")
+            log.debug("Cooling down update checks")
             return True
         else:
             return False
@@ -255,10 +255,10 @@ class UpdaterThread(QtCore.QThread):
            previous run.
         2. In GitHub, by hitting the latest releases API.
         """
-        log.debug(f"Checking for Dangerzone updates")
+        log.debug("Checking for Dangerzone updates")
         latest_version = self.dangerzone.settings.get("updater_latest_version")
         if version.parse(get_version()) < version.parse(latest_version):
-            log.debug(f"Determined that there is an update due to cached results")
+            log.debug("Determined that there is an update due to cached results")
             return UpdateReport(
                 version=latest_version,
                 changelog=self.dangerzone.settings.get("updater_latest_changelog"),
@@ -275,7 +275,7 @@ class UpdaterThread(QtCore.QThread):
                 "updater_last_check", self._get_now_timestamp(), autosave=True
             )
 
-        log.debug(f"Checking the latest GitHub release")
+        log.debug("Checking the latest GitHub release")
         report = self.get_latest_info()
         log.debug(f"Latest version in GitHub is {report.version}")
         if report.version and self.can_update(latest_version, report.version):
@@ -285,7 +285,7 @@ class UpdaterThread(QtCore.QThread):
             )
             return report
 
-        log.debug(f"No need to update")
+        log.debug("No need to update")
         return UpdateReport()
 
     ##################

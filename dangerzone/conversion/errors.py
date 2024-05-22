@@ -78,12 +78,12 @@ class MaxPagesException(PagesException):
 
 class MaxPageWidthException(PagesException):
     error_code = ERROR_SHIFT + 44
-    error_message = f"A page exceeded the maximum width."
+    error_message = "A page exceeded the maximum width."
 
 
 class MaxPageHeightException(PagesException):
     error_code = ERROR_SHIFT + 45
-    error_message = f"A page exceeded the maximum height."
+    error_message = "A page exceeded the maximum height."
 
 
 class PageCountMismatch(PagesException):

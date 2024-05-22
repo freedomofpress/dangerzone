@@ -56,7 +56,7 @@ class QubesWait(Qubes):
                     return proc
             time.sleep(0.1)
 
-        raise RuntimeError(f"Disposable qube did not start within 30 seconds")
+        raise RuntimeError("Disposable qube did not start within 30 seconds")
 
 
 @pytest.fixture

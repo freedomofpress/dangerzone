@@ -824,7 +824,7 @@ class SettingsWidget(QtWidgets.QWidget):
 
         if n_docs == 1:
             self.start_button.setText("Convert to Safe Document")
-            self.docs_selected_label.setText(f"1 document selected")
+            self.docs_selected_label.setText("1 document selected")
         else:
             self.start_button.setText("Convert to Safe Documents")
             self.docs_selected_label.setText(f"{n_docs} documents selected")

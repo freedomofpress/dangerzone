@@ -114,7 +114,7 @@ def test_linux_no_check(updater: UpdaterThread, monkeypatch: MonkeyPatch) -> Non
     # XXX: Simulate Dangerzone installed via package manager.
     monkeypatch.delattr(sys, "dangerzone_dev")
 
-    assert updater.should_check_for_updates() == False
+    assert updater.should_check_for_updates() is False
     assert updater.dangerzone.settings.get_updater_settings() == expected_settings
 
 
@@ -129,7 +129,7 @@ def test_user_prompts(
     expected_settings = default_updater_settings()
     expected_settings["updater_check"] = None
     expected_settings["updater_last_check"] = 0
-    assert updater.should_check_for_updates() == False
+    assert updater.should_check_for_updates() is False
     assert updater.dangerzone.settings.get_updater_settings() == expected_settings
 
     # Second run
@@ -143,14 +143,14 @@ def test_user_prompts(
     # Check disabling update checks.
     prompt_mock().launch.return_value = False  # type: ignore [attr-defined]
     expected_settings["updater_check"] = False
-    assert updater.should_check_for_updates() == False
+    assert updater.should_check_for_updates() is False
     assert updater.dangerzone.settings.get_updater_settings() == expected_settings
 
     # Reset the "updater_check" field and check enabling update checks.
     updater.dangerzone.settings.set("updater_check", None)
     prompt_mock().launch.return_value = True  # type: ignore [attr-defined]
     expected_settings["updater_check"] = True
-    assert updater.should_check_for_updates() == True
+    assert updater.should_check_for_updates() is True
     assert updater.dangerzone.settings.get_updater_settings() == expected_settings
 
     # Third run
@@ -232,7 +232,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     timestamp_mock.return_value = curtime
 
     report = updater.check_for_updates()
-    assert cooldown_spy.spy_return == False
+    assert cooldown_spy.spy_return is False
     assert updater.dangerzone.settings.get("updater_last_check") == curtime
     assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
 
@@ -246,7 +246,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     updater.dangerzone.settings.set("updater_latest_changelog", None)
 
     report = updater.check_for_updates()
-    assert cooldown_spy.spy_return == True
+    assert cooldown_spy.spy_return is True
     assert updater.dangerzone.settings.get("updater_last_check") == curtime - 1
     assert_report_equal(report, UpdateReport())
 
@@ -257,7 +257,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     requests_mock.side_effect = None  # type: ignore [attr-defined]
 
     report = updater.check_for_updates()
-    assert cooldown_spy.spy_return == False
+    assert cooldown_spy.spy_return is False
     assert updater.dangerzone.settings.get("updater_last_check") == curtime
     assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
 
@@ -272,7 +272,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
 
     report = updater.check_for_updates()
-    assert cooldown_spy.spy_return == False
+    assert cooldown_spy.spy_return is False
     assert updater.dangerzone.settings.get("updater_last_check") == curtime
     error_msg = (
         f"Encountered an exception while checking {updater.GH_RELEASE_URL}: failed"
@@ -388,7 +388,7 @@ def test_update_check_prompt(
     QtCore.QTimer.singleShot(500, check_button_labels)
     res = qt_updater.should_check_for_updates()
 
-    assert res == True
+    assert res is True
 
     # Test 2 - Check that when the user chooses to enable update checks, we
     # store that decision in the settings.
@@ -401,8 +401,8 @@ def test_update_check_prompt(
     QtCore.QTimer.singleShot(500, click_ok)
     res = qt_updater.should_check_for_updates()
 
-    assert res == True
-    assert qt_updater.check == True
+    assert res is True
+    assert qt_updater.check is True
 
     # Test 3 - Same as the previous test, but check that clicking on cancel stores the
     # opposite decision.
@@ -415,8 +415,8 @@ def test_update_check_prompt(
     QtCore.QTimer.singleShot(500, click_cancel)
     res = qt_updater.should_check_for_updates()
 
-    assert res == False
-    assert qt_updater.check == False
+    assert res is False
+    assert qt_updater.check is False
 
     # Test 4 - Same as the previous test, but check that clicking on "X" does not store
     # any decision.
@@ -429,5 +429,5 @@ def test_update_check_prompt(
     QtCore.QTimer.singleShot(500, click_x)
     res = qt_updater.should_check_for_updates()
 
-    assert res == False
-    assert qt_updater.check == None
+    assert res is False
+    assert qt_updater.check is None

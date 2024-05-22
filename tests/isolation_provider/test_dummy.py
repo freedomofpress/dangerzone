@@ -35,11 +35,10 @@ def provider_wait() -> DummyWait:
 
 
 @pytest.mark.skipif(
-    os.environ.get("DUMMY_CONVERSION", False) == False,
+    os.environ.get("DUMMY_CONVERSION", False) is False,
     reason="can only run for dummy conversions",
 )
 class TestDummyTermination(IsolationProviderTermination):
-
     def test_failed(
         self,
         provider_wait: IsolationProvider,

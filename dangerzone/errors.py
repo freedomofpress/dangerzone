@@ -95,7 +95,7 @@ class SuffixNotApplicableException(DocumentFilenameException):
 
 
 def handle_document_errors(func: F) -> F:
-    """Log document-related errors and exit gracefully."""
+    """Decorator to log document-related errors and exit gracefully."""
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):  # type: ignore

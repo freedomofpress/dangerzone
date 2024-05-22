@@ -79,7 +79,7 @@ class Settings:
                         if version.parse(get_version()) > version.parse(self.get(key)):
                             self.set(key, get_version())
 
-            except:
+            except Exception:
                 log.error("Error loading settings, falling back to default")
                 self.settings = self.default_settings
 

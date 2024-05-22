@@ -16,7 +16,7 @@ from dangerzone.gui.updater import UpdateReport, UpdaterThread
 from dangerzone.util import get_version
 
 from ..test_settings import default_settings_0_4_1, save_settings
-from . import generate_isolated_updater, qt_updater, updater
+from .conftest import generate_isolated_updater
 
 
 def default_updater_settings() -> dict:

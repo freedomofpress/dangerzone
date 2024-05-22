@@ -8,8 +8,6 @@ import pytest
 from dangerzone import errors
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION, Document
 
-from . import sample_pdf, unreadable_pdf
-
 
 def test_input_sample_init(sample_pdf: str) -> None:
     Document(sample_pdf)

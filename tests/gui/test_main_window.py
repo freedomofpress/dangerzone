@@ -15,8 +15,6 @@ from dangerzone.gui.logic import DangerzoneGui
 from dangerzone.gui.main_window import ContentWidget
 from dangerzone.gui.updater import UpdateReport, UpdaterThread
 
-from .. import sample_doc, sample_pdf
-from . import qt_updater as updater
 from .test_updater import assert_report_equal, default_updater_settings
 
 ##

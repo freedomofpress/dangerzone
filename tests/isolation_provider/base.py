@@ -9,15 +9,6 @@ from dangerzone.document import Document
 from dangerzone.isolation_provider import base
 from dangerzone.isolation_provider.qubes import running_on_qubes
 
-from .. import (
-    pdf_11k_pages,
-    sample_bad_height,
-    sample_bad_width,
-    sample_doc,
-    sanitized_text,
-    uncommon_text,
-)
-
 TIMEOUT_STARTUP = 60  # Timeout in seconds until the conversion sandbox starts.
 
 

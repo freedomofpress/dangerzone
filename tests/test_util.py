@@ -6,8 +6,6 @@ import pytest
 
 from dangerzone import util
 
-from . import sanitized_text, uncommon_text
-
 VERSION_FILE_NAME = "version.txt"
 
 

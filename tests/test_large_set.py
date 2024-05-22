@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import List
 
 import pytest
-from _pytest.fixtures import FixtureRequest
 
 from dangerzone.document import SAFE_EXTENSION
 

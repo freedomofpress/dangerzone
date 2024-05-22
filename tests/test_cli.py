@@ -20,15 +20,7 @@ from dangerzone.cli import cli_main, display_banner
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 
-from . import (
-    TestBase,
-    for_each_doc,
-    for_each_external_doc,
-    sample_bad_height,
-    sample_pdf,
-    uncommon_filename,
-    uncommon_text,
-)
+from .conftest import for_each_doc, for_each_external_doc
 
 # TODO explore any symlink edge cases
 # TODO simulate ctrl-c, ctrl-d, SIGINT/SIGKILL/SIGTERM... (man 7 signal), etc?

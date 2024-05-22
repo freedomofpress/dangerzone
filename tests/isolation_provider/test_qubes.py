@@ -15,15 +15,6 @@ from dangerzone.isolation_provider.qubes import (
     running_on_qubes,
 )
 
-# XXX Fixtures used in abstract Test class need to be imported regardless
-from .. import (
-    pdf_11k_pages,
-    sample_bad_height,
-    sample_bad_width,
-    sample_doc,
-    sanitized_text,
-    uncommon_text,
-)
 from .base import IsolationProviderTermination, IsolationProviderTest
 
 

@@ -232,13 +232,13 @@ class UpdaterThread(QtCore.QThread):
 
         try:
             info = res.json()
-        except json.JSONDecodeError as e:
+        except json.JSONDecodeError:
             raise ValueError(f"Received a non-JSON response from {self.GH_RELEASE_URL}")
 
         try:
             version = info["tag_name"].lstrip("v")
             changelog = markdown.markdown(info["body"])
-        except KeyError as e:
+        except KeyError:
             raise ValueError(
                 f"Missing required fields in JSON response from {self.GH_RELEASE_URL}"
             )

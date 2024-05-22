@@ -13,8 +13,6 @@ from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
 from .util import get_version, replace_control_chars
 
-F = TypeVar("F", bound=Callable[..., Any])
-
 
 def print_header(s: str) -> None:
     click.echo("")

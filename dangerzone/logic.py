@@ -33,9 +33,7 @@ class DangerzoneCore(object):
 
         # Load settings
         self.settings = Settings(self)
-
         self.documents: List[Document] = []
-
         self.isolation_provider = isolation_provider
 
     def add_document_from_filename(

@@ -29,12 +29,12 @@ def test_input_file_none() -> None:
     Attempts to read a document's filename when no doc has been set
     """
     d = Document()
-    with pytest.raises(errors.NotSetInputFilenameException) as e:
+    with pytest.raises(errors.NotSetInputFilenameException):
         d.input_filename
 
 
 def test_input_file_non_existing() -> None:
-    with pytest.raises(errors.InputFileNotFoundException) as e:
+    with pytest.raises(errors.InputFileNotFoundException):
         Document("non-existing-file.pdf")
 
 
@@ -43,7 +43,7 @@ def test_input_file_non_existing() -> None:
 # https://stackoverflow.com/questions/72528318/what-file-permissions-make-a-file-unreadable-by-owner-in-windows
 @pytest.mark.skipif(platform.system() == "Windows", reason="Unix-specific")
 def test_input_file_unreadable(unreadable_pdf: str) -> None:
-    with pytest.raises(errors.InputFileNotReadableException) as e:
+    with pytest.raises(errors.InputFileNotReadableException):
         Document(unreadable_pdf)
 
 
@@ -52,8 +52,8 @@ def test_output_file_unwriteable_dir(sample_pdf: str, tmp_path: Path) -> None:
     # make parent dir unwriteable
     sample_pdf_safe = str(tmp_path / "document-safe.pdf")
     os.chmod(tmp_path, 0o400)
-    with pytest.raises(errors.UnwriteableOutputDirException) as e:
-        d = Document(sample_pdf, sample_pdf_safe)
+    with pytest.raises(errors.UnwriteableOutputDirException):
+        Document(sample_pdf, sample_pdf_safe)
 
 
 def test_output(tmp_path: Path) -> None:
@@ -67,7 +67,7 @@ def test_output_file_none() -> None:
     Attempts to read a document's filename when no doc has been set
     """
     d = Document()
-    with pytest.raises(errors.NotSetOutputFilenameException) as e:
+    with pytest.raises(errors.NotSetOutputFilenameException):
         d.output_filename
 
 
@@ -75,7 +75,7 @@ def test_output_file_not_pdf(tmp_path: Path) -> None:
     docx_file = str(tmp_path / "document.docx")
     d = Document()
 
-    with pytest.raises(errors.NonPDFOutputFileException) as e:
+    with pytest.raises(errors.NonPDFOutputFileException):
         d.output_filename = docx_file
 
     assert not os.path.exists(docx_file)
@@ -90,7 +90,7 @@ def test_archive_unwriteable_dir(tmp_path: Path) -> None:
     # make archive directory unreadable
     os.chmod(tmp_path, 0o400)
 
-    with pytest.raises(errors.UnwriteableArchiveDirException) as e:
+    with pytest.raises(errors.UnwriteableArchiveDirException):
         d.validate_default_archive_dir()
 
 
@@ -155,7 +155,7 @@ def test_set_output_filename_suffix(sample_pdf: str) -> None:
     assert d.output_filename.endswith(safe_extension)
 
     d.output_filename = "something_else.pdf"
-    with pytest.raises(errors.SuffixNotApplicableException) as e:
+    with pytest.raises(errors.SuffixNotApplicableException):
         d.suffix = "-new-trusted.pdf"
 
 

@@ -306,8 +306,6 @@ class TestCliConversion(TestCliBasic):
         result.assert_failure()
 
     def test_archive(self, tmp_path: Path, sample_pdf: str) -> None:
-        test_string = "original file"
-
         original_doc_path = str(tmp_path / "doc.pdf")
         safe_doc_path = str(tmp_path / f"doc{SAFE_EXTENSION}")
         archived_doc_path = str(tmp_path / ARCHIVE_SUBDIR / "doc.pdf")
@@ -322,7 +320,7 @@ class TestCliConversion(TestCliBasic):
         assert os.path.exists(safe_doc_path)
 
     def test_dummy_conversion(self, tmp_path: Path, sample_pdf: str) -> None:
-        result = self.run_cli([sample_pdf, "--unsafe-dummy-conversion"])
+        self.run_cli([sample_pdf, "--unsafe-dummy-conversion"])
 
     def test_dummy_conversion_bulk(self, tmp_path: Path, sample_pdf: str) -> None:
         filenames = ["1.pdf", "2.pdf", "3.pdf"]

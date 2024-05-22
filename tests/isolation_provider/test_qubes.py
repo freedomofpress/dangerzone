@@ -85,7 +85,7 @@ class TestQubes(IsolationProviderTest):
             stderr=subprocess.PIPE,
             shell=True,
         )
-        with pytest.raises(errors.ConverterProcException) as e:
+        with pytest.raises(errors.ConverterProcException):
             doc = Document(sample_doc)
             provider.doc_to_pixels(doc, tmpdir, proc)
             assert provider.get_proc_exception(proc) == errors.QubesQrexecFailed

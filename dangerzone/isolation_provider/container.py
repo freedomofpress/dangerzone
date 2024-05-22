@@ -11,7 +11,7 @@ from typing import Any, List, Optional
 
 from ..conversion import errors
 from ..document import Document
-from ..util import get_resource_path, get_subprocess_startupinfo, get_tmp_dir
+from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import PIXELS_TO_PDF_LOG_END, PIXELS_TO_PDF_LOG_START, IsolationProvider
 
 # Define startupinfo for subprocesses

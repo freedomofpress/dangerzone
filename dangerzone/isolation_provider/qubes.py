@@ -1,5 +1,4 @@
 import asyncio
-import inspect
 import io
 import logging
 import os
@@ -8,7 +7,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from typing import IO, Callable, Optional
+from typing import IO, Optional
 
 from ..conversion import errors
 from ..conversion.common import running_on_qubes

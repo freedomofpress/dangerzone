@@ -1,12 +1,8 @@
 #!/usr/bin/python3
 
 import asyncio
-import glob
-import io
-import os
 import sys
 import tempfile
-import zipfile
 
 
 def say(msg):

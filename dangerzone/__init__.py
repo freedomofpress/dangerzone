@@ -13,4 +13,4 @@ else:
 if mode == "cli":
     from .cli import cli_main as main
 else:
-    from .gui import gui_main as main
+    from .gui import gui_main as main  # noqa: F401

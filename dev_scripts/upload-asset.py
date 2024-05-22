@@ -2,12 +2,9 @@
 
 import argparse
 import getpass
-import inspect
 import logging
 import os
-import pathlib
 import sys
-import urllib
 
 import requests
 

@@ -1,14 +1,9 @@
 import enum
 import logging
 import os
-import platform
 import secrets
-import stat
-import tempfile
 from pathlib import Path
 from typing import Optional
-
-import appdirs
 
 from . import errors, util
 

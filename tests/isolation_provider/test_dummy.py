@@ -9,7 +9,7 @@ from dangerzone.document import Document
 from dangerzone.isolation_provider.base import IsolationProvider
 from dangerzone.isolation_provider.dummy import Dummy
 
-from .base import IsolationProviderTermination, IsolationProviderTest
+from .base import IsolationProviderTermination
 
 
 class DummyWait(Dummy):

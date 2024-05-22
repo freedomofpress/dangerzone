@@ -1,4 +1,3 @@
-import subprocess
 from typing import List, Optional, Type, Union
 
 # XXX: errors start at 128 for conversion-related issues

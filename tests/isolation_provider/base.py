@@ -2,8 +2,6 @@ import os
 import subprocess
 
 import pytest
-from colorama import Style
-from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
 from dangerzone.conversion import errors

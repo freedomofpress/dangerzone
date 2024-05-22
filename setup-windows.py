@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import os
-
 from cx_Freeze import Executable, setup
 
 with open("share/version.txt") as f:

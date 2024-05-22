@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
-import functools
 import os
 import pathlib
-import re
 import shutil
 import subprocess
 import sys

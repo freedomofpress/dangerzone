@@ -1,9 +1,7 @@
 import json
-import os
 import platform
 import sys
 import time
-import typing
 from pathlib import Path
 
 import pytest
@@ -13,7 +11,6 @@ from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
 
 from dangerzone import settings
-from dangerzone.gui import MainWindow
 from dangerzone.gui import updater as updater_module
 from dangerzone.gui.updater import UpdateReport, UpdaterThread
 from dangerzone.util import get_version

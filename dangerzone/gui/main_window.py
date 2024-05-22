@@ -1,15 +1,11 @@
-import json
 import logging
 import os
 import platform
-import shutil
 import subprocess
 import tempfile
 import typing
 from multiprocessing.pool import ThreadPool
-from typing import Dict, List, Optional
-
-from colorama import Fore, Style
+from typing import List, Optional
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:

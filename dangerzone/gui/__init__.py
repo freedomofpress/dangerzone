@@ -1,12 +1,10 @@
 import enum
-import functools
 import logging
 import os
 import platform
 import signal
 import sys
 import typing
-import uuid
 from typing import Dict, List, Optional
 
 import click

@@ -19,7 +19,7 @@ def main():
     # Read the zipfile from stdin
     zf = sys.stdin.buffer.read(size)
     if len(zf) < size:
-        say(f"Client closed the connection early")
+        say("Client closed the connection early")
         return 1
 
     with tempfile.NamedTemporaryFile(suffix=".zip") as t:
@@ -27,10 +27,11 @@ def main():
         t.write(zf)
         t.flush()
 
-        say(f"Importing the conversion module")
+        say("Importing the conversion module")
         sys.path.insert(0, t.name)
 
         from dangerzone.conversion.doc_to_pixels import main
+
         return asyncio.run(main())
 
 

@@ -124,7 +124,7 @@ class Container(IsolationProvider):
                     [Container.get_runtime(), "rmi", "--force", found_image_id],
                     startupinfo=get_subprocess_startupinfo(),
                 )
-            except:
+            except Exception:
                 log.warning("Couldn't delete old container image, so leaving it there")
 
         return installed

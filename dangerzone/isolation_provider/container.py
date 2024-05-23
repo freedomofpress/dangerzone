@@ -11,6 +11,7 @@ from typing import Any, List, Optional
 
 from ..conversion import errors
 from ..document import Document
+from ..util import get_tmp_dir  # NOQA : required for mocking in our tests.
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import PIXELS_TO_PDF_LOG_END, PIXELS_TO_PDF_LOG_START, IsolationProvider
 

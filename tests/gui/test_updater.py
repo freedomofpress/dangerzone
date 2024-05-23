@@ -247,14 +247,14 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
 
     report = updater.check_for_updates()
     assert cooldown_spy.spy_return is True
-    assert updater.dangerzone.settings.get("updater_last_check") == curtime - 1
+    assert updater.dangerzone.settings.get("updater_last_check") == curtime - 1  # type: ignore [unreachable]
     assert_report_equal(report, UpdateReport())
 
     # Test 3: Advance the current time by <cooldown period> seconds. Ensure that
     # Dangerzone checks for updates again, and the last check timestamp gets bumped.
     curtime += updater_module.UPDATE_CHECK_COOLDOWN_SECS
     timestamp_mock.return_value = curtime
-    requests_mock.side_effect = None  # type: ignore [attr-defined]
+    requests_mock.side_effect = None
 
     report = updater.check_for_updates()
     assert cooldown_spy.spy_return is False
@@ -269,7 +269,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
 
     curtime += updater_module.UPDATE_CHECK_COOLDOWN_SECS
     timestamp_mock.return_value = curtime
-    requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
+    requests_mock.side_effect = Exception("failed")
 
     report = updater.check_for_updates()
     assert cooldown_spy.spy_return is False
@@ -406,11 +406,11 @@ def test_update_check_prompt(
 
     # Test 3 - Same as the previous test, but check that clicking on cancel stores the
     # opposite decision.
-    qt_updater.check = None
+    qt_updater.check = None  # type: ignore [unreachable]
 
     def click_cancel() -> None:
         dialog = qt_updater.dangerzone.app.activeWindow()
-        dialog.cancel_button.click()  # type: ignore [attr-defined]
+        dialog.cancel_button.click()
 
     QtCore.QTimer.singleShot(500, click_cancel)
     res = qt_updater.should_check_for_updates()

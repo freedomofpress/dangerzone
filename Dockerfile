@@ -61,7 +61,7 @@ RUN apk --no-cache -U upgrade && \
     py3-magic \
     font-noto-cjk
 
-COPY --from=pymupdf-build /usr/lib/python3.11/site-packages/fitz/ /usr/lib/python3.11/site-packages/fitz
+COPY --from=pymupdf-build /usr/lib/python3.12/site-packages/fitz/ /usr/lib/python3.12/site-packages/fitz
 COPY --from=tessdata-dl /usr/share/tessdata/ /usr/share/tessdata
 COPY --from=h2orestart-dl /libreoffice_ext/ /libreoffice_ext
 

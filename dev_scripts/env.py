@@ -83,7 +83,7 @@ Run Dangerzone in the development environment:
 
     env.py --distro ubuntu --version 22.04 run --dev bash
     user@dangerzone-dev:~$ cd dangerzone/
-    user@dangerzone-dev:~$ poetry run ./dev/scripts/dangerzone
+    user@dangerzone-dev:~$ poetry run ./dev_scripts/dangerzone
 
 Run Dangerzone in the end-user environment:
 

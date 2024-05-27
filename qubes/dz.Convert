@@ -1,2 +1,2 @@
-#!/bin/sh
+#!/usr/bin/sh
 python -m dangerzone.conversion.doc_to_pixels

@@ -258,6 +258,17 @@ install -m 755 -d %{buildroot}/etc/qubes-rpc
 install -m 755 qubes/* %{buildroot}/etc/qubes-rpc
 %endif
 
+%check
+# Detect if the filesystem has been affecting our file permissions.
+bad_files=$(find %{buildroot} -perm 0600)
+if [ -n "${bad_files}" ]; then
+    echo "Error while building the Dangerzone RPM. Detected the following files with wrong permissions (600):"
+    echo ${bad_files}
+    echo ""
+    echo "For more info about this error, see https://github.com/freedomofpress/dangerzone/issues/727"
+    exit 1
+fi
+
 %files -f %{pyproject_files}
 /usr/bin/dangerzone
 /usr/bin/dangerzone-cli

@@ -15,6 +15,7 @@ DZ_ASSETS = [
     "Dangerzone-{version}.msi",
     "Dangerzone-{version}-arm64.dmg",
     "Dangerzone-{version}-i686.dmg",
+    "dangerzone-{version}.tar.gz",
 ]
 DZ_SIGNING_PUBKEY = "DE28AB241FA48260FAC9B8BAA7C9B38522604281"
 

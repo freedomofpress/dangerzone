@@ -395,6 +395,14 @@ repo.
 
 To publish the release:
 
+- [ ] Create an archive of the Dangerzone source in `tar.gz` format:
+  * You can use the following command:
+
+    ```
+    export DZ_VERSION=$(cat share/version.txt)
+    git archive --format=tar.gz -o dangerzone-${DZ_VERSION:?}.tar.gz --prefix=dangerzone/ v${DZ_VERSION:?}
+    ```
+
 - [ ] Run container scan on the produced container images (some time may have passed since the artifacts were built)
 - [ ] Collect the assets in a single directory, calculate their SHA-256 hashes, and sign them.
   * You can use `./dev_scripts/sign-assets.py`, if you want to automate this

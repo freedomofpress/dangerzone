@@ -319,6 +319,12 @@ For the container image:
 gpg --verify container.tar.gz.asc container.tar.gz
 ```
 
+For the source package:
+
+```
+gpg --verify dangerzone-0.6.1.tar.gz.asc dangerzone-0.6.1.tar.gz
+```
+
 We also hash all the above files with SHA-256, and provide a list of these
 hashes as a separate file (`checksums-0.6.1.txt`). This file is signed as well,
 and the signature is embedded within it. You can download this file and verify

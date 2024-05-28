@@ -100,7 +100,7 @@ DOCKERFILE_UBUNTU_2004_DEPS = r"""
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
-    && apt-get install -y python-all curl wget gnupg2 \
+    && apt-get install -y python-all python3.9 curl wget gnupg2 \
     && rm -rf /var/lib/apt/lists/*
 RUN . /etc/os-release \
     && sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_$VERSION_ID/ /' \

@@ -17,7 +17,7 @@ DEFAULT_DEV = False
 DEFAULT_SHOW_DOCKERFILE = False
 DEFAULT_DOWNLOAD_PYSIDE6 = False
 
-PYSIDE6_VERSION = "6.6.3.1"
+PYSIDE6_VERSION = "6.7.1"
 PYSIDE6_RPM = "python3-pyside6-{pyside6_version}-1.fc{fedora_version}.x86_64.rpm"
 PYSIDE6_URL = (
     "https://packages.freedom.press/yum-tools-prod/dangerzone/f{fedora_version}/%s"

@@ -6,7 +6,6 @@ import os
 import shutil
 import subprocess
 import tempfile
-
 from pathlib import Path
 
 root = Path(__file__).parent.parent.parent

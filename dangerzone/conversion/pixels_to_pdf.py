@@ -4,6 +4,7 @@ Here are the steps, with progress bar percentages:
 - 50%-95%: Convert each page of pixels into a PDF (each page takes 45/n%, where n is the number of pages)
 - 95%-100%: Compress the final PDF
 """
+
 import asyncio
 import contextlib
 import glob

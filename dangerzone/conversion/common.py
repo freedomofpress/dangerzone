@@ -14,7 +14,9 @@ def running_on_qubes() -> bool:
 
 
 def get_tessdata_dir() -> str:
-    if running_on_qubes():
+    if os.environ.get("TESSDATA_PREFIX"):
+        return os.environ["TESSDATA_PREFIX"]
+    elif running_on_qubes():
         return "/usr/share/tesseract/tessdata/"
     else:
         return "/usr/share/tessdata/"

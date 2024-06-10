@@ -37,6 +37,7 @@ See [installing Dangerzone](INSTALL.md#linux) for adding the Linux repositories 
 ## Some features
 
 - Sandboxes don't have network access, so if a malicious document can compromise one, it can't phone home
+- Sandboxes use [gVisor](https://gvisor.dev/), an application kernel written in Go, that implements a substantial portion of the Linux system call interface.
 - Dangerzone can optionally OCR the safe PDFs it creates, so it will have a text layer again
 - Dangerzone compresses the safe PDF to reduce file size
 - After converting, Dangerzone lets you open the safe PDF in the PDF viewer of your choice, which allows you to open PDFs and office docs in Dangerzone by default so you never accidentally open a dangerous document

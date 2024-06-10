@@ -4,6 +4,7 @@ import platform
 import shlex
 import subprocess
 import typing
+from collections import OrderedDict
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -49,7 +50,7 @@ class DangerzoneGui(DangerzoneCore):
         # Preload font
         self.fixed_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
 
-        # Preload list of PDF viewers on computer
+        # Preload ordered list of PDF viewers on computer, starting with default
         self.pdf_viewers = self._find_pdf_viewers()
 
         # Are we done waiting (for Docker Desktop to be installed, or for container to install)
@@ -93,9 +94,22 @@ class DangerzoneGui(DangerzoneCore):
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.Popen(args)
 
-    def _find_pdf_viewers(self) -> Dict[str, str]:
-        pdf_viewers: Dict[str, str] = {}
+    def _find_pdf_viewers(self) -> OrderedDict[str, str]:
+        pdf_viewers: OrderedDict[str, str] = OrderedDict()
         if platform.system() == "Linux":
+            # Opportunistically query for default pdf handler
+            default_pdf_viewer = None
+            try:
+                default_pdf_viewer = subprocess.check_output(
+                    ["xdg-mime", "query", "default", "application/pdf"]
+                ).decode()
+            except (FileNotFoundError, subprocess.CalledProcessError) as e:
+                # Log it and continue
+                log.info(
+                    "xdg-mime query failed, default PDF handler could not be found."
+                )
+                log.debug(f"xdg-mime query failed: {e}")
+
             # Find all .desktop files
             for search_path in [
                 "/usr/share/applications",
@@ -108,14 +122,26 @@ class DangerzoneGui(DangerzoneCore):
                         if os.path.splitext(filename)[1] == ".desktop":
                             # See which ones can open PDFs
                             desktop_entry = DesktopEntry(full_filename)
+                            desktop_entry_name = desktop_entry.getName()
                             if (
                                 "application/pdf" in desktop_entry.getMimeTypes()
-                                and "dangerzone" not in desktop_entry.getName().lower()
+                                and "dangerzone" not in desktop_entry_name.lower()
                             ):
-                                pdf_viewers[desktop_entry.getName()] = (
+                                pdf_viewers[desktop_entry_name] = (
                                     desktop_entry.getExec()
                                 )
 
+                                # Put the default entry first
+                                if filename == default_pdf_viewer:
+                                    try:
+                                        pdf_viewers.move_to_end(
+                                            desktop_entry_name, last=False
+                                        )
+                                    except KeyError as e:
+                                        # Should be unreachable
+                                        log.error(
+                                            f"Problem reordering applications: {e}"
+                                        )
                 except FileNotFoundError:
                     pass
 

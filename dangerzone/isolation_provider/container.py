@@ -7,7 +7,7 @@ import shlex
 import shutil
 import subprocess
 import sys
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 from ..conversion import errors
 from ..document import Document
@@ -43,6 +43,39 @@ class Container(IsolationProvider):
             # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
             runtime_name = "docker"
         return runtime_name
+
+    @staticmethod
+    def get_runtime_version() -> Tuple[int, int]:
+        """Get the major/minor parts of the Docker/Podman version.
+
+        Some of the operations we perform in this module rely on some Podman features
+        that are not available across all of our platforms. In order to have a proper
+        fallback, we need to know the Podman version. More specifically, we're fine with
+        just knowing the major and minor version, since writing/installing a full-blown
+        semver parser is an overkill.
+        """
+        # Get the Docker/Podman version, using a Go template.
+        runtime = Container.get_runtime_name()
+        cmd = [runtime, "version", "-f", "{{.Client.Version}}"]
+        try:
+            version = subprocess.run(
+                cmd, capture_output=True, check=True
+            ).stdout.decode()
+        except Exception as e:
+            msg = f"Could not get the version of the {runtime.capitalize()} tool: {e}"
+            raise RuntimeError(msg) from e
+
+        # Parse this version and return the major/minor parts, since we don't need the
+        # rest.
+        try:
+            major, minor, _ = version.split(".", 3)
+            return (int(major), int(minor))
+        except Exception as e:
+            msg = (
+                f"Could not parse the version of the {runtime.capitalize()} tool"
+                f" (found: '{version}') due to the following error: {e}"
+            )
+            raise RuntimeError(msg)
 
     @staticmethod
     def get_runtime() -> str:

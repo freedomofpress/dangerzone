@@ -198,14 +198,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -303,14 +302,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -493,8 +491,8 @@ jobs:
     steps:
       - run: *install-dependencies-deb
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-deb
 
@@ -578,8 +576,8 @@ jobs:
     steps:
       - run: *install-dependencies-rpm
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-rpm
       - run: *build-rpm-qubes

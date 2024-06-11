@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import platform
@@ -6,7 +8,7 @@ import subprocess
 import typing
 from collections import OrderedDict
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 from colorama import Fore
 

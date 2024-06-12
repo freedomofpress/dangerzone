@@ -42,6 +42,13 @@ class NonPDFOutputFileException(DocumentFilenameException):
         super().__init__("Safe PDF filename must end in '.pdf'")
 
 
+class IllegalOutputFilenameException(DocumentFilenameException):
+    """Exception for when the output file contains illegal characters."""
+
+    def __init__(self, char: str) -> None:
+        super().__init__(f"Illegal character: {char}")
+
+
 class UnwriteableOutputDirException(DocumentFilenameException):
     """Exception for when the output file is not writeable."""
 

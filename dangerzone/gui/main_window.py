@@ -810,23 +810,29 @@ class SettingsWidget(QtWidgets.QWidget):
         self.safe_extension = QtWidgets.QLineEdit()
         self.safe_extension.setStyleSheet("margin-left: -6px;")  # no left margin
         self.safe_extension.textChanged.connect(self.update_ui)
-        self.safe_extension_invalid = QtWidgets.QLabel("(must end in .pdf)")
+        self.safe_extension_invalid = QtWidgets.QLabel("")
         self.safe_extension_invalid.setStyleSheet("color: red")
         self.safe_extension_invalid.hide()
         self.safe_extension_name_layout = QtWidgets.QHBoxLayout()
         self.safe_extension_name_layout.setSpacing(0)
         self.safe_extension_name_layout.addWidget(self.safe_extension_filename)
         self.safe_extension_name_layout.addWidget(self.safe_extension)
-
         # FIXME: Workaround for https://github.com/freedomofpress/dangerzone/issues/339.
         # We should drop this once we drop Ubuntu Focal support.
         if hasattr(QtGui, "QRegularExpressionValidator"):
-            dot_pdf_regex = QtCore.QRegularExpression(r".*\.[Pp][Dd][Ff]")
-            validator = QtGui.QRegularExpressionValidator(dot_pdf_regex)
+            QRegEx = QtCore.QRegularExpression
+            QRegExValidator = QtGui.QRegularExpressionValidator
         else:
-            dot_pdf_regex = QtCore.QRegExp(r".*\.[Pp][Dd][Ff]")  # type: ignore [assignment]
-            validator = QtGui.QRegExpValidator(dot_pdf_regex)  # type: ignore [call-overload]
-        self.safe_extension.setValidator(validator)
+            QRegEx = QtCore.QRegExp  # type: ignore [assignment]
+            QRegExValidator = QtGui.QRegExpValidator  # type: ignore [assignment]
+        self.dot_pdf_validator = QRegExValidator(QRegEx(r".*\.[Pp][Dd][Ff]"))
+        if platform.system() == "Linux":
+            illegal_chars_regex = r"[/]"
+        elif platform.system() == "Darwin":
+            illegal_chars_regex = r"[\\]"
+        else:
+            illegal_chars_regex = r"[\"*/:<>?\\|]"
+        self.illegal_chars_regex = QRegEx(illegal_chars_regex)
         self.safe_extension_layout = QtWidgets.QHBoxLayout()
         self.safe_extension_layout.addWidget(self.save_checkbox)
         self.safe_extension_layout.addWidget(self.safe_extension_label)
@@ -969,14 +975,32 @@ class SettingsWidget(QtWidgets.QWidget):
             # ignore validity if not saving file
             self.safe_extension_invalid.hide()
             return True
+        return (
+            self.check_safe_extension_illegal_chars()
+            and self.check_safe_extension_dot_pdf()
+        )
 
-        if self.safe_extension.hasAcceptableInput():
-            self.safe_extension_invalid.hide()
-            return True
-        else:
-            # prevent starting conversion until correct
-            self.safe_extension_invalid.show()
+    def check_safe_extension_illegal_chars(self) -> bool:
+        match = self.illegal_chars_regex.match(self.safe_extension.text())
+        if match.hasMatch():
+            self.set_safe_extension_invalid_label(
+                f"illegal character: {match.captured()}"
+            )
             return False
+        self.safe_extension_invalid.hide()
+        return True
+
+    def check_safe_extension_dot_pdf(self) -> bool:
+        self.safe_extension.setValidator(self.dot_pdf_validator)
+        if not self.safe_extension.hasAcceptableInput():
+            self.set_safe_extension_invalid_label("must end in .pdf")
+            return False
+        self.safe_extension_invalid.hide()
+        return True
+
+    def set_safe_extension_invalid_label(self, string: str) -> None:
+        self.safe_extension_invalid.setText(string)
+        self.safe_extension_invalid.show()
 
     def check_either_save_or_open(self) -> bool:
         return (

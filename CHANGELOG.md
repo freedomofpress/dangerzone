@@ -12,6 +12,15 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Fix a deprecation warning in PySide6, thanks to [@naglis](https://github.com/naglis) ([issue #595](https://github.com/freedomofpress/dangerzone/issues/595))
 - Make update notifications work in systems with PySide2, thanks to [@naglis](https://github.com/naglis) ([issue #788](https://github.com/freedomofpress/dangerzone/issues/788))
 
+### Security
+
+- Integrate Dangerzone with gVisor, a memory-safe application kernel, thanks to [@EtiennePerot](https://github.com/EtiennePerot) ([#126](https://github.com/freedomofpress/dangerzone/issues/126))
+  As a result of this integration, we have also improved Dangerzone's security
+  in the following ways:
+  * Prevent attacker from becoming root within the container ([#224](https://github.com/freedomofpress/dangerzone/issues/224))
+  * Use a restricted seccomp profile ([#225](https://github.com/freedomofpress/dangerzone/issues/225))
+  * Make use of user namespaces ([#228](https://github.com/freedomofpress/dangerzone/issues/228))
+
 ## Dangerzone 0.6.1
 
 ### Added

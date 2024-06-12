@@ -50,7 +50,7 @@ RUN mkdir /libreoffice_ext && cd libreoffice_ext \
 ###########################################
 # Dangerzone image
 
-FROM alpine:latest
+FROM alpine:latest AS dangerzone-image
 
 # Install dependencies
 RUN apk --no-cache -U upgrade && \
@@ -68,15 +68,49 @@ COPY --from=h2orestart-dl /libreoffice_ext/ /libreoffice_ext
 
 RUN install -dm777 "/usr/lib/libreoffice/share/extensions/"
 
-ENV PYTHONPATH=/opt/dangerzone
-
 RUN mkdir -p /opt/dangerzone/dangerzone
 RUN touch /opt/dangerzone/dangerzone/__init__.py
 COPY conversion /opt/dangerzone/dangerzone/conversion
 
-# Add the unprivileged user
-RUN adduser -s /bin/sh -D dangerzone
+# Add the unprivileged user. Set the UID/GID of the dangerzone user/group to
+# 1000, since we will point to it from the OCI config.
+#
+# NOTE: A tmpfs will be mounted over /home/dangerzone directory,
+# so nothing within it from the image will be persisted.
+RUN addgroup -g 1000 dangerzone && \
+    adduser -u 1000 -s /bin/true -G dangerzone -h /home/dangerzone -D dangerzone
+
+###########################################
+# gVisor wrapper image
+
+FROM alpine:latest
+
+RUN apk --no-cache -U upgrade && \
+    apk --no-cache add python3
+
+RUN GVISOR_URL="https://storage.googleapis.com/gvisor/releases/release/latest/$(uname -m)"; \
+    wget "${GVISOR_URL}/runsc" "${GVISOR_URL}/runsc.sha512" && \
+    sha512sum -c runsc.sha512 && \
+    rm -f runsc.sha512 && \
+    chmod 555 runsc && \
+    mv runsc /usr/bin/
+
+# Add the unprivileged `dangerzone` user.
+RUN addgroup dangerzone && \
+    adduser -s /bin/true -G dangerzone -h /home/dangerzone -D dangerzone
+
+# Switch to the dangerzone user for the rest of the script.
 USER dangerzone
 
-# /safezone is a directory through which Pixels to PDF receives files
-VOLUME /safezone
+# Copy the Dangerzone image, as created by the previous steps, into the home
+# directory of the `dangerzone` user.
+RUN mkdir /home/dangerzone/dangerzone-image
+COPY --from=dangerzone-image / /home/dangerzone/dangerzone-image/rootfs
+
+# Create a directory that will be used by gVisor as the place where it will
+# store the state of its containers.
+RUN mkdir /home/dangerzone/.containers
+
+COPY gvisor_wrapper/entrypoint.py /
+
+ENTRYPOINT ["/entrypoint.py"]

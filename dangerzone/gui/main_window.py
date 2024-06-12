@@ -107,7 +107,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toggle_updates_action.triggered.connect(self.toggle_updates_triggered)
         self.toggle_updates_action.setCheckable(True)
         self.toggle_updates_action.setChecked(
-            bool(self.dangerzone.settings.get("updater_check"))
+            bool(self.dangerzone.settings.get("updater_release_check"))
         )
 
         # Add the "Exit" action
@@ -184,8 +184,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def show_update_success(self) -> None:
         """Inform the user about a new Dangerzone release."""
-        version = self.dangerzone.settings.get("updater_latest_version")
-        changelog = self.dangerzone.settings.get("updater_latest_changelog")
+        version = self.dangerzone.settings.get("updater_release_latest_version")
+        changelog = self.dangerzone.settings.get("updater_release_latest_changelog")
 
         changelog_widget = CollapsibleBox("What's New?")
         changelog_layout = QtWidgets.QVBoxLayout()
@@ -230,7 +230,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def toggle_updates_triggered(self) -> None:
         """Change the underlying update check settings based on the user's choice."""
         check = self.toggle_updates_action.isChecked()
-        self.dangerzone.settings.set("updater_check", check)
+        self.dangerzone.settings.set("updater_release_check", check)
         self.dangerzone.settings.save()
 
     def handle_updates(self, report: UpdateReport) -> None:
@@ -274,8 +274,12 @@ class MainWindow(QtWidgets.QMainWindow):
             hamburger_menu.insertAction(sep, error_action)
         else:
             log.debug(f"Handling new version: {report.version}")
-            self.dangerzone.settings.set("updater_latest_version", report.version)
-            self.dangerzone.settings.set("updater_latest_changelog", report.changelog)
+            self.dangerzone.settings.set(
+                "updater_release_latest_version", report.version
+            )
+            self.dangerzone.settings.set(
+                "updater_release_latest_changelog", report.changelog
+            )
             self.dangerzone.settings.set("updater_errors", 0)
 
             # FIXME: Save the settings to the filesystem only when they have really changed,

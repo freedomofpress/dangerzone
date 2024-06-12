@@ -126,11 +126,11 @@ class UpdaterThread(QtCore.QThread):
 
     @property
     def check(self) -> Optional[bool]:
-        return self.dangerzone.settings.get("updater_check")
+        return self.dangerzone.settings.get("updater_release_check")
 
     @check.setter
     def check(self, val: bool) -> None:
-        self.dangerzone.settings.set("updater_check", val, autosave=True)
+        self.dangerzone.settings.set("updater_release_check", val, autosave=True)
 
     def prompt_for_checks(self) -> Optional[bool]:
         """Ask the user if they want to be informed about Dangerzone updates."""
@@ -256,12 +256,14 @@ class UpdaterThread(QtCore.QThread):
         2. In GitHub, by hitting the latest releases API.
         """
         log.debug("Checking for Dangerzone updates")
-        latest_version = self.dangerzone.settings.get("updater_latest_version")
+        latest_version = self.dangerzone.settings.get("updater_release_latest_version")
         if version.parse(get_version()) < version.parse(latest_version):
             log.debug("Determined that there is an update due to cached results")
             return UpdateReport(
                 version=latest_version,
-                changelog=self.dangerzone.settings.get("updater_latest_changelog"),
+                changelog=self.dangerzone.settings.get(
+                    "updater_release_latest_changelog"
+                ),
             )
 
         # If the previous check happened before the cooldown period expires, do not

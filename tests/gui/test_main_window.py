@@ -38,7 +38,7 @@ def test_default_menu(
     updater: UpdaterThread,
 ) -> None:
     """Check that the default menu entries are in order."""
-    updater.dangerzone.settings.set("updater_check", True)
+    updater.dangerzone.settings.set("updater_release_check", True)
 
     window = MainWindow(updater.dangerzone)
     menu_actions = window.hamburger_button.menu().actions()
@@ -56,7 +56,7 @@ def test_default_menu(
 
     toggle_updates_action.trigger()
     assert not toggle_updates_action.isChecked()
-    assert updater.dangerzone.settings.get("updater_check") is False
+    assert updater.dangerzone.settings.get("updater_release_check") is False
 
 
 def test_no_update(
@@ -69,12 +69,12 @@ def test_no_update(
     # Check that when no update is detected, e.g., due to update cooldown, an empty
     # report is received that does not affect the menu entries.
     curtime = int(time.time())
-    updater.dangerzone.settings.set("updater_check", True)
+    updater.dangerzone.settings.set("updater_release_check", True)
     updater.dangerzone.settings.set("updater_errors", 9)
     updater.dangerzone.settings.set("updater_last_check", curtime)
 
     expected_settings = default_updater_settings()
-    expected_settings["updater_check"] = True
+    expected_settings["updater_release_check"] = True
     expected_settings["updater_errors"] = 0  # errors must be cleared
     expected_settings["updater_last_check"] = curtime
 
@@ -107,7 +107,7 @@ def test_update_detected(
 ) -> None:
     """Test that a newly detected version leads to a notification to the user."""
 
-    qt_updater.dangerzone.settings.set("updater_check", True)
+    qt_updater.dangerzone.settings.set("updater_release_check", True)
     qt_updater.dangerzone.settings.set("updater_last_check", 0)
     qt_updater.dangerzone.settings.set("updater_errors", 9)
 
@@ -138,12 +138,12 @@ def test_update_detected(
 
     # Check that the settings have been updated properly.
     expected_settings = default_updater_settings()
-    expected_settings["updater_check"] = True
+    expected_settings["updater_release_check"] = True
     expected_settings["updater_last_check"] = qt_updater.dangerzone.settings.get(
         "updater_last_check"
     )
-    expected_settings["updater_latest_version"] = "99.9.9"
-    expected_settings["updater_latest_changelog"] = "<p>changelog</p>"
+    expected_settings["updater_release_latest_version"] = "99.9.9"
+    expected_settings["updater_release_latest_changelog"] = "<p>changelog</p>"
     expected_settings["updater_errors"] = 0
     assert qt_updater.dangerzone.settings.get_updater_settings() == expected_settings
 
@@ -219,7 +219,7 @@ def test_update_error(
 ) -> None:
     """Test that an error during an update check leads to a notification to the user."""
     # Test 1 - Check that the first error does not notify the user.
-    qt_updater.dangerzone.settings.set("updater_check", True)
+    qt_updater.dangerzone.settings.set("updater_release_check", True)
     qt_updater.dangerzone.settings.set("updater_last_check", 0)
     qt_updater.dangerzone.settings.set("updater_errors", 0)
 
@@ -246,7 +246,7 @@ def test_update_error(
 
     # Check that the settings have been updated properly.
     expected_settings = default_updater_settings()
-    expected_settings["updater_check"] = True
+    expected_settings["updater_release_check"] = True
     expected_settings["updater_last_check"] = qt_updater.dangerzone.settings.get(
         "updater_last_check"
     )

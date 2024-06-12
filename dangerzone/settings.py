@@ -26,6 +26,8 @@ class Settings:
         )
         self.default_settings: Dict[str, Any] = self.generate_default_settings()
         self.load()
+        self.migrate_settings()
+        self.save()
 
     @classmethod
     def generate_default_settings(cls) -> Dict[str, Any]:
@@ -37,13 +39,32 @@ class Settings:
             "open": True,
             "open_app": None,
             "safe_extension": SAFE_EXTENSION,
-            "updater_check": None,
-            "updater_last_check": None,  # last check in UNIX epoch (secs since 1970)
             # FIXME: How to invalidate those if they change upstream?
-            "updater_latest_version": get_version(),
-            "updater_latest_changelog": "",
+            "updater_last_check": None,  # last check in UNIX epoch (secs since 1970)
             "updater_errors": 0,
+            "updater_release_check": None,
+            "updater_release_latest_version": get_version(),
+            "updater_release_latest_changelog": "",
+            "updater_docker_check": None,
+            "updater_docker_latest_version": None,
+            "updater_docker_latest_changelog": "",
         }
+
+    def migrate_settings(self):
+        # Backward compatibility layer for the settings.
+        name_replacements = (
+            # Some `updater_*` settings have been replaced with their
+            # `updater_release_*` counterpart to better differenciate the type of
+            # updates they are tracking, (as we are also checking for Docker Desktop
+            # updates).
+            ("updater_check", "updater_release_check"),
+            ("updater_latest_version", "updater_release_latest_version"),
+            ("updater_latest_changelog", "updater_release_latest_changelog"),
+        )
+
+        for old_name, new_name in name_replacements:
+            if old_name in self.settings:
+                self.settings.set(new_name, self.settings.pop(old_name))
 
     def get(self, key: str) -> Any:
         return self.settings[key]
@@ -75,7 +96,8 @@ class Settings:
                 for key in self.default_settings:
                     if key not in self.settings:
                         self.settings[key] = self.default_settings[key]
-                    elif key == "updater_latest_version":
+                    elif key == "updater_release_latest_version":
+                        # Update the version with the current one if needed
                         if version.parse(get_version()) > version.parse(self.get(key)):
                             self.set(key, get_version())
 
@@ -87,8 +109,6 @@ class Settings:
             # Save with default settings
             log.info("Settings file doesn't exist, starting with default")
             self.settings = self.default_settings
-
-        self.save()
 
     def save(self) -> None:
         os.makedirs(self.dangerzone.appdata_path, exist_ok=True)

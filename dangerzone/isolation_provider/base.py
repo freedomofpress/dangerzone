@@ -172,8 +172,14 @@ class IsolationProvider(ABC):
             page_pdf_bytes = self.ocr_page(pixmap, ocr_lang)
         else:  # Don't OCR
             page_doc = fitz.Document()
-            page_doc.insert_file(pixmap)
-            page_pdf_bytes = page_doc.tobytes(deflate_images=True)
+            # Added in PyMuPDF 1.22.0 (commit 6a9c9d8175c307f7f3baf605c8632745f69a8b1b)
+            if hasattr(page_doc, "insert_file"):
+                page_doc.insert_file(pixmap)
+                page_pdf_bytes = page_doc.tobytes(deflate_images=True)
+            else:
+                page = page_doc.newPage()
+                page.insertImage(page.rect, pixmap=pixmap)
+                page_pdf_bytes = page_doc.write(deflate=True)
 
         return fitz.open("pdf", page_pdf_bytes)
 
@@ -240,11 +246,26 @@ class IsolationProvider(ABC):
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()
 
-        safe_doc.save(document.output_filename)
+        if hasattr(safe_doc, "tobytes"):
+            pdf_bytes = safe_doc.tobytes()
+        else:
+            pdf_bytes = safe_doc.write()
+        with open(document.output_filename, "wb+") as f:
+            f.write(pdf_bytes)
 
         # TODO handle leftover code input
         text = "Converted document"
         self.print_progress(document, False, text, percentage)
+
+        if getattr(sys, "dangerzone_dev", False):
+            assert p.stderr
+            debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
+            log.info(
+                "Conversion output (doc to pixels)\n"
+                f"{DOC_TO_PIXELS_LOG_START}\n"
+                f"{debug_log}"  # no need for an extra newline here
+                f"{DOC_TO_PIXELS_LOG_END}"
+            )
 
     def print_progress(
         self, document: Document, error: bool, text: str, percentage: float
@@ -354,13 +375,3 @@ class IsolationProvider(ABC):
             self.ensure_stop_doc_to_pixels_proc(
                 document, p, timeout_grace=timeout_grace, timeout_force=timeout_force
             )
-
-            if getattr(sys, "dangerzone_dev", False):
-                assert p.stderr
-                debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
-                log.info(
-					"Conversion output (doc to pixels)\n"
-					f"{DOC_TO_PIXELS_LOG_START}\n"
-					f"{debug_log}"  # no need for an extra newline here
-					f"{DOC_TO_PIXELS_LOG_END}"
-                )

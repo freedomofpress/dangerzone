@@ -13,7 +13,7 @@ from colorama import Fore, Style
 from ..conversion import errors
 from ..conversion.common import DEFAULT_DPI, INT_BYTES
 from ..document import Document
-from ..util import get_tessdata_dir, replace_control_chars
+from ..util import get_tessdata_dir, replace_control_chars, PYMUPDF_OCR_SUPPORT, PYMUPDF_TESSDATA_SUPPORT
 
 log = logging.getLogger(__name__)
 
@@ -95,13 +95,13 @@ class IsolationProvider(ABC):
         This operation is particularly tricky, since we have to handle various PyMuPDF
         versions.
         """
-        if int(fitz.version[2]) >= 20230621000001:
+        if PYMUPDF_OCR_SUPPORT and PYMUPDF_TESSDATA_SUPPORT:
             return pixmap.pdfocr_tobytes(
                 compress=True,
                 language=ocr_lang,
                 tessdata=get_tessdata_dir(),
             )
-        else:
+        elif PYMUPDF_OCR_SUPPORT and not PYMUPDF_TESSDATA_SUPPORT:
             # XXX: In PyMuPDF v1.22.5, the function signature of
             # `pdfocr_tobytes()` / `pdfocr_save()` was extended with an argument
             # to explicitly set the Tesseract data dir [1].
@@ -132,6 +132,20 @@ class IsolationProvider(ABC):
                 compress=True,
                 language=ocr_lang,
             )
+        else:
+            import pyocr, os
+            from PIL import Image
+
+            img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
+            img.info["dpi"] = (150, 150)
+            fd = os.memfd_create("ocr_page")
+            f = os.fdopen(fd, "rb")
+            filename = f"/proc/self/fd/{fd}"
+            with tempfile.TemporaryDirectory() as d:
+                base_path = Path(d) / "ocr_page"
+                base_path.with_suffix(".pdf").symlink_to(filename)
+                r = pyocr.libtesseract.image_to_pdf(img, str(base_path), ocr_lang)
+                return f.read()
 
     def pixels_to_pdf_page(
         self,
@@ -148,7 +162,11 @@ class IsolationProvider(ABC):
             untrusted_data,
             False,
         )
-        pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
+        # Added in PyMuPDF 1.18.13 (commit 0036041a5398c07e6574c847513bcd48c4961376)
+        if hasattr(pixmap, "set_dpi"):
+            pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
+        else:
+            pixmap.setResolution(DEFAULT_DPI, DEFAULT_DPI)
 
         if ocr_lang:  # OCR the document
             page_pdf_bytes = self.ocr_page(pixmap, ocr_lang)
@@ -212,7 +230,12 @@ class IsolationProvider(ABC):
                     height,
                     ocr_lang,
                 )
-                safe_doc.insert_pdf(page_pdf)
+
+                # Added in PyMuPDF 1.18.7 (commit b469ab92b8ba5698044ebf4ebe4f65c079682d77)
+                if hasattr(safe_doc, "insert_pdf"):
+                    safe_doc.insert_pdf(page_pdf)
+                else:
+                    safe_doc.insertPDF(page_pdf)
 
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()

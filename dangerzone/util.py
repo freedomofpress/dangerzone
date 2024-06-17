@@ -1,12 +1,21 @@
+import fitz
 import os
 import pathlib
 import platform
 import subprocess
 import sys
 import unicodedata
+from packaging import version
 from typing import Optional
 
 import appdirs
+
+# From https://pymupdf.readthedocs.io/en/latest/pixmap.html#Pixmap.pdfocr_tobytes:
+#
+#   * New in v1.19.0
+#   * Changed in v1.22.5: Support of new parameter for Tesseract’s tessdata.
+PYMUPDF_OCR_SUPPORT = version.parse(fitz.version[0]) >= version.parse("1.19.0")
+PYMUPDF_TESSDATA_SUPPORT = version.parse(fitz.version[0]) >= version.parse("1.22.5")
 
 
 def get_config_dir() -> str:

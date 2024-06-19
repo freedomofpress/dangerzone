@@ -165,20 +165,38 @@ class IsolationProvider(ABC):
         # Added in PyMuPDF 1.18.13 (commit 0036041a5398c07e6574c847513bcd48c4961376)
         if hasattr(pixmap, "set_dpi"):
             pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
-        else:
+        elif hasattr(pixmap, "setResolution"):
             pixmap.setResolution(DEFAULT_DPI, DEFAULT_DPI)
 
         if ocr_lang:  # OCR the document
             page_pdf_bytes = self.ocr_page(pixmap, ocr_lang)
         else:  # Don't OCR
-            page_doc = fitz.Document()
             # Added in PyMuPDF 1.22.0 (commit 6a9c9d8175c307f7f3baf605c8632745f69a8b1b)
+            page_doc = fitz.Document()
             if hasattr(page_doc, "insert_file"):
                 page_doc.insert_file(pixmap)
+            else:
+                rect = pixmap.irect
+                if hasattr(pixmap, "tobytes"):
+                    page_img = fitz.Document("png", pixmap.tobytes())
+                else:
+                    page_img = fitz.Document("png", pixmap.getImageData())
+                if hasattr(pixmap, "convert_to_pdf"):
+                    pdfbytes = page_img.convert_to_pdf()
+                else:
+                    pdfbytes = page_img.convertToPDF()
+                imgPDF = fitz.open("pdf", pdfbytes)
+                if hasattr(page_doc, "new_page"):
+                    page = page_doc.new_page(width=rect.width, height=rect.height)
+                else:
+                    page = page_doc.newPage(width=rect.width, height=rect.height)
+                if hasattr(page_doc, "show_pdf_page"):
+                    page.show_pdf_page(rect, imgPDF, 0)
+                else:
+                    page.showPDFpage(rect, imgPDF, 0)
+            if hasattr(page_doc, "tobytes"):
                 page_pdf_bytes = page_doc.tobytes(deflate_images=True)
             else:
-                page = page_doc.newPage()
-                page.insertImage(page.rect, pixmap=pixmap)
                 page_pdf_bytes = page_doc.write(deflate=True)
 
         return fitz.open("pdf", page_pdf_bytes)

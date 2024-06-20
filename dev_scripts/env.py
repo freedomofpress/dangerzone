@@ -618,26 +618,23 @@ class Env:
             # NOTE: For Fedora 39+ onward, we check if a PySide6 RPM package exists in
             # the user's system. If not, we either throw an error or download it from
             # FPF's repo, according to the user's choice.
-            # FIXME: Unconditionally check for PySide6, once Fedora 38 is no longer
-            # supported.
-            if self.version != "38":
-                pyside6 = PySide6Manager(self.distro, self.version)
-                if not pyside6.is_rpm_present:
-                    if download_pyside6:
-                        pyside6.download_rpm()
-                    else:
-                        print(
-                            PYSIDE6_NOT_FOUND_ERROR.format(
-                                pyside6_local_path=pyside6.rpm_local_path,
-                                pyside6_url=pyside6.rpm_url,
-                            ),
-                            file=sys.stderr,
-                        )
-                        return 1
-                shutil.copy(pyside6.rpm_local_path, build_dir / pyside6.rpm_name)
-                install_deps = (
-                    DOCKERFILE_BUILD_FEDORA_DEPS + DOCKERFILE_BUILD_FEDORA_39_DEPS
-                ).format(pyside6_rpm=pyside6.rpm_name)
+            pyside6 = PySide6Manager(self.distro, self.version)
+            if not pyside6.is_rpm_present:
+                if download_pyside6:
+                    pyside6.download_rpm()
+                else:
+                    print(
+                        PYSIDE6_NOT_FOUND_ERROR.format(
+                            pyside6_local_path=pyside6.rpm_local_path,
+                            pyside6_url=pyside6.rpm_url,
+                        ),
+                        file=sys.stderr,
+                    )
+                    return 1
+            shutil.copy(pyside6.rpm_local_path, build_dir / pyside6.rpm_name)
+            install_deps = (
+                DOCKERFILE_BUILD_FEDORA_DEPS + DOCKERFILE_BUILD_FEDORA_39_DEPS
+            ).format(pyside6_rpm=pyside6.rpm_name)
         else:
             install_deps = DOCKERFILE_BUILD_DEBIAN_DEPS
             if self.distro == "ubuntu" and self.version in ("20.04", "focal"):

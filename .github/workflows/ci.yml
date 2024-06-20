@@ -170,7 +170,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - version: "38"
           - version: "39"
           - version: "40"
     steps:

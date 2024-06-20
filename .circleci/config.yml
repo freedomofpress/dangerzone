@@ -327,33 +327,6 @@ jobs:
             ./dev_scripts/env.py --distro fedora --version 39 run --dev \
                 bash -c 'cd dangerzone; poetry run make test'
 
-  ci-fedora-38:
-    machine:
-      image: ubuntu-2004:202111-01
-    steps:
-      - checkout
-      - run: *install-podman
-
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
-      - run: *copy-image
-
-      - run:
-          name: Prepare Dangerzone environment
-          command: |
-            ./dev_scripts/env.py --distro fedora --version 38 build-dev
-
-      - run:
-          name: Run CI tests
-          command: |
-            ./dev_scripts/env.py --distro fedora --version 38 run --dev \
-                bash -c 'cd dangerzone; poetry run make test'
-
   ci-debian-trixie:
     machine:
       image: ubuntu-2004:202111-01
@@ -579,20 +552,6 @@ jobs:
       - run: *build-rpm
       - run: *build-rpm-qubes
 
-  build-fedora-38:
-    docker:
-      - image: fedora:38
-    resource_class: medium+
-    steps:
-      - run: *install-dependencies-rpm
-      - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
-      - run: *copy-image
-      - run: *build-rpm
-      - run: *build-rpm-qubes
-
-
 workflows:
   version: 2
 
@@ -630,9 +589,6 @@ workflows:
       - ci-fedora-39:
           requires:
             - build-container-image
-      - ci-fedora-38:
-          requires:
-            - build-container-image
       # FIXME: Currently disabled because `stdeb` does not work with Python
       # 3.12, which is the default in Ubuntu Noble. See also:
       # https://github.com/freedomofpress/dangerzone/issues/773
@@ -662,8 +618,5 @@ workflows:
           requires:
             - build-container-image
       - build-fedora-39:
-          requires:
-            - build-container-image
-      - build-fedora-38:
           requires:
             - build-container-image

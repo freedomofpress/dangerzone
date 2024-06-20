@@ -18,7 +18,6 @@ Dangerzone is available for:
 - Debian 11 (bullseye)
 - Fedora 40
 - Fedora 39
-- Fedora 38
 - Qubes OS (beta support)
 
 ### Ubuntu, Debian
@@ -202,8 +201,8 @@ After confirming that it matches, type `y` (for yes) and the installation should
 
 > [!IMPORTANT]
 > This section will install Dangerzone in your **default template**
-> (`fedora-38` as of writing this). If you want to install it in a different
-> one, make sure to replace `fedora-38` with the template of your choice.
+> (`fedora-40` as of writing this). If you want to install it in a different
+> one, make sure to replace `fedora-40` with the template of your choice.
 
 The following steps must be completed once. Make sure you run them in the
 specified qubes.
@@ -220,7 +219,7 @@ Create a **disposable**, offline app qube (`dz-dvm`), based on your default
 template. This will be the qube where the documents will be sanitized:
 
 ```
-qvm-create --class AppVM --label red --template fedora-38 \
+qvm-create --class AppVM --label red --template fedora-40 \
     --prop netvm="" --prop template_for_dispvms=True \
     --prop default_dispvm='' dz-dvm
 ```
@@ -233,7 +232,7 @@ document, with the following contents:
 dz.Convert         *       @anyvm       @dispvm:dz-dvm  allow
 ```
 
-#### In the `fedora-38` template
+#### In the `fedora-40` template
 
 Install Dangerzone:
 

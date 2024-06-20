@@ -21,6 +21,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   * Use a restricted seccomp profile ([#225](https://github.com/freedomofpress/dangerzone/issues/225))
   * Make use of user namespaces ([#228](https://github.com/freedomofpress/dangerzone/issues/228))
 
+## Removed
+
+- Platform support: Drop Fedora 38, since it's end-of-life ([issue #840](https://github.com/freedomofpress/dangerzone/pull/840))
+
 ## Dangerzone 0.6.1
 
 ### Added

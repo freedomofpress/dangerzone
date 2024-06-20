@@ -75,8 +75,6 @@ jobs:
       matrix:
         include:
           - distro: fedora
-            version: 38
-          - distro: fedora
             version: 39
           - distro: fedora
             version: 40

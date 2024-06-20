@@ -167,6 +167,8 @@ class IsolationProvider(ABC):
             pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
         elif hasattr(pixmap, "setResolution"):
             pixmap.setResolution(DEFAULT_DPI, DEFAULT_DPI)
+        else:
+            print("Could not set a DPI")
 
         if ocr_lang:  # OCR the document
             page_pdf_bytes = self.ocr_page(pixmap, ocr_lang)
@@ -181,7 +183,7 @@ class IsolationProvider(ABC):
                     page_img = fitz.Document("png", pixmap.tobytes())
                 else:
                     page_img = fitz.Document("png", pixmap.getImageData())
-                if hasattr(pixmap, "convert_to_pdf"):
+                if hasattr(page_img, "convert_to_pdf"):
                     pdfbytes = page_img.convert_to_pdf()
                 else:
                     pdfbytes = page_img.convertToPDF()
@@ -190,7 +192,7 @@ class IsolationProvider(ABC):
                     page = page_doc.new_page(width=rect.width, height=rect.height)
                 else:
                     page = page_doc.newPage(width=rect.width, height=rect.height)
-                if hasattr(page_doc, "show_pdf_page"):
+                if hasattr(page, "show_pdf_page"):
                     page.show_pdf_page(rect, imgPDF, 0)
                 else:
                     page.showPDFpage(rect, imgPDF, 0)

@@ -14,7 +14,9 @@ import appdirs
 #
 #   * New in v1.19.0
 #   * Changed in v1.22.5: Support of new parameter for Tesseract’s tessdata.
-PYMUPDF_OCR_SUPPORT = version.parse(fitz.version[0]) >= version.parse("1.19.0")
+#
+# XXX: Ubuntu Jammy has version 1.19.2 but is not built with OCR support.
+PYMUPDF_OCR_SUPPORT = version.parse(fitz.version[0]) >= version.parse("1.23.8")
 PYMUPDF_TESSDATA_SUPPORT = version.parse(fitz.version[0]) >= version.parse("1.22.5")
 
 
@@ -67,10 +69,16 @@ def get_tessdata_dir() -> str:
 
     fedora_tessdata_dir = "/usr/share/tesseract/tessdata/"
     debian_tessdata_dir = "/usr/share/tessdata/"
+    ubuntu_tessdata_dir = "/usr/share/tesseract-ocr/4.00/tessdata/"
+    debian2_tessdata_dir = "/usr/share/tesseract-ocr/5/tessdata/"
     if os.path.isdir(fedora_tessdata_dir):
         return fedora_tessdata_dir
     if os.path.isdir(debian_tessdata_dir):
         return debian_tessdata_dir
+    elif os.path.isdir(ubuntu_tessdata_dir):
+        return ubuntu_tessdata_dir
+    elif os.path.isdir(debian2_tessdata_dir):
+        return debian2_tessdata_dir
     else:
         raise RuntimeError("Tesseract language data are not installed in the system")
 

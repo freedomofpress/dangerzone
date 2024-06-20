@@ -5,25 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [0.7.0](https://github.com/freedomofpress/dangerzone/compare/v0.7.0...v0.6.1)
+
+### Added
+
+- Integrate Dangerzone with gVisor, a memory-safe application kernel, thanks to [@EtiennePerot](https://github.com/EtiennePerot) ([#126](https://github.com/freedomofpress/dangerzone/issues/126)).
+  As a result of this integration, we have also improved Dangerzone's security in the following ways:
+  * Prevent attacker from becoming root within the container ([#224](https://github.com/freedomofpress/dangerzone/issues/224))
+  * Use a restricted seccomp profile ([#225](https://github.com/freedomofpress/dangerzone/issues/225))
+  * Make use of user namespaces ([#228](https://github.com/freedomofpress/dangerzone/issues/228))
 
 ### Fixed
 
 - Fix a deprecation warning in PySide6, thanks to [@naglis](https://github.com/naglis) ([issue #595](https://github.com/freedomofpress/dangerzone/issues/595))
 - Make update notifications work in systems with PySide2, thanks to [@naglis](https://github.com/naglis) ([issue #788](https://github.com/freedomofpress/dangerzone/issues/788))
+- Updated the Dangerzone container image to use Alpine Linux 3.20 ([#812](https://github.com/freedomofpress/dangerzone/pull/812))
+- Fix wrong file permissions in Fedora packages ([issue #727](https://github.com/freedomofpress/dangerzone/pull/727))
+- Quote commands in installation instructions, making it compatible with `zsh` based shells. (issue [#805](https://github.com/freedomofpress/dangerzone/issues/805))
+- Order the list of PDF viewers and return the default application first on Linux, thanks to [@rocodes](https://github.com/rocodes) (issue [#814](https://github.com/freedomofpress/dangerzone/pull/814))
 
-### Security
-
-- Integrate Dangerzone with gVisor, a memory-safe application kernel, thanks to [@EtiennePerot](https://github.com/EtiennePerot) ([#126](https://github.com/freedomofpress/dangerzone/issues/126))
-  As a result of this integration, we have also improved Dangerzone's security
-  in the following ways:
-  * Prevent attacker from becoming root within the container ([#224](https://github.com/freedomofpress/dangerzone/issues/224))
-  * Use a restricted seccomp profile ([#225](https://github.com/freedomofpress/dangerzone/issues/225))
-  * Make use of user namespaces ([#228](https://github.com/freedomofpress/dangerzone/issues/228))
-
-## Removed
+### Removed
 
 - Platform support: Drop Fedora 38, since it's end-of-life ([issue #840](https://github.com/freedomofpress/dangerzone/pull/840))
+
+### Development changes
+
+- Bumped the minimum python version to 3.9, due to Pyside6 dropping support for python 3.8 ([#780](https://github.com/freedomofpress/dangerzone/pull/780))
+- Minor amendments to the codebase (in [#811](https://github.com/freedomofpress/dangerzone/pull/811))
+- Use the original line ending (usually `LF`) for all content except images ([#838](https://github.com/freedomofpress/dangerzone/pull/838))
+- Explained how to create, sign, and verify source tarballs ([#823](https://github.com/freedomofpress/dangerzone/pull/823))
+- Added a design doc for the update notifications
+- Added a design doc for the gVisor integration ([#815](https://github.com/freedomofpress/dangerzone/pull/815))
+- Removed the python shebang from some files
+
 
 ## Dangerzone 0.6.1
 

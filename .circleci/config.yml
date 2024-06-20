@@ -49,25 +49,51 @@ aliases:
       PATH=/root/.local/bin:$PATH ./install/linux/build-rpm.py --qubes
       ls -lh dist/
 
-  - &calculate-cache-key
-    name: Caculating container cache key
+  - &prepare-cache-dir
+    name: Prepare cache directory
     command: |
-      mkdir -p /caches/
+      sudo mkdir -p /caches/keys
+      sudo mkdir -p /caches/data
+      sudo chown -R $USER:$USER /caches
+
+  - &calculate-container-cache-key
+    name: Calculating container cache key
+    command: |
+      mkdir -p /caches/keys/
       cd dangerzone/conversion/
-      cat common.py doc_to_pixels.py pixels_to_pdf.py | sha1sum | cut -d' ' -f1 > /caches/cache-id.txt
+      cat common.py doc_to_pixels.py | sha1sum | cut -d' ' -f1 > /caches/keys/container.txt
       cd ../../
 
-  - &restore-cache
-    key: v1-{{ checksum "Dockerfile" }}-{{ checksum "/caches/cache-id.txt" }}
+  - &calculate-tessdata-cache-key
+    name: Caculating tessdata cache key
+    command: |
+      mkdir -p /caches/keys/
+      sha256sum install/common/download-tessdata.py | cut -d' ' -f1 > /caches/keys/tessdata.txt
+      cd ../../
+
+  - &restore-container-cache
+    name: Restoring container cache
+    key: v2-{{ checksum "Dockerfile" }}-{{ checksum "/caches/keys/container.txt" }}
     paths:
-      - /caches/container.tar.gz
-      - /caches/image-id.txt
+      - /caches/data/container.tar.gz
+      - /caches/data/image-id.txt
+
+  - &restore-tessdata-cache
+    name: Restoring tessdata cache
+    key: v1-{{ checksum "/caches/keys/tessdata.txt" }}
+    paths:
+      - /caches/data/tessdata
 
   - &copy-image
     name: Copy container image into package
     command: |
-      cp /caches/container.tar.gz share/
-      cp /caches/image-id.txt share/
+      cp /caches/data/container.tar.gz share/
+      cp /caches/data/image-id.txt share/
+
+  - &copy-tessdata
+    name: Copy tessdata dir into package
+    command: |
+      cp -r /caches/data/tessdata share/
 
 jobs:
   run-lint:
@@ -94,46 +120,45 @@ jobs:
           name: Check that the QA script is up to date with the docs
           command: ./dev_scripts/qa.py --check-refs
 
-  build-container-image:
+  prepare-build-artifacts:
     machine:
       image: ubuntu-2004:202111-01
     steps:
       - checkout
       - run: *install-podman
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
-      # setup_remote_docker
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run:
           name: Build Dangerzone image
           command: |
-            if [ -f "/caches/container.tar.gz" ]; then
+            if [ -f "/caches/data/container.tar.gz" ]; then
               echo "Already cached, skipping"
             else
               sudo pip3 install poetry
               python3 ./install/common/build-image.py
+              cp share/container.tar.gz share/image-id.txt /caches/data/
             fi
       - run:
-          name: Save Dangerzone image and image-id.txt to cache
+          name: Download Tesseract data
           command: |
-            if [ -f "/caches/container.tar.gz" ]; then
+            if [ -f "/caches/data/tessdata" ]; then
               echo "Already cached, skipping"
             else
-              mkdir -p /caches
-              podman save -o /caches/container.tar dangerzone.rocks/dangerzone
-              gzip -f /caches/container.tar
-              podman image ls dangerzone.rocks/dangerzone | grep "dangerzone.rocks/dangerzone" | tr -s ' ' | cut -d' ' -f3 > /caches/image-id.txt
+              python3 ./install/common/download-tessdata.py
+              cp -r share/tessdata /caches/data/
             fi
-      - run: *calculate-cache-key
       - save_cache:
-          key: v1-{{ checksum "Dockerfile" }}-{{ checksum "/caches/cache-id.txt" }}
+          key: v2-{{ checksum "Dockerfile" }}-{{ checksum "/caches/keys/container.txt" }}
           paths:
-            - /caches/container.tar.gz
-            - /caches/image-id.txt
+            - /caches/data/container.tar.gz
+            - /caches/data/image-id.txt
+      - save_cache:
+          key: v1-{{ checksum "/caches/keys/tessdata.txt" }}
+          paths:
+            - /caches/data/tessdata
 
   convert-test-docs:
     machine:
@@ -152,14 +177,15 @@ jobs:
           name: Install test dependencies
           command: |
             sudo apt-get install -y libqt5gui5 libxcb-cursor0 --no-install-recommends
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
+
       - run:
           name: run automated tests
           command: |
@@ -172,14 +198,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -199,14 +224,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -226,14 +250,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -253,14 +276,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -280,14 +302,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -307,14 +328,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -334,14 +354,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -361,14 +380,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -388,14 +406,13 @@ jobs:
       - checkout
       - run: *install-podman
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -432,14 +449,13 @@ jobs:
             events_logger="file"
             EOF
 
-      - run:
-          name: Prepare cache directory
-          command: |
-            sudo mkdir -p /caches
-            sudo chown -R $USER:$USER /caches
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *prepare-cache-dir
+      - run: *calculate-container-cache-key
+      - run: *calculate-tessdata-cache-key
+      - restore_cache: *restore-container-cache
+      - restore_cache: *restore-tessdata-cache
       - run: *copy-image
+      - run: *copy-tessdata
 
       - run:
           name: Prepare Dangerzone environment
@@ -475,8 +491,8 @@ jobs:
     steps:
       - run: *install-dependencies-deb
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-deb
 
@@ -487,8 +503,8 @@ jobs:
     steps:
       - run: *install-dependencies-deb
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-deb
 
@@ -499,8 +515,8 @@ jobs:
     steps:
       - run: *install-dependencies-deb
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-deb
 
@@ -512,8 +528,8 @@ jobs:
       - run: *install-dependencies-deb
       - run: *install-python-all
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-deb
 
@@ -524,8 +540,8 @@ jobs:
     steps:
       - run: *install-dependencies-deb
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-deb
 
@@ -536,8 +552,8 @@ jobs:
     steps:
       - run: *install-dependencies-deb
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-deb
 
@@ -548,8 +564,8 @@ jobs:
     steps:
       - run: *install-dependencies-deb
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-deb
 
@@ -560,8 +576,8 @@ jobs:
     steps:
       - run: *install-dependencies-rpm
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-rpm
       - run: *build-rpm-qubes
@@ -573,8 +589,8 @@ jobs:
     steps:
       - run: *install-dependencies-rpm
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-rpm
       - run: *build-rpm-qubes
@@ -586,8 +602,8 @@ jobs:
     steps:
       - run: *install-dependencies-rpm
       - checkout
-      - run: *calculate-cache-key
-      - restore_cache: *restore-cache
+      - run: *calculate-container-cache-key
+      - restore_cache: *restore-container-cache
       - run: *copy-image
       - run: *build-rpm
       - run: *build-rpm-qubes
@@ -599,71 +615,71 @@ workflows:
   build:
     jobs:
       - run-lint
-      - build-container-image
+      - prepare-build-artifacts
       - convert-test-docs:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - ci-ubuntu-noble:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - ci-ubuntu-mantic:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - ci-ubuntu-jammy:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - ci-ubuntu-focal:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - ci-debian-trixie:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - ci-debian-bookworm:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - ci-debian-bullseye:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - ci-fedora-40:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - ci-fedora-39:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - ci-fedora-38:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       # FIXME: Currently disabled because `stdeb` does not work with Python
       # 3.12, which is the default in Ubuntu Noble. See also:
       # https://github.com/freedomofpress/dangerzone/issues/773
       #
       #- build-ubuntu-noble:
       #    requires:
-      #      - build-container-image
+      #      - prepare-build-artifacts
       - build-ubuntu-mantic:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - build-ubuntu-jammy:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - build-ubuntu-focal:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - build-debian-bullseye:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - build-debian-trixie:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - build-debian-bookworm:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - build-fedora-40:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - build-fedora-39:
           requires:
-            - build-container-image
+            - prepare-build-artifacts
       - build-fedora-38:
           requires:
-            - build-container-image
+            - prepare-build-artifacts

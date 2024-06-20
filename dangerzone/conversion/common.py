@@ -13,15 +13,6 @@ def running_on_qubes() -> bool:
     return os.path.exists("/usr/share/qubes/marker-vm")
 
 
-def get_tessdata_dir() -> str:
-    if os.environ.get("TESSDATA_PREFIX"):
-        return os.environ["TESSDATA_PREFIX"]
-    elif running_on_qubes():
-        return "/usr/share/tesseract/tessdata/"
-    else:
-        return "/usr/share/tessdata/"
-
-
 class DangerzoneConverter:
     def __init__(self, progress_callback: Optional[Callable] = None) -> None:
         self.percentage: float = 0.0

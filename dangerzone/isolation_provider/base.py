@@ -7,20 +7,19 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import IO, Callable, Iterator, Optional
 
+import fitz
 from colorama import Fore, Style
 
 from ..conversion import errors
-from ..conversion.common import INT_BYTES
+from ..conversion.common import DEFAULT_DPI, INT_BYTES
 from ..document import Document
-from ..util import replace_control_chars
+from ..util import get_tessdata_dir, replace_control_chars, PYMUPDF_OCR_SUPPORT, PYMUPDF_TESSDATA_SUPPORT
 
 log = logging.getLogger(__name__)
 
 MAX_CONVERSION_LOG_CHARS = 150 * 50  # up to ~150 lines of 50 characters
 DOC_TO_PIXELS_LOG_START = "----- DOC TO PIXELS LOG START -----"
 DOC_TO_PIXELS_LOG_END = "----- DOC TO PIXELS LOG END -----"
-PIXELS_TO_PDF_LOG_START = "----- PIXELS TO PDF LOG START -----"
-PIXELS_TO_PDF_LOG_END = "----- PIXELS TO PDF LOG END -----"
 
 TIMEOUT_EXCEPTION = 15
 TIMEOUT_GRACE = 15
@@ -76,8 +75,7 @@ class IsolationProvider(ABC):
             with tempfile.TemporaryDirectory() as t:
                 Path(f"{t}/pixels").mkdir()
                 with self.doc_to_pixels_proc(document) as conversion_proc:
-                    self.doc_to_pixels(document, t, conversion_proc)
-                self.pixels_to_pdf(document, t, ocr_lang)
+                    self._convert(document, t, ocr_lang, conversion_proc)
             document.mark_as_safe()
             if document.archive_after_conversion:
                 document.archive()
@@ -91,8 +89,126 @@ class IsolationProvider(ABC):
             self.print_progress(document, True, str(e), 0)
             document.mark_as_failed()
 
-    def doc_to_pixels(
-        self, document: Document, tempdir: str, p: subprocess.Popen
+    def ocr_page(self, pixmap: fitz.Pixmap, ocr_lang: str) -> bytes:
+        """Get a single page as pixels, OCR it, and return a PDF as bytes.
+
+        This operation is particularly tricky, since we have to handle various PyMuPDF
+        versions.
+        """
+        if PYMUPDF_OCR_SUPPORT and PYMUPDF_TESSDATA_SUPPORT:
+            return pixmap.pdfocr_tobytes(
+                compress=True,
+                language=ocr_lang,
+                tessdata=get_tessdata_dir(),
+            )
+        elif PYMUPDF_OCR_SUPPORT and not PYMUPDF_TESSDATA_SUPPORT:
+            # XXX: In PyMuPDF v1.22.5, the function signature of
+            # `pdfocr_tobytes()` / `pdfocr_save()` was extended with an argument
+            # to explicitly set the Tesseract data dir [1].
+            #
+            # In earlier versions, the PyMuPDF developers recommend setting this
+            # path via the TESSDATA_PREFIX environment variable. In practice,
+            # this environment variable is read at import time, so subsequent
+            # changes to the environment variable are not tracked [2].
+            #
+            # To make things worse, any attempt to alter the internal attribute
+            # (`fitz.TESSDATA_PREFIX`) makes no difference as well, when using
+            # the OCR functions. That's due to the way imports work in `fitz`,
+            # where somehow the internal `fitz.fitz` module is shadowed.
+            #
+            # A hacky solution is to grab the `fitz.fitz` module from
+            # `sys.modules`, and set there the TESSDATA_PREFIX variable. We can
+            # get away with this hack because we have a proper solution for
+            # subsequent PyMuPDF versions, and we know that nothing will change
+            # in older versions.
+            #
+            # TODO: Remove after oldest distro has PyMuPDF >= v1.22.5
+            #
+            # [1]: https://pymupdf.readthedocs.io/en/latest/pixmap.html#Pixmap.pdfocr_save
+            # [2]: https://github.com/pymupdf/PyMuPDF/blob/0368e56cfa6afb55bcf6c726e7f51a2a16a5ccba/fitz/fitz.i#L308
+            sys.modules["fitz.fitz"].TESSDATA_PREFIX = get_tessdata_dir()  # type: ignore [attr-defined]
+
+            return pixmap.pdfocr_tobytes(
+                compress=True,
+                language=ocr_lang,
+            )
+        else:
+            import pyocr, os
+            from PIL import Image
+
+            img = Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
+            img.info["dpi"] = (150, 150)
+            fd = os.memfd_create("ocr_page")
+            f = os.fdopen(fd, "rb")
+            filename = f"/proc/self/fd/{fd}"
+            with tempfile.TemporaryDirectory() as d:
+                base_path = Path(d) / "ocr_page"
+                base_path.with_suffix(".pdf").symlink_to(filename)
+                r = pyocr.libtesseract.image_to_pdf(img, str(base_path), ocr_lang)
+                return f.read()
+
+    def pixels_to_pdf_page(
+        self,
+        untrusted_data: bytes,
+        untrusted_width: int,
+        untrusted_height: int,
+        ocr_lang: Optional[str],
+    ) -> fitz.Document:
+        """Convert a byte array of RGB pixels into a PDF page, optionally with OCR."""
+        pixmap = fitz.Pixmap(
+            fitz.Colorspace(fitz.CS_RGB),
+            untrusted_width,
+            untrusted_height,
+            untrusted_data,
+            False,
+        )
+        # Added in PyMuPDF 1.18.13 (commit 0036041a5398c07e6574c847513bcd48c4961376)
+        if hasattr(pixmap, "set_dpi"):
+            pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
+        elif hasattr(pixmap, "setResolution"):
+            pixmap.setResolution(DEFAULT_DPI, DEFAULT_DPI)
+        else:
+            print("Could not set a DPI")
+
+        if ocr_lang:  # OCR the document
+            page_pdf_bytes = self.ocr_page(pixmap, ocr_lang)
+        else:  # Don't OCR
+            # Added in PyMuPDF 1.22.0 (commit 6a9c9d8175c307f7f3baf605c8632745f69a8b1b)
+            page_doc = fitz.Document()
+            if hasattr(page_doc, "insert_file"):
+                page_doc.insert_file(pixmap)
+            else:
+                rect = pixmap.irect
+                if hasattr(pixmap, "tobytes"):
+                    page_img = fitz.Document("png", pixmap.tobytes())
+                else:
+                    page_img = fitz.Document("png", pixmap.getImageData())
+                if hasattr(page_img, "convert_to_pdf"):
+                    pdfbytes = page_img.convert_to_pdf()
+                else:
+                    pdfbytes = page_img.convertToPDF()
+                imgPDF = fitz.open("pdf", pdfbytes)
+                if hasattr(page_doc, "new_page"):
+                    page = page_doc.new_page(width=rect.width, height=rect.height)
+                else:
+                    page = page_doc.newPage(width=rect.width, height=rect.height)
+                if hasattr(page, "show_pdf_page"):
+                    page.show_pdf_page(rect, imgPDF, 0)
+                else:
+                    page.showPDFpage(rect, imgPDF, 0)
+            if hasattr(page_doc, "tobytes"):
+                page_pdf_bytes = page_doc.tobytes(deflate_images=True)
+            else:
+                page_pdf_bytes = page_doc.write(deflate=True)
+
+        return fitz.open("pdf", page_pdf_bytes)
+
+    def _convert(
+        self,
+        document: Document,
+        tempdir: str,
+        ocr_lang: Optional[str],
+        p: subprocess.Popen,
     ) -> None:
         percentage = 0.0
         with open(document.input_filename, "rb") as f:
@@ -107,10 +223,16 @@ class IsolationProvider(ABC):
             n_pages = read_int(p.stdout)
             if n_pages == 0 or n_pages > errors.MAX_PAGES:
                 raise errors.MaxPagesException()
-            percentage_per_page = 49.0 / n_pages
+            step = 100 / n_pages
+
+            safe_doc = fitz.Document()
 
             for page in range(1, n_pages + 1):
-                text = f"Converting page {page}/{n_pages} to pixels"
+                searchable = "searchable " if ocr_lang else ""
+                text = (
+                    f"Converting page {page}/{n_pages} from pixels to {searchable}PDF"
+                )
+                percentage += step
                 self.print_progress(document, False, text, percentage)
 
                 width = read_int(p.stdout)
@@ -126,39 +248,44 @@ class IsolationProvider(ABC):
                     num_pixels,
                 )
 
-                # Wrapper code
-                with open(f"{tempdir}/pixels/page-{page}.width", "w") as f_width:
-                    f_width.write(str(width))
-                with open(f"{tempdir}/pixels/page-{page}.height", "w") as f_height:
-                    f_height.write(str(height))
-                with open(f"{tempdir}/pixels/page-{page}.rgb", "wb") as f_rgb:
-                    f_rgb.write(untrusted_pixels)
+                percentage += step
 
-                percentage += percentage_per_page
+                page_pdf = self.pixels_to_pdf_page(
+                    untrusted_pixels,
+                    width,
+                    height,
+                    ocr_lang,
+                )
+
+                # Added in PyMuPDF 1.18.7 (commit b469ab92b8ba5698044ebf4ebe4f65c079682d77)
+                if hasattr(safe_doc, "insert_pdf"):
+                    safe_doc.insert_pdf(page_pdf)
+                else:
+                    safe_doc.insertPDF(page_pdf)
 
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()
 
+        if hasattr(safe_doc, "tobytes"):
+            pdf_bytes = safe_doc.tobytes()
+        else:
+            pdf_bytes = safe_doc.write()
+        with open(document.output_filename, "wb+") as f:
+            f.write(pdf_bytes)
+
         # TODO handle leftover code input
-        text = "Converted document to pixels"
+        text = "Converted document"
         self.print_progress(document, False, text, percentage)
 
         if getattr(sys, "dangerzone_dev", False):
             assert p.stderr
             debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
-            p.stderr.close()
             log.info(
                 "Conversion output (doc to pixels)\n"
                 f"{DOC_TO_PIXELS_LOG_START}\n"
                 f"{debug_log}"  # no need for an extra newline here
                 f"{DOC_TO_PIXELS_LOG_END}"
             )
-
-    @abstractmethod
-    def pixels_to_pdf(
-        self, document: Document, tempdir: str, ocr_lang: Optional[str]
-    ) -> None:
-        pass
 
     def print_progress(
         self, document: Document, error: bool, text: str, percentage: float
@@ -268,75 +395,3 @@ class IsolationProvider(ABC):
             self.ensure_stop_doc_to_pixels_proc(
                 document, p, timeout_grace=timeout_grace, timeout_force=timeout_force
             )
-
-
-# From global_common:
-
-# def validate_convert_to_pixel_output(self, common, output):
-#     """
-#     Take the output from the convert to pixels tasks and validate it. Returns
-#     a tuple like: (success (boolean), error_message (str))
-#     """
-#     max_image_width = 10000
-#     max_image_height = 10000
-
-#     # Did we hit an error?
-#     for line in output.split("\n"):
-#         if (
-#             "failed:" in line
-#             or "The document format is not supported" in line
-#             or "Error" in line
-#         ):
-#             return False, output
-
-#     # How many pages was that?
-#     num_pages = None
-#     for line in output.split("\n"):
-#         if line.startswith("Document has "):
-#             num_pages = line.split(" ")[2]
-#             break
-#     if not num_pages or not num_pages.isdigit() or int(num_pages) <= 0:
-#         return False, "Invalid number of pages returned"
-#     num_pages = int(num_pages)
-
-#     # Make sure we have the files we expect
-#     expected_filenames = []
-#     for i in range(1, num_pages + 1):
-#         expected_filenames += [
-#             f"page-{i}.rgb",
-#             f"page-{i}.width",
-#             f"page-{i}.height",
-#         ]
-#     expected_filenames.sort()
-#     actual_filenames = os.listdir(common.pixel_dir.name)
-#     actual_filenames.sort()
-
-#     if expected_filenames != actual_filenames:
-#         return (
-#             False,
-#             f"We expected these files:\n{expected_filenames}\n\nBut we got these files:\n{actual_filenames}",
-#         )
-
-#     # Make sure the files are the correct sizes
-#     for i in range(1, num_pages + 1):
-#         with open(f"{common.pixel_dir.name}/page-{i}.width") as f:
-#             w_str = f.read().strip()
-#         with open(f"{common.pixel_dir.name}/page-{i}.height") as f:
-#             h_str = f.read().strip()
-#         w = int(w_str)
-#         h = int(h_str)
-#         if (
-#             not w_str.isdigit()
-#             or not h_str.isdigit()
-#             or w <= 0
-#             or w > max_image_width
-#             or h <= 0
-#             or h > max_image_height
-#         ):
-#             return False, f"Page {i} has invalid geometry"
-
-#         # Make sure the RGB file is the correct size
-#         if os.path.getsize(f"{common.pixel_dir.name}/page-{i}.rgb") != w * h * 3:
-#             return False, f"Page {i} has an invalid RGB file size"
-
-#     return True, True

@@ -1,0 +1,5 @@
+# Setting this to `text=auto` is the closest to core.autocrlf=input, which is a
+# sane default for most projects. If we don't specify this option, then Git will
+# silently convert line endings in text from LF to CRLF. This can cause wrong
+# hashes, or non-executable files, when mounted in containers.
+* text=auto

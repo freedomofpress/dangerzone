@@ -1,11 +1,23 @@
+import fitz
+import os
 import pathlib
 import platform
 import subprocess
 import sys
 import unicodedata
+from packaging import version
 from typing import Optional
 
 import appdirs
+
+# From https://pymupdf.readthedocs.io/en/latest/pixmap.html#Pixmap.pdfocr_tobytes:
+#
+#   * New in v1.19.0
+#   * Changed in v1.22.5: Support of new parameter for Tesseract’s tessdata.
+#
+# XXX: Ubuntu Jammy has version 1.19.2 but is not built with OCR support.
+PYMUPDF_OCR_SUPPORT = version.parse(fitz.version[0]) >= version.parse("1.23.8")
+PYMUPDF_TESSDATA_SUPPORT = version.parse(fitz.version[0]) >= version.parse("1.22.5")
 
 
 def get_config_dir() -> str:
@@ -43,6 +55,32 @@ def get_resource_path(filename: str) -> str:
             raise NotImplementedError(f"Unsupported system {platform.system()}")
     resource_path = prefix / filename
     return str(resource_path)
+
+
+def get_tessdata_dir() -> str:
+    if (
+        getattr(sys, "dangerzone_dev", False)
+        or platform.system() == "Windows"
+        or platform.system() == "Darwin"
+    ):
+        # Always use the tessdata path from the Dangerzone ./share directory, for
+        # development builds, or in Windows/macOS platforms.
+        return get_resource_path("tessdata")
+
+    fedora_tessdata_dir = "/usr/share/tesseract/tessdata/"
+    debian_tessdata_dir = "/usr/share/tessdata/"
+    ubuntu_tessdata_dir = "/usr/share/tesseract-ocr/4.00/tessdata/"
+    debian2_tessdata_dir = "/usr/share/tesseract-ocr/5/tessdata/"
+    if os.path.isdir(fedora_tessdata_dir):
+        return fedora_tessdata_dir
+    if os.path.isdir(debian_tessdata_dir):
+        return debian_tessdata_dir
+    elif os.path.isdir(ubuntu_tessdata_dir):
+        return ubuntu_tessdata_dir
+    elif os.path.isdir(debian2_tessdata_dir):
+        return debian2_tessdata_dir
+    else:
+        raise RuntimeError("Tesseract language data are not installed in the system")
 
 
 def get_version() -> str:

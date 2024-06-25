@@ -22,7 +22,7 @@ class ContainerWait(Container):
         # Check every 100ms if a container with the expected name has showed up.
         # Else, closing the file descriptors may not work.
         name = kwargs["name"]
-        runtime = self.get_runtime()
+        runtime = self.get_container_engine()
         p = super().exec_container(*args, **kwargs)
         for i in range(50):
             containers = subprocess.run(

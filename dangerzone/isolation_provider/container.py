@@ -18,7 +18,8 @@ from .base import PIXELS_TO_PDF_LOG_END, PIXELS_TO_PDF_LOG_START, IsolationProvi
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
     startupinfo = subprocess.STARTUPINFO()  # type: ignore [attr-defined]
-    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # type: ignore [attr-defined]
+    # type: ignore [attr-defined]
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 else:
     startupinfo = None
 
@@ -36,16 +37,16 @@ class Container(IsolationProvider):
     CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 
     @staticmethod
-    def get_runtime_name() -> str:
+    def get_container_engine_name() -> str:
         if platform.system() == "Linux":
-            runtime_name = "podman"
+            container_engine = "podman"
         else:
             # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
-            runtime_name = "docker"
-        return runtime_name
+            container_engine = "docker"
+        return container_engine
 
     @staticmethod
-    def get_runtime_version() -> Tuple[int, int]:
+    def get_container_engine_version() -> Tuple[int, int]:
         """Get the major/minor parts of the Docker/Podman version.
 
         Some of the operations we perform in this module rely on some Podman features
@@ -55,14 +56,14 @@ class Container(IsolationProvider):
         semver parser is an overkill.
         """
         # Get the Docker/Podman version, using a Go template.
-        runtime = Container.get_runtime_name()
-        cmd = [runtime, "version", "-f", "{{.Client.Version}}"]
+        container_engine = Container.get_container_engine_name()
+        cmd = [container_engine, "version", "-f", "{{.Client.Version}}"]
         try:
             version = subprocess.run(
                 cmd, capture_output=True, check=True
             ).stdout.decode()
         except Exception as e:
-            msg = f"Could not get the version of the {runtime.capitalize()} tool: {e}"
+            msg = f"Could not get the version of the {container_engine.capitalize()} tool: {e}"
             raise RuntimeError(msg) from e
 
         # Parse this version and return the major/minor parts, since we don't need the
@@ -72,18 +73,18 @@ class Container(IsolationProvider):
             return (int(major), int(minor))
         except Exception as e:
             msg = (
-                f"Could not parse the version of the {runtime.capitalize()} tool"
+                f"Could not parse the version of the {container_engine.capitalize()} tool"
                 f" (found: '{version}') due to the following error: {e}"
             )
             raise RuntimeError(msg)
 
     @staticmethod
-    def get_runtime() -> str:
-        container_tech = Container.get_runtime_name()
-        runtime = shutil.which(container_tech)
-        if runtime is None:
-            raise NoContainerTechException(container_tech)
-        return runtime
+    def get_container_engine() -> str:
+        container_name = Container.get_container_engine_name()
+        container_engine = shutil.which(container_name)
+        if container_engine is None:
+            raise NoContainerTechException(container_name)
+        return container_engine
 
     @staticmethod
     def get_runtime_security_args() -> List[str]:
@@ -104,7 +105,7 @@ class Container(IsolationProvider):
           - This particular argument is specified in `start_doc_to_pixels_proc()`, but
             should move here once #748 is merged.
         """
-        if Container.get_runtime_name() == "podman":
+        if Container.get_container_engine_name() == "podman":
             security_args = ["--log-driver", "none"]
             security_args += ["--security-opt", "no-new-privileges"]
 
@@ -114,9 +115,10 @@ class Container(IsolationProvider):
             # This file has been copied as is [1] from the official Podman repo.
             #
             # [1] https://github.com/containers/common/blob/d3283f8401eeeb21f3c59a425b5461f069e199a7/pkg/seccomp/seccomp.json
-            if Container.get_runtime_version() < (4, 0):
+            if Container.get_container_engine_version() < (4, 0):
                 seccomp_json_path = get_resource_path("seccomp.gvisor.json")
-                security_args += ["--security-opt", f"seccomp={seccomp_json_path}"]
+                security_args += ["--security-opt",
+                                  f"seccomp={seccomp_json_path}"]
         else:
             security_args = ["--security-opt=no-new-privileges:true"]
 
@@ -140,7 +142,7 @@ class Container(IsolationProvider):
         log.info("Installing Dangerzone container image...")
 
         p = subprocess.Popen(
-            [Container.get_runtime(), "load"],
+            [Container.get_container_engine(), "load"],
             stdin=subprocess.PIPE,
             startupinfo=get_subprocess_startupinfo(),
         )
@@ -177,7 +179,7 @@ class Container(IsolationProvider):
         installed = False
         found_image_id = subprocess.check_output(
             [
-                Container.get_runtime(),
+                Container.get_container_engine(),
                 "image",
                 "list",
                 "--format",
@@ -198,11 +200,13 @@ class Container(IsolationProvider):
 
             try:
                 subprocess.check_output(
-                    [Container.get_runtime(), "rmi", "--force", found_image_id],
+                    [Container.get_container_engine(), "rmi", "--force",
+                     found_image_id],
                     startupinfo=get_subprocess_startupinfo(),
                 )
             except Exception:
-                log.warning("Couldn't delete old container image, so leaving it there")
+                log.warning(
+                    "Couldn't delete old container image, so leaving it there")
 
         return installed
 
@@ -260,7 +264,7 @@ class Container(IsolationProvider):
         name: str,
         extra_args: List[str] = [],
     ) -> subprocess.Popen:
-        container_runtime = self.get_runtime()
+        container_runtime = self.get_container_engine()
         security_args = self.get_runtime_security_args()
         enable_stdin = ["-i"]
         set_name = ["--name", name]
@@ -288,7 +292,7 @@ class Container(IsolationProvider):
         connected to the Docker daemon, and killing it will just close the associated
         standard streams.
         """
-        container_runtime = self.get_runtime()
+        container_runtime = self.get_container_engine()
         cmd = [container_runtime, "kill", name]
         try:
             # We do not check the exit code of the process here, since the container may
@@ -391,8 +395,8 @@ class Container(IsolationProvider):
         # NOTE: Using `--userns nomap` is available only on Podman >= 4.1.0.
         # XXX: Move this under `get_runtime_security_args()` once #748 is merged.
         extra_args = []
-        if Container.get_runtime_name() == "podman":
-            if Container.get_runtime_version() >= (4, 1):
+        if Container.get_container_engine_name() == "podman":
+            if Container.get_container_engine_version() >= (4, 1):
                 extra_args += ["--userns", "nomap"]
 
         name = self.doc_to_pixels_container_name(document)
@@ -419,7 +423,7 @@ class Container(IsolationProvider):
         # after a podman kill / docker kill invocation, this will likely be the case,
         # else the container runtime (Docker/Podman) has experienced a problem, and we
         # should report it.
-        container_runtime = self.get_runtime()
+        container_runtime = self.get_container_engine()
         name = self.doc_to_pixels_container_name(document)
         all_containers = subprocess.run(
             [container_runtime, "ps", "-a"],
@@ -441,11 +445,11 @@ class Container(IsolationProvider):
             if cpu_count is not None:
                 n_cpu = cpu_count
 
-        elif self.get_runtime_name() == "docker":
+        elif self.get_container_engine_name() == "docker":
             # For Windows and MacOS containers run in VM
             # So we obtain the CPU count for the VM
             n_cpu_str = subprocess.check_output(
-                [self.get_runtime(), "info", "--format", "{{.NCPU}}"],
+                [self.get_container_engine(), "info", "--format", "{{.NCPU}}"],
                 text=True,
                 startupinfo=get_subprocess_startupinfo(),
             )

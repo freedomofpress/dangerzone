@@ -79,6 +79,34 @@ class Container(IsolationProvider):
             raise RuntimeError(msg)
 
     @staticmethod
+    def get_runtime_version() -> Tuple[int, int]:
+        """Get the name and version number of the runtime (runc)
+        """
+        container_engine = Container.get_container_engine_name()
+        query = '{{range .Server.Components}}{{if eq .Name "runc"}}{{.Version}}{{end}}{{end}}'
+        cmd = [container_engine, "version", "-f", query]
+
+        try:
+            version = subprocess.run(
+                cmd, capture_output=True, check=True
+            ).stdout.decode()
+        except Exception as e:
+            msg = f"Could not get the version of {container_engine.capitalize()} runc: {e}"
+            raise RuntimeError(msg) from e
+
+        # Parse this version and return the major/minor parts, since we don't need the
+        # rest.
+        try:
+            major, minor, _ = version.split(".", 3)
+            return (int(major), int(minor))
+        except Exception as e:
+            msg = (
+                f"Could not parse the version of the {container_engine.capitalize()} runc"
+                f" (found: '{version}') due to the following error: {e}"
+            )
+            raise RuntimeError(msg)
+
+    @staticmethod
     def get_container_engine() -> str:
         container_name = Container.get_container_engine_name()
         container_engine = shutil.which(container_name)

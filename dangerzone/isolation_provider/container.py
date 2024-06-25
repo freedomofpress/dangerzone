@@ -56,7 +56,12 @@ class Container(IsolationProvider):
         """
         # Get the Docker/Podman version, using a Go template.
         runtime = Container.get_runtime_name()
-        cmd = [runtime, "version", "-f", "{{.Client.Version}}"]
+        if runtime == "podman":
+            query = "{{.Client.Version}}"
+        else:
+            query = "{{.Server.Version}}"
+
+        cmd = [runtime, "version", "-f", query]
         try:
             version = subprocess.run(
                 cmd, capture_output=True, check=True
@@ -104,6 +109,11 @@ class Container(IsolationProvider):
           - This particular argument is specified in `start_doc_to_pixels_proc()`, but
             should move here once #748 is merged.
         """
+        # This file has been copied as is [1] from the official Podman repo. See:
+        #
+        # [1] https://github.com/containers/common/blob/d3283f8401eeeb21f3c59a425b5461f069e199a7/pkg/seccomp/seccomp.json
+        seccomp_json_path = get_resource_path("seccomp.gvisor.json")
+        custom_seccomp_policy_arg = ["--security-opt", f"seccomp={seccomp_json_path}"]
         if Container.get_runtime_name() == "podman":
             security_args = ["--log-driver", "none"]
             security_args += ["--security-opt", "no-new-privileges"]
@@ -111,14 +121,17 @@ class Container(IsolationProvider):
             # NOTE: Ubuntu Focal/Jammy have Podman version 3, and their seccomp policy
             # does not include the `ptrace()` syscall. This system call is required for
             # running gVisor, so we enforce a newer seccomp policy file in that case.
-            # This file has been copied as is [1] from the official Podman repo.
             #
-            # [1] https://github.com/containers/common/blob/d3283f8401eeeb21f3c59a425b5461f069e199a7/pkg/seccomp/seccomp.json
+            # See also https://github.com/freedomofpress/dangerzone/issues/846
             if Container.get_runtime_version() < (4, 0):
-                seccomp_json_path = get_resource_path("seccomp.gvisor.json")
-                security_args += ["--security-opt", f"seccomp={seccomp_json_path}"]
+                security_args += custom_seccomp_policy_arg
         else:
             security_args = ["--security-opt=no-new-privileges:true"]
+            # Older Docker Desktop versions may have a seccomp policy that does not
+            # allow `ptrace(2)`. In these cases, we specify our own. See:
+            # https://github.com/freedomofpress/dangerzone/issues/846
+            if Container.get_runtime_version() < (25, 0):
+                security_args += custom_seccomp_policy_arg
 
         security_args += ["--cap-drop", "all"]
         security_args += ["--cap-add", "SYS_CHROOT"]

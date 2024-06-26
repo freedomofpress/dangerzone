@@ -55,7 +55,13 @@ strip-ansi = "*"
 pymupdf = "^1.23.6"
 
 [tool.poetry.group.container.dependencies]
-pymupdf = "^1.24.0"
+# Starting with 1.24.6, pymupdf started shipping wheels, but only for x86_64.
+# Currently, pymupdfb is removed from the generated container's requirements.txt
+# because we are building the binary manually.
+#
+# We plan on using the wheels when they are provided for all the supported
+# platforms. Until then, we pin pymupdf.
+pymupdf = "1.24.5"
 
 [tool.isort]
 profile = "black"

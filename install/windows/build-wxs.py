@@ -23,12 +23,12 @@ def build_data(dirname, dir_prefix, id_, name):
                 id_prefix = id_
 
             # Skip lib/PySide6/examples folder due to ilegal file names
-            if "\\build\\exe.win-amd64-3.11\\lib\\PySide6\\examples" in dirname:
+            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\examples" in dirname:
                 continue
 
             # Skip lib/PySide6/qml/QtQuick folder due to ilegal file names
             # XXX Since we're not using Qml it should be no problem
-            if "\\build\\exe.win-amd64-3.11\\lib\\PySide6\\qml\\QtQuick" in dirname:
+            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\qml\\QtQuick" in dirname:
                 continue
 
             id_value = f"{id_prefix}{basename.capitalize().replace('-', '_')}"
@@ -128,7 +128,7 @@ def main():
     dist_dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
         "build",
-        "exe.win-amd64-3.11",
+        "exe.win-amd64-3.12",
     )
     if not os.path.exists(dist_dir):
         print("You must build the dangerzone binary before running this")
@@ -152,7 +152,7 @@ def main():
     data["dirs"][0]["dirs"].append(
         build_data(
             dist_dir,
-            "exe.win-amd64-3.11",
+            "exe.win-amd64-3.12",
             "INSTALLDIR",
             "Dangerzone",
         )

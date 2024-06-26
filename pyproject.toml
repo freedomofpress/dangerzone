@@ -30,7 +30,7 @@ dangerzone-cli = 'dangerzone:main'
 # Dependencies required for packaging the code on various platforms.
 [tool.poetry.group.package.dependencies]
 setuptools = "*"
-cx_freeze = {version = "^6.13.1", platform = "win32"}
+cx_freeze = {version = "^7.1.1", platform = "win32"}
 pywin32 = {version = "*", platform = "win32"}
 pyinstaller = {version = "*", platform = "darwin"}
 

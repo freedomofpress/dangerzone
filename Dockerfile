@@ -6,8 +6,8 @@ FROM alpine:latest as pymupdf-build
 ARG REQUIREMENTS_TXT
 
 # Install PyMuPDF via hash-checked requirements file
+RUN apk --no-cache add py3-pip
 COPY ${REQUIREMENTS_TXT} /tmp/requirements.txt
-RUN apk --no-cache add linux-headers g++ linux-headers gcc make python3-dev py3-pip clang-dev
 RUN pip install -vv --break-system-packages --require-hashes -r /tmp/requirements.txt
 
 
@@ -63,6 +63,7 @@ RUN apk --no-cache -U upgrade && \
 
 COPY --from=pymupdf-build /usr/lib/python3.12/site-packages/fitz/ /usr/lib/python3.12/site-packages/fitz
 COPY --from=pymupdf-build /usr/lib/python3.12/site-packages/pymupdf/ /usr/lib/python3.12/site-packages/pymupdf
+COPY --from=pymupdf-build /usr/lib/python3.12/site-packages/PyMuPDFb.libs/ /usr/lib/python3.12/site-packages/PyMuPDFb.libs
 COPY --from=tessdata-dl /usr/share/tessdata/ /usr/share/tessdata
 COPY --from=h2orestart-dl /libreoffice_ext/ /libreoffice_ext
 

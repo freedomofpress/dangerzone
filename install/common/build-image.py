@@ -118,10 +118,8 @@ class ContainerPipDependencies:
         except subprocess.CalledProcessError as e:
             print("FAILURE", e.returncode, e.output)
         print(f"REQUIREMENTS: {container_requirements_txt}")
-        # XXX Export container dependencies and exclude pymupdfb since it is not needed in container
-        req_txt_pymupdfb_stripped = container_requirements_txt.split("pymupdfb")[0]
         with open(Path(BUILD_CONTEXT) / REQUIREMENTS_TXT, "w") as f:
-            f.write(req_txt_pymupdfb_stripped)
+            f.write(container_requirements_txt)
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         print("Leaving the context...")

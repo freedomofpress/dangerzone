@@ -9,13 +9,15 @@ from pytest_mock import MockerFixture
 
 from dangerzone.conversion import errors
 from dangerzone.document import Document
-from dangerzone.isolation_provider.qubes import (
-    Qubes,
-    is_qubes_native_conversion,
-    running_on_qubes,
-)
+from dangerzone.isolation_provider.qubes import Qubes, is_qubes_native_conversion
 
 from .base import IsolationProviderTermination, IsolationProviderTest
+
+# Run the tests in this module only if we can spawn disposable qubes.
+if not is_qubes_native_conversion():
+    pytest.skip("Qubes native conversion is not enabled", allow_module_level=True)
+elif os.environ.get("DUMMY_CONVERSION", False):
+    pytest.skip("Dummy conversion is enabled", allow_module_level=True)
 
 
 @pytest.fixture
@@ -55,7 +57,6 @@ def provider_wait() -> QubesWait:
     return QubesWait()
 
 
-@pytest.mark.skipif(not running_on_qubes(), reason="Not on a Qubes system")
 class TestQubes(IsolationProviderTest):
     def test_out_of_ram(
         self,
@@ -82,12 +83,5 @@ class TestQubes(IsolationProviderTest):
             assert provider.get_proc_exception(proc) == errors.QubesQrexecFailed
 
 
-@pytest.mark.skipif(
-    os.environ.get("DUMMY_CONVERSION", False),
-    reason="cannot run for dummy conversions",
-)
-@pytest.mark.skipif(
-    not is_qubes_native_conversion(), reason="Qubes native conversion is not enabled"
-)
 class TestQubesTermination(IsolationProviderTermination):
     pass

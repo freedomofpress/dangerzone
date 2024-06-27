@@ -11,6 +11,10 @@ from dangerzone.isolation_provider.dummy import Dummy
 
 from .base import IsolationProviderTermination
 
+# Run the tests in this module only if dummy conversion is enabled.
+if not os.environ.get("DUMMY_CONVERSION", False):
+    pytest.skip("Dummy conversion is not enabled", allow_module_level=True)
+
 
 class DummyWait(Dummy):
     """Dummy isolation provider that spawns a blocking process."""
@@ -34,10 +38,6 @@ def provider_wait() -> DummyWait:
     return DummyWait()
 
 
-@pytest.mark.skipif(
-    os.environ.get("DUMMY_CONVERSION", False) is False,
-    reason="can only run for dummy conversions",
-)
 class TestDummyTermination(IsolationProviderTermination):
     def test_failed(
         self,

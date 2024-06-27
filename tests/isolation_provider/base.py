@@ -16,7 +16,6 @@ TIMEOUT_STARTUP = 60  # Timeout in seconds until the conversion sandbox starts.
     os.environ.get("DUMMY_CONVERSION", False),
     reason="dummy conversions not supported",
 )
-@pytest.mark.skipif(not running_on_qubes(), reason="Not on a Qubes system")
 class IsolationProviderTest:
     def test_max_pages_server_enforcement(
         self,

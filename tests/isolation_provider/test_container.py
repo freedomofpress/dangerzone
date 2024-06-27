@@ -9,6 +9,12 @@ from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 
 from .base import IsolationProviderTermination, IsolationProviderTest
 
+# Run the tests in this module only if we can spawn containers.
+if is_qubes_native_conversion():
+    pytest.skip("Qubes native conversion is enabled", allow_module_level=True)
+elif os.environ.get("DUMMY_CONVERSION", False):
+    pytest.skip("Dummy conversion is enabled", allow_module_level=True)
+
 
 @pytest.fixture
 def provider() -> Container:
@@ -44,12 +50,5 @@ class TestContainer(IsolationProviderTest):
     pass
 
 
-@pytest.mark.skipif(
-    os.environ.get("DUMMY_CONVERSION", False),
-    reason="cannot run for dummy conversions",
-)
-@pytest.mark.skipif(
-    is_qubes_native_conversion(), reason="Qubes native conversion is enabled"
-)
 class TestContainerTermination(IsolationProviderTermination):
     pass

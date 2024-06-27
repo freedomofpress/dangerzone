@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from dangerzone.isolation_provider.container import Container
+from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 from dangerzone.logic import DangerzoneCore
 
 
@@ -12,8 +13,11 @@ from dangerzone.logic import DangerzoneCore
 # NOTE: We skip running this test on Windows/MacOS, because our current CI cannot run
 # Docker in these platforms. It's not a problem anyways, because the result should be
 # the same in all container-based platforms.
-@pytest.mark.skipif(platform.system() != "Linux", reason="Container-specific")
-def test_ocr_ommisions() -> None:
+@pytest.mark.skipif(
+    platform.system() != "Linux" or is_qubes_native_conversion(),
+    reason="Container-specific",
+)
+def test_ocr_omissions() -> None:
     # Create the command that will list all the installed languages in the container
     # image.
     command = [Container.get_runtime(), "run"]

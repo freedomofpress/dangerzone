@@ -892,7 +892,7 @@ class QALinux(QABase):
         self.run_tests()
         self.build_package()
         self.build_qa_image()
-        self.qa_scenarios(skip=[1, 2, 8, 9])
+        self.qa_scenarios(skip=[1, 2, 3, 10, 11])
 
 
 class QADebianBased(QALinux):

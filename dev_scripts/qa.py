@@ -237,7 +237,7 @@ Install dependencies:
   ```bash
   sudo apt install -y python3.9
   ```
-  
+
   Poetry will automatically pick up the correct version when running.
 </details>
     </td>

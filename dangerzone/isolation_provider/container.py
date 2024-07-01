@@ -15,6 +15,9 @@ from ..util import get_tmp_dir  # NOQA : required for mocking in our tests.
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import PIXELS_TO_PDF_LOG_END, PIXELS_TO_PDF_LOG_START, IsolationProvider
 
+TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
+
+
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
     startupinfo = subprocess.STARTUPINFO()  # type: ignore [attr-defined]
@@ -308,8 +311,19 @@ class Container(IsolationProvider):
             # have stopped right before invoking this command. In that case, the
             # command's output will contain some error messages, so we capture them in
             # order to silence them.
+            #
+            # NOTE: We specify a timeout for this command, since we've seen it hang
+            # indefinitely for specific files. See:
+            # https://github.com/freedomofpress/dangerzone/issues/854
             subprocess.run(
-                cmd, capture_output=True, startupinfo=get_subprocess_startupinfo()
+                cmd,
+                capture_output=True,
+                startupinfo=get_subprocess_startupinfo(),
+                timeout=TIMEOUT_KILL,
+            )
+        except subprocess.TimeoutExpired:
+            log.warning(
+                f"Could not kill container '{name}' within {TIMEOUT_KILL} seconds"
             )
         except Exception as e:
             log.exception(

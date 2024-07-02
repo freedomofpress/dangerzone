@@ -67,7 +67,10 @@ class Container(IsolationProvider):
         cmd = [runtime, "version", "-f", query]
         try:
             version = subprocess.run(
-                cmd, capture_output=True, check=True
+                cmd,
+                startupinfo=get_subprocess_startupinfo(),
+                capture_output=True,
+                check=True,
             ).stdout.decode()
         except Exception as e:
             msg = f"Could not get the version of the {runtime.capitalize()} tool: {e}"

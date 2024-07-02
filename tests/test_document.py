@@ -79,6 +79,14 @@ def test_output_file_not_pdf(tmp_path: Path) -> None:
     assert not os.path.exists(docx_file)
 
 
+def test_illegal_output_filename(tmp_path: Path) -> None:
+    illegal_name = str(tmp_path / "<illegal*name>.pdf")
+    d = Document()
+
+    with pytest.raises(errors.IllegalOutputFilenameException):
+        d.output_filename = illegal_name
+
+
 @pytest.mark.skipif(platform.system() == "Windows", reason="Unix-specific")
 def test_archive_unwriteable_dir(tmp_path: Path) -> None:
     doc = tmp_path / "doc.pdf"

@@ -104,6 +104,8 @@ def main():
 
     if args.token:
         log.debug(f"Reading token from {args.token}")
+        # Ensure we are not uploading the token as an asset
+        assert args.file != args.token
         with open(args.token) as f:
             token = f.read().strip()
     else:

@@ -9,6 +9,7 @@ name: Test official instructions for installing Dangerzone
 on:
   schedule:
     - cron: '0 0 * * *' # Run every day at 00:00 UTC.
+  workflow_dispatch:
 
 jobs:
   install-from-apt-repo:

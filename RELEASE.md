@@ -6,22 +6,15 @@ This section documents the release process. Unless you're a dangerzone developer
 
 Before making a release, all of these should be complete:
 
-- [ ] Copy the entirety of these instructions onto a new issue and call it **QA and Release version \<VERSION\>**
-- [ ] [Add new Linux platforms and remove obsolete ones](#add-new-platforms-and-remove-obsolete-ones)
+- [ ] Copy the checkboxes from these instructions onto a new issue and call it **QA and Release version \<VERSION\>**
+- [ ] [Add new Linux platforms and remove obsolete ones](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#add-new-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock`
-- [ ] [Check for official PySide6 versions](#check-for-official-pyside6-versions)
+- [ ] [Check for official PySide6 versions](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#check-for-official-pyside6-versions)
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
-- [ ] Create a PGP-signed git tag for the version, e.g., for dangerzone `v0.1.0`:
-
-  ```
-  git tag -s v0.1.0
-  git push origin v0.1.0
-  ```
-  **Note**: release candidates are suffixed by `-rcX`.
 
 ## Add new Linux platforms and remove obsolete ones
 
@@ -245,6 +238,16 @@ should point the user to the Qubes notifications in the top-right corner:
 
 ## Release
 
+Once we are confident that the release will be out shortly, and doesn't need any more changes:
+
+- [ ] Create a PGP-signed git tag for the version, e.g., for dangerzone `v0.1.0`:
+
+  ```
+  git tag -s v0.1.0
+  git push origin v0.1.0
+  ```
+  **Note**: release candidates are suffixed by `-rcX`.
+
 > [!IMPORTANT]
 > Because we don't have [reproducible builds](https://github.com/freedomofpress/dangerzone/issues/188)
 > yet, building the Dangerzone container image in various platforms would lead
@@ -256,6 +259,7 @@ should point the user to the Qubes notifications in the top-right corner:
 ### macOS Release
 
 #### Initial Setup
+
 - Build machine must have:
   - Apple-trusted `Developer ID Application: Freedom of the Press Foundation (94ZZGGGJ3W)` code-signing certificates installed
 - Apple account must have:
@@ -267,21 +271,25 @@ should point the user to the Qubes notifications in the top-right corner:
     https://developer.apple.com and login with the proper Apple ID.
 
 #### Releasing and Signing
-- [ ] Verify and install the latest supported Python version from [python.org](https://www.python.org/downloads/macos/)
+
+- [ ] Verify and install the latest supported Python version from
+  [python.org](https://www.python.org/downloads/macos/) (do not use the one from
+  brew as it is known to [cause issues](https://github.com/freedomofpress/dangerzone/issues/471))
+  * In case of a new Python installation or minor version upgrade, e.g., from
+    3.11 to 3.12 , reinstall Poetry with `python3 -m pip install poetry`
 - [ ] Verify and checkout the git tag for this release
-- [ ] Run `poetry install`
+- [ ] Run `poetry install --sync`
 - [ ] Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`
 - [ ] Run `poetry run ./install/macos/build-app.py --only-codesign`; this will make `dist/Dangerzone.dmg`
   * You need to run this command as the account that has access to the code signing certificate
   * You must run this command from the MacOS UI, from a terminal application.
-- [ ] Notarize it: `xcrun notarytool submit --apple-id "<email>" --keychain-profile "dz-notarytool-release-key" dist/Dangerzone.dmg`
-  * In the end you'll get a `REQUEST_UUID`, which identifies the submission. Keep it to check on its status.
+- [ ] Notarize it: `xcrun notarytool submit --wait --apple-id "<email>" --keychain-profile "dz-notarytool-release-key" dist/Dangerzone.dmg`
   * You need to change the `<email>` in the above command with the email
     associated with the Apple Developer ID.
   * This command assumes that you have created, and stored in the Keychain, an
     application password associated with your Apple Developer ID, which will be
     used specifically for `notarytool`.
-- [ ] Wait for it to get approved, check status with: `xcrun notarytool info <REQUEST_UUID> --apple-id "<email>" --keychain-profile "dz-notarytool-release-key"`
+- [ ] Wait for it to get approved:
   * If it gets rejected, you should be able to see why with the same command
     (or use the `log` option for a more verbose JSON output)
   * You will also receive an update in your email.
@@ -296,6 +304,7 @@ dist/Dangerzone.dmg
 Rename `Dangerzone.dmg` to `Dangerzone-$VERSION.dmg`.
 
 ### Windows Release
+
 The Windows release is performed in a Windows 11 virtual machine as opposed to a physical one.
 
 #### Initial Setup
@@ -311,7 +320,7 @@ The Windows release is performed in a Windows 11 virtual machine as opposed to a
 #### Releasing and Signing
 
 - [ ] Verify and checkout the git tag for this release
-- [ ] Run `poetry install`
+- [ ] Run `poetry install --sync`
 - [ ] Copy the container image into the VM
   > [!IMPORTANT]
   > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar.gz` and `share/image-id.txt` from the host into the `share` folder in the VM
@@ -321,6 +330,13 @@ The Windows release is performed in a Windows 11 virtual machine as opposed to a
 Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
 
 ### Linux release
+
+> [!INFO]
+> Below we explain how we build packages for each Linux distribution we support.
+>
+> There is also a `release.sh` script available which creates all
+> the `.rpm` and `.deb` files with a single command.
+
 
 #### Debian/Ubuntu
 
@@ -409,6 +425,12 @@ To publish the release:
     ```
 
 - [ ] Run container scan on the produced container images (some time may have passed since the artifacts were built)
+  ```
+  gunzip --keep -c ./share/container.tar.gz > /tmp/container.tar
+  docker pull anchore/grype:latest
+  docker run --rm -v /tmp/container.tar:/container.tar anchore/grype:latest /container.tar
+  ```
+
 - [ ] Collect the assets in a single directory, calculate their SHA-256 hashes, and sign them.
   * You can use `./dev_scripts/sign-assets.py`, if you want to automate this
     task.
@@ -422,7 +444,7 @@ To publish the release:
   are shipped in other platforms (see our [Pre-release](#Pre-release) section)
 
 - [ ] Upload the detached signatures (.asc) and checksum file.
-- [ ] Update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers and signatures
+- [ ] Update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers.
 - [ ] Update the brew cask release of Dangerzone with a [PR like this one](https://github.com/Homebrew/homebrew-cask/pull/116319)
 - [ ] Update version and download links in `README.md`
 

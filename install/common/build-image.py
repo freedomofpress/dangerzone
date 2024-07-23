@@ -37,28 +37,36 @@ def main():
         default=9,
         help="The Gzip compression level, from 0 (lowest) to 9 (highest, default)",
     )
+    parser.add_argument(
+        "--use-cache",
+        action="store_true",
+        help="Use the builder's cache to speed up the builds (not suitable for release builds)",
+    )
     args = parser.parse_args()
 
     print(f"Building for architecture '{ARCH}'")
 
     print("Exporting container pip dependencies")
     with ContainerPipDependencies():
-        print("Pulling base image")
-        subprocess.run(
-            [
-                args.runtime,
-                "pull",
-                "alpine:latest",
-            ],
-            check=True,
-        )
+        if not args.use_cache:
+            print("Pulling base image")
+            subprocess.run(
+                [
+                    args.runtime,
+                    "pull",
+                    "alpine:latest",
+                ],
+                check=True,
+            )
 
         print("Building container image")
+        cache_args = [] if args.use_cache else ["--no-cache"]
         subprocess.run(
             [
                 args.runtime,
                 "build",
                 BUILD_CONTEXT,
+                *cache_args,
                 "--build-arg",
                 f"REQUIREMENTS_TXT={REQUIREMENTS_TXT}",
                 "--build-arg",

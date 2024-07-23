@@ -158,6 +158,10 @@ Run Dangerzone against a list of documents, and tick all options. Ensure that:
 Run Dangerzone against a set of documents that you drag-n-drop. Files should be
 added and conversion should run without issue.
 
+> [!TIP]
+> On our end-user container environments for Linux, we can start a file manager
+> with `thunar &`.
+
 #### 9. Dangerzone CLI succeeds in converting multiple documents
 
 _(Only for Windows and Linux)_

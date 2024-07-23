@@ -152,7 +152,7 @@ RUN bash -c 'if [[ "$(pipx --version)" < "1" ]]; then \
                 && rm -rf /var/lib/apt/lists/*; \
               else true; fi'
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends mupdf \
+    && apt-get install -y --no-install-recommends mupdf thunar \
     && rm -rf /var/lib/apt/lists/*
 """
 
@@ -166,7 +166,7 @@ RUN dnf install -y git rpm-build podman python3 python3-devel python3-poetry-cor
 # See https://github.com/freedomofpress/dangerzone/issues/286#issuecomment-1347149783
 RUN rpm --restore shadow-utils
 
-RUN dnf install -y mupdf && dnf clean all
+RUN dnf install -y mupdf thunar && dnf clean all
 """
 
 # The Dockerfile for building a development environment for Dangerzone. Parts of the
@@ -210,7 +210,7 @@ RUN cd /home/user/dangerzone && poetry --no-ansi install
 DOCKERFILE_BUILD_DEBIAN_DEPS = r"""
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends mupdf \
+    && apt-get install -y --no-install-recommends mupdf thunar \
     && rm -rf /var/lib/apt/lists/*
 """
 
@@ -220,7 +220,7 @@ RUN dnf install -y /tmp/pyside6.rpm
 """
 
 DOCKERFILE_BUILD_FEDORA_DEPS = r"""
-RUN dnf install -y mupdf && dnf clean all
+RUN dnf install -y mupdf thunar && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.
 # See https://github.com/freedomofpress/dangerzone/issues/286#issuecomment-1347149783

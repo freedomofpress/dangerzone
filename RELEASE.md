@@ -277,6 +277,7 @@ Once we are confident that the release will be out shortly, and doesn't need any
   brew as it is known to [cause issues](https://github.com/freedomofpress/dangerzone/issues/471))
   * In case of a new Python installation or minor version upgrade, e.g., from
     3.11 to 3.12 , reinstall Poetry with `python3 -m pip install poetry`
+  * You can verify the correct Python version is used with `poetry debug info`
 - [ ] Verify and checkout the git tag for this release
 - [ ] Run `poetry install --sync`
 - [ ] Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`

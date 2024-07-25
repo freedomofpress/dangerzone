@@ -3,6 +3,17 @@ import os
 import sys
 from typing import Dict, Optional
 
+# XXX: PyMUPDF logs to stdout by default [1]. The PyMuPDF devs provide a way [2] to log to
+# stderr, but it's based on environment variables. These envvars are consulted at import
+# time [3], so we have to set them here, before we import `fitz`.
+#
+# [1] https://github.com/freedomofpress/dangerzone/issues/877
+# [2] https://github.com/pymupdf/PyMuPDF/issues/3135#issuecomment-1992625724
+# [3] https://github.com/pymupdf/PyMuPDF/blob/9717935eeb2d50d15440d62575878214226795f9/src/__init__.py#L62-L63
+os.environ["PYMUPDF_MESSAGE"] = "fd:2"
+os.environ["PYMUPDF_LOG"] = "fd:2"
+
+
 import fitz
 import magic
 

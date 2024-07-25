@@ -16,6 +16,16 @@ from typing import Optional
 
 from .common import DEFAULT_DPI, DangerzoneConverter, get_tessdata_dir, running_on_qubes
 
+# XXX: PyMUPDF logs to stdout by default [1]. The PyMuPDF devs provide a way [2] to log to
+# stderr, but it's based on environment variables. These envvars are consulted at import
+# time [3], so we have to set them here, before we import `fitz`.
+#
+# [1] https://github.com/freedomofpress/dangerzone/issues/877
+# [2] https://github.com/pymupdf/PyMuPDF/issues/3135#issuecomment-1992625724
+# [3] https://github.com/pymupdf/PyMuPDF/blob/9717935eeb2d50d15440d62575878214226795f9/src/__init__.py#L62-L63
+os.environ["PYMUPDF_MESSAGE"] = "fd:2"
+os.environ["PYMUPDF_LOG"] = "fd:2"
+
 
 class PixelsToPDF(DangerzoneConverter):
     async def convert(
@@ -50,14 +60,13 @@ class PixelsToPDF(DangerzoneConverter):
             # The first few operations happen on a per-page basis.
             page_size = len(untrusted_rgb_data)
             total_size += page_size
-            with contextlib.redirect_stdout(io.StringIO()):
-                pixmap = fitz.Pixmap(
-                    fitz.Colorspace(fitz.CS_RGB),
-                    width,
-                    height,
-                    untrusted_rgb_data,
-                    False,
-                )
+            pixmap = fitz.Pixmap(
+                fitz.Colorspace(fitz.CS_RGB),
+                width,
+                height,
+                untrusted_rgb_data,
+                False,
+            )
             pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
             if ocr_lang:  # OCR the document
                 self.update_progress(

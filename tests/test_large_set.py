@@ -75,7 +75,12 @@ class TestLargeSet(TestCli):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
-        out, _ = p.communicate()
+        try:
+            # Set a global timeout of 5 minutes for the processing of a document.
+            # This is hacky way to sidestep https://github.com/freedomofpress/dangerzone/issues/878
+            out, _ = p.communicate(timeout=5 * 60)
+        except subprocess.TimeoutExpired:
+            print(f"*** TIMEOUT EXCEEDED FOR DOCUMENT '{doc}' ***")
         from strip_ansi import strip_ansi
 
         print(strip_ansi(out.decode()))

@@ -106,6 +106,9 @@ class Container(IsolationProvider):
           running gVisor.
         * Do not allow access to the network stack.
         * Run the container as the unprivileged `dangerzone` user.
+        * Set the `container_engine_t` SELinux label, which allows gVisor to work on
+          SELinux-enforcing systems
+          (see https://github.com/freedomofpress/dangerzone/issues/880).
 
         For Podman specifically, where applicable, we also add the following:
         * Do not log the container's output.
@@ -141,6 +144,7 @@ class Container(IsolationProvider):
 
         security_args += ["--cap-drop", "all"]
         security_args += ["--cap-add", "SYS_CHROOT"]
+        security_args += ["--security-opt", "label=type:container_engine_t"]
 
         security_args += ["--network=none"]
         security_args += ["-u", "dangerzone"]

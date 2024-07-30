@@ -411,6 +411,28 @@ class Env:
         """Create an Env class from CLI arguments"""
         return cls(distro=args.distro, version=args.version, runtime=args.runtime)
 
+    def find_dz_package(self, path, pattern):
+        """Get the full path of the Dangerzone package in the specified dir.
+
+        There are times where we don't know the exact name of the Dangerzone package
+        that we've built, e.g., because its patch level may have changed.
+
+        Auto-detect the Dangerzone package based on a pattern that a user has provided,
+        and fail if there are none, or multiple matches. If there's a single match, then
+        return the full path for the package.
+        """
+        matches = list(path.glob(pattern))
+        if len(matches) == 0:
+            raise RuntimeError(
+                f"Could not find Dangerzone package '{pattern}' in '{path}'"
+            )
+        elif len(matches) > 1:
+            raise RuntimeError(
+                f"Found more than one matches for Dangerzone package '{pattern}' in"
+                f" '{path}'"
+            )
+        return matches[0]
+
     def runtime_run(self, *args):
         """Run a command for a specific container runtime.
 
@@ -610,8 +632,9 @@ class Env:
         version = dz_version()
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_FEDORA_DEPS
-            package = f"dangerzone-{version}-1.fc{self.version}.x86_64.rpm"
-            package_src = git_root() / "dist" / package
+            package_pattern = f"dangerzone-{version}-*.fc{self.version}.x86_64.rpm"
+            package_src = self.find_dz_package(git_root() / "dist", package_pattern)
+            package = package_src.name
             package_dst = build_dir / package
             install_cmd = "dnf install -y"
 
@@ -652,8 +675,9 @@ class Env:
                 "noble",
             ):
                 install_deps = DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS
-            package = f"dangerzone_{version}-1_all.deb"
-            package_src = git_root() / "deb_dist" / package
+            package_pattern = f"dangerzone_{version}-*_all.deb"
+            package_src = self.find_dz_package(git_root() / "deb_dist", package_pattern)
+            package = package_src.name
             package_dst = build_dir / package
             install_cmd = "apt-get update && apt-get install -y"
 

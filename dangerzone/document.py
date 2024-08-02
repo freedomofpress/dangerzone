@@ -1,8 +1,10 @@
 import enum
 import logging
 import os
+import platform
+import re
 import secrets
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Optional
 
 from . import errors, util
@@ -68,6 +70,22 @@ class Document:
     def validate_output_filename(filename: str) -> None:
         if not filename.endswith(".pdf"):
             raise errors.NonPDFOutputFileException()
+
+        if platform.system() == "Windows":
+            final_filename = PureWindowsPath(filename).name
+            illegal_chars_regex = re.compile(r"[\"*/:<>?\\|]")
+        else:
+            final_filename = PurePosixPath(filename).name
+            if platform.system() == "Darwin":
+                illegal_chars_regex = re.compile(r"[:\\]")
+            else:
+                illegal_chars_regex = re.compile(r"[\\]")
+
+        match = illegal_chars_regex.search(final_filename)
+        if match:
+            # filename contains illegal characters
+            raise errors.IllegalOutputFilenameException(match.group(0))
+
         if not os.access(Path(filename).parent, os.W_OK):
             # in unwriteable directory
             raise errors.UnwriteableOutputDirException()

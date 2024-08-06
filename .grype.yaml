@@ -43,3 +43,16 @@ ignore:
   #      > typically be under attacker control making active exploitation
   #      > unlikely.
   - vulnerability: CVE-2024-5535
+  # CVE-2024-5171
+  # =============
+  #
+  # NVD Entry: https://nvd.nist.gov/vuln/detail/CVE-2024-5171
+  # Verdict: Dangerzone is not affected. The rationale is the following:
+  #
+  # The affected library, `libaom.so`, is linked by GStreamer's `libgstaom.so`
+  # library. The vulnerable `aom_img_alloc` function is only used when
+  # **encoding** a video to AV1. LibreOffce uses the **decode** path instead,
+  # when generating thumbnails.
+  #
+  # See also: https://github.com/freedomofpress/dangerzone/issues/895
+  - vulnerability: CVE-2024-5171

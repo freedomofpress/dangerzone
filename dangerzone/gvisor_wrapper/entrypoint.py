@@ -142,6 +142,9 @@ runsc_argv = [
     "--rootless=true",
     "--network=none",
     "--root=/home/dangerzone/.containers",
+    # Disable DirectFS for to make the seccomp filter even stricter,
+    # at some performance cost.
+    "--directfs=false",
 ]
 if os.environ.get("RUNSC_DEBUG"):
     runsc_argv += ["--debug=true", "--alsologtostderr=true"]

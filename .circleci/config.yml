@@ -608,13 +608,9 @@ workflows:
       - build-debian-bullseye:
           requires:
             - build-container-image
-      # FIXME: Currently disabled because `stdeb` does not work with Python
-      # 3.12, which has become the default in Debian Trixie. See also:
-      # https://github.com/freedomofpress/dangerzone/issues/773
-      #
-      #- build-debian-trixie:
-      #    requires:
-      #      - build-container-image
+      - build-debian-trixie:
+          requires:
+            - build-container-image
       - build-debian-bookworm:
           requires:
             - build-container-image

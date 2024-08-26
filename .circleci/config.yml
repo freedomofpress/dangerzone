@@ -33,6 +33,7 @@ aliases:
 
   - &build-deb
     name: Build the .deb package
+    no_output_timeout: 30m
     command: |
       ./install/linux/build-deb.py
       ls -lh deb_dist/

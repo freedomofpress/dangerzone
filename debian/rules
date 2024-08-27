@@ -1,0 +1,7 @@
+#!/usr/bin/make -f
+export PYBUILD_NAME=dangerzone
+export DEB_BUILD_OPTIONS=nocheck
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+

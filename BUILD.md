@@ -58,8 +58,8 @@ Install dependencies:
 
 
 ```sh
-sudo apt install -y podman dh-python build-essential fakeroot make libqt6gui6 \
-    pipx python3 python3-dev python3-stdeb python3-all
+sudo apt install -y podman dh-python build-essential make libqt6gui6 \
+    pipx python3 python3-dev
 ```
 
 Install Poetry using `pipx` (recommended) and add it to your `$PATH`:

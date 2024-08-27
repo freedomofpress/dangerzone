@@ -5,25 +5,12 @@ aliases:
     name: Install Podman in Ubuntu Focal
     command: ./install/linux/install-podman-ubuntu-focal.sh
 
-    # FIXME: Remove the following step once we drop Ubuntu Focal support. The
-    # python-all dependency is an artificial requirement due to an stdeb bug
-    # prior to v0.9.1. See:
-    #
-    # * https://github.com/astraw/stdeb/issues/153
-    # * https://github.com/freedomofpress/dangerzone/issues/292#issuecomment-1349967888
-  - &install-python-all
-    name: Install python-all package
-    command: |
-      export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
-      apt-get update
-      apt-get install -y python-all
-
   - &install-dependencies-deb
     name: Install dependencies (deb)
     command: |
       export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
       apt-get update
-      apt-get install -y dh-python python3 python3-stdeb
+      apt build-dep -y .
 
   - &install-dependencies-rpm
     name: Install dependencies (rpm)
@@ -470,8 +457,8 @@ jobs:
       - image: ubuntu:24.04
     resource_class: medium+
     steps:
-      - run: *install-dependencies-deb
       - checkout
+      - run: *install-dependencies-deb
       - run: *calculate-cache-key
       - restore_cache: *restore-cache
       - run: *copy-image
@@ -482,8 +469,8 @@ jobs:
       - image: ubuntu:23.10
     resource_class: medium+
     steps:
-      - run: *install-dependencies-deb
       - checkout
+      - run: *install-dependencies-deb
       - run: *calculate-cache-key
       - restore_cache: *restore-cache
       - run: *copy-image
@@ -494,8 +481,8 @@ jobs:
       - image: ubuntu:22.04
     resource_class: medium+
     steps:
-      - run: *install-dependencies-deb
       - checkout
+      - run: *install-dependencies-deb
       - run: *calculate-cache-key
       - restore_cache: *restore-cache
       - run: *copy-image
@@ -506,9 +493,8 @@ jobs:
       - image: ubuntu:20.04
     resource_class: medium+
     steps:
-      - run: *install-dependencies-deb
-      - run: *install-python-all
       - checkout
+      - run: *install-dependencies-deb
       - run: *calculate-cache-key
       - restore_cache: *restore-cache
       - run: *copy-image
@@ -519,8 +505,8 @@ jobs:
       - image: debian:trixie
     resource_class: medium+
     steps:
-      - run: *install-dependencies-deb
       - checkout
+      - run: *install-dependencies-deb
       - run: *calculate-cache-key
       - restore_cache: *restore-cache
       - run: *copy-image
@@ -531,8 +517,8 @@ jobs:
       - image: debian:bookworm
     resource_class: medium+
     steps:
-      - run: *install-dependencies-deb
       - checkout
+      - run: *install-dependencies-deb
       - run: *calculate-cache-key
       - restore_cache: *restore-cache
       - run: *copy-image
@@ -543,8 +529,8 @@ jobs:
       - image: debian:bullseye
     resource_class: medium+
     steps:
-      - run: *install-dependencies-deb
       - checkout
+      - run: *install-dependencies-deb
       - run: *calculate-cache-key
       - restore_cache: *restore-cache
       - run: *copy-image
@@ -613,13 +599,9 @@ workflows:
       - ci-fedora-39:
           requires:
             - build-container-image
-      # FIXME: Currently disabled because `stdeb` does not work with Python
-      # 3.12, which is the default in Ubuntu Noble. See also:
-      # https://github.com/freedomofpress/dangerzone/issues/773
-      #
-      #- build-ubuntu-noble:
-      #    requires:
-      #      - build-container-image
+      - build-ubuntu-noble:
+          requires:
+            - build-container-image
       - build-ubuntu-mantic:
           requires:
             - build-container-image
@@ -632,13 +614,9 @@ workflows:
       - build-debian-bullseye:
           requires:
             - build-container-image
-      # FIXME: Currently disabled because `stdeb` does not work with Python
-      # 3.12, which has become the default in Debian Trixie. See also:
-      # https://github.com/freedomofpress/dangerzone/issues/773
-      #
-      #- build-debian-trixie:
-      #    requires:
-      #      - build-container-image
+      - build-debian-trixie:
+          requires:
+            - build-container-image
       - build-debian-bookworm:
           requires:
             - build-container-image

@@ -1,0 +1,5 @@
+dangerzone (0.7.0) unstable; urgency=low
+
+  * Removed stdeb in favor of direct debian packaging tools
+
+ -- Freedom of the Press Foundation   <info@freedom.press>  Tue, 27 Aug 2024 14:39:28 +0200

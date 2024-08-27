@@ -2,9 +2,9 @@ name: Tests
 on:
   push:
   pull_request:
-    branches: [ main ]
+    branches: [main]
   schedule:
-    - cron: '0 0 * * *' # Run every day at 00:00 UTC.
+    - cron: "0 0 * * *" # Run every day at 00:00 UTC.
   workflow_dispatch:
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - run: pip install poetry
       - run: poetry install
       - name: Run CLI tests
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - run: pip install poetry
       - run: poetry install
       - name: Run CLI tests
@@ -55,7 +55,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Build dev environment
         run: |
@@ -79,7 +79,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dangerzone.deb
-          path: "deb_dist/dangerzone_*_all.deb"
+          path: "deb_dist/dangerzone_*_*.deb"
 
   install-deb:
     runs-on: ubuntu-latest
@@ -115,7 +115,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Download Dangerzone .deb
         uses: actions/download-artifact@v4

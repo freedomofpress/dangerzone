@@ -127,6 +127,13 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Debian packaging
+
+debian/.debhelper
+debian/dangerzone
+debian/files
+debian/debhelper-build-stamp
+debian/dangerzone.*
 # Other
 .vscode
 *.tar.gz

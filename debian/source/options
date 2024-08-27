@@ -1,0 +1,4 @@
+compression = "gzip"
+tar-ignore = "dev_scripts"
+tar-ignore = ".*"
+tar-ignore = "__pycache__"

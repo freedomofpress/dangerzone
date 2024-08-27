@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: dangerzone
+Source: https://github.com/freedomofpress/dangerzone
+
+Files: *
+Copyright: 2020-2021 First Look Media
+           2022- Freedom of the Press Foundation, and Dangerzone contributors
+License: AGPL-3.0-or-later

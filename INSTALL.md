@@ -46,12 +46,6 @@ Dangerzone is available for:
   sudo apt update
   ```
 
-  Also, you need to install the `python-all` package, due to an `stdeb` bug that
-  existed before v0.9.1:
-
-  ```
-  sudo apt-get install python-all -y
-  ```
 </details>
     </td>
   </tr>

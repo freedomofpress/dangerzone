@@ -2,19 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import inspect
 import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
-root = os.path.dirname(
-    os.path.dirname(
-        os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    )
-)
+# .absolute() is needed for python<=3.8, for which
+# __file__ returns an absolute path.
+root = Path(__file__).parent.parent.parent.absolute()
 
-with open(os.path.join(root, "share", "version.txt")) as f:
+with open(root / "share" / "version.txt") as f:
     version = f.read().strip()
 
 
@@ -39,8 +37,8 @@ def main():
     )
     args = parser.parse_args()
 
-    dist_path = os.path.join(root, "dist")
-    deb_dist_path = os.path.join(root, "deb_dist")
+    dist_path = root / "dist"
+    deb_dist_path = root / "deb_dist"
 
     print("* Deleting old dist and deb_dist")
     if os.path.exists(dist_path):
@@ -49,31 +47,28 @@ def main():
         shutil.rmtree(deb_dist_path)
 
     print("* Building DEB package")
-    # NOTE: This command first builds the Debian source package, and then creates the
-    # final DEB package. We could simply call `bdist_deb`, which performs `sdist_dsc`
-    # implicitly, but we wouldn't be able to pass the Debian version argument. Because
-    # we do this in a single invocation though, there's no performance cost.
     if args.distro is None:
-        deb_ver_args = ()
         deb_ver = "1"
     else:
-        deb_ver_args = ("--debian-version", args.distro)
         deb_ver = args.distro
 
     run(
         [
-            "python3",
-            "setup.py",
-            "--command-packages=stdeb.command",
-            "sdist_dsc",
-            *deb_ver_args,
-            "bdist_deb",
+            "dpkg-buildpackage",
         ]
     )
 
+    os.makedirs(deb_dist_path, exist_ok=True)
     print("")
     print("* To install run:")
-    print(f"sudo dpkg -i deb_dist/dangerzone_{version}-{deb_ver}_all.deb")
+
+    # dpkg-buildpackage produces a .deb file in the parent folder
+    # that needs to be copied to the `deb_dist` folder manually
+    for item in root.parent.glob(f"dangerzone_{version}_*.deb"):
+        arch = item.stem.split("_")[-1]
+        destination = root / "deb_dist" / f"dangerzone_{version}-{deb_ver}_{arch}.deb"
+        shutil.move(item, destination)
+        print(f"sudo dpkg -i {destination}")
 
 
 if __name__ == "__main__":

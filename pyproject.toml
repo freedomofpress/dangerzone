@@ -55,7 +55,7 @@ strip-ansi = "*"
 pymupdf = "^1.23.6"
 
 [tool.poetry.group.container.dependencies]
-pymupdf = "^1.24.6"
+pymupdf = "^1.24.10"
 
 [tool.isort]
 profile = "black"

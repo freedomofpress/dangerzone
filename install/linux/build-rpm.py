@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import argparse
-import inspect
 import os
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 
 root = Path(__file__).parent.parent.parent
@@ -98,7 +96,7 @@ def build(build_dir, qubes=False):
     if qubes:
         cmd += [
             "--define",
-            f"_qubes 1",
+            "_qubes 1",
         ]
     subprocess.run(cmd, check=True)
 

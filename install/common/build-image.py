@@ -14,6 +14,8 @@ if platform.system() in ["Darwin", "Windows"]:
 elif platform.system() == "Linux":
     CONTAINER_RUNTIME = "podman"
 
+ARCH = platform.machine()
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -37,6 +39,8 @@ def main():
     )
     args = parser.parse_args()
 
+    print(f"Building for architecture '{ARCH}'")
+
     print("Exporting container pip dependencies")
     with ContainerPipDependencies():
         print("Pulling base image")
@@ -57,6 +61,8 @@ def main():
                 BUILD_CONTEXT,
                 "--build-arg",
                 f"REQUIREMENTS_TXT={REQUIREMENTS_TXT}",
+                "--build-arg",
+                f"ARCH={ARCH}",
                 "-f",
                 "Dockerfile",
                 "--tag",
@@ -121,7 +127,12 @@ class ContainerPipDependencies:
         # XXX Export container dependencies and exclude pymupdfb since it is not needed in container
         req_txt_pymupdfb_stripped = container_requirements_txt.split("pymupdfb")[0]
         with open(Path(BUILD_CONTEXT) / REQUIREMENTS_TXT, "w") as f:
-            f.write(req_txt_pymupdfb_stripped)
+            if ARCH == "arm64":
+                # PyMuPDF needs to be built on ARM64 machines
+                # But is already provided as a prebuilt-wheel on other architectures
+                f.write(req_txt_pymupdfb_stripped)
+            else:
+                f.write(container_requirements_txt)
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         print("Leaving the context...")

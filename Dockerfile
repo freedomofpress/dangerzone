@@ -2,12 +2,23 @@
 # Build PyMuPDF
 
 FROM alpine:latest as pymupdf-build
-
+ARG ARCH
 ARG REQUIREMENTS_TXT
 
+RUN mkdir -p /usr/lib/python3.12/site-packages/PyMuPDFb.libs
 # Install PyMuPDF via hash-checked requirements file
 COPY ${REQUIREMENTS_TXT} /tmp/requirements.txt
-RUN apk --no-cache add linux-headers g++ linux-headers gcc make python3-dev py3-pip clang-dev
+
+# PyMuPDF provides non-arm musl wheels only.
+# Only install build-dependencies if we are actually building the wheel
+RUN case "$ARCH" in \
+    "arm64") \
+        # This is required for copying later, but is created only in the pre-built wheels
+        mkdir -p /usr/lib/python3.12/site-packages/PyMuPDFb.libs/ \
+        && apk --no-cache add linux-headers g++ linux-headers gcc make python3-dev py3-pip clang-dev ;; \
+    *) \
+        apk --no-cache add py3-pip ;; \
+    esac
 RUN pip install -vv --break-system-packages --require-hashes -r /tmp/requirements.txt
 
 
@@ -63,6 +74,7 @@ RUN apk --no-cache -U upgrade && \
 
 COPY --from=pymupdf-build /usr/lib/python3.12/site-packages/fitz/ /usr/lib/python3.12/site-packages/fitz
 COPY --from=pymupdf-build /usr/lib/python3.12/site-packages/pymupdf/ /usr/lib/python3.12/site-packages/pymupdf
+COPY --from=pymupdf-build /usr/lib/python3.12/site-packages/PyMuPDFb.libs/ /usr/lib/python3.12/site-packages/PyMuPDFb.libs
 COPY --from=tessdata-dl /usr/share/tessdata/ /usr/share/tessdata
 COPY --from=h2orestart-dl /libreoffice_ext/ /libreoffice_ext
 

@@ -7,7 +7,7 @@ import pytest
 from dangerzone.gui.logic import DangerzoneGui
 
 if platform.system() == "Linux":
-    from xdg.DesktopEntry import DesktopEntry
+    from xdg.DesktopEntry import DesktopEntry, ParsingError
 
 
 @pytest.mark.skipif(platform.system() != "Linux", reason="Linux-only test")
@@ -98,3 +98,25 @@ def test_mime_handers_succeeds_no_default_found() -> None:
         mock_list.assert_called()
         assert len(dz.pdf_viewers) == 3
         assert dz.pdf_viewers.popitem(last=False)[0] == "Evince"
+
+
+@pytest.mark.skipif(platform.system() != "Linux", reason="Linux-only test")
+def test_malformed_desktop_entry_is_catched() -> None:
+    """
+    Given a failure to read a desktop entry,
+    ensure that the exception is not thrown to the end-user.
+    """
+    mock_app = mock.MagicMock()
+    dummy = mock.MagicMock()
+
+    with mock.patch("dangerzone.gui.logic.DesktopEntry") as mock_desktop, mock.patch(
+        "os.listdir",
+        side_effect=[
+            ["malformed.desktop", "another.desktop"],
+            [],
+            [],
+        ],
+    ):
+        mock_desktop.side_effect = ParsingError("Oh noes!", "malformed.desktop")
+        DangerzoneGui(mock_app, dummy)
+        mock_desktop.assert_called()

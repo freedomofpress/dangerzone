@@ -24,7 +24,7 @@ else:
         from PySide2 import QtCore, QtGui, QtWidgets
 
 if platform.system() == "Linux":
-    from xdg.DesktopEntry import DesktopEntry
+    from xdg.DesktopEntry import DesktopEntry, ParsingError
 
 from ..isolation_provider.base import IsolationProvider
 from ..logic import DangerzoneCore
@@ -123,27 +123,37 @@ class DangerzoneGui(DangerzoneCore):
                         full_filename = os.path.join(search_path, filename)
                         if os.path.splitext(filename)[1] == ".desktop":
                             # See which ones can open PDFs
-                            desktop_entry = DesktopEntry(full_filename)
-                            desktop_entry_name = desktop_entry.getName()
-                            if (
-                                "application/pdf" in desktop_entry.getMimeTypes()
-                                and "dangerzone" not in desktop_entry_name.lower()
-                            ):
-                                pdf_viewers[desktop_entry_name] = (
-                                    desktop_entry.getExec()
+                            try:
+                                desktop_entry = DesktopEntry(full_filename)
+                            except ParsingError:
+                                # Do not stop when encountering malformed desktop entries
+                                continue
+                            except Exception:
+                                log.exception(
+                                    "Encountered the following exception while processing desktop entry %s",
+                                    full_filename,
                                 )
+                            else:
+                                desktop_entry_name = desktop_entry.getName()
+                                if (
+                                    "application/pdf" in desktop_entry.getMimeTypes()
+                                    and "dangerzone" not in desktop_entry_name.lower()
+                                ):
+                                    pdf_viewers[desktop_entry_name] = (
+                                        desktop_entry.getExec()
+                                    )
 
-                                # Put the default entry first
-                                if filename == default_pdf_viewer:
-                                    try:
-                                        pdf_viewers.move_to_end(
-                                            desktop_entry_name, last=False
-                                        )
-                                    except KeyError as e:
-                                        # Should be unreachable
-                                        log.error(
-                                            f"Problem reordering applications: {e}"
-                                        )
+                                    # Put the default entry first
+                                    if filename == default_pdf_viewer:
+                                        try:
+                                            pdf_viewers.move_to_end(
+                                                desktop_entry_name, last=False
+                                            )
+                                        except KeyError as e:
+                                            # Should be unreachable
+                                            log.error(
+                                                f"Problem reordering applications: {e}"
+                                            )
                 except FileNotFoundError:
                     pass
 

@@ -38,7 +38,7 @@ mypy: mypy-host mypy-tests ## check type hints with mypy
 lint: lint-black lint-isort mypy ## check the code with various linters
 
 .PHONY: lint-apply
-lint-apply: lint-black-apply lint-isort-apply ## apply all the linter's suggestions
+format: lint-black-apply lint-isort-apply ## apply all the linter's suggestions
 
 .PHONY: test
 test:

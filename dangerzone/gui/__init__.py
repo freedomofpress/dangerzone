@@ -5,7 +5,7 @@ import platform
 import signal
 import sys
 import typing
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import click
 import colorama

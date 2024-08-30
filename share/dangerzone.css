@@ -48,3 +48,11 @@ QLabel.version {
     font-size: 20px;
     padding-bottom: 5px;  /* align with 'dangerzone' font */
 }
+
+QTextEdit[style="traceback"] {
+    font-family: Consolas, Monospace;
+    font-size: 12px;
+    background-color: #ffffff;
+    color: #000000;
+    padding: 10px;
+}

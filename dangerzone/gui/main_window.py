@@ -10,14 +10,18 @@ from typing import List, Optional
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
-    from PySide2.QtWidgets import QAction
+    from PySide2.QtCore import Qt
+    from PySide2.QtWidgets import QAction, QTextEdit
 else:
     try:
         from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
+        from PySide6.QtCore import Qt
         from PySide6.QtGui import QAction
+        from PySide6.QtWidgets import QTextEdit
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
-        from PySide2.QtWidgets import QAction
+        from PySide2.QtWidgets import QAction, QTextEdit
+        from PySide2.QtCore import Qt
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
@@ -402,6 +406,28 @@ class WaitingWidget(QtWidgets.QWidget):
         super(WaitingWidget, self).__init__()
 
 
+class TracebackWidget(QTextEdit):
+    """Reusable component to present tracebacks to the user.
+
+    By default, the widget is initialized but does not appear.
+    You need to call `.set_content("traceback")` on it so the
+    traceback is displayed.
+    """
+
+    def __init__(self) -> None:
+        super(TracebackWidget, self).__init__()
+        # Error
+        self.setReadOnly(True)
+        self.setVisible(False)
+        self.setProperty("style", "traceback")
+        # Enable copying
+        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+    def set_content(self, error: str) -> None:
+        self.setPlainText(error)
+        self.setVisible(True)
+
+
 class WaitingWidgetContainer(WaitingWidget):
     # These are the possible states that the WaitingWidget can show.
     #
@@ -434,10 +460,13 @@ class WaitingWidgetContainer(WaitingWidget):
         self.buttons = QtWidgets.QWidget()
         self.buttons.setLayout(buttons_layout)
 
+        self.traceback = TracebackWidget()
+
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addStretch()
         layout.addWidget(self.label)
+        layout.addWidget(self.traceback)
         layout.addStretch()
         layout.addWidget(self.buttons)
         layout.addStretch()
@@ -448,51 +477,78 @@ class WaitingWidgetContainer(WaitingWidget):
 
     def check_state(self) -> None:
         state: Optional[str] = None
+        error: Optional[str] = None
 
         try:
             if isinstance(  # Sanity check
                 self.dangerzone.isolation_provider, Container
             ):
                 container_runtime = self.dangerzone.isolation_provider.get_runtime()
+                runtime_name = self.dangerzone.isolation_provider.get_runtime_name()
         except NoContainerTechException as e:
             log.error(str(e))
             state = "not_installed"
 
         else:
-            # Can we run `docker image ls` without an error
+            # Can we run `docker/podman image ls` without an error
             with subprocess.Popen(
                 [container_runtime, "image", "ls"],
                 stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
                 startupinfo=get_subprocess_startupinfo(),
             ) as p:
-                p.communicate()
+                _, stderr = p.communicate()
                 if p.returncode != 0:
-                    log.error("Docker is not running")
+                    log.error(f"{runtime_name} is not running")
                     state = "not_running"
+                    error = stderr.decode()
                 else:
                     # Always try installing the container
                     state = "install_container"
 
         # Update the state
-        self.state_change(state)
+        self.state_change(state, error)
 
-    def state_change(self, state: str) -> None:
+    def state_change(self, state: str, error: Optional[str] = None) -> None:
         if state == "not_installed":
-            self.label.setText(
-                "<strong>Dangerzone Requires Docker Desktop</strong><br><br><a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>, install it, and open it."
-            )
+            if platform.system() == "Linux":
+                self.label.setText(
+                    "<strong>Dangerzone requires Podman</strong><br><br>"
+                    "Install it and retry."
+                )
+            else:
+                self.label.setText(
+                    "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
+                    "<a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>"
+                    ", install it, and open it."
+                )
             self.buttons.show()
         elif state == "not_running":
-            self.label.setText(
-                "<strong>Dangerzone Requires Docker Desktop</strong><br><br>Docker is installed but isn't running.<br><br>Open Docker and make sure it's running in the background."
-            )
+            if platform.system() == "Linux":
+                # "not_running" here means that the `podman image ls` command failed.
+                message = (
+                    "<strong>Dangerzone requires Podman</strong><br><br>"
+                    "Podman is installed but cannot run properly. See errors below"
+                )
+                if error:
+                    self.traceback.set_content(error)
+
+                self.label.setText(message)
+
+            else:
+                self.label.setText(
+                    "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
+                    "Docker is installed but isn't running.<br><br>"
+                    "Open Docker and make sure it's running in the background."
+                )
             self.buttons.show()
         else:
             self.label.setText(
-                "Installing the Dangerzone container image.<br><br>This might take a few minutes..."
+                "Installing the Dangerzone container image.<br><br>"
+                "This might take a few minutes..."
             )
             self.buttons.hide()
+            self.traceback.setVisible(False)
             self.install_container_t = InstallContainerThread(self.dangerzone)
             self.install_container_t.finished.connect(self.finished)
             self.install_container_t.start()

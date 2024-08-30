@@ -242,7 +242,7 @@ class Container(IsolationProvider):
         # `int`.
         #
         # See https://stackoverflow.com/a/37888668
-        if not type(val) == _type:
+        if type(val) is not _type:
             raise ValueError("Status field has incorrect type")
 
     def parse_progress_trusted(self, document: Document, line: str) -> None:

@@ -3,6 +3,7 @@
 import argparse
 import os
 import pathlib
+import platform
 import shutil
 import subprocess
 import sys
@@ -272,9 +273,27 @@ def git_root():
     return pathlib.Path(path)
 
 
+def user_data():
+    """Get the user data dir in (which differs on different OSes)"""
+    home = pathlib.Path.home()
+    system = platform.system()
+
+    if system == "Windows":
+        return home / "AppData" / "Local"
+    elif system == "Linux":
+        return home / ".local" / "share"
+    elif system == "Darwin":
+        return home / "Library" / "Application Support"
+
+
+def dz_dev_root():
+    """Get the directory where we will store dangerzone-dev related files"""
+    return user_data() / "dangerzone-dev"
+
+
 def distro_root(distro, version):
     """Get the root directory for the specific Linux environment."""
-    return git_root() / f"dev_scripts/envs/{distro}/{version}"
+    return dz_dev_root() / "envs" / distro / version
 
 
 def distro_state(distro, version):
@@ -357,9 +376,10 @@ class PySide6Manager:
             file=sys.stderr,
         )
         try:
-            with urllib.request.urlopen(self.rpm_url) as r, open(
-                self.rpm_local_path, "wb"
-            ) as f:
+            with (
+                urllib.request.urlopen(self.rpm_url) as r,
+                open(self.rpm_local_path, "wb") as f,
+            ):
                 shutil.copyfileobj(r, f)
         except:
             # NOTE: We purposefully catch all exceptions, since we want to catch Ctrl-C

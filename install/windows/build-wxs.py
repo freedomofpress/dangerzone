@@ -199,7 +199,13 @@ def main():
         Id="ARPURLINFOABOUT",
         Value="https://freedom.press",
     )
-    ET.SubElement(product_el, "UIRef", Id="WixUI_Minimal")
+    ET.SubElement(
+        product_el,
+        "Property",
+        Id="WIXUI_INSTALLDIR",
+        Value="INSTALLDIR",
+    )
+    ET.SubElement(product_el, "UIRef", Id="WixUI_InstallDir")
     ET.SubElement(product_el, "UIRef", Id="WixUI_ErrorProgressText")
     ET.SubElement(
         product_el,

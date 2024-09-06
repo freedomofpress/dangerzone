@@ -4,10 +4,70 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: "0 0 * * *" # Run every day at 00:00 UTC.
+    - cron: "2 0 * * *" # Run every day at 02:00 UTC.
   workflow_dispatch:
 
+permissions:
+  packages: write
+
+env:
+  REGISTRY_USER: ${{ github.actor }}
+  REGISTRY_PASSWORD: ${{ github.token }}
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  # This is required for running GUI tests on Github Actions
+  DISPLAY: ":99.0"
+  QT_SELECT: "qt6"
+
+# Disable multiple concurrent runs on the same branch
+# When a new CI build is triggered, it will cancel the
+# other in-progress ones (for the same branch)
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
+  run-lint:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dev. dependencies
+        run: |-
+          apt-get update
+          apt-get install -y git make python3 python3-poetry --no-install-recommends
+          poetry install --only lint,test
+      - name: Run linters to enforce code style
+        run: poetry run make lint
+      - name: Check that the QA script is up to date with the docs
+        run: "./dev_scripts/qa.py --check-refs"
+
+  # This is already built daily by the "build.yml" file
+  # But we also want to include this in the checks that run on each push.
+  build-container-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Cache container image
+        id: cache-container-image
+        uses: actions/cache@v4
+        with:
+          key: v2-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          path: |-
+            share/container.tar.gz
+            share/image-id.txt
+
+      - name: Build Dangerzone container image
+        if: ${{ steps.cache-container-image.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt-get install -y python3-poetry
+          python3 ./install/common/build-image.py
+
   windows:
     runs-on: windows-latest
     env:
@@ -44,11 +104,26 @@ jobs:
         run: poetry run make test
 
   build-deb:
+    name: "build-deb (${{ matrix.distro }} ${{ matrix.version }})"
     runs-on: ubuntu-latest
-    env:
-      target: debian-bookworm
-      distro: debian
-      version: bookworm
+    needs: build-container-image
+    strategy:
+      matrix:
+        include:
+          - distro: ubuntu
+            version: "20.04"
+          - distro: ubuntu
+            version: "22.04"
+          - distro: ubuntu
+            version: "23.10"
+          - distro: ubuntu
+            version: "24.04"
+          - distro: debian
+            version: bullseye
+          - distro: debian
+            version: bookworm
+          - distro: debian
+            version: trixie
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,56 +132,65 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Build dev environment
+      - name: Login to GHCR
         run: |
-          ./dev_scripts/env.py --distro ${{ env.distro }} \
-              --version ${{ env.version }} \
-              build-dev
+          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
-      - name: Install container build dependencies
-        run: sudo apt install pipx && pipx install poetry
+      - name: Get the dev environment
+        run: |
+          ./dev_scripts/env.py \
+              --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              build-dev --sync
 
-      - name: Build Dangerzone image
-        run: python3 ./install/common/build-image.py
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Restore container cache
+        uses: actions/cache/restore@v4
+        with:
+          key: v2-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          path: |-
+            share/container.tar.gz
+            share/image-id.txt
+          fail-on-cache-miss: true
 
       - name: Build Dangerzone .deb
         run: |
-          ./dev_scripts/env.py --distro ${{ env.distro }} \
-              --version ${{ env.version }} \
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
               run --dev --no-gui ./dangerzone/install/linux/build-deb.py
 
       - name: Upload Dangerzone .deb
+        if: matrix.distro == 'debian' && matrix.version == 'bookworm'
         uses: actions/upload-artifact@v4
         with:
           name: dangerzone.deb
           path: "deb_dist/dangerzone_*_*.deb"
+          if-no-files-found: error
+          compression-level: 0
 
   install-deb:
+    name: "install-deb (${{ matrix.distro }} ${{ matrix.version }})"
     runs-on: ubuntu-latest
     needs: build-deb
     strategy:
       matrix:
         include:
-          - target: ubuntu-20.04
-            distro: ubuntu
+          - distro: ubuntu
             version: "20.04"
-          - target: ubuntu-22.04
-            distro: ubuntu
+          - distro: ubuntu
             version: "22.04"
-          - target: ubuntu-23.10
-            distro: ubuntu
+          - distro: ubuntu
             version: "23.10"
-          - target: ubuntu-24.04
-            distro: ubuntu
+          - distro: ubuntu
             version: "24.04"
-          - target: debian-bullseye
-            distro: debian
+          - distro: debian
             version: bullseye
-          - target: debian-bookworm
-            distro: debian
+          - distro: debian
             version: bookworm
-          - target: debian-trixie
-            distro: debian
+          - distro: debian
             version: trixie
 
     steps:
@@ -123,35 +207,11 @@ jobs:
           name: dangerzone.deb
           path: "deb_dist/"
 
-      - name: Create end-user environment on (${{ matrix.target }})
+      - name: Build end-user environment
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
               build
-
-      - name: Configure Podman for Debian Bullseye specifically
-        if: matrix.target == 'debian-bullseye'
-        run: |
-          # Create a Podman config specifically for Bullseye (see #388).
-          mkdir bullseye_fix
-          cd bullseye_fix
-          cat > containers.conf <<EOF
-          [engine]
-          cgroup_manager="cgroupfs"
-          events_logger="file"
-          EOF
-
-          # Copy the Podman config into the container image we created for the
-          # Dangerzone environment.
-          cat > Dockerfile.bullseye <<EOF
-          FROM dangerzone.rocks/debian:bullseye-backports
-          RUN mkdir -p /home/user/.config/containers
-          COPY containers.conf /home/user/.config/containers/
-          EOF
-
-          # Create a new image from the Dangerzone environment and re-tag it.
-          podman build -t dangerzone.rocks/debian:bullseye-backports \
-              -f Dockerfile.bullseye .
 
       - name: Run a test command
         run: |
@@ -166,31 +226,44 @@ jobs:
               run dangerzone --help
 
   build-install-rpm:
-    name: "Build and install a Dangerzone RPM on Fedora ${{matrix.version}}"
+    name: "build-install-rpm (${{ matrix.distro }} ${{matrix.version}})"
     runs-on: ubuntu-latest
+    needs: build-container-image
     strategy:
       matrix:
-        include:
-          - version: "39"
-          - version: "40"
+        distro: ["fedora"]
+        version: ["39", "40"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build dev environment
+      - name: Login to GHCR
         run: |
-          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
-              build-dev
+          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
-      - name: Build Dangerzone image
+      - name: Get the dev environment
         run: |
-          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
-              run --dev --no-gui \
-              bash -c 'cd /home/user/dangerzone && python3 ./install/common/build-image.py'
+          ./dev_scripts/env.py \
+              --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              build-dev --sync
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Restore container image
+        uses: actions/cache/restore@v4
+        with:
+          key: v2-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          path: |-
+            share/container.tar.gz
+            share/image-id.txt
+          fail-on-cache-miss: true
 
       - name: Build Dangerzone .rpm
         run: |
-          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
               run --dev --no-gui ./dangerzone/install/linux/build-rpm.py
 
       # Reclaim some space in this step, now that the dev environment is no
@@ -201,15 +274,87 @@ jobs:
 
       - name: Build end-user environment
         run: |
-          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
               build --download-pyside6
 
       - name: Run a test command
         run: |
-          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
               run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf
 
       - name: Check that the Dangerzone GUI imports work
         run: |
-          ./dev_scripts/env.py --distro fedora --version ${{ matrix.version }} \
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
               run dangerzone --help
+
+  run-tests:
+    name: "run tests (${{ matrix.distro }} ${{ matrix.version }})"
+    runs-on: ubuntu-latest
+    needs: build-container-image
+    strategy:
+      matrix:
+        include:
+          - distro: ubuntu
+            version: "20.04"
+          - distro: ubuntu
+            version: "22.04"
+          - distro: ubuntu
+            version: "23.10"
+          - distro: ubuntu
+            version: "24.04"
+          - distro: debian
+            version: bullseye
+          - distro: debian
+            version: bookworm
+          - distro: debian
+            version: trixie
+          - distro: fedora
+            version: "39"
+          - distro: fedora
+            version: "40"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Login to GHCR
+        run: |
+          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Get the dev environment
+        run: |
+          ./dev_scripts/env.py \
+              --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              build-dev --sync
+
+      - name: Restore container image
+        uses: actions/cache/restore@v4
+        with:
+          key: v2-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          path: |-
+            share/container.tar.gz
+            share/image-id.txt
+          fail-on-cache-miss: true
+
+      - name: Setup xvfb (Linux)
+        run: |
+          # Stuff copied wildly from several stackoverflow posts
+          sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libxcb-shape0 libglib2.0-0 libgl1-mesa-dev '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
+
+          # start xvfb in the background
+          sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
+
+      - name: Run CI tests
+        run: |-
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
+              bash -c 'cd dangerzone; poetry run make test'

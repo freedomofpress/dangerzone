@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import hashlib
 import os
 import pathlib
 import platform
@@ -8,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import urllib.request
+from datetime import date
 
 DEFAULT_GUI = True
 DEFAULT_USER = "user"
@@ -56,8 +58,13 @@ will download it from:
 # FIXME: Maybe create an enum for these values.
 DISTROS = ["debian", "fedora", "ubuntu"]
 CONTAINER_RUNTIMES = ["podman", "docker"]
-IMAGE_NAME_BUILD_DEV_FMT = "dangerzone.rocks/build/{distro}:{version}"
-IMAGE_NAME_BUILD_FMT = "dangerzone.rocks/{distro}:{version}"
+IMAGES_REGISTRY = "ghcr.io/freedomofpress/"
+IMAGE_NAME_BUILD_DEV_FMT = (
+    IMAGES_REGISTRY + "v2/dangerzone/build-dev/{distro}-{version}:{date}-{hash}"
+)
+IMAGE_NAME_BUILD_ENDUSER_FMT = (
+    IMAGES_REGISTRY + "v2/dangerzone/end-user/{distro}-{version}:{date}-{hash}"
+)
 
 EPILOG = """\
 Examples:
@@ -306,20 +313,70 @@ def distro_build(distro, version):
     return distro_root(distro, version) / "build"
 
 
-def image_name_build(distro, version):
+def get_current_date():
+    return date.today().strftime("%Y-%m-%d")
+
+
+def get_build_dir_sources(distro, version):
+    """Return the files needed to build an image."""
+    sources = [
+        git_root() / "pyproject.toml",
+        git_root() / "poetry.lock",
+        git_root() / "dev_scripts" / "storage.conf",
+        git_root() / "dev_scripts" / "containers.conf",
+    ]
+
+    if distro == "ubuntu" and version in ("22.04", "jammy"):
+        sources.extend(
+            [
+                git_root() / "dev_scripts" / "apt-tools-prod.pref",
+                git_root() / "dev_scripts" / "apt-tools-prod.sources",
+            ]
+        )
+    return sources
+
+
+def image_name_build_dev(distro, version):
     """Get the container image for the dev variant of a Dangerzone environment."""
-    return IMAGE_NAME_BUILD_DEV_FMT.format(distro=distro, version=version)
+    hash = hash_files(get_build_dir_sources(distro, version))
+
+    return IMAGE_NAME_BUILD_DEV_FMT.format(
+        distro=distro, version=version, hash=hash, date=get_current_date()
+    )
 
 
-def image_name_install(distro, version):
-    """Get the container image for the Dangerzone environment."""
-    return IMAGE_NAME_BUILD_FMT.format(distro=distro, version=version)
+def image_name_build_enduser(distro, version):
+    """Get the container image for the Dangerzone end-user environment."""
+
+    hash = hash_files(get_files_in("install/linux", "debian"))
+    return IMAGE_NAME_BUILD_ENDUSER_FMT.format(
+        distro=distro, version=version, hash=hash, date=get_current_date()
+    )
 
 
 def dz_version():
     """Get the current Dangerzone version."""
     with open(git_root() / "share/version.txt") as f:
         return f.read().strip()
+
+
+def hash_files(file_paths: list[pathlib.Path]) -> str:
+    """Returns the hash value of a list of files using the sha256 hashing algorithm."""
+    hash_obj = hashlib.new("sha256")
+    for path in file_paths:
+        with open(path, "rb") as file:
+            file_data = file.read()
+            hash_obj.update(file_data)
+
+    return hash_obj.hexdigest()
+
+
+def get_files_in(*folders: list[str]) -> list[pathlib.Path]:
+    """Return the list of all files present in the given folders"""
+    files = []
+    for folder in folders:
+        files.extend([p for p in (git_root() / folder).glob("**") if p.is_file()])
+    return files
 
 
 class PySide6Manager:
@@ -553,13 +610,13 @@ class Env:
             run_cmd += [
                 "--hostname",
                 "dangerzone-dev",
-                image_name_build(self.distro, self.version),
+                image_name_build_dev(self.distro, self.version),
             ]
         else:
             run_cmd += [
                 "--hostname",
                 "dangerzone",
-                image_name_install(self.distro, self.version),
+                image_name_build_enduser(self.distro, self.version),
             ]
 
         run_cmd += cmd
@@ -575,8 +632,33 @@ class Env:
         (dist_state / ".bash_history").touch(exist_ok=True)
         self.runtime_run(*run_cmd)
 
-    def build_dev(self, show_dockerfile=DEFAULT_SHOW_DOCKERFILE):
+    def pull_image_from_registry(self, image):
+        try:
+            subprocess.run(self.runtime_cmd + ["pull", image], check=True)
+            return True
+        except subprocess.CalledProcessError:
+            # Do not log an error here, we are just checking if the image exists
+            # on the registry.
+            return False
+
+    def push_image_to_registry(self, image):
+        try:
+            subprocess.run(self.runtime_cmd + ["push", image], check=True)
+            return True
+        except subprocess.CalledProcessError as e:
+            print("An error occured when pulling the image: ", e)
+            return False
+
+    def build_dev(self, show_dockerfile=DEFAULT_SHOW_DOCKERFILE, sync=False):
         """Build a Linux environment and install tools for Dangerzone development."""
+        image = image_name_build_dev(self.distro, self.version)
+
+        if sync and self.pull_image_from_registry(image):
+            print("Image has been pulled from the registry, no need to build it.")
+            return
+        elif sync:
+            print("Image label not in registry, building it")
+
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_DEV_FEDORA_DEPS
         else:
@@ -626,19 +708,17 @@ class Env:
         os.makedirs(build_dir, exist_ok=True)
 
         # Populate the build context.
-        shutil.copy(git_root() / "pyproject.toml", build_dir)
-        shutil.copy(git_root() / "poetry.lock", build_dir)
-        shutil.copy(git_root() / "dev_scripts" / "storage.conf", build_dir)
-        if self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
-            shutil.copy(git_root() / "dev_scripts" / "apt-tools-prod.pref", build_dir)
-            shutil.copy(
-                git_root() / "dev_scripts" / "apt-tools-prod.sources", build_dir
-            )
+        for source in get_build_dir_sources(self.distro, self.version):
+            shutil.copy(source, build_dir)
+
         with open(build_dir / "Dockerfile", mode="w") as f:
             f.write(dockerfile)
 
-        image = image_name_build(self.distro, self.version)
         self.runtime_run("build", "-t", image, build_dir)
+
+        if sync:
+            if not self.push_image_to_registry(image):
+                print("An error occured while trying to push to the container registry")
 
     def build(
         self,
@@ -715,6 +795,7 @@ class Env:
         # Populate the build context.
         shutil.copy(package_src, package_dst)
         shutil.copy(git_root() / "dev_scripts" / "storage.conf", build_dir)
+        shutil.copy(git_root() / "dev_scripts" / "containers.conf", build_dir)
         if self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
             shutil.copy(git_root() / "dev_scripts" / "apt-tools-prod.pref", build_dir)
             shutil.copy(
@@ -723,7 +804,7 @@ class Env:
         with open(build_dir / "Dockerfile", mode="w") as f:
             f.write(dockerfile)
 
-        image = image_name_install(self.distro, self.version)
+        image = image_name_build_enduser(self.distro, self.version)
         self.runtime_run("build", "-t", image, build_dir)
 
 
@@ -742,7 +823,7 @@ def env_run(args):
 def env_build_dev(args):
     """Invoke the 'build-dev' command based on the CLI args."""
     env = Env.from_args(args)
-    return env.build_dev(show_dockerfile=args.show_dockerfile)
+    return env.build_dev(show_dockerfile=args.show_dockerfile, sync=args.sync)
 
 
 def env_build(args):
@@ -827,6 +908,12 @@ def parse_args():
         default=DEFAULT_SHOW_DOCKERFILE,
         action="store_true",
         help="Do not build, only show the Dockerfile",
+    )
+    parser_build_dev.add_argument(
+        "--sync",
+        default=False,
+        action="store_true",
+        help="Attempt to pull the image, build it if not found and push it to the container registry",
     )
 
     # Build a development variant of a Dangerzone environment.

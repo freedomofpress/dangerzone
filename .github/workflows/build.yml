@@ -1,0 +1,96 @@
+name: Build dev environments
+on:
+  push:
+  schedule:
+    - cron: "0 0 * * *" # Run every day at 00:00 UTC.
+
+permissions:
+  packages: write
+
+env:
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  REGISTRY_USER: ${{ github.actor }}
+  REGISTRY_PASSWORD: ${{ github.token }}
+
+# Each day, build and publish to ghcr.io:
+#
+# - the dangerzone/dangerzone container image
+# - the dangerzone/build/{debian,ubuntu,fedora}:version
+#   dev environments used to run the tests
+#
+# End-user environments are not published to the GHCR because
+# they need .rpm or .deb files to be built, which is what we
+# want to test.
+
+jobs:
+  build-dev-environment:
+    name: "Build dev-env (${{ matrix.distro }}-${{ matrix.version }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - distro: ubuntu
+            version: "20.04"
+          - distro: ubuntu
+            version: "22.04"
+          - distro: ubuntu
+            version: "23.10"
+          - distro: ubuntu
+            version: "24.04"
+          - distro: debian
+            version: bullseye
+          - distro: debian
+            version: bookworm
+          - distro: debian
+            version: trixie
+          - distro: fedora
+            version: "39"
+          - distro: fedora
+            version: "40"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Login to GHCR
+        run: |
+          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
+
+      - name: Build dev environment
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              build-dev --sync
+
+  build-container-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Cache container image
+        id: cache-container-image
+        uses: actions/cache@v4
+        with:
+          key: v2-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          path: |
+            share/container.tar.gz
+            share/image-id.txt
+
+      - name: Build and push Dangerzone image
+        if: ${{ steps.cache-container-image.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt-get install -y python3-poetry
+          python3 ./install/common/build-image.py
+          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
+          gunzip -c share/container.tar.gz | podman load
+          podman push \
+                  dangerzone.rocks/dangerzone \
+                  ${{ env.IMAGE_REGISTRY }}/dangerzone/dangerzone

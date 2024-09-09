@@ -96,7 +96,7 @@ jobs:
 
   build-container-image:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2204:edge
     steps:
       - checkout
       - run: *install-podman

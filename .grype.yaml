@@ -16,3 +16,33 @@ ignore:
   #
   # See also: https://github.com/freedomofpress/dangerzone/issues/895
   - vulnerability: CVE-2024-5171
+
+  # CVE-2024-45491, CVE-2024-45492
+  # ===============================
+  #
+  # NVD Entries:
+  # * https://nvd.nist.gov/vuln/detail/CVE-2024-45491
+  # * https://nvd.nist.gov/vuln/detail/CVE-2024-45492
+  #
+  # Verdict: Dangerzone is not affected. The rationale is the following:
+  #
+  # The vulnerabilities that have been assigned to these CVEs affect only 32-bit
+  # architectures. Dangerzone ships only 64-bit images to users.
+  #
+  # See also: https://github.com/freedomofpress/dangerzone/issues/913
+  - vulnerability: CVE-2024-45491
+  - vulnerability: CVE-2024-45492
+
+  # CVE-2024-45490
+  # ==============
+  #
+  # NVD Entry: https://nvd.nist.gov/vuln/detail/CVE-2024-45490
+  # Verdict: Dangerzone is not affected. The rationale is the following:
+  #
+  # In order to exploit this bug, the caller must pass a negative length to the
+  # `XML_ParseBuffer` function. This function is not directly used by
+  # LibreOffice, which instead uses a higher-level wrapper. Therefore, our
+  # understanding is that this path cannot be exploited by attackers.
+  #
+  # See also: https://github.com/freedomofpress/dangerzone/issues/913
+  - vulnerability: CVE-2024-45490

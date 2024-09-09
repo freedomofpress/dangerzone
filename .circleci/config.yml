@@ -279,6 +279,18 @@ jobs:
     steps:
       - checkout
       - run: *install-podman
+      - run:
+          name: Configure Podman for Ubuntu 22.04
+          command: |
+            # This config circumvents the following issues:
+            # * https://github.com/containers/podman/issues/6368
+            # * https://github.com/containers/podman/issues/10987
+            mkdir -p ~/.config/containers
+            cat > ~/.config/containers/containers.conf \<<EOF
+            [engine]
+            cgroup_manager="cgroupfs"
+            events_logger="file"
+            EOF
 
       - run:
           name: Prepare cache directory
@@ -329,10 +341,22 @@ jobs:
 
   ci-debian-trixie:
     machine:
-      image: ubuntu-2204:edge
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run: *install-podman
+      - run:
+          name: Configure Podman for Ubuntu 22.04
+          command: |
+            # This config circumvents the following issues:
+            # * https://github.com/containers/podman/issues/6368
+            # * https://github.com/containers/podman/issues/10987
+            mkdir -p ~/.config/containers
+            cat > ~/.config/containers/containers.conf \<<EOF
+            [engine]
+            cgroup_manager="cgroupfs"
+            events_logger="file"
+            EOF
 
       - run:
           name: Prepare cache directory

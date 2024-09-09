@@ -275,7 +275,7 @@ jobs:
 
   ci-fedora-40:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run: *install-podman

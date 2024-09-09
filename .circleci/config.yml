@@ -137,7 +137,7 @@ jobs:
 
   convert-test-docs:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2204:edge
     steps:
       - checkout
       - run: *install-podman
@@ -329,7 +329,7 @@ jobs:
 
   ci-debian-trixie:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2204:edge
     steps:
       - checkout
       - run: *install-podman

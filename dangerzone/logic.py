@@ -65,11 +65,17 @@ class DangerzoneCore(object):
         self, ocr_lang: Optional[str], stdout_callback: Optional[Callable] = None
     ) -> None:
         def convert_doc(document: Document) -> None:
-            self.isolation_provider.convert(
-                document,
-                ocr_lang,
-                stdout_callback,
-            )
+            try:
+                self.isolation_provider.convert(
+                    document,
+                    ocr_lang,
+                    stdout_callback,
+                )
+            except Exception as e:
+                log.exception(
+                    f"Unexpected error occurred while converting '{document}'"
+                )
+                document.mark_as_failed()
 
         max_jobs = self.isolation_provider.get_max_parallel_conversions()
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_jobs) as executor:

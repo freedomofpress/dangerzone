@@ -64,8 +64,12 @@ def build(build_dir, qubes=False):
     os.symlink(dist_path, srpm_dir)
 
     print("* Creating a Python sdist")
+    tessdata = root / "share" / "tessdata"
+    tessdata_bak = root / "tessdata.bak"
     container_tar_gz = root / "share" / "container.tar.gz"
     container_tar_gz_bak = root / "container.tar.gz.bak"
+
+    tessdata.rename(tessdata_bak)
     stash_container = qubes and container_tar_gz.exists()
     if stash_container:
         container_tar_gz.rename(container_tar_gz_bak)
@@ -77,6 +81,7 @@ def build(build_dir, qubes=False):
         shutil.copy2(sdist_path, build_dir / "SOURCES" / sdist_name)
         sdist_path.unlink()
     finally:
+        tessdata_bak.rename(tessdata)
         if stash_container:
             container_tar_gz_bak.rename(container_tar_gz)
 

@@ -82,7 +82,7 @@ def build_dir_xml(root, data):
             component_el,
             "RegistryValue",
             Root="HKCU",
-            Key="Software\Freedom of the Press Foundation\Dangerzone",
+            Key="Software\\Freedom of the Press Foundation\\Dangerzone",
             Name="installed",
             Type="integer",
             Value="1",

@@ -3,6 +3,7 @@ import os
 import platform
 import subprocess
 import tempfile
+import traceback
 import typing
 from multiprocessing.pool import ThreadPool
 from typing import List, Optional
@@ -388,15 +389,25 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 class InstallContainerThread(QtCore.QThread):
-    finished = QtCore.Signal()
+    finished = QtCore.Signal(str)
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(InstallContainerThread, self).__init__()
         self.dangerzone = dangerzone
 
     def run(self) -> None:
-        self.dangerzone.isolation_provider.install()
-        self.finished.emit()
+        error = None
+        try:
+            installed = self.dangerzone.isolation_provider.install()
+        except Exception as e:
+            log.error("Installation problemo")
+            error = "".join(traceback.format_exception(e))
+            self.finished.emit(error)
+        else:
+            if not installed:
+                # FIXME: Improve this.
+                self.finished.emit("Failed to install the container image")
+            self.finished.emit(None)
 
 
 class WaitingWidget(QtWidgets.QWidget):
@@ -416,7 +427,6 @@ class WaitingWidgetContainer(WaitingWidget):
     #
     # Linux states
     # - "install_container"
-    finished = QtCore.Signal()
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(WaitingWidgetContainer, self).__init__()
@@ -441,17 +451,7 @@ class WaitingWidgetContainer(WaitingWidget):
         # Error
         self.error_text = QTextEdit()
         self.error_text.setReadOnly(True)
-        self.error_text.setStyleSheet(
-            """
-        QTextEdit {
-            font-family: Consolas, Monospace;
-            font-size: 12px;
-            background-color: #fff;
-            color: #000;
-            padding: 10px;
-        }
-        """
-        )
+        self.error_text.setProperty("style", "container_error")
         self.error_text.setVisible(False)
         # Enable copying
         self.error_text.setTextInteractionFlags(Qt.TextSelectableByMouse)
@@ -503,56 +503,66 @@ class WaitingWidgetContainer(WaitingWidget):
         # Update the state
         self.state_change(state, error)
 
+    def show_error(self, msg: str, details: str | None = None) -> None:
+        self.label.setText(msg)
+        if details is not None:
+            self.error_text.setPlainText(details)
+            self.error_text.setVisible(True)
+        else:
+            self.error_text.setVisible(False)
+        self.buttons.show()
+
+    def show_message(self, msg: str) -> None:
+        self.label.setText(msg)
+        self.error_text.setVisible(False)
+        self.buttons.hide()
+
+    def installation_finished(self, error: str | None = None) -> None:
+        if error:
+            msg = (
+                "Installing the Dangerzone container image.<br><br>"
+                "An unexpected error occurred:"
+            )
+            self.show_error(msg, error)
+        else:
+            self.finished.emit()
+
     def state_change(self, state: str, error: str | None = None) -> None:
         if state == "not_installed":
             if platform.system() == "Linux":
-                self.label.setText(
-                    (
-                        "<strong>Dangerzone requires Podman</strong><br><br>"
-                        "Install it and retry."
-                    )
+                self.show_error(
+                    "<strong>Dangerzone requires Podman</strong><br><br>"
+                    "Install it and retry."
                 )
             else:
-                self.label.setText(
-                    (
-                        "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
-                        "<a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>"
-                        ", install it, and open it."
-                    )
+                self.show_error(
+                    "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
+                    "<a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>"
+                    ", install it, and open it."
                 )
-            self.buttons.show()
         elif state == "not_running":
             if platform.system() == "Linux":
                 # "not_running" here means that the `podman image ls` command failed.
-                message = (
+                self.show_error(
                     "<strong>Dangerzone requires Podman</strong><br><br>"
-                    "Podman is installed but cannot run properly. See errors below"
+                    "Podman is installed but cannot run properly.<br>"
+                    "See errors below:",
+                    error,
                 )
-                if error:
-                    self.error_text.setPlainText(error)
-                    self.error_text.setVisible(True)
-
-                self.label.setText(message)
-
             else:
-                self.label.setText(
-                    (
-                        "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
-                        "Docker is installed but isn't running.<br><br>"
-                        "Open Docker and make sure it's running in the background."
-                    )
+                self.show_error(
+                    "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
+                    "Docker is installed but isn't running.<br><br>"
+                    "Open Docker and make sure it's running in the background."
                 )
-            self.buttons.show()
         else:
-            self.label.setText(
-                (
-                    "Installing the Dangerzone container image.<br><br>"
-                    "This might take a few minutes..."
-                )
+            self.show_message(
+                "Installing the Dangerzone container image.<br><br>"
+                "This might take a few minutes...",
             )
-            self.buttons.hide()
+
             self.install_container_t = InstallContainerThread(self.dangerzone)
-            self.install_container_t.finished.connect(self.finished)
+            self.install_container_t.finished.connect(self.installation_finished)
             self.install_container_t.start()
 
 

@@ -168,7 +168,7 @@ class Container(IsolationProvider):
             startupinfo=get_subprocess_startupinfo(),
         )
 
-        chunk_size = 10240
+        chunk_size = 4 << 20
         compressed_container_path = get_resource_path("container.tar.gz")
         with gzip.open(compressed_container_path) as f:
             while True:
@@ -178,7 +178,11 @@ class Container(IsolationProvider):
                         p.stdin.write(chunk)
                 else:
                     break
-        p.communicate()
+        _, err = p.communicate()
+        if p.returncode < 0:
+            raise RuntimeError(f"Could not install container image: {err}")
+
+        log.info("Container image installation finished successfully")
 
         if not Container.is_container_installed():
             log.error("Failed to install the container image")
@@ -192,7 +196,6 @@ class Container(IsolationProvider):
         """
         See if the podman container is installed. Linux only.
         """
-        # Get the image id
         with open(get_resource_path("image-id.txt")) as f:
             expected_image_id = f.read().strip()
 

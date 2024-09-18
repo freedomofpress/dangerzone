@@ -393,6 +393,14 @@ jobs:
             share/image-id.txt
           fail-on-cache-miss: true
 
+      - name: Restore cached tessdata
+        uses: actions/cache/restore@v4
+        with:
+          path: share/tessdata/
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
+
       - name: Setup xvfb (Linux)
         run: |
           # Stuff copied wildly from several stackoverflow posts

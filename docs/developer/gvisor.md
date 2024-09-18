@@ -59,9 +59,9 @@ Spawning the container now becomes a multi-stage process:
 The `Container` isolation provider spawns the container as before, with the
 following changes:
 
-* It adds two Linux capabilities to the **outer** container that didn't exist
-  before: `SETFCAP` and `SYS_CHROOT`. Those capabilities are necessary to run
-  `runsc` rootless, and are not inherited by the **inner** container.
+* It adds the `SYS_CHROOT` Linux capability, which was previously dropped, to
+  the **outer** container.  This capability is necessary to run `runsc`
+  rootless, and is not inherited by the **inner** container.
 * It removes the `--userns keep-id` argument, which mapped the user outside the
   container to the same UID (normally `1000`) within the container. This was
   originally required when we were mounting host directories within the
@@ -72,6 +72,10 @@ following changes:
     since the host user is not mapped within the container at all.
 * In distributions that offer Podman 3.x, we add a seccomp filter that adds the
   `ptrace` syscall, which is required for running gVisor.
+* It labels the **outer** container with the `container_engine_t` SELinux label.
+  This label is reserved for running a container engine within a container, and
+  is necessary in environments where SELinux is enabled in enforcing mode (see
+  [#880](https://github.com/freedomofpress/dangerzone/issues/880)).
 
 Then, the following happens when Podman/Docker spawns the container:
 

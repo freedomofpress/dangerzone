@@ -123,6 +123,7 @@ jobs:
   macOS:
     name: "macOS (${{ matrix.arch }})"
     runs-on: ${{ matrix.runner }}
+    needs: download-tessdata
     strategy:
       matrix:
         include:

@@ -5,7 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 DZ_VENDOR_DIR = Path("./dangerzone/vendor")
 
 

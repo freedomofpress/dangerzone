@@ -340,8 +340,8 @@ class IsolationProvider(ABC):
                 assert p.stderr
                 debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
                 log.info(
-					"Conversion output (doc to pixels)\n"
-					f"{DOC_TO_PIXELS_LOG_START}\n"
-					f"{debug_log}"  # no need for an extra newline here
-					f"{DOC_TO_PIXELS_LOG_END}"
+                    "Conversion output (doc to pixels)\n"
+                    f"{DOC_TO_PIXELS_LOG_START}\n"
+                    f"{debug_log}"  # no need for an extra newline here
+                    f"{DOC_TO_PIXELS_LOG_END}"
                 )

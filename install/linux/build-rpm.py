@@ -69,9 +69,10 @@ def build(build_dir, qubes=False):
     container_tar_gz = root / "share" / "container.tar.gz"
     container_tar_gz_bak = root / "container.tar.gz.bak"
 
-    tessdata.rename(tessdata_bak)
+    if tessdata.exists():
+        tessdata.rename(tessdata_bak)
     stash_container = qubes and container_tar_gz.exists()
-    if stash_container:
+    if stash_container and container_tar_gz.exists():
         container_tar_gz.rename(container_tar_gz_bak)
     try:
         subprocess.run(["poetry", "build", "-f", "sdist"], cwd=root, check=True)
@@ -81,8 +82,9 @@ def build(build_dir, qubes=False):
         shutil.copy2(sdist_path, build_dir / "SOURCES" / sdist_name)
         sdist_path.unlink()
     finally:
-        tessdata_bak.rename(tessdata)
-        if stash_container:
+        if tessdata_bak.exists():
+            tessdata_bak.rename(tessdata)
+        if stash_container and container_tar_gz_bak.exists():
             container_tar_gz_bak.rename(container_tar_gz)
 
     print("* Building RPM package")

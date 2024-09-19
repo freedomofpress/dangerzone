@@ -21,6 +21,10 @@ def main():
     cmd = ["poetry", "export", "--only", "container"]
     container_requirements_txt = subprocess.check_output(cmd)
 
+    # XXX: Hack for Ubuntu Focal.
+    if sys.version.startswith("3.8"):
+        container_requirements_txt = container_requirements_txt.replace(b"3.9", b"3.8")
+
     print(f">>> Vendoring PyMuPDF under '{args.dest}'", file=sys.stderr)
     # We prefer to call the CLI version of `pip`, instead of importing it directly, as
     # instructed here:

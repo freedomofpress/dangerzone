@@ -54,7 +54,6 @@ class TestContainer(IsolationProviderTest):
 
 
 class TestContainerTermination(IsolationProviderTermination):
-
     def test_linger_runtime_kill(
         self,
         provider_wait: base.IsolationProvider,

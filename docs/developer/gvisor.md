@@ -70,8 +70,9 @@ following changes:
   - In distributions that offer Podman version 4 or greater, we use the
     `--userns nomap` flag. This flag greatly minimizes the attack surface,
     since the host user is not mapped within the container at all.
-* In distributions that offer Podman 3.x, we add a seccomp filter that adds the
-  `ptrace` syscall, which is required for running gVisor.
+* We use our custom seccomp policy across container engines, since some do not
+  allow the `ptrace` syscall (see
+  [#846](https://github.com/freedomofpress/dangerzone/issues/846)).
 * It labels the **outer** container with the `container_engine_t` SELinux label.
   This label is reserved for running a container engine within a container, and
   is necessary in environments where SELinux is enabled in enforcing mode (see

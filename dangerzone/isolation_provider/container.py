@@ -109,38 +109,30 @@ class Container(IsolationProvider):
         * Set the `container_engine_t` SELinux label, which allows gVisor to work on
           SELinux-enforcing systems
           (see https://github.com/freedomofpress/dangerzone/issues/880).
+        * Set a custom seccomp policy for every container engine, since the `ptrace(2)`
+          system call is forbidden by some.
 
         For Podman specifically, where applicable, we also add the following:
         * Do not log the container's output.
-        * Use a newer seccomp policy (for Podman 3.x versions only).
         * Do not map the host user to the container, with `--userns nomap` (available
           from Podman 4.1 onwards)
           - This particular argument is specified in `start_doc_to_pixels_proc()`, but
             should move here once #748 is merged.
         """
-        # This file has been copied as is [1] from the official Podman repo. See:
-        #
-        # [1] https://github.com/containers/common/blob/d3283f8401eeeb21f3c59a425b5461f069e199a7/pkg/seccomp/seccomp.json
-        seccomp_json_path = get_resource_path("seccomp.gvisor.json")
-        custom_seccomp_policy_arg = ["--security-opt", f"seccomp={seccomp_json_path}"]
         if Container.get_runtime_name() == "podman":
             security_args = ["--log-driver", "none"]
             security_args += ["--security-opt", "no-new-privileges"]
-
-            # NOTE: Ubuntu Focal/Jammy have Podman version 3, and their seccomp policy
-            # does not include the `ptrace()` syscall. This system call is required for
-            # running gVisor, so we enforce a newer seccomp policy file in that case.
-            #
-            # See also https://github.com/freedomofpress/dangerzone/issues/846
-            if Container.get_runtime_version() < (4, 0):
-                security_args += custom_seccomp_policy_arg
         else:
             security_args = ["--security-opt=no-new-privileges:true"]
-            # Older Docker Desktop versions may have a seccomp policy that does not
-            # allow `ptrace(2)`. In these cases, we specify our own. See:
-            # https://github.com/freedomofpress/dangerzone/issues/846
-            if Container.get_runtime_version() < (25, 0):
-                security_args += custom_seccomp_policy_arg
+
+        # We specify a custom seccomp policy uniformly, because on certain container
+        # engines the default policy might not allow the `ptrace(2)` syscall [1]. Our
+        # custom seccomp policy has been copied as is [2] from the official Podman repo.
+        #
+        # [1] https://github.com/freedomofpress/dangerzone/issues/846
+        # [2] https://github.com/containers/common/blob/d3283f8401eeeb21f3c59a425b5461f069e199a7/pkg/seccomp/seccomp.json
+        seccomp_json_path = get_resource_path("seccomp.gvisor.json")
+        security_args += ["--security-opt", f"seccomp={seccomp_json_path}"]
 
         security_args += ["--cap-drop", "all"]
         security_args += ["--cap-add", "SYS_CHROOT"]

@@ -124,6 +124,10 @@ class Document:
         self._output_filename = filename
 
     @property
+    def sanitized_output_filename(self) -> None:
+        return util.replace_control_chars(self.output_filename)
+
+    @property
     def suffix(self) -> str:
         return self._suffix
 

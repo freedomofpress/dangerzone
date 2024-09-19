@@ -216,7 +216,10 @@ class IsolationProvider(ABC):
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()
 
-        safe_doc.save(document.output_filename)
+        # Saving it with a different name first, because PyMuPDF cannot handle
+        # non-Unicode chars.
+        safe_doc.save(document.sanitized_output_filename)
+        os.replace(document.sanitized_output_filename, document.output_filename)
 
         # TODO handle leftover code input
         text = "Converted document"

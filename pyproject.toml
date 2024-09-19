@@ -17,7 +17,7 @@ python = ">=3.9,<3.13"
 click = "*"
 appdirs = "*"
 PySide6 = "^6.7.1"
-PyMuPDF = "^1.23.8"
+PyMuPDF = "^1.23.3"  # The version in Fedora 39
 colorama = "*"
 pyxdg = {version = "*", platform = "linux"}
 requests = "*"

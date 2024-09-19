@@ -210,10 +210,9 @@ jobs:
               run --dev --no-gui ./dangerzone/install/linux/build-deb.py
 
       - name: Upload Dangerzone .deb
-        if: matrix.distro == 'debian' && matrix.version == 'bookworm'
         uses: actions/upload-artifact@v4
         with:
-          name: dangerzone.deb
+          name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.deb
           path: "deb_dist/dangerzone_*_*.deb"
           if-no-files-found: error
           compression-level: 0
@@ -251,7 +250,7 @@ jobs:
       - name: Download Dangerzone .deb
         uses: actions/download-artifact@v4
         with:
-          name: dangerzone.deb
+          name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.deb
           path: "deb_dist/"
 
       - name: Build end-user environment

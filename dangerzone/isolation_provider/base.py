@@ -336,7 +336,10 @@ class IsolationProvider(ABC):
                 document, p, timeout_grace=timeout_grace, timeout_force=timeout_force
             )
 
-            if getattr(sys, "dangerzone_dev", False):
+            # Read the stderr of the process only if:
+            # * Dev mode is enabled.
+            # * The process has exited (else we risk hanging).
+            if getattr(sys, "dangerzone_dev", False) and p.poll() is not None:
                 assert p.stderr
                 debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
                 log.info(

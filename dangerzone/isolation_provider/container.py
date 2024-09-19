@@ -1,13 +1,12 @@
 import gzip
-import json
 import logging
 import os
 import platform
 import shlex
 import shutil
+import signal
 import subprocess
-import sys
-from typing import Any, List, Tuple
+from typing import List, Tuple
 
 from ..document import Document
 from ..util import get_tmp_dir  # NOQA : required for mocking in our tests.

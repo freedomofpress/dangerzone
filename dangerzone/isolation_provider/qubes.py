@@ -1,15 +1,12 @@
-import asyncio
 import io
 import logging
 import os
-import shutil
 import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from typing import IO, Optional
+from typing import IO
 
-from ..conversion import errors
 from ..conversion.common import running_on_qubes
 from ..document import Document
 from ..util import get_resource_path

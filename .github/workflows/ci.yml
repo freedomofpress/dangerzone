@@ -90,7 +90,15 @@ jobs:
         run: poetry run .\install\windows\build-app.bat
 
   macOS:
-    runs-on: macos-latest
+    name: "macOS (${{ matrix.arch }})"
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: macos-latest  # CPU type: Apple Silicon (M1)
+            arch: arch64
+          - runner: macos-13  # CPU type: Intel x86_64
+            arch: x86_64
     env:
       DUMMY_CONVERSION: 1
     steps:

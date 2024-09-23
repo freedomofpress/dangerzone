@@ -158,9 +158,10 @@ def main():
         )
     )
 
-    root_el = ET.Element("Wix", xmlns="http://schemas.microsoft.com/wix/2006/wi")
+    # Add the Wix root element
+    wix_el = ET.Element("Wix", xmlns="http://wixtoolset.org/schemas/v4/wxs")
     product_el = ET.SubElement(
-        root_el,
+        wix_el,
         "Product",
         Name="Dangerzone",
         Manufacturer="Freedom of the Press Foundation",
@@ -236,8 +237,8 @@ def main():
 
     print(f'<?define ProductVersion = "{version}"?>')
     print('<?define ProductUpgradeCode = "12b9695c-965b-4be0-bc33-21274e809576"?>')
-    ET.indent(root_el, space="    ")
-    print(ET.tostring(root_el).decode())
+    ET.indent(wix_el, space="    ")
+    print(ET.tostring(wix_el).decode())
 
 
 if __name__ == "__main__":

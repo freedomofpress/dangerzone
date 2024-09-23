@@ -160,77 +160,75 @@ def main():
 
     # Add the Wix root element
     wix_el = ET.Element("Wix", xmlns="http://wixtoolset.org/schemas/v4/wxs")
-    product_el = ET.SubElement(
+
+    # Add the Package element
+    package_el = ET.SubElement(
         wix_el,
-        "Product",
+        "Package",
         Name="Dangerzone",
         Manufacturer="Freedom of the Press Foundation",
-        Id="*",
         UpgradeCode="$(var.ProductUpgradeCode)",
         Language="1033",
+        Compressed="yes",
         Codepage="1252",
         Version="$(var.ProductVersion)",
     )
     ET.SubElement(
-        product_el,
-        "Package",
-        Id="*",
+        package_el,
+        "SummaryInformation",
         Keywords="Installer",
         Description="Dangerzone $(var.ProductVersion) Installer",
-        Manufacturer="Freedom of the Press Foundation",
-        InstallerVersion="100",
-        Languages="1033",
-        Compressed="yes",
-        SummaryCodepage="1252",
+        Codepage="1252",
     )
-    ET.SubElement(product_el, "Media", Id="1", Cabinet="product.cab", EmbedCab="yes")
+    ET.SubElement(package_el, "Media", Id="1", Cabinet="product.cab", EmbedCab="yes")
     ET.SubElement(
-        product_el, "Icon", Id="ProductIcon", SourceFile="..\\share\\dangerzone.ico"
+        package_el, "Icon", Id="ProductIcon", SourceFile="..\\share\\dangerzone.ico"
     )
-    ET.SubElement(product_el, "Property", Id="ARPPRODUCTICON", Value="ProductIcon")
+    ET.SubElement(package_el, "Property", Id="ARPPRODUCTICON", Value="ProductIcon")
     ET.SubElement(
-        product_el,
+        package_el,
         "Property",
         Id="ARPHELPLINK",
         Value="https://dangerzone.rocks",
     )
     ET.SubElement(
-        product_el,
+        package_el,
         "Property",
         Id="ARPURLINFOABOUT",
         Value="https://freedom.press",
     )
     ET.SubElement(
-        product_el,
+        package_el,
         "Property",
         Id="WIXUI_INSTALLDIR",
         Value="INSTALLFOLDER",
     )
-    ET.SubElement(product_el, "UIRef", Id="WixUI_InstallDir")
-    ET.SubElement(product_el, "UIRef", Id="WixUI_ErrorProgressText")
+    ET.SubElement(package_el, "UIRef", Id="WixUI_InstallDir")
+    ET.SubElement(package_el, "UIRef", Id="WixUI_ErrorProgressText")
     ET.SubElement(
-        product_el,
+        package_el,
         "WixVariable",
         Id="WixUILicenseRtf",
         Value="..\\install\\windows\\license.rtf",
     )
     ET.SubElement(
-        product_el,
+        package_el,
         "WixVariable",
         Id="WixUIDialogBmp",
         Value="..\\install\\windows\\dialog.bmp",
     )
     ET.SubElement(
-        product_el,
+        package_el,
         "MajorUpgrade",
         AllowSameVersionUpgrades="yes",
         DowngradeErrorMessage="A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.",
     )
 
-    build_dir_xml(product_el, data)
-    component_ids = build_components_xml(product_el, data)
+    build_dir_xml(package_el, data)
+    component_ids = build_components_xml(package_el, data)
 
-    feature_el = ET.SubElement(product_el, "Feature", Id="DefaultFeature", Level="1")
+    # Add the Feature element
+    feature_el = ET.SubElement(package_el, "Feature", Id="DefaultFeature", Level="1")
     for component_id in component_ids:
         ET.SubElement(feature_el, "ComponentRef", Id=component_id)
     ET.SubElement(feature_el, "ComponentRef", Id="ApplicationShortcuts")

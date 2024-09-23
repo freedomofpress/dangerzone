@@ -64,26 +64,17 @@ def build_dir_xml(root, data):
 
 
 def build_components_xml(root, data):
-    component_ids = []
-    if "component_id" in data:
-        component_ids.append(data["component_id"])
-
-        if "component_guid" in data:
-            dir_ref_el = ET.SubElement(root, "DirectoryRef", Id=data["directory_id"])
-            component_el = ET.SubElement(
-                dir_ref_el,
-                "Component",
-                Id=data["component_id"],
-                Guid=data["component_guid"],
-            )
-            for filename in data["files"]:
-                file_el = ET.SubElement(
-                    component_el, "File", Source=filename, Id="file_" + uuid.uuid4().hex
-                )
+    component_el = ET.SubElement(
+        root,
+        "Component",
+        Id=data["component_id"],
+        Guid=data["component_guid"],
+        Directory=data["directory_id"],
+    )
+    for filename in data["files"]:
+        ET.SubElement(component_el, "File", Source=filename)
     for subdata in data["dirs"]:
-        component_ids += build_components_xml(root, subdata)
-
-    return component_ids
+        build_components_xml(root, subdata)
 
 
 def main():
@@ -233,8 +224,7 @@ def main():
 
     # Add the Feature element
     feature_el = ET.SubElement(package_el, "Feature", Id="DefaultFeature", Level="1")
-    for component_id in component_ids:
-        ET.SubElement(feature_el, "ComponentRef", Id=component_id)
+    ET.SubElement(feature_el, "ComponentGroupRef", Id="ApplicationComponents")
     ET.SubElement(feature_el, "ComponentRef", Id="ApplicationShortcuts")
 
     print(f'<?define ProductVersion = "{version}"?>')

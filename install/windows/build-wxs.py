@@ -86,11 +86,15 @@ def main():
         # -rc markers.
         version = f.read().strip().split("-")[0]
 
-    dist_dir = os.path.join(
+    build_dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
         "build",
-        "exe.win-amd64-3.12",
     )
+
+    cx_freeze_dir = "exe.win-amd64-3.12"
+
+    dist_dir = os.path.join(build_dir, cx_freeze_dir)
+
     if not os.path.exists(dist_dir):
         print("You must build the dangerzone binary before running this")
         return
@@ -98,7 +102,7 @@ def main():
     # Prepare data for WiX file harvesting from the output of cx_Freeze
     data = build_data(
         dist_dir,
-        "exe.win-amd64-3.12",
+        cx_freeze_dir,
         "INSTALLFOLDER",
         "Dangerzone",
     )
@@ -226,7 +230,9 @@ def main():
     ET.SubElement(feature_el, "ComponentRef", Id="ApplicationShortcuts")
 
     ET.indent(wix_el, space="    ")
-    print(ET.tostring(wix_el).decode())
+
+    with open(os.path.join(build_dir, "Dangerzone.wxs"), "w") as wxs_file:
+        wxs_file.write(ET.tostring(wix_el).decode())
 
 
 if __name__ == "__main__":

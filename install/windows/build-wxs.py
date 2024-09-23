@@ -118,17 +118,17 @@ def main():
         "Package",
         Name="Dangerzone",
         Manufacturer="Freedom of the Press Foundation",
-        UpgradeCode="$(var.ProductUpgradeCode)",
+        UpgradeCode="12b9695c-965b-4be0-bc33-21274e809576",
         Language="1033",
         Compressed="yes",
         Codepage="1252",
-        Version="$(var.ProductVersion)",
+        Version=version,
     )
     ET.SubElement(
         package_el,
         "SummaryInformation",
         Keywords="Installer",
-        Description="Dangerzone $(var.ProductVersion) Installer",
+        Description="Dangerzone " + version + " Installer",
         Codepage="1252",
     )
     ET.SubElement(package_el, "MediaTemplate", EmbedCab="yes")
@@ -225,8 +225,6 @@ def main():
     ET.SubElement(feature_el, "ComponentGroupRef", Id="ApplicationComponents")
     ET.SubElement(feature_el, "ComponentRef", Id="ApplicationShortcuts")
 
-    print(f'<?define ProductVersion = "{version}"?>')
-    print('<?define ProductUpgradeCode = "12b9695c-965b-4be0-bc33-21274e809576"?>')
     ET.indent(wix_el, space="    ")
     print(ET.tostring(wix_el).decode())
 

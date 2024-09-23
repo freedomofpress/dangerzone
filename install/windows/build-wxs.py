@@ -17,7 +17,7 @@ def build_data(dirname, dir_prefix, id_, name):
         if os.path.isfile(filename):
             data["files"].append(os.path.join(dir_prefix, basename))
         elif os.path.isdir(filename):
-            if id_ == "INSTALLDIR":
+            if id_ == "INSTALLFOLDER":
                 id_prefix = "Folder"
             else:
                 id_prefix = id_
@@ -42,7 +42,7 @@ def build_data(dirname, dir_prefix, id_, name):
             )
 
     if len(data["files"]) > 0:
-        if id_ == "INSTALLDIR":
+        if id_ == "INSTALLFOLDER":
             data["component_id"] = "ApplicationFiles"
         else:
             data["component_id"] = "FolderComponent" + id_[len("Folder") :]
@@ -75,8 +75,8 @@ def build_dir_xml(root, data):
             Id="ApplicationShortcut1",
             Name="Dangerzone",
             Description="Dangerzone",
-            Target="[INSTALLDIR]dangerzone.exe",
-            WorkingDirectory="INSTALLDIR",
+            Target="[INSTALLFOLDER]dangerzone.exe",
+            WorkingDirectory="INSTALLFOLDER",
         )
         ET.SubElement(
             component_el,
@@ -153,7 +153,7 @@ def main():
         build_data(
             dist_dir,
             "exe.win-amd64-3.12",
-            "INSTALLDIR",
+            "INSTALLFOLDER",
             "Dangerzone",
         )
     )
@@ -204,7 +204,7 @@ def main():
         product_el,
         "Property",
         Id="WIXUI_INSTALLDIR",
-        Value="INSTALLDIR",
+        Value="INSTALLFOLDER",
     )
     ET.SubElement(product_el, "UIRef", Id="WixUI_InstallDir")
     ET.SubElement(product_el, "UIRef", Id="WixUI_ErrorProgressText")

@@ -4,49 +4,50 @@ import uuid
 import xml.etree.ElementTree as ET
 
 
-def build_data(dirname, dir_prefix, id_, name):
+def build_data(base_path, path_prefix, dir_id, dir_name):
     data = {
-        "id": id_,
-        "name": name,
+        "directory_name": dir_name,
+        "directory_id": dir_id,
         "files": [],
         "dirs": [],
     }
 
-    for basename in os.listdir(dirname):
-        filename = os.path.join(dirname, basename)
-        if os.path.isfile(filename):
-            data["files"].append(os.path.join(dir_prefix, basename))
-        elif os.path.isdir(filename):
-            if id_ == "INSTALLFOLDER":
-                id_prefix = "Folder"
+    if dir_id == "INSTALLFOLDER":
+        data["component_id"] = "ApplicationFiles"
+    else:
+        data["component_id"] = "Component" + dir_id
+    data["component_guid"] = str(uuid.uuid4())
+
+    for entry in os.listdir(base_path):
+        entry_path = os.path.join(base_path, entry)
+        if os.path.isfile(entry_path):
+            data["files"].append(os.path.join(path_prefix, entry))
+        elif os.path.isdir(entry_path):
+            if dir_id == "INSTALLFOLDER":
+                next_dir_prefix = "Folder"
             else:
-                id_prefix = id_
+                next_dir_prefix = dir_id
 
             # Skip lib/PySide6/examples folder due to ilegal file names
-            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\examples" in dirname:
+            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\examples" in base_path:
                 continue
 
             # Skip lib/PySide6/qml/QtQuick folder due to ilegal file names
             # XXX Since we're not using Qml it should be no problem
-            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\qml\\QtQuick" in dirname:
+            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\qml\\QtQuick" in base_path:
                 continue
 
-            id_value = f"{id_prefix}{basename.capitalize().replace('-', '_')}"
-            data["dirs"].append(
-                build_data(
-                    os.path.join(dirname, basename),
-                    os.path.join(dir_prefix, basename),
-                    id_value,
-                    basename,
-                )
+            next_dir_id = next_dir_prefix + entry.capitalize().replace("-", "_")
+            subdata = build_data(
+                os.path.join(base_path, entry),
+                os.path.join(path_prefix, entry),
+                next_dir_id,
+                entry,
             )
 
-    if len(data["files"]) > 0:
-        if id_ == "INSTALLFOLDER":
-            data["component_id"] = "ApplicationFiles"
-        else:
-            data["component_id"] = "FolderComponent" + id_[len("Folder") :]
-        data["component_guid"] = str(uuid.uuid4())
+            # Add the subdirectory only if it contains files or subdirectories
+            if subdata["files"] or subdata["dirs"]:
+                data["dirs"].append(subdata)
 
     return data
 
@@ -54,9 +55,9 @@ def build_data(dirname, dir_prefix, id_, name):
 def build_dir_xml(root, data):
     attrs = {}
     if "id" in data:
-        attrs["Id"] = data["id"]
+        attrs["Id"] = data["directory_id"]
     if "name" in data:
-        attrs["Name"] = data["name"]
+        attrs["Name"] = data["directory_name"]
     el = ET.SubElement(root, "Directory", attrs)
     for subdata in data["dirs"]:
         build_dir_xml(el, subdata)
@@ -68,7 +69,7 @@ def build_components_xml(root, data):
         component_ids.append(data["component_id"])
 
         if "component_guid" in data:
-            dir_ref_el = ET.SubElement(root, "DirectoryRef", Id=data["id"])
+            dir_ref_el = ET.SubElement(root, "DirectoryRef", Id=data["directory_id"])
             component_el = ET.SubElement(
                 dir_ref_el,
                 "Component",

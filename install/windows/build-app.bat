@@ -22,7 +22,7 @@ python install\windows\build-wxs.py
 
 REM build the msi package
 cd build
-wix build -ext WixToolset.UI.wixext .\Dangerzone.wxs -out Dangerzone.msi
+wix build -arch x64 -ext WixToolset.UI.wixext .\Dangerzone.wxs -out Dangerzone.msi
 
 REM validate Dangerzone.msi
 wix msi validate Dangerzone.msi

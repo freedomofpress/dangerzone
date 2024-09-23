@@ -59,7 +59,6 @@ class Dummy(IsolationProvider):
             self.print_progress(document, error, text, percentage)  # type: ignore [arg-type]
             if error:
                 success = False
-            time.sleep(0.2)
         if success:
             shutil.copy(
                 get_resource_path("dummy_document.pdf"), document.output_filename

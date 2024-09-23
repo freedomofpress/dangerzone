@@ -141,7 +141,7 @@ def main():
         Description="Dangerzone $(var.ProductVersion) Installer",
         Codepage="1252",
     )
-    ET.SubElement(package_el, "Media", Id="1", Cabinet="product.cab", EmbedCab="yes")
+    ET.SubElement(package_el, "MediaTemplate", EmbedCab="yes")
     ET.SubElement(
         package_el, "Icon", Id="ProductIcon", SourceFile="..\\share\\dangerzone.ico"
     )

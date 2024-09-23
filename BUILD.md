@@ -439,7 +439,6 @@ Download the OCR language data:
 python3 .\install\common\download-tessdata.py
 ```
 
-
 After that you can launch dangerzone during development with:
 
 ```

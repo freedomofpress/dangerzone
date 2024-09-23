@@ -124,7 +124,7 @@ class Document:
         self._output_filename = filename
 
     @property
-    def sanitized_output_filename(self) -> None:
+    def sanitized_output_filename(self) -> str:
         return util.replace_control_chars(self.output_filename)
 
     @property

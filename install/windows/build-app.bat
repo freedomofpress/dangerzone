@@ -17,22 +17,23 @@ signtool.exe sign /v /d "Dangerzone" /a /n "Freedom of the Press Foundation" /fd
 REM verify the signature of dangerzone-cli.exe
 signtool.exe verify /pa build\exe.win-amd64-3.12\dangerzone-cli.exe
 
-REM build the wix file
-python install\windows\build-wxs.py > build\Dangerzone.wxs
+REM build the wxs file
+python install\windows\build-wxs.py
 
 REM build the msi package
 cd build
-candle.exe Dangerzone.wxs
-light.exe -ext WixUIExtension Dangerzone.wixobj
+wix build -ext WixToolset.UI.wixext .\Dangerzone.wxs -out Dangerzone.msi
+
+REM validate Dangerzone.msi
+wix msi validate Dangerzone.msi
 
 REM code sign Dangerzone.msi
-insignia.exe -im Dangerzone.msi
 signtool.exe sign /v /d "Dangerzone" /a /n "Freedom of the Press Foundation" /fd sha256 /t http://time.certum.pl/ Dangerzone.msi
 
 REM verify the signature of Dangerzone.msi
 signtool.exe verify /pa Dangerzone.msi
 
-REM moving Dangerzone.msi to dist
+REM move Dangerzone.msi to dist
 cd ..
 mkdir dist
 move build\Dangerzone.msi dist

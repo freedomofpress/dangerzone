@@ -67,20 +67,19 @@ def build_components_xml(root, data):
     if "component_id" in data:
         component_ids.append(data["component_id"])
 
-    for subdata in data["dirs"]:
-        if "component_guid" in subdata:
-            dir_ref_el = ET.SubElement(root, "DirectoryRef", Id=subdata["id"])
+        if "component_guid" in data:
+            dir_ref_el = ET.SubElement(root, "DirectoryRef", Id=data["id"])
             component_el = ET.SubElement(
                 dir_ref_el,
                 "Component",
-                Id=subdata["component_id"],
-                Guid=subdata["component_guid"],
+                Id=data["component_id"],
+                Guid=data["component_guid"],
             )
-            for filename in subdata["files"]:
+            for filename in data["files"]:
                 file_el = ET.SubElement(
                     component_el, "File", Source=filename, Id="file_" + uuid.uuid4().hex
                 )
-
+    for subdata in data["dirs"]:
         component_ids += build_components_xml(root, subdata)
 
     return component_ids
@@ -106,24 +105,12 @@ def main():
         print("You must build the dangerzone binary before running this")
         return
 
-    data = {
-        "id": "TARGETDIR",
-        "name": "SourceDir",
-        "dirs": [
-            {
-                "id": "ProgramFilesFolder",
-                "dirs": [],
-            },
-        ],
-    }
-
-    data["dirs"][0]["dirs"].append(
-        build_data(
-            dist_dir,
-            "exe.win-amd64-3.12",
-            "INSTALLFOLDER",
-            "Dangerzone",
-        )
+    # Prepare data for WiX file harvesting from the output of cx_Freeze
+    data = build_data(
+        dist_dir,
+        "exe.win-amd64-3.12",
+        "INSTALLFOLDER",
+        "Dangerzone",
     )
 
     # Add the Wix root element
@@ -224,8 +211,22 @@ def main():
         KeyPath="yes",
     )
 
-    build_dir_xml(package_el, data)
-    component_ids = build_components_xml(package_el, data)
+    # Add the ProgramFilesFolder StandardDirectory
+    programfilesfolder_el = ET.SubElement(
+        package_el,
+        "StandardDirectory",
+        Id="ProgramFilesFolder",
+    )
+
+    # Create the directory structure for the installed product
+    build_dir_xml(programfilesfolder_el, data)
+
+    # Create a component group for application components
+    applicationcomponents_el = ET.SubElement(
+        package_el, "ComponentGroup", Id="ApplicationComponents"
+    )
+    # Populate the application components group with components for the installed package
+    build_components_xml(applicationcomponents_el, data)
 
     # Add the Feature element
     feature_el = ET.SubElement(package_el, "Feature", Id="DefaultFeature", Level="1")

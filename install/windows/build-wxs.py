@@ -114,7 +114,13 @@ def main():
     )
 
     # Add the Wix root element
-    wix_el = ET.Element("Wix", xmlns="http://wixtoolset.org/schemas/v4/wxs")
+    wix_el = ET.Element(
+        "Wix",
+        {
+            "xmlns": "http://wixtoolset.org/schemas/v4/wxs",
+            "xmlns:ui": "http://wixtoolset.org/schemas/v4/wxs/ui",
+        },
+    )
 
     # Add the Package element
     package_el = ET.SubElement(
@@ -153,12 +159,8 @@ def main():
         Value="https://freedom.press",
     )
     ET.SubElement(
-        package_el,
-        "Property",
-        Id="WIXUI_INSTALLDIR",
-        Value="INSTALLFOLDER",
+        package_el, "ui:WixUI", Id="WixUI_InstallDir", InstallDirectory="INSTALLFOLDER"
     )
-    ET.SubElement(package_el, "UIRef", Id="WixUI_InstallDir")
     ET.SubElement(package_el, "UIRef", Id="WixUI_ErrorProgressText")
     ET.SubElement(
         package_el,

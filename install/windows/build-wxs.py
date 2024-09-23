@@ -61,34 +61,6 @@ def build_dir_xml(root, data):
     for subdata in data["dirs"]:
         build_dir_xml(el, subdata)
 
-    # If this is the ProgramMenuFolder, add the menu component
-    if "id" in data and data["id"] == "ProgramMenuFolder":
-        component_el = ET.SubElement(
-            el,
-            "Component",
-            Id="ApplicationShortcuts",
-            Guid="539e7de8-a124-4c09-aa55-0dd516aad7bc",
-        )
-        ET.SubElement(
-            component_el,
-            "Shortcut",
-            Id="ApplicationShortcut1",
-            Name="Dangerzone",
-            Description="Dangerzone",
-            Target="[INSTALLFOLDER]dangerzone.exe",
-            WorkingDirectory="INSTALLFOLDER",
-        )
-        ET.SubElement(
-            component_el,
-            "RegistryValue",
-            Root="HKCU",
-            Key="Software\\Freedom of the Press Foundation\\Dangerzone",
-            Name="installed",
-            Type="integer",
-            Value="1",
-            KeyPath="yes",
-        )
-
 
 def build_components_xml(root, data):
     component_ids = []
@@ -140,10 +112,6 @@ def main():
         "dirs": [
             {
                 "id": "ProgramFilesFolder",
-                "dirs": [],
-            },
-            {
-                "id": "ProgramMenuFolder",
                 "dirs": [],
             },
         ],
@@ -221,6 +189,39 @@ def main():
         package_el,
         "MajorUpgrade",
         DowngradeErrorMessage="A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.",
+    )
+
+    # Add the ProgramMenuFolder StandardDirectory
+    programmenufolder_el = ET.SubElement(
+        package_el,
+        "StandardDirectory",
+        Id="ProgramMenuFolder",
+    )
+    # Add a shortcut for Dangerzone in the Start menu
+    shortcut_el = ET.SubElement(
+        programmenufolder_el,
+        "Component",
+        Id="ApplicationShortcuts",
+        Guid="539e7de8-a124-4c09-aa55-0dd516aad7bc",
+    )
+    ET.SubElement(
+        shortcut_el,
+        "Shortcut",
+        Id="DangerzoneStartMenuShortcut",
+        Name="Dangerzone",
+        Description="Dangerzone",
+        Target="[INSTALLFOLDER]dangerzone.exe",
+        WorkingDirectory="INSTALLFOLDER",
+    )
+    ET.SubElement(
+        shortcut_el,
+        "RegistryValue",
+        Root="HKCU",
+        Key="Software\\Freedom of the Press Foundation\\Dangerzone",
+        Name="installed",
+        Type="integer",
+        Value="1",
+        KeyPath="yes",
     )
 
     build_dir_xml(package_el, data)

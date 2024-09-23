@@ -234,10 +234,10 @@ def main():
         ET.SubElement(feature_el, "ComponentRef", Id=component_id)
     ET.SubElement(feature_el, "ComponentRef", Id="ApplicationShortcuts")
 
-    print('<?xml version="1.0" encoding="windows-1252"?>')
+    print('<?xml version="1.0" encoding="utf-8"?>')
     print(f'<?define ProductVersion = "{version}"?>')
     print('<?define ProductUpgradeCode = "12b9695c-965b-4be0-bc33-21274e809576"?>')
-    ET.indent(root_el)
+    ET.indent(root_el, space="    ")
     print(ET.tostring(root_el).decode())
 
 

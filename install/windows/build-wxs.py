@@ -52,15 +52,13 @@ def build_data(base_path, path_prefix, dir_id, dir_name):
     return data
 
 
-def build_dir_xml(root, data):
+def build_directory_xml(root, data):
     attrs = {}
-    if "id" in data:
-        attrs["Id"] = data["directory_id"]
-    if "name" in data:
-        attrs["Name"] = data["directory_name"]
-    el = ET.SubElement(root, "Directory", attrs)
+    attrs["Id"] = data["directory_id"]
+    attrs["Name"] = data["directory_name"]
+    directory_el = ET.SubElement(root, "Directory", attrs)
     for subdata in data["dirs"]:
-        build_dir_xml(el, subdata)
+        build_directory_xml(directory_el, subdata)
 
 
 def build_components_xml(root, data):
@@ -213,7 +211,7 @@ def main():
     )
 
     # Create the directory structure for the installed product
-    build_dir_xml(programfilesfolder_el, data)
+    build_directory_xml(programfilesfolder_el, data)
 
     # Create a component group for application components
     applicationcomponents_el = ET.SubElement(

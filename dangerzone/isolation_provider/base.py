@@ -1,5 +1,8 @@
 import contextlib
 import logging
+import os
+import platform
+import signal
 import subprocess
 import sys
 import tempfile
@@ -25,6 +28,38 @@ PIXELS_TO_PDF_LOG_END = "----- PIXELS TO PDF LOG END -----"
 TIMEOUT_EXCEPTION = 15
 TIMEOUT_GRACE = 15
 TIMEOUT_FORCE = 5
+
+
+def _signal_process_group(p: subprocess.Popen, signo: int) -> None:
+    """Send a signal to a process group."""
+    try:
+        os.killpg(os.getpgid(p.pid), signo)
+    except (ProcessLookupError, PermissionError):
+        # If the process no longer exists, we may encounter the above errors, either
+        # when looking for the process group (ProcessLookupError), or when trying to
+        # kill a process group that no longer exists (PermissionError)
+        return
+    except Exception:
+        log.exception(
+            f"Unexpected error while sending signal {signo} to the"
+            f"document-to-pixels process group (PID: {p.pid})"
+        )
+
+
+def terminate_process_group(p: subprocess.Popen) -> None:
+    """Terminate a process group."""
+    if platform.system() == "Windows":
+        p.terminate()
+    else:
+        _signal_process_group(p, signal.SIGTERM)
+
+
+def kill_process_group(p: subprocess.Popen) -> None:
+    """Forcefully kill a process group."""
+    if platform.system() == "Windows":
+        p.kill()
+    else:
+        _signal_process_group(p, signal.SIGKILL)
 
 
 def read_bytes(f: IO[bytes], size: int, exact: bool = True) -> bytes:
@@ -240,7 +275,7 @@ class IsolationProvider(ABC):
             )
 
             # Forcefully kill the running process.
-            p.kill()
+            kill_process_group(p)
             try:
                 p.wait(timeout_force)
             except subprocess.TimeoutExpired:

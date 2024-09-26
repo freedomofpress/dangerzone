@@ -13,7 +13,12 @@ from ..conversion import errors
 from ..document import Document
 from ..util import get_tmp_dir  # NOQA : required for mocking in our tests.
 from ..util import get_resource_path, get_subprocess_startupinfo
-from .base import PIXELS_TO_PDF_LOG_END, PIXELS_TO_PDF_LOG_START, IsolationProvider
+from .base import (
+    PIXELS_TO_PDF_LOG_END,
+    PIXELS_TO_PDF_LOG_START,
+    IsolationProvider,
+    terminate_process_group,
+)
 
 TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
 
@@ -436,7 +441,7 @@ class Container(IsolationProvider):
         #
         # See also https://github.com/freedomofpress/dangerzone/issues/791
         self.kill_container(self.doc_to_pixels_container_name(document))
-        p.terminate()
+        terminate_process_group(p)
 
     def ensure_stop_doc_to_pixels_proc(  # type: ignore [no-untyped-def]
         self, document: Document, *args, **kwargs

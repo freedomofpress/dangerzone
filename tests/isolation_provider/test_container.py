@@ -65,7 +65,7 @@ class TestContainerTermination(IsolationProviderTermination):
         provider_wait.progress_callback = mocker.MagicMock()
         get_proc_exception_spy = mocker.spy(provider_wait, "get_proc_exception")
         terminate_proc_spy = mocker.spy(provider_wait, "terminate_doc_to_pixels_proc")
-        popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
+        kill_proc_spy = mocker.spy(base, "kill_process_group")
 
         # Switch the subprocess.run() function with a patched function that
         # intercepts the `kill` command and switches it with `wait` instead. This way,
@@ -98,5 +98,5 @@ class TestContainerTermination(IsolationProviderTermination):
 
         get_proc_exception_spy.assert_not_called()
         terminate_proc_spy.assert_called()
-        popen_kill_spy.assert_called()
+        kill_proc_spy.assert_called()
         assert proc.poll() is not None

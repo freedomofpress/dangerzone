@@ -140,14 +140,14 @@ class IsolationProviderTermination:
         terminate_proc_mock = mocker.patch.object(
             provider_wait, "terminate_doc_to_pixels_proc", return_value=None
         )
-        popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
+        kill_pg_spy = mocker.spy(base, "kill_process_group")
 
         with provider_wait.doc_to_pixels_proc(doc, timeout_grace=0) as proc:
             pass
 
         get_proc_exception_spy.assert_not_called()
         terminate_proc_mock.assert_called()
-        popen_kill_spy.assert_called()
+        kill_pg_spy.assert_called()
         assert proc.poll() is not None
 
     def test_linger_unkillable(
@@ -165,8 +165,8 @@ class IsolationProviderTermination:
         terminate_proc_mock = mocker.patch.object(
             provider_wait, "terminate_doc_to_pixels_proc", return_value=None
         )
-        popen_kill_mock = mocker.patch.object(
-            subprocess.Popen, "kill", return_value=None
+        kill_pg_mock = mocker.patch(
+            "dangerzone.isolation_provider.base.kill_process_group", return_value=None
         )
 
         with provider_wait.doc_to_pixels_proc(
@@ -176,7 +176,7 @@ class IsolationProviderTermination:
 
         get_proc_exception_spy.assert_not_called()
         terminate_proc_mock.assert_called()
-        popen_kill_mock.assert_called()
+        kill_pg_mock.assert_called()
         assert proc.poll() is None
 
         # Reset the function to the original state.

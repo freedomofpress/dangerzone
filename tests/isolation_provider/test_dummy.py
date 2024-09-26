@@ -25,6 +25,7 @@ class DummyWait(Dummy):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            start_new_session=True,
         )
 
     def terminate_doc_to_pixels_proc(

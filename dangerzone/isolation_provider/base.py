@@ -259,6 +259,11 @@ class IsolationProvider(ABC):
     ) -> Iterator[subprocess.Popen]:
         """Start a conversion process, pass it to the caller, and then clean it up."""
         p = self.start_doc_to_pixels_proc(document)
+        if platform.system() != "Windows":
+            assert os.getpgid(p.pid) != os.getpgid(
+                os.getpid()
+            ), "Parent shares same PGID with child"
+
         try:
             yield p
         except errors.ConverterProcException as e:

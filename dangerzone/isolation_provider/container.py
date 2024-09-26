@@ -267,6 +267,9 @@ class Container(IsolationProvider):
             stdout=subprocess.PIPE,
             stderr=self.proc_stderr,
             startupinfo=startupinfo,
+            # Start the conversion process in a new session, so that we can later on
+            # kill the process group, without killing the controlling script.
+            start_new_session=True,
         )
 
     def exec_container(

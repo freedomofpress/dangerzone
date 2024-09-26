@@ -73,7 +73,7 @@ class Dummy(IsolationProvider):
         pass
 
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
-        return subprocess.Popen("True")
+        return subprocess.Popen("True", start_new_session=True)
 
     def terminate_doc_to_pixels_proc(
         self, document: Document, p: subprocess.Popen

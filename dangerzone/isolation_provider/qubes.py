@@ -67,6 +67,9 @@ class Qubes(IsolationProvider):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=stderr,
+            # Start the conversion process in a new session, so that we can later on
+            # kill the process group, without killing the controlling script.
+            start_new_session=True,
         )
 
         if dev_mode:

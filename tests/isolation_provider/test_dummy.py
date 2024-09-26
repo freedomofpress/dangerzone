@@ -28,15 +28,15 @@ class DummyWait(Dummy):
             start_new_session=True,
         )
 
-    def terminate_doc_to_pixels_proc(
-        self, document: Document, p: subprocess.Popen
-    ) -> None:
-        p.terminate()
-
 
 @pytest.fixture
 def provider_wait() -> DummyWait:
     return DummyWait()
+
+
+@pytest.fixture
+def provider() -> Dummy:
+    return Dummy()
 
 
 class TestDummyTermination(IsolationProviderTermination):
@@ -51,3 +51,12 @@ class TestDummyTermination(IsolationProviderTermination):
             return_value=errors.DocFormatUnsupported(),
         )
         super().test_failed(provider_wait, mocker)
+
+    def test_linger_unkillable(
+        self,
+        provider_wait: IsolationProvider,
+        mocker: MockerFixture,
+    ) -> None:
+        # We have to spawn a blocking process here, else we can't imitate an
+        # "unkillable" process.
+        super().test_linger_unkillable(provider_wait, mocker)

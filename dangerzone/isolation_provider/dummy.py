@@ -8,7 +8,7 @@ from typing import Callable, Optional
 
 from ..document import Document
 from ..util import get_resource_path
-from .base import IsolationProvider
+from .base import IsolationProvider, terminate_process_group
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +27,7 @@ class Dummy(IsolationProvider):
                 "Dummy isolation provider is UNSAFE and should never be "
                 + "called in a non-testing system."
             )
+        super().__init__()
 
     def install(self) -> bool:
         return True
@@ -73,12 +74,19 @@ class Dummy(IsolationProvider):
         pass
 
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
-        return subprocess.Popen("True", start_new_session=True)
+        dummy_cmd = ["python3", "-c", "print('The cake is a lie')"]
+        return subprocess.Popen(
+            dummy_cmd,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=self.proc_stderr,
+            start_new_session=True,
+        )
 
     def terminate_doc_to_pixels_proc(
         self, document: Document, p: subprocess.Popen
     ) -> None:
-        pass
+        terminate_process_group(p)
 
     def get_max_parallel_conversions(self) -> int:
         return 1

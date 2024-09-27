@@ -110,14 +110,14 @@ jobs:
             version: "22.04"
           - distro: ubuntu
             version: "23.10"
-          - distro: ubuntu
-            version: "24.04"
+          #- distro: ubuntu
+          #  version: "24.04"
           - distro: debian
             version: bullseye
           - distro: debian
             version: bookworm
-          - distro: debian
-            version: trixie
+          #- distro: debian
+          #  version: trixie
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -152,7 +152,7 @@ jobs:
               run --dev --no-gui ./dangerzone/install/linux/build-deb.py
 
       - name: Upload Dangerzone .deb
-        if: matrix.distro == 'debian' && matrix.version == 'trixie'
+        if: matrix.distro == 'debian' && matrix.version == 'bookworm'
         uses: actions/upload-artifact@v4
         with:
           name: dangerzone.deb

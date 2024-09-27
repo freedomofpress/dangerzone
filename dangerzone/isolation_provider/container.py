@@ -194,7 +194,7 @@ class Container(IsolationProvider):
         """
         # Get the image id
         with open(get_resource_path("image-id.txt")) as f:
-            expected_image_id = f.read().strip()
+            expected_image_ids = f.read().strip().split()
 
         # See if this image is already installed
         installed = False
@@ -212,7 +212,7 @@ class Container(IsolationProvider):
         )
         found_image_id = found_image_id.strip()
 
-        if found_image_id == expected_image_id:
+        if found_image_id in expected_image_ids:
             installed = True
         elif found_image_id == "":
             pass

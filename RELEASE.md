@@ -271,6 +271,8 @@ should point the user to the Qubes notifications in the top-right corner:
 - [ ] Verify and checkout the git tag for this release
 - [ ] Run `poetry install`
 - [ ] Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`
+- [ ] Make sure that the build application works with the containerd graph
+  driver (see [#933](https://github.com/freedomofpress/dangerzone/issues/933))
 - [ ] Run `poetry run ./install/macos/build-app.py --only-codesign`; this will make `dist/Dangerzone.dmg`
   * You need to run this command as the account that has access to the code signing certificate
   * You must run this command from the MacOS UI, from a terminal application.
@@ -314,7 +316,10 @@ The Windows release is performed in a Windows 11 virtual machine as opposed to a
 - [ ] Run `poetry install`
 - [ ] Copy the container image into the VM
   > [!IMPORTANT]
-  > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar.gz` and `share/image-id.txt` from the host into the `share` folder in the VM
+  > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar.gz` and `share/image-id.txt` from the host into the `share` folder in the VM.
+  > Also, don't forget to add the supplementary image ID (see
+  > [#933](https://github.com/freedomofpress/dangerzone/issues/933)) in
+  > `share/image-id.txt`)
 - [ ] Run `poetry run .\install\windows\build-app.bat`
 - [ ] When you're done you will have `dist\Dangerzone.msi`
 

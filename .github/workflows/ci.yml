@@ -152,7 +152,7 @@ jobs:
               run --dev --no-gui ./dangerzone/install/linux/build-deb.py
 
       - name: Upload Dangerzone .deb
-        if: matrix.distro == 'debian' && matrix.version == 'trixie'
+        if: matrix.distro == 'debian' && matrix.version == 'bookworm'
         uses: actions/upload-artifact@v4
         with:
           name: dangerzone.deb

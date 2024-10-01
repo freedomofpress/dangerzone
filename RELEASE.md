@@ -13,6 +13,7 @@ Before making a release, all of these should be complete:
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
+- [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
 - [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
 

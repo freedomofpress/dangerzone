@@ -157,6 +157,8 @@ jobs:
         with:
           name: dangerzone.deb
           path: "deb_dist/dangerzone_*_*.deb"
+          if-no-files-found: error
+          compression-level: 0
 
   install-deb:
     name: "install-deb (${{ matrix.distro }} ${{ matrix.version }})"

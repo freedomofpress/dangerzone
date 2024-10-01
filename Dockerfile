@@ -100,7 +100,9 @@ FROM alpine:latest
 RUN apk --no-cache -U upgrade && \
     apk --no-cache add python3
 
-RUN GVISOR_URL="https://storage.googleapis.com/gvisor/releases/release/latest/$(uname -m)"; \
+# Temporarily pin gVisor to the latest working version (release-20240826.0).
+# See: https://github.com/freedomofpress/dangerzone/issues/928
+RUN GVISOR_URL="https://storage.googleapis.com/gvisor/releases/release/20240826/$(uname -m)"; \
     wget "${GVISOR_URL}/runsc" "${GVISOR_URL}/runsc.sha512" && \
     sha512sum -c runsc.sha512 && \
     rm -f runsc.sha512 && \

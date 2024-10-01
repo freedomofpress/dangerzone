@@ -64,11 +64,10 @@ def main():
 
     # dpkg-buildpackage produces a .deb file in the parent folder
     # that needs to be copied to the `deb_dist` folder manually
-    for item in root.parent.glob(f"dangerzone_{version}_*.deb"):
-        arch = item.stem.split("_")[-1]
-        destination = root / "deb_dist" / f"dangerzone_{version}-{deb_ver}_{arch}.deb"
-        shutil.move(item, destination)
-        print(f"sudo dpkg -i {destination}")
+    src = root.parent / f"dangerzone_{version}_amd64.deb"
+    destination = root / "deb_dist" / f"dangerzone_{version}-{deb_ver}_amd64.deb"
+    shutil.move(src, destination)
+    print(f"sudo dpkg -i {destination}")
 
 
 if __name__ == "__main__":

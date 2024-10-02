@@ -1,0 +1,67 @@
+name: Bug Report (Linux)
+description: File a bug report for Linux.
+labels: ["bug", "triage"]
+projects: ["freedomofpress/dangerzone"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Hi, and thanks for taking the time to open this bug report. 
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What was the expected behaviour, and what was the actual behaviour? Can you specify the steps you followed, so that we can reproduce?
+      placeholder: "A bug happened!"
+    validations:
+      required: true
+  - type: textarea
+    id: os-version
+    attributes:
+      label: Linux distribution
+      description: |
+        What is the name and version of your Linux distribution? You can find it out with `cat /etc/os-release`
+      placeholder: Ubuntu 20.04.6 LTS
+    validations:
+      required: true
+  - type: textarea
+    id: dangerzone-version
+    attributes:
+      label: Dangerzone version
+      description: Which version of Dangerzone are you using?
+    validations:
+      required: true
+  - type: textarea
+    id: podman-info
+    attributes:
+      label: Podman info
+      description: |
+        If the bug occurs during document conversion, or is otherwise related with Podman, please copy and paste the following commands in your terminal, and provide us with the output:
+
+        ```shell
+        podman version
+        podman info -f 'json'
+        podman images
+        podman run hello-world
+        ```
+
+        This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: textarea
+    id: logs
+    attributes:
+      label: Document conversion logs
+      description: |
+        If the bug occurs during document conversion, we'd like some logs from this process. Please copy and paste the following commands in your terminal, and provide us with the output (replace `/path/to/file` with the path to your document):
+
+        ```bash
+        dangerzone-cli /path/to/file
+        ```
+
+      render: shell
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional info
+      description: |
+        Please provide us with any additional info, such as logs, extra content, that may help us debug this issue.

@@ -1,0 +1,68 @@
+name: Bug Report (Windows)
+description: File a bug report for Windows.
+labels: ["bug", "triage"]
+projects: ["freedomofpress/dangerzone"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Hi, and thanks for taking the time to open this bug report. 
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What was the expected behaviour, and what was the actual behaviour? Can you specify the steps you followed, so that we can reproduce?
+      placeholder: "A bug happened!"
+    validations:
+      required: true
+  - type: textarea
+    id: os-version
+    attributes:
+      label: operating system version
+      description: |
+        Which version of Windows do you use? Follow [this link](https://learn.microsoft.com/en-us/windows/client-management/client-tools/windows-version-search) to find out.
+    validations:
+      required: true
+  - type: textarea
+    id: dangerzone-version
+    attributes:
+      label: Dangerzone version
+      description: Which version of Dangerzone are you using?
+    validations:
+      required: true
+  - type: textarea
+    id: docker-info
+    attributes:
+      label: Docker info
+      description: |
+        If the bug occurs during document conversion, or is otherwise related
+        with Docker, please copy and paste the following commands in your
+        terminal, and provide us with the output:
+
+        ```shell
+        docker version
+        docker info -f 'json'
+        docker images
+        docker run hello-world
+        ```
+
+        This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: textarea
+    id: logs
+    attributes:
+      label: Document conversion logs
+      description: |
+        If the bug occurs during document conversion, we'd like some logs from this process. Please copy and paste the following commands in your terminal, and provide us with the output (replace `\path\to\file` with the path to your document):
+
+        ```bash
+        'C:\Program Files (x86)\Dangerzone\dangerzone-cli.exe' \path\to\file
+        ```
+
+      render: shell
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional info
+      description: |
+        Please provide us with any additional info, such as logs, extra content, that may help us debug this issue.

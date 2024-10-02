@@ -6,7 +6,6 @@ import sys
 import time
 from typing import Callable, Optional
 
-from ..document import Document
 from ..conversion.common import DangerzoneConverter
 from ..document import Document
 from ..util import get_resource_path
@@ -51,14 +50,14 @@ class Dummy(IsolationProvider):
             "python3",
             "-c",
             "from dangerzone.isolation_provider.dummy import dummy_script;"
-            " dummy_script()"
+            " dummy_script()",
         ]
         return subprocess.Popen(
             cmd,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=self.proc_stderr,
-            start_new_session=True
+            start_new_session=True,
         )
 
     def terminate_doc_to_pixels_proc(

@@ -9,11 +9,11 @@ import sys
 import tempfile
 import traceback
 from pathlib import Path
-from pytest_mock import MockerFixture
 from typing import Optional, Sequence
 
 import pytest
 from click.testing import CliRunner, Result
+from pytest_mock import MockerFixture
 from strip_ansi import strip_ansi
 
 from dangerzone.cli import cli_main, display_banner

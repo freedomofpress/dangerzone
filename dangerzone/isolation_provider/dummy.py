@@ -1,22 +1,16 @@
 import logging
-import os
-import shutil
 import subprocess
 import sys
-import time
-from typing import Callable, Optional
 
 from ..conversion.common import DangerzoneConverter
 from ..document import Document
-from ..util import get_resource_path
 from .base import IsolationProvider, terminate_process_group
 
 log = logging.getLogger(__name__)
 
 
 def dummy_script() -> None:
-    sys.stdin.read()
-
+    sys.stdin.buffer.read()
     pages = 2
     width = height = 9
     DangerzoneConverter._write_int(pages)

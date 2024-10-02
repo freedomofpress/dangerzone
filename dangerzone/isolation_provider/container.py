@@ -4,12 +4,10 @@ import os
 import platform
 import shlex
 import shutil
-import signal
 import subprocess
 from typing import List, Tuple
 
 from ..document import Document
-from ..util import get_tmp_dir  # NOQA : required for mocking in our tests.
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
 

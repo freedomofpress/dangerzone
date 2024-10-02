@@ -5,7 +5,6 @@ import platform
 import signal
 import subprocess
 import sys
-import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import IO, Callable, Iterator, Optional
@@ -107,10 +106,8 @@ class IsolationProvider(ABC):
         self.progress_callback = progress_callback
         document.mark_as_converting()
         try:
-            with tempfile.TemporaryDirectory() as t:
-                Path(f"{t}/pixels").mkdir()
-                with self.doc_to_pixels_proc(document) as conversion_proc:
-                    self._convert(document, t, ocr_lang, conversion_proc)
+            with self.doc_to_pixels_proc(document) as conversion_proc:
+                self._convert(document, ocr_lang, conversion_proc)
             document.mark_as_safe()
             if document.archive_after_conversion:
                 document.archive()
@@ -161,7 +158,6 @@ class IsolationProvider(ABC):
     def _convert(
         self,
         document: Document,
-        tempdir: str,
         ocr_lang: Optional[str],
         p: subprocess.Popen,
     ) -> None:

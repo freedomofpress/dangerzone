@@ -9,8 +9,8 @@ import sys
 import tempfile
 import traceback
 from pathlib import Path
+from pytest_mock import MockerFixture
 from typing import Optional, Sequence
-from unittest import mock
 
 import pytest
 from click.testing import CliRunner, Result
@@ -19,7 +19,6 @@ from strip_ansi import strip_ansi
 from dangerzone.cli import cli_main, display_banner
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
-from dangerzone.util import get_resource_path
 
 from .conftest import for_each_doc, for_each_external_doc
 
@@ -211,17 +210,20 @@ class TestCliConversion(TestCliBasic):
         result.assert_success()
 
     ### Test method for swallowed exception
-    def test_output_filename_same_file_dummy_fails(self) -> None:
-        resource_path = get_resource_path("dummy_document.pdf")
-        # Using the same filename for both input and output should fail.
-        result = self.run_cli(
-            [
-                resource_path,
-                "--output-filename",
-                resource_path,
-                "--unsafe-dummy-conversion",
-            ]
+    def test_output_filename_pokemon_handler(
+        self,
+        sample_pdf: str,
+        mocker: MockerFixture,
+    ) -> None:
+        """Ensure that we catch top-level errors."""
+        mock_conv = mocker.patch(
+            "dangerzone.isolation_provider.base.IsolationProvider.convert"
         )
+        mock_conv.side_effect = Exception("It happens")
+        result = self.run_cli([sample_pdf])
+        # FIXME: The following does not work, because the log is somehow not captured by
+        # Click's CliRunner.
+        # result.assert_failure(message="It happens")
         result.assert_failure()
 
     def test_output_filename_new_dir(self, sample_pdf: str) -> None:

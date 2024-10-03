@@ -7,7 +7,6 @@ from pytest_mock import MockerFixture
 from dangerzone.conversion import errors
 from dangerzone.document import Document
 from dangerzone.isolation_provider import base
-from dangerzone.isolation_provider.qubes import running_on_qubes
 
 TIMEOUT_STARTUP = 60  # Timeout in seconds until the conversion sandbox starts.
 

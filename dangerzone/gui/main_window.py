@@ -1,7 +1,6 @@
 import logging
 import os
 import platform
-import subprocess
 import tempfile
 import typing
 from multiprocessing.pool import ThreadPool
@@ -20,15 +19,19 @@ else:
         from PySide6.QtWidgets import QTextEdit
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
-        from PySide2.QtWidgets import QAction, QTextEdit
         from PySide2.QtCore import Qt
+        from PySide2.QtWidgets import QAction, QTextEdit
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
-from ..isolation_provider.container import Container, NoContainerTechException
+from ..isolation_provider.container import (
+    Container,
+    NoContainerTechException,
+    NotAvailableContainerTechException,
+)
 from ..isolation_provider.dummy import Dummy
 from ..isolation_provider.qubes import Qubes, is_qubes_native_conversion
-from ..util import get_resource_path, get_subprocess_startupinfo, get_version
+from ..util import format_exception, get_resource_path, get_version
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 from .updater import UpdateReport
 
@@ -388,15 +391,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 class InstallContainerThread(QtCore.QThread):
-    finished = QtCore.Signal()
+    finished = QtCore.Signal(str)
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(InstallContainerThread, self).__init__()
         self.dangerzone = dangerzone
 
     def run(self) -> None:
-        self.dangerzone.isolation_provider.install()
-        self.finished.emit()
+        error = None
+        try:
+            installed = self.dangerzone.isolation_provider.install()
+        except Exception as e:
+            log.error("Container installation problem")
+            error = format_exception(e)
+        else:
+            if not installed:
+                error = "The image cannot be found. This can be caused by a faulty container image."
+        finally:
+            self.finished.emit(error)
 
 
 class WaitingWidget(QtWidgets.QWidget):
@@ -423,9 +435,10 @@ class TracebackWidget(QTextEdit):
         # Enable copying
         self.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
-    def set_content(self, error: str) -> None:
-        self.setPlainText(error)
-        self.setVisible(True)
+    def set_content(self, error: Optional[str] = None) -> None:
+        if error:
+            self.setPlainText(error)
+            self.setVisible(True)
 
 
 class WaitingWidgetContainer(WaitingWidget):
@@ -438,7 +451,6 @@ class WaitingWidgetContainer(WaitingWidget):
     #
     # Linux states
     # - "install_container"
-    finished = QtCore.Signal()
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(WaitingWidgetContainer, self).__init__()
@@ -480,49 +492,61 @@ class WaitingWidgetContainer(WaitingWidget):
         error: Optional[str] = None
 
         try:
-            if isinstance(  # Sanity check
-                self.dangerzone.isolation_provider, Container
-            ):
-                container_runtime = self.dangerzone.isolation_provider.get_runtime()
-                runtime_name = self.dangerzone.isolation_provider.get_runtime_name()
+            self.dangerzone.isolation_provider.is_runtime_available()
         except NoContainerTechException as e:
             log.error(str(e))
             state = "not_installed"
-
+        except NotAvailableContainerTechException as e:
+            log.error(str(e))
+            state = "not_running"
+            error = e.error
+        except Exception as e:
+            log.error(str(e))
+            state = "not_running"
+            error = format_exception(e)
         else:
-            # Can we run `docker/podman image ls` without an error
-            with subprocess.Popen(
-                [container_runtime, "image", "ls"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.PIPE,
-                startupinfo=get_subprocess_startupinfo(),
-            ) as p:
-                _, stderr = p.communicate()
-                if p.returncode != 0:
-                    log.error(f"{runtime_name} is not running")
-                    state = "not_running"
-                    error = stderr.decode()
-                else:
-                    # Always try installing the container
-                    state = "install_container"
+            state = "install_container"
 
         # Update the state
         self.state_change(state, error)
 
+    def show_error(self, msg: str, details: Optional[str] = None) -> None:
+        self.label.setText(msg)
+        show_traceback = details is not None
+        if show_traceback:
+            self.traceback.set_content(details)
+        self.traceback.setVisible(show_traceback)
+        self.buttons.show()
+
+    def show_message(self, msg: str) -> None:
+        self.label.setText(msg)
+        self.traceback.setVisible(False)
+        self.buttons.hide()
+
+    def installation_finished(self, error: Optional[str] = None) -> None:
+        if error:
+            msg = (
+                "During installation of the dangerzone image, <br>"
+                "the following error occured:"
+            )
+            self.show_error(msg, error)
+        else:
+            self.finished.emit()
+
     def state_change(self, state: str, error: Optional[str] = None) -> None:
         if state == "not_installed":
             if platform.system() == "Linux":
-                self.label.setText(
+                self.show_error(
                     "<strong>Dangerzone requires Podman</strong><br><br>"
                     "Install it and retry."
                 )
             else:
-                self.label.setText(
+                self.show_error(
                     "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
                     "<a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>"
                     ", install it, and open it."
                 )
-            self.buttons.show()
+
         elif state == "not_running":
             if platform.system() == "Linux":
                 # "not_running" here means that the `podman image ls` command failed.
@@ -530,27 +554,20 @@ class WaitingWidgetContainer(WaitingWidget):
                     "<strong>Dangerzone requires Podman</strong><br><br>"
                     "Podman is installed but cannot run properly. See errors below"
                 )
-                if error:
-                    self.traceback.set_content(error)
-
-                self.label.setText(message)
-
             else:
-                self.label.setText(
+                message = (
                     "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
                     "Docker is installed but isn't running.<br><br>"
                     "Open Docker and make sure it's running in the background."
                 )
-            self.buttons.show()
+            self.show_error(message, error)
         else:
-            self.label.setText(
+            self.show_message(
                 "Installing the Dangerzone container image.<br><br>"
                 "This might take a few minutes..."
             )
-            self.buttons.hide()
-            self.traceback.setVisible(False)
             self.install_container_t = InstallContainerThread(self.dangerzone)
-            self.install_container_t.finished.connect(self.finished)
+            self.install_container_t.finished.connect(self.installation_finished)
             self.install_container_t.start()
 
 

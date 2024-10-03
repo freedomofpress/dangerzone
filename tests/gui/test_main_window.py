@@ -1,11 +1,13 @@
 import os
 import pathlib
+import platform
 import shutil
 import time
 from typing import List
 
 from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
+from pytest_subprocess import FakeProcess
 from pytestqt.qtbot import QtBot
 
 from dangerzone.document import Document
@@ -13,12 +15,21 @@ from dangerzone.gui import MainWindow
 from dangerzone.gui import main_window as main_window_module
 from dangerzone.gui import updater as updater_module
 from dangerzone.gui.logic import DangerzoneGui
-from dangerzone.gui.main_window import (  # import Pyside related objects from here to avoid duplicating import logic.
+
+# import Pyside related objects from here to avoid duplicating import logic.
+from dangerzone.gui.main_window import (
     ContentWidget,
+    InstallContainerThread,
     QtCore,
     QtGui,
+    WaitingWidgetContainer,
 )
 from dangerzone.gui.updater import UpdateReport, UpdaterThread
+from dangerzone.isolation_provider.container import (
+    Container,
+    NoContainerTechException,
+    NotAvailableContainerTechException,
+)
 
 from .test_updater import assert_report_equal, default_updater_settings
 
@@ -492,3 +503,90 @@ def test_drop_1_invalid_2_valid_documents(
         content_widget.doc_selection_wrapper.dropEvent(
             drag_1_invalid_and_2_valid_files_event
         )
+
+
+def test_not_available_container_tech_exception(
+    qtbot: QtBot, mocker: MockerFixture
+) -> None:
+    # Setup
+    mock_app = mocker.MagicMock()
+    dummy = mocker.MagicMock()
+
+    dummy.is_runtime_available.side_effect = NotAvailableContainerTechException(
+        "podman", "podman image ls logs"
+    )
+
+    dz = DangerzoneGui(mock_app, dummy)
+    widget = WaitingWidgetContainer(dz)
+    qtbot.addWidget(widget)
+
+    # Assert that the error is displayed in the GUI
+    if platform.system() in ["Darwin", "Windows"]:
+        assert "Dangerzone requires Docker Desktop" in widget.label.text()
+    else:
+        assert "Podman is installed but cannot run properly" in widget.label.text()
+
+    assert "podman image ls logs" in widget.traceback.toPlainText()
+
+
+def test_no_container_tech_exception(qtbot: QtBot, mocker: MockerFixture) -> None:
+    # Setup
+    mock_app = mocker.MagicMock()
+    dummy = mocker.MagicMock()
+
+    # Raise
+    dummy.is_runtime_available.side_effect = NoContainerTechException("podman")
+
+    dz = DangerzoneGui(mock_app, dummy)
+    widget = WaitingWidgetContainer(dz)
+    qtbot.addWidget(widget)
+
+    # Assert that the error is displayed in the GUI
+    if platform.system() in ["Darwin", "Windows"]:
+        assert "Dangerzone requires Docker Desktop" in widget.label.text()
+    else:
+        assert "Dangerzone requires Podman" in widget.label.text()
+
+
+def test_installation_failure_exception(qtbot: QtBot, mocker: MockerFixture) -> None:
+    """Ensures that if an exception is raised during image installation,
+    it is shown in the GUI.
+    """
+    # Setup install to raise an exception
+    mock_app = mocker.MagicMock()
+    dummy = mocker.MagicMock(spec=Container)
+    dummy.install.side_effect = RuntimeError("Error during install")
+
+    dz = DangerzoneGui(mock_app, dummy)
+
+    # Mock the InstallContainerThread to call the original run method instead of
+    # starting a new thread
+    mocker.patch.object(InstallContainerThread, "start", InstallContainerThread.run)
+    widget = WaitingWidgetContainer(dz)
+    qtbot.addWidget(widget)
+
+    assert dummy.install.call_count == 1
+
+    assert "Error during install" in widget.traceback.toPlainText()
+    assert "RuntimeError" in widget.traceback.toPlainText()
+
+
+def test_installation_failure_return_false(qtbot: QtBot, mocker: MockerFixture) -> None:
+    """Ensures that if the installation returns False, the error is shown in the GUI."""
+    # Setup install to return False
+    mock_app = mocker.MagicMock()
+    dummy = mocker.MagicMock(spec=Container)
+    dummy.install.return_value = False
+
+    dz = DangerzoneGui(mock_app, dummy)
+
+    # Mock the InstallContainerThread to call the original run method instead of
+    # starting a new thread
+    mocker.patch.object(InstallContainerThread, "start", InstallContainerThread.run)
+    widget = WaitingWidgetContainer(dz)
+    qtbot.addWidget(widget)
+
+    assert dummy.install.call_count == 1
+
+    assert "the following error occured" in widget.label.text()
+    assert "The image cannot be found" in widget.traceback.toPlainText()

@@ -30,6 +30,21 @@ class NoContainerTechException(Exception):
         super().__init__(f"{container_tech} is not installed")
 
 
+class NotAvailableContainerTechException(Exception):
+    def __init__(self, container_tech: str, error: str) -> None:
+        self.error = error
+        self.container_tech = container_tech
+        super().__init__(f"{container_tech} is not available")
+
+
+class ImageNotPresentException(Exception):
+    pass
+
+
+class ImageInstallationException(Exception):
+    pass
+
+
 class Container(IsolationProvider):
     # Name of the dangerzone container
     CONTAINER_NAME = "dangerzone.rocks/dangerzone"
@@ -156,7 +171,7 @@ class Container(IsolationProvider):
             startupinfo=get_subprocess_startupinfo(),
         )
 
-        chunk_size = 10240
+        chunk_size = 4 << 20
         compressed_container_path = get_resource_path("container.tar.gz")
         with gzip.open(compressed_container_path) as f:
             while True:
@@ -166,19 +181,42 @@ class Container(IsolationProvider):
                         p.stdin.write(chunk)
                 else:
                     break
-        p.communicate()
+        _, err = p.communicate()
+        if p.returncode < 0:
+            if err:
+                error = err.decode()
+            else:
+                error = "No output"
+            raise ImageInstallationException(
+                f"Could not install container image: {error}"
+            )
 
-        if not Container.is_container_installed():
-            log.error("Failed to install the container image")
+        if not Container.is_container_installed(raise_on_error=True):
             return False
 
         log.info("Container image installed")
         return True
 
     @staticmethod
-    def is_container_installed() -> bool:
+    def is_runtime_available() -> bool:
+        container_runtime = Container.get_runtime()
+        runtime_name = Container.get_runtime_name()
+        # Can we run `docker/podman image ls` without an error
+        with subprocess.Popen(
+            [container_runtime, "image", "ls"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            startupinfo=get_subprocess_startupinfo(),
+        ) as p:
+            _, stderr = p.communicate()
+            if p.returncode != 0:
+                raise NotAvailableContainerTechException(runtime_name, stderr.decode())
+            return True
+
+    @staticmethod
+    def is_container_installed(raise_on_error: bool = False) -> bool:
         """
-        See if the podman container is installed. Linux only.
+        See if the container is installed.
         """
         # Get the image id
         with open(get_resource_path("image-id.txt")) as f:
@@ -203,8 +241,18 @@ class Container(IsolationProvider):
         if found_image_id in expected_image_ids:
             installed = True
         elif found_image_id == "":
-            pass
+            if raise_on_error:
+                raise ImageNotPresentException(
+                    "Image is not listed after installation. Bailing out."
+                )
         else:
+            msg = (
+                f"{Container.CONTAINER_NAME} images found, but IDs do not match."
+                f"Found: {found_image_id}, Expected: {','.join(expected_image_ids)}"
+            )
+            if raise_on_error:
+                raise ImageNotPresentException(msg)
+            log.info(msg)
             log.info("Deleting old dangerzone container image")
 
             try:

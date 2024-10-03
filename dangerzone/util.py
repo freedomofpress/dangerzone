@@ -2,6 +2,7 @@ import pathlib
 import platform
 import subprocess
 import sys
+import traceback
 import unicodedata
 
 import appdirs
@@ -117,3 +118,13 @@ def replace_control_chars(untrusted_str: str, keep_newlines: bool = False) -> st
         else:
             sanitized_str += "�"
     return sanitized_str
+
+
+def format_exception(e: Exception) -> str:
+    # The signature of traceback.format_exception has changed in python 3.10
+    if sys.version_info < (3, 10):
+        output = traceback.format_exception(*sys.exc_info())
+    else:
+        output = traceback.format_exception(e)
+
+    return "".join(output)

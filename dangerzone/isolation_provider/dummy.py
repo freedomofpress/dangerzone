@@ -41,7 +41,7 @@ class Dummy(IsolationProvider):
 
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
         cmd = [
-            "python3",
+            sys.executable,
             "-c",
             "from dangerzone.isolation_provider.dummy import dummy_script;"
             " dummy_script()",

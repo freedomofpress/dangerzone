@@ -1,7 +1,13 @@
 #!/usr/bin/make -f
 export PYBUILD_NAME=dangerzone
 export DEB_BUILD_OPTIONS=nocheck
+export PYBUILD_INSTALL_ARGS=--install-lib=/usr/lib/python3/dist-packages
+export PYTHONDONTWRITEBYTECODE=1
+export DH_VERBOSE=1
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
+override_dh_builddeb:
+	./install/linux/vendor-pymupdf.py --dest debian/dangerzone/usr/lib/python3/dist-packages/dangerzone/vendor/
+	dh_builddeb $@

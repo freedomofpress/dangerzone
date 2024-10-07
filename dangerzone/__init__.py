@@ -1,6 +1,13 @@
 import os
 import sys
 
+try:
+    from . import vendor  # type: ignore [attr-defined]
+
+    sys.path.insert(0, vendor.__path__[0])
+except ImportError:
+    pass
+
 if "DANGERZONE_MODE" in os.environ:
     mode = os.environ["DANGERZONE_MODE"]
 else:

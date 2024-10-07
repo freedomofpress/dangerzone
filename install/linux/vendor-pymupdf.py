@@ -22,16 +22,19 @@ def main():
     container_requirements_txt = subprocess.check_output(cmd)
 
     print(f">>> Vendoring PyMuPDF under '{args.dest}'", file=sys.stderr)
+    # We prefer to call the CLI version of `pip`, instead of importing it directly, as
+    # instructed here:
+    # https://pip.pypa.io/en/latest/user_guide/#using-pip-from-your-program
     cmd = [
-        "python3",
+        sys.executable,
         "-m",
         "pip",
         "install",
         "--no-cache-dir",
         "--no-compile",
-        "-t",
+        "--target",
         args.dest,
-        "-r",
+        "--requirements",
         "/proc/self/fd/0",  # XXX: pip does not read requirements.txt from stdin
     ]
     subprocess.check_output(cmd, input=container_requirements_txt)

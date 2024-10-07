@@ -134,6 +134,8 @@ debian/dangerzone
 debian/files
 debian/debhelper-build-stamp
 debian/dangerzone.*
+.pybuild/
+
 # Other
 .vscode
 *.tar.gz

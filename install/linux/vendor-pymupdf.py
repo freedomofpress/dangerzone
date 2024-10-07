@@ -34,7 +34,7 @@ def main():
         "--no-compile",
         "--target",
         args.dest,
-        "--requirements",
+        "--requirement",
         "/proc/self/fd/0",  # XXX: pip does not read requirements.txt from stdin
     ]
     subprocess.check_output(cmd, input=container_requirements_txt)

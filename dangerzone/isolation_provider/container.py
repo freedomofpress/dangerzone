@@ -93,7 +93,7 @@ class Container(IsolationProvider):
         return runtime
 
     @staticmethod
-    def get_runtime_security_args() -> List[str]:
+    def get_runtime_security_args(debug: bool) -> List[str]:
         """Security options applicable to the outer Dangerzone container.
 
         Our security precautions for the outer Dangerzone container are the following:
@@ -136,6 +136,9 @@ class Container(IsolationProvider):
 
         security_args += ["--network=none"]
         security_args += ["-u", "dangerzone"]
+
+        if debug:
+            security_args += ["-e", "RUNSC_DEBUG=1"]
 
         return security_args
 
@@ -250,7 +253,7 @@ class Container(IsolationProvider):
         extra_args: List[str] = [],
     ) -> subprocess.Popen:
         container_runtime = self.get_runtime()
-        security_args = self.get_runtime_security_args()
+        security_args = self.get_runtime_security_args(self.debug)
         enable_stdin = ["-i"]
         set_name = ["--name", name]
         prevent_leakage_args = ["--rm"]

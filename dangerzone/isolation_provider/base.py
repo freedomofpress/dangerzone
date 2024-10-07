@@ -5,6 +5,7 @@ import platform
 import signal
 import subprocess
 import sys
+import tempfile
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import IO, Callable, Iterator, Optional
@@ -87,11 +88,18 @@ class IsolationProvider(ABC):
     Abstracts an isolation provider
     """
 
-    def __init__(self) -> None:
-        if getattr(sys, "dangerzone_dev", False) is True:
+    def __init__(self, debug) -> None:
+        self.debug = debug
+        if self.should_display_errors():
             self.proc_stderr = subprocess.PIPE
         else:
+            # We do not trust STDERR from the inner container,
+            # which could be exploited to ask users to open the document with
+            # a default PDF reader for instance.
             self.proc_stderr = subprocess.DEVNULL
+
+    def should_display_errors(self) -> bool:
+        return self.debug or getattr(sys, "dangerzone_dev", False)
 
     @abstractmethod
     def install(self) -> bool:
@@ -220,6 +228,17 @@ class IsolationProvider(ABC):
         text = "Successfully converted document"
         self.print_progress(document, False, text, 100)
 
+        if self.should_display_errors():
+            assert p.stderr
+            debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
+            p.stderr.close()
+            log.debug(
+                "Conversion output (doc to pixels)\n"
+                f"{DOC_TO_PIXELS_LOG_START}\n"
+                f"{debug_log}"  # no need for an extra newline here
+                f"{DOC_TO_PIXELS_LOG_END}"
+            )
+
     def print_progress(
         self, document: Document, error: bool, text: str, percentage: float
     ) -> None:
@@ -252,7 +271,10 @@ class IsolationProvider(ABC):
                 "Encountered an I/O error during document to pixels conversion,"
                 f" but the status of the conversion process is unknown (PID: {p.pid})"
             )
-        return errors.exception_from_error_code(error_code)
+        logs = None
+        if self.debug:
+            logs = "".join([line.decode() for line in p.stderr.readlines()])
+        return errors.exception_from_error_code(error_code, logs=logs)
 
     @abstractmethod
     def get_max_parallel_conversions(self) -> int:

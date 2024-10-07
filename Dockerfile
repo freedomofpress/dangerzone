@@ -49,10 +49,10 @@ RUN mkdir /usr/share/tessdata/ && mkdir tessdata && cd tessdata \
 ###########################################
 # Download H2ORestart
 FROM alpine:latest as h2orestart-dl
-ARG H2ORESTART_CHECKSUM=5db816a1e57b510456633f55e693cb5ef3675ef8b35df4f31c90ab9d4c66071a
+ARG H2ORESTART_CHECKSUM=d09bc5c93fe2483a7e4a57985d2a8d0e4efae2efb04375fe4b59a68afd7241e2
 RUN mkdir /libreoffice_ext && cd libreoffice_ext \
     && H2ORESTART_FILENAME=h2orestart.oxt \
-    && H2ORESTART_VERSION="v0.5.7" \
+    && H2ORESTART_VERSION="v0.6.6" \
     && wget https://github.com/ebandal/H2Orestart/releases/download/$H2ORESTART_VERSION/$H2ORESTART_FILENAME \
     && echo "$H2ORESTART_CHECKSUM  $H2ORESTART_FILENAME" | sha256sum -c \
     && install -dm777 "/usr/lib/libreoffice/share/extensions/"

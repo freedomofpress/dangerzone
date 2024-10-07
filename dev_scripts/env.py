@@ -147,7 +147,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
     && apt-get install -y --no-install-recommends dh-python make build-essential \
-        git {qt_deps} pipx python3 python3-venv dpkg-dev debhelper python3-setuptools \
+        git {qt_deps} pipx python3 python3-pip python3-venv dpkg-dev debhelper python3-setuptools \
     && rm -rf /var/lib/apt/lists/*
 # NOTE: `pipx install poetry` fails on Ubuntu Focal, when installed through APT. By
 # installing the latest version, we sidestep this issue.

@@ -92,19 +92,3 @@ Dangerzone gets updates to improve its features _and_ to fix problems. So, updat
 1. Check which version of Dangerzone you are currently using: run Dangerzone, then look for a series of numbers to the right of the logo within the app. The format of the numbers will look similar to `0.4.1`
 2. Now find the latest available version of Dangerzone: go to the [download page](https://dangerzone.rocks/#downloads). Look for the version number displayed. The number will be using the same format as in Step 1.
 3. Is the version on the Dangerzone download page higher than the version of your installed app? Go ahead and update.
-
-### "I get `invalid json returned from container` on MacOS Big Sur or newer (MacOS 11.x.x or higher)"
-
-Are you using the latest version of Dangerzone? See the FAQ for: "I'm experiencing an issue while using Dangerzone."
-
-You _may_ be attempting to convert a file in a directory to which Docker Desktop does not have access. Dangerzone for Mac requires Docker Desktop for conversion. Docker Desktop, in turn, requires permission from MacOS to access the directory in which your target file is located.
-
-To grant this permission:
-
-1. On MacOS 13, choose Apple menu > System Settings. On lower versions, choose System Preferences.
-2. Tap into Privacy & Security in the sidebar. (You may need to scroll down.)
-3. In the Privacy section, tap into Files & Folders. (Again, you may need to scroll down.)
-4. Scroll to the entry for Docker. Tap the > to expand the entry.
-5. Enable the toggle beside the directory where your file is present. For example, if the file to be converted is in the Downloads folder, enable the toggle beside Downloads.
-
-(Full Disk Access permission has a similar effect, but it's enough to give Docker access to _only_ the directory containing the intended file(s) to be converted. Full Disk is unnecessary. As of 2023.04.28, granting one of these permissions continues to be required for successful conversion. Apologies for the extra steps. Dangerzone depends on Docker, and the fix for this issue needs to come from upstream. Read more on [#371](https://github.com/freedomofpress/dangerzone/issues/371#issuecomment-1516863056).)

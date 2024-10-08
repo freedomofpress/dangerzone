@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -41,7 +42,11 @@ def main():
         "--requirement",
         "/proc/self/fd/0",  # XXX: pip does not read requirements.txt from stdin
     ]
-    subprocess.check_output(cmd, input=container_requirements_txt)
+    subprocess.run(cmd, check=True, input=container_requirements_txt)
+
+    if not os.listdir(args.dest):
+        print(f">>> Failed to vendor PyMuPDF under '{args.dest}'", file=sys.stderr)
+
 
     print(f">>> Successfully vendored PyMuPDF under '{args.dest}'", file=sys.stderr)
 

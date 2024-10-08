@@ -210,6 +210,7 @@ jobs:
               run --dev --no-gui ./dangerzone/install/linux/build-deb.py
 
       - name: Upload Dangerzone .deb
+        if: matrix.distro == 'debian' && matrix.version == 'bookworm'
         uses: actions/upload-artifact@v4
         with:
           name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.deb
@@ -250,7 +251,7 @@ jobs:
       - name: Download Dangerzone .deb
         uses: actions/download-artifact@v4
         with:
-          name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.deb
+          name: dangerzone-debian-bookworm.deb
           path: "deb_dist/"
 
       - name: Build end-user environment

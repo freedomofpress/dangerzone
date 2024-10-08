@@ -45,7 +45,7 @@ test:
 	# Make each GUI test run as a separate process, to avoid segfaults due to
 	# shared state.
 	# See more in https://github.com/freedomofpress/dangerzone/issues/493
-	pytest --co -q tests/gui | grep -v ' collected' | xargs -n 1 pytest -v
+	pytest --co -q tests/gui | grep -e '^tests/' | xargs -n 1 pytest -v
 	pytest -v --cov --ignore dev_scripts --ignore tests/gui --ignore tests/test_large_set.py
 
 

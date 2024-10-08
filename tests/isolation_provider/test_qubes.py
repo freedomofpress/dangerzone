@@ -20,11 +20,6 @@ elif os.environ.get("DUMMY_CONVERSION", False):
     pytest.skip("Dummy conversion is enabled", allow_module_level=True)
 
 
-@pytest.fixture
-def provider() -> Qubes:
-    return Qubes()
-
-
 class QubesWait(Qubes):
     """Qubes isolation provider that blocks until the disposable qube has started."""
 
@@ -53,7 +48,7 @@ class QubesWait(Qubes):
 
 
 @pytest.fixture
-def provider_wait() -> QubesWait:
+def provider() -> QubesWait:
     return QubesWait()
 
 

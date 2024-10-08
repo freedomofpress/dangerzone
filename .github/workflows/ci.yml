@@ -68,8 +68,32 @@ jobs:
           sudo apt-get install -y python3-poetry
           python3 ./install/common/build-image.py
 
+  download-tessdata:
+    name: Download and cache Tesseract data
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Cache Tessdata
+      id: cache-tessdata
+      uses: actions/cache@v4
+      with:
+        path: share/tessdata/
+        key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
+        enableCrossOsArchive: true
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Download Tessdata
+      run: |-
+          if [ -f "share/tessdata" ]; then
+            echo "Already cached, skipping"
+          else
+            python3 ./install/common/download-tessdata.py
+          fi
+
   windows:
     runs-on: windows-latest
+    needs: download-tessdata
     env:
       DUMMY_CONVERSION: 1
     steps:
@@ -79,6 +103,13 @@ jobs:
           python-version: "3.12"
       - run: pip install poetry
       - run: poetry install
+      - name: Restore cached tessdata
+        uses: actions/cache/restore@v4
+        with:
+          path: share/tessdata/
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
       - name: Run CLI tests
         run: poetry run make test
       # Taken from: https://github.com/orgs/community/discussions/27149#discussioncomment-3254829
@@ -92,6 +123,7 @@ jobs:
   macOS:
     name: "macOS (${{ matrix.arch }})"
     runs-on: ${{ matrix.runner }}
+    needs: download-tessdata
     strategy:
       matrix:
         include:
@@ -106,6 +138,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore cached tessdata
+        uses: actions/cache/restore@v4
+        with:
+          path: share/tessdata/
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
       - run: pip install poetry
       - run: poetry install
       - name: Run CLI tests
@@ -353,6 +392,14 @@ jobs:
             share/container.tar.gz
             share/image-id.txt
           fail-on-cache-miss: true
+
+      - name: Restore cached tessdata
+        uses: actions/cache/restore@v4
+        with:
+          path: share/tessdata/
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
 
       - name: Setup xvfb (Linux)
         run: |

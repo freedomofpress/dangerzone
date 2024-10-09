@@ -126,7 +126,7 @@ class IsolationProvider(ABC):
         return pixmap.pdfocr_tobytes(
             compress=True,
             language=ocr_lang,
-            tessdata=get_tessdata_dir(),
+            tessdata=str(get_tessdata_dir()),
         )
 
     def pixels_to_pdf_page(

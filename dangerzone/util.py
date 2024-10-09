@@ -1,4 +1,3 @@
-import os
 import pathlib
 import platform
 import subprocess
@@ -34,23 +33,25 @@ def get_resource_path(filename: str) -> str:
     return str(resource_path)
 
 
-def get_tessdata_dir() -> str:
+def get_tessdata_dir() -> pathlib.Path:
     if getattr(sys, "dangerzone_dev", False) or platform.system() in (
         "Windows",
         "Darwin",
     ):
         # Always use the tessdata path from the Dangerzone ./share directory, for
         # development builds, or in Windows/macOS platforms.
-        return get_resource_path("tessdata")
+        return pathlib.Path(get_resource_path("tessdata"))
 
-    fedora_tessdata_dir = "/usr/share/tesseract/tessdata/"
-    debian_tessdata_dir = "/usr/share/tessdata/"
-    if os.path.isdir(fedora_tessdata_dir):
-        return fedora_tessdata_dir
-    if os.path.isdir(debian_tessdata_dir):
-        return debian_tessdata_dir
-    else:
-        raise RuntimeError("Tesseract language data are not installed in the system")
+    tessdata_dirs = [
+        pathlib.Path("/usr/share/tessdata/"),  # on debian
+        pathlib.Path("/usr/share/tesseract/tessdata/"),  # on fedora
+    ]
+
+    for dir in tessdata_dirs:
+        if dir.is_dir():
+            return dir
+
+    raise RuntimeError("Tesseract language data are not installed in the system")
 
 
 def get_version() -> str:

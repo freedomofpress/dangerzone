@@ -183,7 +183,6 @@ class IsolationProvider(ABC):
                 text = (
                     f"Converting page {page}/{n_pages} from pixels to {searchable}PDF"
                 )
-                percentage += step
                 self.print_progress(document, False, text, percentage)
 
                 width = read_int(p.stdout)
@@ -199,8 +198,6 @@ class IsolationProvider(ABC):
                     num_pixels,
                 )
 
-                percentage += step
-
                 page_pdf = self.pixels_to_pdf_page(
                     untrusted_pixels,
                     width,
@@ -208,6 +205,8 @@ class IsolationProvider(ABC):
                     ocr_lang,
                 )
                 safe_doc.insert_pdf(page_pdf)
+
+                percentage += step
 
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()
@@ -218,8 +217,8 @@ class IsolationProvider(ABC):
         os.replace(document.sanitized_output_filename, document.output_filename)
 
         # TODO handle leftover code input
-        text = "Converted document"
-        self.print_progress(document, False, text, percentage)
+        text = "Successfully converted document"
+        self.print_progress(document, False, text, 100)
 
     def print_progress(
         self, document: Document, error: bool, text: str, percentage: float

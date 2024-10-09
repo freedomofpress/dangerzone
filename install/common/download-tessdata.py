@@ -77,6 +77,12 @@ def main():
         for lang in langs_short:
             member = f"tessdata_fast-{tag}/{lang}.traineddata"
             logger.info(f"Extracting {member}")
+            # NOTE: We want `filter="data"` because it ignores ownership info, as
+            # recorded in the tarfile. This filter will become the default in Python
+            # 3.14. See:
+            #
+            # https://docs.python.org/3/library/tarfile.html#tarfile-extraction-filter
+            t.extract(member=member, path=share_dir, filter="data")
 
     tessdata_dl_dir = share_dir / f"tessdata_fast-{tag}"
     tessdata_dl_dir.rename(tessdata_dir)

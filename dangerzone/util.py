@@ -35,10 +35,9 @@ def get_resource_path(filename: str) -> str:
 
 
 def get_tessdata_dir() -> str:
-    if (
-        getattr(sys, "dangerzone_dev", False)
-        or platform.system() == "Windows"
-        or platform.system() == "Darwin"
+    if getattr(sys, "dangerzone_dev", False) or platform.system() in (
+        "Windows",
+        "Darwin",
     ):
         # Always use the tessdata path from the Dangerzone ./share directory, for
         # development builds, or in Windows/macOS platforms.

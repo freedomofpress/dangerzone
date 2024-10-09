@@ -2,4 +2,6 @@ compression = "gzip"
 tar-ignore = "dev_scripts"
 tar-ignore = ".*"
 tar-ignore = "__pycache__"
+# Ignore the 'share/tessdata' dir, since it slows down the process, and we
+# install Tesseract data via Debian packages anyway.
 tar-ignore = "share/tessdata"

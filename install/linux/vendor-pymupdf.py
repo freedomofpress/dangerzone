@@ -47,7 +47,6 @@ def main():
     if not os.listdir(args.dest):
         print(f">>> Failed to vendor PyMuPDF under '{args.dest}'", file=sys.stderr)
 
-
     print(f">>> Successfully vendored PyMuPDF under '{args.dest}'", file=sys.stderr)
 
 

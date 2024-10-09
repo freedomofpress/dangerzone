@@ -53,7 +53,9 @@ def get_tessdata_dir() -> pathlib.Path:
     tessdata_dirs = [
         pathlib.Path("/usr/share/tessdata/"),  # on Debian
         pathlib.Path("/usr/share/tesseract/tessdata/"),  # on Fedora
-        pathlib.Path("/usr/share/tesseract-ocr/tessdata/"),  # ? (documented, but not encountered)
+        pathlib.Path(
+            "/usr/share/tesseract-ocr/tessdata/"
+        ),  # ? (documented, but not encountered)
         pathlib.Path("/usr/share/tesseract-ocr/4.00/tessdata/"),  # on Ubuntu
     ]
 

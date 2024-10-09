@@ -107,7 +107,7 @@ class IsolationProvider(ABC):
         document.mark_as_converting()
         try:
             with self.doc_to_pixels_proc(document) as conversion_proc:
-                self._convert(document, ocr_lang, conversion_proc)
+                self.convert_with_proc(document, ocr_lang, conversion_proc)
             document.mark_as_safe()
             if document.archive_after_conversion:
                 document.archive()
@@ -155,7 +155,7 @@ class IsolationProvider(ABC):
 
         return fitz.open("pdf", page_pdf_bytes)
 
-    def _convert(
+    def convert_with_proc(
         self,
         document: Document,
         ocr_lang: Optional[str],

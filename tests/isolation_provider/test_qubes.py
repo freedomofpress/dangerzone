@@ -74,7 +74,7 @@ class TestQubes(IsolationProviderTest):
         )
         with pytest.raises(errors.ConverterProcException):
             doc = Document(sample_doc)
-            provider._convert(doc, None, proc)
+            provider.convert_with_proc(doc, None, proc)
             assert provider.get_proc_exception(proc) == errors.QubesQrexecFailed
 
 

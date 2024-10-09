@@ -29,7 +29,7 @@ class IsolationProviderTest:
 
         p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.ConverterProcException):
-            provider._convert(doc, None, p)
+            provider.convert_with_proc(doc, None, p)
             assert provider.get_proc_exception(p) == errors.MaxPagesException
 
     def test_max_pages_client_enforcement(
@@ -46,7 +46,7 @@ class IsolationProviderTest:
         doc = Document(sample_doc)
         p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.MaxPagesException):
-            provider._convert(doc, None, p)
+            provider.convert_with_proc(doc, None, p)
 
     def test_max_dimensions(
         self,
@@ -60,12 +60,12 @@ class IsolationProviderTest:
         doc = Document(sample_bad_width)
         p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.MaxPageWidthException):
-            provider._convert(doc, None, p)
+            provider.convert_with_proc(doc, None, p)
 
         doc = Document(sample_bad_height)
         p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.MaxPageHeightException):
-            provider._convert(doc, None, p)
+            provider.convert_with_proc(doc, None, p)
 
 
 class IsolationProviderTermination:

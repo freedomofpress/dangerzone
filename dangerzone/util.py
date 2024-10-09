@@ -51,12 +51,11 @@ def get_tessdata_dir() -> pathlib.Path:
     #
     # [1] https://tesseract-ocr.github.io/tessdoc/Installation.html
     tessdata_dirs = [
-        pathlib.Path("/usr/share/tessdata/"),  # on Debian
+        pathlib.Path("/usr/share/tessdata/"),  # on some Debian
         pathlib.Path("/usr/share/tesseract/tessdata/"),  # on Fedora
-        pathlib.Path(
-            "/usr/share/tesseract-ocr/tessdata/"
-        ),  # ? (documented, but not encountered)
-        pathlib.Path("/usr/share/tesseract-ocr/4.00/tessdata/"),  # on Ubuntu
+        pathlib.Path("/usr/share/tesseract-ocr/tessdata/"),  # ? (documented)
+        pathlib.Path("/usr/share/tesseract-ocr/4.00/tessdata/"),  # on Ubuntu Focal
+        pathlib.Path("/usr/share/tesseract-ocr/5/tessdata/"),  # on Debian Trixie
     ]
 
     for dir in tessdata_dirs:

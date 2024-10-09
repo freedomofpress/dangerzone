@@ -338,7 +338,9 @@ jobs:
   run-tests:
     name: "run tests (${{ matrix.distro }} ${{ matrix.version }})"
     runs-on: ubuntu-latest
-    needs: build-container-image
+    needs:
+      - build-container-image
+      - download-tessdata
     strategy:
       matrix:
         include:

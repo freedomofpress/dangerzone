@@ -1,31 +1,17 @@
 import hashlib
 import io
 import json
-import pathlib
-import re
-import subprocess
 import sys
 import tarfile
 import urllib.request
+
+from dev_utils import git_root
 
 TESSDATA_RELEASES_URL = (
     "https://api.github.com/repos/tesseract-ocr/tessdata_fast/releases/latest"
 )
 TESSDATA_ARCHIVE_URL = "https://github.com/tesseract-ocr/tessdata_fast/archive/{tessdata_version}/tessdata_fast-{tessdata_version}.tar.gz"
 TESSDATA_CHECKSUM = "d0e3bb6f3b4e75748680524a1d116f2bfb145618f8ceed55b279d15098a530f9"
-
-
-def git_root():
-    """Get the root directory of the Git repo."""
-    # FIXME: Use a Git Python binding for this.
-    # FIXME: Make this work if called outside the repo.
-    cmd = ["git", "rev-parse", "--show-toplevel"]
-    path = (
-        subprocess.run(cmd, check=True, stdout=subprocess.PIPE)
-        .stdout.decode()
-        .strip("\n")
-    )
-    return pathlib.Path(path)
 
 
 def main():

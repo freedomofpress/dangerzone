@@ -9,6 +9,8 @@ import selectors
 import subprocess
 import sys
 
+from dev_utils import git_root
+
 logger = logging.getLogger(__name__)
 
 CONTENT_QA = r"""## QA
@@ -561,18 +563,7 @@ class QABase(abc.ABC):
         self.debug = debug
         self.try_auto = try_auto
         self.skip_manual = skip_manual
-        self.src = (
-            subprocess.run(
-                [
-                    "git",
-                    "rev-parse",
-                    "--show-toplevel",
-                ],
-                stdout=subprocess.PIPE,
-            )
-            .stdout.decode()
-            .strip("\n")
-        )
+        self.src = git_root()
 
     def task(*msgs, ref=None, auto=False):
         """Decorator for running a task automatically.

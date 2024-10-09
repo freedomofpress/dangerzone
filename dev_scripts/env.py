@@ -11,6 +11,8 @@ import sys
 import urllib.request
 from datetime import date
 
+from dev_utils import git_root
+
 DEFAULT_GUI = True
 DEFAULT_USER = "user"
 DEFAULT_DRY = False
@@ -270,14 +272,6 @@ def run(*args):
     return subprocess.run(
         args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     ).stdout
-
-
-def git_root():
-    """Get the root directory of the Git repo."""
-    # FIXME: Use a Git Python binding for this.
-    # FIXME: Make this work if called outside the repo.
-    path = run("git", "rev-parse", "--show-toplevel").decode().strip("\n")
-    return pathlib.Path(path)
 
 
 def user_data():

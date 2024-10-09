@@ -264,7 +264,7 @@ jobs:
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng
 
       - name: Check that the Dangerzone GUI imports work
         run: |
@@ -328,7 +328,7 @@ jobs:
       - name: Run a test command
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng
 
       - name: Check that the Dangerzone GUI imports work
         run: |

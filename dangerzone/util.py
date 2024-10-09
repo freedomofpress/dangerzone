@@ -42,9 +42,19 @@ def get_tessdata_dir() -> pathlib.Path:
         # development builds, or in Windows/macOS platforms.
         return pathlib.Path(get_resource_path("tessdata"))
 
+    # In case of Linux systems, grab the Tesseract data from any of the following
+    # locations. We have found some of the locations through trial and error, whereas
+    # others are taken from the docs:
+    #
+    #     [...] Possibilities are /usr/share/tesseract-ocr/tessdata or
+    #     /usr/share/tessdata or /usr/share/tesseract-ocr/4.00/tessdata. [1]
+    #
+    # [1] https://tesseract-ocr.github.io/tessdoc/Installation.html
     tessdata_dirs = [
-        pathlib.Path("/usr/share/tessdata/"),  # on debian
-        pathlib.Path("/usr/share/tesseract/tessdata/"),  # on fedora
+        pathlib.Path("/usr/share/tessdata/"),  # on Debian
+        pathlib.Path("/usr/share/tesseract/tessdata/"),  # on Fedora
+        pathlib.Path("/usr/share/tesseract-ocr/tessdata/"),  # ? (documented, but not encountered)
+        pathlib.Path("/usr/share/tesseract-ocr/4.00/tessdata/"),  # on Ubuntu
     ]
 
     for dir in tessdata_dirs:

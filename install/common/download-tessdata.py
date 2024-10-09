@@ -1,12 +1,14 @@
 import hashlib
 import io
 import json
+import logging
 import pathlib
-import re
 import subprocess
 import sys
 import tarfile
 import urllib.request
+
+logger = logging.getLogger(__name__)
 
 TESSDATA_RELEASES_URL = (
     "https://api.github.com/repos/tesseract-ocr/tessdata_fast/releases/latest"
@@ -29,6 +31,12 @@ def git_root():
 
 
 def main():
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
     share_dir = git_root() / "share"
     tessdata_dir = share_dir / "tessdata"
 
@@ -41,22 +49,21 @@ def main():
         expected_files = {f"{lang}.traineddata" for lang in langs_short}
         files = {f.name for f in tessdata_dir.iterdir()}
         if files == expected_files:
-            msg = "> Skipping tessdata download, language data already exists"
-            print(msg, file=sys.stderr)
+            logger.info("Skipping tessdata download, language data already exists")
             return
         else:
-            print(f"Found {tessdata_dir} but contents do not match", file=sys.stderr)
+            logger.info(f"Found {tessdata_dir} but contents do not match")
             return 1
 
     # Get latest release of Tesseract data.
-    print(f"> Getting latest tessdata release", file=sys.stderr)
+    logger.info("Getting latest tessdata release")
     with urllib.request.urlopen(TESSDATA_RELEASES_URL) as f:
         resp = f.read()
         releases = json.loads(resp)
         tag = releases["tag_name"]
 
     # Get latest release of Tesseract data.
-    print(f"> Downloading tessdata release {tag}", file=sys.stderr)
+    logger.info(f"Downloading tessdata release {tag}")
     archive_url = TESSDATA_ARCHIVE_URL.format(tessdata_version=tag)
     with urllib.request.urlopen(archive_url) as f:
         archive = f.read()
@@ -65,12 +72,11 @@ def main():
             raise RuntimeError(f"Checksum mismatch {digest} != {TESSDATA_CHECKSUM}")
 
     # Extract the languages models from the tessdata archive.
-    print(f"> Extracting tessdata archive into {tessdata_dir}", file=sys.stderr)
+    logger.info(f"Extracting tessdata archive into {tessdata_dir}")
     with tarfile.open(fileobj=io.BytesIO(archive)) as t:
         for lang in langs_short:
             member = f"tessdata_fast-{tag}/{lang}.traineddata"
-            print(f">> Extracting {member}")
-            t.extract(member=member, path=share_dir, set_attrs=False)
+            logger.info(f"Extracting {member}")
 
     tessdata_dl_dir = share_dir / f"tessdata_fast-{tag}"
     tessdata_dl_dir.rename(tessdata_dir)

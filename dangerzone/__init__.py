@@ -4,8 +4,8 @@ import sys
 try:
     from . import vendor  # type: ignore [attr-defined]
 
-    vendor_path = vendor.__path__[0]
-    print(f"Using vendored PyMuPDF libraries from '{vendor_path}'")
+    vendor_path: str = vendor.__path__[0]
+    print(f"Using vendored PyMuPDF libraries from '{vendor_path}'", file=sys.stderr)
     sys.path.insert(0, vendor_path)
 except ImportError:
     pass

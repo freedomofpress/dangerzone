@@ -93,9 +93,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: macos-latest  # CPU type: Apple Silicon (M1)
+          - runner: macos-latest # CPU type: Apple Silicon (M1)
             arch: arch64
-          - runner: macos-13  # CPU type: Intel x86_64
+          - runner: macos-13 # CPU type: Intel x86_64
             arch: x86_64
     env:
       DUMMY_CONVERSION: 1
@@ -124,6 +124,8 @@ jobs:
             version: "23.10"
           - distro: ubuntu
             version: "24.04"
+          - distro: ubuntu
+            version: "24.10"
           - distro: debian
             version: bullseye
           - distro: debian
@@ -192,6 +194,8 @@ jobs:
             version: "23.10"
           - distro: ubuntu
             version: "24.04"
+          - distro: ubuntu
+            version: "24.10"
           - distro: debian
             version: bullseye
           - distro: debian
@@ -309,6 +313,8 @@ jobs:
             version: "23.10"
           - distro: ubuntu
             version: "24.04"
+          - distro: ubuntu
+            version: "24.10"
           - distro: debian
             version: bullseye
           - distro: debian

@@ -10,6 +10,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 ### Added
 
 - Point to the installation instructions that the Tails team maintains for Dangerzone ([announcement](https://tails.net/news/dangerzone/index.en.html))
+- Platform support: Ubuntu 24.10 and Fedora 41 ([issue #947](https://github.com/freedomofpress/dangerzone/issues/947))
 
 ## [0.7.1](https://github.com/freedomofpress/dangerzone/compare/v0.7.1...v0.7.0)
 

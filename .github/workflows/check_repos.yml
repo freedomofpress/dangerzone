@@ -20,6 +20,8 @@ jobs:
       matrix:
         include:
           - distro: ubuntu
+            version: "24.10"  # oracular
+          - distro: ubuntu
             version: "24.04"  # noble
           - distro: ubuntu
             version: "23.10"  # mantic

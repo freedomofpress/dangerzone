@@ -14,8 +14,6 @@ env:
   REGISTRY_USER: ${{ github.actor }}
   REGISTRY_PASSWORD: ${{ github.token }}
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
-  # This is required for running GUI tests on Github Actions
-  DISPLAY: ":99.0"
   QT_SELECT: "qt6"
 
 # Disable multiple concurrent runs on the same branch
@@ -354,15 +352,23 @@ jobs:
             share/image-id.txt
           fail-on-cache-miss: true
 
-      - name: Setup xvfb (Linux)
-        run: |
-          # Stuff copied wildly from several stackoverflow posts
-          sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libxcb-shape0 libglib2.0-0 libgl1-mesa-dev '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
-
-          # start xvfb in the background
-          sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
-
       - name: Run CI tests
         run: |-
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
+          # Pass the -ac Xserver flag, to disable host-based access controls.
+          # This should be used ONLY for testing [1]. If we don't pass this
+          # flag, the Podman container is not authorized [2] to access the Xvfb
+          # server.
+          #
+          # [1] From https://www.x.org/releases/X11R6.7.0/doc/Xserver.1.html#sect4:
+          #
+          #     disables host-based access control mechanisms. Enables access by
+          #     any host, and permits any host to modify the access control
+          #     list. Use with extreme caution. This option exists primarily for
+          #     running test suites remotely.
+          #
+          # [2] Fails with "Authorization required, but no authorization
+          #     protocol specified". However, we have verified with strace(1)
+          #     that the command in the Podman container can read the Xauthority
+          #     file successfully.
+          xvfb-run -s '-ac' ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
               bash -c 'cd dangerzone; poetry run make test'

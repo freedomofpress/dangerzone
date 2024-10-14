@@ -81,6 +81,8 @@ jobs:
             version: 39
           - distro: fedora
             version: 40
+          - distro: fedora
+            version: 41
     steps:
       - name: Add packages.freedom.press to our YUM sources
         run: |

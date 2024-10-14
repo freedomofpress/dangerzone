@@ -42,7 +42,7 @@ Install dependencies:
   </br>
 
   The default Python version that ships with Ubuntu Focal (3.8) is not
-  compatible with PySide6, which requires Python 3.9 of greater.
+  compatible with PySide6, which requires Python 3.9 or greater.
 
   You can install Python 3.9 using the `python3.9` package.
 
@@ -124,6 +124,28 @@ Install dependencies:
 sudo dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
     pipx qt6-qtbase-gui
 ```
+
+<table>
+  <tr>
+      <td>
+<details>
+  <summary><i>:memo: Expand this section if you are on Fedora 41.</i></summary>
+  </br>
+
+  The default Python version that ships with Fedora 41 (3.13) is not
+  compatible with PySide6, which requires Python 3.12 or earlier.
+
+  You can install Python 3.12 using the `python3.12` package.
+
+  ```bash
+  sudo dnf install -y python3.12
+  ```
+
+  Poetry will automatically pick up the correct version when running.
+</details>
+    </td>
+  </tr>
+</table>
 
 Install Poetry using `pipx`:
 

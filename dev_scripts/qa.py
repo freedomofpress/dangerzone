@@ -52,7 +52,7 @@ and newer platforms, we have to do the following:
   - [ ] Run the Dangerzone tests.
   - [ ] Create a .deb package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Fedora platform (Fedora 40 as of
+- [ ] Create a test build in the most recent Fedora platform (Fedora 41 as of
   writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
@@ -60,7 +60,7 @@ and newer platforms, we have to do the following:
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 39 as
+- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 40 as
   of writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
   - [ ] Run the Dangerzone tests.
@@ -234,7 +234,7 @@ Install dependencies:
   </br>
 
   The default Python version that ships with Ubuntu Focal (3.8) is not
-  compatible with PySide6, which requires Python 3.9 of greater.
+  compatible with PySide6, which requires Python 3.9 or greater.
 
   You can install Python 3.9 using the `python3.9` package.
 
@@ -317,6 +317,28 @@ Install dependencies:
 sudo dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
     pipx qt6-qtbase-gui
 ```
+
+<table>
+  <tr>
+      <td>
+<details>
+  <summary><i>:memo: Expand this section if you are on Fedora 41.</i></summary>
+  </br>
+
+  The default Python version that ships with Fedora 41 (3.13) is not
+  compatible with PySide6, which requires Python 3.12 or earlier.
+
+  You can install Python 3.12 using the `python3.12` package.
+
+  ```bash
+  sudo dnf install -y python3.12
+  ```
+
+  Poetry will automatically pick up the correct version when running.
+</details>
+    </td>
+  </tr>
+</table>
 
 Install Poetry using `pipx`:
 

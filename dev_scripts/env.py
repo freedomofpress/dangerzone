@@ -163,6 +163,13 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 """
 
+# NOTE: For Fedora 41 specifically, we need to install Python 3.12, else PySide6 from
+# PyPI won't work.
+DOCKERFILE_BUILD_DEV_FEDORA_41_DEPS = r"""
+# Install Python 3.12 since our project is not compatible yet with Python 3.13.
+RUN dnf install -y python3.12
+"""
+
 # FIXME: Install Poetry on Fedora via package manager.
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
 RUN dnf install -y git rpm-build podman python3 python3-devel python3-poetry-core \
@@ -661,6 +668,8 @@ class Env:
 
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_DEV_FEDORA_DEPS
+            if self.version == "41":
+                install_deps += DOCKERFILE_BUILD_DEV_FEDORA_41_DEPS
         else:
             # Use Qt6 in all of our Linux dev environments, and add a missing
             # libxcb-cursor0 dependency

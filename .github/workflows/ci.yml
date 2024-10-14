@@ -319,6 +319,8 @@ jobs:
             version: "39"
           - distro: fedora
             version: "40"
+          - distro: fedora
+            version: "41"
 
     steps:
       - name: Checkout

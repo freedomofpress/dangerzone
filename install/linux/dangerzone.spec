@@ -221,6 +221,8 @@ convert the documents within a secure sandbox.
 %prep
 %autosetup -p1 -n dangerzone-%{version}
 
+sed -i 's/3.13/3.14/' pyproject.toml
+
 %generate_buildrequires
 %pyproject_buildrequires -R
 

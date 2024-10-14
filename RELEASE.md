@@ -24,7 +24,7 @@ as a special case of Fedora, release-wise). For each of these platforms, we need
 to check if a new version has been added, or if an existing one is now EOL
 (https://endoflife.date/ is handy for this purpose).
 
-In case of a new version:
+In case of a new version (beta, RC, or official release):
 
 1. Add it in our CI workflows, to test if that version works.
    * See `.circleci/config.yml` and `.github/workflows/ci.yml`, as well as
@@ -103,7 +103,7 @@ and newer platforms, we have to do the following:
   - [ ] Run the Dangerzone tests.
   - [ ] Create a .deb package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Fedora platform (Fedora 40 as of
+- [ ] Create a test build in the most recent Fedora platform (Fedora 41 as of
   writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
@@ -111,7 +111,7 @@ and newer platforms, we have to do the following:
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 39 as
+- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 40 as
   of writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
   - [ ] Run the Dangerzone tests.
@@ -385,15 +385,15 @@ repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 > **NOTE**: This procedure will have to be done for every supported Fedora version.
 >
-> In this section, we'll use Fedora 39 as an example.
+> In this section, we'll use Fedora 41 as an example.
 
 Create a Fedora development environment. You can [follow the
 instructions in our build section](https://github.com/freedomofpress/dangerzone/blob/main/BUILD.md#fedora),
 or create your own locally with:
 
 ```sh
-./dev_scripts/env.py --distro fedora --version 39 build-dev
-./dev_scripts/env.py --distro fedora --version 39 run --dev bash
+./dev_scripts/env.py --distro fedora --version 41 build-dev
+./dev_scripts/env.py --distro fedora --version 41 run --dev bash
 cd dangerzone
 ```
 

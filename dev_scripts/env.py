@@ -690,6 +690,8 @@ class Env:
                 "mantic",
                 "24.04",
                 "noble",
+                "24.10",
+                "ocular",
             ):
                 install_deps = (
                     DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
@@ -776,6 +778,8 @@ class Env:
                 "mantic",
                 "24.04",
                 "noble",
+                "24.10",
+                "ocular",
             ):
                 install_deps = DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS
             package_pattern = f"dangerzone_{version}-*_*.deb"

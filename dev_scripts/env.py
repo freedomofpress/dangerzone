@@ -146,6 +146,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends podman uidmap slirp4netns \
     && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
+    && apt-get install -y passt || echo "Skipping installation of passt package" \
+    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
     && apt-get install -y --no-install-recommends dh-python make build-essential \
         git {qt_deps} pipx python3 python3-pip python3-venv dpkg-dev debhelper python3-setuptools \
     && rm -rf /var/lib/apt/lists/*

@@ -16,6 +16,7 @@ from ..conversion import errors
 from ..conversion.common import DEFAULT_DPI, INT_BYTES
 from ..document import Document
 from ..util import get_tessdata_dir, replace_control_chars
+from ..ctx import ConversionCtx
 
 log = logging.getLogger(__name__)
 
@@ -97,29 +98,24 @@ class IsolationProvider(ABC):
     def install(self) -> bool:
         pass
 
-    def convert(
-        self,
-        document: Document,
-        ocr_lang: Optional[str],
-        progress_callback: Optional[Callable] = None,
-    ) -> None:
-        self.progress_callback = progress_callback
+    def convert(self, ctx: ConversionCtx) -> None:
+        document = ctx.doc
         document.mark_as_converting()
         try:
+            ctx.start_conversion_proc()
             with self.doc_to_pixels_proc(document) as conversion_proc:
-                self.convert_with_proc(document, ocr_lang, conversion_proc)
-            document.mark_as_safe()
+                ctx.start_page_gathering()
+                self.convert_with_proc(ctx, conversion_proc)
             if document.archive_after_conversion:
                 document.archive()
+            ctx.success()
         except errors.ConversionException as e:
-            self.print_progress(document, True, str(e), 0)
-            document.mark_as_failed()
+            ctx.fail(str(e))
         except Exception as e:
             log.exception(
                 f"An exception occurred while converting document '{document.id}'"
             )
-            self.print_progress(document, True, str(e), 0)
-            document.mark_as_failed()
+            ctx.fail(str(e))
 
     def ocr_page(self, pixmap: fitz.Pixmap, ocr_lang: str) -> bytes:
         """Get a single page as pixels, OCR it, and return a PDF as bytes."""
@@ -157,12 +153,13 @@ class IsolationProvider(ABC):
 
     def convert_with_proc(
         self,
-        document: Document,
-        ocr_lang: Optional[str],
+        ctx: ConversionCtx,
         p: subprocess.Popen,
     ) -> None:
+        ocr_lang = ctx.ocr_lang
+        document = ctx.doc
         percentage = 0.0
-        with open(document.input_filename, "rb") as f:
+        with open(ctx.doc.input_filename, "rb") as f:
             try:
                 assert p.stdin is not None
                 p.stdin.write(f.read())
@@ -178,13 +175,7 @@ class IsolationProvider(ABC):
 
             safe_doc = fitz.Document()
 
-            for page in range(1, n_pages + 1):
-                searchable = "searchable " if ocr_lang else ""
-                text = (
-                    f"Converting page {page}/{n_pages} from pixels to {searchable}PDF"
-                )
-                self.print_progress(document, False, text, percentage)
-
+            for page in ctx.page_iter(n_pages):
                 width = read_int(p.stdout)
                 height = read_int(p.stdout)
                 if not (1 <= width <= errors.MAX_PAGE_WIDTH):
@@ -215,25 +206,6 @@ class IsolationProvider(ABC):
         # non-Unicode chars.
         safe_doc.save(document.sanitized_output_filename)
         os.replace(document.sanitized_output_filename, document.output_filename)
-
-        # TODO handle leftover code input
-        text = "Successfully converted document"
-        self.print_progress(document, False, text, 100)
-
-    def print_progress(
-        self, document: Document, error: bool, text: str, percentage: float
-    ) -> None:
-        s = Style.BRIGHT + Fore.YELLOW + f"[doc {document.id}] "
-        s += Fore.CYAN + f"{int(percentage)}% " + Style.RESET_ALL
-        if error:
-            s += Fore.RED + text + Style.RESET_ALL
-            log.error(s)
-        else:
-            s += text
-            log.info(s)
-
-        if self.progress_callback:
-            self.progress_callback(error, text, percentage)
 
     def get_proc_exception(
         self, p: subprocess.Popen, timeout: int = TIMEOUT_EXCEPTION

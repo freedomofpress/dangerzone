@@ -7,6 +7,7 @@ import colorama
 
 from . import errors, util
 from .document import Document
+from .ctx import ConversionCtx
 from .isolation_provider.base import IsolationProvider
 from .settings import Settings
 from .util import get_resource_path
@@ -65,12 +66,9 @@ class DangerzoneCore(object):
         self, ocr_lang: Optional[str], stdout_callback: Optional[Callable] = None
     ) -> None:
         def convert_doc(document: Document) -> None:
+            ctx = ConversionCtx(document, ocr_lang, stdout_callback)
             try:
-                self.isolation_provider.convert(
-                    document,
-                    ocr_lang,
-                    stdout_callback,
-                )
+                self.isolation_provider.convert(ctx)
             except Exception as e:
                 log.exception(
                     f"Unexpected error occurred while converting '{document}'"

@@ -29,6 +29,7 @@ from ..isolation_provider.container import Container, NoContainerTechException
 from ..isolation_provider.dummy import Dummy
 from ..isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from ..util import get_resource_path, get_subprocess_startupinfo, get_version
+from ..ctx import ConversionCtx
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 from .updater import UpdateReport
 
@@ -1124,11 +1125,8 @@ class ConvertTask(QtCore.QObject):
         self.dangerzone = dangerzone
 
     def convert_document(self) -> None:
-        self.dangerzone.isolation_provider.convert(
-            self.document,
-            self.ocr_lang,
-            self.progress_callback,
-        )
+        ctx = ConversionCtx(self.document, self.ocr_lang, self.progress_callback)
+        self.dangerzone.isolation_provider.convert(ctx)
         self.finished.emit(self.error)
 
     def progress_callback(self, error: bool, text: str, percentage: int) -> None:

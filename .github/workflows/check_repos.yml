@@ -89,6 +89,17 @@ jobs:
           dnf install -y 'dnf-command(config-manager)'
           dnf-3 config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 
+      - name: Replace 'rawhide' string with Fedora version
+        # The previous command has created a `dangerzone.repo` file. The
+        # config-manager plugin should have substituted the $releasever variable
+        # with the Fedora version number. However, for unreleased Fedora
+        # versions, this gets translated to "rawhide", even though they do have
+        # a number. To fix this, we need to substitute the "rawhide" string
+        # witht the proper Fedora version.
+        run: |
+          source /etc/os-release
+          sed -i "s/rawhide/${VERSION_ID}/g" /etc/yum.repos.d/dangerzone.repo
+
       - name: Install Dangerzone
         # FIXME: We add the `-y` flag here, in lieu of a better way to check the
         # Dangerzone signature.

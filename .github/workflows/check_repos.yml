@@ -87,7 +87,7 @@ jobs:
       - name: Add packages.freedom.press to our YUM sources
         run: |
           dnf install -y 'dnf-command(config-manager)'
-          dnf config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
+          dnf-3 config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 
       - name: Install Dangerzone
         # FIXME: We add the `-y` flag here, in lieu of a better way to check the

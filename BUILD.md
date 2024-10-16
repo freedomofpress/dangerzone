@@ -300,7 +300,7 @@ test it.
 
    ```sh
    sudo dnf install 'dnf-command(config-manager)'
-   sudo dnf config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
+   sudo dnf-3 config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
    sudo dnf install ~/QubesIncoming/dz/*.rpm
    ```
 

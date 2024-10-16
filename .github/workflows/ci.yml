@@ -79,10 +79,14 @@ jobs:
       - run: poetry install
       - name: Run CLI tests
         run: poetry run make test
-      # Taken from: https://github.com/orgs/community/discussions/27149#discussioncomment-3254829
-      - name: Set path for candle and light
-        run: echo "C:\Program Files (x86)\WiX Toolset v3.14\bin" >> $GITHUB_PATH
-        shell: bash
+      - name: Set up .NET CLI environment
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+      - name: Install WiX Toolset
+        run: dotnet tool install --global wix --version 5.0.1
+      - name: Add WiX UI extension
+        run: wix extension add --global WixToolset.UI.wixext/5.0.1
       - name: Build the MSI installer
         # NOTE: This also builds the .exe internally.
         run: poetry run .\install\windows\build-app.bat

@@ -453,11 +453,22 @@ poetry shell
 .\dev_scripts\dangerzone.bat
 ```
 
-### If you want to build the installer
+### If you want to build the Windows installer
 
-* Go to https://dotnet.microsoft.com/download/dotnet-framework and download and install .NET Framework 3.5 SP1 Runtime. I downloaded `dotnetfx35.exe`.
-* Go to https://wixtoolset.org/releases/ and download and install WiX toolset. I downloaded `wix314.exe`.
-* Add `C:\Program Files (x86)\WiX Toolset v3.14\bin` to the path ([instructions](https://web.archive.org/web/20230221104142/https://windowsloop.com/how-to-add-to-windows-path/)).
+Install [.NET SDK](https://dotnet.microsoft.com/en-us/download) version 6 or later. Then, open a terminal and install the [WiX Toolset .NET tool](https://wixtoolset.org/) v5.0.1.
+
+```sh
+dotnet tool install --global wix --version 5.0.1
+```
+
+Install the WiX UI extension **in a new terminal**, in order to use the newly installed `wix` .NET tool:
+
+```sh
+wix extension add --global WixToolset.UI.wixext/5.0.1
+```
+
+> [!IMPORTANT]  
+> To prevent compatibility issues, ensure that all WiX plugins you install match the version of WiX Toolset.
 
 ### If you want to sign binaries with Authenticode
 

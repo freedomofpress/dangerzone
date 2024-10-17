@@ -451,7 +451,7 @@ To publish the release:
   * Copy the release notes text from the template at [`docs/templates/release-notes`](https://github.com/freedomofpress/dangerzone/tree/main/docs/templates/)
   * You can use `./dev_scripts/upload-asset.py`, if you want to upload an asset
     using an access token.
-- [ ] Upload the `container.i686.tar.gz` and `container.arm64.tar.gz` images that were created in the previous step
+- [ ] Upload the `container-$VERSION-i686.tar.gz` and `container-$VERSION-arm64.tar.gz` images that were created in the previous step
 
   **Important:** Make sure that it's the same container images as the ones that
   are shipped in other platforms (see our [Pre-release](#Pre-release) section)

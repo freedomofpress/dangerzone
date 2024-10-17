@@ -11,7 +11,8 @@ log = logging.getLogger(__name__)
 
 
 DZ_ASSETS = [
-    "container.tar.gz",
+    "container-{version}-i686.tar.gz",
+    "container-{version}-arm64.tar.gz",
     "Dangerzone-{version}.msi",
     "Dangerzone-{version}-arm64.dmg",
     "Dangerzone-{version}-i686.dmg",

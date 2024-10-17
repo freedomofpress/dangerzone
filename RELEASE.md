@@ -285,6 +285,11 @@ Once we are confident that the release will be out shortly, and doesn't need any
   * You can verify the correct Python version is used with `poetry debug info`
 - [ ] Verify and checkout the git tag for this release
 - [ ] Run `poetry install --sync`
+- [ ] On the silicon mac, build the container image:
+  ```
+  python3 ./install/common/build-image.py
+  ```
+  Then copy the `share/container.tar.gz` to the assets folder on `dangerzone-$VERSION-arm64.tar.gz`, along with the `share/image-id.txt` file.
 - [ ] Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`
 - [ ] Make sure that the build application works with the containerd graph
   driver (see [#933](https://github.com/freedomofpress/dangerzone/issues/933))
@@ -403,6 +408,8 @@ Build the latest container:
 python3 ./install/common/build-image.py
 ```
 
+Copy the container image to the assets folder on `dangerzone-$VERSION-i686.tar.gz`.
+
 Create a .rpm:
 
 ```sh
@@ -449,9 +456,9 @@ To publish the release:
   * Copy the release notes text from the template at [`docs/templates/release-notes`](https://github.com/freedomofpress/dangerzone/tree/main/docs/templates/)
   * You can use `./dev_scripts/upload-asset.py`, if you want to upload an asset
     using an access token.
-- [ ] Upload the `container.tar.gz` i686 image that was created in the previous step
+- [ ] Upload the `container-$VERSION-i686.tar.gz` and `container-$VERSION-arm64.tar.gz` images that were created in the previous step
 
-  **Important:** Make sure that it's the same container image as the ones that
+  **Important:** Make sure that it's the same container images as the ones that
   are shipped in other platforms (see our [Pre-release](#Pre-release) section)
 
 - [ ] Upload the detached signatures (.asc) and checksum file.

@@ -6,14 +6,21 @@ on:
 
 jobs:
   security-scan-container:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - runs-on: ubuntu-latest
+            arch: i686
+          - runs-on: macos-latest
+            arch: arm64
+    runs-on: ${{ matrix.runs-on }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Download container image for the latest release
         run: |
           VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | jq -r '.tag_name')
-          wget https://github.com/freedomofpress/dangerzone/releases/download/${VERSION}/container.tar.gz
+          wget https://github.com/freedomofpress/dangerzone/releases/download/${VERSION}/container.${{ matrix.arch }}.tar.gz -O container.tar.gz
       - name: Load container image
         run: docker load -i container.tar.gz
       # NOTE: Scan first without failing, else we won't be able to read the scan
@@ -30,7 +37,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.scan_container.outputs.sarif }}
-          category: container
+          category: container-${{ matrix.arch }}
       - name: Inspect container scan report
         run: cat ${{ steps.scan_container.outputs.sarif }}
       - name: Scan container image

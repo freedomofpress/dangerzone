@@ -1,6 +1,6 @@
 name: Check branch conformity
 on:
-  push:
+  pull_request:
 
 jobs:
   prevent-fixup-commits:

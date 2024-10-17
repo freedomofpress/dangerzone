@@ -1,6 +1,10 @@
 name: Build dev environments
 on:
+  pull_request:
   push:
+    branches:
+      - main
+      - "test/**"
   schedule:
     - cron: "0 0 * * *" # Run every day at 00:00 UTC.
 

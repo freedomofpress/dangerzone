@@ -43,7 +43,7 @@ jobs:
   # This is already built daily by the "build.yml" file
   # But we also want to include this in the checks that run on each push.
   build-container-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 

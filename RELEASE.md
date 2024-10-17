@@ -285,6 +285,10 @@ Once we are confident that the release will be out shortly, and doesn't need any
   * You can verify the correct Python version is used with `poetry debug info`
 - [ ] Verify and checkout the git tag for this release
 - [ ] Run `poetry install --sync`
+- [ ] On the silicon mac, build the container image:
+  ```
+  python3 ./install/common/build-image.py
+  ```, and copy the `share/container.tar.gz` to the assets folder on `dangerzone-$VERSION-arm64.tar.gz`, along with the `share/image-id.txt` file.
 - [ ] Run `poetry run ./install/macos/build-app.py`; this will make `dist/Dangerzone.app`
 - [ ] Make sure that the build application works with the containerd graph
   driver (see [#933](https://github.com/freedomofpress/dangerzone/issues/933))

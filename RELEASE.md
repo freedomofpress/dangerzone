@@ -397,7 +397,7 @@ or create your own locally with:
 cd dangerzone
 ```
 
-Build the latest container, on both architectures:
+Build the latest container:
 
 ```sh
 python3 ./install/common/build-image.py

@@ -18,10 +18,19 @@ class ConversionException(Exception):
     error_message = "Unspecified error"
     error_code = ERROR_SHIFT
 
-    def __init__(self, error_message: Optional[str] = None) -> None:
+    def __init__(
+        self, error_message: Optional[str] = None, logs: Optional[str] = None
+    ) -> None:
         if error_message:
             self.error_message = error_message
+        self.logs = logs
         super().__init__(self.error_message)
+
+    def __str__(self):
+        msg = f"{self.error_message}"
+        if self.logs:
+            msg += f" {self.logs}"
+        return msg
 
     @classmethod
     def get_subclasses(cls) -> List[Type["ConversionException"]]:
@@ -100,9 +109,10 @@ class UnexpectedConversionError(ConversionException):
 
 def exception_from_error_code(
     error_code: int,
+    logs: Optional[str] = None,
 ) -> Union[ConversionException, ValueError]:
     """returns the conversion exception corresponding to the error code"""
     for cls in ConversionException.get_subclasses():
         if cls.error_code == error_code:
-            return cls()
-    return UnexpectedConversionError(f"Unknown error code '{error_code}'")
+            return cls(logs=logs)
+    return UnexpectedConversionError(f"Unknown error code '{error_code}', logs= {logs}")

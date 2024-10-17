@@ -397,11 +397,13 @@ or create your own locally with:
 cd dangerzone
 ```
 
-Build the latest container:
+Build the latest container, on both architectures:
 
 ```sh
 python3 ./install/common/build-image.py
 ```
+
+Rename the container images to `dangerzone.i686.tar.gz` and `dangerzone.arm64.tar.gz`.
 
 Create a .rpm:
 
@@ -449,9 +451,9 @@ To publish the release:
   * Copy the release notes text from the template at [`docs/templates/release-notes`](https://github.com/freedomofpress/dangerzone/tree/main/docs/templates/)
   * You can use `./dev_scripts/upload-asset.py`, if you want to upload an asset
     using an access token.
-- [ ] Upload the `container.tar.gz` i686 image that was created in the previous step
+- [ ] Upload the `container.i686.tar.gz` and `container.arm64.tar.gz` images that were created in the previous step
 
-  **Important:** Make sure that it's the same container image as the ones that
+  **Important:** Make sure that it's the same container images as the ones that
   are shipped in other platforms (see our [Pre-release](#Pre-release) section)
 
 - [ ] Upload the detached signatures (.asc) and checksum file.

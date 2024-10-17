@@ -403,7 +403,7 @@ Build the latest container:
 python3 ./install/common/build-image.py
 ```
 
-Rename the container images to `dangerzone.i686.tar.gz` and `dangerzone.arm64.tar.gz`.
+Copy the container image to the assets folder on `dangerzone-$VERSION-i686.tar.gz`.
 
 Create a .rpm:
 

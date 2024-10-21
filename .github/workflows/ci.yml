@@ -78,7 +78,7 @@ jobs:
         path: share/tessdata/
         key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
         enableCrossOsArchive: true
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     - name: Download Tessdata

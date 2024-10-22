@@ -248,7 +248,7 @@ class Container(IsolationProvider):
         else:
             msg = (
                 f"{Container.CONTAINER_NAME} images found, but IDs do not match."
-                f"Found: {found_image_id}, Expected: {','.join(expected_image_ids)}"
+                f" Found: {found_image_id}, Expected: {','.join(expected_image_ids)}"
             )
             if raise_on_error:
                 raise ImageNotPresentException(msg)

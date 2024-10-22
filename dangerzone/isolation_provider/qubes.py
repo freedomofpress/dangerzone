@@ -70,14 +70,18 @@ class Qubes(IsolationProvider):
         standard streams explicitly, so that we can afterwards use `Popen.wait()` to
         learn if the qube terminated.
 
+        Note that we don't close the stderr stream because we want to read debug logs
+        from it. In the rare case where a qube cannot terminate because it's stuck
+        writing at stderr (this is not the expected behavior), we expect that the
+        process will still be forcefully killed after the soft termination timeout
+        expires.
+
         [1]: https://github.com/freedomofpress/dangerzone/issues/563#issuecomment-2034803232
         """
         if p.stdin:
             p.stdin.close()
         if p.stdout:
             p.stdout.close()
-        if p.stderr:
-            p.stderr.close()
 
     def teleport_dz_module(self, wpipe: IO[bytes]) -> None:
         """Send the dangerzone module to another qube, as a zipfile."""

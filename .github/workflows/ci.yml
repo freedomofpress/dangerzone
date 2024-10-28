@@ -68,6 +68,12 @@ jobs:
           sudo apt-get install -y python3-poetry
           python3 ./install/common/build-image.py
 
+      - name: Upload container image
+        uses: actions/upload-artifact@v4
+        with:
+          name: container.tar.gz
+          path: share/container.tar.gz
+
   download-tessdata:
     name: Download and cache Tesseract data
     runs-on: ubuntu-latest
@@ -120,6 +126,13 @@ jobs:
       - name: Build the MSI installer
         # NOTE: This also builds the .exe internally.
         run: poetry run .\install\windows\build-app.bat
+      - name: Upload MSI installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dangerzone.msi
+          path: "dist/Dangerzone.msi"
+          if-no-files-found: error
+          compression-level: 0
 
   macOS:
     name: "macOS (${{ matrix.arch }})"
@@ -151,7 +164,15 @@ jobs:
       - run: poetry install
       - name: Run CLI tests
         run: poetry run make test
-
+      - name: Build macOS app
+        run: poetry run python ./install/macos/build-app.py
+      - name: Upload macOS app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dangerzone-${{ matrix.arch }}.app
+          path: "dist/Dangerzone.app"
+          if-no-files-found: error
+          compression-level: 0
   build-deb:
     needs:
       - build-container-image
@@ -216,7 +237,7 @@ jobs:
         if: matrix.distro == 'debian' && matrix.version == 'bookworm'
         uses: actions/upload-artifact@v4
         with:
-          name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.deb
+          name: dangerzone.deb
           path: "deb_dist/dangerzone_*_*.deb"
           if-no-files-found: error
           compression-level: 0
@@ -255,7 +276,7 @@ jobs:
       - name: Download Dangerzone .deb
         uses: actions/download-artifact@v4
         with:
-          name: dangerzone-debian-bookworm.deb
+          name: dangerzone.deb
           path: "deb_dist/"
 
       - name: Build end-user environment
@@ -317,6 +338,14 @@ jobs:
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
               run --dev --no-gui ./dangerzone/install/linux/build-rpm.py
+
+      - name: Upload Dangerzone .rpm
+        uses: actions/upload-artifact@v4
+        with:
+          name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.rpm
+          path: "dist/dangerzone-*.x86_64.rpm"
+          if-no-files-found: error
+          compression-level: 0
 
       # Reclaim some space in this step, now that the dev environment is no
       # longer necessary. Previously, we encountered out-of-space issues while

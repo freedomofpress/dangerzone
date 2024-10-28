@@ -4,6 +4,7 @@ import platform
 import tempfile
 import typing
 from multiprocessing.pool import ThreadPool
+from pathlib import Path
 from typing import List, Optional
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
@@ -58,6 +59,13 @@ about updates.</p>
 
 
 HAMBURGER_MENU_SIZE = 30
+
+
+WARNING_MESSAGE = """\
+<p><b>Warning:</b> Ubuntu Focal systems and their derivatives will
+stop being supported in subsequent Dangerzone releases. We encourage you to upgrade to a
+more recent version of your operating system in order to get security updates.</p>
+"""
 
 
 def load_svg_image(filename: str, width: int, height: int) -> QtGui.QPixmap:
@@ -579,6 +587,17 @@ class ContentWidget(QtWidgets.QWidget):
         self.dangerzone = dangerzone
         self.conversion_started = False
 
+        self.warning_label = None
+        if platform.system() == "Linux":
+            # Add the warning message only for ubuntu focal
+            os_release_path = Path("/etc/os-release")
+            if os_release_path.exists():
+                os_release = os_release_path.read_text()
+                if "Ubuntu 20.04" in os_release or "focal" in os_release:
+                    self.warning_label = QtWidgets.QLabel(WARNING_MESSAGE)
+                    self.warning_label.setWordWrap(True)
+                    self.warning_label.setProperty("style", "warning")
+
         # Doc selection widget
         self.doc_selection_widget = DocSelectionWidget(self.dangerzone)
         self.doc_selection_widget.documents_selected.connect(self.documents_selected)
@@ -604,6 +623,8 @@ class ContentWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
+        if self.warning_label:
+            layout.addWidget(self.warning_label)  # Add warning at the top
         layout.addWidget(self.settings_widget, stretch=1)
         layout.addWidget(self.documents_list, stretch=1)
         layout.addWidget(self.doc_selection_wrapper, stretch=1)

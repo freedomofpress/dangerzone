@@ -56,3 +56,19 @@ QTextEdit[style="traceback"] {
     color: #000000;
     padding: 10px;
 }
+
+QLabel[style="warning"] {
+    background-color: #FFF3CD;
+    color: #856404;
+    border: 1px solid #FFEEBA;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px;
+}
+
+
+MainWindow[OSColorMode="dark"] QLabel[style="warning"] {
+    background-color: #332D00;
+    color: #FFD970;
+    border-color: #665A00;
+}

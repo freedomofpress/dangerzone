@@ -1,6 +1,4 @@
 import os
-import subprocess
-import time
 
 import pytest
 from pytest_mock import MockerFixture

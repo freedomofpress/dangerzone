@@ -119,7 +119,7 @@ jobs:
         run: poetry run .\install\windows\build-app.bat
       - name: Run the app and check that it doesn't crash. Kill it after 10 seconds.
         run: |
-          start *\dangerzone.exe
+          start build\exe.win-amd64-3.12\dangerzone.exe
           timeout /t 10 /nobreak
           taskkill /f /im dangerzone.exe
 

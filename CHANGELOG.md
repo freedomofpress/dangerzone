@@ -5,12 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.7.1...HEAD)
+## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.8.0...HEAD)
+
+## [0.8.0](https://github.com/freedomofpress/dangerzone/compare/v0.8.0...0.7.1)
 
 ### Added
 
 - Point to the installation instructions that the Tails team maintains for Dangerzone ([announcement](https://tails.net/news/dangerzone/index.en.html))
-- Platform support: Ubuntu 24.10 and Fedora 41 ([issue #947](https://github.com/freedomofpress/dangerzone/issues/947))
+- Installation and execution errors are now caught and displayed in the interface ([#193](https://github.com/freedomofpress/dangerzone/issues/193))
+- Prevent users from using illegal characters in output filename ([#362](https://github.com/freedomofpress/dangerzone/issues/362)). Thanks @bnewc for the contribution!
+- Add support for Fedora 41 ([#947](https://github.com/freedomofpress/dangerzone/issues/947))
+- Add support for Ubuntu Oracular (24.10) ([#954](https://github.com/freedomofpress/dangerzone/pull/954))
+
+### Fixed
+
+- Update our macOS entitlements, removing now unneeded privileges ([#638](https://github.com/freedomofpress/dangerzone/issues/638))
+- Make Dangerzone work on Linux systems with SELinux in enforcing mode ([#880](https://github.com/freedomofpress/dangerzone/issues/880))
+- Process documents with embedded multimedia files without crashing ([#877](https://github.com/freedomofpress/dangerzone/issues/877))
+- Search for applications that can read PDF files in a more reliable way on Linux ([#899](https://github.com/freedomofpress/dangerzone/issues/899))
+- Handle and report some stray conversion errors ([#776](https://github.com/freedomofpress/dangerzone/issues/776)). Thanks @amnak613 for the contribution!
+- Replace occurrences of the word "Docker" in Podman-related error messages in Linux ([#212](https://github.com/freedomofpress/dangerzone/issues/212))
+
+### Changed
+
+- The second phase of the conversion (pixels to PDF) now happens on the host. Instead of first grabbing all of the pixel data from the first container, storing them on disk, and then reconstructing the PDF on a second container, Dangerzone now immediately reconstructs the PDF **on the host**, while the doc to pixels conversion is still running on the first container. The sanitation is no less safe, since the boundaries between the sandbox and the host are still respected ([#625](https://github.com/freedomofpress/dangerzone/issues/625))
+- PyMuPDF is now vendorized for Debian packages. This is done because the PyMuPDF package from the Debian repos lacks OCR support. ([#940](https://github.com/freedomofpress/dangerzone/pull/940))
+- Always use our own seccomp policy as a default ([#908](https://github.com/freedomofpress/dangerzone/issues/908))
+- Debian packages are now amd64 only, which removes some warnings in Linux distros with 32-bit repos enabled ([#394](https://github.com/freedomofpress/dangerzone/issues/394))
+- Allow choosing installation directory on Windows platforms ([#148](https://github.com/freedomofpress/dangerzone/issues/148)). Thanks @jkarasti for the contribution!
+- Bumped H2ORestart LibreOffice extension to version 0.6.6 ([#943](https://github.com/freedomofpress/dangerzone/issues/943))
+- Platform support: Ubuntu Focal (20.04) is now deprecated, and support will be dropped with the next release ([#965](https://github.com/freedomofpress/dangerzone/issues/965))
+
+### Removed
+
+- Platform support: Drop Ubuntu Mantic (23.10), since it's end-of-life ([#977](https://github.com/freedomofpress/dangerzone/pull/977))
+
+### Development changes
+
+- Build Debian packages with pybuild ([#773](https://github.com/freedomofpress/dangerzone/issues/773))
+- Test Dangerzone on Intel macOS machines as well ([#932](https://github.com/freedomofpress/dangerzone/issues/932))
+- Switch from CircleCI runners to Github actions ([#674](https://github.com/freedomofpress/dangerzone/issues/674))
+- Sign Windows executables and installer with SHA256 rather than SHA1 ([#931](https://github.com/freedomofpress/dangerzone/pull/931)). Thanks @jkarasti for the contribution!
 
 ## [0.7.1](https://github.com/freedomofpress/dangerzone/compare/v0.7.1...v0.7.0)
 

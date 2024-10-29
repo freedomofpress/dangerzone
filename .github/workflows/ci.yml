@@ -117,6 +117,11 @@ jobs:
       - name: Build the MSI installer
         # NOTE: This also builds the .exe internally.
         run: poetry run .\install\windows\build-app.bat
+      - name: Run the app and check that it doesn't crash. Kill it after 10 seconds.
+        run: |
+          start *\dangerzone.exe
+          timeout /t 10 /nobreak
+          taskkill /f /im dangerzone.exe
 
   macOS:
     name: "macOS (${{ matrix.arch }})"

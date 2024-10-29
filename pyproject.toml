@@ -57,6 +57,9 @@ pytest-rerunfailures = "^14.0"
 [tool.poetry.group.container.dependencies]
 pymupdf = "1.24.11" # Last version to support python 3.8 (needed for Ubuntu Focal support)
 
+[tool.poetry.group.dev.dependencies]
+httpx = "^0.27.2"
+
 [tool.isort]
 profile = "black"
 skip_gitignore = true

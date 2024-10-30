@@ -160,8 +160,6 @@ jobs:
           - distro: ubuntu
             version: "22.04"
           - distro: ubuntu
-            version: "23.10"
-          - distro: ubuntu
             version: "24.04"
           - distro: ubuntu
             version: "24.10"
@@ -229,8 +227,6 @@ jobs:
             version: "20.04"
           - distro: ubuntu
             version: "22.04"
-          - distro: ubuntu
-            version: "23.10"
           - distro: ubuntu
             version: "24.04"
           - distro: ubuntu
@@ -350,8 +346,6 @@ jobs:
             version: "20.04"
           - distro: ubuntu
             version: "22.04"
-          - distro: ubuntu
-            version: "23.10"
           - distro: ubuntu
             version: "24.04"
           - distro: ubuntu

@@ -978,11 +978,6 @@ class QAUbuntu2204(QADebianBased):
     VERSION = "22.04"
 
 
-class QAUbuntu2310(QADebianBased):
-    DISTRO = "ubuntu"
-    VERSION = "23.10"
-
-
 class QAUbuntu2404(QADebianBased):
     DISTRO = "ubuntu"
     VERSION = "24.04"

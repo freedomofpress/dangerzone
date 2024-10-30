@@ -164,6 +164,7 @@ class IsolationProviderTermination:
         terminate_proc_mock = mocker.patch.object(
             provider, "terminate_doc_to_pixels_proc", return_value=None
         )
+        kill_pg_orig = base.kill_process_group
         kill_pg_mock = mocker.patch(
             "dangerzone.isolation_provider.base.kill_process_group", return_value=None
         )
@@ -178,6 +179,7 @@ class IsolationProviderTermination:
 
         # Reset the function to the original state.
         provider.terminate_doc_to_pixels_proc = terminate_proc_orig  # type: ignore [method-assign]
+        base.kill_process_group = kill_pg_orig
 
         # Really kill the spawned process, so that it doesn't linger after the tests
         # complete.

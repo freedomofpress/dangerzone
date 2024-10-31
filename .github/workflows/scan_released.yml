@@ -13,7 +13,7 @@ jobs:
       - name: Download container image for the latest release
         run: |
           VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | jq -r '.tag_name')
-          wget https://github.com/freedomofpress/dangerzone/releases/download/${VERSION}/container-${VERSION}-i686.tar.gz -O container.tar.gz
+          wget https://github.com/freedomofpress/dangerzone/releases/download/${VERSION}/container.tar.gz -O container.tar.gz
       - name: Load container image
         run: docker load -i container.tar.gz
       # NOTE: Scan first without failing, else we won't be able to read the scan

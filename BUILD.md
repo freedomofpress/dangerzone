@@ -260,11 +260,17 @@ The following instructions require typing commands in a terminal in dom0.
 
    ```
    qvm-create --class AppVM --label red --template fedora-40-dz dz
+   qvm-volume resize dz:private $(numfmt --from=auto 20Gi)
    ```
 
    > :bulb: Alternatively, you can use a different app qube for Dangerzone
    > development. In that case, replace `dz` with the qube of your choice in the
    > steps below.
+   >
+   > In the commands above, we also resize the private volume of the `dz` qube
+   > to 20GiB, since you may need some extra storage space when developing on
+   > Dangerzone (e.g., for container images, Tesseract data, and Python
+   > virtualenvs).
 
 4. Add an RPC policy (`/etc/qubes/policy.d/50-dangerzone.policy`) that will
    allow launching a disposable qube (`dz-dvm`) when Dangerzone converts a

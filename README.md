@@ -6,7 +6,7 @@ Take potentially dangerous PDFs, office documents, or images and convert them to
 | ![Settings](./assets/screenshot1.png) | ![Converting](./assets/screenshot2.png)
 |--|--|
 
-Dangerzone works like this: You give it a document that you don't know if you can trust (for example, an email attachment). Inside of a sandbox, Dangerzone converts the document to a PDF (if it isn't already one), and then converts the PDF into raw pixel data: a huge list of RGB color values for each page. Then, in a separate sandbox, Dangerzone takes this pixel data and converts it back into a PDF.
+Dangerzone works like this: You give it a document that you don't know if you can trust (for example, an email attachment). Inside of a sandbox, Dangerzone converts the document to a PDF (if it isn't already one), and then converts the PDF into raw pixel data: a huge list of RGB color values for each page. Then, outside of the sandbox, Dangerzone takes this pixel data and converts it back into a PDF.
 
 _Read more about Dangerzone in the [official site](https://dangerzone.rocks/about/)._
 

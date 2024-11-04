@@ -3,13 +3,19 @@
 import abc
 import argparse
 import difflib
+import json
 import logging
 import re
 import selectors
 import subprocess
 import sys
+import urllib.request
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+PYTHON_VERSION = "3.12"
+EOL_PYTHON_URL = "https://endoflife.date/api/python.json"
 
 CONTENT_QA = r"""## QA
 
@@ -776,6 +782,10 @@ class QABase(abc.ABC):
                 self.prompt("Does it pass?", choices=["y", "n"])
         logger.info("Successfully completed QA scenarios")
 
+    @task("Download Tesseract data", auto=True)
+    def download_tessdata(self):
+        self.run("python", str(Path("install", "common", "download-tessdata.py")))
+
     @classmethod
     @abc.abstractmethod
     def get_id(cls):
@@ -802,6 +812,40 @@ class QAWindows(QABase):
         while msvcrt.kbhit():
             msvcrt.getch()
 
+    def get_latest_python_release(self):
+        with urllib.request.urlopen(EOL_PYTHON_URL) as f:
+            resp = f.read()
+            releases = json.loads(resp)
+            for release in releases:
+                if release["cycle"] == PYTHON_VERSION:
+                    # Transform the Python version string (e.g., "3.12.7") into a list
+                    # (e.g., [3, 12, 7]), and return it
+                    return [int(num) for num in release["latest"].split(".")]
+
+            raise RuntimeError(
+                f"Could not find a Python release for version {PYTHON_VERSION}"
+            )
+
+    @QABase.task(
+        f"Install the latest version of Python {PYTHON_VERSION}", ref=REF_BUILD
+    )
+    def install_python(self):
+        logger.info("Getting latest Python release")
+        try:
+            latest_version = self.get_latest_python_release()
+        except Exception:
+            logger.error("Could not verify that the latest Python version is installed")
+
+        cur_version = list(sys.version_info[:3])
+        if latest_version > cur_version:
+            self.prompt(
+                f"You need to install the latest Python version ({latest_version})"
+            )
+        elif latest_version == cur_version:
+            logger.info(
+                f"Verified that the latest Python version ({latest_version}) is installed"
+            )
+
     @QABase.task("Install and Run Docker Desktop", ref=REF_BUILD)
     def install_docker(self):
         logger.info("Checking if Docker Desktop is installed and running")
@@ -816,7 +860,7 @@ class QAWindows(QABase):
     )
     def install_poetry(self):
         self.run("python", "-m", "pip", "install", "poetry")
-        self.run("poetry", "install")
+        self.run("poetry", "install", "--sync")
 
     @QABase.task("Build Dangerzone container image", ref=REF_BUILD, auto=True)
     def build_image(self):
@@ -838,9 +882,11 @@ class QAWindows(QABase):
         return "windows"
 
     def start(self):
+        self.install_python()
         self.install_docker()
         self.install_poetry()
         self.build_image()
+        self.download_tessdata()
         self.run_tests()
         self.build_dangerzone_exe()
 
@@ -933,6 +979,7 @@ class QALinux(QABase):
     def start(self):
         self.build_dev_image()
         self.build_container_image()
+        self.download_tessdata()
         self.run_tests()
         self.build_package()
         self.build_qa_image()

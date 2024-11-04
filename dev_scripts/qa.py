@@ -1051,6 +1051,10 @@ class QAFedora(QALinux):
         )
 
 
+class QAFedora41(QAFedora):
+    VERSION = "41"
+
+
 class QAFedora40(QAFedora):
     VERSION = "40"
 

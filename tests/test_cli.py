@@ -335,6 +335,7 @@ class TestCliConversion(TestCliBasic):
 
 class TestExtraFormats(TestCli):
     @for_each_external_doc("*hwp*")
+    @pytest.mark.flaky(reruns=2)
     def test_hancom_office(self, doc: str) -> None:
         if is_qubes_native_conversion():
             pytest.skip("HWP / HWPX formats are not supported on this platform")

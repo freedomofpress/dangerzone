@@ -20,17 +20,32 @@ EOL_PYTHON_URL = "https://endoflife.date/api/python.json"
 CONTENT_QA = r"""## QA
 
 To ensure that new releases do not introduce regressions, and support existing
-and newer platforms, we have to do the following:
+and newer platforms, we have to test that the produced packages work as expected.
+
+Check the following:
 
 - [ ] Make sure that the tip of the `main` branch passes the CI tests.
 - [ ] Make sure that the Apple account has a valid application password and has
       agreed to the latest Apple terms (see [macOS release](#macos-release)
       section).
+
+Because it is repetitive, we wrote a script to help with the QA.
+It can run the tasks for you, pausing when it needs manual intervention.
+
+You can run it with a command like:
+
+```bash
+poetry run ./dev_scripts/qa.py {distro}-{version}
+```
+
+### The checklist
+
 - [ ] Create a test build in Windows and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
+  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
   - [ ] Run the Dangerzone tests.
   - [ ] Build and run the Dangerzone .exe
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -39,6 +54,7 @@ and newer platforms, we have to do the following:
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
+  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
   - [ ] Run the Dangerzone tests.
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -47,6 +63,7 @@ and newer platforms, we have to do the following:
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
+  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
   - [ ] Run the Dangerzone tests.
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -55,6 +72,7 @@ and newer platforms, we have to do the following:
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
+  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
   - [ ] Run the Dangerzone tests.
   - [ ] Create a .deb package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -63,6 +81,7 @@ and newer platforms, we have to do the following:
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
+  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -553,7 +572,7 @@ class Reference:
         # Convert spaces to dashes
         anchor = anchor.replace(" ", "-")
         # Remove non-alphanumeric (except dash and underscore)
-        anchor = re.sub("[^a-zA-Z\-_]", "", anchor)
+        anchor = re.sub("[^a-zA-Z-_]", "", anchor)
 
         return anchor
 
@@ -572,8 +591,8 @@ class QABase(abc.ABC):
 
     platforms = {}
 
-    REF_QA = Reference("RELEASE.md", content=CONTENT_QA)
-    REF_QA_SCENARIOS = Reference("RELEASE.md", content=CONTENT_QA_SCENARIOS)
+    REF_QA = Reference("QA.md", content=CONTENT_QA)
+    REF_QA_SCENARIOS = Reference("QA.md", content=CONTENT_QA_SCENARIOS)
 
     # The following class method is available since Python 3.6. For more details, see:
     # https://docs.python.org/3.6/whatsnew/3.6.html#pep-487-simpler-customization-of-class-creation

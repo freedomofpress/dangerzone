@@ -1,0 +1,35 @@
+name: Check branch conformity
+on:
+  pull_request:
+
+jobs:
+  prevent-fixup-commits:
+      runs-on: ubuntu-latest
+      env:
+        target: debian-bookworm
+        distro: debian
+        version: bookworm
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        - name: prevent fixup commits
+          run: |
+            git fetch origin
+            git status
+            git log --pretty=format:%s origin/main..HEAD | grep -ie '^fixup\|^wip' && exit 1 || true
+
+  check-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: ensure CHANGELOG.md is populated
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        shell: bash
+        run: |
+          if git diff --exit-code "origin/${BASE_REF}" -- CHANGELOG.md; then
+              echo "::warning::No CHANGELOG.md modifications were found in this pull request."
+          fi

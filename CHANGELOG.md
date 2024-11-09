@@ -7,6 +7,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.8.0...HEAD)
 
+### Added
+
+- Disable gVisor's DirectFS feature ([#226](https://github.com/freedomofpress/dangerzone/issues/226)).
+  Thanks [EtiennePerot](https://github.com/EtiennePerot) for the contribution.
+
 ## [0.8.0](https://github.com/freedomofpress/dangerzone/compare/v0.8.0...0.7.1)
 
 ### Added

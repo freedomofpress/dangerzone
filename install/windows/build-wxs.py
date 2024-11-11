@@ -220,7 +220,6 @@ def main():
     ET.SubElement(
         package_el,
         "MajorUpgrade",
-        AllowSameVersionUpgrades="yes",
         DowngradeErrorMessage="A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.",
     )
 

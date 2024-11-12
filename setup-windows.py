@@ -13,11 +13,7 @@ setup(
     description="Dangerzone",
     options={
         "build_exe": {
-            # Explicitly specify pymupdf.util module to fix building the executables
-            # with cx_freeze. See https://github.com/marcelotduarte/cx_Freeze/issues/2653
-            # for more details.
-            # TODO: Upgrade to cx_freeze 7.3.0 which should include a fix.
-            "packages": ["dangerzone", "dangerzone.gui", "pymupdf.utils"],
+            "packages": ["dangerzone", "dangerzone.gui"],
             "excludes": ["test", "tkinter"],
             "include_files": [("share", "share"), ("LICENSE", "LICENSE")],
             "include_msvcr": True,

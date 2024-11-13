@@ -9,7 +9,6 @@ Before making a release, all of these should be complete:
 - [ ] Copy the checkboxes from these instructions onto a new issue and call it **QA and Release version \<VERSION\>**
 - [ ] [Add new Linux platforms and remove obsolete ones](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#add-new-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock`
-- [ ] [Check for official PySide6 versions](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#check-for-official-pyside6-versions)
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
@@ -43,16 +42,6 @@ In case of an EOL version:
 1. Remove any mention to this version from our repo.
    * Consult the previous paragraph, but also `grep` your way around.
 2. Add a notice in our `CHANGELOG.md` about the version removal.
-
-## Check for official PySide6 versions
-
-PySide6 6.7.0 is available from the Fedora Rawhide repo, and we expect that a
-similar version will be pushed soon to the rest of the stable releases. Prior to
-a release, we should check if this has happened already. Once this happens, we
-should update our CI tests accordingly, and remove this notice.
-
-For more info, read:
-https://github.com/freedomofpress/maint-dangerzone-pyside6/issues/5
 
 ## Large Document Testing
 

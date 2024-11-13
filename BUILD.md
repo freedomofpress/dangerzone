@@ -314,17 +314,8 @@ test it.
 1. Install the `.rpm` package you just copied
 
    ```sh
-   sudo dnf install 'dnf-command(config-manager)'
-   sudo dnf-3 config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
    sudo dnf install ~/QubesIncoming/dz/*.rpm
    ```
-
-   In the above steps, we add the Dangerzone repo because it includes the
-   necessary PySide6 RPM in order to make Dangerzone work.
-
-   > [!NOTE]
-   > During the installation, you will be asked to
-   > [verify the Dangerzone GPG key](INSTALL.md#verifying-dangerzone-gpg-key).
 
 2. Shutdown the `fedora-40-dz` template
 

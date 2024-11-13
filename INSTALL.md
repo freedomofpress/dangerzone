@@ -137,23 +137,6 @@ sudo apt install -y dangerzone
 
 ### Fedora
 
-<table>
-  <tr>
-    <td>
-<details>
-  <summary><i>:information_source: Backport notice for Fedora users regarding the <code>python3-pyside6</code> package</i></summary>
-  </br>
-
-  Fedora 39+ onwards does not provide official Python bindings for Qt. For
-  this reason, we provide our own `python3-pyside6` package (see
-  [build instructions](https://github.com/freedomofpress/maint-dangerzone-pyside6))
-  from our YUM repo. For a deeper dive on this subject, you may read
-  [this issue](https://github.com/freedomofpress/dangerzone/issues/211#issuecomment-1827777122).
-</details>
-    </td>
-  </tr>
-</table>
-
 Type the following commands in a terminal:
 
 ```

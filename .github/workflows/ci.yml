@@ -328,7 +328,7 @@ jobs:
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
-              build --download-pyside6
+              build
 
       - name: Run a test command
         run: |

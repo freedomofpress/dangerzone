@@ -48,8 +48,6 @@ jobs:
           - distro: debian
             version: trixie
           - distro: fedora
-            version: "39"
-          - distro: fedora
             version: "40"
           - distro: fedora
             version: "41"

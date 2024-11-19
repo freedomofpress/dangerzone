@@ -23,6 +23,7 @@ pyxdg = {version = "*", platform = "linux"}
 requests = "*"
 markdown = "*"
 packaging = "*"
+doit = "^0.36.0"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
@@ -65,6 +66,9 @@ profile = "black"
 skip_gitignore = true
 # This is necessary due to https://github.com/PyCQA/isort/issues/1835
 follow_links = false
+
+[tool.doit.tasks.build_container]
+use_cache = true
 
 [build-system]
 requires = ["poetry-core>=1.2.0"]

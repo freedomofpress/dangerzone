@@ -174,6 +174,41 @@ def main():
         DowngradeErrorMessage="A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.",
     )
 
+    # Workaround for an issue after upgrading from WiX Toolset v3 to v5 where the previous
+    # version of Dangerzone is not uninstalled during the upgrade by checking if the older installation
+    # exists in "C:\Program Files (x86)\Dangerzone".
+    #
+    # Also handle a special case for Dangerzone 0.8.0 which allows choosing the install location
+    # during install by checking if the registry key for it exists.
+    #
+    # Note that this seems to allow installing Dangerzone 0.8.0 after installing Dangerzone from this branch.
+    # In this case the installer errors until Dangerzone 0.8.0 is uninstalled again
+    #
+    # TODO: Revert this once we are reasonably certain there aren't too many affected Dangerzone installations.
+    find_old_el = ET.SubElement(package_el, "Property", Id="OLDDANGERZONEFOUND")
+    directory_search_el = ET.SubElement(
+        find_old_el,
+        "DirectorySearch",
+        Id="dangerzone_install_folder",
+        Path="C:\\Program Files (x86)\\Dangerzone",
+    )
+    ET.SubElement(directory_search_el, "FileSearch", Name="dangerzone.exe")
+    registry_search_el = ET.SubElement(package_el, "Property", Id="DANGERZONE080FOUND")
+    ET.SubElement(
+        registry_search_el,
+        "RegistrySearch",
+        Root="HKLM",
+        Key="SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{03C2D2B2-9955-4AED-831F-DA4E67FC0FDB}",
+        Name="DisplayName",
+        Type="raw",
+    )
+    ET.SubElement(
+        package_el,
+        "Launch",
+        Condition="NOT OLDDANGERZONEFOUND AND NOT DANGERZONE080FOUND",
+        Message="A previous version of [ProductName] is already installed. Please uninstall it from Programs and Features before proceeding with the installation.",
+    )
+
     # Add the ProgramMenuFolder StandardDirectory
     programmenufolder_el = ET.SubElement(
         package_el,

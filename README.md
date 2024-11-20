@@ -12,27 +12,15 @@ _Read more about Dangerzone in the [official site](https://dangerzone.rocks/abou
 
 ## Getting started
 
-### MacOS
-- Download [Dangerzone 0.8.0 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.0/Dangerzone-0.8.0-arm64.dmg)
-- Download [Dangerzone 0.8.0 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.0/Dangerzone-0.8.0-i686.dmg)
+Follow the instructions for each platform:
 
-You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`
-
-> **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
-> This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
-> create the secure environment.
-
-### Windows
-
-- Download [Dangerzone 0.8.0 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.0/Dangerzone-0.8.0.msi)
-
-> **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
-> This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
-> create the secure environment.
-
-### Linux
-
-See [installing Dangerzone](INSTALL.md#linux) for adding the Linux repositories to your system.
+* [macOS](https://github.com/freedomofpress/dangerzone/blob/v0.8.0//INSTALL.md#macos).
+* [Windows](https://github.com/freedomofpress/dangerzone/blob/v0.8.0//INSTALL.md#macos).
+* [Ubuntu Linux](https://github.com/freedomofpress/dangerzone/blob/v0.8.0/INSTALL.md#ubuntu-debian)
+* [Debian Linux](https://github.com/freedomofpress/dangerzone/blob/v0.8.0/INSTALL.md#ubuntu-debian)
+* [Fedora Linux](https://github.com/freedomofpress/dangerzone/blob/v0.8.0/INSTALL.md#fedora)
+* [Qubes OS (beta)](https://github.com/freedomofpress/dangerzone/v0.8.0/main/INSTALL.md#qubes-os)
+* [Tails](https://github.com/freedomofpress/dangerzone/blob/v0.8.0/INSTALL.md#tails)
 
 ## Some features
 

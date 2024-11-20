@@ -1,8 +1,21 @@
 ## MacOS
-See instructions in [README.md](README.md#macos).
+
+- Download [Dangerzone 0.8.0 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.0/Dangerzone-0.8.0-arm64.dmg)
+- Download [Dangerzone 0.8.0 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.0/Dangerzone-0.8.0-i686.dmg)
+
+You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`
+
+> **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+> This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
+> create the secure environment.
 
 ## Windows
-See instructions in [README.md](README.md#windows).
+
+- Download [Dangerzone 0.8.0 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.0/Dangerzone-0.8.0.msi)
+
+> **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+> This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
+> create the secure environment.
 
 ## Linux
 On Linux, Dangerzone uses [Podman](https://podman.io/) instead of Docker Desktop for creating

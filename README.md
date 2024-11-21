@@ -14,12 +14,12 @@ _Read more about Dangerzone in the [official site](https://dangerzone.rocks/abou
 
 Follow the instructions for each platform:
 
-* [macOS](https://github.com/freedomofpress/dangerzone/blob/v0.8.0//INSTALL.md#macos).
-* [Windows](https://github.com/freedomofpress/dangerzone/blob/v0.8.0//INSTALL.md#macos).
+* [macOS](https://github.com/freedomofpress/dangerzone/blob/v0.8.0//INSTALL.md#macos)
+* [Windows](https://github.com/freedomofpress/dangerzone/blob/v0.8.0//INSTALL.md#windows)
 * [Ubuntu Linux](https://github.com/freedomofpress/dangerzone/blob/v0.8.0/INSTALL.md#ubuntu-debian)
 * [Debian Linux](https://github.com/freedomofpress/dangerzone/blob/v0.8.0/INSTALL.md#ubuntu-debian)
 * [Fedora Linux](https://github.com/freedomofpress/dangerzone/blob/v0.8.0/INSTALL.md#fedora)
-* [Qubes OS (beta)](https://github.com/freedomofpress/dangerzone/v0.8.0/main/INSTALL.md#qubes-os)
+* [Qubes OS (beta)](https://github.com/freedomofpress/dangerzone/blob/v0.8.0/INSTALL.md#qubes-os)
 * [Tails](https://github.com/freedomofpress/dangerzone/blob/v0.8.0/INSTALL.md#tails)
 
 ## Some features

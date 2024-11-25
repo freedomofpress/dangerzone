@@ -11,8 +11,9 @@ jobs:
         include:
           - runs-on: ubuntu-latest
             arch: i686
-          - runs-on: macos-latest
-            arch: arm64
+          # Do not scan Silicon mac for now to avoid masking release scan results for other plaforms.
+          # - runs-on: macos-latest
+          #   arch: arm64
     runs-on: ${{ matrix.runs-on }}
     steps:
       - name: Checkout

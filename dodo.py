@@ -1,20 +1,32 @@
+import json
 import os
 import platform
 import shutil
+import subprocess
 from pathlib import Path
 
 from doit import task_params
 from doit.action import CmdAction
 
-if platform.system() in ["Darwin", "Windows"]:
-    CONTAINER_RUNTIME = "docker"
-elif platform.system() == "Linux":
-    CONTAINER_RUNTIME = "podman"
+# if platform.system() in ["Darwin", "Windows"]:
+#     CONTAINER_RUNTIME = "docker"
+# elif platform.system() == "Linux":
+#     CONTAINER_RUNTIME = "podman"
+CONTAINER_RUNTIME = "podman"
 
 VERSION = open("share/version.txt").read().strip()
 RELEASE_DIR = Path.home() / "release" / VERSION
 FEDORA_VERSIONS = ["39", "40", "41"]
 DEBIAN_VERSIONS = ["bullseye", "focal", "jammy", "mantic", "noble", "trixie"]
+
+### Parameters
+
+PARAM_APPLE_ID = {
+    "name": "apple_id",
+    "long": "apple-id",
+    "default": "fpf@example.com",
+    "help": "The Apple developer ID that will be used for signing the .dmg",
+}
 
 
 def list_files(path):
@@ -52,8 +64,13 @@ def cmd_build_linux_pkg(distro, version, cwd, qubes=False):
 
 
 def task_check_python():
+    """Check that the latest supported Python version is installed (WIP).
+
+    This task does not work yet, and is currently short-circuited.
+    """
     def check_python():
-        # FIXME: Check that Python 3.12 is installed.
+        # FIXME: Check that the latest supported Python release is installed. Use the
+        # same logic as we do in dev_scripts/qa.py.
         return True
 
     return {
@@ -62,6 +79,7 @@ def task_check_python():
 
 
 def task_container_runtime():
+    """Test that the container runtime is ready."""
     return {
         "actions": [
             ["which", CONTAINER_RUNTIME],
@@ -71,6 +89,7 @@ def task_container_runtime():
 
 
 def task_system_checks():
+    """Common status checks for a system."""
     return {
         "actions": None,
         "task_dep": [
@@ -80,14 +99,61 @@ def task_system_checks():
     }
 
 
-def task_download_tessdata():
+def task_macos_check_cert():
+    """Test that the Apple developer certificate can be used."""
     return {
-        "actions": [["python", "install/common/download-tessdata.py"]],
+        "actions": [
+            "xcrun notarytool history --apple-id %(apple_id)s --keychain-profile dz-notarytool-release-key"
+        ],
+        "params": [PARAM_APPLE_ID],
+    }
+
+
+def task_macos_check_docker_containerd():
+    """Test that Docker uses the containard image store."""
+    def check_containerd_store():
+        driver = subprocess.check_output(["docker", "info", "-f", "{{ .DriverSTatus }}"])
+        if driver != "[[driver-type io.containerd.snapshotter.v1]]":
+            raise RuntimeError(
+                "Switch to Docker's containerd image store"
+            )
+
+    return {
+        "actions": [
+            "which docker",
+            "docker ps",
+            check_containerd_store,
+        ],
+        "params": [PARAM_APPLE_ID],
+    }
+
+
+def task_macos_system_checks():
+    """Run macOS specific system checks, as well as the generic ones."""
+    return {
+        "actions": None,
+        "task_dep": [
+            "system_checks",
+            "macos_check_cert",
+            "macos_check_docker_containerd",
+        ],
+    }
+
+
+def task_tessdata():
+    """Download Tesseract data"""
+    tessdata_dir = Path("share") / "tessdata"
+    langs = json.loads(open(tessdata_dir.parent / "ocr-languages.json").read()).values()
+    targets = [tessdata_dir / f"{lang}.traineddata" for lang in langs]
+    targets.append(tessdata_dir)
+    return {
+        "actions": ["python install/common/download-tessdata.py"],
         "file_dep": [
             "install/common/download-tessdata.py",
             "share/ocr-languages.json",
         ],
-        "targets": ["share/tessdata"]
+        "targets": targets,
+        "clean": True,
     }
 
 
@@ -109,6 +175,7 @@ def task_build_container():
         ],
         "targets": ["share/container.tar.gz", "share/image-id.txt"],
         "task_dep": ["container_runtime"],
+        "clean": True,
     }
 
 
@@ -126,7 +193,8 @@ def task_app():
             *list_files("dangerzone"),
         ],
         "task_dep": ["poetry_install"],
-        "targets": ["dist/Dangerzone.app"]
+        "targets": ["dist/Dangerzone.app"],
+        "clean": True,
     }
 
 

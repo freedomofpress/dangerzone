@@ -2,22 +2,6 @@ LARGE_TEST_REPO_DIR:=tests/test_docs_large
 GIT_DESC=$$(git describe)
 JUNIT_FLAGS := --capture=sys -o junit_logging=all
 
-.PHONY: lint-black
-lint-black: ## check python source code formatting issues, with black
-	black --check --diff ./
-
-.PHONY: lint-black-apply
-lint-black-apply: ## apply black's source code formatting suggestions
-	black ./
-
-.PHONY: lint-isort
-lint-isort: ## check imports are organized, with isort
-	isort --check --diff ./
-
-.PHONY: lint-isort-apply
-lint-isort-apply: ## apply isort's imports organization suggestions
-	isort ./
-
 MYPY_ARGS := --ignore-missing-imports \
 			 --disallow-incomplete-defs \
 			 --disallow-untyped-defs \
@@ -35,10 +19,15 @@ mypy-tests:
 mypy: mypy-host mypy-tests ## check type hints with mypy
 
 .PHONY: lint
-lint: lint-black lint-isort mypy ## check the code with various linters
+lint: ## Check the code for linting, formatting, and typing issues with ruff and mypy
+	ruff check
+	ruff format --check
+	mypy 
 
-.PHONY: lint-apply
-format: lint-black-apply lint-isort-apply ## apply all the linter's suggestions
+.PHONY: fix
+fix: ## apply all the suggestions from ruff
+	ruff check --fix
+	ruff format 
 
 .PHONY: test
 test:

@@ -62,12 +62,6 @@ pymupdf = "1.24.11" # Last version to support python 3.8 (needed for Ubuntu Foca
 [tool.poetry.group.dev.dependencies]
 httpx = "^0.27.2"
 
-[tool.isort]
-profile = "black"
-skip_gitignore = true
-# This is necessary due to https://github.com/PyCQA/isort/issues/1835
-follow_links = false
-
 [tool.doit]
 verbosity = 3
 

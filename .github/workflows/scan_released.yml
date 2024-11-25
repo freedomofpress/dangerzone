@@ -22,11 +22,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Colima (macOS only)
+      - name: Setup Docker and Colima (macOS only)
         if: runner.os == 'macOS'
         run: |
-          brew install colima
+          brew install docker colima
           colima start
+          # Wait for Docker daemon to be ready
+          timeout=30
+          while ! docker info >/dev/null 2>&1; do
+            if [ $timeout -le 0 ]; then
+              echo "Timed out waiting for Docker daemon"
+              exit 1
+            fi
+            timeout=$((timeout-1))
+            sleep 1
+          done
           
       - name: Download container image for the latest release and load it
         run: |

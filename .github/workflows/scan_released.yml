@@ -10,8 +10,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - runs-on: ubuntu-latest
-            arch: i686
+          # - runs-on: ubuntu-latest
+          #  arch: i686
           - runs-on: macos-latest
             arch: arm64
     runs-on: ${{ matrix.runs-on }}

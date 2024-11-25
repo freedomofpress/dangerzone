@@ -33,17 +33,19 @@ def test_order_mime_handers() -> None:
         "LibreOffice",
     ]
 
-    with mock.patch(
-        "subprocess.check_output", return_value=b"libreoffice-draw.desktop"
-    ) as mock_default_mime_hander, mock.patch(
-        "os.listdir",
-        side_effect=[
-            ["org.gnome.Evince.desktop"],
-            ["org.pwmt.zathura-pdf-mupdf.desktop"],
-            ["libreoffice-draw.desktop"],
-        ],
-    ) as mock_list, mock.patch(
-        "dangerzone.gui.logic.DesktopEntry", return_value=mock_desktop
+    with (
+        mock.patch(
+            "subprocess.check_output", return_value=b"libreoffice-draw.desktop"
+        ) as mock_default_mime_hander,
+        mock.patch(
+            "os.listdir",
+            side_effect=[
+                ["org.gnome.Evince.desktop"],
+                ["org.pwmt.zathura-pdf-mupdf.desktop"],
+                ["libreoffice-draw.desktop"],
+            ],
+        ) as mock_list,
+        mock.patch("dangerzone.gui.logic.DesktopEntry", return_value=mock_desktop),
     ):
         dz = DangerzoneGui(mock_app, dummy)
 
@@ -77,18 +79,20 @@ def test_mime_handers_succeeds_no_default_found() -> None:
         "LibreOffice",
     ]
 
-    with mock.patch(
-        "subprocess.check_output",
-        side_effect=subprocess.CalledProcessError(1, "Oh no, xdg-mime error!)"),
-    ) as mock_default_mime_hander, mock.patch(
-        "os.listdir",
-        side_effect=[
-            ["org.gnome.Evince.desktop"],
-            ["org.pwmt.zathura-pdf-mupdf.desktop"],
-            ["libreoffice-draw.desktop"],
-        ],
-    ) as mock_list, mock.patch(
-        "dangerzone.gui.logic.DesktopEntry", return_value=mock_desktop
+    with (
+        mock.patch(
+            "subprocess.check_output",
+            side_effect=subprocess.CalledProcessError(1, "Oh no, xdg-mime error!)"),
+        ) as mock_default_mime_hander,
+        mock.patch(
+            "os.listdir",
+            side_effect=[
+                ["org.gnome.Evince.desktop"],
+                ["org.pwmt.zathura-pdf-mupdf.desktop"],
+                ["libreoffice-draw.desktop"],
+            ],
+        ) as mock_list,
+        mock.patch("dangerzone.gui.logic.DesktopEntry", return_value=mock_desktop),
     ):
         dz = DangerzoneGui(mock_app, dummy)
 
@@ -109,13 +113,16 @@ def test_malformed_desktop_entry_is_catched() -> None:
     mock_app = mock.MagicMock()
     dummy = mock.MagicMock()
 
-    with mock.patch("dangerzone.gui.logic.DesktopEntry") as mock_desktop, mock.patch(
-        "os.listdir",
-        side_effect=[
-            ["malformed.desktop", "another.desktop"],
-            [],
-            [],
-        ],
+    with (
+        mock.patch("dangerzone.gui.logic.DesktopEntry") as mock_desktop,
+        mock.patch(
+            "os.listdir",
+            side_effect=[
+                ["malformed.desktop", "another.desktop"],
+                [],
+                [],
+            ],
+        ),
     ):
         mock_desktop.side_effect = ParsingError("Oh noes!", "malformed.desktop")
         DangerzoneGui(mock_app, dummy)

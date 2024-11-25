@@ -6,7 +6,6 @@ import signal
 import subprocess
 import sys
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import IO, Callable, Iterator, Optional
 
 import fitz

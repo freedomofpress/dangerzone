@@ -7,7 +7,6 @@ from typing import List
 
 from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
-from pytest_subprocess import FakeProcess
 from pytestqt.qtbot import QtBot
 
 from dangerzone import errors

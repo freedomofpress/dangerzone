@@ -3,6 +3,7 @@ on:
   schedule:
     - cron: '0 0 * * *' # Run every day at 00:00 UTC.
   workflow_dispatch:
+  pull_request:
 
 jobs:
   security-scan-container:
@@ -20,7 +21,7 @@ jobs:
       - name: Download container image for the latest release and load it
         run: |
           VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | grep "tag_name" | cut -d '"' -f 4)
-          CONTAINER_FILENAME=container-${VERSION:1}-${{ matrix.arch }}.tar.gz
+          CONTAINER_FILENAME=container-${VERSION}-${{ matrix.arch }}.tar.gz
           wget https://github.com/freedomofpress/dangerzone/releases/download/${VERSION}/${CONTAINER_FILENAME} -O ${CONTAINER_FILENAME}
           docker load -i ${CONTAINER_FILENAME}
       # NOTE: Scan first without failing, else we won't be able to read the scan

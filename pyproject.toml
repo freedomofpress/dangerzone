@@ -38,13 +38,12 @@ doit = "^0.36.0"
 
 # Dependencies required for linting the code.
 [tool.poetry.group.lint.dependencies]
-black = "*"
-isort = "*"
 mypy = "*"
+ruff = "*"
 types-colorama = "*"
+types-PySide2 = "*"
 types-Markdown = "*"
 types-pygments = "*"
-types-PySide2 = "*"
 types-requests = "*"
 
 # Dependencies required for testing the code.

@@ -40,6 +40,7 @@ pyinstaller = {version = "*", platform = "darwin"}
 black = "*"
 isort = "*"
 mypy = "*"
+ruff = "*"
 types-PySide2 = "*"
 types-Markdown = "*"
 types-requests = "*"

@@ -112,10 +112,13 @@ def task_macos_check_cert():
 def task_macos_check_docker_containerd():
     """Test that Docker uses the containard image store."""
     def check_containerd_store():
-        driver = subprocess.check_output(["docker", "info", "-f", "{{ .DriverSTatus }}"])
+        cmd = ["docker", "info", "-f", "{{ .DriverStatus }}"]
+        driver = subprocess.check_output(cmd).strip()
         if driver != "[[driver-type io.containerd.snapshotter.v1]]":
             raise RuntimeError(
-                "Switch to Docker's containerd image store"
+                f"Probing the Docker image store with {cmd} returned {driver}."
+                " Switch to Docker's containerd image store from the Docker Desktop"
+                " settings."
             )
 
     return {

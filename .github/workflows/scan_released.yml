@@ -21,12 +21,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Colima (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          brew install colima
+          colima start
+          
       - name: Download container image for the latest release and load it
         run: |
           VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | grep "tag_name" | cut -d '"' -f 4)
           CONTAINER_FILENAME=container-${VERSION:1}-${{ matrix.arch }}.tar.gz
           wget https://github.com/freedomofpress/dangerzone/releases/download/${VERSION}/${CONTAINER_FILENAME} -O ${CONTAINER_FILENAME}
           docker load -i ${CONTAINER_FILENAME}
+
       # NOTE: Scan first without failing, else we won't be able to read the scan
       # report.
       - name: Scan container image (no fail)
@@ -37,13 +45,16 @@ jobs:
           fail-build: false
           only-fixed: false
           severity-cutoff: critical
+
       - name: Upload container scan report
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.scan_container.outputs.sarif }}
           category: container-${{ matrix.arch }}
+
       - name: Inspect container scan report
         run: cat ${{ steps.scan_container.outputs.sarif }}
+
       - name: Scan container image
         uses: anchore/scan-action@v5
         with:
@@ -51,6 +62,10 @@ jobs:
           fail-build: true
           only-fixed: false
           severity-cutoff: critical
+
+      - name: Cleanup Colima (macOS only)
+        if: runner.os == 'macOS'
+        run: colima stop
 
   security-scan-app:
     runs-on: ubuntu-latest

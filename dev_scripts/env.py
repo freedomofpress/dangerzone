@@ -8,7 +8,6 @@ import platform
 import shutil
 import subprocess
 import sys
-import urllib.request
 from datetime import date
 
 DEFAULT_GUI = True

@@ -5,7 +5,9 @@ import platform
 import signal
 import subprocess
 import sys
+import threading
 from abc import ABC, abstractmethod
+from io import BytesIO
 from typing import IO, Callable, Iterator, Optional
 
 import fitz
@@ -18,7 +20,6 @@ from ..util import get_tessdata_dir, replace_control_chars
 
 log = logging.getLogger(__name__)
 
-MAX_CONVERSION_LOG_CHARS = 150 * 50  # up to ~150 lines of 50 characters
 DOC_TO_PIXELS_LOG_START = "----- DOC TO PIXELS LOG START -----"
 DOC_TO_PIXELS_LOG_END = "----- DOC TO PIXELS LOG END -----"
 
@@ -75,9 +76,9 @@ def read_int(f: IO[bytes]) -> int:
     return int.from_bytes(untrusted_int, "big", signed=False)
 
 
-def read_debug_text(f: IO[bytes], size: int) -> str:
-    """Read arbitrarily long text (for debug purposes), and sanitize it."""
-    untrusted_text = f.read(size).decode("ascii", errors="replace")
+def sanitize_debug_text(text: bytes) -> str:
+    """Read all the buffer and return a sanitized version"""
+    untrusted_text = text.decode("ascii", errors="replace")
     return replace_control_chars(untrusted_text, keep_newlines=True)
 
 
@@ -86,11 +87,15 @@ class IsolationProvider(ABC):
     Abstracts an isolation provider
     """
 
-    def __init__(self) -> None:
-        if getattr(sys, "dangerzone_dev", False) is True:
+    def __init__(self, debug: bool = False) -> None:
+        self.debug = debug
+        if self.should_capture_stderr():
             self.proc_stderr = subprocess.PIPE
         else:
             self.proc_stderr = subprocess.DEVNULL
+
+    def should_capture_stderr(self) -> bool:
+        return self.debug or getattr(sys, "dangerzone_dev", False)
 
     @abstractmethod
     def install(self) -> bool:
@@ -327,7 +332,11 @@ class IsolationProvider(ABC):
         timeout_force: int = TIMEOUT_FORCE,
     ) -> Iterator[subprocess.Popen]:
         """Start a conversion process, pass it to the caller, and then clean it up."""
+        # Store the proc stderr in memory
+        stderr = BytesIO()
         p = self.start_doc_to_pixels_proc(document)
+        stderr_thread = self.start_stderr_thread(p, stderr)
+
         if platform.system() != "Windows":
             assert os.getpgid(p.pid) != os.getpgid(
                 os.getpid()
@@ -343,15 +352,41 @@ class IsolationProvider(ABC):
                 document, p, timeout_grace=timeout_grace, timeout_force=timeout_force
             )
 
-            # Read the stderr of the process only if:
-            # * Dev mode is enabled.
-            # * The process has exited (else we risk hanging).
-            if getattr(sys, "dangerzone_dev", False) and p.poll() is not None:
-                assert p.stderr
-                debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
+            if stderr_thread:
+                # Wait for the thread to complete. If it's still alive, mention it in the debug log.
+                stderr_thread.join(timeout=1)
+
+                debug_bytes = stderr.getvalue()
+                debug_log = sanitize_debug_text(debug_bytes)
+
+                incomplete = "(incomplete)\n" if stderr_thread.is_alive() else ""
+
                 log.info(
                     "Conversion output (doc to pixels)\n"
                     f"{DOC_TO_PIXELS_LOG_START}\n"
                     f"{debug_log}"  # no need for an extra newline here
+                    f"{incomplete}"
                     f"{DOC_TO_PIXELS_LOG_END}"
                 )
+
+    def start_stderr_thread(
+        self, process: subprocess.Popen, stderr: IO[bytes]
+    ) -> Optional[threading.Thread]:
+        """Start a thread to read stderr from the process"""
+
+        def _stream_stderr(process_stderr: IO[bytes]) -> None:
+            try:
+                for line in process_stderr:
+                    stderr.write(line)
+            except (ValueError, IOError) as e:
+                log.debug(f"Stderr stream closed: {e}")
+
+        if process.stderr:
+            stderr_thread = threading.Thread(
+                target=_stream_stderr,
+                args=(process.stderr,),
+                daemon=True,
+            )
+            stderr_thread.start()
+            return stderr_thread
+        return None

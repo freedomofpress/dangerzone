@@ -71,6 +71,7 @@ class DangerzoneCore(object):
                     ocr_lang,
                     stdout_callback,
                 )
+
             except Exception:
                 log.exception(
                     f"Unexpected error occurred while converting '{document}'"

@@ -48,8 +48,7 @@ body:
     attributes:
       label: Docker info
       description: |
-        If the bug occurs during document conversion, or is otherwise related
-        with Docker, please copy and paste the following commands in your
+        Please copy and paste the following commands in your
         terminal, and provide us with the output:
 
         ```shell

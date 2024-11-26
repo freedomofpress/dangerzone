@@ -36,7 +36,7 @@ body:
     attributes:
       label: Podman info
       description: |
-        If the bug occurs during document conversion, or is otherwise related with Podman, please copy and paste the following commands in your terminal, and provide us with the output:
+        Please copy and paste the following commands in your terminal, and provide us with the output:
 
         ```shell
         podman version

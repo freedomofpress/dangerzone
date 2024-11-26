@@ -25,12 +25,10 @@ jobs:
       - name: Setup Docker and Colima (macOS only)
         if: runner.os == 'macOS'
         run: |
-          # Workaround for https://github.com/actions/runner-images/issues/8104
-          brew remove --ignore-dependencies qemu
-          curl -o ./qemu.rb https://raw.githubusercontent.com/Homebrew/homebrew-core/dc0669eca9479e9eeb495397ba3a7480aaa45c2e/Formula/qemu.rb
-          brew install ./qemu.rb
           brew install docker colima
-          colima start
+          # LIMACTL_PATH=$(brew --prefix)/bin/limactl
+          # sudo curl -L -o $LIMACTL_PATH https://github.com/mikekazakov/lima-nohvf/raw/master/limactl && sudo chmod +x $LIMACTL_PATH
+          colima start --network-address --arch arm64 --vm-type=qemu
           # Wait for Docker daemon to be ready
           timeout=30
           while ! docker info >/dev/null 2>&1; do

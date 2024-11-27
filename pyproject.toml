@@ -67,8 +67,19 @@ skip_gitignore = true
 # This is necessary due to https://github.com/PyCQA/isort/issues/1835
 follow_links = false
 
+[tool.doit.commands.clean]
+# XXX: Change this to false if you REALLY want to clean a task's output. Else,
+# the `doit clean` comamnd will print the commands that would run instead.
+dryrun = true
+
+[tool.doit.tasks.macos_check_cert]
+apple_id = "fpf@example.com"
+
+[tool.doit.tasks.macos_codesign]
+apple_id = "fpf@example.com"
+
 [tool.doit.tasks.build_container]
-use_cache = true
+use_cache = false
 
 [build-system]
 requires = ["poetry-core>=1.2.0"]

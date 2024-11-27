@@ -12,7 +12,7 @@ def get_config_dir() -> str:
     return appdirs.user_config_dir("dangerzone")
 
 
-def get_resource_path(filename: str) -> str:
+def get_resource_dir() -> pathlib.Path:
     if getattr(sys, "dangerzone_dev", False):
         # Look for resources directory relative to python file
         project_root = pathlib.Path(__file__).parent.parent
@@ -30,8 +30,11 @@ def get_resource_path(filename: str) -> str:
             prefix = dz_install_path / "share"
         else:
             raise NotImplementedError(f"Unsupported system {platform.system()}")
-    resource_path = prefix / filename
-    return str(resource_path)
+    return prefix
+
+
+def get_resource_path(filename: str) -> str:
+    return str(get_resource_dir()/ filename)
 
 
 def get_tessdata_dir() -> pathlib.Path:

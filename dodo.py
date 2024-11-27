@@ -14,8 +14,10 @@ from doit.action import CmdAction
 #     CONTAINER_RUNTIME = "podman"
 CONTAINER_RUNTIME = "podman"
 
+ARCH = "i686"  # FIXME
 VERSION = open("share/version.txt").read().strip()
-RELEASE_DIR = Path.home() / "release" / VERSION
+# FIXME: Make this user-selectable with `get_var()`
+RELEASE_DIR = Path.home() / "dz_release_area" / VERSION
 FEDORA_VERSIONS = ["39", "40", "41"]
 DEBIAN_VERSIONS = ["bullseye", "focal", "jammy", "mantic", "noble", "trixie"]
 
@@ -63,6 +65,16 @@ def cmd_build_linux_pkg(distro, version, cwd, qubes=False):
     return CmdAction(cmd, cwd=cwd)
 
 
+def task_clean_container_runtime():
+    """Clean the storage space of the container runtime."""
+    return {
+        "actions": None,
+        "clean": [
+            [CONTAINER_RUNTIME, "system", "prune", "-f"],
+        ],
+    }
+
+
 def task_check_python():
     """Check that the latest supported Python version is installed (WIP).
 
@@ -78,7 +90,7 @@ def task_check_python():
     }
 
 
-def task_container_runtime():
+def task_check_container_runtime():
     """Test that the container runtime is ready."""
     return {
         "actions": [
@@ -88,13 +100,13 @@ def task_container_runtime():
     }
 
 
-def task_system_checks():
+def task_check_system():
     """Common status checks for a system."""
     return {
         "actions": None,
         "task_dep": [
             "check_python",
-            "container_runtime",
+            "check_container_runtime",
         ],
     }
 
@@ -113,7 +125,7 @@ def task_macos_check_docker_containerd():
     """Test that Docker uses the containard image store."""
     def check_containerd_store():
         cmd = ["docker", "info", "-f", "{{ .DriverStatus }}"]
-        driver = subprocess.check_output(cmd).strip()
+        driver = subprocess.check_output(cmd, text=True).strip()
         if driver != "[[driver-type io.containerd.snapshotter.v1]]":
             raise RuntimeError(
                 f"Probing the Docker image store with {cmd} returned {driver}."
@@ -131,20 +143,34 @@ def task_macos_check_docker_containerd():
     }
 
 
-def task_macos_system_checks():
+def task_macos_check_system():
     """Run macOS specific system checks, as well as the generic ones."""
     return {
         "actions": None,
         "task_dep": [
-            "system_checks",
+            "check_system",
             "macos_check_cert",
             "macos_check_docker_containerd",
         ],
     }
 
 
-def task_tessdata():
-    """Download Tesseract data"""
+def task_init_release_dir():
+    """Create a directory for release artifacts."""
+    def create_release_dir():
+        RELEASE_DIR.mkdir(parents=True, exist_ok=True)
+        (RELEASE_DIR / "assets").mkdir(exist_ok=True)
+        (RELEASE_DIR / "tmp").mkdir(exist_ok=True)
+
+    return {
+        "actions": [create_release_dir],
+        "targets": [RELEASE_DIR, RELEASE_DIR / "github", RELEASE_DIR / "tmp"],
+        "clean": True,
+    }
+
+
+def task_download_tessdata():
+    """Download the Tesseract data using ./install/common/download-tessdata.py"""
     tessdata_dir = Path("share") / "tessdata"
     langs = json.loads(open(tessdata_dir.parent / "ocr-languages.json").read()).values()
     targets = [tessdata_dir / f"{lang}.traineddata" for lang in langs]
@@ -160,77 +186,73 @@ def task_tessdata():
     }
 
 
-def task_build_container():
+def task_build_image():
+    """Build the container image using ./install/common/build-image.py"""
     return {
-        "actions": ["python install/common/build-image.py --use-cache=%(use_cache)s"],
+        "actions": [
+            "python install/common/build-image.py --use-cache=%(use_cache)s",
+        ],
         "params": [
             {
                 "name": "use_cache",
                 "long": "use-cache",
+                "help": (
+                    "Whether to use cached results or not. For reproducibility reasons,"
+                    " it's best to leave it to false"
+                ),
                 "default": False,
-            }
+            },
         ],
         "file_dep": [
             "Dockerfile",
             "poetry.lock",
             *list_files("dangerzone/conversion"),
             "dangerzone/gvisor_wrapper/entrypoint.py",
+            "install/common/build-image.py",
         ],
         "targets": ["share/container.tar.gz", "share/image-id.txt"],
-        "task_dep": ["container_runtime"],
+        "task_dep": ["check_container_runtime"],
         "clean": True,
     }
 
 
 def task_poetry_install():
+    """Setup the Poetry environment"""
     return {
         "actions": ["poetry install --sync"],
     }
 
 
-def task_app():
+def task_macos_build_app():
+    """Build the macOS app bundle for Dangerzone."""
+
     return {
         "actions": [["poetry", "run", "install/macos/build-app.py"]],
         "file_dep": [
             *list_files("share"),
             *list_files("dangerzone"),
+            "share/container.tar.gz",
+            "share/image-id.txt",
         ],
         "task_dep": ["poetry_install"],
         "targets": ["dist/Dangerzone.app"],
-        "clean": True,
+        "clean": ["rm -rf dist/Dangerzone.app"],
     }
 
 
-def task_codesign():
+def task_macos_codesign():
     return {
         "actions": [
-            ["poetry", "run", "install/macos/build-app.py"],
+            ["poetry", "run", "install/macos/build-app.py", "--only-codesign"],
             [
-                "xcrun",
-                "notarytool",
-                "submit",
-                "--wait",
-                "--apple-id",
-                "<email>",
-                "--keychain-profile",
-                "dz-notarytool-release-key",
-                "dist/Dangerzone.dmg",
+                "xcrun notarytool submit --wait --apple-id %(apple_id)s"
+                " --keychain-profile dz-notarytool-release-key dist/Dangerzone.dmg",
             ],
         ],
+        "params": [PARAM_APPLE_ID],
         "file_dep": ["dist/Dangerzone.app"],
-        "targets": ["dist/Dangerzone.dmg"]
-    }
-
-
-def task_init_release_dir():
-    def create_release_dir():
-        RELEASE_DIR.mkdir(parents=True, exist_ok=True)
-        (RELEASE_DIR / "github").mkdir(exist_ok=True)
-        (RELEASE_DIR / "tmp").mkdir(exist_ok=True)
-
-    return {
-        "actions": [create_release_dir],
-        "targets": [RELEASE_DIR, RELEASE_DIR / "github", RELEASE_DIR / "tmp"],
+        "targets": ["dist/Dangerzone.dmg"],
+        "clean": True,
     }
 
 
@@ -271,7 +293,8 @@ def task_debian_deb():
         "task_dep": [
             "debian_env",
         ],
-        "targets": [deb_dst]
+        "targets": [deb_dst],
+        "clean": True,
     }
 
 
@@ -322,7 +345,8 @@ def task_fedora_rpm():
             "task_dep": [
                 f"fedora_env:{version}",
             ],
-            "targets": rpm_dst
+            "targets": rpm_dst,
+            "clean": True,
         }
 
 
@@ -360,5 +384,6 @@ def task_apt_tools_prod_prep(apt_tools_prod_dir):
     return {
         "actions": [copy_files],
         "file_dep": [src],
-        "targets": [bookworm_deb, *other_debs]
+        "targets": [bookworm_deb, *other_debs],
+        "clean": True,
     }

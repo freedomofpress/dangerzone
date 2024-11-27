@@ -6,9 +6,10 @@ import shlex
 import shutil
 import subprocess
 from typing import List, Tuple
+from pathlib import Path
 
 from ..document import Document
-from ..util import get_resource_path, get_subprocess_startupinfo
+from ..util import get_resource_path, get_resource_dir, get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
 
 TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
@@ -47,7 +48,8 @@ class ImageInstallationException(Exception):
 
 class Container(IsolationProvider):
     # Name of the dangerzone container
-    CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+    IMAGE_NAME = "dangerzone.rocks/dangerzone"
+    TARBALL_NAME = "container-%(tag)s.tar.gz"
 
     @staticmethod
     def get_runtime_name() -> str:
@@ -155,16 +157,59 @@ class Container(IsolationProvider):
         return security_args
 
     @staticmethod
-    def install() -> bool:
-        """
-        Make sure the podman container is installed. Linux only.
-        """
-        if Container.is_container_installed():
-            return True
+    def get_image_tags() -> [str]:
+        """Get the tag of the loaded Dangerzone container image.
 
-        # Load the container into podman
+        If there's no such image, return None.
+        """
+        names = subprocess.check_output(
+            [
+                Container.get_runtime(),
+                "image",
+                "list",
+                "--format",
+                "{{index .Names 0 }}",
+                Container.IMAGE_NAME,
+            ],
+            text=True,
+            startupinfo=get_subprocess_startupinfo(),
+        ).strip().split()
+
+        tags = [name.split(":")[1] for name in names]
+        return tags.pop("latest")
+
+    @staticmethod
+    def delete_image_tag(tag: str) -> None:
+        name = Container.IMAGE_NAME +  ":" + tag
+        log.warning(f"Deleting old container image: {name}")
+        try:
+            subprocess.check_output(
+                [Container.get_runtime(), "rmi", "--force", name],
+                startupinfo=get_subprocess_startupinfo(),
+            )
+        except Exception:
+            log.warning(f"Couldn't delete old container image '{name}', so leaving it there")
+
+    @staticmethod
+    def get_image_tarball() -> None | str:
+        """Get the name of the Dangerzone image tarball in the resource directory.
+
+        If there's no such tarball, raise an exception.
+        """
+        resource_dir = get_resource_dir()
+        tarball_glob = Container.TARBALL_NAME.format(tag="*")
+        tarballs = [f for f in resource_dir.glob(tarball_glob) if f.is_file()]
+
+        if not tarballs:
+            raise FileNotFoundError(f"Did not find a Dangerzone image tarball in '{resource_dir}'")
+        elif len(tarballs) > 1:
+            log.warning(f"Found more than one Dangerzone image tarballs: {tarballs}. Picking the first one.")
+
+        return tarballs[0]
+
+    @staticmethod
+    def load_image_tarball(tarball: Path) -> None:
         log.info("Installing Dangerzone container image...")
-
         p = subprocess.Popen(
             [Container.get_runtime(), "load"],
             stdin=subprocess.PIPE,
@@ -172,8 +217,7 @@ class Container(IsolationProvider):
         )
 
         chunk_size = 4 << 20
-        compressed_container_path = get_resource_path("container.tar.gz")
-        with gzip.open(compressed_container_path) as f:
+        with gzip.open(tarball) as f:
             while True:
                 chunk = f.read(chunk_size)
                 if len(chunk) > 0:
@@ -181,7 +225,7 @@ class Container(IsolationProvider):
                         p.stdin.write(chunk)
                 else:
                     break
-        _, err = p.communicate()
+        out, err = p.communicate()
         if p.returncode < 0:
             if err:
                 error = err.decode()
@@ -191,10 +235,66 @@ class Container(IsolationProvider):
                 f"Could not install container image: {error}"
             )
 
-        if not Container.is_container_installed(raise_on_error=True):
-            return False
+        image_id = out.decode().strip()
+        log.info(f"Successfully installed container image with ID '{image_id}'")
+        return image_id
 
-        log.info("Container image installed")
+    @staticmethod
+    def tag_image(image_id: str, tag: str) -> None:
+        image_name = Container.IMAGE_NAME + ":" + tag
+        subprocess.check_output(
+            [
+                Container.get_runtime(),
+                "tag",
+                image_id,
+                image_name,
+            ],
+            startupinfo=get_subprocess_startupinfo(),
+        )
+
+        log.info(f"Successfully tagged container image with ID '{image_id}' as {image_name}")
+
+    @staticmethod
+    def is_tarball_loaded(tarball: Path, tags: [str]) -> None:
+        # Check if the image tarball has been loaded.
+        for tag in tags:
+            if tarball.name == Container.TARBALL_NAME.format(tag=tag):
+                return True
+        return False
+
+    @staticmethod
+    def install() -> bool:
+        """Install the container image tarball, or verify that it's already installed.
+
+        Perform the following actions:
+        1. Get the images named `dangerzone.rocks/dangerzone`, and their tags, if any.
+        2. Get the name of the container tarball in Dangerzone's `share/` directory.
+        3. If there's no previous Dangerzone image, install the container tarball.
+        4. Else, check if the image tag matches the name in the container tarball. If
+           yes, skip the installation. Else, load the container image tarball and delete
+           the previous ones.
+        """
+        old_tags = Container.get_image_tags()
+        tarball = Container.get_image_tarball()
+
+        if Container.is_tarball_loaded(tarball, old_tags):
+            return
+
+        # Load the image tarball into the container runtime.
+        image_id = Container.load_image_tarball(tarball)
+        Container.tag_image(image_id, "latest")
+
+        # Check if the image tarball has been loaded.
+        new_tags = Container.get_image_tags()
+        if not Container.is_tarball_loaded(tarball, new_tags):
+            raise ImageNotPresentException(
+                "Image is not listed after installation. Bailing out."
+            )
+
+        # Prune older container images.
+        for tag in old_tags:
+            Container.delete_image_tag(tag)
+
         return True
 
     @staticmethod
@@ -212,58 +312,6 @@ class Container(IsolationProvider):
             if p.returncode != 0:
                 raise NotAvailableContainerTechException(runtime_name, stderr.decode())
             return True
-
-    @staticmethod
-    def is_container_installed(raise_on_error: bool = False) -> bool:
-        """
-        See if the container is installed.
-        """
-        # Get the image id
-        with open(get_resource_path("image-id.txt")) as f:
-            expected_image_ids = f.read().strip().split()
-
-        # See if this image is already installed
-        installed = False
-        found_image_id = subprocess.check_output(
-            [
-                Container.get_runtime(),
-                "image",
-                "list",
-                "--format",
-                "{{.ID}}",
-                Container.CONTAINER_NAME,
-            ],
-            text=True,
-            startupinfo=get_subprocess_startupinfo(),
-        )
-        found_image_id = found_image_id.strip()
-
-        if found_image_id in expected_image_ids:
-            installed = True
-        elif found_image_id == "":
-            if raise_on_error:
-                raise ImageNotPresentException(
-                    "Image is not listed after installation. Bailing out."
-                )
-        else:
-            msg = (
-                f"{Container.CONTAINER_NAME} images found, but IDs do not match."
-                f" Found: {found_image_id}, Expected: {','.join(expected_image_ids)}"
-            )
-            if raise_on_error:
-                raise ImageNotPresentException(msg)
-            log.info(msg)
-            log.info("Deleting old dangerzone container image")
-
-            try:
-                subprocess.check_output(
-                    [Container.get_runtime(), "rmi", "--force", found_image_id],
-                    startupinfo=get_subprocess_startupinfo(),
-                )
-            except Exception:
-                log.warning("Couldn't delete old container image, so leaving it there")
-
-        return installed
 
     def doc_to_pixels_container_name(self, document: Document) -> str:
         """Unique container name for the doc-to-pixels phase."""

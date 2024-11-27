@@ -29,7 +29,7 @@ env:
 jobs:
   build-dev-environment:
     name: "Build dev-env (${{ matrix.distro }}-${{ matrix.version }})"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24
     strategy:
       matrix:
         include:

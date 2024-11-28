@@ -68,8 +68,13 @@ skip_gitignore = true
 follow_links = false
 
 [tool.doit.commands.clean]
-# XXX: Change this to false if you REALLY want to clean a task's output. Else,
-# the `doit clean` comamnd will print the commands that would run instead.
+# XXX: Change this to false if you REALLY want to clean your environment. Note
+# that this command will:
+# * prune container images,
+# * clean the Git repo, and
+# * remove all tasks output
+#
+# Else, the `doit clean` comamnd will print the commands that would run instead.
 dryrun = true
 
 [tool.doit.tasks.macos_check_cert]

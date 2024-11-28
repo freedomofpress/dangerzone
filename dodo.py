@@ -75,6 +75,17 @@ def task_clean_container_runtime():
     }
 
 
+def task_clean_git():
+    """Clean the Git repo."""
+    return {
+        "actions": None,
+        "clean": [
+            "git clean -fdx",
+            "git checkout -f",
+        ],
+    }
+
+
 def task_check_python():
     """Check that the latest supported Python version is installed (WIP).
 
@@ -188,9 +199,13 @@ def task_download_tessdata():
 
 def task_build_image():
     """Build the container image using ./install/common/build-image.py"""
+    img_src = "share/container-{VERSION}.tar.gz"
+    img_dst = RELEASE_DIR / "container-{VERSION}.tar.gz"  # FIXME: Add arch
+
     return {
         "actions": [
             "python install/common/build-image.py --use-cache=%(use_cache)s",
+            "cp {img_src} {img_dst}",
         ],
         "params": [
             {
@@ -210,7 +225,7 @@ def task_build_image():
             "dangerzone/gvisor_wrapper/entrypoint.py",
             "install/common/build-image.py",
         ],
-        "targets": ["share/container.tar.gz", "share/image-id.txt"],
+        "targets": [img_src, img_dst],
         "task_dep": ["check_container_runtime"],
         "clean": True,
     }
@@ -223,37 +238,54 @@ def task_poetry_install():
     }
 
 
-def task_macos_build_app():
+def task_macos_build_dmg():
     """Build the macOS app bundle for Dangerzone."""
+    dz_dir = RELEASE_DIR / "tmp" / "macos"
+    dmg_src = dz_dir / "dist" / "Dangerzone.dmg"
+    dmg_dst = RELEASE_DIR / "Dangerzone-{VERSION}.dmg"  # FIXME: Add -arch
 
-    return {
-        "actions": [["poetry", "run", "install/macos/build-app.py"]],
-        "file_dep": [
-            *list_files("share"),
-            *list_files("dangerzone"),
-            "share/container.tar.gz",
-            "share/image-id.txt",
-        ],
-        "task_dep": ["poetry_install"],
-        "targets": ["dist/Dangerzone.app"],
-        "clean": ["rm -rf dist/Dangerzone.app"],
-    }
-
-
-def task_macos_codesign():
     return {
         "actions": [
-            ["poetry", "run", "install/macos/build-app.py", "--only-codesign"],
-            [
-                "xcrun notarytool submit --wait --apple-id %(apple_id)s"
-                " --keychain-profile dz-notarytool-release-key dist/Dangerzone.dmg",
-            ],
+            (copy_dz_dir, [".", dz_dir]),
+            f"cd {dz_dir} && poetry run install/macos/build-app.py --with-codesign",
+            ("xcrun notarytool submit --wait --apple-id %(apple_id)s"
+             f" --keychain-profile dz-notarytool-release-key {dmg_src}"),
+            f"xcrun stapler staple {dmg_src}",
+            ["cp", "-r", dmg_src, dmg_dst],
+            ["rm", "-r", dz_dir],
         ],
         "params": [PARAM_APPLE_ID],
-        "file_dep": ["dist/Dangerzone.app"],
-        "targets": ["dist/Dangerzone.dmg"],
+        "file_dep": [
+            RELEASE_DIR,
+            "poetry.lock",
+            "install/macos/build.app.py",
+            *list_files("assets"),
+            *list_files("share"),
+            *list_files("dangerzone"),
+            f"share/container-{VERSION}.tar.gz",
+        ],
+        "task_dep": ["poetry_install"],
+        "targets": [dmg_dst],
         "clean": True,
     }
+
+
+# def task_macos_codesign():
+#     dz_dir = RELEASE_DIR / "tmp" / "macos"
+#     app_src = RELEASE_DIR / "Dangerzone.app"
+#     dmg_src = dz_dir / "dist" / "Dangerzone.dmg"
+#     dmg_dst = RELEASE_DIR / "Dangerzone-{VERSION}.dmg"
+
+#     return {
+#         "actions": [
+#         ],
+#         "params": [PARAM_APPLE_ID],
+#         "file_dep": [
+#             RELEASE_DIR / "Dangerzone.app"
+#         ],
+#         "targets": ["dist/Dangerzone.dmg"],
+#         "clean": True,
+#     }
 
 
 def task_debian_env():
@@ -287,8 +319,12 @@ def task_debian_deb():
         ],
         "file_dep": [
             RELEASE_DIR,
-            "share/container.tar.gz",
-            "share/image-id.txt",
+            "poetry.lock",
+            "install/linux/build-deb.py",
+            *list_files("assets"),
+            *list_files("share"),
+            *list_files("dangerzone"),
+            "share/container-{VERSION}.tar.gz",
         ],
         "task_dep": [
             "debian_env",
@@ -339,8 +375,12 @@ def task_fedora_rpm():
             ],
             "file_dep": [
                 RELEASE_DIR,
-                "share/container.tar.gz",
-                "share/image-id.txt",
+                "poetry.lock",
+                "install/linux/build-rpm.py",
+                *list_files("assets"),
+                *list_files("share"),
+                *list_files("dangerzone"),
+                "share/container-{VERSION}.tar.gz",
             ],
             "task_dep": [
                 f"fedora_env:{version}",

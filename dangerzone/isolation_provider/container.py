@@ -270,13 +270,7 @@ class Container(IsolationProvider):
         log.info(f"Successfully tagged container image '{cur_image_name}' as {new_image_name}")
 
     @staticmethod
-    def is_tag_latest(expected_tag: str, tag_map: [str]) -> None:
-        try:
-            return tag_map[expected_tag] == tag_map["latest"]
-        except KeyError:
-            return False
-
-    def install(self) -> bool:
+    def install() -> bool:
         """Install the container image tarball, or verify that it's already installed.
 
         Perform the following actions:
@@ -310,7 +304,7 @@ class Container(IsolationProvider):
         new_tags = Container.get_image_tags()
         if expected_tag not in new_tags:
             raise ImageNotPresentException(
-                "Could not find expected tag {tag} after loading the container image tarball"
+                f"Could not find expected tag '{expected_tag}' after loading the container image tarball"
             )
 
         # Mark the expected tag as "latest".

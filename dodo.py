@@ -175,8 +175,7 @@ def task_init_release_dir():
 
     return {
         "actions": [create_release_dir],
-        "targets": [RELEASE_DIR, RELEASE_DIR / "github", RELEASE_DIR / "tmp"],
-        "clean": True,
+        "clean": [f"rm -rf {RELEASE_DIR}"],
     }
 
 
@@ -199,13 +198,13 @@ def task_download_tessdata():
 
 def task_build_image():
     """Build the container image using ./install/common/build-image.py"""
-    img_src = "share/container-{VERSION}.tar.gz"
-    img_dst = RELEASE_DIR / "container-{VERSION}.tar.gz"  # FIXME: Add arch
+    img_src = f"share/container-{VERSION}.tar.gz"
+    img_dst = RELEASE_DIR / f"container-{VERSION}.tar.gz"  # FIXME: Add arch
 
     return {
         "actions": [
-            "python install/common/build-image.py --use-cache=%(use_cache)s",
-            "cp {img_src} {img_dst}",
+            "python install/common/build-image.py --use-cache=%(use_cache)s --force-tag=%(force_tag)s",
+            f"cp {img_src} {img_dst}",
         ],
         "params": [
             {
@@ -217,6 +216,15 @@ def task_build_image():
                 ),
                 "default": False,
             },
+            {
+                "name": "force_tag",
+                "long": "force-tag",
+                "help": (
+                    "Build the image using the specified tag. For reproducibility"
+                    " reasons, it's best to not use this flag"
+                ),
+                "default": "",
+            },
         ],
         "file_dep": [
             "Dockerfile",
@@ -226,7 +234,10 @@ def task_build_image():
             "install/common/build-image.py",
         ],
         "targets": [img_src, img_dst],
-        "task_dep": ["check_container_runtime"],
+        "task_dep": [
+            "init_release_dir",
+            "check_container_runtime",
+        ],
         "clean": True,
     }
 
@@ -242,7 +253,7 @@ def task_macos_build_dmg():
     """Build the macOS app bundle for Dangerzone."""
     dz_dir = RELEASE_DIR / "tmp" / "macos"
     dmg_src = dz_dir / "dist" / "Dangerzone.dmg"
-    dmg_dst = RELEASE_DIR / "Dangerzone-{VERSION}.dmg"  # FIXME: Add -arch
+    dmg_dst = RELEASE_DIR / f"Dangerzone-{VERSION}.dmg"  # FIXME: Add -arch
 
     return {
         "actions": [
@@ -256,7 +267,6 @@ def task_macos_build_dmg():
         ],
         "params": [PARAM_APPLE_ID],
         "file_dep": [
-            RELEASE_DIR,
             "poetry.lock",
             "install/macos/build.app.py",
             *list_files("assets"),
@@ -264,7 +274,10 @@ def task_macos_build_dmg():
             *list_files("dangerzone"),
             f"share/container-{VERSION}.tar.gz",
         ],
-        "task_dep": ["poetry_install"],
+        "task_dep": [
+            "init_release_dir",
+            "poetry_install"
+        ],
         "targets": [dmg_dst],
         "clean": True,
     }
@@ -318,15 +331,15 @@ def task_debian_deb():
             ["rm", "-r", dz_dir],
         ],
         "file_dep": [
-            RELEASE_DIR,
             "poetry.lock",
             "install/linux/build-deb.py",
             *list_files("assets"),
             *list_files("share"),
             *list_files("dangerzone"),
-            "share/container-{VERSION}.tar.gz",
+            f"share/container-{VERSION}.tar.gz",
         ],
         "task_dep": [
+            "init_release_dir",
             "debian_env",
         ],
         "targets": [deb_dst],
@@ -374,15 +387,15 @@ def task_fedora_rpm():
                 ["rm", "-r", dz_dir],
             ],
             "file_dep": [
-                RELEASE_DIR,
                 "poetry.lock",
                 "install/linux/build-rpm.py",
                 *list_files("assets"),
                 *list_files("share"),
                 *list_files("dangerzone"),
-                "share/container-{VERSION}.tar.gz",
+                f"share/container-{VERSION}.tar.gz",
             ],
             "task_dep": [
+                "init_release_dir",
                 f"fedora_env:{version}",
             ],
             "targets": rpm_dst,

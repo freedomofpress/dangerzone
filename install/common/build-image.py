@@ -56,19 +56,27 @@ def main():
         const=True,
         help="Use the builder's cache to speed up the builds (not suitable for release builds)",
     )
+    parser.add_argument(
+        "--force-tag",
+        default=None,
+        help="Force tag the image with this tag",
+    )
     args = parser.parse_args()
 
     print(f"Building for architecture '{ARCH}'")
     dirty_tag = secrets.token_hex(2)
 
-    tag = subprocess.check_output(
-        [
-            "git",
-            "describe",
-            "--first-parent",
-            f"--dirty=-{dirty_tag}"
-        ],
-    ).decode().strip()[1:]  # remove the "v" prefix of the tag.
+    if not args.force_tag:
+        tag = subprocess.check_output(
+            [
+                "git",
+                "describe",
+                "--first-parent",
+                f"--dirty=-{dirty_tag}"
+            ],
+        ).decode().strip()[1:]  # remove the "v" prefix of the tag.
+    else:
+        tag = args.force_tag
     image_name_tagged = IMAGE_NAME + ":" + tag
 
     print(f"Will tag the container image as '{image_name_tagged}'")

@@ -83,8 +83,9 @@ apple_id = "fpf@example.com"
 [tool.doit.tasks.macos_codesign]
 apple_id = "fpf@example.com"
 
-[tool.doit.tasks.build_container]
+[tool.doit.tasks.build_image]
 use_cache = false
+force_tag = ""
 
 [build-system]
 requires = ["poetry-core>=1.2.0"]

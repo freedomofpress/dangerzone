@@ -124,6 +124,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle("Dangerzone")
         self.setWindowIcon(self.dangerzone.get_window_icon())
+        self.alert: Optional[Alert] = None
 
         self.setMinimumWidth(600)
         if platform.system() == "Darwin":
@@ -226,6 +227,13 @@ class MainWindow(QtWidgets.QMainWindow):
         # This allows us to make QSS rules conditional on the OS color mode.
         self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
 
+        if hasattr(self.dangerzone.isolation_provider, "check_docker_desktop_version"):
+            is_version_valid, version = (
+                self.dangerzone.isolation_provider.check_docker_desktop_version()
+            )
+            if not is_version_valid:
+                self.handle_docker_desktop_version_check(is_version_valid, version)
+
         self.show()
 
     def show_update_success(self) -> None:
@@ -278,6 +286,46 @@ class MainWindow(QtWidgets.QMainWindow):
         check = self.toggle_updates_action.isChecked()
         self.dangerzone.settings.set("updater_check", check)
         self.dangerzone.settings.save()
+
+    def handle_docker_desktop_version_check(
+        self, is_version_valid: bool, version: str
+    ) -> None:
+        hamburger_menu = self.hamburger_button.menu()
+        sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
+        upgrade_action = QAction("Docker Desktop should be upgraded", hamburger_menu)
+        upgrade_action.setIcon(
+            QtGui.QIcon(
+                load_svg_image(
+                    "hamburger_menu_update_dot_error.svg", width=64, height=64
+                )
+            )
+        )
+
+        message = """
+        <p>A new version of Docker Desktop is available. Please upgrade your system.</p>
+        <p>Visit the <a href="https://www.docker.com/products/docker-desktop">Docker Desktop website</a> to download the latest version.</p>
+        <em>Keeping Docker Desktop up to date allows you to have more confidence that your documents are processed safely.</em>
+        """
+        self.alert = Alert(
+            self.dangerzone,
+            title="Upgrade Docker Desktop",
+            message=message,
+            ok_text="Ok",
+            has_cancel=False,
+        )
+
+        def _launch_alert() -> None:
+            if self.alert:
+                self.alert.launch()
+
+        upgrade_action.triggered.connect(_launch_alert)
+        hamburger_menu.insertAction(sep, upgrade_action)
+
+        self.hamburger_button.setIcon(
+            QtGui.QIcon(
+                load_svg_image("hamburger_menu_update_error.svg", width=64, height=64)
+            )
+        )
 
     def handle_updates(self, report: UpdateReport) -> None:
         """Handle update reports from the update checker thread.

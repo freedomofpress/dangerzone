@@ -34,7 +34,7 @@ def get_resource_dir() -> pathlib.Path:
 
 
 def get_resource_path(filename: str) -> str:
-    return str(get_resource_dir()/ filename)
+    return str(get_resource_dir() / filename)
 
 
 def get_tessdata_dir() -> pathlib.Path:

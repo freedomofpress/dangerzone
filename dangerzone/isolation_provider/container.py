@@ -1,4 +1,5 @@
 import gzip
+import json
 import logging
 import os
 import platform
@@ -49,7 +50,11 @@ class ImageInstallationException(Exception):
 class Container(IsolationProvider):
     # Name of the dangerzone container
     IMAGE_NAME = "dangerzone.rocks/dangerzone"
-    TARBALL_NAME = "container-%(tag)s.tar.gz"
+    TARBALL_NAME = "container-{tag}.tar.gz"
+
+    # def __init__(self) -> None:
+    #     super().__init__()
+    #     self.tag = "latest"
 
     @staticmethod
     def get_runtime_name() -> str:
@@ -162,21 +167,26 @@ class Container(IsolationProvider):
 
         If there's no such image, return None.
         """
-        names = subprocess.check_output(
+        images = json.loads(subprocess.check_output(
             [
                 Container.get_runtime(),
                 "image",
                 "list",
                 "--format",
-                "{{index .Names 0 }}",
+                "json",
                 Container.IMAGE_NAME,
             ],
             text=True,
             startupinfo=get_subprocess_startupinfo(),
-        ).strip().split()
+        ))
 
-        tags = [name.split(":")[1] for name in names]
-        return tags.pop("latest")
+        tags = {}
+        for image in images:
+            for name in image["Names"]:
+                tag = name.split(":")[1]
+                tags[tag] = image["Id"]
+
+        return tags
 
     @staticmethod
     def delete_image_tag(tag: str) -> None:
@@ -208,6 +218,12 @@ class Container(IsolationProvider):
         return tarballs[0]
 
     @staticmethod
+    def get_tag_from_tarball(tarball: Path) -> str:
+        """Get the tag of the tarball from its filename."""
+        prefix, suffix = Container.TARBALL_NAME.format(tag="*").split("*")
+        return tarball.name[len(prefix):-len(suffix)]
+
+    @staticmethod
     def load_image_tarball(tarball: Path) -> None:
         log.info("Installing Dangerzone container image...")
         p = subprocess.Popen(
@@ -225,7 +241,7 @@ class Container(IsolationProvider):
                         p.stdin.write(chunk)
                 else:
                     break
-        out, err = p.communicate()
+        _, err = p.communicate()
         if p.returncode < 0:
             if err:
                 error = err.decode()
@@ -235,35 +251,32 @@ class Container(IsolationProvider):
                 f"Could not install container image: {error}"
             )
 
-        image_id = out.decode().strip()
-        log.info(f"Successfully installed container image with ID '{image_id}'")
-        return image_id
+        log.info(f"Successfully installed container image from {tarball}")
 
     @staticmethod
-    def tag_image(image_id: str, tag: str) -> None:
-        image_name = Container.IMAGE_NAME + ":" + tag
+    def add_image_tag(cur_tag: str, new_tag: str) -> None:
+        cur_image_name = Container.IMAGE_NAME + ":" + cur_tag
+        new_image_name = Container.IMAGE_NAME + ":" + new_tag
         subprocess.check_output(
             [
                 Container.get_runtime(),
                 "tag",
-                image_id,
-                image_name,
+                cur_image_name,
+                new_image_name,
             ],
             startupinfo=get_subprocess_startupinfo(),
         )
 
-        log.info(f"Successfully tagged container image with ID '{image_id}' as {image_name}")
+        log.info(f"Successfully tagged container image '{cur_image_name}' as {new_image_name}")
 
     @staticmethod
-    def is_tarball_loaded(tarball: Path, tags: [str]) -> None:
-        # Check if the image tarball has been loaded.
-        for tag in tags:
-            if tarball.name == Container.TARBALL_NAME.format(tag=tag):
-                return True
-        return False
+    def is_tag_latest(expected_tag: str, tag_map: [str]) -> None:
+        try:
+            return tag_map[expected_tag] == tag_map["latest"]
+        except KeyError:
+            return False
 
-    @staticmethod
-    def install() -> bool:
+    def install(self) -> bool:
         """Install the container image tarball, or verify that it's already installed.
 
         Perform the following actions:
@@ -276,25 +289,32 @@ class Container(IsolationProvider):
         """
         old_tags = Container.get_image_tags()
         tarball = Container.get_image_tarball()
+        expected_tag = Container.get_tag_from_tarball(tarball)
 
-        if Container.is_tarball_loaded(tarball, old_tags):
-            return
+        if expected_tag not in old_tags:
+            # Prune older container images.
+            log.info(f"Could not find a Dangerzone container image with tag '{expected_tag}'")
+            for tag in old_tags.keys():
+                Container.delete_image_tag(tag)
+        elif old_tags[expected_tag] != old_tags.get("latest"):
+            log.info(f"The expected tag '{expected_tag}' is not the latest one")
+            Container.add_image_tag(expected_tag, "latest")
+            return True
+        else:
+            return True
 
         # Load the image tarball into the container runtime.
-        image_id = Container.load_image_tarball(tarball)
-        Container.tag_image(image_id, "latest")
+        Container.load_image_tarball(tarball)
 
-        # Check if the image tarball has been loaded.
+        # Check that the container image has the expected image tag.
         new_tags = Container.get_image_tags()
-        if not Container.is_tarball_loaded(tarball, new_tags):
+        if expected_tag not in new_tags:
             raise ImageNotPresentException(
-                "Image is not listed after installation. Bailing out."
+                "Could not find expected tag {tag} after loading the container image tarball"
             )
 
-        # Prune older container images.
-        for tag in old_tags:
-            Container.delete_image_tag(tag)
-
+        # Mark the expected tag as "latest".
+        Container.add_image_tag(expected_tag, "latest")
         return True
 
     @staticmethod
@@ -357,7 +377,7 @@ class Container(IsolationProvider):
             + enable_stdin
             + set_name
             + extra_args
-            + [self.CONTAINER_NAME]
+            + [self.IMAGE_NAME]
             + command
         )
         args = [container_runtime] + args

@@ -81,17 +81,6 @@ def task_clean_container_runtime():
     }
 
 
-def task_clean_git():
-    """Clean the Git repo."""
-    return {
-        "actions": None,
-        "clean": [
-            "git clean -fdx",
-            "git checkout -f",
-        ],
-    }
-
-
 #def task_check_python():
 #    """Check that the latest supported Python version is installed (WIP).
 #

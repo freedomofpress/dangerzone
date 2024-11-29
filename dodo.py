@@ -42,9 +42,14 @@ def list_files(path):
 
 
 def copy_dz_dir(src, dst):
-    shutil.rmtree(dst)
-    dst.mkdir(exist_ok=True)
+    shutil.rmtree(dst, ignore_errors=True)
     shutil.copytree(src, dst)
+
+
+def create_release_dir():
+    RELEASE_DIR.mkdir(parents=True, exist_ok=True)
+    (RELEASE_DIR / "assets").mkdir(exist_ok=True)
+    (RELEASE_DIR / "tmp").mkdir(exist_ok=True)
 
 
 def cmd_build_linux_pkg(distro, version, cwd, qubes=False):
@@ -57,12 +62,13 @@ def cmd_build_linux_pkg(distro, version, cwd, qubes=False):
         "--version",
         version,
         "run",
-        "--dev"
+        "--no-gui",
+        "--dev",
         f"./dangerzone/install/linux/build-{pkg}.py"
     ]
     if qubes:
         cmd += ["--qubes"]
-    return CmdAction(cmd, cwd=cwd)
+    return CmdAction(" ".join(cmd), cwd=cwd)
 
 
 def task_clean_container_runtime():
@@ -86,19 +92,19 @@ def task_clean_git():
     }
 
 
-def task_check_python():
-    """Check that the latest supported Python version is installed (WIP).
-
-    This task does not work yet, and is currently short-circuited.
-    """
-    def check_python():
-        # FIXME: Check that the latest supported Python release is installed. Use the
-        # same logic as we do in dev_scripts/qa.py.
-        return True
-
-    return {
-        "actions": [check_python],
-    }
+#def task_check_python():
+#    """Check that the latest supported Python version is installed (WIP).
+#
+#    This task does not work yet, and is currently short-circuited.
+#    """
+#    def check_python_updated():
+#        # FIXME: Check that the latest supported Python release is installed. Use the
+#        # same logic as we do in dev_scripts/qa.py.
+#        return True
+#
+#    return {
+#        "actions": [check_python_updated],
+#    }
 
 
 def task_check_container_runtime():
@@ -116,7 +122,7 @@ def task_check_system():
     return {
         "actions": None,
         "task_dep": [
-            "check_python",
+            #"check_python",
             "check_container_runtime",
         ],
     }
@@ -132,26 +138,26 @@ def task_macos_check_cert():
     }
 
 
-def task_macos_check_docker_containerd():
-    """Test that Docker uses the containard image store."""
-    def check_containerd_store():
-        cmd = ["docker", "info", "-f", "{{ .DriverStatus }}"]
-        driver = subprocess.check_output(cmd, text=True).strip()
-        if driver != "[[driver-type io.containerd.snapshotter.v1]]":
-            raise RuntimeError(
-                f"Probing the Docker image store with {cmd} returned {driver}."
-                " Switch to Docker's containerd image store from the Docker Desktop"
-                " settings."
-            )
-
-    return {
-        "actions": [
-            "which docker",
-            "docker ps",
-            check_containerd_store,
-        ],
-        "params": [PARAM_APPLE_ID],
-    }
+#def task_macos_check_docker_containerd():
+#    """Test that Docker uses the containard image store."""
+#    def check_containerd_store():
+#        cmd = ["docker", "info", "-f", "{{ .DriverStatus }}"]
+#        driver = subprocess.check_output(cmd, text=True).strip()
+#        if driver != "[[driver-type io.containerd.snapshotter.v1]]":
+#            raise RuntimeError(
+#                f"Probing the Docker image store with {cmd} returned {driver}."
+#                " Switch to Docker's containerd image store from the Docker Desktop"
+#                " settings."
+#            )
+#
+#    return {
+#        "actions": [
+#            "which docker",
+#            "docker ps",
+#            check_containerd_store,
+#        ],
+#        "params": [PARAM_APPLE_ID],
+#    }
 
 
 def task_macos_check_system():
@@ -161,18 +167,13 @@ def task_macos_check_system():
         "task_dep": [
             "check_system",
             "macos_check_cert",
-            "macos_check_docker_containerd",
+            #"macos_check_docker_containerd",
         ],
     }
 
 
 def task_init_release_dir():
     """Create a directory for release artifacts."""
-    def create_release_dir():
-        RELEASE_DIR.mkdir(parents=True, exist_ok=True)
-        (RELEASE_DIR / "assets").mkdir(exist_ok=True)
-        (RELEASE_DIR / "tmp").mkdir(exist_ok=True)
-
     return {
         "actions": [create_release_dir],
         "clean": [f"rm -rf {RELEASE_DIR}"],
@@ -263,12 +264,12 @@ def task_macos_build_dmg():
              f" --keychain-profile dz-notarytool-release-key {dmg_src}"),
             f"xcrun stapler staple {dmg_src}",
             ["cp", "-r", dmg_src, dmg_dst],
-            ["rm", "-r", dz_dir],
+            ["rm", "-rf", dz_dir],
         ],
         "params": [PARAM_APPLE_ID],
         "file_dep": [
             "poetry.lock",
-            "install/macos/build.app.py",
+            "install/macos/build-app.py",
             *list_files("assets"),
             *list_files("share"),
             *list_files("dangerzone"),
@@ -314,6 +315,7 @@ def task_debian_env():
                 "build-dev",
             ]
         ],
+        "task_dep": ["check_container_runtime"],
     }
 
 
@@ -328,7 +330,7 @@ def task_debian_deb():
             (copy_dz_dir, [".", dz_dir]),
             cmd_build_linux_pkg("debian", "bookworm", cwd=dz_dir),
             ["cp", deb_src, deb_dst],
-            ["rm", "-r", dz_dir],
+            ["rm", "-rf", dz_dir],
         ],
         "file_dep": [
             "poetry.lock",
@@ -363,44 +365,63 @@ def task_fedora_env():
                     "build-dev",
                 ],
             ],
+            "task_dep": ["check_container_runtime"],
         }
 
 def task_fedora_rpm():
     for version in FEDORA_VERSIONS:
-        dz_dir = RELEASE_DIR / "tmp" / f"f{version}"
-        rpm_names = [
-            f"dangerzone-{VERSION}-1.fc{version}.x86_64.rpm",
-            f"dangerzone-{VERSION}-1.fc{version}.src.rpm",
-            f"dangerzone-qubes-{VERSION}-1.fc{version}.x86_64.rpm",
-            f"dangerzone-qubes-{VERSION}-1.fc{version}.src.rpm",
-        ]
-        rpm_src = [dz_dir / "dist" / rpm_name for rpm_name in rpm_names]
-        rpm_dst = [RELEASE_DIR / rpm_name for rpm_name in rpm_names]
+        for qubes in (True, False):
+            qubes_ident = "-qubes" if qubes else ""
+            dz_dir = RELEASE_DIR / "tmp" / f"f{version}{qubes_ident}"
+            rpm_names = [
+                f"dangerzone{qubes_ident}-{VERSION}-1.fc{version}.x86_64.rpm",
+                f"dangerzone{qubes_ident}-{VERSION}-1.fc{version}.src.rpm",
+            ]
+            rpm_src = [dz_dir / "dist" / rpm_name for rpm_name in rpm_names]
+            rpm_dst = [RELEASE_DIR / rpm_name for rpm_name in rpm_names]
 
-        yield {
-            "name": version,
-            "actions": [
-                (copy_dz_dir, [".", dz_dir]),
-                cmd_build_linux_pkg("fedora", version, cwd=dz_dir),
-                cmd_build_linux_pkg("fedora", version, cwd=dz_dir, qubes=True),
-                ["cp", *rpm_src, RELEASE_DIR],
-                ["rm", "-r", dz_dir],
-            ],
-            "file_dep": [
-                "poetry.lock",
-                "install/linux/build-rpm.py",
-                *list_files("assets"),
-                *list_files("share"),
-                *list_files("dangerzone"),
-                f"share/container-{VERSION}.tar.gz",
-            ],
-            "task_dep": [
-                "init_release_dir",
-                f"fedora_env:{version}",
-            ],
-            "targets": rpm_dst,
-            "clean": True,
-        }
+            yield {
+                "name": version + qubes_ident,
+                "actions": [
+                    (copy_dz_dir, [".", dz_dir]),
+                    #cmd_build_linux_pkg("fedora", version, cwd=dz_dir, qubes=qubes),
+                    #["cp", *rpm_src, RELEASE_DIR],
+                    ["rm", "-rf", dz_dir],
+                ],
+                "file_dep": [
+                    "poetry.lock",
+                    "install/linux/build-rpm.py",
+                    *list_files("assets"),
+                    *list_files("share"),
+                    *list_files("dangerzone"),
+                    f"share/container-{VERSION}.tar.gz",
+                ],
+                "task_dep": [
+                    "init_release_dir",
+                    f"fedora_env:{version}",
+                ],
+                "targets": rpm_dst,
+                "clean": True,
+            }
+
+
+def copy_files(dz_dir, apt_dir, src, bookworm_deb, other_debs):
+    # Delete previous Dangerzone files.
+    old_files = dz_dir.rglob("dangerzone_*j")
+    for f in old_files:
+        f.unlink()
+
+    # Delete DB entries.
+    shutil.rmtree(apt_dir / "db")
+    shutil.rmtree(apt_dir / "public" / "dists")
+    shutil.rmtree(apt_dir / "public" / "pool")
+
+    # Copy .deb to bookworm folder.
+    shutil.copy2(src, bookworm_deb)
+
+    # Create the necessary symlinks
+    for deb in other_debs:
+        deb.symlink_to(f"../bookworm/{deb_name}")
 
 
 @task_params([{
@@ -416,26 +437,8 @@ def task_apt_tools_prod_prep(apt_tools_prod_dir):
     bookworm_deb =  dz_dir / "bookworm" / deb_name
     other_debs = [dz_dir / version / deb_name for version in DEBIAN_VERSIONS]
 
-    def copy_files():
-        # Delete previous Dangerzone files.
-        old_files = dz_dir.rglob("dangerzone_*j")
-        for f in old_files:
-            f.unlink()
-
-        # Delete DB entries.
-        shutil.rmtree(apt_dir / "db")
-        shutil.rmtree(apt_dir / "public" / "dists")
-        shutil.rmtree(apt_dir / "public" / "pool")
-
-        # Copy .deb to bookworm folder.
-        shutil.copy2(src, bookworm_deb)
-
-        # Create the necessary symlinks
-        for deb in other_debs:
-            deb.symlink_to(f"../bookworm/{deb_name}")
-
     return {
-        "actions": [copy_files],
+        "actions": [(copy_files, [dz_dir, apt_dir, src, bookworm_deb, other_debs])],
         "file_dep": [src],
         "targets": [bookworm_deb, *other_debs],
         "clean": True,

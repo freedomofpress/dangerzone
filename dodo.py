@@ -31,13 +31,15 @@ PARAM_APPLE_ID = {
 }
 
 
-def list_files(path):
+def list_files(path, recursive=False):
     filepaths = []
     for root, _, files in os.walk(path):
         for f in files:
             if f.endswith(".pyc"):
                 continue
             filepaths.append(Path(root) / f)
+        if not recursive:
+            break
     return filepaths
 
 
@@ -76,7 +78,7 @@ def task_clean_container_runtime():
     return {
         "actions": None,
         "clean": [
-            [CONTAINER_RUNTIME, "system", "prune", "-f"],
+            [CONTAINER_RUNTIME, "system", "prune", "-a", "-f"],
         ],
     }
 
@@ -260,13 +262,14 @@ def task_macos_build_dmg():
             "poetry.lock",
             "install/macos/build-app.py",
             *list_files("assets"),
-            *list_files("share"),
-            *list_files("dangerzone"),
+            *list_files("share", recursive=True),
+            *list_files("dangerzone", recursive=True),
             f"share/container-{VERSION}.tar.gz",
         ],
         "task_dep": [
             "init_release_dir",
-            "poetry_install"
+            "poetry_install",
+            "download_tessdata",
         ],
         "targets": [dmg_dst],
         "clean": True,
@@ -326,7 +329,7 @@ def task_debian_deb():
             "install/linux/build-deb.py",
             *list_files("assets"),
             *list_files("share"),
-            *list_files("dangerzone"),
+            *list_files("dangerzone", recursive=True),
             f"share/container-{VERSION}.tar.gz",
         ],
         "task_dep": [
@@ -373,8 +376,8 @@ def task_fedora_rpm():
                 "name": version + qubes_ident,
                 "actions": [
                     (copy_dz_dir, [".", dz_dir]),
-                    #cmd_build_linux_pkg("fedora", version, cwd=dz_dir, qubes=qubes),
-                    #["cp", *rpm_src, RELEASE_DIR],
+                    cmd_build_linux_pkg("fedora", version, cwd=dz_dir, qubes=qubes),
+                    ["cp", *rpm_src, RELEASE_DIR],
                     ["rm", "-rf", dz_dir],
                 ],
                 "file_dep": [
@@ -382,7 +385,7 @@ def task_fedora_rpm():
                     "install/linux/build-rpm.py",
                     *list_files("assets"),
                     *list_files("share"),
-                    *list_files("dangerzone"),
+                    *list_files("dangerzone", recursive=True),
                     f"share/container-{VERSION}.tar.gz",
                 ],
                 "task_dep": [
@@ -394,41 +397,41 @@ def task_fedora_rpm():
             }
 
 
-def copy_files(dz_dir, apt_dir, src, bookworm_deb, other_debs):
-    # Delete previous Dangerzone files.
-    old_files = dz_dir.rglob("dangerzone_*j")
-    for f in old_files:
-        f.unlink()
-
-    # Delete DB entries.
-    shutil.rmtree(apt_dir / "db")
-    shutil.rmtree(apt_dir / "public" / "dists")
-    shutil.rmtree(apt_dir / "public" / "pool")
-
-    # Copy .deb to bookworm folder.
-    shutil.copy2(src, bookworm_deb)
-
-    # Create the necessary symlinks
-    for deb in other_debs:
-        deb.symlink_to(f"../bookworm/{deb_name}")
-
-
-@task_params([{
-    "name": "apt_tools_prod_dir",
-    "default": "~/release/apt-tools-prod"
-}])
-def task_apt_tools_prod_prep(apt_tools_prod_dir):
-    apt_dir = Path(apt_tools_prod_dir).expanduser()
-    dz_dir = apt_dir / "dangerzone"
-
-    src = task_debian_deb()["targets"][0]
-    deb_name = src.name
-    bookworm_deb =  dz_dir / "bookworm" / deb_name
-    other_debs = [dz_dir / version / deb_name for version in DEBIAN_VERSIONS]
-
-    return {
-        "actions": [(copy_files, [dz_dir, apt_dir, src, bookworm_deb, other_debs])],
-        "file_dep": [src],
-        "targets": [bookworm_deb, *other_debs],
-        "clean": True,
-    }
+#def copy_files(dz_dir, apt_dir, src, bookworm_deb, other_debs):
+#    # Delete previous Dangerzone files.
+#    old_files = dz_dir.rglob("dangerzone_*j")
+#    for f in old_files:
+#        f.unlink()
+#
+#    # Delete DB entries.
+#    shutil.rmtree(apt_dir / "db")
+#    shutil.rmtree(apt_dir / "public" / "dists")
+#    shutil.rmtree(apt_dir / "public" / "pool")
+#
+#    # Copy .deb to bookworm folder.
+#    shutil.copy2(src, bookworm_deb)
+#
+#    # Create the necessary symlinks
+#    for deb in other_debs:
+#        deb.symlink_to(f"../bookworm/{deb_name}")
+#
+#
+#@task_params([{
+#    "name": "apt_tools_prod_dir",
+#    "default": "~/release/apt-tools-prod"
+#}])
+#def task_apt_tools_prod_prep(apt_tools_prod_dir):
+#    apt_dir = Path(apt_tools_prod_dir).expanduser()
+#    dz_dir = apt_dir / "dangerzone"
+#
+#    src = task_debian_deb()["targets"][0]
+#    deb_name = src.name
+#    bookworm_deb =  dz_dir / "bookworm" / deb_name
+#    other_debs = [dz_dir / version / deb_name for version in DEBIAN_VERSIONS]
+#
+#    return {
+#        "actions": [(copy_files, [dz_dir, apt_dir, src, bookworm_deb, other_debs])],
+#        "file_dep": [src],
+#        "targets": [bookworm_deb, *other_debs],
+#        "clean": True,
+#    }

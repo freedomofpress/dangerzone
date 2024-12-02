@@ -1,10 +1,14 @@
 name: Check branch conformity
 on:
   pull_request:
+  push:
+    branches:
+      - main
+      - "test/**"
 
 jobs:
   prevent-fixup-commits:
-      runs-on: ubuntu-latest
+      runs-on: ubuntu-24
       env:
         target: debian-bookworm
         distro: debian

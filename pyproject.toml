@@ -1,4 +1,4 @@
-[tool.poetry]
+    [tool.poetry]
 name = "dangerzone"
 version = "0.8.0"
 description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
@@ -69,6 +69,12 @@ verbosity = 3
 # DO NOT change this to 'true' for release artifacts, else we risk building
 # images that are a few days behind. See also: docs/developer/doit.md
 use_cache = false
+
+[tool.ruff.lint]
+select = [
+    # isort
+    "I",
+]
 
 [build-system]
 requires = ["poetry-core>=1.2.0"]

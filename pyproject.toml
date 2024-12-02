@@ -59,6 +59,12 @@ pymupdf = "1.24.11" # Last version to support python 3.8 (needed for Ubuntu Foca
 [tool.poetry.group.dev.dependencies]
 httpx = "^0.27.2"
 
+[tool.ruff.lint]
+select = [
+    # isort
+    "I",
+]
+
 [build-system]
 requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"

@@ -1,11 +1,12 @@
 import gzip
+import json
 import logging
 import os
 import platform
 import shlex
 import shutil
 import subprocess
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from ..document import Document
 from ..util import get_resource_path, get_subprocess_startupinfo
@@ -153,6 +154,77 @@ class Container(IsolationProvider):
         security_args += ["-u", "dangerzone"]
 
         return security_args
+
+    @staticmethod
+    def list_image_tags() -> Dict[str, str]:
+        """Get the tags of all loaded Dangerzone images.
+
+        Perform the following actions:
+        1. Get the tags of any locally available images that match Dangerzone's image
+           name.
+        2. Get the expected image tag from the image-id.txt file.
+           - If this tag is present in the local images, then we can return.
+           - Else, prune the older container images and continue.
+        3. Load the image tarball and make sure it matches the expected tag.
+        """
+        images = json.loads(
+            subprocess.check_output(
+                [
+                    Container.get_runtime(),
+                    "image",
+                    "list",
+                    "--format",
+                    "json",
+                    Container.CONTAINER_NAME,
+                ],
+                text=True,
+                startupinfo=get_subprocess_startupinfo(),
+            )
+        )
+
+        # Grab every image name and associate it with an image ID.
+        tags = {}
+        for image in images:
+            for name in image["Names"]:
+                tag = name.split(":")[1]
+                tags[tag] = image["Id"]
+
+        return tags
+
+    @staticmethod
+    def delete_image_tag(tag: str) -> None:
+        """Delete a Dangerzone image tag."""
+        name = Container.CONTAINER_NAME + ":" + tag
+        log.warning(f"Deleting old container image: {name}")
+        try:
+            subprocess.check_output(
+                [Container.get_runtime(), "rmi", "--force", name],
+                startupinfo=get_subprocess_startupinfo(),
+            )
+        except Exception as e:
+            log.warning(
+                f"Couldn't delete old container image '{name}', so leaving it there."
+                f" Original error: {e}"
+            )
+
+    @staticmethod
+    def add_image_tag(cur_tag: str, new_tag: str) -> None:
+        """Add a tag to an existing Dangerzone image."""
+        cur_image_name = Container.CONTAINER_NAME + ":" + cur_tag
+        new_image_name = Container.CONTAINER_NAME + ":" + new_tag
+        subprocess.check_output(
+            [
+                Container.get_runtime(),
+                "tag",
+                cur_image_name,
+                new_image_name,
+            ],
+            startupinfo=get_subprocess_startupinfo(),
+        )
+
+        log.info(
+            f"Successfully tagged container image '{cur_image_name}' as '{new_image_name}'"
+        )
 
     @staticmethod
     def install() -> bool:

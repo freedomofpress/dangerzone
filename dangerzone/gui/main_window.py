@@ -500,6 +500,7 @@ class WaitingWidgetContainer(WaitingWidget):
         error: Optional[str] = None
 
         try:
+            assert isinstance(self.dangerzone.isolation_provider, (Dummy, Container))
             self.dangerzone.isolation_provider.is_runtime_available()
         except NoContainerTechException as e:
             log.error(str(e))

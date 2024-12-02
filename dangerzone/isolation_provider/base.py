@@ -93,10 +93,6 @@ class IsolationProvider(ABC):
         else:
             self.proc_stderr = subprocess.DEVNULL
 
-    @staticmethod
-    def is_runtime_available() -> bool:
-        return True
-
     @abstractmethod
     def install(self) -> bool:
         pass

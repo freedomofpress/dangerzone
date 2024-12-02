@@ -30,6 +30,7 @@ from dangerzone.isolation_provider.container import (
     NoContainerTechException,
     NotAvailableContainerTechException,
 )
+from dangerzone.isolation_provider.dummy import Dummy
 
 from .test_updater import assert_report_equal, default_updater_settings
 
@@ -510,9 +511,9 @@ def test_not_available_container_tech_exception(
 ) -> None:
     # Setup
     mock_app = mocker.MagicMock()
-    dummy = mocker.MagicMock()
-
-    dummy.is_runtime_available.side_effect = NotAvailableContainerTechException(
+    dummy = Dummy()
+    fn = mocker.patch.object(dummy, "is_runtime_available")
+    fn.side_effect = NotAvailableContainerTechException(
         "podman", "podman image ls logs"
     )
 

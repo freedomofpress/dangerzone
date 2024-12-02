@@ -227,16 +227,14 @@ class Container(IsolationProvider):
         )
 
     @staticmethod
-    def install() -> bool:
-        """
-        Make sure the podman container is installed. Linux only.
-        """
-        if Container.is_container_installed():
-            return True
+    def get_expected_tag() -> str:
+        """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
+        with open(get_resource_path("image-id.txt")) as f:
+            return f.read.strip()
 
-        # Load the container into podman
+    @staticmethod
+    def load_image_tarball() -> None:
         log.info("Installing Dangerzone container image...")
-
         p = subprocess.Popen(
             [Container.get_runtime(), "load"],
             stdin=subprocess.PIPE,
@@ -262,6 +260,18 @@ class Container(IsolationProvider):
             raise ImageInstallationException(
                 f"Could not install container image: {error}"
             )
+
+        log.info("Successfully installed container image from")
+
+    @staticmethod
+    def install() -> bool:
+        """
+        Make sure the podman container is installed. Linux only.
+        """
+        if Container.is_container_installed():
+            return True
+
+        Container.load_image_tarball()
 
         if not Container.is_container_installed(raise_on_error=True):
             return False

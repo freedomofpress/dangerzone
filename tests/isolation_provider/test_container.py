@@ -69,10 +69,11 @@ class TestContainer(IsolationProviderTest):
                 "image",
                 "list",
                 "--format",
-                "{{.ID}}",
+                "json",
                 "dangerzone.rocks/dangerzone",
             ],
             occurrences=2,
+            stdout="{}",
         )
 
         # Make podman load fail
@@ -102,10 +103,11 @@ class TestContainer(IsolationProviderTest):
                 "image",
                 "list",
                 "--format",
-                "{{.ID}}",
+                "json",
                 "dangerzone.rocks/dangerzone",
             ],
             occurrences=2,
+            stdout="{}",
         )
 
         # Patch gzip.open and podman load so that it works

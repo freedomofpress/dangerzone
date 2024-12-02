@@ -2,12 +2,13 @@ import argparse
 import gzip
 import os
 import platform
+import secrets
 import subprocess
 import sys
 from pathlib import Path
 
 BUILD_CONTEXT = "dangerzone/"
-TAG = "dangerzone.rocks/dangerzone:latest"
+IMAGE_NAME = "dangerzone.rocks/dangerzone"
 REQUIREMENTS_TXT = "container-pip-requirements.txt"
 if platform.system() in ["Darwin", "Windows"]:
     CONTAINER_RUNTIME = "docker"
@@ -44,7 +45,30 @@ def main():
     )
     args = parser.parse_args()
 
+    tarball_path = Path("share") / "container.tar.gz"
+    image_id_path = Path("share") / "image-id.txt"
+
     print(f"Building for architecture '{ARCH}'")
+
+    # Designate a unique tag for this image, depending on the Git commit it was created
+    # from:
+    # 1. If created from a Git tag (e.g., 0.8.0), the image tag will be `0.8.0`.
+    # 2. If created from a commit, it will be something like `0.8.0-31-g6bdaa7a`.
+    # 3. If the contents of the Git repo are dirty, we will append a unique identifier
+    #    for this run, something like `0.8.0-31-g6bdaa7a-fdcb` or `0.8.0-fdcb`.
+    dirty_ident = secrets.token_hex(2)
+    tag = (
+        subprocess.check_output(
+            ["git", "describe", "--first-parent", f"--dirty=-{dirty_ident}"],
+        )
+        .decode()
+        .strip()[1:]  # remove the "v" prefix of the tag.
+    )
+    image_name_tagged = IMAGE_NAME + ":" + tag
+
+    print(f"Will tag the container image as '{image_name_tagged}'")
+    with open(image_id_path, "w") as f:
+        f.write(tag)
 
     print("Exporting container pip dependencies")
     with ContainerPipDependencies():
@@ -59,6 +83,7 @@ def main():
                 check=True,
             )
 
+        # Build the container image, and tag it with the calculated tag
         print("Building container image")
         cache_args = [] if args.use_cache else ["--no-cache"]
         subprocess.run(
@@ -74,7 +99,7 @@ def main():
                 "-f",
                 "Dockerfile",
                 "--tag",
-                TAG,
+                image_name_tagged,
             ],
             check=True,
         )
@@ -85,7 +110,7 @@ def main():
                 [
                     CONTAINER_RUNTIME,
                     "save",
-                    TAG,
+                    image_name_tagged,
                 ],
                 stdout=subprocess.PIPE,
             )
@@ -93,7 +118,7 @@ def main():
             print("Compressing container image")
             chunk_size = 4 << 20
             with gzip.open(
-                "share/container.tar.gz",
+                tarball_path,
                 "wb",
                 compresslevel=args.compress_level,
             ) as gzip_f:
@@ -104,21 +129,6 @@ def main():
                     else:
                         break
             cmd.wait(5)
-
-    print("Looking up the image id")
-    image_id = subprocess.check_output(
-        [
-            args.runtime,
-            "image",
-            "list",
-            "--format",
-            "{{.ID}}",
-            TAG,
-        ],
-        text=True,
-    )
-    with open("share/image-id.txt", "w") as f:
-        f.write(image_id)
 
 
 class ContainerPipDependencies:

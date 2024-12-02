@@ -230,7 +230,7 @@ class Container(IsolationProvider):
     def get_expected_tag() -> str:
         """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
         with open(get_resource_path("image-id.txt")) as f:
-            return f.read.strip()
+            return f.read().strip()
 
     @staticmethod
     def load_image_tarball() -> None:
@@ -265,18 +265,42 @@ class Container(IsolationProvider):
 
     @staticmethod
     def install() -> bool:
+        """Install the container image tarball, or verify that it's already installed.
+
+        Perform the following actions:
+        1. Get the tags of any locally available images that match Dangerzone's image
+           name.
+        2. Get the expected image tag from the image-id.txt file.
+           - If this tag is present in the local images, then we can return.
+           - Else, prune the older container images and continue.
+        3. Load the image tarball and make sure it matches the expected tag.
         """
-        Make sure the podman container is installed. Linux only.
-        """
-        if Container.is_container_installed():
+        old_tags = Container.list_image_tags()
+        expected_tag = Container.get_expected_tag()
+
+        if expected_tag not in old_tags:
+            # Prune older container images.
+            log.info(
+                f"Could not find a Dangerzone container image with tag '{expected_tag}'"
+            )
+            for tag in old_tags:
+                container_utils.delete_image_tag(tag)
+        else:
             return True
 
+        # Load the image tarball into the container runtime.
         Container.load_image_tarball()
 
-        if not Container.is_container_installed(raise_on_error=True):
-            return False
+        # Check that the container image has the expected image tag.
+        # See https://github.com/freedomofpress/dangerzone/issues/988 for an example
+        # where this was not the case.
+        new_tags = Container.list_image_tags()
+        if expected_tag not in new_tags:
+            raise ImageNotPresentException(
+                f"Could not find expected tag '{expected_tag}' after loading the"
+                " container image tarball"
+            )
 
-        log.info("Container image installed")
         return True
 
     @staticmethod
@@ -294,58 +318,6 @@ class Container(IsolationProvider):
             if p.returncode != 0:
                 raise NotAvailableContainerTechException(runtime_name, stderr.decode())
             return True
-
-    @staticmethod
-    def is_container_installed(raise_on_error: bool = False) -> bool:
-        """
-        See if the container is installed.
-        """
-        # Get the image id
-        with open(get_resource_path("image-id.txt")) as f:
-            expected_image_ids = f.read().strip().split()
-
-        # See if this image is already installed
-        installed = False
-        found_image_id = subprocess.check_output(
-            [
-                Container.get_runtime(),
-                "image",
-                "list",
-                "--format",
-                "{{.ID}}",
-                Container.CONTAINER_NAME,
-            ],
-            text=True,
-            startupinfo=get_subprocess_startupinfo(),
-        )
-        found_image_id = found_image_id.strip()
-
-        if found_image_id in expected_image_ids:
-            installed = True
-        elif found_image_id == "":
-            if raise_on_error:
-                raise ImageNotPresentException(
-                    "Image is not listed after installation. Bailing out."
-                )
-        else:
-            msg = (
-                f"{Container.CONTAINER_NAME} images found, but IDs do not match."
-                f" Found: {found_image_id}, Expected: {','.join(expected_image_ids)}"
-            )
-            if raise_on_error:
-                raise ImageNotPresentException(msg)
-            log.info(msg)
-            log.info("Deleting old dangerzone container image")
-
-            try:
-                subprocess.check_output(
-                    [Container.get_runtime(), "rmi", "--force", found_image_id],
-                    startupinfo=get_subprocess_startupinfo(),
-                )
-            except Exception:
-                log.warning("Couldn't delete old container image, so leaving it there")
-
-        return installed
 
     def doc_to_pixels_container_name(self, document: Document) -> str:
         """Unique container name for the doc-to-pixels phase."""
@@ -384,14 +356,16 @@ class Container(IsolationProvider):
         enable_stdin = ["-i"]
         set_name = ["--name", name]
         prevent_leakage_args = ["--rm"]
+        image_name = [
+            container_utils.CONTAINER_NAME + ":" + container_utils.get_expected_tag()
+        ]
         args = (
             ["run"]
             + security_args
             + prevent_leakage_args
             + enable_stdin
             + set_name
-            + extra_args
-            + [self.CONTAINER_NAME]
+            + image_name
             + command
         )
         args = [container_runtime] + args

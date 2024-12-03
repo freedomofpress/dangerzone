@@ -6,7 +6,6 @@ import signal
 import subprocess
 import sys
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import IO, Callable, Iterator, Optional
 
 import fitz
@@ -87,11 +86,15 @@ class IsolationProvider(ABC):
     Abstracts an isolation provider
     """
 
-    def __init__(self) -> None:
-        if getattr(sys, "dangerzone_dev", False) is True:
+    def __init__(self, debug: bool = False) -> None:
+        self.debug = debug
+        if self.should_capture_stderr():
             self.proc_stderr = subprocess.PIPE
         else:
             self.proc_stderr = subprocess.DEVNULL
+
+    def should_capture_stderr(self) -> bool:
+        return self.debug or getattr(sys, "dangerzone_dev", False)
 
     @staticmethod
     def is_runtime_available() -> bool:
@@ -339,9 +342,9 @@ class IsolationProvider(ABC):
             )
 
             # Read the stderr of the process only if:
-            # * Dev mode is enabled.
+            # * We're in debug mode
             # * The process has exited (else we risk hanging).
-            if getattr(sys, "dangerzone_dev", False) and p.poll() is not None:
+            if self.should_capture_stderr() and p.poll() is not None:
                 assert p.stderr
                 debug_log = read_debug_text(p.stderr, MAX_CONVERSION_LOG_CHARS)
                 log.info(

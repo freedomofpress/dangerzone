@@ -42,6 +42,11 @@ def print_header(s: str) -> None:
     type=click.UNPROCESSED,
     callback=args.validate_input_filenames,
 )
+@click.option(
+    "--debug",
+    "debug",
+    flag_value=True,
+    help="Run Dangerzone in debug mode, to get logs from gVisor.")
 @click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
 def cli_main(
@@ -50,6 +55,7 @@ def cli_main(
     filenames: List[str],
     archive: bool,
     dummy_conversion: bool,
+    debug: bool,
 ) -> None:
     setup_logging()
 
@@ -58,7 +64,7 @@ def cli_main(
     elif is_qubes_native_conversion():
         dangerzone = DangerzoneCore(Qubes())
     else:
-        dangerzone = DangerzoneCore(Container())
+        dangerzone = DangerzoneCore(Container(debug=debug))
 
     display_banner()
     if len(filenames) == 1 and output_filename:

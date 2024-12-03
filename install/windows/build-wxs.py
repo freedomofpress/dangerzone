@@ -4,114 +4,75 @@ import uuid
 import xml.etree.ElementTree as ET
 
 
-def build_data(dirname, dir_prefix, id_, name):
+def build_data(base_path, path_prefix, dir_id, dir_name):
     data = {
-        "id": id_,
-        "name": name,
+        "directory_name": dir_name,
+        "directory_id": dir_id,
         "files": [],
         "dirs": [],
     }
 
-    for basename in os.listdir(dirname):
-        filename = os.path.join(dirname, basename)
-        if os.path.isfile(filename):
-            data["files"].append(os.path.join(dir_prefix, basename))
-        elif os.path.isdir(filename):
-            if id_ == "INSTALLDIR":
-                id_prefix = "Folder"
+    if dir_id == "INSTALLFOLDER":
+        data["component_id"] = "ApplicationFiles"
+    else:
+        data["component_id"] = "Component" + dir_id
+    data["component_guid"] = str(uuid.uuid4()).upper()
+
+    for entry in os.listdir(base_path):
+        entry_path = os.path.join(base_path, entry)
+        if os.path.isfile(entry_path):
+            data["files"].append(os.path.join(path_prefix, entry))
+        elif os.path.isdir(entry_path):
+            if dir_id == "INSTALLFOLDER":
+                next_dir_prefix = "Folder"
             else:
-                id_prefix = id_
+                next_dir_prefix = dir_id
 
             # Skip lib/PySide6/examples folder due to ilegal file names
-            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\examples" in dirname:
+            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\examples" in base_path:
                 continue
 
             # Skip lib/PySide6/qml/QtQuick folder due to ilegal file names
             # XXX Since we're not using Qml it should be no problem
-            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\qml\\QtQuick" in dirname:
+            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\qml\\QtQuick" in base_path:
                 continue
 
-            id_value = f"{id_prefix}{basename.capitalize().replace('-', '_')}"
-            data["dirs"].append(
-                build_data(
-                    os.path.join(dirname, basename),
-                    os.path.join(dir_prefix, basename),
-                    id_value,
-                    basename,
-                )
+            next_dir_id = next_dir_prefix + entry.capitalize().replace("-", "_")
+            subdata = build_data(
+                os.path.join(base_path, entry),
+                os.path.join(path_prefix, entry),
+                next_dir_id,
+                entry,
             )
 
-    if len(data["files"]) > 0:
-        if id_ == "INSTALLDIR":
-            data["component_id"] = "ApplicationFiles"
-        else:
-            data["component_id"] = "FolderComponent" + id_[len("Folder") :]
-        data["component_guid"] = str(uuid.uuid4())
+            # Add the subdirectory only if it contains files or subdirectories
+            if subdata["files"] or subdata["dirs"]:
+                data["dirs"].append(subdata)
 
     return data
 
 
-def build_dir_xml(root, data):
+def build_directory_xml(root, data):
     attrs = {}
-    if "id" in data:
-        attrs["Id"] = data["id"]
-    if "name" in data:
-        attrs["Name"] = data["name"]
-    el = ET.SubElement(root, "Directory", attrs)
+    attrs["Id"] = data["directory_id"]
+    attrs["Name"] = data["directory_name"]
+    directory_el = ET.SubElement(root, "Directory", attrs)
     for subdata in data["dirs"]:
-        build_dir_xml(el, subdata)
-
-    # If this is the ProgramMenuFolder, add the menu component
-    if "id" in data and data["id"] == "ProgramMenuFolder":
-        component_el = ET.SubElement(
-            el,
-            "Component",
-            Id="ApplicationShortcuts",
-            Guid="539e7de8-a124-4c09-aa55-0dd516aad7bc",
-        )
-        ET.SubElement(
-            component_el,
-            "Shortcut",
-            Id="ApplicationShortcut1",
-            Name="Dangerzone",
-            Description="Dangerzone",
-            Target="[INSTALLDIR]dangerzone.exe",
-            WorkingDirectory="INSTALLDIR",
-        )
-        ET.SubElement(
-            component_el,
-            "RegistryValue",
-            Root="HKCU",
-            Key="Software\Freedom of the Press Foundation\Dangerzone",
-            Name="installed",
-            Type="integer",
-            Value="1",
-            KeyPath="yes",
-        )
+        build_directory_xml(directory_el, subdata)
 
 
 def build_components_xml(root, data):
-    component_ids = []
-    if "component_id" in data:
-        component_ids.append(data["component_id"])
-
+    component_el = ET.SubElement(
+        root,
+        "Component",
+        Id=data["component_id"],
+        Guid=data["component_guid"],
+        Directory=data["directory_id"],
+    )
+    for filename in data["files"]:
+        ET.SubElement(component_el, "File", Source=filename)
     for subdata in data["dirs"]:
-        if "component_guid" in subdata:
-            dir_ref_el = ET.SubElement(root, "DirectoryRef", Id=subdata["id"])
-            component_el = ET.SubElement(
-                dir_ref_el,
-                "Component",
-                Id=subdata["component_id"],
-                Guid=subdata["component_guid"],
-            )
-            for filename in subdata["files"]:
-                file_el = ET.SubElement(
-                    component_el, "File", Source=filename, Id="file_" + uuid.uuid4().hex
-                )
-
-        component_ids += build_components_xml(root, subdata)
-
-    return component_ids
+        build_components_xml(root, subdata)
 
 
 def main():
@@ -125,120 +86,188 @@ def main():
         # -rc markers.
         version = f.read().strip().split("-")[0]
 
-    dist_dir = os.path.join(
+    build_dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
         "build",
-        "exe.win-amd64-3.12",
     )
+
+    cx_freeze_dir = "exe.win-amd64-3.12"
+
+    dist_dir = os.path.join(build_dir, cx_freeze_dir)
+
     if not os.path.exists(dist_dir):
         print("You must build the dangerzone binary before running this")
         return
 
-    data = {
-        "id": "TARGETDIR",
-        "name": "SourceDir",
-        "dirs": [
-            {
-                "id": "ProgramFilesFolder",
-                "dirs": [],
-            },
-            {
-                "id": "ProgramMenuFolder",
-                "dirs": [],
-            },
-        ],
-    }
-
-    data["dirs"][0]["dirs"].append(
-        build_data(
-            dist_dir,
-            "exe.win-amd64-3.12",
-            "INSTALLDIR",
-            "Dangerzone",
-        )
+    # Prepare data for WiX file harvesting from the output of cx_Freeze
+    data = build_data(
+        dist_dir,
+        cx_freeze_dir,
+        "INSTALLFOLDER",
+        "Dangerzone",
     )
 
-    root_el = ET.Element("Wix", xmlns="http://schemas.microsoft.com/wix/2006/wi")
-    product_el = ET.SubElement(
-        root_el,
-        "Product",
+    # Add the Wix root element
+    wix_el = ET.Element(
+        "Wix",
+        {
+            "xmlns": "http://wixtoolset.org/schemas/v4/wxs",
+            "xmlns:ui": "http://wixtoolset.org/schemas/v4/wxs/ui",
+        },
+    )
+
+    # Add the Package element
+    package_el = ET.SubElement(
+        wix_el,
+        "Package",
         Name="Dangerzone",
         Manufacturer="Freedom of the Press Foundation",
-        Id="*",
-        UpgradeCode="$(var.ProductUpgradeCode)",
+        UpgradeCode="12B9695C-965B-4BE0-BC33-21274E809576",
         Language="1033",
-        Codepage="1252",
-        Version="$(var.ProductVersion)",
-    )
-    ET.SubElement(
-        product_el,
-        "Package",
-        Id="*",
-        Keywords="Installer",
-        Description="Dangerzone $(var.ProductVersion) Installer",
-        Manufacturer="Freedom of the Press Foundation",
-        InstallerVersion="100",
-        Languages="1033",
         Compressed="yes",
-        SummaryCodepage="1252",
+        Codepage="1252",
+        Version=version,
     )
-    ET.SubElement(product_el, "Media", Id="1", Cabinet="product.cab", EmbedCab="yes")
     ET.SubElement(
-        product_el, "Icon", Id="ProductIcon", SourceFile="..\\share\\dangerzone.ico"
+        package_el,
+        "SummaryInformation",
+        Keywords="Installer",
+        Description="Dangerzone " + version + " Installer",
+        Codepage="1252",
     )
-    ET.SubElement(product_el, "Property", Id="ARPPRODUCTICON", Value="ProductIcon")
+    ET.SubElement(package_el, "MediaTemplate", EmbedCab="yes")
     ET.SubElement(
-        product_el,
+        package_el, "Icon", Id="ProductIcon", SourceFile="..\\share\\dangerzone.ico"
+    )
+    ET.SubElement(package_el, "Property", Id="ARPPRODUCTICON", Value="ProductIcon")
+    ET.SubElement(
+        package_el,
         "Property",
         Id="ARPHELPLINK",
         Value="https://dangerzone.rocks",
     )
     ET.SubElement(
-        product_el,
+        package_el,
         "Property",
         Id="ARPURLINFOABOUT",
         Value="https://freedom.press",
     )
     ET.SubElement(
-        product_el,
-        "Property",
-        Id="WIXUI_INSTALLDIR",
-        Value="INSTALLDIR",
+        package_el, "ui:WixUI", Id="WixUI_InstallDir", InstallDirectory="INSTALLFOLDER"
     )
-    ET.SubElement(product_el, "UIRef", Id="WixUI_InstallDir")
-    ET.SubElement(product_el, "UIRef", Id="WixUI_ErrorProgressText")
+    ET.SubElement(package_el, "UIRef", Id="WixUI_ErrorProgressText")
     ET.SubElement(
-        product_el,
+        package_el,
         "WixVariable",
         Id="WixUILicenseRtf",
         Value="..\\install\\windows\\license.rtf",
     )
     ET.SubElement(
-        product_el,
+        package_el,
         "WixVariable",
         Id="WixUIDialogBmp",
         Value="..\\install\\windows\\dialog.bmp",
     )
     ET.SubElement(
-        product_el,
+        package_el,
         "MajorUpgrade",
-        AllowSameVersionUpgrades="yes",
         DowngradeErrorMessage="A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.",
     )
 
-    build_dir_xml(product_el, data)
-    component_ids = build_components_xml(product_el, data)
+    # Workaround for an issue after upgrading from WiX Toolset v3 to v5 where the previous
+    # version of Dangerzone is not uninstalled during the upgrade by checking if the older installation
+    # exists in "C:\Program Files (x86)\Dangerzone".
+    #
+    # Also handle a special case for Dangerzone 0.8.0 which allows choosing the install location
+    # during install by checking if the registry key for it exists.
+    #
+    # Note that this seems to allow installing Dangerzone 0.8.0 after installing Dangerzone from this branch.
+    # In this case the installer errors until Dangerzone 0.8.0 is uninstalled again
+    #
+    # TODO: Revert this once we are reasonably certain there aren't too many affected Dangerzone installations.
+    find_old_el = ET.SubElement(package_el, "Property", Id="OLDDANGERZONEFOUND")
+    directory_search_el = ET.SubElement(
+        find_old_el,
+        "DirectorySearch",
+        Id="dangerzone_install_folder",
+        Path="C:\\Program Files (x86)\\Dangerzone",
+    )
+    ET.SubElement(directory_search_el, "FileSearch", Name="dangerzone.exe")
+    registry_search_el = ET.SubElement(package_el, "Property", Id="DANGERZONE080FOUND")
+    ET.SubElement(
+        registry_search_el,
+        "RegistrySearch",
+        Root="HKLM",
+        Key="SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{03C2D2B2-9955-4AED-831F-DA4E67FC0FDB}",
+        Name="DisplayName",
+        Type="raw",
+    )
+    ET.SubElement(
+        package_el,
+        "Launch",
+        Condition="NOT OLDDANGERZONEFOUND AND NOT DANGERZONE080FOUND",
+        Message="A previous version of [ProductName] is already installed. Please uninstall it from Programs and Features before proceeding with the installation.",
+    )
 
-    feature_el = ET.SubElement(product_el, "Feature", Id="DefaultFeature", Level="1")
-    for component_id in component_ids:
-        ET.SubElement(feature_el, "ComponentRef", Id=component_id)
+    # Add the ProgramMenuFolder StandardDirectory
+    programmenufolder_el = ET.SubElement(
+        package_el,
+        "StandardDirectory",
+        Id="ProgramMenuFolder",
+    )
+    # Add a shortcut for Dangerzone in the Start menu
+    shortcut_el = ET.SubElement(
+        programmenufolder_el,
+        "Component",
+        Id="ApplicationShortcuts",
+        Guid="539E7DE8-A124-4C09-AA55-0DD516AAD7BC",
+    )
+    ET.SubElement(
+        shortcut_el,
+        "Shortcut",
+        Id="DangerzoneStartMenuShortcut",
+        Name="Dangerzone",
+        Description="Dangerzone",
+        Target="[INSTALLFOLDER]dangerzone.exe",
+        WorkingDirectory="INSTALLFOLDER",
+    )
+    ET.SubElement(
+        shortcut_el,
+        "RegistryValue",
+        Root="HKCU",
+        Key="Software\\Freedom of the Press Foundation\\Dangerzone",
+        Name="installed",
+        Type="integer",
+        Value="1",
+        KeyPath="yes",
+    )
+
+    # Add the ProgramFilesFolder StandardDirectory
+    programfilesfolder_el = ET.SubElement(
+        package_el,
+        "StandardDirectory",
+        Id="ProgramFiles64Folder",
+    )
+
+    # Create the directory structure for the installed product
+    build_directory_xml(programfilesfolder_el, data)
+
+    # Create a component group for application components
+    applicationcomponents_el = ET.SubElement(
+        package_el, "ComponentGroup", Id="ApplicationComponents"
+    )
+    # Populate the application components group with components for the installed package
+    build_components_xml(applicationcomponents_el, data)
+
+    # Add the Feature element
+    feature_el = ET.SubElement(package_el, "Feature", Id="DefaultFeature", Level="1")
+    ET.SubElement(feature_el, "ComponentGroupRef", Id="ApplicationComponents")
     ET.SubElement(feature_el, "ComponentRef", Id="ApplicationShortcuts")
 
-    print('<?xml version="1.0" encoding="windows-1252"?>')
-    print(f'<?define ProductVersion = "{version}"?>')
-    print('<?define ProductUpgradeCode = "12b9695c-965b-4be0-bc33-21274e809576"?>')
-    ET.indent(root_el)
-    print(ET.tostring(root_el).decode())
+    ET.indent(wix_el, space="    ")
+
+    with open(os.path.join(build_dir, "Dangerzone.wxs"), "w") as wxs_file:
+        wxs_file.write(ET.tostring(wix_el).decode())
 
 
 if __name__ == "__main__":

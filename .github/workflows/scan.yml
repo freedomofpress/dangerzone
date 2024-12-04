@@ -31,7 +31,7 @@ jobs:
         uses: anchore/scan-action@v5
         id: scan_container
         with:
-          image: "dangerzone.rocks/dangerzone:{{ steps.tag.outputs.tag }}"
+          image: "dangerzone.rocks/dangerzone:${{ steps.tag.outputs.tag }}"
           fail-build: false
           only-fixed: false
           severity-cutoff: critical
@@ -45,8 +45,7 @@ jobs:
       - name: Scan container image
         uses: anchore/scan-action@v5
         with:
-          image: "dangerzone.rocks/dangerzone:{{ steps.tag.outputs.tag }}"
-          fail-build: false
+          image: "dangerzone.rocks/dangerzone:${{ steps.tag.outputs.tag }}"
           fail-build: true
           only-fixed: false
           severity-cutoff: critical

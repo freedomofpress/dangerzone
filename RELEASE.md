@@ -7,7 +7,11 @@ This section documents how we currently release Dangerzone for the different dis
 Here is a list of tasks that should be done before issuing the release:
 
 - [ ] Create a new issue named **QA and Release for version \<VERSION\>**, to track the general progress.
-      You can generate its content with the the `poetry run ./dev_scripts/generate-release-tasks.py` command.
+      You can generate its content with:
+
+      ```
+      poetry run ./dev_scripts/generate-release-tasks.py`
+      ```
 - [ ] [Add new Linux platforms and remove obsolete ones](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#add-new-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock`
 - [ ] Update `version` in `pyproject.toml`
@@ -76,7 +80,16 @@ Once we are confident that the release will be out shortly, and doesn't need any
 
 ### macOS Release
 
-This needs to happen for both Silicon and Intel chipsets.
+> [!TIP]
+> You can automate these steps from your macOS terminal app with:
+>
+> ```
+> doit clean
+> doit -n 8 apple_id=<email>                  # for Intel macOS
+> doit -n 8 apple_id=<email> macos_build_dmg  # for Apple Silicon macOS
+> ```
+
+The following needs to happen for both Silicon and Intel chipsets.
 
 #### Initial Setup
 
@@ -217,12 +230,17 @@ Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
 
 ### Linux release
 
-> [!INFO]
-> Below we explain how we build packages for each Linux distribution we support.
+> [!TIP]
+> You can automate these steps from any Linux distribution with:
 >
-> There is also a `release.sh` script available which creates all
-> the `.rpm` and `.deb` files with a single command.
+> ```
+> doit clean
+> doit -n 8 fedora_rpm debian_deb
+> ```
+>
+> You can then add the created artifacts to the appropriate APT/YUM repo.
 
+Below we explain how we build packages for each Linux distribution we support.
 
 #### Debian/Ubuntu
 

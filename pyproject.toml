@@ -34,6 +34,7 @@ setuptools = "*"
 cx_freeze = {version = "^7.2.5", platform = "win32"}
 pywin32 = {version = "*", platform = "win32"}
 pyinstaller = {version = "*", platform = "darwin"}
+doit = "^0.36.0"
 
 # Dependencies required for linting the code.
 [tool.poetry.group.lint.dependencies]
@@ -65,6 +66,13 @@ profile = "black"
 skip_gitignore = true
 # This is necessary due to https://github.com/PyCQA/isort/issues/1835
 follow_links = false
+
+[tool.doit]
+verbosity = 3
+
+[tool.doit.tasks.build_image]
+# DO NOT change this to 'true' for release artifacts.
+use_cache = false
 
 [build-system]
 requires = ["poetry-core>=1.2.0"]

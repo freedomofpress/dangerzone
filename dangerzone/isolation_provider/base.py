@@ -255,6 +255,16 @@ class IsolationProvider(ABC):
         return errors.exception_from_error_code(error_code)
 
     @abstractmethod
+    def should_wait_install(self) -> bool:
+        """Whether this isolation provider takes a lot of time to install."""
+        pass
+
+    @abstractmethod
+    def is_available(self) -> bool:
+        """Whether the backing implementation of the isolation provider is available."""
+        pass
+
+    @abstractmethod
     def get_max_parallel_conversions(self) -> int:
         pass
 

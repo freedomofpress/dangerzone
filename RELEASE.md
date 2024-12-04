@@ -126,7 +126,7 @@ Here is what you need to do:
   ```
 
 - [ ] Build the container image and the OCR language data
-  
+
   ```bash
   poetry run ./install/common/build-image.py
   poetry run ./install/common/download-tessdata.py
@@ -143,9 +143,9 @@ Here is what you need to do:
   ```
 
 - [ ] Sign the application bundle, and notarize it
-  
+
   You need to run this command as the account that has access to the code signing certificate
-  
+
   This command assumes that you have created, and stored in the Keychain, an
   application password associated with your Apple Developer ID, which will be
   used specifically for `notarytool`.
@@ -264,7 +264,7 @@ or create your own locally with:
 ./dev_scripts/env.py --distro fedora --version 41 build-dev
 
 # Build the latest container (skip if already built):
-./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py" 
+./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py"
 
 # Create a .rpm:
 ./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"

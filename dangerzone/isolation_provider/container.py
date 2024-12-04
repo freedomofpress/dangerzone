@@ -46,12 +46,12 @@ class Container(IsolationProvider):
         * Do not log the container's output.
         * Do not map the host user to the container, with `--userns nomap` (available
           from Podman 4.1 onwards)
-          - This particular argument is specified in `start_doc_to_pixels_proc()`, but
-            should move here once #748 is merged.
         """
         if container_utils.get_runtime_name() == "podman":
             security_args = ["--log-driver", "none"]
             security_args += ["--security-opt", "no-new-privileges"]
+            if container_utils.get_runtime_version() >= (4, 1):
+                security_args += ["--userns", "nomap"]
         else:
             security_args = ["--security-opt=no-new-privileges:true"]
 
@@ -165,7 +165,6 @@ class Container(IsolationProvider):
         self,
         command: List[str],
         name: str,
-        extra_args: List[str] = [],
     ) -> subprocess.Popen:
         container_runtime = container_utils.get_runtime()
         security_args = self.get_runtime_security_args()
@@ -230,15 +229,8 @@ class Container(IsolationProvider):
             "-m",
             "dangerzone.conversion.doc_to_pixels",
         ]
-        # NOTE: Using `--userns nomap` is available only on Podman >= 4.1.0.
-        # XXX: Move this under `get_runtime_security_args()` once #748 is merged.
-        extra_args = []
-        if container_utils.get_runtime_name() == "podman":
-            if container_utils.get_runtime_version() >= (4, 1):
-                extra_args += ["--userns", "nomap"]
-
         name = self.doc_to_pixels_container_name(document)
-        return self.exec_container(command, name=name, extra_args=extra_args)
+        return self.exec_container(command, name=name)
 
     def terminate_doc_to_pixels_proc(
         self, document: Document, p: subprocess.Popen

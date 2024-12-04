@@ -7,7 +7,11 @@ This section documents how we currently release Dangerzone for the different dis
 Here is a list of tasks that should be done before issuing the release:
 
 - [ ] Create a new issue named **QA and Release for version \<VERSION\>**, to track the general progress.
-      You can generate its content with the the `poetry run ./dev_scripts/generate-release-tasks.py` command.
+      You can generate its content with:
+
+      ```
+      poetry run ./dev_scripts/generate-release-tasks.py`
+      ```
 - [ ] [Add new Linux platforms and remove obsolete ones](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#add-new-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock`
 - [ ] Update `version` in `pyproject.toml`
@@ -126,7 +130,7 @@ Here is what you need to do:
   ```
 
 - [ ] Build the container image and the OCR language data
-  
+
   ```bash
   poetry run ./install/common/build-image.py
   poetry run ./install/common/download-tessdata.py
@@ -142,11 +146,10 @@ Here is what you need to do:
   poetry run ./install/macos/build-app.py
   ```
 
-  driver (see [#933](https://github.com/freedomofpress/dangerzone/issues/933))
 - [ ] Sign the application bundle, and notarize it
-  
+
   You need to run this command as the account that has access to the code signing certificate
-  
+
   This command assumes that you have created, and stored in the Keychain, an
   application password associated with your Apple Developer ID, which will be
   used specifically for `notarytool`.

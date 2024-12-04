@@ -40,8 +40,12 @@ class Dummy(IsolationProvider):
         return True
 
     @staticmethod
-    def is_runtime_available() -> bool:
+    def is_available() -> bool:
         return True
+
+    @staticmethod
+    def should_wait_install() -> bool:
+        return False
 
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
         cmd = [

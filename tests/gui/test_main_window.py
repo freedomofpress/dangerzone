@@ -512,7 +512,7 @@ def test_not_available_container_tech_exception(
     # Setup
     mock_app = mocker.MagicMock()
     dummy = Dummy()
-    fn = mocker.patch.object(dummy, "is_runtime_available")
+    fn = mocker.patch.object(dummy, "is_available")
     fn.side_effect = NotAvailableContainerTechException(
         "podman", "podman image ls logs"
     )
@@ -536,7 +536,7 @@ def test_no_container_tech_exception(qtbot: QtBot, mocker: MockerFixture) -> Non
     dummy = mocker.MagicMock()
 
     # Raise
-    dummy.is_runtime_available.side_effect = NoContainerTechException("podman")
+    dummy.is_available.side_effect = NoContainerTechException("podman")
 
     dz = DangerzoneGui(mock_app, dummy)
     widget = WaitingWidgetContainer(dz)

@@ -25,10 +25,6 @@ else:
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
-from ..isolation_provider.container import (
-    NoContainerTechException,
-    NotAvailableContainerTechException,
-)
 from ..isolation_provider.qubes import is_qubes_native_conversion
 from ..util import format_exception, get_resource_path, get_version
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
@@ -496,10 +492,10 @@ class WaitingWidgetContainer(WaitingWidget):
 
         try:
             self.dangerzone.isolation_provider.is_available()
-        except NoContainerTechException as e:
+        except errors.NoContainerTechException as e:
             log.error(str(e))
             state = "not_installed"
-        except NotAvailableContainerTechException as e:
+        except errors.NotAvailableContainerTechException as e:
             log.error(str(e))
             state = "not_running"
             error = e.error

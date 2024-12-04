@@ -304,7 +304,11 @@ class Container(IsolationProvider):
         return True
 
     @staticmethod
-    def is_runtime_available() -> bool:
+    def should_wait_install() -> bool:
+        return True
+
+    @staticmethod
+    def is_available() -> bool:
         container_runtime = Container.get_runtime()
         runtime_name = Container.get_runtime_name()
         # Can we run `docker/podman image ls` without an error

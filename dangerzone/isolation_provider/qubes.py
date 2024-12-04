@@ -21,6 +21,14 @@ class Qubes(IsolationProvider):
     def install(self) -> bool:
         return True
 
+    @staticmethod
+    def is_available() -> bool:
+        return True
+
+    @staticmethod
+    def should_wait_install() -> bool:
+        return False
+
     def get_max_parallel_conversions(self) -> int:
         return 1
 

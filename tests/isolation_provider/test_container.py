@@ -27,9 +27,7 @@ def provider() -> Container:
 
 
 class TestContainer(IsolationProviderTest):
-    def test_is_runtime_available_raises(
-        self, provider: Container, fp: FakeProcess
-    ) -> None:
+    def test_is_available_raises(self, provider: Container, fp: FakeProcess) -> None:
         """
         NotAvailableContainerTechException should be raised when
         the "podman image ls" command fails.
@@ -40,18 +38,16 @@ class TestContainer(IsolationProviderTest):
             stderr="podman image ls logs",
         )
         with pytest.raises(NotAvailableContainerTechException):
-            provider.is_runtime_available()
+            provider.is_available()
 
-    def test_is_runtime_available_works(
-        self, provider: Container, fp: FakeProcess
-    ) -> None:
+    def test_is_available_works(self, provider: Container, fp: FakeProcess) -> None:
         """
         No exception should be raised when the "podman image ls" can return properly.
         """
         fp.register_subprocess(
             [provider.get_runtime(), "image", "ls"],
         )
-        provider.is_runtime_available()
+        provider.is_available()
 
     def test_install_raise_if_image_cant_be_installed(
         self, mocker: MockerFixture, provider: Container, fp: FakeProcess

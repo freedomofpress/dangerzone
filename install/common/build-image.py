@@ -83,11 +83,9 @@ def main():
                 check=True,
             )
 
-        # Build the container image, and tag it with two tags; the one we calculated
-        # above, and the "latest" tag.
+        # Build the container image, and tag it with the calculated tag
         print("Building container image")
         cache_args = [] if args.use_cache else ["--no-cache"]
-        image_name_latest = IMAGE_NAME + ":latest"
         subprocess.run(
             [
                 args.runtime,
@@ -100,8 +98,6 @@ def main():
                 f"ARCH={ARCH}",
                 "-f",
                 "Dockerfile",
-                "--tag",
-                image_name_latest,
                 "--tag",
                 image_name_tagged,
             ],

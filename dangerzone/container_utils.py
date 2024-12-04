@@ -1,10 +1,9 @@
 import gzip
-import json
 import logging
 import platform
 import shutil
 import subprocess
-from typing import Dict, Tuple
+from typing import List, Tuple
 
 from .util import get_resource_path, get_subprocess_startupinfo
 from . import errors
@@ -72,36 +71,25 @@ def get_runtime() -> str:
     return runtime
 
 
-def list_image_tags() -> Dict[str, str]:
+def list_image_tags() -> List[str]:
     """Get the tags of all loaded Dangerzone images.
 
     This method returns a mapping of image tags to image IDs, for all Dangerzone
     images. This can be useful when we want to find which are the local image tags,
     and which image ID does the "latest" tag point to.
     """
-    images = json.loads(
-        subprocess.check_output(
-            [
-                get_runtime(),
-                "image",
-                "list",
-                "--format",
-                "json",
-                CONTAINER_NAME,
-            ],
-            text=True,
-            startupinfo=get_subprocess_startupinfo(),
-        )
-    )
-
-    # Grab every image name and associate it with an image ID.
-    tags = {}
-    for image in images:
-        for name in image["Names"]:
-            tag = name.split(":")[1]
-            tags[tag] = image["Id"]
-
-    return tags
+    return subprocess.check_output(
+        [
+            get_runtime(),
+            "image",
+            "list",
+            "--format",
+            "{{ .Tag }}",
+            CONTAINER_NAME,
+        ],
+        text=True,
+        startupinfo=get_subprocess_startupinfo(),
+    ).strip().split()
 
 
 def delete_image_tag(tag: str) -> None:

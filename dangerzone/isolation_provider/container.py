@@ -81,11 +81,9 @@ class Container(IsolationProvider):
         1. Get the tags of any locally available images that match Dangerzone's image
            name.
         2. Get the expected image tag from the image-id.txt file.
-           - If this tag is present in the local images, and that image is also tagged
-             as "latest", then we can return.
+           - If this tag is present in the local images, then we can return.
            - Else, prune the older container images and continue.
         3. Load the image tarball and make sure it matches the expected tag.
-        4. Tag that image as "latest", and mark the installation as finished.
         """
         old_tags = container_utils.list_image_tags()
         expected_tag = container_utils.get_expected_tag()
@@ -95,12 +93,8 @@ class Container(IsolationProvider):
             log.info(
                 f"Could not find a Dangerzone container image with tag '{expected_tag}'"
             )
-            for tag in old_tags.keys():
+            for tag in old_tags:
                 container_utils.delete_image_tag(tag)
-        elif old_tags[expected_tag] != old_tags.get("latest"):
-            log.info(f"The expected tag '{expected_tag}' is not the latest one")
-            container_utils.add_image_tag(expected_tag, "latest")
-            return True
         else:
             return True
 
@@ -117,8 +111,6 @@ class Container(IsolationProvider):
                 " container image tarball"
             )
 
-        # Mark the expected tag as "latest".
-        container_utils.add_image_tag(expected_tag, "latest")
         return True
 
     @staticmethod
@@ -179,13 +171,14 @@ class Container(IsolationProvider):
         enable_stdin = ["-i"]
         set_name = ["--name", name]
         prevent_leakage_args = ["--rm"]
+        image_name = [container_utils.CONTAINER_NAME + ":" + container_utils.get_expected_tag()]
         args = (
             ["run"]
             + security_args
             + prevent_leakage_args
             + enable_stdin
             + set_name
-            + [container_utils.CONTAINER_NAME]
+            + image_name
             + command
         )
         args = [container_runtime] + args

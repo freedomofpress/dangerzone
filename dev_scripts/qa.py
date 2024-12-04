@@ -129,7 +129,6 @@ version. For example:
 ```
 $ docker images dangerzone.rocks/dangerzone
 REPOSITORY                   TAG         IMAGE ID      CREATED       SIZE
-dangerzone.rocks/dangerzone  latest      <image ID>    <date>        <size>
 dangerzone.rocks/dangerzone  <tag>       <image ID>    <date>        <size>
 ```
 
@@ -141,7 +140,6 @@ and seeing the following differences:
 ```
 $ docker images dangerzone.rocks/dangerzone
 REPOSITORY                   TAG         IMAGE ID        CREATED       SIZE
-dangerzone.rocks/dangerzone  latest      <different ID>  <newer date>  <different size>
 dangerzone.rocks/dangerzone  <other tag> <different ID>  <newer date>  <different size>
 ```
 

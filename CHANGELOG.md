@@ -18,8 +18,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Development changes
 
-- Build Dangerzone MSI with Wix Toolset 5 ([#929](https://github.com/freedomofpress/dangerzone/pull/929)).
   Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
+- Automate a large portion of our release tasks with `doit` ([#1016](https://github.com/freedomofpress/dangerzone/issues/1016))
 
 ## [0.8.0](https://github.com/freedomofpress/dangerzone/compare/v0.8.0...0.7.1)
 

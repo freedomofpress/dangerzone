@@ -5,8 +5,8 @@ import shutil
 import subprocess
 from typing import List, Tuple
 
-from .util import get_resource_path, get_subprocess_startupinfo
 from . import errors
+from .util import get_resource_path, get_subprocess_startupinfo
 
 CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 
@@ -78,18 +78,22 @@ def list_image_tags() -> List[str]:
     images. This can be useful when we want to find which are the local image tags,
     and which image ID does the "latest" tag point to.
     """
-    return subprocess.check_output(
-        [
-            get_runtime(),
-            "image",
-            "list",
-            "--format",
-            "{{ .Tag }}",
-            CONTAINER_NAME,
-        ],
-        text=True,
-        startupinfo=get_subprocess_startupinfo(),
-    ).strip().split()
+    return (
+        subprocess.check_output(
+            [
+                get_runtime(),
+                "image",
+                "list",
+                "--format",
+                "{{ .Tag }}",
+                CONTAINER_NAME,
+            ],
+            text=True,
+            startupinfo=get_subprocess_startupinfo(),
+        )
+        .strip()
+        .split()
+    )
 
 
 def delete_image_tag(tag: str) -> None:

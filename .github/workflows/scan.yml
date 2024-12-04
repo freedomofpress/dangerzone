@@ -20,13 +20,18 @@ jobs:
         run: sudo apt install pipx && pipx install poetry
       - name: Build container image
         run: python3 ./install/common/build-image.py --runtime docker --no-save
+      - name: Get image tag
+        id: tag
+        run: |
+          tag=$(docker images dangerzone.rocks/dangerzone --format '{{ .Tag }}')
+          echo "tag=$tag" >> $GITHUB_OUTPUT
       # NOTE: Scan first without failing, else we won't be able to read the scan
       # report.
       - name: Scan container image (no fail)
         uses: anchore/scan-action@v5
         id: scan_container
         with:
-          image: "dangerzone.rocks/dangerzone:latest"
+          image: "dangerzone.rocks/dangerzone:${{ steps.tag.outputs.tag }}"
           fail-build: false
           only-fixed: false
           severity-cutoff: critical
@@ -40,7 +45,7 @@ jobs:
       - name: Scan container image
         uses: anchore/scan-action@v5
         with:
-          image: "dangerzone.rocks/dangerzone:latest"
+          image: "dangerzone.rocks/dangerzone:${{ steps.tag.outputs.tag }}"
           fail-build: true
           only-fixed: false
           severity-cutoff: critical

@@ -85,7 +85,7 @@ jobs:
         id: cache-container-image
         uses: actions/cache@v4
         with:
-          key: v2-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
           path: |
             share/container.tar.gz
             share/image-id.txt
@@ -97,6 +97,7 @@ jobs:
           python3 ./install/common/build-image.py
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
           gunzip -c share/container.tar.gz | podman load
+          tag=$(cat share/image-id.txt)
           podman push \
-                  dangerzone.rocks/dangerzone \
-                  ${{ env.IMAGE_REGISTRY }}/dangerzone/dangerzone
+                  dangerzone.rocks/dangerzone:$tag \
+                  ${{ env.IMAGE_REGISTRY }}/dangerzone/dangerzone:tag

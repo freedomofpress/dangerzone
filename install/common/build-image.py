@@ -59,7 +59,7 @@ def main():
     dirty_ident = secrets.token_hex(2)
     tag = (
         subprocess.check_output(
-            ["git", "describe", "--first-parent", f"--dirty=-{dirty_ident}"],
+            ["git", "describe", "--long", "--first-parent", f"--dirty=-{dirty_ident}"],
         )
         .decode()
         .strip()[1:]  # remove the "v" prefix of the tag.

@@ -67,6 +67,13 @@ skip_gitignore = true
 # This is necessary due to https://github.com/PyCQA/isort/issues/1835
 follow_links = false
 
+[tool.doit]
+verbosity = 3
+
+[tool.doit.tasks.build_image]
+# DO NOT change this to 'true' for release artifacts.
+use_cache = false
+
 [build-system]
 requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"

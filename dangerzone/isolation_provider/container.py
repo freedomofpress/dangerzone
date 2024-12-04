@@ -171,7 +171,9 @@ class Container(IsolationProvider):
         enable_stdin = ["-i"]
         set_name = ["--name", name]
         prevent_leakage_args = ["--rm"]
-        image_name = [container_utils.CONTAINER_NAME + ":" + container_utils.get_expected_tag()]
+        image_name = [
+            container_utils.CONTAINER_NAME + ":" + container_utils.get_expected_tag()
+        ]
         args = (
             ["run"]
             + security_args

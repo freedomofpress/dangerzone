@@ -10,6 +10,7 @@ from pytest_mock import MockerFixture
 from pytest_subprocess import FakeProcess
 from pytestqt.qtbot import QtBot
 
+from dangerzone import errors
 from dangerzone.document import Document
 from dangerzone.gui import MainWindow
 from dangerzone.gui import main_window as main_window_module
@@ -25,11 +26,7 @@ from dangerzone.gui.main_window import (
     WaitingWidgetContainer,
 )
 from dangerzone.gui.updater import UpdateReport, UpdaterThread
-from dangerzone.isolation_provider.container import (
-    Container,
-    NoContainerTechException,
-    NotAvailableContainerTechException,
-)
+from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.dummy import Dummy
 
 from .test_updater import assert_report_equal, default_updater_settings
@@ -513,7 +510,7 @@ def test_not_available_container_tech_exception(
     mock_app = mocker.MagicMock()
     dummy = Dummy()
     fn = mocker.patch.object(dummy, "is_available")
-    fn.side_effect = NotAvailableContainerTechException(
+    fn.side_effect = errors.NotAvailableContainerTechException(
         "podman", "podman image ls logs"
     )
 
@@ -536,7 +533,7 @@ def test_no_container_tech_exception(qtbot: QtBot, mocker: MockerFixture) -> Non
     dummy = mocker.MagicMock()
 
     # Raise
-    dummy.is_available.side_effect = NoContainerTechException("podman")
+    dummy.is_available.side_effect = errors.NoContainerTechException("podman")
 
     dz = DangerzoneGui(mock_app, dummy)
     widget = WaitingWidgetContainer(dz)

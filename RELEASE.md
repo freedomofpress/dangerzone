@@ -76,7 +76,16 @@ Once we are confident that the release will be out shortly, and doesn't need any
 
 ### macOS Release
 
-This needs to happen for both Silicon and Intel chipsets.
+> [!TIP]
+> You can automate these steps from your macOS terminal app with:
+>
+> ```
+> export APPLE_ID=<email>
+> make build-macos-intel  # for Intel macOS
+> make build-macos-arm    # for Apple Silicon macOS
+> ```
+
+The following needs to happen for both Silicon and Intel chipsets.
 
 #### Initial Setup
 
@@ -217,12 +226,16 @@ Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
 
 ### Linux release
 
-> [!INFO]
-> Below we explain how we build packages for each Linux distribution we support.
+> [!TIP]
+> You can automate these steps from any Linux distribution with:
 >
-> There is also a `release.sh` script available which creates all
-> the `.rpm` and `.deb` files with a single command.
+> ```
+> make build-linux
+> ```
+>
+> You can then add the created artifacts to the appropriate APT/YUM repo.
 
+Below we explain how we build packages for each Linux distribution we support.
 
 #### Debian/Ubuntu
 

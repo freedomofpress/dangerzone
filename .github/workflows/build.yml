@@ -99,5 +99,5 @@ jobs:
           gunzip -c share/container.tar.gz | podman load
           tag=$(cat share/image-id.txt)
           podman push \
-                  dangerzone.rocks/dangerzone \
-                  ${{ env.IMAGE_REGISTRY }}/dangerzone/dangerzone:$tag
+                  dangerzone.rocks/dangerzone:$tag \
+                  ${{ env.IMAGE_REGISTRY }}/dangerzone/dangerzone:tag

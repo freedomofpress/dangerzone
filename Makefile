@@ -1,7 +1,6 @@
 LARGE_TEST_REPO_DIR:=tests/test_docs_large
 GIT_DESC=$$(git describe)
 JUNIT_FLAGS := --capture=sys -o junit_logging=all
-
 MYPY_ARGS := --ignore-missing-imports \
 			 --disallow-incomplete-defs \
 			 --disallow-untyped-defs \
@@ -10,19 +9,12 @@ MYPY_ARGS := --ignore-missing-imports \
 			 --warn-unused-ignores \
 			 --exclude $(LARGE_TEST_REPO_DIR)/*.py
 
-mypy-host:
-	mypy $(MYPY_ARGS) dangerzone
-
-mypy-tests:
-	mypy $(MYPY_ARGS) tests
-
-mypy: mypy-host mypy-tests ## check type hints with mypy
-
 .PHONY: lint
 lint: ## Check the code for linting, formatting, and typing issues with ruff and mypy
 	ruff check
 	ruff format --check
-	mypy 
+	mypy $(MYPY_ARGS) dangerzone
+	mypy $(MYPY_ARGS) tests
 
 .PHONY: fix
 fix: ## apply all the suggestions from ruff

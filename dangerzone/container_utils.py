@@ -112,25 +112,6 @@ def delete_image_tag(tag: str) -> None:
         )
 
 
-def add_image_tag(cur_tag: str, new_tag: str) -> None:
-    """Add a tag to an existing Dangerzone image."""
-    cur_image_name = CONTAINER_NAME + ":" + cur_tag
-    new_image_name = CONTAINER_NAME + ":" + new_tag
-    subprocess.check_output(
-        [
-            get_runtime(),
-            "tag",
-            cur_image_name,
-            new_image_name,
-        ],
-        startupinfo=get_subprocess_startupinfo(),
-    )
-
-    log.info(
-        f"Successfully tagged container image '{cur_image_name}' as '{new_image_name}'"
-    )
-
-
 def get_expected_tag() -> str:
     """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
     with open(get_resource_path("image-id.txt")) as f:

@@ -105,7 +105,7 @@ def build_components_xml(root, data):
                 Guid=subdata["component_guid"],
             )
             for filename in subdata["files"]:
-                file_el = ET.SubElement(
+                ET.SubElement(
                     component_el, "File", Source=filename, Id="file_" + uuid.uuid4().hex
                 )
 

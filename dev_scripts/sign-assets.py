@@ -95,11 +95,11 @@ def main():
     parser.add_argument(
         "--version",
         required=True,
-        help=f"look for assets with this Dangerzone version",
+        help="look for assets with this Dangerzone version",
     )
     parser.add_argument(
         "dir",
-        help=f"look for assets in this directory",
+        help="look for assets in this directory",
     )
     args = parser.parse_args()
     setup_logging()

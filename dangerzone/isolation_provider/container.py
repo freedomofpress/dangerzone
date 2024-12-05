@@ -1,12 +1,11 @@
-import gzip
 import logging
 import os
 import platform
 import shlex
-import shutil
 import subprocess
-from typing import List, Tuple
+from typing import List
 
+from .. import container_utils, errors
 from ..document import Document
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
@@ -25,88 +24,8 @@ else:
 log = logging.getLogger(__name__)
 
 
-class NoContainerTechException(Exception):
-    def __init__(self, container_tech: str) -> None:
-        super().__init__(f"{container_tech} is not installed")
-
-
-class NotAvailableContainerTechException(Exception):
-    def __init__(self, container_tech: str, error: str) -> None:
-        self.error = error
-        self.container_tech = container_tech
-        super().__init__(f"{container_tech} is not available")
-
-
-class ImageNotPresentException(Exception):
-    pass
-
-
-class ImageInstallationException(Exception):
-    pass
-
-
 class Container(IsolationProvider):
     # Name of the dangerzone container
-    CONTAINER_NAME = "dangerzone.rocks/dangerzone"
-
-    @staticmethod
-    def get_runtime_name() -> str:
-        if platform.system() == "Linux":
-            runtime_name = "podman"
-        else:
-            # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
-            runtime_name = "docker"
-        return runtime_name
-
-    @staticmethod
-    def get_runtime_version() -> Tuple[int, int]:
-        """Get the major/minor parts of the Docker/Podman version.
-
-        Some of the operations we perform in this module rely on some Podman features
-        that are not available across all of our platforms. In order to have a proper
-        fallback, we need to know the Podman version. More specifically, we're fine with
-        just knowing the major and minor version, since writing/installing a full-blown
-        semver parser is an overkill.
-        """
-        # Get the Docker/Podman version, using a Go template.
-        runtime = Container.get_runtime_name()
-        if runtime == "podman":
-            query = "{{.Client.Version}}"
-        else:
-            query = "{{.Server.Version}}"
-
-        cmd = [runtime, "version", "-f", query]
-        try:
-            version = subprocess.run(
-                cmd,
-                startupinfo=get_subprocess_startupinfo(),
-                capture_output=True,
-                check=True,
-            ).stdout.decode()
-        except Exception as e:
-            msg = f"Could not get the version of the {runtime.capitalize()} tool: {e}"
-            raise RuntimeError(msg) from e
-
-        # Parse this version and return the major/minor parts, since we don't need the
-        # rest.
-        try:
-            major, minor, _ = version.split(".", 3)
-            return (int(major), int(minor))
-        except Exception as e:
-            msg = (
-                f"Could not parse the version of the {runtime.capitalize()} tool"
-                f" (found: '{version}') due to the following error: {e}"
-            )
-            raise RuntimeError(msg)
-
-    @staticmethod
-    def get_runtime() -> str:
-        container_tech = Container.get_runtime_name()
-        runtime = shutil.which(container_tech)
-        if runtime is None:
-            raise NoContainerTechException(container_tech)
-        return runtime
-
     @staticmethod
     def get_runtime_security_args() -> List[str]:
         """Security options applicable to the outer Dangerzone container.
@@ -127,12 +46,12 @@ class Container(IsolationProvider):
         * Do not log the container's output.
         * Do not map the host user to the container, with `--userns nomap` (available
           from Podman 4.1 onwards)
-          - This particular argument is specified in `start_doc_to_pixels_proc()`, but
-            should move here once #748 is merged.
         """
-        if Container.get_runtime_name() == "podman":
+        if container_utils.get_runtime_name() == "podman":
             security_args = ["--log-driver", "none"]
             security_args += ["--security-opt", "no-new-privileges"]
+            if container_utils.get_runtime_version() >= (4, 1):
+                security_args += ["--userns", "nomap"]
         else:
             security_args = ["--security-opt=no-new-privileges:true"]
 
@@ -156,51 +75,52 @@ class Container(IsolationProvider):
 
     @staticmethod
     def install() -> bool:
+        """Install the container image tarball, or verify that it's already installed.
+
+        Perform the following actions:
+        1. Get the tags of any locally available images that match Dangerzone's image
+           name.
+        2. Get the expected image tag from the image-id.txt file.
+           - If this tag is present in the local images, then we can return.
+           - Else, prune the older container images and continue.
+        3. Load the image tarball and make sure it matches the expected tag.
         """
-        Make sure the podman container is installed. Linux only.
-        """
-        if Container.is_container_installed():
+        old_tags = container_utils.list_image_tags()
+        expected_tag = container_utils.get_expected_tag()
+
+        if expected_tag not in old_tags:
+            # Prune older container images.
+            log.info(
+                f"Could not find a Dangerzone container image with tag '{expected_tag}'"
+            )
+            for tag in old_tags:
+                container_utils.delete_image_tag(tag)
+        else:
             return True
 
-        # Load the container into podman
-        log.info("Installing Dangerzone container image...")
+        # Load the image tarball into the container runtime.
+        container_utils.load_image_tarball()
 
-        p = subprocess.Popen(
-            [Container.get_runtime(), "load"],
-            stdin=subprocess.PIPE,
-            startupinfo=get_subprocess_startupinfo(),
-        )
-
-        chunk_size = 4 << 20
-        compressed_container_path = get_resource_path("container.tar.gz")
-        with gzip.open(compressed_container_path) as f:
-            while True:
-                chunk = f.read(chunk_size)
-                if len(chunk) > 0:
-                    if p.stdin:
-                        p.stdin.write(chunk)
-                else:
-                    break
-        _, err = p.communicate()
-        if p.returncode < 0:
-            if err:
-                error = err.decode()
-            else:
-                error = "No output"
-            raise ImageInstallationException(
-                f"Could not install container image: {error}"
+        # Check that the container image has the expected image tag.
+        # See https://github.com/freedomofpress/dangerzone/issues/988 for an example
+        # where this was not the case.
+        new_tags = container_utils.list_image_tags()
+        if expected_tag not in new_tags:
+            raise errors.ImageNotPresentException(
+                f"Could not find expected tag '{expected_tag}' after loading the"
+                " container image tarball"
             )
 
-        if not Container.is_container_installed(raise_on_error=True):
-            return False
-
-        log.info("Container image installed")
         return True
 
     @staticmethod
-    def is_runtime_available() -> bool:
-        container_runtime = Container.get_runtime()
-        runtime_name = Container.get_runtime_name()
+    def should_wait_install() -> bool:
+        return True
+
+    @staticmethod
+    def is_available() -> bool:
+        container_runtime = container_utils.get_runtime()
+        runtime_name = container_utils.get_runtime_name()
         # Can we run `docker/podman image ls` without an error
         with subprocess.Popen(
             [container_runtime, "image", "ls"],
@@ -210,60 +130,10 @@ class Container(IsolationProvider):
         ) as p:
             _, stderr = p.communicate()
             if p.returncode != 0:
-                raise NotAvailableContainerTechException(runtime_name, stderr.decode())
+                raise errors.NotAvailableContainerTechException(
+                    runtime_name, stderr.decode()
+                )
             return True
-
-    @staticmethod
-    def is_container_installed(raise_on_error: bool = False) -> bool:
-        """
-        See if the container is installed.
-        """
-        # Get the image id
-        with open(get_resource_path("image-id.txt")) as f:
-            expected_image_ids = f.read().strip().split()
-
-        # See if this image is already installed
-        installed = False
-        found_image_id = subprocess.check_output(
-            [
-                Container.get_runtime(),
-                "image",
-                "list",
-                "--format",
-                "{{.ID}}",
-                Container.CONTAINER_NAME,
-            ],
-            text=True,
-            startupinfo=get_subprocess_startupinfo(),
-        )
-        found_image_id = found_image_id.strip()
-
-        if found_image_id in expected_image_ids:
-            installed = True
-        elif found_image_id == "":
-            if raise_on_error:
-                raise ImageNotPresentException(
-                    "Image is not listed after installation. Bailing out."
-                )
-        else:
-            msg = (
-                f"{Container.CONTAINER_NAME} images found, but IDs do not match."
-                f" Found: {found_image_id}, Expected: {','.join(expected_image_ids)}"
-            )
-            if raise_on_error:
-                raise ImageNotPresentException(msg)
-            log.info(msg)
-            log.info("Deleting old dangerzone container image")
-
-            try:
-                subprocess.check_output(
-                    [Container.get_runtime(), "rmi", "--force", found_image_id],
-                    startupinfo=get_subprocess_startupinfo(),
-                )
-            except Exception:
-                log.warning("Couldn't delete old container image, so leaving it there")
-
-        return installed
 
     def doc_to_pixels_container_name(self, document: Document) -> str:
         """Unique container name for the doc-to-pixels phase."""
@@ -295,21 +165,22 @@ class Container(IsolationProvider):
         self,
         command: List[str],
         name: str,
-        extra_args: List[str] = [],
     ) -> subprocess.Popen:
-        container_runtime = self.get_runtime()
+        container_runtime = container_utils.get_runtime()
         security_args = self.get_runtime_security_args()
         enable_stdin = ["-i"]
         set_name = ["--name", name]
         prevent_leakage_args = ["--rm"]
+        image_name = [
+            container_utils.CONTAINER_NAME + ":" + container_utils.get_expected_tag()
+        ]
         args = (
             ["run"]
             + security_args
             + prevent_leakage_args
             + enable_stdin
             + set_name
-            + extra_args
-            + [self.CONTAINER_NAME]
+            + image_name
             + command
         )
         args = [container_runtime] + args
@@ -325,7 +196,7 @@ class Container(IsolationProvider):
         connected to the Docker daemon, and killing it will just close the associated
         standard streams.
         """
-        container_runtime = self.get_runtime()
+        container_runtime = container_utils.get_runtime()
         cmd = [container_runtime, "kill", name]
         try:
             # We do not check the exit code of the process here, since the container may
@@ -358,15 +229,8 @@ class Container(IsolationProvider):
             "-m",
             "dangerzone.conversion.doc_to_pixels",
         ]
-        # NOTE: Using `--userns nomap` is available only on Podman >= 4.1.0.
-        # XXX: Move this under `get_runtime_security_args()` once #748 is merged.
-        extra_args = []
-        if Container.get_runtime_name() == "podman":
-            if Container.get_runtime_version() >= (4, 1):
-                extra_args += ["--userns", "nomap"]
-
         name = self.doc_to_pixels_container_name(document)
-        return self.exec_container(command, name=name, extra_args=extra_args)
+        return self.exec_container(command, name=name)
 
     def terminate_doc_to_pixels_proc(
         self, document: Document, p: subprocess.Popen
@@ -389,7 +253,7 @@ class Container(IsolationProvider):
         # after a podman kill / docker kill invocation, this will likely be the case,
         # else the container runtime (Docker/Podman) has experienced a problem, and we
         # should report it.
-        container_runtime = self.get_runtime()
+        container_runtime = container_utils.get_runtime()
         name = self.doc_to_pixels_container_name(document)
         all_containers = subprocess.run(
             [container_runtime, "ps", "-a"],
@@ -411,11 +275,11 @@ class Container(IsolationProvider):
             if cpu_count is not None:
                 n_cpu = cpu_count
 
-        elif self.get_runtime_name() == "docker":
+        elif container_utils.get_runtime_name() == "docker":
             # For Windows and MacOS containers run in VM
             # So we obtain the CPU count for the VM
             n_cpu_str = subprocess.check_output(
-                [self.get_runtime(), "info", "--format", "{{.NCPU}}"],
+                [container_utils.get_runtime(), "info", "--format", "{{.NCPU}}"],
                 text=True,
                 startupinfo=get_subprocess_startupinfo(),
             )

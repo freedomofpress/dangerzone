@@ -25,13 +25,7 @@ else:
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
-from ..isolation_provider.container import (
-    Container,
-    NoContainerTechException,
-    NotAvailableContainerTechException,
-)
-from ..isolation_provider.dummy import Dummy
-from ..isolation_provider.qubes import Qubes, is_qubes_native_conversion
+from ..isolation_provider.qubes import is_qubes_native_conversion
 from ..util import format_exception, get_resource_path, get_version
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 from .updater import UpdateReport
@@ -197,14 +191,11 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(self.hamburger_button)
         header_layout.addSpacing(15)
 
-        if isinstance(self.dangerzone.isolation_provider, Container):
+        if self.dangerzone.isolation_provider.should_wait_install():
             # Waiting widget replaces content widget while container runtime isn't available
             self.waiting_widget: WaitingWidget = WaitingWidgetContainer(self.dangerzone)
             self.waiting_widget.finished.connect(self.waiting_finished)
-
-        elif isinstance(self.dangerzone.isolation_provider, Dummy) or isinstance(
-            self.dangerzone.isolation_provider, Qubes
-        ):
+        else:
             # Don't wait with dummy converter and on Qubes.
             self.waiting_widget = WaitingWidget()
             self.dangerzone.is_waiting_finished = True
@@ -500,11 +491,11 @@ class WaitingWidgetContainer(WaitingWidget):
         error: Optional[str] = None
 
         try:
-            self.dangerzone.isolation_provider.is_runtime_available()
-        except NoContainerTechException as e:
+            self.dangerzone.isolation_provider.is_available()
+        except errors.NoContainerTechException as e:
             log.error(str(e))
             state = "not_installed"
-        except NotAvailableContainerTechException as e:
+        except errors.NotAvailableContainerTechException as e:
             log.error(str(e))
             state = "not_running"
             error = e.error

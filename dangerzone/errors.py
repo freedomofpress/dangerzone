@@ -117,3 +117,26 @@ def handle_document_errors(func: F) -> F:
             sys.exit(1)
 
     return cast(F, wrapper)
+
+
+#### Container-related errors
+
+
+class ImageNotPresentException(Exception):
+    pass
+
+
+class ImageInstallationException(Exception):
+    pass
+
+
+class NoContainerTechException(Exception):
+    def __init__(self, container_tech: str) -> None:
+        super().__init__(f"{container_tech} is not installed")
+
+
+class NotAvailableContainerTechException(Exception):
+    def __init__(self, container_tech: str, error: str) -> None:
+        self.error = error
+        self.container_tech = container_tech
+        super().__init__(f"{container_tech} is not available")

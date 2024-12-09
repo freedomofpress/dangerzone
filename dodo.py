@@ -29,7 +29,7 @@ PARAM_APPLE_ID = {
     "name": "apple_id",
     "long": "apple-id",
     "default": APPLE_ID,
-    "help": "The Apple developer ID that will be used for signing the .dmg",
+    "help": "The Apple developer ID that will be used to sign the .dmg",
 }
 
 PARAM_USE_CACHE = {

@@ -14,7 +14,7 @@ We picked Doit out of the various tools out there for the following reasons:
   applicable, it's easy to issue shell commands as well.
 * **File targets:** Doit borrows the file target concept from Makefiles. Tasks
   can have file dependencies, and targets they build. This makes it easy to
-  define a dependency graph (DAG) for tasks.
+  define a dependency graph for tasks.
 * **Hash-based caching:** Unlike Makefiles, doit does not look at the
   modification timestamp of source/target files, to figure out if it needs to
   run them.  Instead, it hashes those files, and will run a task only if the

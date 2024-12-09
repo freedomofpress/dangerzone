@@ -1,7 +1,7 @@
 # Using the Doit Automation Tool
 
 Developers can use the [Doit](https://pydoit.org/) automation tool to create
-release artifacts. The purpose of the tool is to automate our manual release
+release artifacts. The purpose of the tool is to automate the manual release
 instructions in `RELEASE.md` file. Not everything is automated yet, since we're
 still experimenting with this tool. You can find our task definitions in this
 repo's `dodo.py` file.

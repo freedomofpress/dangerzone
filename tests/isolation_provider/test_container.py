@@ -4,12 +4,8 @@ import pytest
 from pytest_mock import MockerFixture
 from pytest_subprocess import FakeProcess
 
-from dangerzone.isolation_provider.container import (
-    Container,
-    ImageInstallationException,
-    ImageNotPresentException,
-    NotAvailableContainerTechException,
-)
+from dangerzone import container_utils, errors
+from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 
 from .base import IsolationProviderTermination, IsolationProviderTest
@@ -27,31 +23,27 @@ def provider() -> Container:
 
 
 class TestContainer(IsolationProviderTest):
-    def test_is_runtime_available_raises(
-        self, provider: Container, fp: FakeProcess
-    ) -> None:
+    def test_is_available_raises(self, provider: Container, fp: FakeProcess) -> None:
         """
         NotAvailableContainerTechException should be raised when
         the "podman image ls" command fails.
         """
         fp.register_subprocess(
-            [provider.get_runtime(), "image", "ls"],
+            [container_utils.get_runtime(), "image", "ls"],
             returncode=-1,
             stderr="podman image ls logs",
         )
-        with pytest.raises(NotAvailableContainerTechException):
-            provider.is_runtime_available()
+        with pytest.raises(errors.NotAvailableContainerTechException):
+            provider.is_available()
 
-    def test_is_runtime_available_works(
-        self, provider: Container, fp: FakeProcess
-    ) -> None:
+    def test_is_available_works(self, provider: Container, fp: FakeProcess) -> None:
         """
         No exception should be raised when the "podman image ls" can return properly.
         """
         fp.register_subprocess(
-            [provider.get_runtime(), "image", "ls"],
+            [container_utils.get_runtime(), "image", "ls"],
         )
-        provider.is_runtime_available()
+        provider.is_available()
 
     def test_install_raise_if_image_cant_be_installed(
         self, mocker: MockerFixture, provider: Container, fp: FakeProcess
@@ -59,17 +51,17 @@ class TestContainer(IsolationProviderTest):
         """When an image installation fails, an exception should be raised"""
 
         fp.register_subprocess(
-            [provider.get_runtime(), "image", "ls"],
+            [container_utils.get_runtime(), "image", "ls"],
         )
 
         # First check should return nothing.
         fp.register_subprocess(
             [
-                provider.get_runtime(),
+                container_utils.get_runtime(),
                 "image",
                 "list",
                 "--format",
-                "{{.ID}}",
+                "{{ .Tag }}",
                 "dangerzone.rocks/dangerzone",
             ],
             occurrences=2,
@@ -79,11 +71,11 @@ class TestContainer(IsolationProviderTest):
         mocker.patch("gzip.open", mocker.mock_open(read_data=""))
 
         fp.register_subprocess(
-            [provider.get_runtime(), "load"],
+            [container_utils.get_runtime(), "load"],
             returncode=-1,
         )
 
-        with pytest.raises(ImageInstallationException):
+        with pytest.raises(errors.ImageInstallationException):
             provider.install()
 
     def test_install_raises_if_still_not_installed(
@@ -92,17 +84,17 @@ class TestContainer(IsolationProviderTest):
         """When an image keep being not installed, it should return False"""
 
         fp.register_subprocess(
-            [provider.get_runtime(), "image", "ls"],
+            [container_utils.get_runtime(), "image", "ls"],
         )
 
         # First check should return nothing.
         fp.register_subprocess(
             [
-                provider.get_runtime(),
+                container_utils.get_runtime(),
                 "image",
                 "list",
                 "--format",
-                "{{.ID}}",
+                "{{ .Tag }}",
                 "dangerzone.rocks/dangerzone",
             ],
             occurrences=2,
@@ -111,9 +103,9 @@ class TestContainer(IsolationProviderTest):
         # Patch gzip.open and podman load so that it works
         mocker.patch("gzip.open", mocker.mock_open(read_data=""))
         fp.register_subprocess(
-            [provider.get_runtime(), "load"],
+            [container_utils.get_runtime(), "load"],
         )
-        with pytest.raises(ImageNotPresentException):
+        with pytest.raises(errors.ImageNotPresentException):
             provider.install()
 
 

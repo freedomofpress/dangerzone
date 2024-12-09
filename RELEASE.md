@@ -126,7 +126,7 @@ Here is what you need to do:
   ```
 
 - [ ] Build the container image and the OCR language data
-  
+
   ```bash
   poetry run ./install/common/build-image.py
   poetry run ./install/common/download-tessdata.py
@@ -142,12 +142,10 @@ Here is what you need to do:
   poetry run ./install/macos/build-app.py
   ```
 
-- [ ] Make sure that the build application works with the containerd graph
-  driver (see [#933](https://github.com/freedomofpress/dangerzone/issues/933))
 - [ ] Sign the application bundle, and notarize it
-  
+
   You need to run this command as the account that has access to the code signing certificate
-  
+
   This command assumes that you have created, and stored in the Keychain, an
   application password associated with your Apple Developer ID, which will be
   used specifically for `notarytool`.
@@ -212,9 +210,6 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
 - [ ] Copy the container image into the VM
   > [!IMPORTANT]
   > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar.gz` and `share/image-id.txt` from the host into the `share` folder in the VM.
-  > Also, don't forget to add the supplementary image ID (see
-  > [#933](https://github.com/freedomofpress/dangerzone/issues/933)) in
-  > `share/image-id.txt`)
 - [ ] Run `poetry run .\install\windows\build-app.bat`
 - [ ] When you're done you will have `dist\Dangerzone.msi`
 
@@ -269,7 +264,7 @@ or create your own locally with:
 ./dev_scripts/env.py --distro fedora --version 41 build-dev
 
 # Build the latest container (skip if already built):
-./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py" 
+./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py"
 
 # Create a .rpm:
 ./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"

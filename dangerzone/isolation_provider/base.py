@@ -93,10 +93,6 @@ class IsolationProvider(ABC):
         else:
             self.proc_stderr = subprocess.DEVNULL
 
-    @staticmethod
-    def is_runtime_available() -> bool:
-        return True
-
     @abstractmethod
     def install(self) -> bool:
         pass
@@ -257,6 +253,16 @@ class IsolationProvider(ABC):
                 f" but the status of the conversion process is unknown (PID: {p.pid})"
             )
         return errors.exception_from_error_code(error_code)
+
+    @abstractmethod
+    def should_wait_install(self) -> bool:
+        """Whether this isolation provider takes a lot of time to install."""
+        pass
+
+    @abstractmethod
+    def is_available(self) -> bool:
+        """Whether the backing implementation of the isolation provider is available."""
+        pass
 
     @abstractmethod
     def get_max_parallel_conversions(self) -> int:

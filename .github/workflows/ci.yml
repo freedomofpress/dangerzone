@@ -48,6 +48,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get current date
         id: date
@@ -57,7 +59,7 @@ jobs:
         id: cache-container-image
         uses: actions/cache@v4
         with:
-          key: v2-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
           path: |-
             share/container.tar.gz
             share/image-id.txt
@@ -225,7 +227,7 @@ jobs:
       - name: Restore container cache
         uses: actions/cache/restore@v4
         with:
-          key: v2-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
           path: |-
             share/container.tar.gz
             share/image-id.txt
@@ -249,7 +251,7 @@ jobs:
   install-deb:
     name: "install-deb (${{ matrix.distro }} ${{ matrix.version }})"
     runs-on: ubuntu-latest
-    needs: 
+    needs:
       - build-deb
     strategy:
       matrix:
@@ -332,7 +334,7 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v2-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
           path: |-
             share/container.tar.gz
             share/image-id.txt
@@ -427,7 +429,7 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v2-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
           path: |-
             share/container.tar.gz
             share/image-id.txt

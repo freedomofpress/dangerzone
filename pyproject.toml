@@ -37,6 +37,7 @@ pyinstaller = {version = "*", platform = "darwin"}
 
 # Dependencies required for linting the code.
 [tool.poetry.group.lint.dependencies]
+click = "*" # Install click so mypy is able to reason about it.
 mypy = "*"
 ruff = "*"
 types-PySide2 = "*"

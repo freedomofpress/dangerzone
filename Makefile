@@ -66,6 +66,22 @@ test-large: test-large-init  ## Run large test set
 	python -m pytest --tb=no tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)
 	python $(TEST_LARGE_RESULTS)/report.py $(TEST_LARGE_RESULTS)
 
+.PHONY: build-clean
+build-clean:
+	doit clean
+
+.PHONY: build-macos-intel
+build-macos-intel: build-clean
+	doit -n 8
+
+.PHONY: build-macos-arm
+build-macos-arm: build-clean
+	doit -n 8 macos_build_dmg
+
+.PHONY: build-linux
+build-linux: build-clean
+	doit -n 8 fedora_rpm debian_deb
+
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" and any make targets that might appear between : and ##

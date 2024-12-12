@@ -11,6 +11,8 @@ RUN \
   apt-get update && \
   apt-get install -y --no-install-recommends python3-fitz libreoffice-nogui libreoffice-java-common python3 python3-magic default-jdk-headless fonts-noto-cjk && \
   : "Clean up for improving reproducibility (optional)" && \
+  rm -rf /var/cache/fontconfig/ && \
+  rm -rf /etc/ssl/certs/java/cacerts && \
   rm -rf /var/log/* /var/cache/ldconfig/aux-cache /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/dangerzone/dangerzone && \
@@ -18,7 +20,7 @@ RUN mkdir -p /opt/dangerzone/dangerzone && \
   addgroup --gid 1000 dangerzone && \
   adduser --uid 1000 --ingroup dangerzone --shell /bin/true --home /home/dangerzone dangerzone
 
-COPY conversion /opt/dangerzone/dangerzone/conversion
+COPY conversion/doc_to_pixels.py conversion/common.py conversion/errors.py conversion/__init__.py /opt/dangerzone/dangerzone/conversion
 
 ###########################################
 # gVisor wrapper image

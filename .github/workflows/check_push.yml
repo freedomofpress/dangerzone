@@ -1,0 +1,23 @@
+name: Check branch conformity
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "test/**"
+
+jobs:
+  prevent-fixup-commits:
+      runs-on: ubuntu-24
+      env:
+        target: debian-bookworm
+        distro: debian
+        version: bookworm
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        - name: prevent fixup commits
+          run: |
+            git fetch origin
+            git status
+            git log --pretty=format:%s origin/main..HEAD | grep -ie '^fixup\|^wip' && exit 1 || true

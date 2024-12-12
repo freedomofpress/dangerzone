@@ -10,11 +10,15 @@ on:
   schedule:
     - cron: '0 0 * * *' # Run every day at 00:00 UTC.
   workflow_dispatch:
+  push:
+    branches:
+      - main
+      - "test/**"
 
 jobs:
   install-from-apt-repo:
     name: "Install Dangerzone on ${{ matrix.distro}} ${{ matrix.version }}"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24
     container: ${{ matrix.distro }}:${{ matrix.version }}
     strategy:
       matrix:
@@ -70,7 +74,7 @@ jobs:
 
   install-from-yum-repo:
     name: "Install Dangerzone on ${{ matrix.distro}} ${{ matrix.version }}"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24
     container: ${{ matrix.distro }}:${{ matrix.version }}
     strategy:
       matrix:

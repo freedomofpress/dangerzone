@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   run-lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24
     container:
       image: debian:bookworm
     steps:
@@ -78,7 +78,7 @@ jobs:
 
   download-tessdata:
     name: Download and cache Tesseract data
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24
     steps:
     - uses: actions/checkout@v4
     - name: Cache Tessdata
@@ -183,7 +183,7 @@ jobs:
     needs:
       - build-container-image
     name: "build-deb (${{ matrix.distro }} ${{ matrix.version }})"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24
     strategy:
       matrix:
         include:
@@ -250,8 +250,8 @@ jobs:
 
   install-deb:
     name: "install-deb (${{ matrix.distro }} ${{ matrix.version }})"
-    runs-on: ubuntu-latest
-    needs:
+    runs-on: ubuntu-24
+    needs: 
       - build-deb
     strategy:
       matrix:
@@ -305,7 +305,7 @@ jobs:
 
   build-install-rpm:
     name: "build-install-rpm (${{ matrix.distro }} ${{matrix.version}})"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24
     needs:
       - build-container-image
     strategy:
@@ -377,7 +377,7 @@ jobs:
 
   run-tests:
     name: "run tests (${{ matrix.distro }} ${{ matrix.version }})"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24
     needs:
       - build-container-image
       - download-tessdata

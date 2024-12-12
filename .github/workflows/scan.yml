@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - "test/**"
   pull_request:
   schedule:
     - cron: '0 0 * * *' # Run every day at 00:00 UTC.
@@ -10,7 +11,7 @@ on:
 
 jobs:
   security-scan-container:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,7 +52,7 @@ jobs:
           severity-cutoff: critical
 
   security-scan-app:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24
     steps:
       - name: Checkout
         uses: actions/checkout@v4

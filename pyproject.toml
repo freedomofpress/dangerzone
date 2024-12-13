@@ -41,8 +41,10 @@ doit = "^0.36.0"
 black = "*"
 isort = "*"
 mypy = "*"
-types-PySide2 = "*"
+types-colorama = "*"
 types-Markdown = "*"
+types-pygments = "*"
+types-PySide2 = "*"
 types-requests = "*"
 
 # Dependencies required for testing the code.

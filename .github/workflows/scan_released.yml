@@ -32,7 +32,7 @@ jobs:
       # NOTE: Scan first without failing, else we won't be able to read the scan
       # report.
       - name: Scan container image (no fail)
-        uses: anchore/scan-action@v5
+        uses: anchore/scan-action@v6
         id: scan_container
         with:
           image: "dangerzone.rocks/dangerzone:${{ steps.tag.outputs.tag }}"
@@ -47,7 +47,7 @@ jobs:
       - name: Inspect container scan report
         run: cat ${{ steps.scan_container.outputs.sarif }}
       - name: Scan container image
-        uses: anchore/scan-action@v5
+        uses: anchore/scan-action@v6
         with:
           image: "dangerzone.rocks/dangerzone:${{ steps.tag.outputs.tag }}"
           fail-build: true
@@ -68,7 +68,7 @@ jobs:
       # NOTE: Scan first without failing, else we won't be able to read the scan
       # report.
       - name: Scan application (no fail)
-        uses: anchore/scan-action@v5
+        uses: anchore/scan-action@v6
         id: scan_app
         with:
           path: "."
@@ -83,7 +83,7 @@ jobs:
       - name: Inspect application scan report
         run: cat ${{ steps.scan_app.outputs.sarif }}
       - name: Scan application
-        uses: anchore/scan-action@v5
+        uses: anchore/scan-action@v6
         with:
           path: "."
           fail-build: true

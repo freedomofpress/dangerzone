@@ -63,9 +63,8 @@ TESSDATA_TARGETS = list_language_data()
 
 IMAGE_DEPS = [
     "Dockerfile",
-    "poetry.lock",
     *list_files("dangerzone/conversion"),
-    "dangerzone/gvisor_wrapper/entrypoint.py",
+    *list_files("dangerzone/oci"),
     "install/common/build-image.py",
 ]
 IMAGE_TARGETS = ["share/container.tar.gz", "share/image-id.txt"]

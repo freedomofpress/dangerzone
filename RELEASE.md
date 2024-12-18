@@ -8,12 +8,13 @@ Here is a list of tasks that should be done before issuing the release:
 
 - [ ] Create a new issue named **QA and Release for version \<VERSION\>**, to track the general progress.
       You can generate its content with the the `poetry run ./dev_scripts/generate-release-tasks.py` command.
-- [ ] [Add new Linux platforms and remove obsolete ones](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#add-new-platforms-and-remove-obsolete-ones)
+- [ ] [Add new Linux platforms and remove obsolete ones](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#add-new-linux-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock`
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
+- [ ] [Bump the minimum Docker Desktop versions](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#bump-the-minimum-docker-desktop-version) in `isolation_provider/container.py`
 - [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
 - [ ] A draft release should be created. Copy the release notes text from the template at [`docs/templates/release-notes`](https://github.com/freedomofpress/dangerzone/tree/main/docs/templates/)
@@ -45,6 +46,12 @@ In case of the removal of a version:
 1. Remove any mention to this version from our repo.
    * Consult the previous paragraph, but also `grep` your way around.
 2. Add a notice in our `CHANGELOG.md` about the version removal.
+
+## Bump the minimum Docker Desktop version
+
+We embed the minimum docker desktop versions inside Dangerzone, as an incentive for our macOS and Windows users to upgrade to the latests version.
+
+You can find the latest version at the time of the release by looking at [their release notes](https://docs.docker.com/desktop/release-notes/)
 
 ## Large Document Testing
 

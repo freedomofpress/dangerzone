@@ -13,7 +13,8 @@ RUN \
   apt-get update && \
   apt-get install -y --no-install-recommends \
       python3-fitz libreoffice-nogui libreoffice-java-common python3 \
-      python3-magic default-jdk-headless fonts-noto-cjk unzip wget && \
+      python3-magic default-jdk-headless fonts-noto-cjk fonts-dejavu \
+      unzip wget && \
   : "Clean up for improving reproducibility (optional)" && \
   apt-get autoremove -y && \
   rm -rf /var/cache/fontconfig/ && \

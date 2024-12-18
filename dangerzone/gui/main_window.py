@@ -413,7 +413,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.content_widget.show()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
-        alert_widget = Alert(
+        self.alert = Alert(
             self.dangerzone,
             message="Some documents are still being converted.\n Are you sure you want to quit?",
             ok_text="Abort conversions",
@@ -427,7 +427,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 self.dangerzone.app.exit(0)
         else:
-            accept_exit = alert_widget.launch()
+            accept_exit = self.alert.launch()
             if not accept_exit:
                 e.ignore()
                 return
@@ -671,7 +671,7 @@ class ContentWidget(QtWidgets.QWidget):
 
     def documents_selected(self, docs: List[Document]) -> None:
         if self.conversion_started:
-            Alert(
+            self.alert = Alert(
                 self.dangerzone,
                 message="Dangerzone does not support adding documents after the conversion has started.",
                 has_cancel=False,
@@ -681,7 +681,7 @@ class ContentWidget(QtWidgets.QWidget):
         # Ensure all files in batch are in the same directory
         dirnames = {os.path.dirname(doc.input_filename) for doc in docs}
         if len(dirnames) > 1:
-            Alert(
+            self.alert = Alert(
                 self.dangerzone,
                 message="Dangerzone does not support adding documents from multiple locations.\n\n The newly added documents were ignored.",
                 has_cancel=False,
@@ -850,14 +850,14 @@ class DocSelectionDropFrame(QtWidgets.QFrame):
             text = f"{num_unsupported_docs} files are not supported."
             ok_text = "Continue without these files"
 
-        alert_widget = Alert(
+        self.alert = Alert(
             self.dangerzone,
             message=f"{text}\nThe supported extensions are: "
             + ", ".join(get_supported_extensions()),
             ok_text=ok_text,
         )
 
-        return alert_widget.exec_()
+        return self.alert.exec_()
 
 
 class SettingsWidget(QtWidgets.QWidget):

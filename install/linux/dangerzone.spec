@@ -11,7 +11,7 @@
 #
 # 1. It expects a `dangerzone-<version>.tar.gz` package under SOURCES. It is
 #    best not to invoke `tar` yourself, but create a Python source distribution
-#    instead, via `poetry build`.
+#    instead, via `uv build --sdist`.
 # 2. It detects the `_qubes` parameter. If 1, it will build a package
 #    tailored for installation in Qubes environments. Else, it will build a
 #    regular RPM package. The key differences between these packages are that:
@@ -41,7 +41,7 @@ URL:            https://dangerzone.rocks
 
 # XXX: rpmbuild attempts to find a tarball in SOURCES using the basename in the
 # Source0 url. In our case, GitHub uses `v<version>.tar.gz`. However, the name
-# of the source distribution that `poetry build` creates is
+# of the source distribution that `uv build --sdist` creates is
 # `dangerzone-<version>.tar.gz`, so rpmbuild cannot find it.
 #
 # Taking a hint from SecureDrop Workstation, we can fix this by adding an

@@ -35,14 +35,14 @@ It can run the tasks for you, pausing when it needs manual intervention.
 You can run it with a command like:
 
 ```bash
-poetry run ./dev_scripts/qa.py {distro}-{version}
+uv run ./dev_scripts/qa.py {distro}-{version}
 ```
 
 ### The checklist
 
 - [ ] Create a test build in Windows and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with uv.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
   - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
@@ -51,7 +51,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in macOS (Intel CPU) and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with `uv`.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
   - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
@@ -60,7 +60,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in macOS (M1/2 CPU) and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with `uv`.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
   - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
@@ -69,7 +69,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in the most recent Ubuntu LTS platform (Ubuntu 24.04
   as of writing this) and make sure it works:
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with `uv`.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
   - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
@@ -78,7 +78,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in the most recent Fedora platform (Fedora 41 as of
   writing this) and make sure it works:
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with `uv`.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
   - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
@@ -87,7 +87,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in the most recent Qubes Fedora template (Fedora 40 as
   of writing this) and make sure it works:
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with `uv`.
   - [ ] Run the Dangerzone tests.
   - [ ] Create a Qubes .rpm package and install it system-wide.
   - [ ] Ensure that the Dangerzone application appears in the "Applications"
@@ -251,23 +251,47 @@ Install dependencies:
 </table>
 
 
+<<<<<<< HEAD
+=======
+<table>
+  <tr>
+      <td>
+<details>
+  <summary><i>:memo: Expand this section if you are on Ubuntu 20.04 (Focal).</i></summary>
+  </br>
+
+  The default Python version that ships with Ubuntu Focal (3.8) is not
+  compatible with PySide6, which requires Python 3.9 or greater.
+
+  You can install Python 3.9 using the `python3.9` package.
+
+  ```bash
+  sudo apt install -y python3.9
+  ```
+
+  `uv` will automatically pick up the correct version when running.
+</details>
+    </td>
+  </tr>
+</table>
+
+
 ```sh
 sudo apt install -y podman dh-python build-essential make libqt6gui6 \
     pipx python3 python3-dev
 ```
 
-Install Poetry using `pipx` (recommended) and add it to your `$PATH`:
+Install `uv` using `pipx` (recommended) and add it to your `$PATH`:
 
 _(See also a list of [alternative installation
-methods](https://python-poetry.org/docs/#installation))_
+methods](https://python-`uv`.org/docs/#installation))_
 
 ```sh
 pipx ensurepath
-pipx install poetry
-pipx inject poetry poetry-plugin-export
+pipx install `uv`
 ```
 
-After this, restart the terminal window, for the `poetry` command to be in your
+After this, restart the terminal window, for the ``uv command to be in your
 `$PATH`.
 
 
@@ -277,13 +301,13 @@ Clone this repository:
 git clone https://github.com/freedomofpress/dangerzone/
 ```
 
-Change to the `dangerzone` folder, and install the poetry dependencies:
+Change to the `dangerzone` folder, and install the `uv` dependencies:
 
-> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
+> **Note**: due to an issue with [`uv`](https://github.com/python-`uv`/`uv`/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
 
 ```
 cd dangerzone
-poetry install
+`uv` install
 ```
 
 Build the latest container:
@@ -302,7 +326,7 @@ Run from source tree:
 
 ```sh
 # start a shell in the virtual environment
-poetry shell
+`uv` shell
 
 # run the CLI
 ./dev_scripts/dangerzone-cli --help
@@ -323,15 +347,36 @@ CONTENT_BUILD_FEDORA = r"""## Fedora
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
+sudo dnf install -y rpm-build podman python3 python3-devel python3-`uv`-core \
     pipx qt6-qtbase-gui
 ```
 
-Install Poetry using `pipx`:
+<table>
+  <tr>
+      <td>
+<details>
+  <summary><i>:memo: Expand this section if you are on Fedora 41.</i></summary>
+  </br>
+
+  The default Python version that ships with Fedora 41 (3.13) is not
+  compatible with PySide6, which requires Python 3.12 or earlier.
+
+  You can install Python 3.12 using the `python3.12` package.
+
+  ```bash
+  sudo dnf install -y python3.12
+  ```
+
+  `uv` will automatically pick up the correct version when running.
+</details>
+    </td>
+  </tr>
+</table>
+
+Install `uv` using `pipx`:
 
 ```sh
-pipx install poetry
-pipx inject poetry poetry-plugin-export
+pipx install `uv`
 ```
 
 Clone this repository:
@@ -340,13 +385,13 @@ Clone this repository:
 git clone https://github.com/freedomofpress/dangerzone/
 ```
 
-Change to the `dangerzone` folder, and install the poetry dependencies:
+Change to the `dangerzone` folder, and install the `uv` dependencies:
 
-> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
+> **Note**: due to an issue with [`uv`](https://github.com/python-`uv`/`uv`/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
 
 ```
 cd dangerzone
-poetry install
+`uv` install
 ```
 
 Build the latest container:
@@ -365,7 +410,7 @@ Run from source tree:
 
 ```sh
 # start a shell in the virtual environment
-poetry shell
+`uv` shell
 
 # run the CLI
 ./dev_scripts/dangerzone-cli --help
@@ -394,10 +439,10 @@ Install the latest version of Python 3.12 (64-bit) [from python.org](https://www
 
 Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build Tools"](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and make sure to select "Desktop development with C++" when installing.
 
-Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
+Install [`uv`](https://python-`uv`.org/). Open PowerShell, and run:
 
 ```
-python -m pip install poetry poetry-plugin-export
+python -m pip install `uv`
 ```
 
 Install git from [here](https://git-scm.com/download/win), open a Windows terminal (`cmd.exe`) and clone this repository:
@@ -406,11 +451,11 @@ Install git from [here](https://git-scm.com/download/win), open a Windows termin
 git clone https://github.com/freedomofpress/dangerzone/
 ```
 
-Change to the `dangerzone` folder, and install the poetry dependencies:
+Change to the `dangerzone` folder, and install the `uv` dependencies:
 
 ```
 cd dangerzone
-poetry install
+`uv` install
 ```
 
 Build the dangerzone container image:
@@ -429,7 +474,7 @@ After that you can launch dangerzone during development with:
 
 ```
 # start a shell in the virtual environment
-poetry shell
+`uv` shell
 
 # run the CLI
 .\dev_scripts\dangerzone-cli.bat --help
@@ -832,11 +877,11 @@ class QAWindows(QABase):
             logger.info("Verified that Docker Desktop is installed and running")
 
     @QABase.task(
-        "Install Poetry and the project's dependencies", ref=REF_BUILD, auto=True
+        "Install `uv` and the project's dependencies", ref=REF_BUILD, auto=True
     )
-    def install_poetry(self):
-        self.run("python", "-m", "pip", "install", "poetry", "poetry-plugin-export")
-        self.run("poetry", "install", "--sync")
+    def install_uv(self):
+        self.run("python", "-m", "pip", "install", "`uv`")
+        self.run("`uv`", "install", "--sync")
 
     @QABase.task("Build Dangerzone container image", ref=REF_BUILD, auto=True)
     def build_image(self):
@@ -846,12 +891,12 @@ class QAWindows(QABase):
     def run_tests(self):
         # NOTE: Windows does not have Makefile by default.
         self.run(
-            "poetry", "run", "pytest", "-v", "--ignore", r"tests\test_large_set.py"
+            "`uv`", "run", "pytest", "-v", "--ignore", r"tests\test_large_set.py"
         )
 
     @QABase.task("Build Dangerzone .exe", ref="REF_BUILD", auto=True)
     def build_dangerzone_exe(self):
-        self.run("poetry", "run", "python", r".\setup-windows.py", "build")
+        self.run("`uv`", "run", "python", r".\setup-windows.py", "build")
 
     @classmethod
     def get_id(cls):
@@ -860,7 +905,7 @@ class QAWindows(QABase):
     def start(self):
         self.install_python()
         self.install_docker()
-        self.install_poetry()
+        self.install_uv()
         self.build_image()
         self.download_tessdata()
         self.run_tests()
@@ -892,9 +937,8 @@ class QALinux(QABase):
         args_str = " ".join(args)
         self.container_run("bash", "-c", f"cd dangerzone; {args_str}")
 
-    def poetry_run(self, *args):
-        """Run a command via Poetry inside a Dangerzone environment."""
-        self.shell_run("poetry", "run", *args)
+    def uv_run(self, *args):
+        self.shell_run("uv", "run", *args)
 
     @QABase.task(
         "Create Dangerzone build environment",
@@ -921,7 +965,7 @@ class QALinux(QABase):
 
     @QABase.task("Run tests", ref="REF_BUILD", auto=True)
     def run_tests(self):
-        self.poetry_run("make", "test")
+        self.`uv`_run("make", "test")
 
     def build_package(self):
         """Build the Dangerzone .deb/.rpm package"""

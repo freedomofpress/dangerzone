@@ -16,14 +16,14 @@ It can run the tasks for you, pausing when it needs manual intervention.
 You can run it with a command like:
 
 ```bash
-poetry run ./dev_scripts/qa.py {distro}-{version}
+uv run ./dev_scripts/qa.py {distro}-{version}
 ```
 
 ### The checklist
 
 - [ ] Create a test build in Windows and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with uv.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
   - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
@@ -32,7 +32,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in macOS (Intel CPU) and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with uv.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
   - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
@@ -41,7 +41,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in macOS (M1/2 CPU) and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with uv.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
   - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
@@ -50,7 +50,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in the most recent Ubuntu LTS platform (Ubuntu 24.04
   as of writing this) and make sure it works:
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with uv.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
   - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
@@ -59,7 +59,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in the most recent Fedora platform (Fedora 41 as of
   writing this) and make sure it works:
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with uv.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
   - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
@@ -68,7 +68,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
 - [ ] Create a test build in the most recent Qubes Fedora template (Fedora 40 as
   of writing this) and make sure it works:
-  - [ ] Create a new development environment with Poetry.
+  - [ ] Create a new development environment with uv.
   - [ ] Run the Dangerzone tests.
   - [ ] Create a Qubes .rpm package and install it system-wide.
   - [ ] Ensure that the Dangerzone application appears in the "Applications"

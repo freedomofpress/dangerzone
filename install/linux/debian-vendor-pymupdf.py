@@ -28,7 +28,7 @@ def main():
     )
 
     logger.info("Getting PyMuPDF deps as requirements.txt")
-    cmd = ["poetry", "export", "--only", "debian"]
+    cmd = ["uv", "export", "--only-group", "debian"]
     container_requirements_txt = subprocess.check_output(cmd)
 
     logger.info(f"Vendoring PyMuPDF under '{args.dest}'")

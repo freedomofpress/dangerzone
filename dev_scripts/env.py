@@ -52,7 +52,7 @@ Run Dangerzone in the development environment:
 
     env.py --distro ubuntu --version 22.04 run --dev bash
     user@dangerzone-dev:~$ cd dangerzone/
-    user@dangerzone-dev:~$ poetry run ./dev_scripts/dangerzone
+    user@dangerzone-dev:~$ uv run ./dev_scripts/dangerzone
 
 Run Dangerzone in the end-user environment:
 
@@ -106,8 +106,8 @@ RUN apt-get update \
 
 # FIXME: Install Poetry on Fedora via package manager.
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
-RUN dnf install -y git rpm-build podman python3 python3-devel python3-poetry-core \
-    pipx make qt6-qtbase-gui gcc gcc-c++\
+RUN dnf install -y git rpm-build podman python3 python3-devel uv \
+    make qt6-qtbase-gui python3-hatchling pipx gcc gcc-c++\
     && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.

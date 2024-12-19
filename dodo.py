@@ -53,6 +53,7 @@ TESSDATA_TARGETS = list_language_data()
 
 IMAGE_DEPS = [
     "Dockerfile",
+    "uv.lock",
     *list_files("dangerzone/conversion"),
     *list_files("dangerzone/container_helpers"),
     "install/common/build-image.py",
@@ -65,7 +66,7 @@ SOURCE_DEPS = [
     *list_files("dangerzone", recursive=True),
 ]
 
-PYTHON_DEPS = ["poetry.lock", "pyproject.toml"]
+PYTHON_DEPS = ["uv.lock", "pyproject.toml"]
 
 DMG_DEPS = [
     *list_files("install/macos"),
@@ -206,9 +207,9 @@ def task_build_image():
     }
 
 
-def task_poetry_install():
-    """Setup the Poetry environment"""
-    return {"actions": ["poetry install --sync"], "clean": ["poetry env remove --all"]}
+def task_uv_install():
+    """Setup the uv environment"""
+    return {"actions": ["uv sync"], "clean": ["rm -rf .venv"]}
 
 
 def task_macos_build_dmg():
@@ -220,7 +221,7 @@ def task_macos_build_dmg():
     return {
         "actions": [
             (copy_dir, [".", dz_dir]),
-            f"cd {dz_dir} && poetry run install/macos/build-app.py --with-codesign",
+            f"cd {dz_dir} && uv run install/macos/build-app.py --with-codesign",
             (
                 "xcrun notarytool submit --wait --apple-id %(apple_id)s"
                 f" --keychain-profile dz-notarytool-release-key {dmg_src}"
@@ -234,7 +235,7 @@ def task_macos_build_dmg():
         "task_dep": [
             "macos_check_system",
             "init_release_dir",
-            "poetry_install",
+            "uv_install",
             "download_tessdata",
         ],
         "targets": [dmg_src, dmg_dst],

@@ -8,15 +8,6 @@ DEFAULT_DPI = 150  # Pixels per inch
 INT_BYTES = 2
 
 
-class CommandError(RuntimeError):
-
-    def __init__(self, msg, stdout, stderr):
-        self.stdout = stdout
-        self.stderr = stderr
-        msg += f"\n====\nCommand output:\n{stdout}\n=====\nCommand stderr:\n{stderr}\n======"
-        super().__init__(msg)
-
-
 def running_on_qubes() -> bool:
     # https://www.qubes-os.org/faq/#what-is-the-canonical-way-to-detect-qubes-vm
     return os.path.exists("/usr/share/qubes/marker-vm")
@@ -105,7 +96,7 @@ class DangerzoneConverter:
         Run a command using asyncio.subprocess, consume its standard streams, and return its
         output in bytes.
 
-        :raises CommandError: if the process returns a non-zero exit status
+        :raises RuntimeError: if the process returns a non-zero exit status
         """
         # Start the provided command, and return a handle. The command will run in the
         # background.
@@ -134,14 +125,14 @@ class DangerzoneConverter:
         # Wait until the command has finished. Then, verify that the command
         # has completed successfully. In any other case, raise an exception.
         ret = await proc.wait()
+        if ret != 0:
+            raise RuntimeError(error_message)
+
 
         # Wait until the tasks that consume the command's standard streams have exited as
         # well, and return their output.
         stdout = await stdout_task
         stderr = await stderr_task
-
-        if ret != 0:
-            raise CommandError(error_message, stdout, stderr)
 
         return (stdout, stderr)
 

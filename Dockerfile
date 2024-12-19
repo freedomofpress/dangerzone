@@ -30,7 +30,8 @@ RUN mkdir /libreoffice_ext && cd libreoffice_ext \
     && H2ORESTART_FILENAME=h2orestart.oxt \
     && wget https://github.com/ebandal/H2Orestart/releases/download/$H2ORESTART_VERSION/$H2ORESTART_FILENAME \
     && echo "$H2ORESTART_CHECKSUM  $H2ORESTART_FILENAME" | sha256sum -c \
-    && install -dm777 "/usr/lib/libreoffice/share/extensions/"
+    && install -dm777 "/usr/lib/libreoffice/share/extensions/" \
+    && rm /root/.wget-hsts
 
 RUN mkdir -p /opt/dangerzone/dangerzone && \
   touch /opt/dangerzone/dangerzone/__init__.py && \

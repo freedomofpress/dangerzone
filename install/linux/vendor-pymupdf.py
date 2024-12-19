@@ -28,14 +28,14 @@ def main():
     )
 
     logger.info("Getting PyMuPDF deps as requirements.txt")
-    cmd = ["poetry", "export", "--only", "container"]
+    cmd = ["uv", "export", "--only-group", "container"]
     container_requirements_txt = subprocess.check_output(cmd)
 
     # XXX: Hack for Ubuntu Focal.
     #
     # The `requirements.txt` file is generated from our `pyproject.toml` file, and thus
     # specifies that the minimum Python version is 3.9. This was to accommodate to
-    # PySide6, which is installed in macOS / Windows via `poetry` and works with Python
+    # PySide6, which is installed in macOS / Windows via `uv` and works with Python
     # 3.9+. [1]
     #
     # The Python version in Ubuntu Focal though is 3.8. This generally was not much of

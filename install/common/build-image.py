@@ -151,7 +151,7 @@ class ContainerPipDependencies:
     def __enter__(self):
         try:
             container_requirements_txt = subprocess.check_output(
-                ["poetry", "export", "--only", "container"], universal_newlines=True
+                ["uv", "export", "--only-group", "container"], universal_newlines=True
             )
         except subprocess.CalledProcessError as e:
             print("FAILURE", e.returncode, e.output)

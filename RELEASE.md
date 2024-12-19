@@ -7,9 +7,9 @@ This section documents how we currently release Dangerzone for the different dis
 Here is a list of tasks that should be done before issuing the release:
 
 - [ ] Create a new issue named **QA and Release for version \<VERSION\>**, to track the general progress.
-      You can generate its content with the the `poetry run ./dev_scripts/generate-release-tasks.py` command.
+      You can generate its content with the the `uv run ./dev_scripts/generate-release-tasks.py` command.
 - [ ] [Add new Linux platforms and remove obsolete ones](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#add-new-platforms-and-remove-obsolete-ones)
-- [ ] Bump the Python dependencies using `poetry lock`
+- [ ] Bump the Python dependencies using `uv lock`
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
@@ -112,11 +112,8 @@ Here is what you need to do:
   ```bash
 
   # In case of a new Python installation or minor version upgrade, e.g., from
-  # 3.11 to 3.12, reinstall Poetry
-  python3 -m pip install poetry
-
-  # You can verify the correct Python version is used
-  poetry debug info
+  # 3.11 to 3.12, reinstall uv
+  python3 -m pip install uv
 
   # Replace with the actual version
   export DZ_VERSION=$(cat share/version.txt)
@@ -127,18 +124,15 @@ Here is what you need to do:
   # Clean the git repository
   git clean -df
 
-  # Clean up the environment
-  poetry env remove --all
-
   # Install the dependencies
-  poetry install --sync
+  uv sync
   ```
 
 - [ ] Build the container image and the OCR language data
 
   ```bash
-  poetry run ./install/common/build-image.py
-  poetry run ./install/common/download-tessdata.py
+  uv run ./install/common/build-image.py
+  uv run ./install/common/download-tessdata.py
 
   # Copy the container image to the assets folder
   cp share/container.tar.gz ~dz/release-assets/$VERSION/dangerzone-$VERSION-arm64.tar.gz
@@ -148,7 +142,7 @@ Here is what you need to do:
 - [ ] Build the app bundle
 
   ```bash
-  poetry run ./install/macos/build-app.py
+  uv run ./install/macos/build-app.py
   ```
 
 - [ ] Sign the application bundle, and notarize it
@@ -161,7 +155,7 @@ Here is what you need to do:
 
   ```bash
   # Sign the .App and make it a .dmg
-  poetry run ./install/macos/build-app.py --only-codesign
+  uv run ./install/macos/build-app.py --only-codesign
 
   # Notarize it. You must run this command from the MacOS UI
   # from a terminal application.
@@ -194,11 +188,11 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
 - [ ] Checkout the dependencies, and clean your local copy:
   ```bash
   # In case of a new Python installation or minor version upgrade, e.g., from
-  # 3.11 to 3.12, reinstall Poetry
-  python3 -m pip install poetry
+  # 3.11 to 3.12, reinstall uv
+  python3 -m pip install uv
 
   # You can verify the correct Python version is used
-  poetry debug info
+  uv debug info
 
   # Replace with the actual version
   export DZ_VERSION=$(cat share/version.txt)
@@ -210,16 +204,16 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
   git clean -df
 
   # Clean up the environment
-  poetry env remove --all
+  uv env remove --all
 
   # Install the dependencies
-  poetry install --sync
+  uv install --sync
   ```
 
 - [ ] Copy the container image into the VM
   > [!IMPORTANT]
   > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar.gz` and `share/image-id.txt` from the host into the `share` folder in the VM.
-- [ ] Run `poetry run .\install\windows\build-app.bat`
+- [ ] Run `uv run .\install\windows\build-app.bat`
 - [ ] When you're done you will have `dist\Dangerzone.msi`
 
 Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
@@ -253,7 +247,7 @@ or create your own locally with:
 ./dev_scripts/env.py --distro debian --version bookworm run --dev bash
 
 # Build the latest container
-./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py"
+./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && uv run ./install/common/build-image.py"
 
 # Create a .deb
 ./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && ./install/linux/build-deb.py"
@@ -277,7 +271,7 @@ or create your own locally with:
 ./dev_scripts/env.py --distro fedora --version 41 build-dev
 
 # Build the latest container (skip if already built):
-./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py"
+./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && uv run ./install/common/build-image.py"
 
 # Create a .rpm:
 ./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"

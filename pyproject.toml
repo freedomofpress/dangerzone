@@ -1,71 +1,70 @@
-[tool.poetry]
+[project]
+requires-python = ">=3.9,<3.13"
 name = "dangerzone"
 version = "0.8.0"
 description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
-authors = ["Freedom of the Press Foundation <info@freedom.press>", "Micah Lee <micah.lee@theintercept.com>"]
-license = "AGPL-3.0"
-# NOTE: See also https://github.com/freedomofpress/dangerzone/issues/677
-include = [
-    { path = "share/*", format = "sdist" },
-    { path = "qubes/*", format = "sdist" },
-    { path = "install/linux/press.freedom.dangerzone.*", format = "sdist" },
-    { path = "README.md", format = "sdist" },
+authors = [
+    { name = "Freedom of the Press Foundation", email = "info@freedom.press" },
+    { name = "Micah Lee", email = "micah.lee@theintercept.com" }, ]
+license = { text = "AGPL-3.0"}
+
+dependencies = [
+    "appdirs",
+    "click",
+    "colorama",
+    "markdown",
+    "packaging",
+    "pymupdf (>=1.23.3, <1.24.0)", # The version in Fedora 39
+    "pyside6 (>=6.7.1, < 6.8)",
+    "pyxdg; sys_platform == 'linux'",
+    "requests",]
+
+[dependency-groups]
+# Dependencies installed inside the container
+container = [
+    "pymupdf",
+    ]
+
+# Dependencies required only for development
+dev = [
+    "httpx",
 ]
 
-[tool.poetry.dependencies]
-python = ">=3.9,<3.13"
-click = "*"
-appdirs = "*"
-PySide6 = "^6.7.1"
-PyMuPDF = "^1.23.3"  # The version in Fedora 39
-colorama = "*"
-pyxdg = {version = "*", platform = "linux"}
-requests = "*"
-markdown = "*"
-packaging = "*"
-
-[tool.poetry.scripts]
-dangerzone = 'dangerzone:main'
-dangerzone-cli = 'dangerzone:main'
+# Dependencies required for linting the code.
+lint = [
+    "mypy",
+    "types-colorama",
+    "types-pyside2",
+    "types-markdown",
+    "types-pygments",
+    "types-requests",
+    "ruff",
+]
 
 # Dependencies required for packaging the code on various platforms.
-[tool.poetry.group.package.dependencies]
-setuptools = "*"
-cx_freeze = {version = "^7.2.5", platform = "win32"}
-pywin32 = {version = "*", platform = "win32"}
-pyinstaller = {version = "*", platform = "darwin"}
-doit = "^0.36.0"
+package = [
+    "setuptools",
+    "cx-freeze",
+    "pywin32",
+    "pyinstaller",
+    "doit",
+]
 
-# Dependencies required for linting the code.
-[tool.poetry.group.lint.dependencies]
-black = "*"
-isort = "*"
-mypy = "*"
-types-PySide2 = "*"
-types-Markdown = "*"
-types-requests = "*"
-
+[project.optional-dependencies]
 # Dependencies required for testing the code.
-[tool.poetry.group.test.dependencies]
-pytest = "^7.1.2"
-pytest-mock = "^3.10.0"
-pytest-qt = "^4.2.0"
-pytest-cov = "^5.0.0"
-strip-ansi = "*"
-pytest-subprocess = "^1.5.2"
-pytest-rerunfailures = "^14.0"
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-qt",
+    "pytest-rerunfailures",
+    "pytest-subprocess",
+    "strip-ansi",
+]
 
-[tool.poetry.group.container.dependencies]
-pymupdf = "1.24.11" # Last version to support python 3.8 (needed for Ubuntu Focal support)
-
-[tool.poetry.group.dev.dependencies]
-httpx = "^0.27.2"
-
-[tool.isort]
-profile = "black"
-skip_gitignore = true
-# This is necessary due to https://github.com/PyCQA/isort/issues/1835
-follow_links = false
+[project.scripts]
+dangerzone = 'dangerzone:main'
+dangerzone-cli = 'dangerzone:main'
 
 [tool.doit]
 verbosity = 3
@@ -75,6 +74,27 @@ verbosity = 3
 # images that are a few days behind. See also: docs/developer/doit.md
 use_cache = false
 
+[tool.ruff.lint]
+select = [
+    # isort
+    "I",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+     "dangerzone",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+     "dangerzone/*",
+     "share/*",
+     "qubes/*",
+     "install/linux/press.freedom.dangerzone.*",
+     "README.md",
+]
+
+
 [build-system]
-requires = ["poetry-core>=1.2.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

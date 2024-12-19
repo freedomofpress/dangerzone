@@ -50,7 +50,7 @@ Install dependencies:
   sudo apt install -y python3.9
   ```
 
-  Poetry will automatically pick up the correct version when running.
+  uv will automatically pick up the correct version when running.
 </details>
     </td>
   </tr>
@@ -69,10 +69,10 @@ methods](https://python-poetry.org/docs/#installation))_
 
 ```sh
 pipx ensurepath
-pipx install poetry
+pipx install uv
 ```
 
-After this, restart the terminal window, for the `poetry` command to be in your
+After this, restart the terminal window, for the `uv` command to be in your
 `$PATH`.
 
 
@@ -82,44 +82,39 @@ Clone this repository:
 git clone https://github.com/freedomofpress/dangerzone/
 ```
 
-Change to the `dangerzone` folder, and install the poetry dependencies:
-
-> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
+Change to the `dangerzone` folder, and install the dependencies:
 
 ```
 cd dangerzone
-poetry install
+uv sync
 ```
 
 Build the latest container:
 
 ```sh
-python3 ./install/common/build-image.py
+uv run ./install/common/build-image.py
 ```
 
 Download the OCR language data:
 
 ```sh
-python3 ./install/common/download-tessdata.py
+uv run ./install/common/download-tessdata.py
 ```
 
 Run from source tree:
 
 ```sh
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+uv run ./dev_scripts/dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+uv run ./dev_scripts/dangerzone
 ```
 
 Create a .deb:
 
 ```sh
-./install/linux/build-deb.py
+uv run ./install/linux/build-deb.py
 ```
 
 ## Fedora
@@ -127,7 +122,7 @@ Create a .deb:
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
+sudo dnf install -y rpm-build podman python3 python3-devel python3-uv \
     pipx qt6-qtbase-gui
 ```
 

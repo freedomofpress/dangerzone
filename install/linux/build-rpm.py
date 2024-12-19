@@ -27,13 +27,13 @@ def build(build_dir, qubes=False):
     The build process is the following:
 
     1. Clean up any stale data from previous runs under ./dist. Note that this directory
-       is used by `poetry build` and `rpmbuild`.
+       is used by `uv build` and `rpmbuild`.
     2. Create the necessary RPM project structure under the specified build directory
        (default: ~/rpmbuild), and use symlinks to point to ./dist, so that we don't need
        to move files explicitly.
-    3. Create a Python source distribution using `poetry build`. If we are building a
-       Qubes package and there is a container image under `share/`, stash it temporarily
-       under a different directory.
+    3. Create a Python source distribution using `uv build --sdist`.
+       If we are building a Qubes package and there is a container image under
+       `share/`, stash it temporarily under a different directory.
     4. Build both binary and source RPMs using rpmbuild. Optionally, pass to the SPEC
         `_qubes` flag, that denotes we want to build a package for Qubes.
     """
@@ -75,7 +75,7 @@ def build(build_dir, qubes=False):
     if stash_container and container_tar_gz.exists():
         container_tar_gz.rename(container_tar_gz_bak)
     try:
-        subprocess.run(["poetry", "build", "-f", "sdist"], cwd=root, check=True)
+        subprocess.run(["uv", "build", "--sdist"], cwd=root, check=True)
         # Copy and unlink the Dangerzone sdist, instead of just renaming it. If the
         # build directory is outside the filesystem boundary (e.g., due to a container
         # mount), then a simple rename will not work.

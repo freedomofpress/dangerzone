@@ -50,7 +50,6 @@ package = [
     "doit",
 ]
 
-[project.optional-dependencies]
 # Dependencies required for testing the code.
 test = [
     "pytest",

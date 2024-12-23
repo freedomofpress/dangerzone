@@ -35,7 +35,7 @@ jobs:
       - name: Install dev. dependencies
         run: |-
           apt-get update
-          apt-get install -y git make python3 python3-poetry --no-install-recommends
+          apt-get install -y git make python3 --no-install-recommends
           poetry install --only lint,test
       - name: Run linters to enforce code style
         run: poetry run make lint

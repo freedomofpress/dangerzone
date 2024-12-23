@@ -293,17 +293,6 @@ dependencies = [
     { name = "requests" },
 ]
 
-[package.optional-dependencies]
-test = [
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-mock" },
-    { name = "pytest-qt" },
-    { name = "pytest-rerunfailures" },
-    { name = "pytest-subprocess" },
-    { name = "strip-ansi" },
-]
-
 [package.dev-dependencies]
 container = [
     { name = "pymupdf" },
@@ -327,6 +316,15 @@ package = [
     { name = "pywin32" },
     { name = "setuptools" },
 ]
+test = [
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-mock" },
+    { name = "pytest-qt" },
+    { name = "pytest-rerunfailures" },
+    { name = "pytest-subprocess" },
+    { name = "strip-ansi" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -337,15 +335,8 @@ requires-dist = [
     { name = "packaging" },
     { name = "pymupdf", specifier = ">=1.23.3,<1.24.0" },
     { name = "pyside6", specifier = ">=6.7.1,<6.8" },
-    { name = "pytest", marker = "extra == 'test'" },
-    { name = "pytest-cov", marker = "extra == 'test'" },
-    { name = "pytest-mock", marker = "extra == 'test'" },
-    { name = "pytest-qt", marker = "extra == 'test'" },
-    { name = "pytest-rerunfailures", marker = "extra == 'test'" },
-    { name = "pytest-subprocess", marker = "extra == 'test'" },
     { name = "pyxdg", marker = "sys_platform == 'linux'" },
     { name = "requests" },
-    { name = "strip-ansi", marker = "extra == 'test'" },
 ]
 
 [package.metadata.requires-dev]
@@ -366,6 +357,15 @@ package = [
     { name = "pyinstaller" },
     { name = "pywin32" },
     { name = "setuptools" },
+]
+test = [
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-mock" },
+    { name = "pytest-qt" },
+    { name = "pytest-rerunfailures" },
+    { name = "pytest-subprocess" },
+    { name = "strip-ansi" },
 ]
 
 [[package]]

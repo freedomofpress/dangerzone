@@ -17,9 +17,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install container build dependencies
-        run: sudo apt install pipx && pipx install poetry
+        run: sudo apt install pipx && pipx install uv
       - name: Build container image
-        run: python3 ./install/common/build-image.py --runtime docker --no-save
+        run: uv run ./install/common/build-image.py --runtime docker --no-save
       - name: Get image tag
         id: tag
         run: |

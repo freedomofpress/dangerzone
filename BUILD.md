@@ -39,10 +39,10 @@ sudo apt install -y podman dh-python build-essential make libqt6gui6 \
     pipx python3 python3-dev
 ```
 
-Install Poetry using `pipx` (recommended) and add it to your `$PATH`:
+Install uv using `pipx` (recommended) and add it to your `$PATH`:
 
 _(See also a list of [alternative installation
-methods](https://python-poetry.org/docs/#installation))_
+methods](https://docs.astral.sh/uv/getting-started/installation/))_
 
 ```sh
 pipx ensurepath
@@ -103,11 +103,32 @@ sudo dnf install -y rpm-build podman python3 python3-devel python3-uv \
     pipx qt6-qtbase-gui
 ```
 
-Install Poetry using `pipx`:
+<table>
+  <tr>
+      <td>
+<details>
+  <summary><i>:memo: Expand this section if you are on Fedora 41.</i></summary>
+  </br>
+
+  The default Python version that ships with Fedora 41 (3.13) is not
+  compatible with PySide6, which requires Python 3.12 or earlier.
+
+  You can install Python 3.12 using the `python3.12` package.
+
+  ```bash
+  sudo dnf install -y python3.12
+  ```
+
+  uv will automatically pick up the correct version when running.
+</details>
+    </td>
+  </tr>
+</table>
+
+Install uv using `pipx`:
 
 ```sh
-pipx install poetry
-pipx inject poetry poetry-plugin-export
+pipx install uv
 ```
 
 Clone this repository:
@@ -116,38 +137,33 @@ Clone this repository:
 git clone https://github.com/freedomofpress/dangerzone/
 ```
 
-Change to the `dangerzone` folder, and install the poetry dependencies:
-
-> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
+Change to the `dangerzone` folder, and install the `uv` dependencies:
 
 ```
 cd dangerzone
-poetry install
+uv sync
 ```
 
 Build the latest container:
 
 ```sh
-python3 ./install/common/build-image.py
+uv run ./install/common/build-image.py
 ```
 
 Download the OCR language data:
 
 ```sh
-python3 ./install/common/download-tessdata.py
+uv run ./install/common/download-tessdata.py
 ```
 
 Run from source tree:
 
 ```sh
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+uv run ./dev_scripts/dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+uv run ./dev_scripts/dangerzone
 ```
 
 > [!NOTE]
@@ -157,7 +173,7 @@ poetry shell
 Create a .rpm:
 
 ```sh
-./install/linux/build-rpm.py
+uv run ./install/linux/build-rpm.py
 ```
 
 ## Qubes OS
@@ -279,10 +295,10 @@ you wish to test the Qubes conversion, run the following commands on the `dz` de
 ```sh
 
 # run the CLI
-QUBES_CONVERSION=1 poetry run ./dev_scripts/dangerzone-cli --help
+QUBES_CONVERSION=1 uv run ./dev_scripts/dangerzone-cli --help
 
 # run the GUI
-QUBES_CONVERSION=1 poetry run ./dev_scripts/dangerzone
+QUBES_CONVERSION=1 uv run ./dev_scripts/dangerzone
 ```
 
 And when creating a `.rpm` you'll need to enable the `--qubes` flag.
@@ -320,8 +336,8 @@ cd dangerzone
 Install Python dependencies:
 
 ```sh
-python3 -m pip install poetry poetry-plugin-export
-poetry install
+python3 -m pip install uv
+uv sync
 ```
 
 Install [Homebrew](https://brew.sh/) dependencies:
@@ -333,38 +349,35 @@ brew install create-dmg
 Build the dangerzone container image:
 
 ```sh
-python3 ./install/common/build-image.py
+uv run ./install/common/build-image.py
 ```
 
 Download the OCR language data:
 
 ```sh
-python3 ./install/common/download-tessdata.py
+uv run ./install/common/download-tessdata.py
 ```
 
 Run from source tree:
 
 ```sh
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+uv run ./dev_scripts/dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+uv run ./dev_scripts/dangerzone
 ```
 
 To create an app bundle, use the `build_app.py` script:
 
 ```sh
-poetry run ./install/macos/build-app.py
+uv run ./install/macos/build-app.py
 ```
 
 If you want to build for distribution, you'll need a codesigning certificate, and then run:
 
 ```sh
-poetry run ./install/macos/build-app.py --with-codesign
+uv run ./install/macos/build-app.py --with-codesign
 ```
 
 The output is in the `dist` folder.
@@ -378,10 +391,10 @@ Install the latest version of Python 3.12 (64-bit) [from python.org](https://www
 
 Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build Tools"](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and make sure to select "Desktop development with C++" when installing.
 
-Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/). Open PowerShell, and run:
 
 ```
-python -m pip install poetry poetry-plugin-export
+python -m pip install uv
 ```
 
 Install git from [here](https://git-scm.com/download/win), open a Windows terminal (`cmd.exe`) and clone this repository:
@@ -390,36 +403,33 @@ Install git from [here](https://git-scm.com/download/win), open a Windows termin
 git clone https://github.com/freedomofpress/dangerzone/
 ```
 
-Change to the `dangerzone` folder, and install the poetry dependencies:
+Change to the `dangerzone` folder, and install the `uv` dependencies:
 
 ```
 cd dangerzone
-poetry install
+uv sync
 ```
 
 Build the dangerzone container image:
 
 ```sh
-python3 .\install\common\build-image.py
+uv run .\install\common\build-image.py
 ```
 
 Download the OCR language data:
 
 ```sh
-python3 .\install\common\download-tessdata.py
+uv run .\install\common\download-tessdata.py
 ```
 
 After that you can launch dangerzone during development with:
 
 ```
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-.\dev_scripts\dangerzone-cli.bat --help
+uv run .\dev_scripts\dangerzone-cli.bat --help
 
 # run the GUI
-.\dev_scripts\dangerzone.bat
+uv run .\dev_scripts\dangerzone.bat
 ```
 
 ### If you want to build the Windows installer
@@ -450,7 +460,7 @@ You'll need a code signing certificate.
 Open a command prompt, cd into the dangerzone directory, and run:
 
 ```
-poetry run python .\setup-windows.py build
+uv run .\setup-windows.py build
 ```
 
 In `build\exe.win32-3.12\` you will find `dangerzone.exe`, `dangerzone-cli.exe`, and all supporting files.
@@ -460,7 +470,7 @@ In `build\exe.win32-3.12\` you will find `dangerzone.exe`, `dangerzone-cli.exe`,
 Note that you must have a codesigning certificate installed in order to use the `install\windows\build-app.bat` script, because it codesigns `dangerzone.exe`, `dangerzone-cli.exe` and `Dangerzone.msi`.
 
 ```
-poetry run .\install\windows\build-app.bat
+uv run .\install\windows\build-app.bat
 ```
 
 When you're done you will have `dist\Dangerzone.msi`.

@@ -21,9 +21,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Install container build dependencies
+        run: sudo apt install pipx && pipx install uv
       - name: Build container image
         run: |
-          python3 ./install/common/build-image.py \
+          uv run ./install/common/build-image.py \
             --debian-archive-date $(date "+%Y%m%d") \
             --runtime docker
           docker load -i share/container.tar

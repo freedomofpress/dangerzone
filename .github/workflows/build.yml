@@ -87,12 +87,20 @@ jobs:
         id: cache-container-image
         uses: actions/cache@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
+          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py', "uv.lock") }}
           path: |
             share/container.tar
             share/image-id.txt
 
-      - name: Build Dangerzone image
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Build and push Dangerzone image
         if: ${{ steps.cache-container-image.outputs.cache-hit != 'true' }}
         run: |
-          python3 ./install/common/build-image.py
+          uv run ./install/common/build-image.py
+          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
+          gunzip -c share/container.tar.gz | podman load
+          tag=$(cat share/image-id.txt)
+          podman push \
+                  dangerzone.rocks/dangerzone:$tag \
+                  ${{ env.IMAGE_REGISTRY }}/dangerzone/dangerzone:tag

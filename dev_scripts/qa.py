@@ -251,8 +251,6 @@ Install dependencies:
 </table>
 
 
-<<<<<<< HEAD
-=======
 <table>
   <tr>
       <td>
@@ -284,14 +282,14 @@ sudo apt install -y podman dh-python build-essential make libqt6gui6 \
 Install `uv` using `pipx` (recommended) and add it to your `$PATH`:
 
 _(See also a list of [alternative installation
-methods](https://python-`uv`.org/docs/#installation))_
+methods](https://docs.astral.sh/uv/getting-started/installation/))_
 
 ```sh
 pipx ensurepath
-pipx install `uv`
+pipx install uv
 ```
 
-After this, restart the terminal window, for the ``uv command to be in your
+After this, restart the terminal window, for the `uv` command to be in your
 `$PATH`.
 
 
@@ -303,42 +301,37 @@ git clone https://github.com/freedomofpress/dangerzone/
 
 Change to the `dangerzone` folder, and install the `uv` dependencies:
 
-> **Note**: due to an issue with [`uv`](https://github.com/python-`uv`/`uv`/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
-
 ```
 cd dangerzone
-`uv` install
+uv sync
 ```
 
 Build the latest container:
 
 ```sh
-python3 ./install/common/build-image.py
+uv run ./install/common/build-image.py
 ```
 
 Download the OCR language data:
 
 ```sh
-python3 ./install/common/download-tessdata.py
+uv run ./install/common/download-tessdata.py
 ```
 
 Run from source tree:
 
 ```sh
-# start a shell in the virtual environment
-`uv` shell
-
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+uv run ./dev_scripts/dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+uv run ./dev_scripts/dangerzone
 ```
 
 Create a .deb:
 
 ```sh
-./install/linux/build-deb.py
+uv run ./install/linux/build-deb.py
 ```
 """
 
@@ -347,7 +340,7 @@ CONTENT_BUILD_FEDORA = r"""## Fedora
 Install dependencies:
 
 ```sh
-sudo dnf install -y rpm-build podman python3 python3-devel python3-`uv`-core \
+sudo dnf install -y rpm-build podman python3 python3-devel python3-uv \
     pipx qt6-qtbase-gui
 ```
 
@@ -367,7 +360,7 @@ sudo dnf install -y rpm-build podman python3 python3-devel python3-`uv`-core \
   sudo dnf install -y python3.12
   ```
 
-  `uv` will automatically pick up the correct version when running.
+  uv will automatically pick up the correct version when running.
 </details>
     </td>
   </tr>
@@ -376,7 +369,7 @@ sudo dnf install -y rpm-build podman python3 python3-devel python3-`uv`-core \
 Install `uv` using `pipx`:
 
 ```sh
-pipx install `uv`
+pipx install uv
 ```
 
 Clone this repository:
@@ -387,11 +380,9 @@ git clone https://github.com/freedomofpress/dangerzone/
 
 Change to the `dangerzone` folder, and install the `uv` dependencies:
 
-> **Note**: due to an issue with [`uv`](https://github.com/python-`uv`/`uv`/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
-
 ```
 cd dangerzone
-`uv` install
+uv sync
 ```
 
 Build the latest container:
@@ -409,14 +400,11 @@ python3 ./install/common/download-tessdata.py
 Run from source tree:
 
 ```sh
-# start a shell in the virtual environment
-`uv` shell
-
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+uv run ./dev_scripts/dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+uv run ./dev_scripts/dangerzone
 ```
 
 > [!NOTE]
@@ -426,7 +414,7 @@ Run from source tree:
 Create a .rpm:
 
 ```sh
-./install/linux/build-rpm.py
+uv run ./install/linux/build-rpm.py
 ```
 """
 
@@ -439,10 +427,10 @@ Install the latest version of Python 3.12 (64-bit) [from python.org](https://www
 
 Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build Tools"](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and make sure to select "Desktop development with C++" when installing.
 
-Install [`uv`](https://python-`uv`.org/). Open PowerShell, and run:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/). Open PowerShell, and run:
 
 ```
-python -m pip install `uv`
+python -m pip install uv
 ```
 
 Install git from [here](https://git-scm.com/download/win), open a Windows terminal (`cmd.exe`) and clone this repository:
@@ -455,7 +443,7 @@ Change to the `dangerzone` folder, and install the `uv` dependencies:
 
 ```
 cd dangerzone
-`uv` install
+uv sync
 ```
 
 Build the dangerzone container image:
@@ -473,14 +461,11 @@ python3 .\install\common\download-tessdata.py
 After that you can launch dangerzone during development with:
 
 ```
-# start a shell in the virtual environment
-`uv` shell
-
 # run the CLI
-.\dev_scripts\dangerzone-cli.bat --help
+uv run .\dev_scripts\dangerzone-cli.bat --help
 
 # run the GUI
-.\dev_scripts\dangerzone.bat
+uv run .\dev_scripts\dangerzone.bat
 ```
 """
 
@@ -880,8 +865,8 @@ class QAWindows(QABase):
         "Install `uv` and the project's dependencies", ref=REF_BUILD, auto=True
     )
     def install_uv(self):
-        self.run("python", "-m", "pip", "install", "`uv`")
-        self.run("`uv`", "install", "--sync")
+        self.run("python", "-m", "pip", "install", "uv")
+        self.run("`uv`", "sync")
 
     @QABase.task("Build Dangerzone container image", ref=REF_BUILD, auto=True)
     def build_image(self):
@@ -890,13 +875,11 @@ class QAWindows(QABase):
     @QABase.task("Run tests", ref="REF_BUILD", auto=True)
     def run_tests(self):
         # NOTE: Windows does not have Makefile by default.
-        self.run(
-            "`uv`", "run", "pytest", "-v", "--ignore", r"tests\test_large_set.py"
-        )
+        self.run("uv", "run", "pytest", "-v", "--ignore", r"tests\test_large_set.py")
 
     @QABase.task("Build Dangerzone .exe", ref="REF_BUILD", auto=True)
     def build_dangerzone_exe(self):
-        self.run("`uv`", "run", "python", r".\setup-windows.py", "build")
+        self.run("uv", "run", r".\setup-windows.py", "build")
 
     @classmethod
     def get_id(cls):
@@ -938,6 +921,7 @@ class QALinux(QABase):
         self.container_run("bash", "-c", f"cd dangerzone; {args_str}")
 
     def uv_run(self, *args):
+        """Run a command via `uv` inside a Dangerzone environment."""
         self.shell_run("uv", "run", *args)
 
     @QABase.task(
@@ -965,7 +949,7 @@ class QALinux(QABase):
 
     @QABase.task("Run tests", ref="REF_BUILD", auto=True)
     def run_tests(self):
-        self.`uv`_run("make", "test")
+        self.uv_run("make", "test")
 
     def build_package(self):
         """Build the Dangerzone .deb/.rpm package"""

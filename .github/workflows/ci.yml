@@ -32,13 +32,16 @@ jobs:
       image: debian:bookworm
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
       - name: Install dev. dependencies
         run: |-
           apt-get update
-          apt-get install -y git make python3 python3-poetry --no-install-recommends
-          poetry install --only lint,test
+          apt-get install -y git make python3 --no-install-recommends
+          uv sync --only-group test --only-group lint
       - name: Run linters to enforce code style
-        run: poetry run make lint
+        run: uv run make lint
       - name: Check that the QA script is up to date with the docs
         run: "./dev_scripts/qa.py --check-refs"
 
@@ -59,15 +62,18 @@ jobs:
         id: cache-container-image
         uses: actions/cache@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
+          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py', "uv.lock") }}
           path: |-
             share/container.tar
             share/image-id.txt
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Build Dangerzone container image
         if: ${{ steps.cache-container-image.outputs.cache-hit != 'true' }}
         run: |
-          python3 ./install/common/build-image.py
+          uv run ./install/common/build-image.py
 
       - name: Upload container image
         uses: actions/upload-artifact@v4
@@ -109,8 +115,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install poetry
-      - run: poetry install
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - run: uv sync --group test --group package
       - name: Restore cached tessdata
         uses: actions/cache/restore@v4
         with:
@@ -119,7 +126,7 @@ jobs:
           fail-on-cache-miss: true
           key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
       - name: Run CLI tests
-        run: poetry run make test
+        run: uv run make test
       - name: Set up .NET CLI environment
         uses: actions/setup-dotnet@v4
         with:
@@ -130,7 +137,7 @@ jobs:
         run: wix extension add --global WixToolset.UI.wixext/5.0.2
       - name: Build the MSI installer
         # NOTE: This also builds the .exe internally.
-        run: poetry run .\install\windows\build-app.bat
+        run: uv run .\install\windows\build-app.bat
       - name: Upload MSI installer
         uses: actions/upload-artifact@v4
         with:
@@ -165,12 +172,13 @@ jobs:
           enableCrossOsArchive: true
           fail-on-cache-miss: true
           key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
-      - run: pip install poetry
-      - run: poetry install
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
       - name: Run CLI tests
-        run: poetry run make test
+        run: uv run --group test --group package make test
       - name: Build macOS app
-        run: poetry run python ./install/macos/build-app.py
+        run: uv run --group package ./install/macos/build-app.py
       - name: Upload macOS app
         uses: actions/upload-artifact@v4
         with:
@@ -226,7 +234,7 @@ jobs:
       - name: Restore container cache
         uses: actions/cache/restore@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
+          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py', 'uv.lock') }}
           path: |-
             share/container.tar
             share/image-id.txt
@@ -333,7 +341,7 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
+          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py', 'uv.lock') }}
           path: |-
             share/container.tar
             share/image-id.txt
@@ -430,7 +438,7 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
+          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py', 'uv.lock') }}
           path: |-
             share/container.tar
             share/image-id.txt
@@ -471,8 +479,7 @@ jobs:
           #     protocol specified". However, we have verified with strace(1)
           #     that the command in the Podman container can read the Xauthority
           #     file successfully.
-          xvfb-run -s '-ac' ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
-              bash -c 'cd dangerzone; poetry run make test'
+          xvfb-run -s '-ac' ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \             bash -c 'cd dangerzone; uv run --group test make test'
       
       - name: Upload PDF diffs
         uses: actions/upload-artifact@v4

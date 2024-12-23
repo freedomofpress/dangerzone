@@ -36,12 +36,9 @@ def main():
     # instructed here:
     # https://pip.pypa.io/en/latest/user_guide/#using-pip-from-your-program
     cmd = [
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "--no-cache-dir",
-        "--no-compile",
+        "uv", "pip", "install", 
+        "--no-cache",
+        "--no-compile-bytecode",
         "--target",
         args.dest,
         "--requirement",

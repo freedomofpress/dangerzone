@@ -16,6 +16,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Document Operating System support [#986](https://github.com/freedomofpress/dangerzone/issues/986)
 - Tests: Look for regressions when converting PDFs [#321](https://github.com/freedomofpress/dangerzone/issues/321)
 
+### Changed
+
+- Use `uv` instead of `poetry`
+
 ## [0.8.1](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...0.8.0)
 
 - Update the container image

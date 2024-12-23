@@ -1,5 +1,5 @@
 [project]
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.9,<3.14"
 name = "dangerzone"
 version = "0.8.1"
 description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
@@ -15,12 +15,12 @@ dependencies = [
     "colorama",
     "markdown",
     "packaging",
-    "pymupdf (>=1.23.3, <1.24.0)", # The version in Fedora 39
+    "pymupdf",
     "pyside6 (>=6.7.1, < 6.8)",
-    # "pyxdg; sys_platform == 'linux'",
+    "pyxdg; sys_platform == 'linux'",
     "requests",]
 
-dynamic = ["readme", "classifiers"]
+dynamic = ["readme",] # "classifiers"]
 
 classifiers = [
     "Programming Language :: Python",
@@ -35,9 +35,9 @@ container = [
     "pymupdf",
     ]
 
-debian = [
-    "pymupdf (>=1.24.11, <1.25)",
-]
+# debian = [
+#     "pymupdf (>=1.24.11, <1.25)",
+# ]
 
 # Dependencies required only for development
 dev = [
@@ -58,12 +58,13 @@ lint = [
 
 # Dependencies required for packaging the code on various platforms.
 package = [
-    "cx-freeze",
+    "cx-freeze; sys_platform == 'win32'",
     "doit",
     "jinja2-cli",
-    "pywin32",
-    "pyinstaller",
+    "pywin32; sys_platform == 'win32'",
+    "pyinstaller; sys_platform == 'darwin'",
     "setuptools",
+    "doit",
 ]
 
 test = [

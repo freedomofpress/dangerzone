@@ -9,11 +9,11 @@ It supports two types of environments:
 1. Dev environment. This environment has developer tools, necessary for
    Dangerzone, baked in. Also, it mounts the Dangerzone source under
    `/home/user/dangerzone` in the container. The developer can then run
-   Dangerzone from source, with `poetry run ./dev_scripts/dangerzone`.
+   Dangerzone from source, with `uv run ./dev_scripts/dangerzone`.
 2. End-user environment. This environment has only Dangerzone installed in it,
    from the .deb/.rpm package that we have created. For convenience, it also has
    the Dangerzone source mounted under `/home/user/dangerzone`, but it lacks
-   Poetry and other build tools. The developer can run Dangerzone there with
+   uv and other build tools. The developer can run Dangerzone there with
    `dangerzone`. This environment is the most vanilla Dangerzone environment,
    and should be closer to the end user's environment, than the development
    environment.
@@ -92,7 +92,7 @@ In order to build Dangerzone environments, the script uses the following inputs:
 
 * Dev environment:
   - Distro name and version. Together, these comprise the base container image.
-  - `poetry.lock` and `pyproject.toml`. Together, these comprise the build
+  - `uv.lock` and `pyproject.toml`. Together, these comprise the build
     context.
 * End-user environment:
   - Distro name and version. Together, these comprise the base container image.

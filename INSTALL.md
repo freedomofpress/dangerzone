@@ -1,7 +1,7 @@
 ## MacOS
 
-- Download [Dangerzone 0.8.0 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.0/Dangerzone-0.8.0-arm64.dmg)
-- Download [Dangerzone 0.8.0 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.0/Dangerzone-0.8.0-i686.dmg)
+- Download [Dangerzone 0.8.1 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1-arm64.dmg)
+- Download [Dangerzone 0.8.1 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1-i686.dmg)
 
 You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`
 
@@ -11,7 +11,7 @@ You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `bre
 
 ## Windows
 
-- Download [Dangerzone 0.8.0 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.0/Dangerzone-0.8.0.msi)
+- Download [Dangerzone 0.8.1 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1.msi)
 
 > **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 > This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to

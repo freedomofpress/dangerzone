@@ -1,4 +1,5 @@
 import os
+import platform
 
 import pytest
 from pytest_mock import MockerFixture
@@ -107,6 +108,92 @@ class TestContainer(IsolationProviderTest):
         )
         with pytest.raises(errors.ImageNotPresentException):
             provider.install()
+
+    @pytest.mark.skipif(
+        platform.system() not in ("Windows", "Darwin"),
+        reason="macOS and Windows specific",
+    )
+    def test_old_docker_desktop_version_is_detected(
+        self, mocker: MockerFixture, provider: Container, fp: FakeProcess
+    ) -> None:
+        fp.register_subprocess(
+            [
+                "docker",
+                "version",
+                "--format",
+                "{{.Server.Platform.Name}}",
+            ],
+            stdout="Docker Desktop 1.0.0 (173100)",
+        )
+
+        mocker.patch(
+            "dangerzone.isolation_provider.container.MINIMUM_DOCKER_DESKTOP",
+            {"Darwin": "1.0.1", "Windows": "1.0.1"},
+        )
+        assert (False, "1.0.0") == provider.check_docker_desktop_version()
+
+    @pytest.mark.skipif(
+        platform.system() not in ("Windows", "Darwin"),
+        reason="macOS and Windows specific",
+    )
+    def test_up_to_date_docker_desktop_version_is_detected(
+        self, mocker: MockerFixture, provider: Container, fp: FakeProcess
+    ) -> None:
+        fp.register_subprocess(
+            [
+                "docker",
+                "version",
+                "--format",
+                "{{.Server.Platform.Name}}",
+            ],
+            stdout="Docker Desktop 1.0.1 (173100)",
+        )
+
+        # Require version 1.0.1
+        mocker.patch(
+            "dangerzone.isolation_provider.container.MINIMUM_DOCKER_DESKTOP",
+            {"Darwin": "1.0.1", "Windows": "1.0.1"},
+        )
+        assert (True, "1.0.1") == provider.check_docker_desktop_version()
+
+        fp.register_subprocess(
+            [
+                "docker",
+                "version",
+                "--format",
+                "{{.Server.Platform.Name}}",
+            ],
+            stdout="Docker Desktop 2.0.0 (173100)",
+        )
+        assert (True, "2.0.0") == provider.check_docker_desktop_version()
+
+    @pytest.mark.skipif(
+        platform.system() not in ("Windows", "Darwin"),
+        reason="macOS and Windows specific",
+    )
+    def test_docker_desktop_version_failure_returns_true(
+        self, mocker: MockerFixture, provider: Container, fp: FakeProcess
+    ) -> None:
+        fp.register_subprocess(
+            [
+                "docker",
+                "version",
+                "--format",
+                "{{.Server.Platform.Name}}",
+            ],
+            stderr="Oopsie",
+            returncode=1,
+        )
+        assert provider.check_docker_desktop_version() == (True, "")
+
+    @pytest.mark.skipif(
+        platform.system() != "Linux",
+        reason="Linux specific",
+    )
+    def test_linux_skips_desktop_version_check_returns_true(
+        self, mocker: MockerFixture, provider: Container
+    ) -> None:
+        assert (True, "") == provider.check_docker_desktop_version()
 
 
 class TestContainerTermination(IsolationProviderTermination):

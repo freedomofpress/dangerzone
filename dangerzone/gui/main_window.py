@@ -124,6 +124,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle("Dangerzone")
         self.setWindowIcon(self.dangerzone.get_window_icon())
+        self.alert: Optional[Alert] = None
 
         self.setMinimumWidth(600)
         if platform.system() == "Darwin":
@@ -226,6 +227,13 @@ class MainWindow(QtWidgets.QMainWindow):
         # This allows us to make QSS rules conditional on the OS color mode.
         self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
 
+        if hasattr(self.dangerzone.isolation_provider, "check_docker_desktop_version"):
+            is_version_valid, version = (
+                self.dangerzone.isolation_provider.check_docker_desktop_version()
+            )
+            if not is_version_valid:
+                self.handle_docker_desktop_version_check(is_version_valid, version)
+
         self.show()
 
     def show_update_success(self) -> None:
@@ -278,6 +286,46 @@ class MainWindow(QtWidgets.QMainWindow):
         check = self.toggle_updates_action.isChecked()
         self.dangerzone.settings.set("updater_check", check)
         self.dangerzone.settings.save()
+
+    def handle_docker_desktop_version_check(
+        self, is_version_valid: bool, version: str
+    ) -> None:
+        hamburger_menu = self.hamburger_button.menu()
+        sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
+        upgrade_action = QAction("Docker Desktop should be upgraded", hamburger_menu)
+        upgrade_action.setIcon(
+            QtGui.QIcon(
+                load_svg_image(
+                    "hamburger_menu_update_dot_error.svg", width=64, height=64
+                )
+            )
+        )
+
+        message = """
+        <p>A new version of Docker Desktop is available. Please upgrade your system.</p>
+        <p>Visit the <a href="https://www.docker.com/products/docker-desktop">Docker Desktop website</a> to download the latest version.</p>
+        <em>Keeping Docker Desktop up to date allows you to have more confidence that your documents are processed safely.</em>
+        """
+        self.alert = Alert(
+            self.dangerzone,
+            title="Upgrade Docker Desktop",
+            message=message,
+            ok_text="Ok",
+            has_cancel=False,
+        )
+
+        def _launch_alert() -> None:
+            if self.alert:
+                self.alert.launch()
+
+        upgrade_action.triggered.connect(_launch_alert)
+        hamburger_menu.insertAction(sep, upgrade_action)
+
+        self.hamburger_button.setIcon(
+            QtGui.QIcon(
+                load_svg_image("hamburger_menu_update_error.svg", width=64, height=64)
+            )
+        )
 
     def handle_updates(self, report: UpdateReport) -> None:
         """Handle update reports from the update checker thread.
@@ -365,7 +413,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.content_widget.show()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
-        alert_widget = Alert(
+        self.alert = Alert(
             self.dangerzone,
             message="Some documents are still being converted.\n Are you sure you want to quit?",
             ok_text="Abort conversions",
@@ -379,7 +427,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 self.dangerzone.app.exit(0)
         else:
-            accept_exit = alert_widget.launch()
+            accept_exit = self.alert.launch()
             if not accept_exit:
                 e.ignore()
                 return
@@ -623,7 +671,7 @@ class ContentWidget(QtWidgets.QWidget):
 
     def documents_selected(self, docs: List[Document]) -> None:
         if self.conversion_started:
-            Alert(
+            self.alert = Alert(
                 self.dangerzone,
                 message="Dangerzone does not support adding documents after the conversion has started.",
                 has_cancel=False,
@@ -633,7 +681,7 @@ class ContentWidget(QtWidgets.QWidget):
         # Ensure all files in batch are in the same directory
         dirnames = {os.path.dirname(doc.input_filename) for doc in docs}
         if len(dirnames) > 1:
-            Alert(
+            self.alert = Alert(
                 self.dangerzone,
                 message="Dangerzone does not support adding documents from multiple locations.\n\n The newly added documents were ignored.",
                 has_cancel=False,
@@ -802,14 +850,14 @@ class DocSelectionDropFrame(QtWidgets.QFrame):
             text = f"{num_unsupported_docs} files are not supported."
             ok_text = "Continue without these files"
 
-        alert_widget = Alert(
+        self.alert = Alert(
             self.dangerzone,
             message=f"{text}\nThe supported extensions are: "
             + ", ".join(get_supported_extensions()),
             ok_text=ok_text,
         )
 
-        return alert_widget.exec_()
+        return self.alert.exec_()
 
 
 class SettingsWidget(QtWidgets.QWidget):

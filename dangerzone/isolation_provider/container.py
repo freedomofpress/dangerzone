@@ -3,7 +3,7 @@ import os
 import platform
 import shlex
 import subprocess
-from typing import List
+from typing import List, Tuple
 
 from .. import container_utils, errors
 from ..document import Document
@@ -11,7 +11,10 @@ from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
 
 TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
-
+MINIMUM_DOCKER_DESKTOP = {
+    "Darwin": "4.36.0",
+    "Windows": "4.36.0",
+}
 
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
@@ -121,6 +124,7 @@ class Container(IsolationProvider):
     def is_available() -> bool:
         container_runtime = container_utils.get_runtime()
         runtime_name = container_utils.get_runtime_name()
+
         # Can we run `docker/podman image ls` without an error
         with subprocess.Popen(
             [container_runtime, "image", "ls"],
@@ -134,6 +138,28 @@ class Container(IsolationProvider):
                     runtime_name, stderr.decode()
                 )
             return True
+
+    def check_docker_desktop_version(self) -> Tuple[bool, str]:
+        # On windows and darwin, check that the minimum version is met
+        version = ""
+        if platform.system() != "Linux":
+            with subprocess.Popen(
+                ["docker", "version", "--format", "{{.Server.Platform.Name}}"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                startupinfo=get_subprocess_startupinfo(),
+            ) as p:
+                stdout, stderr = p.communicate()
+                if p.returncode != 0:
+                    # In the case where there were an error, consider that
+                    # the check went trough, as we're checking for installation
+                    # compatibiliy somewhere else already
+                    return True, version
+                # The output is like "Docker Desktop 4.35.1 (173168)"
+                version = stdout.decode().replace("Docker Desktop", "").split()[0]
+                if version < MINIMUM_DOCKER_DESKTOP[platform.system()]:
+                    return False, version
+        return True, version
 
     def doc_to_pixels_container_name(self, document: Document) -> str:
         """Unique container name for the doc-to-pixels phase."""

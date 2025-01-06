@@ -292,6 +292,7 @@ def get_build_dir_sources(distro, version):
     sources = [
         git_root() / "pyproject.toml",
         git_root() / "poetry.lock",
+        git_root() / "dev_scripts" / "env.py",
         git_root() / "dev_scripts" / "storage.conf",
         git_root() / "dev_scripts" / "containers.conf",
     ]

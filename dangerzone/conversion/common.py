@@ -9,7 +9,6 @@ INT_BYTES = 2
 
 
 class CommandError(RuntimeError):
-
     def __init__(self, msg, stdout, stderr):
         self.stdout = stdout
         self.stderr = stderr

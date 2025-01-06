@@ -478,4 +478,4 @@ jobs:
           #     that the command in the Podman container can read the Xauthority
           #     file successfully.
           xvfb-run -s '-ac' ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
-              bash -c 'cd dangerzone; uv run make test'
+              bash -c 'cd dangerzone; uv run --group test make test'

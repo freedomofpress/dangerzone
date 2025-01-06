@@ -44,9 +44,9 @@ lint = [
 # Dependencies required for packaging the code on various platforms.
 package = [
     "setuptools",
-    "cx-freeze",
-    "pywin32",
-    "pyinstaller",
+    "cx-freeze; sys_platform == 'win32'",
+    "pywin32; sys_platform == 'win32'",
+    "pyinstaller; sys_platform == 'win32'",
     "doit",
 ]
 

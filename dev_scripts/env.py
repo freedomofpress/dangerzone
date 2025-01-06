@@ -183,6 +183,7 @@ COPY storage.conf /home/user/.config/containers
 # FIXME: pipx install poetry does not work for Ubuntu Focal.
 ENV PATH="$PATH:/home/user/.local/bin"
 RUN pipx install poetry
+RUN pipx inject poetry poetry-plugin-export
 
 COPY pyproject.toml poetry.lock /home/user/dangerzone/
 RUN cd /home/user/dangerzone && poetry --no-ansi install

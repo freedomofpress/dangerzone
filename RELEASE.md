@@ -113,7 +113,7 @@ Here is what you need to do:
 
   # In case of a new Python installation or minor version upgrade, e.g., from
   # 3.11 to 3.12, reinstall Poetry
-  python3 -m pip install poetry
+  python3 -m pip install poetry poetry-plugin-export
 
   # You can verify the correct Python version is used
   poetry debug info
@@ -195,7 +195,7 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
   ```bash
   # In case of a new Python installation or minor version upgrade, e.g., from
   # 3.11 to 3.12, reinstall Poetry
-  python3 -m pip install poetry
+  python3 -m pip install poetry poetry-plugin-export
 
   # You can verify the correct Python version is used
   poetry debug info

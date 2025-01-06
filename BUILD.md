@@ -70,6 +70,7 @@ methods](https://python-poetry.org/docs/#installation))_
 ```sh
 pipx ensurepath
 pipx install poetry
+pipx inject poetry poetry-plugin-export
 ```
 
 After this, restart the terminal window, for the `poetry` command to be in your
@@ -157,6 +158,7 @@ Install Poetry using `pipx`:
 
 ```sh
 pipx install poetry
+pipx inject poetry poetry-plugin-export
 ```
 
 Clone this repository:
@@ -369,7 +371,7 @@ cd dangerzone
 Install Python dependencies:
 
 ```sh
-python3 -m pip install poetry
+python3 -m pip install poetry poetry-plugin-export
 poetry install
 ```
 
@@ -430,7 +432,7 @@ Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build 
 Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
 
 ```
-python -m pip install poetry
+python -m pip install poetry poetry-plugin-export
 ```
 
 Install git from [here](https://git-scm.com/download/win), open a Windows terminal (`cmd.exe`) and clone this repository:

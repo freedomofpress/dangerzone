@@ -14,7 +14,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install container build dependencies
-        run: sudo apt install pipx && pipx install poetry
+        run: |
+          sudo apt install pipx
+          pipx install poetry
+          pipx inject poetry poetry-plugin-export
       - name: Build container image
         run: python3 ./install/common/build-image.py --runtime docker --no-save
       # NOTE: Scan first without failing, else we won't be able to read the scan

@@ -160,7 +160,7 @@ Clone this repository:
 git clone https://github.com/freedomofpress/dangerzone/
 ```
 
-Change to the `dangerzone` folder, and install the uv dependencies:
+Change to the `dangerzone` folder, and install the `uv` dependencies:
 
 ```
 cd dangerzone
@@ -426,7 +426,7 @@ Install git from [here](https://git-scm.com/download/win), open a Windows termin
 git clone https://github.com/freedomofpress/dangerzone/
 ```
 
-Change to the `dangerzone` folder, and install the uv dependencies:
+Change to the `dangerzone` folder, and install the `uv` dependencies:
 
 ```
 cd dangerzone

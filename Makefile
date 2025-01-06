@@ -19,8 +19,9 @@ lint: ## Check the code for linting, formatting, and typing issues with ruff and
 .PHONY: fix
 fix: ## apply all the suggestions from ruff
 	ruff check --fix
-	ruff format .PHONY: test
+	ruff format .
 
+.PHONY: test
 test:
 	# Make each GUI test run as a separate process, to avoid segfaults due to
 	# shared state.
@@ -41,6 +42,7 @@ test-large-init: test-large-requirements
 	cd $(LARGE_TEST_REPO_DIR) && $(MAKE) clone-docs
 
 TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC).junit.xml
+
 .PHONY: test-large
 test-large: test-large-init  ## Run large test set
 	python -m pytest --tb=no tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)

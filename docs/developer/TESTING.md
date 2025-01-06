@@ -9,7 +9,7 @@ The following assumes that you have already setup the development environment.
 Unit / integration tests are run with:
 
 ```bash
-poetry run make test
+uv run make test
 ```
 
 ## Run large tests
@@ -17,7 +17,7 @@ poetry run make test
 We also have a larger set of tests that can take a day or more to run, where we evaluate the completeness of Dangerzone conversions.
 
 ```bash
-poetry run make test-large
+uv run make test-large
 ```
 
 ### Test report generation

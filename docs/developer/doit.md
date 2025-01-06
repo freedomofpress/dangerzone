@@ -24,26 +24,26 @@ We picked Doit out of the various tools out there for the following reasons:
 
 ## How to Doit?
 
-First, enter your Poetry shell. Then, make sure that your environment is clean,
-and you have ample disk space. You can run:
+Make sure that your environment is clean, and you have ample disk space. You
+can run:
 
 ```bash
-doit clean --dry-run  # if you want to see what would happen
-doit clean  # you'll be asked to cofirm that you want to clean everything
+uv run doit clean --dry-run  # if you want to see what would happen
+uv run doit clean  # you'll be asked to cofirm that you want to clean everything
 ```
 
 Finally, you can build all the release artifacts with `doit`, or a specific task
 with:
 
 ```
-doit <task>
+uv run doit <task>
 ```
 
 ## Tips and tricks
 
-* You can run `doit list --all -s` to see the full list of tasks, their
+* You can run `uv run doit list --all -s` to see the full list of tasks, their
   dependencies, and whether they are up to date.
-* You can run `doit info <task>` to see which dependencies are missing.
+* You can run `uv run doit info <task>` to see which dependencies are missing.
 * You can change this line in `pyproject.toml` to `true`, to allow using the
   Docker/Podman build cache:
 

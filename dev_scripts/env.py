@@ -116,7 +116,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends dh-python make build-essential \
         git {qt_deps} pipx python3 python3-pip python3-venv dpkg-dev debhelper python3-setuptools \
     && rm -rf /var/lib/apt/lists/*
-# NOTE: `pipx install poetry` fails on Ubuntu Focal, when installed through APT. By
 # installing the latest version, we sidestep this issue.
 RUN bash -c 'if [[ "$(pipx --version)" < "1" ]]; then \
                 apt-get update \
@@ -138,9 +137,8 @@ DOCKERFILE_BUILD_DEV_FEDORA_41_DEPS = r"""
 RUN dnf install -y python3.12
 """
 
-# FIXME: Install Poetry on Fedora via package manager.
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
-RUN dnf install -y git rpm-build podman python3 python3-devel python3-poetry-core \
+RUN dnf install -y git rpm-build podman python3 python3-devel uv \
     pipx make qt6-qtbase-gui \
     && dnf clean all
 
@@ -179,14 +177,12 @@ VOLUME /home/user/dangerzone
 RUN mkdir -p /home/user/.config/containers
 COPY storage.conf /home/user/.config/containers
 
-# Install Poetry under ~/.local/bin.
-# See https://github.com/freedomofpress/dangerzone/issues/351
-# FIXME: pipx install poetry does not work for Ubuntu Focal.
+# Install uv under ~/.local/bin.
 ENV PATH="$PATH:/home/user/.local/bin"
-RUN pipx install poetry
+RUN pipx install uv
 
-COPY pyproject.toml poetry.lock /home/user/dangerzone/
-RUN cd /home/user/dangerzone && poetry --no-ansi install
+COPY pyproject.toml uv.lock /home/user/dangerzone/
+RUN cd /home/user/dangerzone && uv sync
 """
 
 DOCKERFILE_BUILD_DEBIAN_DEPS = r"""
@@ -291,7 +287,7 @@ def get_build_dir_sources(distro, version):
     """Return the files needed to build an image."""
     sources = [
         git_root() / "pyproject.toml",
-        git_root() / "poetry.lock",
+        git_root() / "uv.lock",
         git_root() / "dev_scripts" / "storage.conf",
         git_root() / "dev_scripts" / "containers.conf",
     ]

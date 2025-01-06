@@ -36,9 +36,9 @@ jobs:
         run: |-
           apt-get update
           apt-get install -y git make python3 --no-install-recommends
-          poetry install --only lint,test
+          uv sync --only-group test --only-group lint
       - name: Run linters to enforce code style
-        run: poetry run make lint
+        run: uv run make lint
       - name: Check that the QA script is up to date with the docs
         run: "./dev_scripts/qa.py --check-refs"
 
@@ -59,16 +59,18 @@ jobs:
         id: cache-container-image
         uses: actions/cache@v4
         with:
-          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'uv.lock', 'gvisor_wrapper/entrypoint.py') }}
           path: |-
             share/container.tar.gz
             share/image-id.txt
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Build Dangerzone container image
         if: ${{ steps.cache-container-image.outputs.cache-hit != 'true' }}
         run: |
-          sudo apt-get install -y python3-poetry
-          python3 ./install/common/build-image.py
+          uv run ./install/common/build-image.py
 
       - name: Upload container image
         uses: actions/upload-artifact@v4
@@ -110,8 +112,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install poetry
-      - run: poetry install
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - run: uv sync
       - name: Restore cached tessdata
         uses: actions/cache/restore@v4
         with:
@@ -120,7 +123,7 @@ jobs:
           fail-on-cache-miss: true
           key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
       - name: Run CLI tests
-        run: poetry run make test
+        run: uv run make test
       - name: Set up .NET CLI environment
         uses: actions/setup-dotnet@v4
         with:
@@ -131,7 +134,7 @@ jobs:
         run: wix extension add --global WixToolset.UI.wixext
       - name: Build the MSI installer
         # NOTE: This also builds the .exe internally.
-        run: poetry run .\install\windows\build-app.bat
+        run: uv run .\install\windows\build-app.bat
       - name: Upload MSI installer
         uses: actions/upload-artifact@v4
         with:
@@ -166,12 +169,14 @@ jobs:
           enableCrossOsArchive: true
           fail-on-cache-miss: true
           key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
-      - run: pip install poetry
-      - run: poetry install
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - run: uv sync
       - name: Run CLI tests
-        run: poetry run make test
+        run: uv run make test
       - name: Build macOS app
-        run: poetry run python ./install/macos/build-app.py
+        run: uv run ./install/macos/build-app.py
       - name: Upload macOS app
         uses: actions/upload-artifact@v4
         with:
@@ -227,7 +232,7 @@ jobs:
       - name: Restore container cache
         uses: actions/cache/restore@v4
         with:
-          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'uv.lock', 'gvisor_wrapper/entrypoint.py') }}
           path: |-
             share/container.tar.gz
             share/image-id.txt
@@ -334,7 +339,7 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'uv.lock', 'gvisor_wrapper/entrypoint.py') }}
           path: |-
             share/container.tar.gz
             share/image-id.txt
@@ -429,7 +434,7 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'poetry.lock', 'gvisor_wrapper/entrypoint.py') }}
+          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/common.py', 'dangerzone/conversion/doc_to_pixels.py', 'dangerzone/conversion/pixels_to_pdf.py', 'uv.lock', 'gvisor_wrapper/entrypoint.py') }}
           path: |-
             share/container.tar.gz
             share/image-id.txt
@@ -470,4 +475,4 @@ jobs:
           #     that the command in the Podman container can read the Xauthority
           #     file successfully.
           xvfb-run -s '-ac' ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
-              bash -c 'cd dangerzone; poetry run make test'
+              bash -c 'cd dangerzone; uv run make test'

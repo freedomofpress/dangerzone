@@ -35,6 +35,7 @@ cx_freeze = {version = "^7.2.5", platform = "win32"}
 pywin32 = {version = "*", platform = "win32"}
 pyinstaller = {version = "*", platform = "darwin"}
 doit = "^0.36.0"
+jinja2-cli = "^0.8.2"
 
 # Dependencies required for linting the code.
 [tool.poetry.group.lint.dependencies]

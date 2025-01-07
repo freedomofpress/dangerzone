@@ -487,9 +487,9 @@ Install the WiX UI extension. You may need to open a new terminal in order to us
 wix extension add --global WixToolset.UI.wixext/5.x.y
 ```
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > To avoid compatibility issues, ensure the WiX UI extension version matches the version of the WiX Toolset.
-> 
+>
 > Run `wix --version` to check the version of WiX Toolset you have installed and replace `5.x.y` with the full version number without the Git revision.
 
 ### If you want to sign binaries with Authenticode
@@ -515,3 +515,35 @@ poetry run .\install\windows\build-app.bat
 ```
 
 When you're done you will have `dist\Dangerzone.msi`.
+
+## Updating the container image
+
+The Dangezone container image is reproducible. This means that every time we
+build it, the result will be bit-for-bit the same, with some minor exceptions.
+You can verify this with the
+[`diffoci`](https://github.com/reproducible-containers/diffoci) tool:
+
+```
+./diffoci diff podman://<new_image_tag> podman://<old_image_tag> --ignore-timestamp --ignore-image-name --verbose
+```
+
+> [!NOTE]
+> As we've hinted above, building the same image twice will result in the same
+> image, with two small exceptions: the timestamps of the files, and the image
+> tag will differ. This means that the image hash will be different, but the
+> contents of the files, permissions, and everything else, will be the same.
+
+In order to get security updates, we need to update the Dangerzone image. We
+list the necessary variables that make up our image in the `Dockerfile.env`
+file. These are:
+* `DEBIAN_DATE`: The date of the Debian snapshot
+* `GVISOR_DATE`: The build date of the gVisor helper
+* `H2ORESTART_CHECKSUM`: The SHA-256 checksum of the H2ORestart plugin
+* `H2ORESTART_VERSION`: The version of the H2ORestart plugin
+
+If you bump these values in `Dockerfile.env`, you can create a new Dockerfile
+with:
+
+```
+poetry run jinja2 Dockerfile.in Dockerfile.env > Dockerfile
+```

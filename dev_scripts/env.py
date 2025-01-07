@@ -139,7 +139,7 @@ RUN dnf install -y python3.12
 
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
 RUN dnf install -y git rpm-build podman python3 python3-devel uv \
-    pipx make qt6-qtbase-gui \
+    make qt6-qtbase-gui python3-hatchling pipx \
     && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.

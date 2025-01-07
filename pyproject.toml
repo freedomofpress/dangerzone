@@ -16,7 +16,7 @@ dependencies = [
     "packaging",
     "pymupdf (>=1.23.3, <1.24.0)", # The version in Fedora 39
     "pyside6 (>=6.7.1, < 6.8)",
-    # "pyxdg; sys_platform == 'linux'",
+    "pyxdg; sys_platform == 'linux'",
     "requests",]
 
 dynamic = ["readme", "classifiers"]

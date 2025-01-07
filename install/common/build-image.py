@@ -51,9 +51,9 @@ def main():
         "--use-cache",
         type=str2bool,
         nargs="?",
-        default=False,
+        default=True,
         const=True,
-        help="Use the builder's cache to speed up the builds (not suitable for release builds)",
+        help="Use the builder's cache to speed up the builds",
     )
     args = parser.parse_args()
 
@@ -81,18 +81,6 @@ def main():
     print(f"Will tag the container image as '{image_name_tagged}'")
     with open(image_id_path, "w") as f:
         f.write(tag)
-
-    print("Exporting container pip dependencies")
-    if not args.use_cache:
-        print("Pulling base image")
-        subprocess.run(
-            [
-                args.runtime,
-                "pull",
-                "alpine:latest",
-            ],
-            check=True,
-        )
 
     # Build the container image, and tag it with the calculated tag
     print("Building container image")

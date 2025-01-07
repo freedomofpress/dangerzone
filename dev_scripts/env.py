@@ -182,8 +182,9 @@ ENV PATH="$PATH:/home/user/.local/bin"
 RUN pipx install uv
 
 COPY pyproject.toml uv.lock /home/user/dangerzone/
-# XXX Not sure why, but permission problems with the command below. Commenting it out for now as `uv` will get the deps later on.
-# RUN cd /home/user/dangerzone && uv venv .venv-{distro}-{version} && uv sync
+RUN uv venv /home/user/.venv
+ENV UV_PROJECT_ENVIRONMENT="/home/user/.venv"
+RUN cd /home/user/dangerzone && uv sync
 """
 
 DOCKERFILE_BUILD_DEBIAN_DEPS = r"""

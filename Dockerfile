@@ -1,25 +1,28 @@
-ARG DEBIAN_DATE=20241202
+ARG DEBIAN_IMAGE_DATE=20241223
 
 ###########################################
 # Build Dangerzone container image (inner)
 
-FROM debian:bookworm-${DEBIAN_DATE}-slim
+FROM debian:bookworm-${DEBIAN_IMAGE_DATE}-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG GVISOR_DATE=20241202
+ARG GVISOR_ARCHIVE_DATE=20241217
+ARG DEBIAN_ARCHIVE_DATE=20250108
 
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   --mount=type=bind,source=./oci/repro-sources-list.sh,target=/usr/local/bin/repro-sources-list.sh \
   --mount=type=bind,source=./oci/gvisor.key,target=/tmp/gvisor.key \
+  touch -d ${DEBIAN_ARCHIVE_DATE} /etc/apt/sources.list.d/debian.sources && \
+  touch -d ${DEBIAN_ARCHIVE_DATE} /etc/apt/sources.list && \
   repro-sources-list.sh && \
   : "Setup APT to install gVisor from its separate APT repo" && \
   apt-get update && \
   apt-get install -y --no-install-recommends apt-transport-https ca-certificates gnupg && \
   gpg -o /usr/share/keyrings/gvisor-archive-keyring.gpg --dearmor /tmp/gvisor.key && \
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] https://storage.googleapis.com/gvisor/releases ${GVISOR_DATE} main" > /etc/apt/sources.list.d/gvisor.list && \
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] https://storage.googleapis.com/gvisor/releases ${GVISOR_ARCHIVE_DATE} main" > /etc/apt/sources.list.d/gvisor.list && \
   : "Install gVisor and Dangerzone dependencies" && \
   apt-get update && \
   apt-get install -y --no-install-recommends \

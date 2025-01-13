@@ -81,6 +81,9 @@ select = [
     "I",
 ]
 
+[tool.setuptools.dynamic]
+readme = {file = "README.md"}
+
 [tool.hatch.build.targets.wheel]
 packages = [
      "dangerzone",

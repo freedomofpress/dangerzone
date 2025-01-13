@@ -245,7 +245,7 @@ jobs:
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
-              run --dev --no-gui uv run --group package ./dangerzone/install/linux/build-deb.py
+              run --dev --no-gui ./dangerzone/install/linux/build-deb.py
 
       - name: Upload Dangerzone .deb
         if: matrix.distro == 'debian' && matrix.version == 'bookworm'

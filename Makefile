@@ -47,6 +47,9 @@ test-large: test-large-init  ## Run large test set
 	python -m pytest --tb=no tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)
 	python $(TEST_LARGE_RESULTS)/report.py $(TEST_LARGE_RESULTS)
 
+Dockerfile: Dockerfile.env Dockerfile.in
+	poetry run jinja2 Dockerfile.in Dockerfile.env > Dockerfile
+
 .PHONY: build-clean
 build-clean:
 	doit clean

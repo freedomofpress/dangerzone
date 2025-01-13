@@ -515,3 +515,9 @@ poetry run .\install\windows\build-app.bat
 ```
 
 When you're done you will have `dist\Dangerzone.msi`.
+
+## Updating the container image
+
+The Dangezone container image is reproducible. This means that every time we
+build it, the result will be bit-for-bit the same, with some minor exceptions.
+Read more on how you can update it in `docs/developer/reproducibility.md`.

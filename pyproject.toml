@@ -1,4 +1,4 @@
-    [tool.poetry]
+[tool.poetry]
 name = "dangerzone"
 version = "0.8.1"
 description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
@@ -72,11 +72,6 @@ httpx = "^0.27.2"
 
 [tool.doit]
 verbosity = 3
-
-[tool.doit.tasks.build_image]
-# DO NOT change this to 'true' for release artifacts, else we risk building
-# images that are a few days behind. See also: docs/developer/doit.md
-use_cache = false
 
 [tool.ruff.lint]
 select = [

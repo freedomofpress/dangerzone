@@ -44,20 +44,6 @@ doit <task>
 * You can run `doit list --all -s` to see the full list of tasks, their
   dependencies, and whether they are up to date.
 * You can run `doit info <task>` to see which dependencies are missing.
-* You can change this line in `pyproject.toml` to `true`, to allow using the
-  Docker/Podman build cache:
-
-  ```
-  use_cache = true
-  ```
-
-  > [!WARNING]
-  > Using caching may speed up image builds, but is not suitable for release
-  > artifacts. The ID of our base container image (Alpine Linux) does not change
-  > that often, but its APK package index does. So, if we use caching, we risk
-  > skipping the `apk upgrade` layer and end up with packages that are days
-  > behind.
-
 * You can pass the following environment variables to the script, in order to
   affect some global parameters:
   - `CONTAINER_RUNTIME`: The container runtime to use. Either `podman` (default)

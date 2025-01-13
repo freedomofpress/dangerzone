@@ -27,16 +27,6 @@ PARAM_APPLE_ID = {
     "help": "The Apple developer ID that will be used to sign the .dmg",
 }
 
-PARAM_USE_CACHE = {
-    "name": "use_cache",
-    "long": "use-cache",
-    "help": (
-        "Whether to use cached results or not. For reproducibility reasons,"
-        " it's best to leave it to false"
-    ),
-    "default": False,
-}
-
 ### File dependencies
 #
 # Define all the file dependencies for our tasks in a single place, since some file
@@ -205,11 +195,10 @@ def task_build_image():
 
     return {
         "actions": [
-            f"python install/common/build-image.py --use-cache=%(use_cache)s --runtime={CONTAINER_RUNTIME}",
+            f"python install/common/build-image.py --runtime={CONTAINER_RUNTIME}",
             ["cp", img_src, img_dst],
             ["cp", img_id_src, img_id_dst],
         ],
-        "params": [PARAM_USE_CACHE],
         "file_dep": IMAGE_DEPS,
         "targets": [img_src, img_dst, img_id_src, img_id_dst],
         "task_dep": ["init_release_dir", "check_container_runtime"],

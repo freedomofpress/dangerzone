@@ -51,9 +51,9 @@ def main():
         "--use-cache",
         type=str2bool,
         nargs="?",
-        default=False,
+        default=True,
         const=True,
-        help="Use the builder's cache to speed up the builds (not suitable for release builds)",
+        help="Use the builder's cache to speed up the builds",
     )
     args = parser.parse_args()
 

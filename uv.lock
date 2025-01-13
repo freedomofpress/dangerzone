@@ -302,7 +302,7 @@ requires-dist = [
     { name = "colorama" },
     { name = "markdown" },
     { name = "packaging" },
-    { name = "pymupdf", specifier = ">=1.23.3,<1.24.0" },
+    { name = "pymupdf" },
     { name = "pyside6", specifier = ">=6.7.1,<6.8" },
     { name = "pyxdg", marker = "sys_platform == 'linux'" },
     { name = "requests" },

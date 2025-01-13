@@ -129,6 +129,10 @@ class DocumentToPixels(DangerzoneConverter):
             # At least .odt, .docx, .odg, .odp, .ods, and .pptx
             "application/zip": {
                 "type": "libreoffice",
+                # NOTE: `file` command < 5.45 cannot detect hwpx files properly, so we
+                # enable the extension in any case. See also:
+                # https://github.com/freedomofpress/dangerzone/pull/460#issuecomment-1654166465
+                "libreoffice_ext": "h2orestart.oxt",
             },
             # At least .doc, .docx, .odg, .odp, .odt, .pdf, .ppt, .pptx, .xls, and .xlsx
             "application/octet-stream": {

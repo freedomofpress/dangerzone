@@ -175,11 +175,10 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-      - run: uv sync --group test --group package
       - name: Run CLI tests
-        run: uv run make test
+        run: uv run --group test --group package make test
       - name: Build macOS app
-        run: uv run ./install/macos/build-app.py
+        run: uv run --group package ./install/macos/build-app.py
       - name: Upload macOS app
         uses: actions/upload-artifact@v4
         with:

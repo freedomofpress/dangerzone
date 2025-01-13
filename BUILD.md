@@ -487,9 +487,9 @@ Install the WiX UI extension. You may need to open a new terminal in order to us
 wix extension add --global WixToolset.UI.wixext/5.x.y
 ```
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > To avoid compatibility issues, ensure the WiX UI extension version matches the version of the WiX Toolset.
-> 
+>
 > Run `wix --version` to check the version of WiX Toolset you have installed and replace `5.x.y` with the full version number without the Git revision.
 
 ### If you want to sign binaries with Authenticode

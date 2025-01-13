@@ -19,7 +19,7 @@ lint: ## Check the code for linting, formatting, and typing issues with ruff and
 .PHONY: fix
 fix: ## apply all the suggestions from ruff
 	ruff check --fix
-	ruff format 
+	ruff format
 
 .PHONY: test
 test:

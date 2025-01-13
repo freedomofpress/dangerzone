@@ -19,7 +19,14 @@ dependencies = [
     "pyxdg; sys_platform == 'linux'",
     "requests",]
 
-dynamic = ["readme", "classifiers"]
+dynamic = ["readme", ]
+
+classifiers = [
+    "Programming Language :: Python",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Topic :: Security",
+]
 
 [dependency-groups]
 # Dependencies installed inside the container

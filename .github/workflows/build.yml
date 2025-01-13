@@ -85,7 +85,7 @@ jobs:
         id: cache-container-image
         uses: actions/cache@v4
         with:
-          key: v3-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py', 'poetry.lock') }}
+          key: v4-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |
             share/container.tar.gz
             share/image-id.txt

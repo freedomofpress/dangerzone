@@ -1,6 +1,5 @@
 import argparse
 import gzip
-import os
 import platform
 import secrets
 import subprocess
@@ -9,7 +8,6 @@ from pathlib import Path
 
 BUILD_CONTEXT = "dangerzone/"
 IMAGE_NAME = "dangerzone.rocks/dangerzone"
-REQUIREMENTS_TXT = "container-pip-requirements.txt"
 if platform.system() in ["Darwin", "Windows"]:
     CONTAINER_RUNTIME = "docker"
 elif platform.system() == "Linux":
@@ -84,91 +82,48 @@ def main():
     with open(image_id_path, "w") as f:
         f.write(tag)
 
-    print("Exporting container pip dependencies")
-    with ContainerPipDependencies():
-        if not args.use_cache:
-            print("Pulling base image")
-            subprocess.run(
-                [
-                    args.runtime,
-                    "pull",
-                    "alpine:latest",
-                ],
-                check=True,
-            )
+    # Build the container image, and tag it with the calculated tag
+    print("Building container image")
+    cache_args = [] if args.use_cache else ["--no-cache"]
+    subprocess.run(
+        [
+            args.runtime,
+            "build",
+            BUILD_CONTEXT,
+            *cache_args,
+            "-f",
+            "Dockerfile",
+            "--tag",
+            image_name_tagged,
+        ],
+        check=True,
+    )
 
-        # Build the container image, and tag it with the calculated tag
-        print("Building container image")
-        cache_args = [] if args.use_cache else ["--no-cache"]
-        subprocess.run(
+    if not args.no_save:
+        print("Saving container image")
+        cmd = subprocess.Popen(
             [
-                args.runtime,
-                "build",
-                BUILD_CONTEXT,
-                *cache_args,
-                "--build-arg",
-                f"REQUIREMENTS_TXT={REQUIREMENTS_TXT}",
-                "--build-arg",
-                f"ARCH={ARCH}",
-                "-f",
-                "Dockerfile",
-                "--tag",
+                CONTAINER_RUNTIME,
+                "save",
                 image_name_tagged,
             ],
-            check=True,
+            stdout=subprocess.PIPE,
         )
 
-        if not args.no_save:
-            print("Saving container image")
-            cmd = subprocess.Popen(
-                [
-                    CONTAINER_RUNTIME,
-                    "save",
-                    image_name_tagged,
-                ],
-                stdout=subprocess.PIPE,
-            )
-
-            print("Compressing container image")
-            chunk_size = 4 << 20
-            with gzip.open(
-                tarball_path,
-                "wb",
-                compresslevel=args.compress_level,
-            ) as gzip_f:
-                while True:
-                    chunk = cmd.stdout.read(chunk_size)
-                    if len(chunk) > 0:
-                        gzip_f.write(chunk)
-                    else:
-                        break
-            cmd.wait(5)
-
-
-class ContainerPipDependencies:
-    """Generates PIP dependencies within container"""
-
-    def __enter__(self):
-        try:
-            container_requirements_txt = subprocess.check_output(
-                ["poetry", "export", "--only", "container"], universal_newlines=True
-            )
-        except subprocess.CalledProcessError as e:
-            print("FAILURE", e.returncode, e.output)
-        print(f"REQUIREMENTS: {container_requirements_txt}")
-        # XXX Export container dependencies and exclude pymupdfb since it is not needed in container
-        req_txt_pymupdfb_stripped = container_requirements_txt.split("pymupdfb")[0]
-        with open(Path(BUILD_CONTEXT) / REQUIREMENTS_TXT, "w") as f:
-            if ARCH == "arm64":
-                # PyMuPDF needs to be built on ARM64 machines
-                # But is already provided as a prebuilt-wheel on other architectures
-                f.write(req_txt_pymupdfb_stripped)
-            else:
-                f.write(container_requirements_txt)
-
-    def __exit__(self, exc_type, exc_value, exc_tb):
-        print("Leaving the context...")
-        os.remove(Path(BUILD_CONTEXT) / REQUIREMENTS_TXT)
+        print("Compressing container image")
+        chunk_size = 4 << 20
+        with gzip.open(
+            tarball_path,
+            "wb",
+            compresslevel=args.compress_level,
+        ) as gzip_f:
+            while True:
+                chunk = cmd.stdout.read(chunk_size)
+                if len(chunk) > 0:
+                    gzip_f.write(chunk)
+                else:
+                    break
+        cmd.wait(5)
 
 
 if __name__ == "__main__":

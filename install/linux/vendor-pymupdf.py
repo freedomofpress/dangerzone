@@ -28,7 +28,7 @@ def main():
     )
 
     logger.info("Getting PyMuPDF deps as requirements.txt")
-    cmd = ["poetry", "export", "--only", "container"]
+    cmd = ["poetry", "export", "--only", "debian"]
     container_requirements_txt = subprocess.check_output(cmd)
 
     # XXX: Hack for Ubuntu Focal.

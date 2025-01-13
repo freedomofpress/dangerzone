@@ -63,7 +63,6 @@ TESSDATA_TARGETS = list_language_data()
 
 IMAGE_DEPS = [
     "Dockerfile",
-    "poetry.lock",
     *list_files("dangerzone/conversion"),
     *list_files("dangerzone/container_helpers"),
     "install/common/build-image.py",

@@ -48,7 +48,7 @@ package = [
     "setuptools",
     "cx-freeze; sys_platform == 'win32'",
     "pywin32; sys_platform == 'win32'",
-    "pyinstaller; sys_platform == 'win32'",
+    "pyinstaller; sys_platform == 'darwin'",
     "doit",
 ]
 

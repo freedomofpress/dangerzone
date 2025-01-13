@@ -56,7 +56,7 @@ oci_config: dict[str, typing.Any] = {
             {"type": "RLIMIT_NOFILE", "hard": 4096, "soft": 4096},
         ],
     },
-    "root": {"path": "rootfs", "readonly": True},
+    "root": {"path": "/", "readonly": True},
     "hostname": "dangerzone",
     "mounts": [
         {
@@ -133,7 +133,7 @@ if os.environ.get("RUNSC_DEBUG"):
     json.dump(oci_config, sys.stderr, indent=2, sort_keys=True)
     # json.dump doesn't print a trailing newline, so print one here:
     log("")
-with open("/home/dangerzone/dangerzone-image/config.json", "w") as oci_config_out:
+with open("/config.json", "w") as oci_config_out:
     json.dump(oci_config, oci_config_out, indent=2, sort_keys=True)
 
 # Run gVisor.
@@ -150,7 +150,7 @@ if os.environ.get("RUNSC_DEBUG"):
     runsc_argv += ["--debug=true", "--alsologtostderr=true"]
 if os.environ.get("RUNSC_FLAGS"):
     runsc_argv += [x for x in shlex.split(os.environ.get("RUNSC_FLAGS", "")) if x]
-runsc_argv += ["run", "--bundle=/home/dangerzone/dangerzone-image", "dangerzone"]
+runsc_argv += ["run", "--bundle=/", "dangerzone"]
 log(
     "Running gVisor with command line: {}", " ".join(shlex.quote(s) for s in runsc_argv)
 )

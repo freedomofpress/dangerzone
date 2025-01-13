@@ -1,5 +1,11 @@
 # gVisor integration
 
+> [!NOTE]
+> **Update on 2025-01-13:** There is no longer a copied container image under
+> `/home/dangerzone/dangerzone-image/rootfs`. We now reuse the same container
+> image both for the inner and outer container. See
+> [#1048](https://github.com/freedomofpress/dangerzone/issues/1048).
+
 Dangerzone has relied on the container runtime available in each supported
 operating system (Docker Desktop on Windows / macOS, Podman on Linux) to isolate
 the host from the sanitization process. The problem with this type of isolation

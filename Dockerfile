@@ -36,7 +36,7 @@ RUN mkdir /libreoffice_ext && cd libreoffice_ext \
 ###########################################
 # Dangerzone image
 
-FROM alpine:latest AS dangerzone-image
+FROM alpine:latest
 
 # Install dependencies
 RUN apk --no-cache -U upgrade && \
@@ -66,14 +66,6 @@ COPY conversion /opt/dangerzone/dangerzone/conversion
 RUN addgroup -g 1000 dangerzone && \
     adduser -u 1000 -s /bin/true -G dangerzone -h /home/dangerzone -D dangerzone
 
-###########################################
-# gVisor wrapper image
-
-FROM alpine:latest
-
-RUN apk --no-cache -U upgrade && \
-    apk --no-cache add python3
-
 RUN GVISOR_URL="https://storage.googleapis.com/gvisor/releases/release/latest/$(uname -m)"; \
     wget "${GVISOR_URL}/runsc" "${GVISOR_URL}/runsc.sha512" && \
     sha512sum -c runsc.sha512 && \
@@ -81,17 +73,11 @@ RUN GVISOR_URL="https://storage.googleapis.com/gvisor/releases/release/latest/$(
     chmod 555 runsc && \
     mv runsc /usr/bin/
 
-# Add the unprivileged `dangerzone` user.
-RUN addgroup dangerzone && \
-    adduser -s /bin/true -G dangerzone -h /home/dangerzone -D dangerzone
+RUN touch /config.json
+RUN chown dangerzone:dangerzone /config.json
 
 # Switch to the dangerzone user for the rest of the script.
 USER dangerzone
-
-# Copy the Dangerzone image, as created by the previous steps, into the home
-# directory of the `dangerzone` user.
-RUN mkdir /home/dangerzone/dangerzone-image
-COPY --from=dangerzone-image / /home/dangerzone/dangerzone-image/rootfs
 
 # Create a directory that will be used by gVisor as the place where it will
 # store the state of its containers.

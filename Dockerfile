@@ -97,6 +97,6 @@ COPY --from=dangerzone-image / /home/dangerzone/dangerzone-image/rootfs
 # store the state of its containers.
 RUN mkdir /home/dangerzone/.containers
 
-COPY gvisor_wrapper/entrypoint.py /
+COPY container_helpers/entrypoint.py /
 
 ENTRYPOINT ["/entrypoint.py"]

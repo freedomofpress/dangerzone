@@ -47,6 +47,7 @@ jobs:
           apt-get install python-all -y
 
       - name: Add GPG key for the packages.freedom.press
+        if: matrix.version != 'trixie'
         run: |
           apt-get update && apt-get install -y gnupg2 ca-certificates
           dirmngr  # NOTE: This is a command that's necessary only in containers
@@ -54,8 +55,16 @@ jobs:
               --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
               --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
           mkdir -p /etc/apt/keyrings/
-          mv fpf-apt-tools-archive-keyring.gpg /etc/apt/keyrings
-
+          mv fpf-apt-tools-archive-keyring.gpg /etc/apt/keyrings/.
+      - name: Add GPG key using sq for pacakges.freedom.press
+        if: matrix.version == 'trixie'
+        run: |
+          apt-get update && apt-get install -y sq
+          mkdir -p /etc/apt/keyrings/
+          sq network keyserver \
+             --server hkps://keys.openpgp.org \
+             search "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
+             --output /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
       - name: Add packages.freedom.press to our APT sources
         run: |
           . /etc/os-release

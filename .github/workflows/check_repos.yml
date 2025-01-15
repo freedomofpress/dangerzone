@@ -53,8 +53,13 @@ jobs:
           gpg --keyserver hkps://keys.openpgp.org \
               --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
               --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
+
+          # Export the GPG key in armor mode because sequoia needs it this way
+          # (sqv is used on debian trixie by default to check the keys)
           mkdir -p /etc/apt/keyrings/
-          mv fpf-apt-tools-archive-keyring.gpg /etc/apt/keyrings
+          gpg --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
+              --armor --export "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
+              > /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
 
       - name: Add packages.freedom.press to our APT sources
         run: |

@@ -94,7 +94,9 @@ gpg --keyserver hkps://keys.openpgp.org \
     --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
     --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
 sudo mkdir -p /etc/apt/keyrings/
-sudo mv fpf-apt-tools-archive-keyring.gpg /etc/apt/keyrings
+sudo gpg --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
+    --armor --export "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
+    > /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
 ```
 
 Add the URL of the repo in your APT sources:

@@ -108,6 +108,15 @@ echo "deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
     | sudo tee /etc/apt/sources.list.d/fpf-apt-tools.list
 ```
 
+Or, if you want to use sequoia instead (on recent Linux distributions):
+
+```bash
+sudo apt-get update && sudo apt-get install sq -y
+sq network keyserver \
+  --server hkps://keys.openpgp.org search "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
+  --output /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg  
+```
+
 Install Dangerzone:
 
 ```

@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - runs-on: ubuntu-latest
+          - runs-on: ubuntu-24.04
             arch: i686
           # Do not scan Silicon mac for now to avoid masking release scan results for other plaforms.
           # - runs-on: macos-latest
@@ -55,7 +55,7 @@ jobs:
           severity-cutoff: critical
 
   security-scan-app:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4

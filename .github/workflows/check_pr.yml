@@ -4,7 +4,7 @@ on:
 
 jobs:
   prevent-fixup-commits:
-      runs-on: ubuntu-latest
+      runs-on: ubuntu-24.04
       env:
         target: debian-bookworm
         distro: debian
@@ -19,7 +19,7 @@ jobs:
             git log --pretty=format:%s origin/main..HEAD | grep -ie '^fixup\|^wip' && exit 1 || true
 
   check-changelog:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

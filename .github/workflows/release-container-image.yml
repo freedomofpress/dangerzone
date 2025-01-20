@@ -47,7 +47,8 @@ jobs:
           # Load the image with the final name directly
           gunzip -c share/container.tar.gz | podman load
           FINAL_IMAGE_NAME="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
-          podman tag dangerzone.rocks/dangerzone "$FINAL_IMAGE_NAME"
+          TAG=$(git describe --long --first-parent | tail -c +2)
+          podman tag dangerzone.rocks/dangerzone:$TAG "$FINAL_IMAGE_NAME"
           podman push "$FINAL_IMAGE_NAME" --digestfile=digest
           echo "digest=$(cat digest)" >> "$GITHUB_OUTPUT"
 

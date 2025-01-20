@@ -84,9 +84,20 @@ Dangerzone is available for:
   </tr>
 </table>
 
-Add our repository following these instructions:
+First, retrieve the PGP keys.
 
-Download the GPG key for the repo:
+Starting with Trixie, follow these instructions to download the PGP keys:
+
+```bash
+sudo apt-get update && sudo apt-get install sq -y
+mkdir -p /etc/apt/keyrings/
+sq network keyserver \
+   --server hkps://keys.openpgp.org \
+   search "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
+   --output /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
+```
+
+On other Debian-derivatives:
 
 ```sh
 sudo apt-get update && sudo apt-get install gnupg2 ca-certificates -y
@@ -99,7 +110,7 @@ sudo gpg --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
     > /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
 ```
 
-Add the URL of the repo in your APT sources:
+Then, on all distributions, add the URL of the repo in your APT sources:
 
 ```sh
 . /etc/os-release

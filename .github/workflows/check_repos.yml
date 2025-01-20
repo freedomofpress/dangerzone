@@ -46,21 +46,30 @@ jobs:
           apt update
           apt-get install python-all -y
 
-      - name: Add GPG key for the packages.freedom.press
+      - name: Add packages.freedom.press PGP key (gpg)
+        if: matrix.version != 'trixie'
         run: |
           apt-get update && apt-get install -y gnupg2 ca-certificates
           dirmngr  # NOTE: This is a command that's necessary only in containers
+          # The key needs to be in the GPG keybox database format so the
+          # signing subkey is detected by apt-secure.
           gpg --keyserver hkps://keys.openpgp.org \
               --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
               --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
-
-          # Export the GPG key in armor mode because sequoia needs it this way
-          # (sqv is used on debian trixie by default to check the keys)
           mkdir -p /etc/apt/keyrings/
-          gpg --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
-              --armor --export "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
-              > /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
+          mv ./fpf-apt-tools-archive-keyring.gpg /etc/apt/keyrings/.
 
+      - name: Add packages.freedom.press PGP key (sq)
+        if: matrix.version == 'trixie'
+        run: |
+          apt-get update && apt-get install -y ca-certificates sq
+          mkdir -p /etc/apt/keyrings/
+          # On debian trixie, apt-secure uses `sqv` to verify the signatures
+          # so we need to retrieve PGP keys and store them using the base64 format.
+          sq network keyserver \
+             --server hkps://keys.openpgp.org \
+             search "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
+             --output /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
       - name: Add packages.freedom.press to our APT sources
         run: |
           . /etc/os-release

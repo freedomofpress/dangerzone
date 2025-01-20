@@ -9,5 +9,5 @@ export DH_VERBOSE=1
 	dh $@ --with python3 --buildsystem=pybuild
 
 override_dh_builddeb:
-	./install/linux/vendor-pymupdf.py --dest debian/dangerzone/usr/lib/python3/dist-packages/dangerzone/vendor/
+	./install/linux/debian-vendor-pymupdf.py --dest debian/dangerzone/usr/lib/python3/dist-packages/dangerzone/vendor/
 	dh_builddeb $@

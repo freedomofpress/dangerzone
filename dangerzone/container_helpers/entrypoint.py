@@ -59,16 +59,81 @@ oci_config: dict[str, typing.Any] = {
     "root": {"path": "/", "readonly": True},
     "hostname": "dangerzone",
     "mounts": [
+        # Mask almost every system directory of the outer container, by mounting tmpfs
+        # on top of them. This is done to avoid leaking any sensitive information,
+        # either mounted by Podman/Docker, or when gVisor runs, since we reuse the same
+        # rootfs. We basically mask everything except for `/usr`, `/bin`, `/lib`,
+        # and `/etc`.
+        #
+        # Note that we set `--root /home/dangerzone/.containers` for the directory where
+        # gVisor will create files at runtime, which means that in principle, we are
+        # covered by the masking of `/home/dangerzone` that follows below.
+        #
+        # Finally, note that the following list has been taken from the dirs in our
+        # container image, and double-checked against the top-level dirs listed in the
+        # Filesystem Hierarchy Standard (FHS) [1]. It would be nice to have an allowlist
+        # approach instead of a denylist, but FHS is such an old standard that we don't
+        # expect any new top-level dirs to pop up any time soon.
+        #
+        # [1] https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard
         {
-            "destination": "/proc",
-            "type": "proc",
-            "source": "proc",
+            "destination": "/boot",
+            "type": "tmpfs",
+            "source": "tmpfs",
+            "options": ["nosuid", "noexec", "nodev", "ro"],
         },
         {
             "destination": "/dev",
             "type": "tmpfs",
             "source": "tmpfs",
             "options": ["nosuid", "noexec", "nodev"],
+        },
+        {
+            "destination": "/home",
+            "type": "tmpfs",
+            "source": "tmpfs",
+            "options": ["nosuid", "noexec", "nodev", "ro"],
+        },
+        {
+            "destination": "/media",
+            "type": "tmpfs",
+            "source": "tmpfs",
+            "options": ["nosuid", "noexec", "nodev", "ro"],
+        },
+        {
+            "destination": "/mnt",
+            "type": "tmpfs",
+            "source": "tmpfs",
+            "options": ["nosuid", "noexec", "nodev", "ro"],
+        },
+        {
+            "destination": "/proc",
+            "type": "proc",
+            "source": "proc",
+        },
+        {
+            "destination": "/root",
+            "type": "tmpfs",
+            "source": "tmpfs",
+            "options": ["nosuid", "noexec", "nodev", "ro"],
+        },
+        {
+            "destination": "/run",
+            "type": "tmpfs",
+            "source": "tmpfs",
+            "options": ["nosuid", "noexec", "nodev"],
+        },
+        {
+            "destination": "/sbin",
+            "type": "tmpfs",
+            "source": "tmpfs",
+            "options": ["nosuid", "noexec", "nodev", "ro"],
+        },
+        {
+            "destination": "/srv",
+            "type": "tmpfs",
+            "source": "tmpfs",
+            "options": ["nosuid", "noexec", "nodev", "ro"],
         },
         {
             "destination": "/sys",
@@ -81,6 +146,27 @@ oci_config: dict[str, typing.Any] = {
             "type": "tmpfs",
             "source": "tmpfs",
             "options": ["nosuid", "noexec", "nodev"],
+        },
+        {
+            "destination": "/var",
+            "type": "tmpfs",
+            "source": "tmpfs",
+            "options": ["nosuid", "noexec", "nodev"],
+        },
+        # Also mask some files that are usually mounted by Docker / Podman. These files
+        # should not contain any sensitive information, since we use the `--network
+        # none` flag, but we want to make sure in any case.
+        {
+            "destination": "/etc/hostname",
+            "type": "bind",
+            "source": "/dev/null",
+            "options": ["rbind", "ro"],
+        },
+        {
+            "destination": "/etc/hosts",
+            "type": "bind",
+            "source": "/dev/null",
+            "options": ["rbind", "ro"],
         },
         # LibreOffice needs a writable home directory, so just mount a tmpfs
         # over it.

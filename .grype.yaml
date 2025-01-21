@@ -2,10 +2,38 @@
 # latest release of Dangerzone, and offer our analysis.
 
 ignore:
-  # CVE-2024-11053
+  # CVE-2023-45853
   # ==============
   #
-  # NVD Entry: https://nvd.nist.gov/vuln/detail/CVE-2024-11053
-  # Verdict: Dangerzone is not affected because libcurl is an HTTP client, and
-  # the Dangerzone container does not make any network calls.
-  - vulnerability: CVE-2024-11053
+  # Debian tracker: https://security-tracker.debian.org/tracker/CVE-2023-45853
+  # Verdict: Dangerzone is not affected because the zlib library in Debian is
+  # built in a way that is not vulnerable.
+  - vulnerability: CVE-2023-45853
+  # CVE-2024-38428
+  # ==============
+  #
+  # Debian tracker: https://security-tracker.debian.org/tracker/CVE-2024-38428
+  # Verdict: Dangerzone is not affected because it doesn't use wget in the
+  # container image (which also has no network connectivity).
+  - vulnerability: CVE-2024-38428
+  # CVE-2024-57823
+  # ==============
+  #
+  # Debian tracker: https://security-tracker.debian.org/tracker/CVE-2024-57823
+  # Verdict: Dangerzone is not affected. First things first, LibreOffice is
+  # using this library for parsing RDF metadata in a document [1], and has
+  # issued a fix for the vendored raptor2 package they have for other distros
+  # [2].
+  #
+  # On the other hand, the Debian security team has stated that this is a minor
+  # issue [3], and there's no fix from the developers yet. It seems that the
+  # Debian package is not affected somehow by this CVE, probably due to the way
+  # it's packaged.
+  #
+  # [1] https://wiki.documentfoundation.org/Documentation/DevGuide/Office_Development#RDF_metadata
+  # [2] https://cgit.freedesktop.org/libreoffice/core/commit/?id=2b50dc0e4482ac0ad27d69147b4175e05af4fba4
+  # [2] From https://security-tracker.debian.org/tracker/CVE-2024-57823:
+  #
+  #       [bookworm] - raptor2 <postponed> (Minor issue, revisit when fixed upstream)
+  #
+  - vulnerability: CVE-2024-57823

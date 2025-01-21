@@ -34,7 +34,7 @@ def git_commit_get():
 
 
 def git_determine_tag():
-    return run("git", "describe", "--long", "--first-parent").decode().strip()
+    return run("git", "describe", "--long", "--first-parent").decode().strip()[1:]
 
 
 def git_verify(commit, source):
@@ -116,7 +116,7 @@ def parse_args():
     image_tag = git_determine_tag()
     # TODO: Remove the local "podman://" prefix once we have started pushing images to a
     # remote.
-    default_image_name = "podman://" + IMAGE_NAME + ":" + image_tag
+    default_image_name = f"podman://{IMAGE_NAME}:{image_tag}"
 
     parser = argparse.ArgumentParser(
         prog=sys.argv[0],
@@ -157,7 +157,7 @@ def main():
         diffoci_download()
 
     tag = f"reproduce-{commit}"
-    target = f"dangerzone.rocks/dangerzone:{tag}"
+    target = f"{IMAGE_NAME}:{tag}"
     logger.info(f"Building container image and tagging it as '{target}'")
     build_image(tag, args.use_cache)
 

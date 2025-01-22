@@ -211,6 +211,16 @@ def list_tags(image):
 
 @main.command()
 @click.argument("image")
+@click.argument("tag")
+def get_manifest(image, tag):
+    registry, org, package, _ = parse_image_location(image)
+    client = RegistryClient(registry, org, package)
+    resp = client.get_manifest(tag, extra_headers={"Accept": OCI_IMAGE_MANIFEST})
+    click.echo(resp.content)
+
+
+@main.command()
+@click.argument("image")
 @click.option(
     "--repo",
     default=DEFAULT_REPO,

@@ -5,11 +5,14 @@ import sys
 import traceback
 import unicodedata
 
-import appdirs
+try:
+    import platformdirs
+except ImportError:
+    import appdirs as platformdirs
 
 
 def get_config_dir() -> str:
-    return appdirs.user_config_dir("dangerzone")
+    return platformdirs.user_config_dir("dangerzone")
 
 
 def get_resource_path(filename: str) -> str:

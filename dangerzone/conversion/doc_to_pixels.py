@@ -253,7 +253,7 @@ class DocumentToPixels(DangerzoneConverter):
             "unzip",
             "-d",
             f"/usr/lib/libreoffice/share/extensions/{libreoffice_ext}/",
-            f"/libreoffice_ext/{libreoffice_ext}",
+            f"/opt/libreoffice_ext/{libreoffice_ext}",
         ]
         await self.run_command(
             unzip_args,

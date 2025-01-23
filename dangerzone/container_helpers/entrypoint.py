@@ -56,14 +56,14 @@ oci_config: dict[str, typing.Any] = {
             {"type": "RLIMIT_NOFILE", "hard": 4096, "soft": 4096},
         ],
     },
-    "root": {"path": "/", "readonly": True},
+    "root": {"path": "rootfs", "readonly": True},
     "hostname": "dangerzone",
     "mounts": [
         # Mask almost every system directory of the outer container, by mounting tmpfs
         # on top of them. This is done to avoid leaking any sensitive information,
         # either mounted by Podman/Docker, or when gVisor runs, since we reuse the same
         # rootfs. We basically mask everything except for `/usr`, `/bin`, `/lib`,
-        # and `/etc`.
+        # `/etc`, and `/opt`.
         #
         # Note that we set `--root /home/dangerzone/.containers` for the directory where
         # gVisor will create files at runtime, which means that in principle, we are
@@ -153,21 +153,6 @@ oci_config: dict[str, typing.Any] = {
             "source": "tmpfs",
             "options": ["nosuid", "noexec", "nodev"],
         },
-        # Also mask some files that are usually mounted by Docker / Podman. These files
-        # should not contain any sensitive information, since we use the `--network
-        # none` flag, but we want to make sure in any case.
-        {
-            "destination": "/etc/hostname",
-            "type": "bind",
-            "source": "/dev/null",
-            "options": ["rbind", "ro"],
-        },
-        {
-            "destination": "/etc/hosts",
-            "type": "bind",
-            "source": "/dev/null",
-            "options": ["rbind", "ro"],
-        },
         # LibreOffice needs a writable home directory, so just mount a tmpfs
         # over it.
         {
@@ -219,7 +204,7 @@ if os.environ.get("RUNSC_DEBUG"):
     json.dump(oci_config, sys.stderr, indent=2, sort_keys=True)
     # json.dump doesn't print a trailing newline, so print one here:
     log("")
-with open("/config.json", "w") as oci_config_out:
+with open("/home/dangerzone/dangerzone-image/config.json", "w") as oci_config_out:
     json.dump(oci_config, oci_config_out, indent=2, sort_keys=True)
 
 # Run gVisor.
@@ -236,7 +221,7 @@ if os.environ.get("RUNSC_DEBUG"):
     runsc_argv += ["--debug=true", "--alsologtostderr=true"]
 if os.environ.get("RUNSC_FLAGS"):
     runsc_argv += [x for x in shlex.split(os.environ.get("RUNSC_FLAGS", "")) if x]
-runsc_argv += ["run", "--bundle=/", "dangerzone"]
+runsc_argv += ["run", "--bundle=/home/dangerzone/dangerzone-image", "dangerzone"]
 log(
     "Running gVisor with command line: {}", " ".join(shlex.quote(s) for s in runsc_argv)
 )

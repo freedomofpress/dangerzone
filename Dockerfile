@@ -4,7 +4,7 @@
 
 ARG DEBIAN_IMAGE_DATE=20250113
 
-FROM debian:bookworm-${DEBIAN_IMAGE_DATE}-slim
+FROM debian:bookworm-${DEBIAN_IMAGE_DATE}-slim as dangerzone-image
 
 ARG GVISOR_ARCHIVE_DATE=20250113
 ARG DEBIAN_ARCHIVE_DATE=20250120
@@ -44,7 +44,7 @@ RUN \
 
 # Download H2ORestart from GitHub using a pinned version and hash. Note that
 # it's available in Debian repos, but not in Bookworm yet.
-RUN mkdir /libreoffice_ext && cd libreoffice_ext \
+RUN mkdir /opt/libreoffice_ext && cd /opt/libreoffice_ext \
     && H2ORESTART_FILENAME=h2orestart.oxt \
     && wget https://github.com/ebandal/H2Orestart/releases/download/$H2ORESTART_VERSION/$H2ORESTART_FILENAME \
     && echo "$H2ORESTART_CHECKSUM  $H2ORESTART_FILENAME" | sha256sum -c \
@@ -64,17 +64,70 @@ RUN touch /opt/dangerzone/dangerzone/__init__.py
 # Copy only the Python code, and not any produced .pyc files.
 COPY conversion/*.py /opt/dangerzone/dangerzone/conversion/
 
-# Let the entrypoint script write the OCI config for the inner container under
-# /config.json.
-RUN touch /config.json
-RUN chown dangerzone:dangerzone /config.json
-
-# Switch to the dangerzone user for the rest of the script.
-USER dangerzone
-
 # Create a directory that will be used by gVisor as the place where it will
 # store the state of its containers.
 RUN mkdir /home/dangerzone/.containers
+
+# XXX: Create a new root hierarchy, that will be used in the final container
+# image:
+#
+# /bin -> usr/bin
+# /lib -> usr/lib
+# /lib64 -> usr/lib64
+# /root
+# /run
+# /tmp
+# /usr -> /home/dangerzone/dangerzone-image/rootfs/usr/
+#
+# We have to create this hierarchy beforehand because we want to use the same
+# /usr for both the inner and outer container. The problem though is that /usr
+# is very sensitive, and you can't manipulate in a live system. That is, I
+# haven't found a way to do the following, or something equivalent:
+#
+#    rm -r /usr && ln -s /home/dangerzone/dangerzone-image/rootfs/usr/ /usr
+#
+# So, we prefer to create the symlinks here instead, and create the image
+# manually in the next steps.
+RUN mkdir /new_root
+RUN mkdir /new_root/root /new_root/run /new_root/tmp
+RUN chmod 777 /new_root/tmp
+RUN ln -s /home/dangerzone/dangerzone-image/rootfs/usr/ /new_root/usr
+RUN ln -s usr/bin /new_root/bin
+RUN ln -s usr/lib /new_root/lib
+RUN ln -s usr/lib64 /new_root/lib64
+RUN ln -s usr/sbin /new_root/sbin
+
+# Intermediate layer
+
+FROM debian:bookworm-${DEBIAN_IMAGE_DATE}-slim as debian-utils
+
+## Final image
+
+FROM scratch
+
+# Copy the filesystem hierarchy that we created in the previous layer, so that
+# /usr can be a symlink.
+COPY --from=dangerzone-image /new_root/ /
+
+# Copy some files that are necessary to use the outer container image, e.g., in
+# order to run `apt`. We _could_ avoid doing this, but the space cost is very
+# small.
+COPY --from=dangerzone-image /etc/ /etc/
+COPY --from=debian-utils /var/ /var/
+
+# Copy the bare minimum to run Dangerzone in the inner container image.
+COPY --from=dangerzone-image /etc/ /home/dangerzone/dangerzone-image/rootfs/etc/
+COPY --from=dangerzone-image /usr/ /home/dangerzone/dangerzone-image/rootfs/usr/
+COPY --from=dangerzone-image /opt/ /home/dangerzone/dangerzone-image/rootfs/opt/
+RUN ln -s usr/bin /home/dangerzone/dangerzone-image/rootfs/bin
+RUN ln -s usr/lib /home/dangerzone/dangerzone-image/rootfs/lib
+RUN ln -s usr/lib64 /home/dangerzone/dangerzone-image/rootfs/lib64
+
+# Allow our entrypoint script to make changes in the following folders.
+RUN chown dangerzone:dangerzone /home/dangerzone /home/dangerzone/dangerzone-image/
+
+# Switch to the dangerzone user for the rest of the script.
+USER dangerzone
 
 COPY container_helpers/entrypoint.py /
 

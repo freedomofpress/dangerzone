@@ -15,7 +15,7 @@ include = [
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
 click = "*"
-appdirs = "*"
+platformdirs = "*"
 PySide6 = "^6.7.1"
 PyMuPDF = "^1.23.3"  # The version in Fedora 39
 colorama = "*"

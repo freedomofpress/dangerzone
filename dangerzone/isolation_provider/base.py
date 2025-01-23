@@ -335,9 +335,9 @@ class IsolationProvider(ABC):
         stderr_thread = self.start_stderr_thread(p, stderr)
 
         if platform.system() != "Windows":
-            assert os.getpgid(p.pid) != os.getpgid(
-                os.getpid()
-            ), "Parent shares same PGID with child"
+            assert os.getpgid(p.pid) != os.getpgid(os.getpid()), (
+                "Parent shares same PGID with child"
+            )
 
         try:
             yield p

@@ -302,7 +302,7 @@ def display_banner() -> None:
         + Back.BLACK
         + Fore.LIGHTWHITE_EX
         + Style.BRIGHT
-        + f"{' '*left_spaces}Dangerzone v{get_version()}{' '*right_spaces}"
+        + f"{' ' * left_spaces}Dangerzone v{get_version()}{' ' * right_spaces}"
         + Fore.YELLOW
         + Style.DIM
         + "│"

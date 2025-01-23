@@ -226,6 +226,11 @@ convert the documents within a secure sandbox.
 sed -i 's/<3.13/<3.14/' pyproject.toml
 %endif
 
+# Bypass the version pin for Fedora as the 6.8.1.1 package is causing trouble
+# A 6.8.1.1 package was only released with a wheel for macOS, but was picked by
+# Fedora packagers. We cannot use "*" when PyPI is involved as it will fail to download the latest version.
+# For Fedora, we can pick any of the released versions.
+ sed -i '/shiboken6 = \[/,/\]/c\shiboken6 = "*"' pyproject.toml
 
 %generate_buildrequires
 %pyproject_buildrequires -R

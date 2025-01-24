@@ -21,7 +21,7 @@ IMAGE_NAME = "dangerzone.rocks/dangerzone"
 
 def run(*args):
     """Simple function that runs a command, validates it, and returns the output"""
-    logger.debug(f"Running command: {" ".join(args)}")
+    logger.debug(f"Running command: {' '.join(args)}")
     return subprocess.run(
         args,
         check=True,

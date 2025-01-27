@@ -13,7 +13,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.9,<3.14"
 click = "*"
 platformdirs = "*"
 PySide6 = "^6.7.1"

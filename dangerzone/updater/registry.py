@@ -1,12 +1,17 @@
 import hashlib
 import re
+from collections import namedtuple
 from typing import Dict, Optional, Tuple
 
 import requests
 
+from . import log
+
 __all__ = [
     "get_manifest_hash",
     "list_tags",
+    "get_manifest",
+    "get_attestation",
 ]
 
 SIGSTORE_BUNDLE = "application/vnd.dev.sigstore.bundle.v0.3+json"
@@ -15,40 +20,51 @@ DOCKER_MANIFEST_INDEX = "application/vnd.oci.image.index.v1+json"
 OCI_IMAGE_MANIFEST = "application/vnd.oci.image.manifest.v1+json"
 
 
-def parse_image_location(input_string: str) -> Tuple[str, str, str, str]:
-    """Parses container image location into (registry, namespace, repository, tag)"""
+class Image(namedtuple("Image", ["registry", "namespace", "image_name", "tag"])):
+    __slots__ = ()
+
+    @property
+    def full_name(self) -> str:
+        tag = f":{self.tag}" if self.tag else ""
+        return f"{self.registry}/{self.namespace}/{self.image_name}{tag}"
+
+
+def parse_image_location(input_string: str) -> Image:
+    """Parses container image location into an Image namedtuple"""
     pattern = (
         r"^"
         r"(?P<registry>[a-zA-Z0-9.-]+)/"
         r"(?P<namespace>[a-zA-Z0-9-]+)/"
-        r"(?P<repository>[^:]+)"
+        r"(?P<image_name>[^:]+)"
         r"(?::(?P<tag>[a-zA-Z0-9.-]+))?"
         r"$"
     )
     match = re.match(pattern, input_string)
     if not match:
         raise ValueError("Malformed image location")
-
-    return (
-        match.group("registry"),
-        match.group("namespace"),
-        match.group("repository"),
-        match.group("tag") or "latest",
+    return Image(
+        registry=match.group("registry"),
+        namespace=match.group("namespace"),
+        image_name=match.group("image_name"),
+        tag=match.group("tag") or "latest",
     )
 
 
 class RegistryClient:
-    def __init__(self, registry: str, org: str, image: str):
-        self._registry = registry
-        self._org = org
-        self._image = image
-        self._auth_token = None
-        self._base_url = f"https://{registry}"
-        self._image_url = f"{self._base_url}/v2/{self._org}/{self._image}"
+    def __init__(
+        self,
+        image: Image | str,
+    ):
+        if isinstance(image, str):
+            image = parse_image_location(image)
 
-    @property
-    def image(self):
-        return f"{self._registry}/{self._org}/{self._image}"
+        self._image = image
+        self._registry = image.registry
+        self._namespace = image.namespace
+        self._image_name = image.image_name
+        self._auth_token = None
+        self._base_url = f"https://{self._registry}"
+        self._image_url = f"{self._base_url}/v2/{self._namespace}/{self._image_name}"
 
     def get_auth_token(self) -> Optional[str]:
         if not self._auth_token:
@@ -57,7 +73,7 @@ class RegistryClient:
                 auth_url,
                 params={
                     "service": f"{self._registry}",
-                    "scope": f"repository:{self._org}/{self._image}:pull",
+                    "scope": f"repository:{self._namespace}/{self._image_name}:pull",
                 },
             )
             response.raise_for_status()
@@ -74,7 +90,9 @@ class RegistryClient:
         tags = response.json().get("tags", [])
         return tags
 
-    def get_manifest(self, tag, extra_headers=None) -> requests.Response:
+    def get_manifest(
+        self, tag: str, extra_headers: Optional[dict] = None
+    ) -> requests.Response:
         """Get manifest information for a specific tag"""
         manifest_url = f"{self._image_url}/manifests/{tag}"
         headers = {
@@ -88,7 +106,7 @@ class RegistryClient:
         response.raise_for_status()
         return response
 
-    def list_manifests(self, tag) -> list:
+    def list_manifests(self, tag: str) -> list:
         return (
             self.get_manifest(
                 tag,
@@ -100,7 +118,7 @@ class RegistryClient:
             .get("manifests")
         )
 
-    def get_blob(self, hash) -> requests.Response:
+    def get_blob(self, hash: str) -> requests.Response:
         url = f"{self._image_url}/blobs/{hash}"
         response = requests.get(
             url,
@@ -111,13 +129,15 @@ class RegistryClient:
         response.raise_for_status()
         return response
 
-    def get_manifest_hash(self, tag, tag_manifest_content=None) -> str:
+    def get_manifest_hash(
+        self, tag: str, tag_manifest_content: Optional[bytes] = None
+    ) -> str:
         if not tag_manifest_content:
             tag_manifest_content = self.get_manifest(tag).content
 
         return hashlib.sha256(tag_manifest_content).hexdigest()
 
-    def get_attestation(self, tag) -> Tuple[bytes, bytes]:
+    def get_attestation(self, tag: str) -> Tuple[bytes, bytes]:
         """
         Retrieve an attestation from a given tag.
 
@@ -129,15 +149,20 @@ class RegistryClient:
         Returns a tuple with the tag manifest content and the bundle content.
         """
 
-        def _find_sigstore_bundle_manifest(manifests):
+        # FIXME: do not only rely on the first layer
+        def _find_sigstore_bundle_manifest(
+            manifests: list,
+        ) -> Tuple[Optional[str], Optional[str]]:
             for manifest in manifests:
                 if manifest["artifactType"] == SIGSTORE_BUNDLE:
                     return manifest["mediaType"], manifest["digest"]
+            return None, None
 
-        def _get_bundle_blob_digest(layers):
+        def _get_bundle_blob_digest(layers: list) -> Optional[str]:
             for layer in layers:
                 if layer.get("mediaType") == SIGSTORE_BUNDLE:
                     return layer["digest"]
+            return None
 
         tag_manifest_content = self.get_manifest(tag).content
 
@@ -164,30 +189,29 @@ class RegistryClient:
         layers = bundle_manifest.get("layers", [])
 
         blob_digest = _get_bundle_blob_digest(layers)
+        log.info(f"Found sigstore bundle blob digest: {blob_digest}")
+        if not blob_digest:
+            raise Exception("Not able to find sigstore bundle blob info")
         bundle = self.get_blob(blob_digest)
         return tag_manifest_content, bundle.content
 
 
-def get_manifest_hash(image: str) -> str:
-    registry, org, package, tag = parse_image_location(image)
-    client = RegistryClient(registry, org, package)
-    return client.get_manifest_hash(tag)
+def get_manifest_hash(image_str: str) -> str:
+    image = parse_image_location(image_str)
+    return RegistryClient(image).get_manifest_hash(image.tag)
 
 
-def list_tags(image: str) -> list:
-    registry, org, package, _ = parse_image_location(image)
-    client = RegistryClient(registry, org, package)
-    return client.list_tags()
+def list_tags(image_str: str) -> list:
+    return RegistryClient(image_str).list_tags()
 
 
-def get_manifest(image: str, tag: str) -> bytes:
-    registry, org, package, _ = parse_image_location(image)
-    client = RegistryClient(registry, org, package)
-    resp = client.get_manifest(tag, extra_headers={"Accept": OCI_IMAGE_MANIFEST})
+def get_manifest(image_str: str) -> bytes:
+    image = parse_image_location(image_str)
+    client = RegistryClient(image)
+    resp = client.get_manifest(image.tag, extra_headers={"Accept": OCI_IMAGE_MANIFEST})
     return resp.content
 
 
-def get_attestation(image: str) -> Tuple[bytes, bytes]:
-    registry, org, package, tag = parse_image_location(image)
-    client = RegistryClient(registry, org, package)
-    return client.get_attestation(tag)
+def get_attestation(image_str: str) -> Tuple[bytes, bytes]:
+    image = parse_image_location(image_str)
+    return RegistryClient(image).get_attestation(image.tag)

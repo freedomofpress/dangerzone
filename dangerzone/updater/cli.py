@@ -6,19 +6,20 @@ from . import registry
 from .attestations import verify_attestation
 from .signatures import upgrade_container_image, verify_offline_image_signature
 
-DEFAULT_REPO = "freedomofpress/dangerzone"
+DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
 
 
 @click.group()
-def main():
+def main() -> None:
     pass
 
 
 @main.command()
-@click.argument("image")
+@click.option("--image")
 @click.option("--pubkey", default="pub.key")
+@click.option("--airgap", is_flag=True)
 # XXX Add options to do airgap upgrade
-def upgrade(image, pubkey):
+def upgrade(image: str, pubkey: str) -> None:
     manifest_hash = registry.get_manifest_hash(image)
     if upgrade_container_image(image, manifest_hash, pubkey):
         click.echo(f"✅ The local image {image} has been upgraded")
@@ -27,9 +28,9 @@ def upgrade(image, pubkey):
 @main.command()
 @click.argument("image")
 @click.option("--pubkey", default="pub.key")
-def verify_local(image, pubkey):
+def verify_local(image: str, pubkey: str) -> None:
     """
-    XXX document
+    Verify the local image signature against a public key and the stored signatures.
     """
     # XXX remove a potentiel :tag
     if verify_offline_image_signature(image, pubkey):
@@ -38,28 +39,26 @@ def verify_local(image, pubkey):
 
 @main.command()
 @click.argument("image")
-def list_tags(image):
-    click.echo(f"Existing tags for {client.image}")
+def list_remote_tags(image: str) -> None:
+    click.echo(f"Existing tags for {image}")
     for tag in registry.list_tags(image):
         click.echo(tag)
 
 
 @main.command()
 @click.argument("image")
-@click.argument("tag")
-def get_manifest(image, tag):
-    click.echo(registry.get_manifest(image, tag))
+def get_manifest(image: str) -> None:
+    click.echo(registry.get_manifest(image))
 
 
 @main.command()
 @click.argument("image")
 @click.option(
-    "--repo",
-    default=DEFAULT_REPO,
+    "--repository",
+    default=DEFAULT_REPOSITORY,
     help="The github repository to check the attestation for",
 )
-# XXX use a consistent naming for these cli commands
-def attest(image: str, repo: str):
+def attest_provenance(image: str, repository: str) -> None:
     """
     Look up the image attestation to see if the image has been built
     on Github runners, and from a given repository.
@@ -68,14 +67,13 @@ def attest(image: str, repo: str):
     # if shutil.which("cosign") is None:
     #     click.echo("The cosign binary is needed but not installed.")
     #     raise click.Abort()
-    # XXX: refactor parse_image_location to return a dict.
-    _, _, _, image_tag = registry.parse_image_location(image)
+    parsed = registry.parse_image_location(image)
     manifest, bundle = registry.get_attestation(image)
 
-    verified = verify_attestation(manifest, bundle, image_tag, repo)
+    verified = verify_attestation(manifest, bundle, parsed.tag, repository)
     if verified:
         click.echo(
-            f"🎉 The image available at `{client.image}:{image_tag}` has been built by Github Runners from the `{repo}` repository"
+            f"🎉 The image available at `{parsed.full_name}` has been built by Github Runners from the `{repository}` repository"
         )
 
 

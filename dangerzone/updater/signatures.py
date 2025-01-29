@@ -8,13 +8,10 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict, List, Tuple
 
-from .registry import RegistryClient
-from .utils import write
-
 try:
     import platformdirs
 except ImportError:
-    import appdirs as platformdirs
+    import appdirs as platformdirs  # type: ignore[no-redef]
 
 
 def get_config_dir() -> Path:
@@ -67,7 +64,8 @@ def verify_signature(signature: dict, pubkey: str) -> bool:
         signature_file.flush()
 
         payload_bytes = b64decode(signature_bundle["Payload"])
-        write(payload_file, payload_bytes)
+        payload_file.write(payload_bytes)
+        payload_file.flush()
 
         cmd = [
             "cosign",
@@ -91,7 +89,7 @@ def get_runtime_name() -> str:
     return "docker"
 
 
-def container_pull(image: str):
+def container_pull(image: str) -> bool:
     # XXX - Move to container_utils.py
     cmd = [get_runtime_name(), "pull", f"{image}"]
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -99,7 +97,7 @@ def container_pull(image: str):
     return process.returncode == 0
 
 
-def new_image_release():
+def new_image_release() -> bool:
     # XXX - Implement
     return True
 
@@ -108,9 +106,9 @@ def upgrade_container_image(
     image: str,
     manifest_hash: str,
     pubkey: str,
-):
+) -> bool:
     if not new_image_release():
-        return
+        return False
 
     # manifest_hash = registry.get_manifest_hash(tag)
     signatures = get_signatures(image, manifest_hash)
@@ -138,7 +136,7 @@ def get_file_hash(file: str) -> str:
         return sha256(content).hexdigest()
 
 
-def load_signatures(image_hash, pubkey):
+def load_signatures(image_hash: str, pubkey: str) -> List[Dict]:
     """
     Load signatures from the local filesystem
 
@@ -156,7 +154,7 @@ def load_signatures(image_hash, pubkey):
         return json.load(f)
 
 
-def store_signatures(signatures: list[Dict], image_hash: str, pubkey: str):
+def store_signatures(signatures: list[Dict], image_hash: str, pubkey: str) -> None:
     """
     Store signatures locally in the SIGNATURE_PATH folder, like this:
 
@@ -172,7 +170,7 @@ def store_signatures(signatures: list[Dict], image_hash: str, pubkey: str):
     the `signature_to_bundle()` function.
     """
 
-    def _get_digest(sig):
+    def _get_digest(sig: Dict) -> str:
         payload = json.loads(b64decode(sig["Payload"]))
         return payload["critical"]["image"]["docker-manifest-digest"]
 
@@ -216,7 +214,7 @@ def load_image_hash(image: str) -> str:
     return result.stdout.strip().decode().strip("sha256:")
 
 
-def get_signatures(image, hash) -> List[Dict]:
+def get_signatures(image: str, hash: str) -> List[Dict]:
     """
     Retrieve the signatures from cosign download signature and convert each one to the "cosign bundle" format.
     """

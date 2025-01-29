@@ -1,12 +1,10 @@
 import subprocess
 from tempfile import NamedTemporaryFile
 
-from .utils import write
-
 
 def verify_attestation(
     manifest: bytes, attestation_bundle: bytes, image_tag: str, expected_repo: str
-):
+) -> bool:
     """
     Look up the image attestation to see if the image has been built
     on Github runners, and from a given repository.
@@ -17,8 +15,10 @@ def verify_attestation(
         NamedTemporaryFile(mode="wb") as manifest_json,
         NamedTemporaryFile(mode="wb") as attestation_bundle_json,
     ):
-        write(manifest_json, manifest)
-        write(attestation_bundle_json, attestation_bundle)
+        manifest_json.write(manifest)
+        manifest_json.flush()
+        attestation_bundle_json.write(attestation_bundle)
+        attestation_bundle_json.flush()
 
         # Call cosign with the temporary file paths
         cmd = [

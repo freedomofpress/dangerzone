@@ -5,7 +5,7 @@ from typing import Dict, Optional, Tuple
 
 import requests
 
-from . import log
+from . import errors, log
 
 __all__ = [
     "get_manifest_hash",
@@ -178,7 +178,7 @@ class RegistryClient:
             _find_sigstore_bundle_manifest(manifests)
         )
         if not bundle_manifest_digest:
-            raise Exception("Not able to find sigstore bundle manifest info")
+            raise errors.RegistryError("Not able to find sigstore bundle manifest info")
 
         bundle_manifest = self.get_manifest(
             bundle_manifest_digest, extra_headers={"Accept": bundle_manifest_mediatype}
@@ -191,7 +191,7 @@ class RegistryClient:
         blob_digest = _get_bundle_blob_digest(layers)
         log.info(f"Found sigstore bundle blob digest: {blob_digest}")
         if not blob_digest:
-            raise Exception("Not able to find sigstore bundle blob info")
+            raise errors.RegistryError("Not able to find sigstore bundle blob info")
         bundle = self.get_blob(blob_digest)
         return tag_manifest_content, bundle.content
 

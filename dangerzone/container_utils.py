@@ -15,11 +15,9 @@ log = logging.getLogger(__name__)
 
 def get_runtime_name() -> str:
     if platform.system() == "Linux":
-        runtime_name = "podman"
-    else:
-        # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
-        runtime_name = "docker"
-    return runtime_name
+        return "podman"
+    # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
+    return "docker"
 
 
 def get_runtime_version() -> Tuple[int, int]:
@@ -147,3 +145,18 @@ def load_image_tarball() -> None:
         )
 
     log.info("Successfully installed container image from")
+
+
+def container_pull(image: str) -> bool:
+    """Pull a container image from a registry."""
+    cmd = [get_runtime_name(), "pull", f"{image}"]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    process.communicate()
+    return process.returncode == 0
+
+
+def load_image_hash(image: str) -> str:
+    """Returns a image hash from a local image name"""
+    cmd = [get_runtime_name(), "image", "inspect", image, "-f", "{{.Digest}}"]
+    result = subprocess.run(cmd, capture_output=True, check=True)
+    return result.stdout.strip().decode().strip("sha256:")

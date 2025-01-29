@@ -1,6 +1,8 @@
 import subprocess
 from tempfile import NamedTemporaryFile
 
+from . import utils
+
 
 def verify_attestation(
     manifest: bytes, attestation_bundle: bytes, image_tag: str, expected_repo: str
@@ -9,6 +11,7 @@ def verify_attestation(
     Look up the image attestation to see if the image has been built
     on Github runners, and from a given repository.
     """
+    utils.ensure_cosign()
 
     # Put the value in files and verify with cosign
     with (

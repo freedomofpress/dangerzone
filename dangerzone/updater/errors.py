@@ -36,3 +36,7 @@ class SignatureMismatch(SignatureError):
 
 class LocalSignatureNotFound(SignatureError):
     pass
+
+
+class CosignNotInstalledError(SignatureError):
+    pass

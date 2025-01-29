@@ -1,40 +1,63 @@
 #!/usr/bin/python
 
+import logging
+
 import click
 
-from . import registry
+from ..util import get_resource_path
+from . import errors, log, registry
 from .attestations import verify_attestation
 from .signatures import upgrade_container_image, verify_offline_image_signature
 
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
 
+PUBKEY_DEFAULT_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
+
 
 @click.group()
-def main() -> None:
-    pass
+@click.option("--debug", is_flag=True)
+def main(debug=False) -> None:
+    if debug:
+        click.echo("Debug mode enabled")
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+    logging.basicConfig(level=level)
 
 
 @main.command()
 @click.option("--image")
-@click.option("--pubkey", default="pub.key")
+@click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
 @click.option("--airgap", is_flag=True)
 # XXX Add options to do airgap upgrade
-def upgrade(image: str, pubkey: str) -> None:
+def upgrade(image: str, pubkey: str, airgap: bool) -> None:
+    """Upgrade the image to the latest signed version."""
     manifest_hash = registry.get_manifest_hash(image)
-    if upgrade_container_image(image, manifest_hash, pubkey):
+    try:
+        is_upgraded = upgrade_container_image(image, manifest_hash, pubkey)
         click.echo(f"✅ The local image {image} has been upgraded")
+    except errors.ImageAlreadyUpToDate as e:
+        click.echo(f"✅ {e}")
+        raise click.Abort()
 
 
 @main.command()
 @click.argument("image")
-@click.option("--pubkey", default="pub.key")
-def verify_local(image: str, pubkey: str) -> None:
+@click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
+def verify_offline(image: str, pubkey: str) -> None:
     """
     Verify the local image signature against a public key and the stored signatures.
     """
     # XXX remove a potentiel :tag
     if verify_offline_image_signature(image, pubkey):
-        click.echo(f"✅ The local image {image} has been signed with {pubkey}")
+        click.echo(
+            (
+                f"Verifying the local image:\n\n"
+                f"pubkey: {pubkey}\n"
+                f"image: {image}\n\n"
+                f"✅ The local image {image} has been signed with {pubkey}"
+            )
+        )
 
 
 @main.command()

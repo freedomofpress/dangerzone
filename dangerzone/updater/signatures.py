@@ -8,6 +8,10 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Dict, List, Tuple
 
+from ..container_utils import container_pull, load_image_hash
+from . import errors, log
+from .registry import get_manifest_hash
+
 try:
     import platformdirs
 except ImportError:
@@ -24,8 +28,16 @@ __all__ = [
     "verify_signature",
     "load_signatures",
     "store_signatures",
-    "verify_local_image_signature",
+    "verify_offline_image_signature",
 ]
+
+
+def is_cosign_installed() -> bool:
+    try:
+        subprocess.run(["cosign", "version"], capture_output=True, check=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
 
 
 def signature_to_bundle(sig: Dict) -> Dict:
@@ -55,7 +67,6 @@ def verify_signature(signature: dict, pubkey: str) -> bool:
 
     signature_bundle = signature_to_bundle(signature)
 
-    # Put the value in files and verify with cosign
     with (
         NamedTemporaryFile(mode="w") as signature_file,
         NamedTemporaryFile(mode="bw") as payload_file,
@@ -76,30 +87,24 @@ def verify_signature(signature: dict, pubkey: str) -> bool:
             signature_file.name,
             payload_file.name,
         ]
+        log.debug(" ".join(cmd))
         result = subprocess.run(cmd, capture_output=True)
         if result.returncode != 0:
             # XXX Raise instead?
+            log.debug("Failed to verify signature", result.stderr)
             return False
-        return result.stderr == b"Verified OK\n"
+        if result.stderr == b"Verified OK\n":
+            log.debug("Signature verified")
+            return True
+    return False
 
 
-def get_runtime_name() -> str:
-    if platform.system() == "Linux":
-        return "podman"
-    return "docker"
-
-
-def container_pull(image: str) -> bool:
-    # XXX - Move to container_utils.py
-    cmd = [get_runtime_name(), "pull", f"{image}"]
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    process.communicate()
-    return process.returncode == 0
-
-
-def new_image_release() -> bool:
-    # XXX - Implement
-    return True
+def new_image_release(image) -> bool:
+    remote_hash = get_manifest_hash(image)
+    local_hash = load_image_hash(image)
+    log.debug("Remote hash: %s", remote_hash)
+    log.debug("Local hash: %s", local_hash)
+    return remote_hash != local_hash
 
 
 def upgrade_container_image(
@@ -107,19 +112,20 @@ def upgrade_container_image(
     manifest_hash: str,
     pubkey: str,
 ) -> bool:
-    if not new_image_release():
+    if not new_image_release(image):
+        raise errors.ImageAlreadyUpToDate("The image is already up to date")
         return False
 
-    # manifest_hash = registry.get_manifest_hash(tag)
     signatures = get_signatures(image, manifest_hash)
+    log.debug("Signatures: %s", signatures)
 
     if len(signatures) < 1:
-        raise Exception("Unable to retrieve signatures")
+        raise errors.NoRemoteSignatures("No remote signatures found")
 
     for signature in signatures:
         signature_is_valid = verify_signature(signature, pubkey)
         if not signature_is_valid:
-            raise Exception("Unable to verify signature")
+            raise errors.SignatureVerificationError()
 
     # At this point, the signatures are verified
     # We store the signatures just now to avoid storing unverified signatures
@@ -148,9 +154,10 @@ def load_signatures(image_hash: str, pubkey: str) -> List[Dict]:
             f"Cannot find a '{pubkey_signatures}' folder."
             "You might need to download the image signatures first."
         )
-        raise Exception(msg)
+        raise errors.SignaturesFolderDoesNotExist(msg)
 
     with open(pubkey_signatures / f"{image_hash}.json") as f:
+        log.debug("Loading signatures from %s", f.name)
         return json.load(f)
 
 
@@ -177,15 +184,18 @@ def store_signatures(signatures: list[Dict], image_hash: str, pubkey: str) -> No
     # All the signatures should share the same hash.
     hashes = list(map(_get_digest, signatures))
     if len(set(hashes)) != 1:
-        raise Exception("Signatures do not share the same image hash")
+        raise errors.InvalidSignatures("Signatures do not share the same image hash")
 
     if f"sha256:{image_hash}" != hashes[0]:
-        raise Exception("Signatures do not match the given image hash")
+        raise errors.SignatureMismatch("Signatures do not match the given image hash")
 
     pubkey_signatures = SIGNATURES_PATH / get_file_hash(pubkey)
     pubkey_signatures.mkdir(exist_ok=True)
 
     with open(pubkey_signatures / f"{image_hash}.json", "w") as f:
+        log.debug(
+            f"Storing signatures for {image_hash} in {pubkey_signatures}/{image_hash}.json"
+        )
         json.dump(signatures, f)
 
 
@@ -193,25 +203,18 @@ def verify_offline_image_signature(image: str, pubkey: str) -> bool:
     """
     Verifies that a local image has a valid signature
     """
+    log.info(f"Verifying local image {image} against pubkey {pubkey}")
     image_hash = load_image_hash(image)
+    log.debug(f"Image hash: {image_hash}")
     signatures = load_signatures(image_hash, pubkey)
     if len(signatures) < 1:
-        raise Exception("No signatures found")
+        raise errors.LocalSignatureNotFound("No signatures found")
 
     for signature in signatures:
         if not verify_signature(signature, pubkey):
             msg = f"Unable to verify signature for {image} with pubkey {pubkey}"
-            raise Exception(msg)
+            raise errors.SignatureVerificationError(msg)
     return True
-
-
-def load_image_hash(image: str) -> str:
-    """
-    Returns a image hash from a local image name
-    """
-    cmd = [get_runtime_name(), "image", "inspect", image, "-f", "{{.Digest}}"]
-    result = subprocess.run(cmd, capture_output=True, check=True)
-    return result.stdout.strip().decode().strip("sha256:")
 
 
 def get_signatures(image: str, hash: str) -> List[Dict]:

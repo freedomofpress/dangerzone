@@ -12,6 +12,8 @@ __all__ = [
     "list_tags",
     "get_manifest",
     "get_attestation",
+    "Image",
+    "parse_image_location",
 ]
 
 SIGSTORE_BUNDLE = "application/vnd.dev.sigstore.bundle.v0.3+json"

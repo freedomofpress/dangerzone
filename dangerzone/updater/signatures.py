@@ -9,7 +9,7 @@ from tempfile import NamedTemporaryFile
 from typing import Dict, List, Tuple
 
 from ..container_utils import container_pull, load_image_hash
-from . import errors, log
+from . import errors, log, utils
 from .registry import get_manifest_hash
 
 try:
@@ -30,14 +30,6 @@ __all__ = [
     "store_signatures",
     "verify_offline_image_signature",
 ]
-
-
-def is_cosign_installed() -> bool:
-    try:
-        subprocess.run(["cosign", "version"], capture_output=True, check=True)
-        return True
-    except subprocess.CalledProcessError:
-        return False
 
 
 def signature_to_bundle(sig: Dict) -> Dict:
@@ -65,6 +57,7 @@ def signature_to_bundle(sig: Dict) -> Dict:
 def verify_signature(signature: dict, pubkey: str) -> bool:
     """Verify a signature against a given public key"""
 
+    utils.ensure_cosign()
     signature_bundle = signature_to_bundle(signature)
 
     with (
@@ -221,6 +214,7 @@ def get_signatures(image: str, hash: str) -> List[Dict]:
     """
     Retrieve the signatures from cosign download signature and convert each one to the "cosign bundle" format.
     """
+    utils.ensure_cosign()
 
     process = subprocess.run(
         ["cosign", "download", "signature", f"{image}@sha256:{hash}"],

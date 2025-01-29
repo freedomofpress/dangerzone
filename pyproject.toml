@@ -34,6 +34,7 @@ shiboken6 = [
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
 dangerzone-cli = 'dangerzone:main'
+dangerzone-image = "dangerzone.updater.cli:main"
 
 # Dependencies required for packaging the code on various platforms.
 [tool.poetry.group.package.dependencies]

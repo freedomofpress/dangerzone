@@ -3,7 +3,7 @@ import logging
 import platform
 import shutil
 import subprocess
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from . import errors
 from .util import get_resource_path, get_subprocess_startupinfo
@@ -116,7 +116,34 @@ def get_expected_tag() -> str:
         return f.read().strip()
 
 
-def load_image_tarball_in_memory() -> None:
+def tag_image_by_digest(digest: str, tag: str) -> None:
+    image_id = get_image_id_by_digest(digest)
+    cmd = [get_runtime(), "tag", image_id, tag]
+    subprocess.run(cmd, startupinfo=get_subprocess_startupinfo(), check=True)
+
+
+def get_image_id_by_digest(digest: str) -> str:
+    cmd = [
+        get_runtime(),
+        "image",
+        "tag",
+        "-f",
+        f'digest="{digest}"',
+        "--format ",
+        "{{.Id}}",
+    ]
+    process = subprocess.run(
+        cmd, startupinfo=get_subprocess_startupinfo(), check=True, capture_output=True
+    )
+    return process.stdout.decode().strip()
+
+
+def load_image_tarball_in_memory(
+    compressed_container_path: Optional[str] = None,
+) -> None:
+    if compressed_container_path is None:
+        compressed_container_path = get_resource_path("container.tar.gz")
+
     log.info("Installing Dangerzone container image...")
     p = subprocess.Popen(
         [get_runtime(), "load"],
@@ -125,7 +152,7 @@ def load_image_tarball_in_memory() -> None:
     )
 
     chunk_size = 4 << 20
-    compressed_container_path = get_resource_path("container.tar.gz")
+
     with gzip.open(compressed_container_path) as f:
         while True:
             chunk = f.read(chunk_size)
@@ -147,48 +174,16 @@ def load_image_tarball_in_memory() -> None:
     log.info("Successfully installed container image from")
 
 
-def load_image_tarball_file(tarball_path: str) -> None:
-    cmd = [get_runtime(), "load", "-i", tarball_path]
+def load_image_tarball_file(container_path: str) -> None:
+    cmd = [get_runtime(), "load", "-i", container_path]
     subprocess.run(cmd, startupinfo=get_subprocess_startupinfo(), check=True)
 
-    log.info("Successfully installed container image from %s", tarball_path)
-
-
-def tag_image_by_digest(digest: str, tag: str) -> None:
-    image_id = get_image_id_by_digest(digest)
-    cmd = [get_runtime(), "tag", image_id, tag]
-    log.debug(" ".join(cmd))
-    subprocess.run(cmd, startupinfo=get_subprocess_startupinfo(), check=True)
-
-
-def get_image_id_by_digest(digest: str) -> str:
-    cmd = [
-        get_runtime(),
-        "images",
-        "-f",
-        f"digest={digest}",
-        "--format",
-        "{{.Id}}",
-    ]
-    log.debug(" ".join(cmd))
-    process = subprocess.run(
-        cmd, startupinfo=get_subprocess_startupinfo(), check=True, capture_output=True
-    )
-    return process.stdout.decode().strip()
+    log.info("Successfully installed container image from %s", container_path)
 
 
 def container_pull(image: str) -> bool:
-    """Pull a container image from a registry."""
+    # XXX - Move to container_utils.py
     cmd = [get_runtime_name(), "pull", f"{image}"]
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     process.communicate()
     return process.returncode == 0
-
-
-def get_local_image_hash(image: str) -> str:
-    """
-    Returns a image hash from a local image name
-    """
-    cmd = [get_runtime_name(), "image", "inspect", image, "-f", "{{.Digest}}"]
-    result = subprocess.run(cmd, capture_output=True, check=True)
-    return result.stdout.strip().decode().strip("sha256:")

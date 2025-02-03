@@ -155,6 +155,9 @@ def load_image_tarball_file(tarball_path: str) -> None:
 
 
 def tag_image_by_digest(digest: str, tag: str) -> None:
+    """Tag a container image by digest.
+    The sha256: prefix should be omitted from the digest.
+    """
     image_id = get_image_id_by_digest(digest)
     cmd = [get_runtime(), "tag", image_id, tag]
     log.debug(" ".join(cmd))
@@ -162,11 +165,14 @@ def tag_image_by_digest(digest: str, tag: str) -> None:
 
 
 def get_image_id_by_digest(digest: str) -> str:
+    """Get an image ID from a digest.
+    The sha256: prefix should be omitted from the digest.
+    """
     cmd = [
         get_runtime(),
         "images",
         "-f",
-        f"digest={digest}",
+        f"digest=sha256:{digest}",
         "--format",
         "{{.Id}}",
     ]
@@ -174,7 +180,9 @@ def get_image_id_by_digest(digest: str) -> str:
     process = subprocess.run(
         cmd, startupinfo=get_subprocess_startupinfo(), check=True, capture_output=True
     )
-    return process.stdout.decode().strip()
+    breakpoint()
+    # In case we have multiple lines, we only want the first one.
+    return process.stdout.decode().strip().split("\n")[0]
 
 
 def container_pull(image: str) -> bool:

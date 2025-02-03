@@ -22,6 +22,10 @@ class SignatureVerificationError(SignatureError):
     pass
 
 
+class SignatureExtractionError(SignatureError):
+    pass
+
+
 class SignaturesFolderDoesNotExist(SignatureError):
     pass
 

@@ -12,7 +12,6 @@ __all__ = [
     "list_tags",
     "get_manifest",
     "get_attestation",
-    "Image",
     "parse_image_location",
 ]
 

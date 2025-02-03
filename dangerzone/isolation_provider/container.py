@@ -102,7 +102,7 @@ class Container(IsolationProvider):
             return True
 
         # Load the image tarball into the container runtime.
-        container_utils.load_image_tarball()
+        container_utils.load_image_tarball_in_memory()
 
         # Check that the container image has the expected image tag.
         # See https://github.com/freedomofpress/dangerzone/issues/988 for an example

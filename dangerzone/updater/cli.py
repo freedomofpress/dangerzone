@@ -7,16 +7,20 @@ import click
 from ..util import get_resource_path
 from . import errors, log, registry
 from .attestations import verify_attestation
-from .signatures import upgrade_container_image, verify_offline_image_signature
+from .signatures import (
+    upgrade_container_image,
+    upgrade_container_image_airgapped,
+    verify_offline_image_signature,
+)
 
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
-
+DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone"
 PUBKEY_DEFAULT_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
 
 
 @click.group()
 @click.option("--debug", is_flag=True)
-def main(debug=False) -> None:
+def main(debug: bool) -> None:
     if debug:
         click.echo("Debug mode enabled")
         level = logging.DEBUG
@@ -26,16 +30,28 @@ def main(debug=False) -> None:
 
 
 @main.command()
-@click.option("--image")
+@click.argument("image")
 @click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
-@click.option("--airgap", is_flag=True)
-# XXX Add options to do airgap upgrade
-def upgrade(image: str, pubkey: str, airgap: bool) -> None:
+def upgrade(image: str, pubkey: str) -> None:
     """Upgrade the image to the latest signed version."""
     manifest_hash = registry.get_manifest_hash(image)
     try:
         is_upgraded = upgrade_container_image(image, manifest_hash, pubkey)
         click.echo(f"✅ The local image {image} has been upgraded")
+    except errors.ImageAlreadyUpToDate as e:
+        click.echo(f"✅ {e}")
+        raise click.Abort()
+
+
+@main.command()
+@click.argument("image_filename")
+@click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
+@click.option("--image-name", default=DEFAULT_IMAGE_NAME)
+def upgrade_airgapped(image_filename: str, pubkey: str, image_name: str) -> None:
+    """Upgrade the image to the latest signed version."""
+    try:
+        upgrade_container_image_airgapped(image_filename, pubkey, image_name)
+        click.echo(f"✅ Installed image {image_filename} on the system")
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
         raise click.Abort()

@@ -302,7 +302,7 @@ def store_signatures(signatures: list[Dict], image_hash: str, pubkey: str) -> No
         )
 
     pubkey_signatures = SIGNATURES_PATH / get_file_hash(pubkey)
-    pubkey_signatures.mkdir(exist_ok=True)
+    pubkey_signatures.mkdir(parents=True, exist_ok=True)
 
     with open(pubkey_signatures / f"{image_hash}.json", "w") as f:
         log.info(

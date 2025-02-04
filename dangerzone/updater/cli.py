@@ -8,6 +8,7 @@ from ..util import get_resource_path
 from . import attestations, errors, log, registry, signatures
 
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
+DEFAULT_BRANCH = "main"
 DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 PUBKEY_DEFAULT_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
 
@@ -103,29 +104,52 @@ def get_manifest(image: str) -> None:
 
 
 @main.command()
-@click.argument("image")
+@click.argument("image_name")
+# XXX: Do we really want to check against this?
+@click.option(
+    "--branch",
+    default=DEFAULT_BRANCH,
+    help="The Git branch that the image was built from",
+)
+@click.option(
+    "--commit",
+    required=True,
+    help="The Git commit the image was built from",
+)
 @click.option(
     "--repository",
     default=DEFAULT_REPOSITORY,
     help="The github repository to check the attestation for",
 )
-def attest_provenance(image: str, repository: str) -> None:
+@click.option(
+    "--workflow",
+    default=".github/workflows/multi_arch_build.yml",
+    help="The path of the GitHub actions workflow this image was created from",
+)
+def attest_provenance(
+    image_name: str,
+    branch: str,
+    commit: str,
+    repository: str,
+    workflow: str,
+) -> None:
     """
     Look up the image attestation to see if the image has been built
     on Github runners, and from a given repository.
     """
-    # XXX put this inside a module
-    # if shutil.which("cosign") is None:
-    #     click.echo("The cosign binary is needed but not installed.")
-    #     raise click.Abort()
-    parsed = registry.parse_image_location(image)
-    manifest, bundle = registry.get_attestation(image)
+    # TODO: Parse image and make sure it has a tag. Might even check for a digest.
+    # parsed = registry.parse_image_location(image)
 
-    verified = attestations.verify(manifest, bundle, parsed.tag, repository)
+    verified = attestations.verify(image_name, branch, commit, repository, workflow)
     if verified:
         click.echo(
-            f"🎉 The image available at `{parsed.full_name}` has been built by Github Runners from the `{repository}` repository"
+            f"🎉 Successfully verified image '{image_name}' and its associated claims:"
         )
+        click.echo(f"- ✅ SLSA Level 3 provenance")
+        click.echo(f"- ✅ GitHub repo: {repository}")
+        click.echo(f"- ✅ GitHub actions workflow: {workflow}")
+        click.echo(f"- ✅ Git branch: {branch}")
+        click.echo(f"- ✅ Git commit: {commit}")
 
 
 if __name__ == "__main__":

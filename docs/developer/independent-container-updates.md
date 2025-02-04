@@ -21,3 +21,19 @@ In case of sucess, it will report back:
 ```
 🎉 The image available at `ghcr.io/freedomofpress/dangerzone/dangerzone:latest` has been built by Github runners from the `freedomofpress/dangerzone` repository.
 ```
+
+## Container updates on air-gapped environments
+
+In order to make updates on an air-gapped environment, you will need to prepare an archive for the air-gapped environment. This archive will contain all the needed material to validate that the new container image has been signed and is valid.
+
+On the machine on which you prepare the packages:
+
+```bash
+dangerzone-image prepare-archive ghcr.io/almet/dangerzone/dangerzone@sha256:fa948726aac29a6ac49f01ec8fbbac18522b35b2491fdf716236a0b3502a2ca7
+```
+
+On the airgapped machine, copy the file and run the following command:
+
+```bash
+dangerzone-image load-archive 
+```

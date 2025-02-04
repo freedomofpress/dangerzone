@@ -180,7 +180,6 @@ def get_image_id_by_digest(digest: str) -> str:
     process = subprocess.run(
         cmd, startupinfo=get_subprocess_startupinfo(), check=True, capture_output=True
     )
-    breakpoint()
     # In case we have multiple lines, we only want the first one.
     return process.stdout.decode().strip().split("\n")[0]
 

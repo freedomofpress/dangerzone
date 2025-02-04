@@ -11,7 +11,7 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Dict, List, Optional, Tuple
 
 from .. import container_utils as runtime
-from . import errors, log, registry, utils
+from . import cosign, errors, log, registry
 
 try:
     import platformdirs
@@ -55,34 +55,12 @@ def signature_to_bundle(sig: Dict) -> Dict:
     }
 
 
-def cosign_verify_local_image(oci_image_folder: str, pubkey: str) -> bool:
-    """Verify the given path against the given public key"""
-
-    utils.ensure_cosign()
-    cmd = [
-        "cosign",
-        "verify",
-        "--key",
-        pubkey,
-        "--offline",
-        "--local-image",
-        oci_image_folder,
-    ]
-    log.debug(" ".join(cmd))
-    result = subprocess.run(cmd, capture_output=True)
-    if result.returncode == 0:
-        log.debug("Signature verified")
-        return True
-    log.debug("Failed to verify signature", result.stderr)
-    return False
-
-
 def verify_signature(signature: dict, image_hash: str, pubkey: str) -> bool:
     """Verify a signature against a given public key"""
     # XXX - Also verfy the identity/docker-reference field against the expected value
     # e.g. ghcr.io/freedomofpress/dangerzone/dangerzone
 
-    utils.ensure_cosign()
+    cosign.ensure_installed()
     signature_bundle = signature_to_bundle(signature)
 
     payload_bytes = b64decode(signature_bundle["Payload"])
@@ -188,7 +166,7 @@ def upgrade_container_image_airgapped(
 
         # XXX Check if the contained signatures match the given ones?
         # Or maybe store both signatures?
-        if not cosign_verify_local_image(tmpdir, pubkey):
+        if not cosign.verify_local_image(tmpdir, pubkey):
             raise errors.SignatureVerificationError()
 
         # Remove the signatures from the archive.
@@ -321,7 +299,7 @@ def store_signatures(signatures: list[Dict], image_hash: str, pubkey: str) -> No
         json.dump(signatures, f)
 
 
-def verify_offline_image_signature(image: str, pubkey: str) -> bool:
+def verify_local_image(image: str, pubkey: str) -> bool:
     """
     Verifies that a local image has a valid signature
     """
@@ -341,7 +319,7 @@ def verify_offline_image_signature(image: str, pubkey: str) -> bool:
 
 def get_remote_signatures(image: str, hash: str) -> List[Dict]:
     """Retrieve the signatures from the registry, via `cosign download`."""
-    utils.ensure_cosign()
+    cosign.ensure_installed()
 
     process = subprocess.run(
         ["cosign", "download", "signature", f"{image}@sha256:{hash}"],
@@ -356,3 +334,28 @@ def get_remote_signatures(image: str, hash: str) -> List[Dict]:
     if len(signatures) < 1:
         raise errors.NoRemoteSignatures("No signatures found for the image")
     return signatures
+
+
+def prepare_airgapped_archive(image_name, destination):
+    if "@sha256:" not in image_name:
+        raise errors.AirgappedImageDownloadError(
+            "The image name must include a digest, e.g. ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:123456"
+        )
+
+    cosign.ensure_installed()
+    # Get the image from the registry
+
+    with TemporaryDirectory() as tmpdir:
+        msg = f"Downloading image {image_name}. \nIt might take a while."
+        log.info(msg)
+
+        process = subprocess.run(
+            ["cosign", "save", image_name, "--dir", tmpdir],
+            capture_output=True,
+            check=True,
+        )
+        if process.returncode != 0:
+            raise errors.AirgappedImageDownloadError()
+
+        with tarfile.open(destination, "w") as archive:
+            archive.add(tmpdir, arcname=".")

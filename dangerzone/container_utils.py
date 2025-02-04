@@ -3,7 +3,7 @@ import logging
 import platform
 import shutil
 import subprocess
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from . import errors
 from .util import get_resource_path, get_subprocess_startupinfo
@@ -192,10 +192,14 @@ def container_pull(image: str) -> bool:
     return process.returncode == 0
 
 
-def get_local_image_hash(image: str) -> str:
+def get_local_image_hash(image: str) -> Optional[str]:
     """
     Returns a image hash from a local image name
     """
     cmd = [get_runtime_name(), "image", "inspect", image, "-f", "{{.Digest}}"]
-    result = subprocess.run(cmd, capture_output=True, check=True)
-    return result.stdout.strip().decode().strip("sha256:")
+    try:
+        result = subprocess.run(cmd, capture_output=True, check=True)
+    except subprocess.CalledProcessError as e:
+        return None
+    else:
+        return result.stdout.strip().decode().strip("sha256:")

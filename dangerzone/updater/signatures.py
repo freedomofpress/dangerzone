@@ -64,8 +64,13 @@ def verify_signature(signature: dict, image_hash: str, pubkey: str) -> bool:
     signature_bundle = signature_to_bundle(signature)
 
     payload_bytes = b64decode(signature_bundle["Payload"])
-    if json.loads(payload_bytes)["critical"]["type"] != f"sha256:{image_hash}":
-        raise errors.SignatureMismatch("The signature does not match the image hash")
+    payload_hash = json.loads(payload_bytes)["critical"]["image"][
+        "docker-manifest-digest"
+    ]
+    if payload_hash != f"sha256:{image_hash}":
+        raise errors.SignatureMismatch(
+            f"The signature does not match the image hash ({payload_hash}, {image_hash})"
+        )
 
     with (
         NamedTemporaryFile(mode="w") as signature_file,
@@ -220,7 +225,7 @@ def convert_oci_images_signatures(
             "Payload": payload_b64,
             "Cert": None,
             "Chain": None,
-            "rekorBundle": bundle,
+            "Bundle": bundle,
             "RFC3161Timestamp": None,
         }
 
@@ -311,7 +316,11 @@ def verify_local_image(image: str, pubkey: str) -> bool:
     Verifies that a local image has a valid signature
     """
     log.info(f"Verifying local image {image} against pubkey {pubkey}")
-    image_hash = runtime.get_local_image_hash(image)
+    try:
+        image_hash = runtime.get_local_image_hash(image)
+    except subprocess.CalledProcessError:
+        raise errors.ImageNotFound(f"The image {image} does not exist locally")
+
     log.debug(f"Image hash: {image_hash}")
     signatures = load_signatures(image_hash, pubkey)
     if len(signatures) < 1:

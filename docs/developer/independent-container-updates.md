@@ -37,7 +37,7 @@ To check if a new container image has been released, and update your local insta
 dangerzone-image upgrade ghcr.io/almet/dangerzone/dangerzone
 ```
 
-## Verify local
+## Verify locally
 
 You can verify that the image you have locally matches the stored signatures, and that these have been signed with a trusted public key:
 

@@ -14,6 +14,10 @@ class RegistryError(UpdaterError):
     pass
 
 
+class AirgappedImageDownloadError(UpdaterError):
+    pass
+
+
 class NoRemoteSignatures(SignatureError):
     pass
 

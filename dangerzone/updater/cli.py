@@ -5,13 +5,7 @@ import logging
 import click
 
 from ..util import get_resource_path
-from . import errors, log, registry
-from .attestations import verify_attestation
-from .signatures import (
-    upgrade_container_image,
-    upgrade_container_image_airgapped,
-    verify_offline_image_signature,
-)
+from . import attestations, errors, log, registry, signatures
 
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
 DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone"
@@ -36,7 +30,7 @@ def upgrade(image: str, pubkey: str) -> None:
     """Upgrade the image to the latest signed version."""
     manifest_hash = registry.get_manifest_hash(image)
     try:
-        is_upgraded = upgrade_container_image(image, manifest_hash, pubkey)
+        is_upgraded = signatures.upgrade_container_image(image, manifest_hash, pubkey)
         click.echo(f"✅ The local image {image} has been upgraded")
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
@@ -47,10 +41,10 @@ def upgrade(image: str, pubkey: str) -> None:
 @click.argument("image_filename")
 @click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
 @click.option("--image-name", default=DEFAULT_IMAGE_NAME)
-def upgrade_airgapped(image_filename: str, pubkey: str, image_name: str) -> None:
-    """Upgrade the image to the latest signed version."""
+def load_archive(image_filename: str, pubkey: str, image_name: str) -> None:
+    """Upgrade the local image to the one in the archive."""
     try:
-        upgrade_container_image_airgapped(image_filename, pubkey, image_name)
+        signatures.upgrade_container_image_airgapped(image_filename, pubkey, image_name)
         click.echo(f"✅ Installed image {image_filename} on the system")
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
@@ -59,13 +53,22 @@ def upgrade_airgapped(image_filename: str, pubkey: str, image_name: str) -> None
 
 @main.command()
 @click.argument("image")
+@click.option("--destination", default="dangerzone-airgapped.tar")
+def prepare_archive(image: str, destination: str) -> None:
+    """Prepare an archive to upgrade the dangerzone image on an airgapped environment."""
+    signatures.prepare_airgapped_archive(image, destination)
+    click.echo(f"✅ Archive {destination} created")
+
+
+@main.command()
+@click.argument("image")
 @click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
-def verify_offline(image: str, pubkey: str) -> None:
+def verify_local(image: str, pubkey: str) -> None:
     """
     Verify the local image signature against a public key and the stored signatures.
     """
     # XXX remove a potentiel :tag
-    if verify_offline_image_signature(image, pubkey):
+    if signatures.verify_local_image(image, pubkey):
         click.echo(
             (
                 f"Verifying the local image:\n\n"
@@ -109,7 +112,7 @@ def attest_provenance(image: str, repository: str) -> None:
     parsed = registry.parse_image_location(image)
     manifest, bundle = registry.get_attestation(image)
 
-    verified = verify_attestation(manifest, bundle, parsed.tag, repository)
+    verified = attestations.verify(manifest, bundle, parsed.tag, repository)
     if verified:
         click.echo(
             f"🎉 The image available at `{parsed.full_name}` has been built by Github Runners from the `{repository}` repository"

@@ -8,7 +8,7 @@ from ..util import get_resource_path
 from . import attestations, errors, log, registry, signatures
 
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
-DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone"
+DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 PUBKEY_DEFAULT_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
 
 
@@ -24,14 +24,18 @@ def main(debug: bool) -> None:
 
 
 @main.command()
-@click.argument("image")
+@click.argument("image", default=DEFAULT_IMAGE_NAME)
 @click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
 def upgrade(image: str, pubkey: str) -> None:
     """Upgrade the image to the latest signed version."""
     manifest_hash = registry.get_manifest_hash(image)
     try:
         is_upgraded = signatures.upgrade_container_image(image, manifest_hash, pubkey)
-        click.echo(f"✅ The local image {image} has been upgraded")
+        if is_upgraded:
+            click.echo(f"✅ The local image {image} has been upgraded")
+            click.echo(f"✅ The image has been signed with {pubkey}")
+            click.echo(f"✅ Signatures has been verified and stored locally")
+
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
         raise click.Abort()
@@ -56,15 +60,15 @@ def load_archive(image_filename: str, pubkey: str) -> None:
 
 @main.command()
 @click.argument("image")
-@click.option("--destination", default="dangerzone-airgapped.tar")
-def prepare_archive(image: str, destination: str) -> None:
+@click.option("--output", default="dangerzone-airgapped.tar")
+def prepare_archive(image: str, output: str) -> None:
     """Prepare an archive to upgrade the dangerzone image on an airgapped environment."""
-    signatures.prepare_airgapped_archive(image, destination)
-    click.echo(f"✅ Archive {destination} created")
+    signatures.prepare_airgapped_archive(image, output)
+    click.echo(f"✅ Archive {output} created")
 
 
 @main.command()
-@click.argument("image")
+@click.argument("image", default=DEFAULT_IMAGE_NAME)
 @click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
 def verify_local(image: str, pubkey: str) -> None:
     """
@@ -85,6 +89,7 @@ def verify_local(image: str, pubkey: str) -> None:
 @main.command()
 @click.argument("image")
 def list_remote_tags(image: str) -> None:
+    """List the tags available for a given image."""
     click.echo(f"Existing tags for {image}")
     for tag in registry.list_tags(image):
         click.echo(tag)
@@ -93,6 +98,7 @@ def list_remote_tags(image: str) -> None:
 @main.command()
 @click.argument("image")
 def get_manifest(image: str) -> None:
+    """Retrieves a remove manifest for a given image and displays it."""
     click.echo(registry.get_manifest(image))
 
 

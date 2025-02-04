@@ -6,6 +6,10 @@ class ImageAlreadyUpToDate(UpdaterError):
     pass
 
 
+class ImageNotFound(UpdaterError):
+    pass
+
+
 class SignatureError(UpdaterError):
     pass
 

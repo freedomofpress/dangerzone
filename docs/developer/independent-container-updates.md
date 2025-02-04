@@ -19,7 +19,14 @@ dangerzone-image attest-provenance ghcr.io/freedomofpress/dangerzone/dangerzone 
 In case of sucess, it will report back:
 
 ```
-🎉 The image available at `ghcr.io/freedomofpress/dangerzone/dangerzone:latest` has been built by Github runners from the `freedomofpress/dangerzone` repository.
+🎉 Successfully verified image
+'ghcr.io/apyrgio/dangerzone/dangerzone:20250129-0.8.0-149-gbf2f5ac@sha256:4da441235e84e93518778827a5c5745d532d7a4079886e1647924bee7ef1c14d'
+and its associated claims:
+- ✅ SLSA Level 3 provenance
+- ✅ GitHub repo: apyrgio/dangerzone
+- ✅ GitHub actions workflow: .github/workflows/multi_arch_build.yml
+- ✅ Git branch: test/multi-arch
+- ✅ Git commit: bf2f5accc24bd15a4f5c869a7f0b03b8fe48dfb6
 ```
 
 ## Install updates
@@ -27,7 +34,7 @@ In case of sucess, it will report back:
 To check if a new container image has been released, and update your local installation with it, you can use the following commands:
 
 ```bash
-./dev_scripts/dangerzone-image --debug upgrade ghcr.io/almet/dangerzone/dangerzone
+dangerzone-image upgrade ghcr.io/almet/dangerzone/dangerzone
 ```
 
 ## Verify local
@@ -53,4 +60,3 @@ On the airgapped machine, copy the file and run the following command:
 ```bash
 dangerzone-image load-archive dz-fa94872.tar
 ```
-

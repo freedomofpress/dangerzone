@@ -40,12 +40,15 @@ def upgrade(image: str, pubkey: str) -> None:
 @main.command()
 @click.argument("image_filename")
 @click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
-@click.option("--image-name", default=DEFAULT_IMAGE_NAME)
-def load_archive(image_filename: str, pubkey: str, image_name: str) -> None:
+def load_archive(image_filename: str, pubkey: str) -> None:
     """Upgrade the local image to the one in the archive."""
     try:
-        signatures.upgrade_container_image_airgapped(image_filename, pubkey, image_name)
-        click.echo(f"✅ Installed image {image_filename} on the system")
+        loaded_image = signatures.upgrade_container_image_airgapped(
+            image_filename, pubkey
+        )
+        click.echo(
+            f"✅ Installed image {image_filename} on the system as {loaded_image}"
+        )
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
         raise click.Abort()

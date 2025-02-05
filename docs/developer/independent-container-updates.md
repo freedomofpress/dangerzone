@@ -1,9 +1,11 @@
 # Independent Container Updates
 
 Since version 0.9.0, Dangerzone is able to ship container images independently
-from releases.
+from releases of the software.
 
-One of the main benefits of doing so is to lower the time needed to patch security issues inside the containers.
+One of the main benefits of doing so is to shorten the time neede to distribute the security fixes for the containers. Being the place where the actual conversion of documents happen, it's a way to keep dangerzone users secure.
+
+If you are a dangerzone user, this all happens behind the curtain, and you should not have to know anything about that to enjoy these "in-app" updates. If you are using dangerzone in an air-gapped environment, check the sections below.
 
 ## Checking attestations
 
@@ -20,13 +22,26 @@ In case of sucess, it will report back:
 
 ```
 🎉 Successfully verified image
-'ghcr.io/apyrgio/dangerzone/dangerzone:20250129-0.8.0-149-gbf2f5ac@sha256:4da441235e84e93518778827a5c5745d532d7a4079886e1647924bee7ef1c14d'
+'ghcr.io/freedomofpress/dangerzone/dangerzone:20250129-0.8.0-149-gbf2f5ac@sha256:4da441235e84e93518778827a5c5745d532d7a4079886e1647924bee7ef1c14d'
 and its associated claims:
 - ✅ SLSA Level 3 provenance
 - ✅ GitHub repo: apyrgio/dangerzone
 - ✅ GitHub actions workflow: .github/workflows/multi_arch_build.yml
 - ✅ Git branch: test/multi-arch
 - ✅ Git commit: bf2f5accc24bd15a4f5c869a7f0b03b8fe48dfb6
+```
+
+## Sign and publish the remote image
+
+Once the image has been reproduced locally, we can add a signature to the container registry,
+and update the `latest` tag to point to the proper hash.
+
+```bash
+cosign sign --sk ghcr.io/freedomofpress/dangerzone/dangerzone:20250129-0.8.0-149-gbf2f5ac@sha256:4da441235e84e93518778827a5c5745d532d7a4079886e1647924bee7ef1c14d
+
+# And mark bump latest
+crane auth login ghcr.io -u USERNAME --password $(cat pat_token)
+crane tag ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:4da441235e84e93518778827a5c5745d532d7a4079886e1647924bee7ef1c14d latest
 ```
 
 ## Install updates
@@ -45,9 +60,15 @@ You can verify that the image you have locally matches the stored signatures, an
 dangerzone-image verify-local ghcr.io/almet/dangerzone/dangerzone
 ```
 
-## Air-gapped environments
+## Installing image updates to air-gapped environments
 
-In order to make updates on an air-gapped environment, you will need to prepare an archive for the air-gapped environment. This archive will contain all the needed material to validate that the new container image has been signed and is valid.
+Three steps are required:
+
+1. Prepare the archive
+2. Transfer the archive to the air-gapped system
+3. Install the archive on the air-gapped system
+
+This archive will contain all the needed material to validate that the new container image has been signed and is valid.
 
 On the machine on which you prepare the packages:
 

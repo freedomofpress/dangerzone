@@ -192,13 +192,22 @@ def container_pull(image: str) -> bool:
     return process.returncode == 0
 
 
-def get_local_image_hash(image: str) -> Optional[str]:
+def get_local_image_digest(image: str) -> Optional[str]:
     """
     Returns a image hash from a local image name
     """
-    cmd = [get_runtime_name(), "image", "inspect", image, "-f", "{{.Digest}}"]
+    # Get the image hash from the podman images command, as
+    # podman inspect returns a the digest of the architecture-bound image
+    cmd = [get_runtime_name(), "images", image, "--format", "{{.Digest}}"]
+    log.debug(" ".join(cmd))
     try:
         result = subprocess.run(cmd, capture_output=True, check=True)
+        lines = result.stdout.decode().strip().split("\n")
+        if len(lines) != 1:
+            raise errors.MultipleImagesFoundException(
+                f"Expected a single line of output, got {len(lines)} lines"
+            )
+        return lines[0].replace("sha256:", "")
     except subprocess.CalledProcessError as e:
         return None
     else:

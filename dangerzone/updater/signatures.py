@@ -105,7 +105,7 @@ def verify_signature(signature: dict, image_hash: str, pubkey: str) -> bool:
 
 def new_image_release(image: str) -> bool:
     remote_hash = registry.get_manifest_hash(image)
-    local_hash = runtime.get_local_image_hash(image)
+    local_hash = runtime.get_local_image_digest(image)
     log.debug("Remote hash: %s", remote_hash)
     log.debug("Local hash: %s", local_hash)
     return remote_hash != local_hash
@@ -181,7 +181,8 @@ def upgrade_container_image_airgapped(container_tar: str, pubkey: str) -> str:
         index_json["manifests"] = [
             manifest
             for manifest in index_json["manifests"]
-            if manifest["annotations"].get("kind") != "dev.cosignproject.cosign/sigs"
+            if manifest["annotations"].get("kind")
+            in ("dev.cosignproject.cosign/imageIndex", "dev.cosignproject.cosign/image")
         ]
 
         with open(signature_filename, "rb") as f:
@@ -317,7 +318,7 @@ def verify_local_image(image: str, pubkey: str) -> bool:
     """
     log.info(f"Verifying local image {image} against pubkey {pubkey}")
     try:
-        image_hash = runtime.get_local_image_hash(image)
+        image_hash = runtime.get_local_image_digest(image)
     except subprocess.CalledProcessError:
         raise errors.ImageNotFound(f"The image {image} does not exist locally")
 

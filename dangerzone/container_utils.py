@@ -8,7 +8,8 @@ from typing import List, Optional, Tuple
 from . import errors
 from .util import get_resource_path, get_subprocess_startupinfo
 
-CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+CONTAINER_NAME = "ghcr.io/almet/dangerzone/dangerzone"
 
 log = logging.getLogger(__name__)
 
@@ -108,12 +109,6 @@ def delete_image_tag(tag: str) -> None:
             f"Couldn't delete old container image '{name}', so leaving it there."
             f" Original error: {e}"
         )
-
-
-def get_expected_tag() -> str:
-    """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
-    with open(get_resource_path("image-id.txt")) as f:
-        return f.read().strip()
 
 
 def load_image_tarball_in_memory() -> None:

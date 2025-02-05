@@ -15,10 +15,22 @@ __all__ = [
 ]
 
 SIGSTORE_BUNDLE = "application/vnd.dev.sigstore.bundle.v0.3+json"
-ACCEPT_MANIFESTS_HEADER="application/vnd.docker.distribution.manifest.v1+json,application/vnd.docker.distribution.manifest.v1+prettyjws,application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json,application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.oci.image.index.v1+json"
+IMAGE_INDEX_MEDIA_TYPE = "application/vnd.oci.image.index.v1+json"
+ACCEPT_MANIFESTS_HEADER = ",".join(
+    [
+        "application/vnd.docker.distribution.manifest.v1+json",
+        "application/vnd.docker.distribution.manifest.v1+prettyjws",
+        "application/vnd.docker.distribution.manifest.v2+json",
+        "application/vnd.oci.image.manifest.v1+json",
+        "application/vnd.docker.distribution.manifest.list.v2+json",
+        IMAGE_INDEX_MEDIA_TYPE,
+    ]
+)
 
 
-class Image(namedtuple("Image", ["registry", "namespace", "image_name", "tag"])):
+class Image(
+    namedtuple("Image", ["registry", "namespace", "image_name", "tag", "digest"])
+):
     __slots__ = ()
 
     @property
@@ -130,6 +142,8 @@ class RegistryClient:
 
         return hashlib.sha256(tag_manifest_content).hexdigest()
 
+
+# XXX Refactor this with regular functions rather than a class
 def get_manifest_hash(image_str: str) -> str:
     image = parse_image_location(image_str)
     return RegistryClient(image).get_manifest_hash(image.tag)

@@ -1,6 +1,6 @@
-import hashlib
 import re
 from collections import namedtuple
+from hashlib import sha256
 from typing import Dict, Optional, Tuple
 
 import requests
@@ -8,7 +8,7 @@ import requests
 from . import errors, log
 
 __all__ = [
-    "get_manifest_hash",
+    "get_manifest_digest",
     "list_tags",
     "get_manifest",
     "parse_image_location",
@@ -28,9 +28,7 @@ ACCEPT_MANIFESTS_HEADER = ",".join(
 )
 
 
-class Image(
-    namedtuple("Image", ["registry", "namespace", "image_name", "tag", "digest"])
-):
+class Image(namedtuple("Image", ["registry", "namespace", "image_name", "tag"])):
     __slots__ = ()
 
     @property
@@ -101,7 +99,8 @@ class RegistryClient:
         return tags
 
     def get_manifest(
-        self, tag: str,
+        self,
+        tag: str,
     ) -> requests.Response:
         """Get manifest information for a specific tag"""
         manifest_url = f"{self._image_url}/manifests/{tag}"
@@ -123,8 +122,8 @@ class RegistryClient:
             .get("manifests")
         )
 
-    def get_blob(self, hash: str) -> requests.Response:
-        url = f"{self._image_url}/blobs/{hash}"
+    def get_blob(self, digest: str) -> requests.Response:
+        url = f"{self._image_url}/blobs/{digest}"
         response = requests.get(
             url,
             headers={
@@ -134,19 +133,19 @@ class RegistryClient:
         response.raise_for_status()
         return response
 
-    def get_manifest_hash(
+    def get_manifest_digest(
         self, tag: str, tag_manifest_content: Optional[bytes] = None
     ) -> str:
         if not tag_manifest_content:
             tag_manifest_content = self.get_manifest(tag).content
 
-        return hashlib.sha256(tag_manifest_content).hexdigest()
+        return sha256(tag_manifest_content).hexdigest()
 
 
 # XXX Refactor this with regular functions rather than a class
-def get_manifest_hash(image_str: str) -> str:
+def get_manifest_digest(image_str: str) -> str:
     image = parse_image_location(image_str)
-    return RegistryClient(image).get_manifest_hash(image.tag)
+    return RegistryClient(image).get_manifest_digest(image.tag)
 
 
 def list_tags(image_str: str) -> list:

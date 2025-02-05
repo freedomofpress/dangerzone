@@ -29,9 +29,9 @@ def main(debug: bool) -> None:
 @click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
 def upgrade(image: str, pubkey: str) -> None:
     """Upgrade the image to the latest signed version."""
-    manifest_hash = registry.get_manifest_hash(image)
+    manifest_digest = registry.get_manifest_digest(image)
     try:
-        is_upgraded = signatures.upgrade_container_image(image, manifest_hash, pubkey)
+        is_upgraded = signatures.upgrade_container_image(image, manifest_digest, pubkey)
         if is_upgraded:
             click.echo(f"✅ The local image {image} has been upgraded")
             click.echo(f"✅ The image has been signed with {pubkey}")

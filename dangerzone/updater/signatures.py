@@ -11,6 +11,7 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Dict, List, Optional, Tuple
 
 from .. import container_utils as runtime
+from ..util import get_resource_path
 from . import cosign, errors, log, registry
 
 try:
@@ -24,6 +25,7 @@ def get_config_dir() -> Path:
 
 
 # XXX Store this somewhere else.
+DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
 SIGNATURES_PATH = get_config_dir() / "signatures"
 __all__ = [
     "verify_signature",
@@ -103,12 +105,15 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str) -> bool:
     return False
 
 
-def is_update_available(image: str) -> bool:
+def is_update_available(image: str) -> (bool, Optional[str]):
     remote_digest = registry.get_manifest_digest(image)
     local_digest = runtime.get_local_image_digest(image)
     log.debug("Remote digest: %s", remote_digest)
     log.debug("Local digest: %s", local_digest)
-    return remote_digest != local_digest
+    has_update = remote_digest != local_digest
+    if has_update:
+        return True, remote_digest
+    return False, None
 
 
 def verify_signatures(
@@ -124,7 +129,8 @@ def verify_signatures(
 
 def upgrade_container_image(image: str, manifest_digest: str, pubkey: str) -> bool:
     """Verify and upgrade the image to the latest, if signed."""
-    if not is_update_available(image):
+    update_available, _ = is_update_available(image)
+    if not update_available:
         raise errors.ImageAlreadyUpToDate("The image is already up to date")
 
     signatures = get_remote_signatures(image, manifest_digest)

@@ -4,13 +4,11 @@ import logging
 
 import click
 
-from ..util import get_resource_path
 from . import attestations, errors, log, registry, signatures
 
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
 DEFAULT_BRANCH = "main"
 DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
-PUBKEY_DEFAULT_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
 
 
 @click.group()
@@ -26,7 +24,7 @@ def main(debug: bool) -> None:
 
 @main.command()
 @click.argument("image", default=DEFAULT_IMAGE_NAME)
-@click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
+@click.option("--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION)
 def upgrade(image: str, pubkey: str) -> None:
     """Upgrade the image to the latest signed version."""
     manifest_digest = registry.get_manifest_digest(image)

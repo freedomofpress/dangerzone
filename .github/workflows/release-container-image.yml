@@ -2,6 +2,12 @@ name: Release multi-arch container image
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+      - "test/**"
+  schedule:
+    - cron: "0 0 * * *" # Run every day at 00:00 UTC.
 
 env:
   REGISTRY: ghcr.io/${{ github.repository_owner }}

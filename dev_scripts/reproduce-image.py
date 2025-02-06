@@ -140,11 +140,19 @@ def diffoci_diff(runtime, source, local_target, platform=None):
         )
 
 
-def build_image(tag, use_cache=False, platform=None, runtime=None, date=None):
+def build_image(
+    tag,
+    use_cache=False,
+    platform=None,
+    runtime=None,
+    date=None,
+    buildx=False
+):
     """Build the Dangerzone container image with a special tag."""
     platform_args = [] if not platform else ["--platform", platform]
     runtime_args = [] if not runtime else ["--runtime", runtime]
     date_args = [] if not date else ["--debian-archive-date", date]
+    buildx_args = [] if not buildx else ["--buildx"]
     run(
         "python3",
         "./install/common/build-image.py",
@@ -154,6 +162,7 @@ def build_image(tag, use_cache=False, platform=None, runtime=None, date=None):
         *date_args,
         *platform_args,
         *runtime_args,
+        *buildx_args,
         "--tag",
         tag,
     )
@@ -168,6 +177,11 @@ def parse_args():
     parser = argparse.ArgumentParser(
         prog=sys.argv[0],
         description="Dev script for verifying container image reproducibility",
+    )
+    parser.add_argument(
+        "--buildx",
+        action="store_true",
+        help="Use the buildx platform of Docker or Podman",
     )
     parser.add_argument(
         "--platform",
@@ -234,6 +248,7 @@ def main():
         args.platform,
         args.runtime,
         args.debian_archive_date,
+        args.buildx,
     )
 
     logger.info(

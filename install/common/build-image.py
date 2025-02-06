@@ -69,6 +69,11 @@ def main():
         help="Do not save the container image as a tarball in share/container.tar.gz",
     )
     parser.add_argument(
+        "--buildx",
+        action="store_true",
+        help="Use the buildx platform of Docker or Podman",
+    )
+    parser.add_argument(
         "--compress-level",
         type=int,
         choices=range(0, 10),
@@ -110,6 +115,7 @@ def main():
 
     # Build the container image, and tag it with the calculated tag
     print("Building container image")
+    buildx_args = ["buildx", "build"] if args.buildx else ["build"]
     cache_args = [] if args.use_cache else ["--no-cache"]
     platform_args = [] if not args.platform else ["--platform", args.platform]
     build_args = []
@@ -119,11 +125,13 @@ def main():
     subprocess.run(
         [
             args.runtime,
-            "build",
+            *buildx_args,
             BUILD_CONTEXT,
             *build_args,
             *cache_args,
             *platform_args,
+            "--provenance",
+            "false",
             "-f",
             "Dockerfile",
             "--tag",

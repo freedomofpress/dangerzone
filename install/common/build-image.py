@@ -101,13 +101,8 @@ def main():
     print(f"Building for architecture '{ARCH}'")
 
     tag = args.tag or determine_git_tag()
-    image_name_tagged = IMAGE_NAME + ":" + tag
-    build_args = []
-
-    if args.debian_archive_date:
-        print(f"Using Debian archive snapshot date '{args.debian_archive_date}'")
-        build_args = ["--build-arg", f"DEBIAN_ARCHIVE_DATE={args.debian_archive_date}"]
-        image_name_tagged = f"{args.debian_archive_date}-{image_name_tagged}"
+    date = f"{args.debian_archive_date}-" if args.debian_archive_date and not args.tag else ""
+    image_name_tagged = IMAGE_NAME + ":" + date + tag
 
     print(f"Will tag the container image as '{image_name_tagged}'")
     with open(image_id_path, "w") as f:
@@ -117,6 +112,10 @@ def main():
     print("Building container image")
     cache_args = [] if args.use_cache else ["--no-cache"]
     platform_args = [] if not args.platform else ["--platform", args.platform]
+    build_args = []
+    if args.debian_archive_date:
+        build_args = ["--build-arg", f"DEBIAN_ARCHIVE_DATE={args.debian_archive_date}"]
+
     subprocess.run(
         [
             args.runtime,

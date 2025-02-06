@@ -115,12 +115,19 @@ def main():
 
     # Build the container image, and tag it with the calculated tag
     print("Building container image")
-    buildx_args = ["buildx", "build"] if args.buildx else ["build"]
     cache_args = [] if args.use_cache else ["--no-cache"]
     platform_args = [] if not args.platform else ["--platform", args.platform]
     build_args = []
     if args.debian_archive_date:
         build_args = ["--build-arg", f"DEBIAN_ARCHIVE_DATE={args.debian_archive_date}"]
+    buildx_args = []
+    if args.buildx:
+        buildx_args = [
+            "buildx",
+            "build",
+            "--output",
+            "type=image,name-canonical=true,push=false,push-by-digest=false",
+        ]
 
     subprocess.run(
         [

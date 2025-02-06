@@ -6,9 +6,9 @@ import click
 
 from . import attestations, errors, log, registry, signatures
 
-DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
+DEFAULT_REPOSITORY = "almet/dangerzone"
 DEFAULT_BRANCH = "main"
-DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
+DEFAULT_IMAGE_NAME = "ghcr.io/almet/dangerzone/dangerzone"
 
 
 @click.group()

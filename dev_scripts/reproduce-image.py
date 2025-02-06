@@ -31,6 +31,11 @@ DIFFOCI_PATH = (
 )
 IMAGE_NAME = "dangerzone.rocks/dangerzone"
 
+if platform.system() in ["Darwin", "Windows"]:
+    CONTAINER_RUNTIME = "docker"
+elif platform.system() == "Linux":
+    CONTAINER_RUNTIME = "podman"
+
 
 def run(*args):
     """Simple function that runs a command, validates it, and returns the output"""

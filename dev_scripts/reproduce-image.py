@@ -140,16 +140,18 @@ def diffoci_diff(runtime, source, local_target, platform=None):
         )
 
 
-def build_image(tag, use_cache=False, platform=None, runtime=None):
+def build_image(tag, use_cache=False, platform=None, runtime=None, date=None):
     """Build the Dangerzone container image with a special tag."""
     platform_args = [] if not platform else ["--platform", platform]
     runtime_args = [] if not runtime else ["--runtime", runtime]
+    date_args = [] if not date else ["--debian-archive-date", date]
     run(
         "python3",
         "./install/common/build-image.py",
         "--no-save",
         "--use-cache",
         str(use_cache),
+        *date_args,
         *platform_args,
         *runtime_args,
         "--tag",
@@ -199,6 +201,11 @@ def parse_args():
         action="store_true",
         help="Skip checking if the source image tag contains the current Git commit",
     )
+    parser.add_argument(
+        "--debian-archive-date",
+        default=None,
+        help="Use a specific Debian snapshot archive, by its date",
+    )
     return parser.parse_args()
 
 
@@ -221,7 +228,13 @@ def main():
     tag = f"reproduce-{commit}"
     target = f"{IMAGE_NAME}:{tag}"
     logger.info(f"Building container image and tagging it as '{target}'")
-    build_image(tag, args.use_cache, args.platform, args.runtime)
+    build_image(
+        tag,
+        args.use_cache,
+        args.platform,
+        args.runtime,
+        args.debian_archive_date,
+    )
 
     logger.info(
         f"Ensuring that source image '{args.source}' is semantically identical with"

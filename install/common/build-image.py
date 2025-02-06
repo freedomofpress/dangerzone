@@ -107,7 +107,7 @@ def main():
     if args.debian_archive_date:
         print(f"Using Debian archive snapshot date '{args.debian_archive_date}'")
         build_args = ["--build-arg", f"DEBIAN_ARCHIVE_DATE={args.debian_archive_date}"]
-        image_name_tagged = "f{args.debian_archive_date}-{image_name_tagged}"
+        image_name_tagged = f"{args.debian_archive_date}-{image_name_tagged}"
 
     print(f"Will tag the container image as '{image_name_tagged}'")
     with open(image_id_path, "w") as f:

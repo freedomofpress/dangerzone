@@ -64,8 +64,9 @@ jobs:
           file: Dockerfile
           build-args: |
             DEBIAN_ARCHIVE_DATE=${{ steps.date.outputs.date }}
-          ## Remove potentially incorrect Docker provenance.
-          #provenance: false
+          # Remove potentially incorrect Docker provenance that cannot be
+          # reproduced.
+          provenance: false
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,"name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}",push-by-digest=true,name-canonical=true,push=true

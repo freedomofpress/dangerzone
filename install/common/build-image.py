@@ -88,6 +88,11 @@ def main():
         default=None,
         help="Provide a custom tag for the image (for development only)",
     )
+    parser.add_argument(
+        "--debian-archive-date",
+        default=None,
+        help="Use a specific Debian snapshot archive, by its date",
+    )
     args = parser.parse_args()
 
     tarball_path = Path("share") / "container.tar.gz"
@@ -97,6 +102,12 @@ def main():
 
     tag = args.tag or determine_git_tag()
     image_name_tagged = IMAGE_NAME + ":" + tag
+    build_args = []
+
+    if args.debian_archive_date:
+        print(f"Using Debian archive snapshot date '{args.debian_archive_date}'")
+        build_args = ["--build-arg", f"DEBIAN_ARCHIVE_DATE={args.debian_archive_date}"]
+        image_name_tagged = "f{args.debian_archive_date}-{image_name_tagged}"
 
     print(f"Will tag the container image as '{image_name_tagged}'")
     with open(image_id_path, "w") as f:
@@ -111,6 +122,7 @@ def main():
             args.runtime,
             "build",
             BUILD_CONTEXT,
+            *build_args,
             *cache_args,
             *platform_args,
             "-f",

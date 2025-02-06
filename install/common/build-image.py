@@ -59,6 +59,11 @@ def main():
         help=f"The container runtime for building the image (default: {CONTAINER_RUNTIME})",
     )
     parser.add_argument(
+        "--platform",
+        default=None,
+        help=f"The platform for building the image (default: current platform)",
+    )
+    parser.add_argument(
         "--no-save",
         action="store_true",
         help="Do not save the container image as a tarball in share/container.tar.gz",
@@ -100,12 +105,14 @@ def main():
     # Build the container image, and tag it with the calculated tag
     print("Building container image")
     cache_args = [] if args.use_cache else ["--no-cache"]
+    platform_args = [] if not args.platform else ["--platform", args.platform]
     subprocess.run(
         [
             args.runtime,
             "build",
             BUILD_CONTEXT,
             *cache_args,
+            *platform_args,
             "-f",
             "Dockerfile",
             "--tag",

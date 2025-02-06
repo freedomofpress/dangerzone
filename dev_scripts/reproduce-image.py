@@ -114,9 +114,9 @@ def diffoci_download():
     DIFFOCI_PATH.chmod(DIFFOCI_PATH.stat().st_mode | stat.S_IEXEC)
 
 
-def diffoci_diff(source, local_target):
+def diffoci_diff(runtime, source, local_target):
     """Diff the source image against the recently built target image using diffoci."""
-    target = f"podman://{local_target}"
+    target = f"{runtime}://{local_target}"
     try:
         return run(
             str(DIFFOCI_PATH),
@@ -150,11 +150,17 @@ def parse_args():
     image_tag = git_determine_tag()
     # TODO: Remove the local "podman://" prefix once we have started pushing images to a
     # remote.
-    default_image_name = f"podman://{IMAGE_NAME}:{image_tag}"
+    default_image_name = f"{IMAGE_NAME}:{image_tag}"
 
     parser = argparse.ArgumentParser(
         prog=sys.argv[0],
         description="Dev script for verifying container image reproducibility",
+    )
+    parser.add_argument(
+        "--runtime",
+        choices=["docker", "podman"],
+        default=CONTAINER_RUNTIME,
+        help=f"The container runtime for building the image (default: {CONTAINER_RUNTIME})",
     )
     parser.add_argument(
         "--source",

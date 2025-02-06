@@ -42,7 +42,7 @@ def upgrade(image: str, pubkey: str) -> None:
 
 @main.command()
 @click.argument("image_filename")
-@click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
+@click.option("--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION)
 def load_archive(image_filename: str, pubkey: str) -> None:
     """Upgrade the local image to the one in the archive."""
     try:
@@ -68,7 +68,7 @@ def prepare_archive(image: str, output: str) -> None:
 
 @main.command()
 @click.argument("image", default=DEFAULT_IMAGE_NAME)
-@click.option("--pubkey", default=PUBKEY_DEFAULT_LOCATION)
+@click.option("--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION)
 def verify_local(image: str, pubkey: str) -> None:
     """
     Verify the local image signature against a public key and the stored signatures.

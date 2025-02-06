@@ -119,9 +119,10 @@ def diffoci_download():
     DIFFOCI_PATH.chmod(DIFFOCI_PATH.stat().st_mode | stat.S_IEXEC)
 
 
-def diffoci_diff(runtime, source, local_target):
+def diffoci_diff(runtime, source, local_target, platform=None):
     """Diff the source image against the recently built target image using diffoci."""
     target = f"{runtime}://{local_target}"
+    platform_args = [] if not platform else ["--platform", platform]
     try:
         return run(
             str(DIFFOCI_PATH),
@@ -130,6 +131,7 @@ def diffoci_diff(runtime, source, local_target):
             target,
             "--semantic",
             "--verbose",
+            *platform_args,
         )
     except subprocess.CalledProcessError as e:
         error = e.stdout.decode()
@@ -138,14 +140,18 @@ def diffoci_diff(runtime, source, local_target):
         )
 
 
-def build_image(tag, use_cache=False):
+def build_image(tag, use_cache=False, platform=None, runtime=None):
     """Build the Dangerzone container image with a special tag."""
+    platform_args = [] if not platform else ["--platform", platform]
+    runtime_args = [] if not runtime else ["--runtime", runtime]
     run(
         "python3",
         "./install/common/build-image.py",
         "--no-save",
         "--use-cache",
         str(use_cache),
+        *platform_args,
+        *runtime_args,
         "--tag",
         tag,
     )
@@ -160,6 +166,11 @@ def parse_args():
     parser = argparse.ArgumentParser(
         prog=sys.argv[0],
         description="Dev script for verifying container image reproducibility",
+    )
+    parser.add_argument(
+        "--platform",
+        default=None,
+        help=f"The platform for building the image (default: current platform)",
     )
     parser.add_argument(
         "--runtime",
@@ -182,6 +193,12 @@ def parse_args():
         action="store_true",
         help="Whether to reuse the build cache (off by default for better reproducibility)",
     )
+    parser.add_argument(
+        "--skip-check-commit",
+        default=False,
+        action="store_true",
+        help="Skip checking if the source image tag contains the current Git commit",
+    )
     return parser.parse_args()
 
 
@@ -193,9 +210,10 @@ def main():
     )
     args = parse_args()
 
-    logger.info(f"Ensuring that current Git commit matches image '{args.source}'")
     commit = git_commit_get()
-    git_verify(commit, args.source)
+    if not args.skip_check_commit:
+        logger.info(f"Ensuring that current Git commit matches image '{args.source}'")
+        git_verify(commit, args.source)
 
     if not diffoci_is_installed():
         diffoci_download()
@@ -203,14 +221,14 @@ def main():
     tag = f"reproduce-{commit}"
     target = f"{IMAGE_NAME}:{tag}"
     logger.info(f"Building container image and tagging it as '{target}'")
-    build_image(tag, args.use_cache)
+    build_image(tag, args.use_cache, args.platform, args.runtime)
 
     logger.info(
         f"Ensuring that source image '{args.source}' is semantically identical with"
         f" built image '{target}'"
     )
     try:
-        diffoci_diff(args.source, target)
+        diffoci_diff(args.runtime, args.source, target, args.platform)
     except subprocess.CalledProcessError as e:
         raise RuntimeError(
             f"Could not reproduce image {args.source} for commit {commit}"

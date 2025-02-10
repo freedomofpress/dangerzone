@@ -121,7 +121,7 @@ def get_manifest(image: str) -> None:
 )
 @click.option(
     "--workflow",
-    default=".github/workflows/multi_arch_build.yml",
+    default=".github/workflows/release-container-image.yml",
     help="The path of the GitHub actions workflow this image was created from",
 )
 def attest_provenance(

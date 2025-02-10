@@ -37,3 +37,12 @@ ignore:
   #       [bookworm] - raptor2 <postponed> (Minor issue, revisit when fixed upstream)
   #
   - vulnerability: CVE-2024-57823
+  # CVE-2025-0665
+  # ==============
+  #
+  # Debian tracker: https://security-tracker.debian.org/tracker/CVE-2025-0665
+  # Verdict: Dangerzone is not affected because the vulnerable code is not
+  # present in Debian Bookworm. Also, libcurl is an HTTP client, and the
+  # Dangerzone container does not make any network calls.
+  - vulnerability: CVE-2025-0665
+

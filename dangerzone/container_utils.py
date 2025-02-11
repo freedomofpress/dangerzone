@@ -10,7 +10,8 @@ from . import errors
 from .settings import Settings
 from .util import get_resource_path, get_subprocess_startupinfo
 
-CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+CONTAINER_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 
 log = logging.getLogger(__name__)
 
@@ -149,12 +150,6 @@ def delete_image_tag(tag: str) -> None:
         )
 
 
-def get_expected_tag() -> str:
-    """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
-    with get_resource_path("image-id.txt").open() as f:
-        return f.read().strip()
-
-
 def load_image_tarball() -> None:
     runtime = Runtime()
     log.info("Installing Dangerzone container image...")
@@ -199,3 +194,68 @@ def load_image_tarball() -> None:
         delete_image_tag(bad_tag)
 
     log.info("Successfully installed container image")
+
+
+def tag_image_by_digest(digest: str, tag: str) -> None:
+    """Tag a container image by digest.
+    The sha256: prefix should be omitted from the digest.
+    """
+    runtime = Runtime()
+    image_id = get_image_id_by_digest(digest)
+    cmd = [str(runtime.path), "tag", image_id, tag]
+    log.debug(" ".join(cmd))
+    subprocess.run(cmd, startupinfo=get_subprocess_startupinfo(), check=True)
+
+
+def get_image_id_by_digest(digest: str) -> str:
+    """Get an image ID from a digest.
+    The sha256: prefix should be omitted from the digest.
+    """
+    runtime = Runtime()
+    cmd = [
+        str(runtime.path),
+        "images",
+        "-f",
+        f"digest=sha256:{digest}",
+        "--format",
+        "{{.Id}}",
+    ]
+    log.debug(" ".join(cmd))
+    process = subprocess.run(
+        cmd, startupinfo=get_subprocess_startupinfo(), check=True, capture_output=True
+    )
+    # In case we have multiple lines, we only want the first one.
+    return process.stdout.decode().strip().split("\n")[0]
+
+
+def container_pull(image: str) -> bool:
+    """Pull a container image from a registry."""
+    runtime = Runtime()
+    cmd = [str(runtime.path), "pull", f"{image}"]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    process.communicate()
+    return process.returncode == 0
+
+
+def get_local_image_digest(image: str) -> str:
+    """
+    Returns a image hash from a local image name
+    """
+    # Get the image hash from the "podman images" command.
+    # It's not possible to use "podman inspect" here as it
+    # returns the digest of the architecture-bound image
+    runtime = Runtime()
+    cmd = [str(runtime.path), "images", image, "--format", "{{.Digest}}"]
+    log.debug(" ".join(cmd))
+    try:
+        result = subprocess.run(cmd, capture_output=True, check=True)
+        lines = result.stdout.decode().strip().split("\n")
+        if len(lines) != 1:
+            raise errors.MultipleImagesFoundException(
+                f"Expected a single line of output, got {len(lines)} lines"
+            )
+        return lines[0].replace("sha256:", "")
+    except subprocess.CalledProcessError as e:
+        raise errors.ImageNotPresentException(
+            f"The image {image} does not exist locally"
+        )

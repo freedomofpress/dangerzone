@@ -132,7 +132,6 @@ for_each_doc = pytest.mark.parametrize(
     "doc", test_docs, ids=[str(doc.name) for doc in test_docs]
 )
 
-
 # External Docs - base64 docs encoded for externally sourced documents
 # XXX to reduce the chance of accidentally opening them
 test_docs_external_dir = Path(__file__).parent.joinpath(SAMPLE_EXTERNAL_DIRECTORY)

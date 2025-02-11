@@ -3,23 +3,22 @@ import logging
 import platform
 import shutil
 import subprocess
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from . import errors
 from .util import get_resource_path, get_subprocess_startupinfo
 
-CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+CONTAINER_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 
 log = logging.getLogger(__name__)
 
 
 def get_runtime_name() -> str:
     if platform.system() == "Linux":
-        runtime_name = "podman"
-    else:
-        # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
-        runtime_name = "docker"
-    return runtime_name
+        return "podman"
+    # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
+    return "docker"
 
 
 def get_runtime_version() -> Tuple[int, int]:
@@ -112,13 +111,7 @@ def delete_image_tag(tag: str) -> None:
         )
 
 
-def get_expected_tag() -> str:
-    """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
-    with open(get_resource_path("image-id.txt")) as f:
-        return f.read().strip()
-
-
-def load_image_tarball() -> None:
+def load_image_tarball_from_gzip() -> None:
     log.info("Installing Dangerzone container image...")
     p = subprocess.Popen(
         [get_runtime(), "load"],
@@ -147,3 +140,70 @@ def load_image_tarball() -> None:
         )
 
     log.info("Successfully installed container image from")
+
+
+def load_image_tarball_from_tar(tarball_path: str) -> None:
+    cmd = [get_runtime(), "load", "-i", tarball_path]
+    subprocess.run(cmd, startupinfo=get_subprocess_startupinfo(), check=True)
+
+    log.info("Successfully installed container image from %s", tarball_path)
+
+
+def tag_image_by_digest(digest: str, tag: str) -> None:
+    """Tag a container image by digest.
+    The sha256: prefix should be omitted from the digest.
+    """
+    image_id = get_image_id_by_digest(digest)
+    cmd = [get_runtime(), "tag", image_id, tag]
+    log.debug(" ".join(cmd))
+    subprocess.run(cmd, startupinfo=get_subprocess_startupinfo(), check=True)
+
+
+def get_image_id_by_digest(digest: str) -> str:
+    """Get an image ID from a digest.
+    The sha256: prefix should be omitted from the digest.
+    """
+    cmd = [
+        get_runtime(),
+        "images",
+        "-f",
+        f"digest=sha256:{digest}",
+        "--format",
+        "{{.Id}}",
+    ]
+    log.debug(" ".join(cmd))
+    process = subprocess.run(
+        cmd, startupinfo=get_subprocess_startupinfo(), check=True, capture_output=True
+    )
+    # In case we have multiple lines, we only want the first one.
+    return process.stdout.decode().strip().split("\n")[0]
+
+
+def container_pull(image: str) -> bool:
+    """Pull a container image from a registry."""
+    cmd = [get_runtime_name(), "pull", f"{image}"]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    process.communicate()
+    return process.returncode == 0
+
+
+def get_local_image_digest(image: str) -> Optional[str]:
+    """
+    Returns a image hash from a local image name
+    """
+    # Get the image hash from the podman images command, as
+    # podman inspect returns a the digest of the architecture-bound image
+    cmd = [get_runtime_name(), "images", image, "--format", "{{.Digest}}"]
+    log.debug(" ".join(cmd))
+    try:
+        result = subprocess.run(cmd, capture_output=True, check=True)
+        lines = result.stdout.decode().strip().split("\n")
+        if len(lines) != 1:
+            raise errors.MultipleImagesFoundException(
+                f"Expected a single line of output, got {len(lines)} lines"
+            )
+        return lines[0].replace("sha256:", "")
+    except subprocess.CalledProcessError as e:
+        return None
+    else:
+        return result.stdout.strip().decode().strip("sha256:")

@@ -22,13 +22,13 @@ In case of sucess, it will report back:
 
 ```
 🎉 Successfully verified image
-'ghcr.io/freedomofpress/dangerzone/dangerzone:20250129-0.8.0-149-gbf2f5ac@sha256:4da441235e84e93518778827a5c5745d532d7a4079886e1647924bee7ef1c14d'
+'ghcr.io/freedomofpress/dangerzone/dangerzone:<tag>@sha256:<digest>'
 and its associated claims:
 - ✅ SLSA Level 3 provenance
-- ✅ GitHub repo: apyrgio/dangerzone
-- ✅ GitHub actions workflow: .github/workflows/multi_arch_build.yml
-- ✅ Git branch: test/multi-arch
-- ✅ Git commit: bf2f5accc24bd15a4f5c869a7f0b03b8fe48dfb6
+- ✅ GitHub repo: freedomofpress/dangerzone
+- ✅ GitHub actions workflow: <workflow>
+- ✅ Git branch: <branch>
+- ✅ Git commit: <commit>
 ```
 
 ## Sign and publish the remote image
@@ -37,11 +37,11 @@ Once the image has been reproduced locally, we can add a signature to the contai
 and update the `latest` tag to point to the proper hash.
 
 ```bash
-cosign sign --sk ghcr.io/freedomofpress/dangerzone/dangerzone:20250129-0.8.0-149-gbf2f5ac@sha256:4da441235e84e93518778827a5c5745d532d7a4079886e1647924bee7ef1c14d
+cosign sign --sk ghcr.io/freedomofpress/dangerzone/dangerzone:${TAG}@sha256:${DIGEST}
 
 # And mark bump latest
 crane auth login ghcr.io -u USERNAME --password $(cat pat_token)
-crane tag ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:4da441235e84e93518778827a5c5745d532d7a4079886e1647924bee7ef1c14d latest
+crane tag ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST} latest
 ```
 
 ## Install updates
@@ -49,7 +49,7 @@ crane tag ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:4da441235e84e93518
 To check if a new container image has been released, and update your local installation with it, you can use the following commands:
 
 ```bash
-dangerzone-image upgrade ghcr.io/almet/dangerzone/dangerzone
+dangerzone-image upgrade ghcr.io/freedomofpress/dangerzone/dangerzone
 ```
 
 ## Verify locally
@@ -57,7 +57,7 @@ dangerzone-image upgrade ghcr.io/almet/dangerzone/dangerzone
 You can verify that the image you have locally matches the stored signatures, and that these have been signed with a trusted public key:
 
 ```bash
-dangerzone-image verify-local ghcr.io/almet/dangerzone/dangerzone
+dangerzone-image verify-local ghcr.io/freedomofpress/dangerzone/dangerzone
 ```
 
 ## Installing image updates to air-gapped environments
@@ -73,7 +73,7 @@ This archive will contain all the needed material to validate that the new conta
 On the machine on which you prepare the packages:
 
 ```bash
-dangerzone-image prepare-archive --output dz-fa94872.tar ghcr.io/almet/dangerzone/dangerzone@sha256:fa948726aac29a6ac49f01ec8fbbac18522b35b2491fdf716236a0b3502a2ca7
+dangerzone-image prepare-archive --output dz-fa94872.tar ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:<digest>
 ```
 
 On the airgapped machine, copy the file and run the following command:

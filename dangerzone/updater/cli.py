@@ -101,5 +101,54 @@ def get_manifest(image: str) -> None:
     click.echo(registry.get_manifest(image).content)
 
 
+@main.command()
+@click.argument("image_name")
+# XXX: Do we really want to check against this?
+@click.option(
+    "--branch",
+    default=DEFAULT_BRANCH,
+    help="The Git branch that the image was built from",
+)
+@click.option(
+    "--commit",
+    required=True,
+    help="The Git commit the image was built from",
+)
+@click.option(
+    "--repository",
+    default=DEFAULT_REPOSITORY,
+    help="The github repository to check the attestation for",
+)
+@click.option(
+    "--workflow",
+    default=".github/workflows/release-container-image.yml",
+    help="The path of the GitHub actions workflow this image was created from",
+)
+def attest_provenance(
+    image_name: str,
+    branch: str,
+    commit: str,
+    repository: str,
+    workflow: str,
+) -> None:
+    """
+    Look up the image attestation to see if the image has been built
+    on Github runners, and from a given repository.
+    """
+    # TODO: Parse image and make sure it has a tag. Might even check for a digest.
+    # parsed = registry.parse_image_location(image)
+
+    verified = attestations.verify(image_name, branch, commit, repository, workflow)
+    if verified:
+        click.echo(
+            f"🎉 Successfully verified image '{image_name}' and its associated claims:"
+        )
+        click.echo(f"- ✅ SLSA Level 3 provenance")
+        click.echo(f"- ✅ GitHub repo: {repository}")
+        click.echo(f"- ✅ GitHub actions workflow: {workflow}")
+        click.echo(f"- ✅ Git branch: {branch}")
+        click.echo(f"- ✅ Git commit: {commit}")
+
+
 if __name__ == "__main__":
     main()

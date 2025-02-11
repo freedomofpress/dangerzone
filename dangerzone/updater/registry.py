@@ -28,13 +28,7 @@ ACCEPT_MANIFESTS_HEADER = ",".join(
 )
 
 
-class Image(namedtuple("Image", ["registry", "namespace", "image_name", "tag"])):
-    __slots__ = ()
-
-    @property
-    def full_name(self) -> str:
-        tag = f":{self.tag}" if self.tag else ""
-        return f"{self.registry}/{self.namespace}/{self.image_name}{tag}"
+Image = namedtuple("Image", ["registry", "namespace", "image_name", "tag"])
 
 
 def parse_image_location(input_string: str) -> Image:
@@ -58,102 +52,67 @@ def parse_image_location(input_string: str) -> Image:
     )
 
 
-class RegistryClient:
-    def __init__(
-        self,
-        image: Image | str,
-    ):
-        if isinstance(image, str):
-            image = parse_image_location(image)
-
-        self._image = image
-        self._registry = image.registry
-        self._namespace = image.namespace
-        self._image_name = image.image_name
-        self._auth_token = None
-        self._base_url = f"https://{self._registry}"
-        self._image_url = f"{self._base_url}/v2/{self._namespace}/{self._image_name}"
-
-    def get_auth_token(self) -> Optional[str]:
-        if not self._auth_token:
-            auth_url = f"{self._base_url}/token"
-            response = requests.get(
-                auth_url,
-                params={
-                    "service": f"{self._registry}",
-                    "scope": f"repository:{self._namespace}/{self._image_name}:pull",
-                },
-            )
-            response.raise_for_status()
-            self._auth_token = response.json()["token"]
-        return self._auth_token
-
-    def get_auth_header(self) -> Dict[str, str]:
-        return {"Authorization": f"Bearer {self.get_auth_token()}"}
-
-    def list_tags(self) -> list:
-        url = f"{self._image_url}/tags/list"
-        response = requests.get(url, headers=self.get_auth_header())
-        response.raise_for_status()
-        tags = response.json().get("tags", [])
-        return tags
-
-    def get_manifest(
-        self,
-        tag: str,
-    ) -> requests.Response:
-        """Get manifest information for a specific tag"""
-        manifest_url = f"{self._image_url}/manifests/{tag}"
-        headers = {
-            "Accept": ACCEPT_MANIFESTS_HEADER,
-            "Authorization": f"Bearer {self.get_auth_token()}",
-        }
-
-        response = requests.get(manifest_url, headers=headers)
-        response.raise_for_status()
-        return response
-
-    def list_manifests(self, tag: str) -> list:
-        return (
-            self.get_manifest(
-                tag,
-            )
-            .json()
-            .get("manifests")
-        )
-
-    def get_blob(self, digest: str) -> requests.Response:
-        url = f"{self._image_url}/blobs/{digest}"
-        response = requests.get(
-            url,
-            headers={
-                "Authorization": f"Bearer {self.get_auth_token()}",
-            },
-        )
-        response.raise_for_status()
-        return response
-
-    def get_manifest_digest(
-        self, tag: str, tag_manifest_content: Optional[bytes] = None
-    ) -> str:
-        if not tag_manifest_content:
-            tag_manifest_content = self.get_manifest(tag).content
-
-        return sha256(tag_manifest_content).hexdigest()
+def _get_auth_header(image) -> Dict[str, str]:
+    auth_url = f"https://{image.registry}/token"
+    response = requests.get(
+        auth_url,
+        params={
+            "service": f"{image.registry}",
+            "scope": f"repository:{image.namespace}/{image.image_name}:pull",
+        },
+    )
+    response.raise_for_status()
+    token = response.json()["token"]
+    return {"Authorization": f"Bearer {token}"}
 
 
-# XXX Refactor this with regular functions rather than a class
-def get_manifest_digest(image_str: str) -> str:
-    image = parse_image_location(image_str)
-    return RegistryClient(image).get_manifest_digest(image.tag)
+def _url(image):
+    return f"https://{image.registry}/v2/{image.namespace}/{image.image_name}"
 
 
 def list_tags(image_str: str) -> list:
-    return RegistryClient(image_str).list_tags()
-
-
-def get_manifest(image_str: str) -> bytes:
     image = parse_image_location(image_str)
-    client = RegistryClient(image)
-    resp = client.get_manifest(image.tag)
-    return resp.content
+    url = f"{_url(image)}/tags/list"
+    response = requests.get(url, headers=_get_auth_header(image))
+    response.raise_for_status()
+    tags = response.json().get("tags", [])
+    return tags
+
+
+def get_manifest(image_str) -> requests.Response:
+    """Get manifest information for a specific tag"""
+    image = parse_image_location(image_str)
+    manifest_url = f"{_url(image)}/manifests/{image.tag}"
+    headers = {
+        "Accept": ACCEPT_MANIFESTS_HEADER,
+    }
+    headers.update(_get_auth_header(image))
+
+    response = requests.get(manifest_url, headers=headers)
+    response.raise_for_status()
+    return response
+
+
+def list_manifests(image_str) -> list:
+    return get_manifest(image_str).json().get("manifests")
+
+
+def get_blob(image, digest: str) -> requests.Response:
+    response = requests.get(
+        f"{_url(image)}/blobs/{digest}",
+        headers={
+            "Authorization": f"Bearer {_get_auth_token(image)}",
+        },
+    )
+    response.raise_for_status()
+    return response
+
+
+def get_manifest_digest(
+    image_str: str, tag_manifest_content: Optional[bytes] = None
+) -> str:
+    image = parse_image_location(image_str)
+    if not tag_manifest_content:
+        tag_manifest_content = get_manifest(image).content
+
+    return sha256(tag_manifest_content).hexdigest()

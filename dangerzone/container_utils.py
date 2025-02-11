@@ -9,7 +9,7 @@ from . import errors
 from .util import get_resource_path, get_subprocess_startupinfo
 
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
-CONTAINER_NAME = "ghcr.io/almet/dangerzone/dangerzone"
+CONTAINER_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 
 log = logging.getLogger(__name__)
 
@@ -111,7 +111,7 @@ def delete_image_tag(tag: str) -> None:
         )
 
 
-def load_image_tarball_in_memory() -> None:
+def load_image_tarball_from_gzip() -> None:
     log.info("Installing Dangerzone container image...")
     p = subprocess.Popen(
         [get_runtime(), "load"],
@@ -142,7 +142,7 @@ def load_image_tarball_in_memory() -> None:
     log.info("Successfully installed container image from")
 
 
-def load_image_tarball_file(tarball_path: str) -> None:
+def load_image_tarball_from_tar(tarball_path: str) -> None:
     cmd = [get_runtime(), "load", "-i", tarball_path]
     subprocess.run(cmd, startupinfo=get_subprocess_startupinfo(), check=True)
 

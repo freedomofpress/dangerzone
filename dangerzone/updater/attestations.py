@@ -3,7 +3,6 @@ from tempfile import NamedTemporaryFile
 
 from . import cosign
 
-
 # NOTE: You can grab the SLSA attestation for an image/tag pair with the following
 # commands:
 #
@@ -51,7 +50,11 @@ def generate_cue_policy(repo, workflow, commit, branch):
 
 
 def verify(
-    image_name: str, branch: str, commit: str, repository: str, workflow: str,
+    image_name: str,
+    branch: str,
+    commit: str,
+    repository: str,
+    workflow: str,
 ) -> bool:
     """
     Look up the image attestation to see if the image has been built

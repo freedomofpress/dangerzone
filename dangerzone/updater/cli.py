@@ -6,9 +6,9 @@ import click
 
 from . import attestations, errors, log, registry, signatures
 
-DEFAULT_REPOSITORY = "almet/dangerzone"
+DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
 DEFAULT_BRANCH = "main"
-DEFAULT_IMAGE_NAME = "ghcr.io/almet/dangerzone/dangerzone"
+DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 
 
 @click.group()
@@ -97,8 +97,8 @@ def list_remote_tags(image: str) -> None:
 @main.command()
 @click.argument("image")
 def get_manifest(image: str) -> None:
-    """Retrieves a remove manifest for a given image and displays it."""
-    click.echo(registry.get_manifest(image))
+    """Retrieves a remote manifest for a given image and displays it."""
+    click.echo(registry.get_manifest(image).content)
 
 
 @main.command()

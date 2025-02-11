@@ -152,34 +152,6 @@ def write_log_index(log_index: int) -> None:
         f.write(str(log_index))
 
 
-def upgrade_container_image(image: str, manifest_digest: str, pubkey: str) -> bool:
-    """Verify and upgrade the image to the latest, if signed."""
-    update_available, _ = is_update_available(image)
-    if not update_available:
-        raise errors.ImageAlreadyUpToDate("The image is already up to date")
-
-    signatures = get_remote_signatures(image, manifest_digest)
-    verify_signatures(signatures, manifest_digest, pubkey)
-
-    # Ensure that we only upgrade if the log index is higher than the last known one
-    incoming_log_index = get_log_index_from_signatures(signatures)
-    last_log_index = get_last_log_index()
-
-    if incoming_log_index < last_log_index:
-        raise errors.InvalidLogIndex(
-            "The log index is not higher than the last known one"
-        )
-
-    # let's upgrade the image
-    # XXX Use the image digest here to avoid race conditions
-    upgraded = runtime.container_pull(image)
-
-    # At this point, the signatures are verified
-    # We store the signatures just now to avoid storing unverified signatures
-    store_signatures(signatures, manifest_digest, pubkey)
-    return upgraded
-
-
 def _get_blob(tmpdir: str, digest: str) -> Path:
     return Path(tmpdir) / "blobs" / "sha256" / digest.replace("sha256:", "")
 
@@ -252,7 +224,7 @@ def upgrade_container_image_airgapped(container_tar: str, pubkey: str) -> str:
                 archive.add(Path(tmpdir) / "oci-layout", arcname="oci-layout")
                 archive.add(Path(tmpdir) / "blobs", arcname="blobs")
 
-            runtime.load_image_tarball_file(temporary_tar.name)
+            runtime.load_image_tarball_from_tar(temporary_tar.name)
             runtime.tag_image_by_digest(image_digest, image_name)
 
     store_signatures(signatures, image_digest, pubkey)
@@ -431,3 +403,31 @@ def prepare_airgapped_archive(image_name, destination):
 
         with tarfile.open(destination, "w") as archive:
             archive.add(tmpdir, arcname=".")
+
+
+def upgrade_container_image(image: str, manifest_digest: str, pubkey: str) -> bool:
+    """Verify and upgrade the image to the latest, if signed."""
+    update_available, _ = is_update_available(image)
+    if not update_available:
+        raise errors.ImageAlreadyUpToDate("The image is already up to date")
+
+    signatures = get_remote_signatures(image, manifest_digest)
+    verify_signatures(signatures, manifest_digest, pubkey)
+
+    # Ensure that we only upgrade if the log index is higher than the last known one
+    incoming_log_index = get_log_index_from_signatures(signatures)
+    last_log_index = get_last_log_index()
+
+    if incoming_log_index < last_log_index:
+        raise errors.InvalidLogIndex(
+            "The log index is not higher than the last known one"
+        )
+
+    # let's upgrade the image
+    # XXX Use the image digest here to avoid race conditions
+    upgraded = runtime.container_pull(image)
+
+    # At this point, the signatures are verified
+    # We store the signatures just now to avoid storing unverified signatures
+    store_signatures(signatures, manifest_digest, pubkey)
+    return upgraded

@@ -52,3 +52,7 @@ class LocalSignatureNotFound(SignatureError):
 
 class CosignNotInstalledError(SignatureError):
     pass
+
+
+class InvalidLogIndex(SignatureError):
+    pass

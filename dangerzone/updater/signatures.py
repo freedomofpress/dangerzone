@@ -4,6 +4,7 @@ import re
 import subprocess
 import tarfile
 from base64 import b64decode, b64encode
+from functools import reduce
 from hashlib import sha256
 from io import BytesIO
 from pathlib import Path
@@ -27,6 +28,8 @@ def get_config_dir() -> Path:
 # XXX Store this somewhere else.
 DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
 SIGNATURES_PATH = get_config_dir() / "signatures"
+LAST_LOG_INDEX = SIGNATURES_PATH / "last_log_index"
+
 __all__ = [
     "verify_signature",
     "load_signatures",
@@ -127,6 +130,28 @@ def verify_signatures(
     return True
 
 
+def get_last_log_index() -> int:
+    SIGNATURES_PATH.mkdir(parents=True, exist_ok=True)
+    if not LAST_LOG_INDEX.exists():
+        return 0
+
+    with open(LAST_LOG_INDEX) as f:
+        return int(f.read())
+
+
+def get_log_index_from_signatures(signatures: List[Dict]) -> int:
+    return reduce(
+        lambda acc, sig: max(acc, sig["Bundle"]["Payload"]["logIndex"]), signatures, 0
+    )
+
+
+def write_log_index(log_index: int) -> None:
+    last_log_index_path = SIGNATURES_PATH / "last_log_index"
+
+    with open(log_index, "w") as f:
+        f.write(str(log_index))
+
+
 def upgrade_container_image(image: str, manifest_digest: str, pubkey: str) -> bool:
     """Verify and upgrade the image to the latest, if signed."""
     update_available, _ = is_update_available(image)
@@ -136,13 +161,23 @@ def upgrade_container_image(image: str, manifest_digest: str, pubkey: str) -> bo
     signatures = get_remote_signatures(image, manifest_digest)
     verify_signatures(signatures, manifest_digest, pubkey)
 
-    # At this point, the signatures are verified
-    # We store the signatures just now to avoid storing unverified signatures
-    store_signatures(signatures, manifest_digest, pubkey)
+    # Ensure that we only upgrade if the log index is higher than the last known one
+    incoming_log_index = get_log_index_from_signatures(signatures)
+    last_log_index = get_last_log_index()
+
+    if incoming_log_index < last_log_index:
+        raise errors.InvalidLogIndex(
+            "The log index is not higher than the last known one"
+        )
 
     # let's upgrade the image
     # XXX Use the image digest here to avoid race conditions
-    return runtime.container_pull(image)
+    upgraded = runtime.container_pull(image)
+
+    # At this point, the signatures are verified
+    # We store the signatures just now to avoid storing unverified signatures
+    store_signatures(signatures, manifest_digest, pubkey)
+    return upgraded
 
 
 def _get_blob(tmpdir: str, digest: str) -> Path:
@@ -178,7 +213,7 @@ def upgrade_container_image_airgapped(container_tar: str, pubkey: str) -> str:
         if not cosign.verify_local_image(tmpdir, pubkey):
             raise errors.SignatureVerificationError()
 
-        # Remove the signatures from the archive.
+        # Remove the signatures from the archive, otherwise podman is not able to load it
         with open(Path(tmpdir) / "index.json") as f:
             index_json = json.load(f)
 
@@ -194,6 +229,15 @@ def upgrade_container_image_airgapped(container_tar: str, pubkey: str) -> str:
         with open(signature_filename, "rb") as f:
             image_name, signatures = convert_oci_images_signatures(json.load(f), tmpdir)
         log.info(f"Found image name: {image_name}")
+
+        # Ensure that we only upgrade if the log index is higher than the last known one
+        incoming_log_index = get_log_index_from_signatures(signatures)
+        last_log_index = get_last_log_index()
+
+        if incoming_log_index < last_log_index:
+            raise errors.InvalidLogIndex(
+                "The log index is not higher than the last known one"
+            )
 
         image_digest = index_json["manifests"][0].get("digest").replace("sha256:", "")
 
@@ -283,9 +327,13 @@ def store_signatures(signatures: list[Dict], image_digest: str, pubkey: str) -> 
     Store signatures locally in the SIGNATURE_PATH folder, like this:
 
     ~/.config/dangerzone/signatures/
-    └── <pubkey-digest>
-        └── <image-digest>.json
-        └── <image-digest>.json
+    ├── <pubkey-digest>
+    │   ├── <image-digest>.json
+    │   ├── <image-digest>.json
+    └── last_log_index
+
+    The last_log_index file is used to keep track of the last log index
+    processed by the updater.
 
     The format used in the `.json` file is the one of `cosign download
     signature`, which differs from the "bundle" one used afterwards.
@@ -344,6 +392,7 @@ def get_remote_signatures(image: str, digest: str) -> List[Dict]:
     """Retrieve the signatures from the registry, via `cosign download`."""
     cosign.ensure_installed()
 
+    # XXX: try/catch here
     process = subprocess.run(
         ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
         capture_output=True,

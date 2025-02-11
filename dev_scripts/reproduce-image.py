@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import logging
 import pathlib
+import platform
 import stat
 import subprocess
 import sys
@@ -11,8 +12,20 @@ import urllib.request
 
 logger = logging.getLogger(__name__)
 
-DIFFOCI_URL = "https://github.com/reproducible-containers/diffoci/releases/download/v0.1.5/diffoci-v0.1.5.linux-amd64"
-DIFFOCI_CHECKSUM = "01d25fe690196945a6bd510d30559338aa489c034d3a1b895a0d82a4b860698f"
+DIFFOCI_VERSION = "v0.1.5"
+# https://github.com/reproducible-containers/diffoci/releases/download/v0.1.5/SHA256SUMS
+DIFFOCI_CHECKSUMS = """
+ae171821b18c3b9e5cd1953323e79fe5ec1e972e9586474b18227b2cd052e695  diffoci-v0.1.5.darwin-amd64
+fadabdac9be45fb3dfe2a53986422e53dcc6e1fdc8062713c5760e8959a37c2b  diffoci-v0.1.5.darwin-arm64
+01d25fe690196945a6bd510d30559338aa489c034d3a1b895a0d82a4b860698f  diffoci-v0.1.5.linux-amd64
+5cbc5d13b51183e2988ee0f406d428eb846d51b7c2c12ae17d0775371f43103e  diffoci-v0.1.5.linux-arm-v7
+2d067bd1af8a26b2c206c6bf2bde9bcb21062ddb5dc575e110e0e1a93d0d065f  diffoci-v0.1.5.linux-arm64
+0923f0c01f270c596fea9f84e529af958d6caba3fa0f6bf4f03df2a12f23b3fc  diffoci-v0.1.5.linux-ppc64le
+5821cbc299a90caa167c3a91465292907077ca1123375f88165a842b8970e710  diffoci-v0.1.5.linux-riscv64
+917d7f23d2bd8fcc755cb2f722fc50ffd83389e04838c3b6e9c3463ea96a9be1  diffoci-v0.1.5.linux-s390x
+"""
+DIFFOCI_URL = "https://github.com/reproducible-containers/diffoci/releases/download/{version}/diffoci-{version}.{arch}"
+
 DIFFOCI_PATH = (
     pathlib.Path.home() / ".local" / "share" / "dangerzone-dev" / "helpers" / "diffoci"
 )
@@ -44,12 +57,31 @@ def git_verify(commit, source):
         )
 
 
+def get_platform_arch():
+    system = platform.system().lower()
+    arch = platform.machine().lower()
+    if arch == "x86_64":
+        arch = "amd64"
+    return f"{system}-{arch}"
+
+
+def parse_checksums():
+    lines = [
+        line.replace(f"diffoci-{DIFFOCI_VERSION}.", "").split("  ")
+        for line in DIFFOCI_CHECKSUMS.split("\n")
+        if line
+    ]
+    return {arch: checksum for checksum, arch in lines}
+
+
 def diffoci_hash_matches(diffoci):
     """Check if the hash of the downloaded diffoci bin matches the expected one."""
+    arch = get_platform_arch()
+    expected_checksum = parse_checksums().get(arch)
     m = hashlib.sha256()
     m.update(diffoci)
     diffoci_checksum = m.hexdigest()
-    return diffoci_checksum == DIFFOCI_CHECKSUM
+    return diffoci_checksum == expected_checksum
 
 
 def diffoci_is_installed():
@@ -66,7 +98,9 @@ def diffoci_is_installed():
 
 def diffoci_download():
     """Download the diffoci tool, based on a URL and its checksum."""
-    with urllib.request.urlopen(DIFFOCI_URL) as f:
+    download_url = DIFFOCI_URL.format(version=DIFFOCI_VERSION, arch=get_platform_arch())
+    logger.info(f"Downloading diffoci helper from {download_url}")
+    with urllib.request.urlopen(download_url) as f:
         diffoci_bin = f.read()
 
     if not diffoci_hash_matches(diffoci_bin):
@@ -153,7 +187,6 @@ def main():
     git_verify(commit, args.source)
 
     if not diffoci_is_installed():
-        logger.info(f"Downloading diffoci helper from {DIFFOCI_URL}")
         diffoci_download()
 
     tag = f"reproduce-{commit}"

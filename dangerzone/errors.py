@@ -126,6 +126,10 @@ class ImageNotPresentException(Exception):
     pass
 
 
+class MultipleImagesFoundException(Exception):
+    pass
+
+
 class ImageInstallationException(Exception):
     pass
 

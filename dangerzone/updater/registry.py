@@ -97,7 +97,7 @@ def list_manifests(image_str: str) -> list:
     return get_manifest(image_str).json().get("manifests")
 
 
-def get_blob(image, digest: str) -> requests.Response:
+def get_blob(image: Image, digest: str) -> requests.Response:
     response = requests.get(
         f"{_url(image)}/blobs/{digest}",
         headers={

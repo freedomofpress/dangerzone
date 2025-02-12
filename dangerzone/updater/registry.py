@@ -99,10 +99,7 @@ def list_manifests(image_str: str) -> list:
 
 def get_blob(image: Image, digest: str) -> requests.Response:
     response = requests.get(
-        f"{_url(image)}/blobs/{digest}",
-        headers={
-            "Authorization": f"Bearer {_get_auth_token(image)}",
-        },
+        f"{_url(image)}/blobs/{digest}", headers=_get_auth_header(image)
     )
     response.raise_for_status()
     return response

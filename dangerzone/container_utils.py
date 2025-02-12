@@ -261,7 +261,12 @@ def get_local_image_digest(image: str) -> str:
             raise errors.MultipleImagesFoundException(
                 f"Expected a single line of output, got {len(lines)} lines"
             )
-        return lines[0].replace("sha256:", "")
+        image_digest = lines[0].replace("sha256:", "")
+        if not image_digest:
+            raise errors.ImageNotPresentException(
+                f"The image {image} does not exist locally"
+            )
+        return image_digest
     except subprocess.CalledProcessError as e:
         raise errors.ImageNotPresentException(
             f"The image {image} does not exist locally"

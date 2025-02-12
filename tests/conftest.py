@@ -13,6 +13,13 @@ from dangerzone.gui import Application
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
 
 
+ASSETS_PATH = Path(__file__).parent / "assets"
+TEST_PUBKEY_PATH = ASSETS_PATH / "test.pub.key"
+INVALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "invalid"
+VALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "valid"
+TEMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tempered"
+
+
 # Use this fixture to make `pytest-qt` invoke our custom QApplication.
 # See https://pytest-qt.readthedocs.io/en/latest/qapplication.html#testing-custom-qapplications
 @pytest.fixture(scope="session")
@@ -131,6 +138,7 @@ test_docs = [
 for_each_doc = pytest.mark.parametrize(
     "doc", test_docs, ids=[str(doc.name) for doc in test_docs]
 )
+
 
 # External Docs - base64 docs encoded for externally sourced documents
 # XXX to reduce the chance of accidentally opening them

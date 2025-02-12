@@ -34,7 +34,7 @@ predicate: {{
       // This condition verifies that the image was generated from
       // the source repository we expect. Replace this with your
       // repository.
-      uri: =~"^git\\+https://github.com/{repo}@refs/heads/{branch}"
+      uri: =~"^git\\+https://github.com/{repository}@refs/heads/{branch}"
       // Add a condition to check for a specific commit hash
       digest: {{
         sha1: "{commit}"

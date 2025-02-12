@@ -204,6 +204,6 @@ def get_local_image_digest(image: str) -> str:
             )
         return lines[0].replace("sha256:", "")
     except subprocess.CalledProcessError as e:
-        return None
-    else:
-        return result.stdout.strip().decode().strip("sha256:")
+        raise errors.ImageNotPresentException(
+            f"The image {image} does not exist locally"
+        )

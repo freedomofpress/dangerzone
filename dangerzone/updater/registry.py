@@ -79,7 +79,7 @@ def list_tags(image_str: str) -> list:
     return tags
 
 
-def get_manifest(image_str) -> requests.Response:
+def get_manifest(image_str: str) -> requests.Response:
     """Get manifest information for a specific tag"""
     image = parse_image_location(image_str)
     manifest_url = f"{_url(image)}/manifests/{image.tag}"

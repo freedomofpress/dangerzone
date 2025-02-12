@@ -45,10 +45,6 @@ predicate: {{
 """
 
 
-def generate_cue_policy(repo, workflow, commit, branch):
-    return CUE_POLICY.format(repo=repo, workflow=workflow, commit=commit, branch=branch)
-
-
 def verify(
     image_name: str,
     branch: str,

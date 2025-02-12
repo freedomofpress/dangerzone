@@ -108,7 +108,7 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str) -> bool:
     return False
 
 
-def is_update_available(image: str) -> (bool, Optional[str]):
+def is_update_available(image: str) -> Tuple[bool, Optional[str]]:
     remote_digest = registry.get_manifest_digest(image)
     local_digest = runtime.get_local_image_digest(image)
     log.debug("Remote digest: %s", remote_digest)

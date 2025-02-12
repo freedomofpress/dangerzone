@@ -52,7 +52,7 @@ def parse_image_location(input_string: str) -> Image:
     )
 
 
-def _get_auth_header(image) -> Dict[str, str]:
+def _get_auth_header(image: Image) -> Dict[str, str]:
     auth_url = f"https://{image.registry}/token"
     response = requests.get(
         auth_url,

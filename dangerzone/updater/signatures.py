@@ -255,6 +255,9 @@ def convert_oci_images_signatures(
     layers = signatures_manifest.get("layers", [])
     signatures = [_to_cosign_signature(layer) for layer in layers]
 
+    if not signatures:
+        raise errors.SignatureExtractionError()
+
     payload_location = _get_blob(tmpdir, layers[0]["digest"])
     with open(payload_location, "r") as f:
         payload = json.load(f)

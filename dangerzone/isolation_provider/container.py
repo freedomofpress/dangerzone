@@ -180,7 +180,9 @@ class Container(IsolationProvider):
             container_utils.CONTAINER_NAME
         )
         updater.verify_local_image(
-            container_utils.CONTAINER_NAME, updater.DEFAULT_PUBKEY_LOCATION
+            container_utils.CONTAINER_NAME,
+            updater.DEFAULT_PUBKEY_LOCATION,
+            image_digest,
         )
         security_args = self.get_runtime_security_args()
         debug_args = []

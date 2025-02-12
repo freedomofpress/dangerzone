@@ -108,7 +108,6 @@ def get_blob(image: Image, digest: str) -> requests.Response:
 def get_manifest_digest(
     image_str: str, tag_manifest_content: Optional[bytes] = None
 ) -> str:
-    image = parse_image_location(image_str)
     if not tag_manifest_content:
         tag_manifest_content = get_manifest(image).content
 

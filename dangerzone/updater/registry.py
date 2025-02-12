@@ -93,7 +93,7 @@ def get_manifest(image_str: str) -> requests.Response:
     return response
 
 
-def list_manifests(image_str) -> list:
+def list_manifests(image_str: str) -> list:
     return get_manifest(image_str).json().get("manifests")
 
 

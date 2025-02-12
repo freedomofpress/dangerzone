@@ -57,7 +57,9 @@ def verify(
     on Github runners, and from a given repository.
     """
     cosign.ensure_installed()
-    policy = generate_cue_policy(repository, workflow, commit, branch)
+    policy = CUE_POLICY.format(
+        repository=repository, workflow=workflow, commit=commit, branch=branch
+    )
 
     # Put the value in files and verify with cosign
     with (

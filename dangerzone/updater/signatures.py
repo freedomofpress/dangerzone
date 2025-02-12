@@ -383,7 +383,7 @@ def get_remote_signatures(image: str, digest: str) -> List[Dict]:
     return signatures
 
 
-def prepare_airgapped_archive(image_name: str, destination: str):
+def prepare_airgapped_archive(image_name: str, destination: str) -> None:
     if "@sha256:" not in image_name:
         raise errors.AirgappedImageDownloadError(
             "The image name must include a digest, e.g. ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:123456"

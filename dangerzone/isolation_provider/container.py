@@ -85,7 +85,7 @@ class Container(IsolationProvider):
         update_available, image_digest = updater.is_update_available(
             container_utils.CONTAINER_NAME
         )
-        if update_available:
+        if update_available and image_digest:
             updater.upgrade_container_image(
                 container_utils.CONTAINER_NAME,
                 image_digest,

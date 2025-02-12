@@ -252,7 +252,7 @@ def convert_oci_images_signatures(
             "RFC3161Timestamp": None,
         }
 
-    layers = signatures_manifest["layers"]
+    layers = signatures_manifest.get("layers", [])
     signatures = [_to_cosign_signature(layer) for layer in layers]
 
     payload_location = _get_blob(tmpdir, layers[0]["digest"])

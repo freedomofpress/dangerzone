@@ -109,6 +109,6 @@ def get_manifest_digest(
     image_str: str, tag_manifest_content: Optional[bytes] = None
 ) -> str:
     if not tag_manifest_content:
-        tag_manifest_content = get_manifest(image).content
+        tag_manifest_content = get_manifest(image_str).content
 
     return sha256(tag_manifest_content).hexdigest()

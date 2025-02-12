@@ -187,7 +187,7 @@ def container_pull(image: str) -> bool:
     return process.returncode == 0
 
 
-def get_local_image_digest(image: str) -> Optional[str]:
+def get_local_image_digest(image: str) -> str:
     """
     Returns a image hash from a local image name
     """

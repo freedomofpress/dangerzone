@@ -232,8 +232,8 @@ def upgrade_container_image_airgapped(container_tar: str, pubkey: str) -> str:
 
 
 def convert_oci_images_signatures(
-    signatures_manifest: List[Dict], tmpdir: str
-) -> (str, List[Dict]):
+    signatures_manifest: Dict, tmpdir: str
+) -> Tuple[str, List[Dict]]:
     def _to_cosign_signature(layer: Dict) -> Dict:
         signature = layer["annotations"]["dev.cosignproject.cosign/signature"]
         bundle = json.loads(layer["annotations"]["dev.sigstore.cosign/bundle"])

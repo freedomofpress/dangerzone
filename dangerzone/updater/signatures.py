@@ -198,7 +198,7 @@ def upgrade_container_image_airgapped(container_tar: str, pubkey: str) -> str:
             in ("dev.cosignproject.cosign/imageIndex", "dev.cosignproject.cosign/image")
         ]
 
-        with open(signature_filename, "rb") as f:
+        with open(signature_filename, "r") as f:
             image_name, signatures = convert_oci_images_signatures(json.load(f), tmpdir)
         log.info(f"Found image name: {image_name}")
 

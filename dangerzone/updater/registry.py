@@ -66,7 +66,7 @@ def _get_auth_header(image: Image) -> Dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
-def _url(image):
+def _url(image: Image) -> str:
     return f"https://{image.registry}/v2/{image.namespace}/{image.image_name}"
 
 

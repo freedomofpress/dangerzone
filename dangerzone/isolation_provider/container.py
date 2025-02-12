@@ -79,18 +79,19 @@ class Container(IsolationProvider):
     @staticmethod
     def install() -> bool:
         """Check if an update is available and install it if necessary."""
-        # XXX Do this only if users have optted in to auto-updates
+        # XXX Do this only if users have opted in to auto-updates
 
-        # # Load the image tarball into the container runtime.
-        update_available, image_digest = updater.is_update_available(
-            container_utils.CONTAINER_NAME
-        )
-        if update_available and image_digest:
-            updater.upgrade_container_image(
-                container_utils.CONTAINER_NAME,
-                image_digest,
-                updater.DEFAULT_PUBKEY_LOCATION,
+        if False:  # Comment this for now, just as an exemple of this can be implemented
+            # # Load the image tarball into the container runtime.
+            update_available, image_digest = updater.is_update_available(
+                container_utils.CONTAINER_NAME
             )
+            if update_available and image_digest:
+                updater.upgrade_container_image(
+                    container_utils.CONTAINER_NAME,
+                    image_digest,
+                    updater.DEFAULT_PUBKEY_LOCATION,
+                )
 
         updater.verify_local_image(
             container_utils.CONTAINER_NAME, updater.DEFAULT_PUBKEY_LOCATION
@@ -182,7 +183,6 @@ class Container(IsolationProvider):
         updater.verify_local_image(
             container_utils.CONTAINER_NAME,
             updater.DEFAULT_PUBKEY_LOCATION,
-            image_digest,
         )
         security_args = self.get_runtime_security_args()
         debug_args = []

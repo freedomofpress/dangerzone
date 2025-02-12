@@ -37,7 +37,7 @@ LAST_LOG_INDEX = SIGNATURES_PATH / "last_log_index"
 
 __all__ = [
     "verify_signature",
-    "load_signatures",
+    "load_and_verify_signatures",
     "store_signatures",
     "verify_offline_image_signature",
 ]
@@ -77,11 +77,15 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> 
 
     cosign.ensure_installed()
     signature_bundle = signature_to_bundle(signature)
-
-    payload_bytes = b64decode(signature_bundle["Payload"])
-    payload_digest = json.loads(payload_bytes)["critical"]["image"][
-        "docker-manifest-digest"
-    ]
+    try:
+        payload_bytes = b64decode(signature_bundle["Payload"])
+        payload_digest = json.loads(payload_bytes)["critical"]["image"][
+            "docker-manifest-digest"
+        ]
+    except Exception as e:
+        raise errors.SignatureVerificationError(
+            f"Unable to extract the payload digest from the signature: {e}"
+        )
     if payload_digest != f"sha256:{image_digest}":
         raise errors.SignatureMismatch(
             "The given signature does not match the expected image digest "
@@ -98,11 +102,14 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> 
         payload_file.write(payload_bytes)
         payload_file.flush()
 
+        if isinstance(pubkey, str):
+            pubkey = Path(pubkey)
+
         cmd = [
             "cosign",
             "verify-blob",
             "--key",
-            pubkey,
+            str(pubkey.absolute()),
             "--bundle",
             signature_file.name,
             payload_file.name,
@@ -149,8 +156,12 @@ def verify_signatures(
     image_digest: str,
     pubkey: str,
 ) -> bool:
+    if len(signatures) < 1:
+        raise errors.SignatureVerificationError("No signatures found")
+
     for signature in signatures:
         verify_signature(signature, image_digest, pubkey)
+
     return True
 
 
@@ -164,9 +175,14 @@ def get_last_log_index() -> int:
 
 
 def get_log_index_from_signatures(signatures: List[Dict]) -> int:
-    return reduce(
-        lambda acc, sig: max(acc, sig["Bundle"]["Payload"]["logIndex"]), signatures, 0
-    )
+    def _reducer(accumulator: int, signature: Dict) -> int:
+        try:
+            logIndex = int(signature["Bundle"]["Payload"]["logIndex"])
+        except (KeyError, ValueError):
+            return accumulator
+        return max(accumulator, logIndex)
+
+    return reduce(_reducer, signatures, 0)
 
 
 def write_log_index(log_index: int) -> None:
@@ -302,13 +318,21 @@ def get_file_digest(file: Optional[str] = None, content: Optional[bytes] = None)
     return ""
 
 
-def load_signatures(image_digest: str, pubkey: str) -> List[Dict]:
+def load_and_verify_signatures(
+    image_digest: str,
+    pubkey: str,
+    bypass_verification: bool = False,
+    signatures_path: Optional[Path] = None,
+) -> List[Dict]:
     """
     Load signatures from the local filesystem
 
     See store_signatures() for the expected format.
     """
-    pubkey_signatures = SIGNATURES_PATH / get_file_digest(pubkey)
+    if not signatures_path:
+        signatures_path = SIGNATURES_PATH
+
+    pubkey_signatures = signatures_path / get_file_digest(pubkey)
     if not pubkey_signatures.exists():
         msg = (
             f"Cannot find a '{pubkey_signatures}' folder."
@@ -318,7 +342,12 @@ def load_signatures(image_digest: str, pubkey: str) -> List[Dict]:
 
     with open(pubkey_signatures / f"{image_digest}.json") as f:
         log.debug("Loading signatures from %s", f.name)
-        return json.load(f)
+        signatures = json.load(f)
+
+    if not bypass_verification:
+        verify_signatures(signatures, image_digest, pubkey)
+
+    return signatures
 
 
 def store_signatures(signatures: list[Dict], image_digest: str, pubkey: str) -> None:
@@ -380,32 +409,26 @@ def verify_local_image(image: str, pubkey: str) -> bool:
         raise errors.ImageNotFound(f"The image {image} does not exist locally")
 
     log.debug(f"Image digest: {image_digest}")
-    signatures = load_signatures(image_digest, pubkey)
-    if len(signatures) < 1:
-        raise errors.LocalSignatureNotFound("No signatures found")
-
-    for signature in signatures:
-        if not verify_signature(signature, image_digest, pubkey):
-            msg = f"Unable to verify signature for {image} with pubkey {pubkey}"
-            raise errors.SignatureVerificationError(msg)
+    load_and_verify_signatures(image_digest, pubkey)
     return True
 
 
 def get_remote_signatures(image: str, digest: str) -> List[Dict]:
-    """Retrieve the signatures from the registry, via `cosign download`."""
+    """Retrieve the signatures from the registry, via `cosign download signatures`."""
     cosign.ensure_installed()
 
-    # XXX: try/catch here
-    process = subprocess.run(
-        ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
-        capture_output=True,
-        check=True,
-    )
+    try:
+        process = subprocess.run(
+            ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise errors.NoRemoteSignatures(e)
 
-    # XXX: Check the output first.
     # Remove the last return, split on newlines, convert from JSON
     signatures_raw = process.stdout.decode("utf-8").strip().split("\n")
-    signatures = list(map(json.loads, signatures_raw))
+    signatures = list(filter(bool, map(json.loads, signatures_raw)))
     if len(signatures) < 1:
         raise errors.NoRemoteSignatures("No signatures found for the image")
     return signatures
@@ -418,8 +441,8 @@ def prepare_airgapped_archive(image_name: str, destination: str) -> None:
         )
 
     cosign.ensure_installed()
-    # Get the image from the registry
 
+    # Get the image from the registry
     with TemporaryDirectory() as tmpdir:
         msg = f"Downloading image {image_name}. \nIt might take a while."
         log.info(msg)

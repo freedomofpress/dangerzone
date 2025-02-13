@@ -32,6 +32,29 @@ TEMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tempered"
 RANDOM_DIGEST = "aacc9b586648bbe3040f2822153b1d5ead2779af45ff750fd6f04daf4a9f64b4"
 
 
+@pytest.fixture
+def valid_signature():
+    signature_file = next(VALID_SIGNATURES_PATH.glob("**/*.json"))
+    with open(signature_file, "r") as signature_file:
+        signatures = json.load(signature_file)
+        return signatures.pop()
+
+
+@pytest.fixture
+def tempered_signature():
+    signature_file = next(TEMPERED_SIGNATURES_PATH.glob("**/*.json"))
+    with open(signature_file, "r") as signature_file:
+        signatures = json.load(signature_file)
+        return signatures.pop()
+
+
+@pytest.fixture
+def signature_other_digest(valid_signature):
+    signature = valid_signature.copy()
+    signature["Bundle"]["Payload"]["digest"] = "sha256:123456"
+    return signature
+
+
 def test_load_valid_signatures(mocker):
     mocker.patch("dangerzone.updater.signatures.SIGNATURES_PATH", VALID_SIGNATURES_PATH)
     valid_signatures = list(VALID_SIGNATURES_PATH.glob("**/*.json"))
@@ -167,21 +190,30 @@ def test_get_remote_signatures_empty(fp: FakeProcess, mocker):
     mocker.patch("dangerzone.updater.cosign.ensure_installed", return_value=True)
     fp.register_subprocess(
         ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
-        stdout=json.dumps([]),
+        stdout=json.dumps({}),
     )
     with pytest.raises(errors.NoRemoteSignatures):
         get_remote_signatures(image, digest)
 
 
-def test_get_remote_signatures_cosign_error():
-    pass
+def test_get_remote_signatures_cosign_error(mocker, fp: FakeProcess):
+    image = "ghcr.io/freedomofpress/dangerzone/dangerzone"
+    digest = "123456"
+    mocker.patch("dangerzone.updater.cosign.ensure_installed", return_value=True)
+    fp.register_subprocess(
+        ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
+        returncode=1,
+        stderr="Error: no signatures associated",
+    )
+    with pytest.raises(errors.NoRemoteSignatures):
+        get_remote_signatures(image, digest)
 
 
 def test_store_signatures_with_different_digests(
     valid_signature, signature_other_digest, mocker, tmp_path
 ):
     """Test that store_signatures raises an error when a signature's digest doesn't match."""
-
+    signatures = [valid_signature, signature_other_digest]
     image_digest = "sha256:123456"
 
     # Mock the signatures path
@@ -196,8 +228,19 @@ def test_store_signatures_with_different_digests(
     )
 
     # Mock get_last_log_index
+    mocker.patch(
+        "dangerzone.updater.signatures.get_last_log_index",
+        return_value=50,
+    )
+
+    # Call store_signatures
+    with pytest.raises(errors.SignatureMismatch):
+        store_signatures(signatures, image_digest, TEST_PUBKEY_PATH)
+
     # Verify that the signatures file was not created
     assert not (signatures_path / f"{image_digest}.json").exists()
+
+    # Verify that the log index file was not updated
     assert not (signatures_path / "last_log_index").exists()
 
 
@@ -238,6 +281,34 @@ def test_stores_signatures_updates_last_log_index(valid_signature, mocker, tmp_p
     signatures = [valid_signature]
     # Extract the digest from the signature
     image_digest = Signature(valid_signature).manifest_digest
+    signatures = [valid_signature, signature_other_digest]
+    breakpoint()
+    valid_signature, signature_other_digest, mocker, tmp_path
+
+    """Test that store_signatures raises an error when a signature's digest doesn't match."""
+
+    image_digest = "sha256:123456"
+
+    # Mock the signatures path
+    signatures_path = tmp_path / "signatures"
+    signatures_path.mkdir()
+    mocker.patch("dangerzone.updater.signatures.SIGNATURES_PATH", signatures_path)
+
+    # Mock get_log_index_from_signatures
+    mocker.patch(
+        "dangerzone.updater.signatures.get_log_index_from_signatures",
+        return_value=100,
+    )
+
+    # Mock get_last_log_index
+    mocker.patch(
+        "dangerzone.updater.signatures.get_last_log_index",
+        return_value=50,
+    )
+
+
+def test_stores_signatures_updates_last_log_index():
+    pass
 
 
 def test_get_file_digest():
@@ -310,5 +381,6 @@ def test_verify_signature_tempered(tempered_signature):
         )
 
 
-def test_verify_signatures_not_0():
-    pass
+def test_verify_signatures_empty_list():
+    with pytest.raises(errors.SignatureVerificationError):
+        verify_signatures([], "1234", TEST_PUBKEY_PATH)

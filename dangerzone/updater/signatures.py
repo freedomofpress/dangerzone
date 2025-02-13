@@ -424,8 +424,7 @@ def get_remote_signatures(image: str, digest: str) -> List[Dict]:
 
     # Remove the last return, split on newlines, convert from JSON
     signatures_raw = process.stdout.decode("utf-8").strip().split("\n")
-    signatures = list(map(json.loads, signatures_raw))
-    breakpoint()
+    signatures = list(filter(bool, map(json.loads, signatures_raw)))
     if len(signatures) < 1:
         raise errors.NoRemoteSignatures("No signatures found for the image")
     return signatures

@@ -28,6 +28,21 @@ VALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "valid"
 TEMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tempered"
 
 
+@pytest.fixture
+def valid_signature():
+    signature_file = next(VALID_SIGNATURES_PATH.glob("**/*.json"))
+    with open(signature_file, "r") as signature_file:
+        signatures = json.load(signature_file)
+        return signatures.pop()
+
+
+@pytest.fixture
+def signature_other_digest(valid_signature):
+    signature = valid_signature.copy()
+    signature["Bundle"]["Payload"]["digest"] = "sha256:123456"
+    return signature
+
+
 def test_load_valid_signatures(mocker):
     mocker.patch("dangerzone.updater.signatures.SIGNATURES_PATH", VALID_SIGNATURES_PATH)
     valid_signatures = list(VALID_SIGNATURES_PATH.glob("**/*.json"))
@@ -163,29 +178,30 @@ def test_get_remote_signatures_empty(fp: FakeProcess, mocker):
     mocker.patch("dangerzone.updater.cosign.ensure_installed", return_value=True)
     fp.register_subprocess(
         ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
-        stdout=json.dumps([]),
+        stdout=json.dumps({}),
     )
     with pytest.raises(errors.NoRemoteSignatures):
         get_remote_signatures(image, digest)
 
 
-def test_get_remote_signatures_cosign_error():
-    pass
+def test_get_remote_signatures_cosign_error(mocker, fp: FakeProcess):
+    image = "ghcr.io/freedomofpress/dangerzone/dangerzone"
+    digest = "123456"
+    mocker.patch("dangerzone.updater.cosign.ensure_installed", return_value=True)
+    fp.register_subprocess(
+        ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
+        returncode=1,
+        stderr="Error: no signatures associated",
+    )
+    with pytest.raises(errors.NoRemoteSignatures):
+        get_remote_signatures(image, digest)
 
 
-def test_verify_local_image_no_signatures():
-    pass
-
-
-def test_verify_local_image_invalid_signatures():
-    pass
-
-
-def test_verify_local_image():
-    pass
-
-
-def test_store_signatures_with_different_digests():
+def test_store_signatures_with_different_digests(
+    valid_signature, signature_other_digest
+):
+    signatures = [valid_signature, signature_other_digest]
+    breakpoint()
     pass
 
 
@@ -217,5 +233,6 @@ def test_verify_signature_wrong_payload_digest():
     pass
 
 
-def test_verify_signatures_not_0():
-    pass
+def test_verify_signatures_empty_list():
+    with pytest.raises(errors.SignatureVerificationError):
+        verify_signatures([], "1234", TEST_PUBKEY_PATH)

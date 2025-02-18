@@ -1,3 +1,6 @@
+#FROM alpine
+
+#RUN touch shite
 # NOTE: Updating the packages to their latest versions requires bumping the
 # Dockerfile args below. For more info about this file, read
 # docs/developer/reproducibility.md.

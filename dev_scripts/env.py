@@ -160,8 +160,8 @@ DOCKERFILE_BUILD_DEV = r"""FROM {distro}:{version}
 # Create a non-root user to run Dangerzone
 RUN adduser user
 # See https://github.com/freedomofpress/dangerzone/issues/286#issuecomment-1347149783
-RUN echo user:2000:2000 > /etc/subuid
-RUN echo user:2000:2000 > /etc/subgid
+RUN echo user:2000:250000 > /etc/subuid
+RUN echo user:2000:250000 > /etc/subgid
 
 # XXX: We need the empty source folder, so that we can trick Poetry to create a
 # link to the project's path. This way, we should be able to do `import
@@ -456,7 +456,7 @@ class Env:
                 "--uidmap",
                 "0:1:1000",
                 "--uidmap",
-                "1001:1001:64536",
+                "1001:1001:251999",
             ]
             gidmaps = [
                 "--gidmap",
@@ -464,7 +464,7 @@ class Env:
                 "--gidmap",
                 "0:1:1000",
                 "--gidmap",
-                "1001:1001:64536",
+                "1001:1001:251999",
             ]
             run_cmd += uidmaps + gidmaps
 

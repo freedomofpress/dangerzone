@@ -23,13 +23,6 @@ pyxdg = {version = "*", platform = "linux"}
 requests = "*"
 markdown = "*"
 packaging = "*"
-# shiboken6 released a 6.8.1.1 version only for macOS
-# and it's getting picked by poetry, so pin it instead.
-shiboken6 = [
-    {version = "*", platform = "darwin"},
-    {version = "<6.8.1.1", platform = "linux"},
-    {version = "<6.8.1.1", platform = "win32"},
-]
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

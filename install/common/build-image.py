@@ -13,8 +13,6 @@ if platform.system() in ["Darwin", "Windows"]:
 elif platform.system() == "Linux":
     CONTAINER_RUNTIME = "podman"
 
-ARCH = platform.machine()
-
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -50,6 +48,16 @@ def determine_git_tag():
     )
 
 
+def determine_debian_archive_date():
+    """Get the date of the Debian archive from Dockerfile.env."""
+    for env in Path("Dockerfile.env").read_text().split("\n"):
+        if env.startswith("DEBIAN_ARCHIVE_DATE"):
+            return env.split("=")[1]
+    raise Exception(
+        "Could not find 'DEBIAN_ARCHIVE_DATE' build argument in Dockerfile.env"
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -64,22 +72,23 @@ def main():
         help=f"The platform for building the image (default: current platform)",
     )
     parser.add_argument(
-        "--no-save",
-        action="store_true",
-        help="Do not save the container image as a tarball in share/container.tar.gz",
+        "--output",
+        "-o",
+        default=str(Path("share") / "container.tar"),
+        help="Path to store the container image",
     )
-    parser.add_argument(
-        "--buildx",
-        action="store_true",
-        help="Use the buildx platform of Docker or Podman",
-    )
-    parser.add_argument(
-        "--compress-level",
-        type=int,
-        choices=range(0, 10),
-        default=9,
-        help="The Gzip compression level, from 0 (lowest) to 9 (highest, default)",
-    )
+    # parser.add_argument(
+    #     "--buildx",
+    #     action="store_true",
+    #     help="Use the buildx platform of Docker or Podman",
+    # )
+    # parser.add_argument(
+    #     "--compress-level",
+    #     type=int,
+    #     choices=range(0, 10),
+    #     default=9,
+    #     help="The Gzip compression level, from 0 (lowest) to 9 (highest, default)",
+    # )
     parser.add_argument(
         "--use-cache",
         type=str2bool,
@@ -95,83 +104,58 @@ def main():
     )
     parser.add_argument(
         "--debian-archive-date",
-        default=None,
-        help="Use a specific Debian snapshot archive, by its date",
+        "-d",
+        default=determine_debian_archive_date(),
+        help="Use a specific Debian snapshot archive, by its date (default %(default)s)",
+    )
+    parser.add_argument(
+        "--dry",
+        default=False,
+        action="store_true",
+        help="Do not run any commands, just print what would happen",
     )
     args = parser.parse_args()
 
-    tarball_path = Path("share") / "container.tar.gz"
-    image_id_path = Path("share") / "image-id.txt"
-
-    print(f"Building for architecture '{ARCH}'")
-
     tag = args.tag or determine_git_tag()
-    date = f"{args.debian_archive_date}-" if args.debian_archive_date and not args.tag else ""
-    image_name_tagged = IMAGE_NAME + ":" + date + tag
+    image_name_tagged = f"{IMAGE_NAME}:{args.debian_archive_date}-{tag}"
 
     print(f"Will tag the container image as '{image_name_tagged}'")
-    with open(image_id_path, "w") as f:
-        f.write(tag)
+    image_id_path = Path("share") / "image-id.txt"
+    if not args.dry:
+        with open(image_id_path, "w") as f:
+            f.write(tag)
 
     # Build the container image, and tag it with the calculated tag
     print("Building container image")
     cache_args = [] if args.use_cache else ["--no-cache"]
     platform_args = [] if not args.platform else ["--platform", args.platform]
-    build_args = []
-    if args.debian_archive_date:
-        build_args = ["--build-arg", f"DEBIAN_ARCHIVE_DATE={args.debian_archive_date}"]
-    buildx_args = []
-    if args.buildx:
-        buildx_args = [
-            "buildx",
-            "build",
-            "--output",
-            "type=image,name-canonical=true,push=false,push-by-digest=false",
-        ]
+    rootless_args = [] if args.runtime == "docker" else ["--rootless"]
+    dry_args = [] if not args.dry else ["--dry"]
 
     subprocess.run(
         [
+            "./dev_scripts/repro-build",
+            "build",
+            "--runtime",
             args.runtime,
-            *buildx_args,
-            BUILD_CONTEXT,
-            *build_args,
+            "--build-arg",
+            f"DEBIAN_ARCHIVE_DATE={args.debian_archive_date}",
+            "--datetime",
+            args.debian_archive_date,
+            *dry_args,
             *cache_args,
             *platform_args,
-            "--provenance",
-            "false",
-            "-f",
-            "Dockerfile",
+            *rootless_args,
             "--tag",
             image_name_tagged,
+            "--output",
+            args.output,
+            "-f",
+            "Dockerfile",
+            BUILD_CONTEXT,
         ],
         check=True,
     )
-
-    if not args.no_save:
-        print("Saving container image")
-        cmd = subprocess.Popen(
-            [
-                CONTAINER_RUNTIME,
-                "save",
-                image_name_tagged,
-            ],
-            stdout=subprocess.PIPE,
-        )
-
-        print("Compressing container image")
-        chunk_size = 4 << 20
-        with gzip.open(
-            tarball_path,
-            "wb",
-            compresslevel=args.compress_level,
-        ) as gzip_f:
-            while True:
-                chunk = cmd.stdout.read(chunk_size)
-                if len(chunk) > 0:
-                    gzip_f.write(chunk)
-                else:
-                    break
-        cmd.wait(5)
 
 
 if __name__ == "__main__":

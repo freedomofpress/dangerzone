@@ -7,7 +7,7 @@
 
 ARG DEBIAN_IMAGE_DATE=20250113
 
-FROM debian:bookworm-${DEBIAN_IMAGE_DATE}-slim as dangerzone-image
+FROM debian:bookworm-${DEBIAN_IMAGE_DATE}-slim AS dangerzone-image
 
 ARG GVISOR_ARCHIVE_DATE=20250120
 ARG DEBIAN_ARCHIVE_DATE=20250127
@@ -25,8 +25,8 @@ RUN \
   --mount=type=bind,source=./container_helpers/repro-sources-list.sh,target=/usr/local/bin/repro-sources-list.sh \
   --mount=type=bind,source=./container_helpers/gvisor.key,target=/tmp/gvisor.key \
   : "Hacky way to set a date for the Debian snapshot repos" && \
-  touch -d ${DEBIAN_ARCHIVE_DATE} /etc/apt/sources.list.d/debian.sources && \
-  touch -d ${DEBIAN_ARCHIVE_DATE} /etc/apt/sources.list && \
+  touch -d ${DEBIAN_ARCHIVE_DATE}Z /etc/apt/sources.list.d/debian.sources && \
+  touch -d ${DEBIAN_ARCHIVE_DATE}Z /etc/apt/sources.list && \
   repro-sources-list.sh && \
   : "Setup APT to install gVisor from its separate APT repo" && \
   apt-get update && \

@@ -32,8 +32,8 @@ Name:           dangerzone-qubes
 Name:           dangerzone
 %endif
 
-// Version:        0.8.1
-Release:        1%{?dist}
+Version:        0.8.1
+Release:        2%{?dist}
 Summary:        Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs
 
 License:        AGPL-3.0

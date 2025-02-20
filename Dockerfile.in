@@ -171,14 +171,26 @@ RUN mkdir /home/dangerzone/.containers
 
 # Create the filesystem hierarchy that will be used to symlink /usr.
 
-RUN mkdir /new_root
-RUN mkdir /new_root/root /new_root/run /new_root/tmp
-RUN chmod 777 /new_root/tmp
+RUN mkdir -p \
+    /new_root \
+    /new_root/root \
+    /new_root/run \
+    /new_root/tmp \
+    /new_root/home/dangerzone/dangerzone-image/rootfs
+
 RUN ln -s /home/dangerzone/dangerzone-image/rootfs/usr /new_root/usr
 RUN ln -s usr/bin /new_root/bin
 RUN ln -s usr/lib /new_root/lib
 RUN ln -s usr/lib64 /new_root/lib64
 RUN ln -s usr/sbin /new_root/sbin
+
+# Fix permissions in /home/dangerzone, so that our entrypoint script can make
+# changes in the following folders.
+RUN chown dangerzone:dangerzone \
+    /new_root/home/dangerzone \
+    /new_root/home/dangerzone/dangerzone-image/
+# Fix permissions in /tmp, so that it can be used by unprivileged users.
+RUN chmod 777 /new_root/tmp
 
 ## Final image
 
@@ -199,9 +211,6 @@ RUN ln -s usr/lib64 /home/dangerzone/dangerzone-image/rootfs/lib64
 # Copy the bare minimum to let the security scanner find vulnerabilities.
 COPY --from=dangerzone-image /etc/ /etc/
 COPY --from=dangerzone-image /var/ /var/
-
-# Allow our entrypoint script to make changes in the following folders.
-RUN chown dangerzone:dangerzone /home/dangerzone /home/dangerzone/dangerzone-image/
 
 # Switch to the dangerzone user for the rest of the script.
 USER dangerzone

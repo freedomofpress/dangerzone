@@ -52,9 +52,12 @@ RUN mkdir /opt/libreoffice_ext && cd /opt/libreoffice_ext \
     && rm /root/.wget-hsts
 
 # Create an unprivileged user both for gVisor and for running Dangerzone.
+# XXX: Make the shadow filed "date of last password change" a constant
+# number.
 RUN addgroup --gid 1000 dangerzone
 RUN adduser --uid 1000 --ingroup dangerzone --shell /bin/true \
-    --disabled-password --home /home/dangerzone dangerzone
+    --disabled-password --home /home/dangerzone dangerzone \
+    && chage -d 99999 dangerzone
 
 # Copy Dangerzone's conversion logic under /opt/dangerzone, and allow Python to
 # import it.
@@ -178,8 +181,12 @@ RUN mkdir -p \
     /new_root/tmp \
     /new_root/home/dangerzone/dangerzone-image/rootfs
 
-RUN cp -r /etc /var /new_root/
-RUN cp -r /etc /opt /usr /new_root/home/dangerzone/dangerzone-image/rootfs
+# XXX: Remove /etc/resolv.conf, so that the network configuration of the host
+# does not leak.
+RUN cp -r /etc /var /new_root/ \
+    && rm /new_root/etc/resolv.conf
+RUN cp -r /etc /opt /usr /new_root/home/dangerzone/dangerzone-image/rootfs \
+    && rm /new_root/home/dangerzone/dangerzone-image/rootfs/etc/resolv.conf
 
 RUN ln -s /home/dangerzone/dangerzone-image/rootfs/usr /new_root/usr
 RUN ln -s usr/bin /new_root/bin

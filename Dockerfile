@@ -173,10 +173,16 @@ RUN mkdir /home/dangerzone/.containers
 
 RUN mkdir -p \
     /new_root \
+    /new_root/etc \
     /new_root/root \
     /new_root/run \
     /new_root/tmp \
-    /new_root/home/dangerzone/dangerzone-image/rootfs
+    /new_root/var \
+    /new_root/home/dangerzone/dangerzone-image/rootfs \
+    /new_root/home/dangerzone/dangerzone-image/rootfs/etc \
+    /new_root/home/dangerzone/dangerzone-image/rootfs/opt \
+    /new_root/home/dangerzone/dangerzone-image/rootfs/usr
+
 
 RUN ln -s /home/dangerzone/dangerzone-image/rootfs/usr /new_root/usr
 RUN ln -s usr/bin /new_root/bin
@@ -192,9 +198,9 @@ RUN chown dangerzone:dangerzone \
 # Fix permissions in /tmp, so that it can be used by unprivileged users.
 RUN chmod 777 /new_root/tmp
 
-## Final image
+## Intermediate image
 
-FROM scratch
+FROM scratch AS intermediate
 
 # Copy the filesystem hierarchy that we created in the previous stage, so that
 # /usr can be a symlink.
@@ -211,6 +217,24 @@ RUN ln -s usr/lib64 /home/dangerzone/dangerzone-image/rootfs/lib64
 # Copy the bare minimum to let the security scanner find vulnerabilities.
 COPY --from=dangerzone-image /etc/ /etc/
 COPY --from=dangerzone-image /var/ /var/
+
+RUN chmod g-s \
+    /etc/ \
+    /home/ \
+    /var/ \
+    /root/ \
+    /run/ \
+    /home/dangerzone/dangerzone-image/rootfs/etc/ \
+    /home/dangerzone/dangerzone-image/rootfs/opt/ \
+    /home/dangerzone/dangerzone-image/rootfs/usr/
+
+### Final image
+
+FROM scratch
+
+# Copy the filesystem hierarchy that we created in the previous stage, so that
+# /usr can be a symlink.
+COPY --from=intermediate / /
 
 # Switch to the dangerzone user for the rest of the script.
 USER dangerzone

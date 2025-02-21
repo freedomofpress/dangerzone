@@ -129,7 +129,8 @@ def main():
     print("Building container image")
     cache_args = [] if args.use_cache else ["--no-cache"]
     platform_args = [] if not args.platform else ["--platform", args.platform]
-    rootless_args = [] if args.runtime == "docker" else ["--rootless"]
+    # rootless_args = [] if args.runtime == "docker" else ["--rootless"]
+    rootless_args = []
     dry_args = [] if not args.dry else ["--dry"]
 
     subprocess.run(

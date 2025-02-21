@@ -311,7 +311,7 @@ def podman_build(
     if use_cache:
         cache_args = [
             "--export-cache",
-            "type=local,dest=/tmp/cache",
+            "type=local,mode=max,dest=/tmp/cache",
             "--import-cache",
             "type=local,src=/tmp/cache",
         ]

@@ -165,30 +165,30 @@ RUN mkdir /home/dangerzone/.containers
 # The `ln` binary, even if you specify it by its full path, cannot run
 # (probably because `ld-linux.so` can't be found). For this reason, we have
 # to create the symlinks beforehand, in a previous build stage. Then, in an
-# empty contianer image (scratch images), we can copy these symlinks and the
-# /usr, and stich everything together.
+# empty container image (scratch images), we can copy these symlinks and the
+# /usr, and stitch everything together.
 ###############################################################################
 
 # Create the filesystem hierarchy that will be used to symlink /usr.
 
 RUN mkdir -p \
     /new_root \
-    /new_root/etc \
     /new_root/root \
     /new_root/run \
     /new_root/tmp \
-    /new_root/var \
-    /new_root/home/dangerzone/dangerzone-image/rootfs \
-    /new_root/home/dangerzone/dangerzone-image/rootfs/etc \
-    /new_root/home/dangerzone/dangerzone-image/rootfs/opt \
-    /new_root/home/dangerzone/dangerzone-image/rootfs/usr
+    /new_root/home/dangerzone/dangerzone-image/rootfs
 
+RUN cp -r /etc /var /new_root/
+RUN cp -r /etc /opt /usr /new_root/home/dangerzone/dangerzone-image/rootfs
 
 RUN ln -s /home/dangerzone/dangerzone-image/rootfs/usr /new_root/usr
 RUN ln -s usr/bin /new_root/bin
 RUN ln -s usr/lib /new_root/lib
 RUN ln -s usr/lib64 /new_root/lib64
 RUN ln -s usr/sbin /new_root/sbin
+RUN ln -s usr/bin /new_root/home/dangerzone/dangerzone-image/rootfs/bin
+RUN ln -s usr/lib /new_root/home/dangerzone/dangerzone-image/rootfs/lib
+RUN ln -s usr/lib64 /new_root/home/dangerzone/dangerzone-image/rootfs/lib64
 
 # Fix permissions in /home/dangerzone, so that our entrypoint script can make
 # changes in the following folders.
@@ -198,43 +198,13 @@ RUN chown dangerzone:dangerzone \
 # Fix permissions in /tmp, so that it can be used by unprivileged users.
 RUN chmod 777 /new_root/tmp
 
-## Intermediate image
-
-FROM scratch AS intermediate
-
-# Copy the filesystem hierarchy that we created in the previous stage, so that
-# /usr can be a symlink.
-COPY --from=dangerzone-image /new_root/ /
-
-# Copy the bare minimum to run Dangerzone in the inner container image.
-COPY --from=dangerzone-image /etc/ /home/dangerzone/dangerzone-image/rootfs/etc/
-COPY --from=dangerzone-image /opt/ /home/dangerzone/dangerzone-image/rootfs/opt/
-COPY --from=dangerzone-image /usr/ /home/dangerzone/dangerzone-image/rootfs/usr/
-RUN ln -s usr/bin /home/dangerzone/dangerzone-image/rootfs/bin
-RUN ln -s usr/lib /home/dangerzone/dangerzone-image/rootfs/lib
-RUN ln -s usr/lib64 /home/dangerzone/dangerzone-image/rootfs/lib64
-
-# Copy the bare minimum to let the security scanner find vulnerabilities.
-COPY --from=dangerzone-image /etc/ /etc/
-COPY --from=dangerzone-image /var/ /var/
-
-RUN chmod g-s \
-    /etc/ \
-    /home/ \
-    /var/ \
-    /root/ \
-    /run/ \
-    /home/dangerzone/dangerzone-image/rootfs/etc/ \
-    /home/dangerzone/dangerzone-image/rootfs/opt/ \
-    /home/dangerzone/dangerzone-image/rootfs/usr/
-
-### Final image
+## Final image
 
 FROM scratch
 
 # Copy the filesystem hierarchy that we created in the previous stage, so that
 # /usr can be a symlink.
-COPY --from=intermediate / /
+COPY --from=dangerzone-image /new_root/ /
 
 # Switch to the dangerzone user for the rest of the script.
 USER dangerzone

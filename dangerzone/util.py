@@ -8,7 +8,7 @@ import unicodedata
 try:
     import platformdirs
 except ImportError:
-    import appdirs as platformdirs
+    import appdirs as platformdirs  # type: ignore[no-redef]
 
 
 def get_config_dir() -> str:

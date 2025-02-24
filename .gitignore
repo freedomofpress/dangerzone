@@ -146,7 +146,7 @@ tests/test_docs/**/*-safe.pdf
 tests/test_docs_large/
 install/windows/Dangerzone.wxs
 share/container.tar
-share/container.tar.gz
+share/container.tar.*
 share/image-id.txt
 container/container-pip-requirements.txt
 .doit.db.db

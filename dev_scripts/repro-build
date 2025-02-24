@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-###################
-# Copied from:
-# https://github.com/freedomofpress/repro-build/blob/8f85db91a5595bf29d9ba22f6021aca77c1037a8/repro-build
-
 import argparse
 import datetime
 import hashlib
@@ -35,7 +31,7 @@ DEFAULT_BUILDKIT_IMAGE_ROOTLESS = "moby/buildkit:v0.19.0-rootless@sha256:e901cff
 
 MSG_BUILD_CTX = """Build environment:
 - Container runtime: {runtime}
-- Buildkit image: {buildkit_image}
+- BuildKit image: {buildkit_image}
 - Rootless support: {rootless}
 - Caching enabled: {use_cache}
 - Build context: {context}
@@ -49,7 +45,7 @@ Build parameters:
 - Platform: {platform}
 
 Podman-only arguments:
-- Buildkit arguments: {buildkit_args}
+- BuildKit arguments: {buildkit_args}
 
 Docker-only arguments:
 - Docker Buildx arguments: {buildx_args}
@@ -133,7 +129,8 @@ def parse_sde(args) -> str:
 
     if dt is not None:
         d = datetime.datetime.fromisoformat(dt)
-        # If the datetime is naive, assume its timezone is UTC. The check is taken from:
+        # If the datetime is naive, assume its timezone is UTC. The check is
+        # taken from:
         # https://docs.python.org/3/library/datetime.html#determining-if-an-object-is-aware-or-naive
         if d.tzinfo is None or d.tzinfo.utcoffset(d) is None:
             d = d.replace(tzinfo=datetime.timezone.utc)
@@ -159,7 +156,7 @@ def parse_buildkit_args(args, runtime: str) -> str:
         return []
 
     if runtime != "podman":
-        raise RuntimeError("Cannot specify Buildkit arguments using the Podman runtime")
+        raise RuntimeError("Cannot specify BuildKit arguments using the Podman runtime")
 
     return shlex.split(args.buildkit_args)
 
@@ -227,6 +224,12 @@ def oci_get_file_from_tarball(tar: tarfile.TarFile, path: str) -> dict:
 
 
 def oci_parse_manifest(tar: tarfile.TarFile, path: str, platform: dict | None) -> dict:
+    """Parse manifest information in JSON format.
+
+    Interestingly, the platform info for a manifest is not included in the
+    manifest itself, but in the descriptor that points to it. So, we have to
+    carry it from the previous manifest and include in the info here.
+    """
     path = oci_normalize_path(path)
     contents = tar.extractfile(path).read().decode()
     digest = "sha256:" + hashlib.sha256(contents.encode()).hexdigest()
@@ -304,6 +307,8 @@ def podman_build(
     if dockerfile:
         dockerfile_args_podman = ["-v", f"{dockerfile}:/tmp/Dockerfile"]
         dockerfile_args_buildkit = ["--local", "dockerfile=/tmp"]
+    else:
+        dockerfile_args_buildkit = ["--local", "dockerfile=/tmp/work"]
 
     tag_args = f",name={tag}" if tag else ""
 
@@ -348,7 +353,7 @@ def podman_build(
         f"build-arg:SOURCE_DATE_EPOCH={sde}",
         *_build_args,
         "--output",
-        f"type=oci,dest=/tmp/image/{output.name},rewrite-timestamp=true{tag_args}",
+        f"type=docker,dest=/tmp/image/{output.name},rewrite-timestamp=true{tag_args}",
         *cache_args,
         *dockerfile_args_buildkit,
         *platform_args,
@@ -406,7 +411,7 @@ def docker_build(
         "--provenance",
         "false",
         "--output",
-        f"type=oci,dest={output},rewrite-timestamp=true",
+        f"type=docker,dest={output},rewrite-timestamp=true",
         *cache_args,
         *tag_args,
         *dockerfile_args,
@@ -527,7 +532,7 @@ def define_build_cmd_args(parser: argparse.ArgumentParser) -> None:
         metavar="NAME:TAG@DIGEST",
         default=None,
         help=(
-            "The Buildkit container image which will be used for building the"
+            "The BuildKit container image which will be used for building the"
             " reproducible container image. Make sure to pass the '-rootless'"
             " variant if you are using rootless Podman"
             " (default: docker.io/moby/buildkit:v0.19.0)"
@@ -551,7 +556,7 @@ def define_build_cmd_args(parser: argparse.ArgumentParser) -> None:
         "--rootless",
         default=False,
         action="store_true",
-        help="Run Buildkit in rootless mode (Podman only)",
+        help="Run BuildKit in rootless mode (Podman only)",
     )
     parser.add_argument(
         "-f",
@@ -585,13 +590,13 @@ def define_build_cmd_args(parser: argparse.ArgumentParser) -> None:
         "--platform",
         metavar="PLAT1,PLAT2",
         default=None,
-        help="Set platform if server is multi-platform capable",
+        help="Set platform for the image",
     )
     parser.add_argument(
         "--buildkit-args",
         metavar="'ARG1 ARG2'",
         default=None,
-        help="Extra arguments for Buildkit (Podman only)",
+        help="Extra arguments for BuildKit (Podman only)",
     )
     parser.add_argument(
         "--buildx-args",

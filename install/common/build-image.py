@@ -78,11 +78,6 @@ def main():
         help="Path to store the container image",
     )
     # parser.add_argument(
-    #     "--buildx",
-    #     action="store_true",
-    #     help="Use the buildx platform of Docker or Podman",
-    # )
-    # parser.add_argument(
     #     "--compress-level",
     #     type=int,
     #     choices=range(0, 10),
@@ -116,8 +111,8 @@ def main():
     )
     args = parser.parse_args()
 
-    tag = args.tag or determine_git_tag()
-    image_name_tagged = f"{IMAGE_NAME}:{args.debian_archive_date}-{tag}"
+    tag = args.tag or f"{args.debian_archive_date}-{determine_git_tag()}"
+    image_name_tagged = f"{IMAGE_NAME}:{tag}"
 
     print(f"Will tag the container image as '{image_name_tagged}'")
     image_id_path = Path("share") / "image-id.txt"
@@ -129,7 +124,7 @@ def main():
     print("Building container image")
     cache_args = [] if args.use_cache else ["--no-cache"]
     platform_args = [] if not args.platform else ["--platform", args.platform]
-    # rootless_args = [] if args.runtime == "docker" else ["--rootless"]
+    rootless_args = [] if args.runtime == "docker" else ["--rootless"]
     rootless_args = []
     dry_args = [] if not args.dry else ["--dry"]
 

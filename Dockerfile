@@ -57,7 +57,8 @@ RUN mkdir /opt/libreoffice_ext && cd /opt/libreoffice_ext \
 RUN addgroup --gid 1000 dangerzone
 RUN adduser --uid 1000 --ingroup dangerzone --shell /bin/true \
     --disabled-password --home /home/dangerzone dangerzone \
-    && chage -d 99999 dangerzone
+    && chage -d 99999 dangerzone \
+    && rm /etc/shadow-
 
 # Copy Dangerzone's conversion logic under /opt/dangerzone, and allow Python to
 # import it.

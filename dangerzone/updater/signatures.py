@@ -184,7 +184,7 @@ def get_log_index_from_signatures(signatures: List[Dict]) -> int:
 def write_log_index(log_index: int) -> None:
     last_log_index_path = SIGNATURES_PATH / "last_log_index"
 
-    with open(log_index, "w") as f:
+    with open(last_log_index_path, "w") as f:
         f.write(str(log_index))
 
 

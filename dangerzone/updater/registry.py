@@ -28,7 +28,7 @@ ACCEPT_MANIFESTS_HEADER = ",".join(
 )
 
 
-Image = namedtuple("Image", ["registry", "namespace", "image_name", "tag"])
+Image = namedtuple("Image", ["registry", "namespace", "image_name", "tag", "digest"])
 
 
 def parse_image_location(input_string: str) -> Image:

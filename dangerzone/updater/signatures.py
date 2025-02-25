@@ -109,7 +109,7 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> 
         if result.returncode != 0:
             # XXX Raise instead?
             log.debug("Failed to verify signature", result.stderr)
-            return False
+            raise errors.SignatureVerificationError("Failed to verify signature")
         if result.stderr == b"Verified OK\n":
             log.debug("Signature verified")
             return True

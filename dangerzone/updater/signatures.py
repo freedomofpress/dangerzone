@@ -377,7 +377,7 @@ def store_signatures(signatures: list[Dict], image_digest: str, pubkey: str) -> 
 
     if f"sha256:{image_digest}" != digests[0]:
         raise errors.SignatureMismatch(
-            f"Signatures do not match the given image digest ({image_digest}, {digests[0]})"
+            f"Signatures do not match the given image digest (sha256:{image_digest}, {digests[0]})"
         )
 
     pubkey_signatures = SIGNATURES_PATH / get_file_digest(pubkey)

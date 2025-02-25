@@ -50,6 +50,7 @@ def parse_image_location(input_string: str) -> Image:
         namespace=match.group("namespace"),
         image_name=match.group("image_name"),
         tag=match.group("tag") or "latest",
+        digest=match.group("digest"),
     )
 
 

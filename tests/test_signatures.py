@@ -49,6 +49,10 @@ def tempered_signature():
 
 
 @pytest.fixture
+def signature_other_digest(valid_signature):
+    signature = valid_signature.copy()
+    signature["Bundle"]["Payload"]["digest"] = "sha256:123456"
+    return signature
 
 
 def test_load_valid_signatures(mocker):

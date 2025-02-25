@@ -237,8 +237,8 @@ def test_store_signatures_with_different_digests(
     with pytest.raises(errors.SignatureMismatch):
         store_signatures(signatures, image_digest, TEST_PUBKEY_PATH)
         "dangerzone.updater.signatures.get_last_log_index",
-        return_value=50,
-    )
+    # Verify that the signatures file was not created
+    assert not (signatures_path / f"{image_digest}.json").exists()
 
 
 def test_stores_signatures_updates_last_log_index():

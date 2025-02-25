@@ -274,8 +274,16 @@ def test_stores_signatures_updates_last_log_index(valid_signature, mocker, tmp_p
         assert f.read() == "100"
 
 
-def test_is_update_available_nothing_local():
-    pass
+def test_is_update_available_when_no_local_image(mocker):
+    """
+    Test that is_update_available returns True when no local image is
+    currently present.
+    """
+    # Mock container_image_exists to return False
+    mocker.patch(
+        "dangerzone.container_utils.get_local_image_digest",
+        side_effect=dzerrors.ImageNotPresentException,
+    )
 
 
 def test_is_update_available_trims():

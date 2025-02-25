@@ -229,6 +229,10 @@ def test_store_signatures_with_different_digests(
 
     # Mock get_last_log_index
     mocker.patch(
+        "dangerzone.updater.signatures.get_last_log_index",
+        return_value=50,
+    )
+
     # Call store_signatures
     with pytest.raises(errors.SignatureMismatch):
         store_signatures(signatures, image_digest, TEST_PUBKEY_PATH)

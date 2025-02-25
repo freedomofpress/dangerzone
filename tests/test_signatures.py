@@ -29,6 +29,8 @@ INVALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "invalid"
 VALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "valid"
 TEMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tempered"
 
+RANDOM_DIGEST = "aacc9b586648bbe3040f2822153b1d5ead2779af45ff750fd6f04daf4a9f64b4"
+
 
 @pytest.fixture
 def valid_signature():

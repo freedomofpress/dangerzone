@@ -132,7 +132,11 @@ class Signature:
 
 def is_update_available(image: str) -> Tuple[bool, Optional[str]]:
     remote_digest = registry.get_manifest_digest(image)
-    local_digest = runtime.get_local_image_digest(image)
+    try:
+        local_digest = runtime.get_local_image_digest(image)
+    except dzerrors.ImageNotPresentException:
+        log.debug("No local image found")
+        return True, remote_digest
     log.debug("Remote digest: %s", remote_digest)
     log.debug("Local digest: %s", local_digest)
     has_update = remote_digest != local_digest

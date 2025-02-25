@@ -250,8 +250,10 @@ def test_stores_signatures_updates_last_log_index(valid_signature, mocker, tmp_p
     # Extract the digest from the signature
     image_digest = Signature(valid_signature).manifest_digest
 
-def test_get_file_digest():
-    pass
+    # Mock the signatures path
+    signatures_path = tmp_path / "signatures"
+    signatures_path.mkdir()
+    mocker.patch("dangerzone.updater.signatures.SIGNATURES_PATH", signatures_path)
 
 
 def test_convert_oci_images_signatures():

@@ -298,8 +298,25 @@ def test_is_update_available_when_no_local_image(mocker):
     assert update_available is True
     assert digest == RANDOM_DIGEST
 
-def test_verify_signature_wrong_payload_digest():
-    pass
+
+def test_verify_signature(valid_signature):
+    """Test that verify_signature raises an error when the payload digest doesn't match."""
+    verify_signature(
+        valid_signature,
+        Signature(valid_signature).manifest_digest,
+        TEST_PUBKEY_PATH,
+    )
+
+
+def test_verify_signature_tempered(tempered_signature):
+    """Test that verify_signature raises an error when the payload digest doesn't match."""
+    # Call verify_signature and expect an error
+    with pytest.raises(errors.SignatureError):
+        verify_signature(
+            tempered_signature,
+            Signature(tempered_signature).manifest_digest,
+            TEST_PUBKEY_PATH,
+        )
 
 
 def test_verify_signatures_empty_list():

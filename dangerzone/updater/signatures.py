@@ -12,6 +12,7 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Dict, List, Optional, Tuple
 
 from .. import container_utils as runtime
+from .. import errors as dzerrors
 from ..util import get_resource_path
 from . import cosign, errors, log, registry
 

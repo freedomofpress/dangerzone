@@ -214,8 +214,24 @@ def test_store_signatures_with_different_digests(
 
     """Test that store_signatures raises an error when a signature's digest doesn't match."""
 
-def test_store_signatures_digest_mismatch():
-    pass
+    image_digest = "sha256:123456"
+
+    # Mock the signatures path
+    signatures_path = tmp_path / "signatures"
+    signatures_path.mkdir()
+    mocker.patch("dangerzone.updater.signatures.SIGNATURES_PATH", signatures_path)
+
+    # Mock get_log_index_from_signatures
+    mocker.patch(
+        "dangerzone.updater.signatures.get_log_index_from_signatures",
+        return_value=100,
+    )
+
+    # Mock get_last_log_index
+    mocker.patch(
+        "dangerzone.updater.signatures.get_last_log_index",
+        return_value=50,
+    )
 
 
 def test_stores_signatures_updates_last_log_index():

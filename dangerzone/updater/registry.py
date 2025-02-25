@@ -37,7 +37,7 @@ def parse_image_location(input_string: str) -> Image:
         r"^"
         r"(?P<registry>[a-zA-Z0-9.-]+)/"
         r"(?P<namespace>[a-zA-Z0-9-]+)/"
-        r"(?P<image_name>[^:]+)"
+        r"(?P<image_name>[^:@]+)"
         r"(?::(?P<tag>[a-zA-Z0-9.-]+))?"
         r"$"
     )

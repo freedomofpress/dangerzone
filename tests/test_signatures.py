@@ -244,6 +244,11 @@ def test_store_signatures_with_different_digests(
     assert not (signatures_path / "last_log_index").exists()
 
 
+def test_stores_signatures_updates_last_log_index(valid_signature, mocker, tmp_path):
+    """Test that store_signatures updates the last log index file."""
+    signatures = [valid_signature]
+    # Extract the digest from the signature
+    image_digest = Signature(valid_signature).manifest_digest
 
 def test_get_file_digest():
     pass

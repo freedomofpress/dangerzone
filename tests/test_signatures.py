@@ -212,6 +212,7 @@ def test_store_signatures_with_different_digests(
     breakpoint()
     valid_signature, signature_other_digest, mocker, tmp_path
 
+    """Test that store_signatures raises an error when a signature's digest doesn't match."""
 
 def test_store_signatures_digest_mismatch():
     pass

@@ -294,6 +294,9 @@ def test_is_update_available_when_no_local_image(mocker):
     # Call is_update_available
     update_available, digest = is_update_available("ghcr.io/freedomofpress/dangerzone")
 
+    # Verify the result
+    assert update_available is True
+    assert digest == RANDOM_DIGEST
 
 def test_verify_signature_wrong_payload_digest():
     pass

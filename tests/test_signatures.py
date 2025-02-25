@@ -211,7 +211,7 @@ def test_get_remote_signatures_cosign_error(mocker, fp: FakeProcess):
 
 def test_store_signatures_with_different_digests(
     valid_signature, signature_other_digest, mocker, tmp_path
-
+):
     """Test that store_signatures raises an error when a signature's digest doesn't match."""
 
     image_digest = "sha256:123456"

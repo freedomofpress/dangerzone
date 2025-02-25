@@ -41,10 +41,6 @@ def valid_signature():
 
 
 @pytest.fixture
-def signature_other_digest(valid_signature):
-    signature = valid_signature.copy()
-    signature["Bundle"]["Payload"]["digest"] = "sha256:123456"
-    return signature
 def tempered_signature():
     signature_file = next(TEMPERED_SIGNATURES_PATH.glob("**/*.json"))
     with open(signature_file, "r") as signature_file:

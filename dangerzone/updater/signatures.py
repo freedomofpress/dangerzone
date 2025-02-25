@@ -115,6 +115,20 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> 
     return False
 
 
+class Signature:
+    def __init__(self, signature: Dict):
+        self.signature = signature
+
+    @property
+    def payload(self) -> Dict:
+        return json.loads(b64decode(self.signature["Payload"]))
+
+    @property
+    def manifest_digest(self) -> str:
+        full_digest = self.payload["critical"]["image"]["docker-manifest-digest"]
+        return full_digest.replace("sha256:", "")
+
+
 def is_update_available(image: str) -> Tuple[bool, Optional[str]]:
     remote_digest = registry.get_manifest_digest(image)
     local_digest = runtime.get_local_image_digest(image)

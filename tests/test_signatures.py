@@ -236,7 +236,7 @@ def test_store_signatures_with_different_digests(
     # Verify that the signatures file was not created
     assert not (signatures_path / f"{image_digest}.json").exists()
 
-    # Verify that the log index file was not updated
+
     assert not (signatures_path / "last_log_index").exists()
 
 

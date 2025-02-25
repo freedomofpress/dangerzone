@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from pytest_subprocess import FakeProcess
 
+from dangerzone import errors as dzerrors
 from dangerzone.updater import errors
 from dangerzone.updater.signatures import (
     get_config_dir,

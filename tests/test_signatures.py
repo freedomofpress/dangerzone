@@ -255,6 +255,9 @@ def test_stores_signatures_updates_last_log_index(valid_signature, mocker, tmp_p
     signatures_path.mkdir()
     mocker.patch("dangerzone.updater.signatures.SIGNATURES_PATH", signatures_path)
 
+    # Create an existing last_log_index file with a lower value
+    with open(signatures_path / "last_log_index", "w") as f:
+        f.write("50")
 
 def test_convert_oci_images_signatures():
     pass

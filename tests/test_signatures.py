@@ -285,6 +285,11 @@ def test_is_update_available_when_no_local_image(mocker):
         side_effect=dzerrors.ImageNotPresentException,
     )
 
+    # Mock get_manifest_digest to return a digest
+    mocker.patch(
+        "dangerzone.updater.registry.get_manifest_digest",
+        return_value=RANDOM_DIGEST,
+    )
 
 def test_is_update_available_trims():
     pass

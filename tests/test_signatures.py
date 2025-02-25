@@ -259,8 +259,19 @@ def test_stores_signatures_updates_last_log_index(valid_signature, mocker, tmp_p
     with open(signatures_path / "last_log_index", "w") as f:
         f.write("50")
 
-def test_convert_oci_images_signatures():
-    pass
+    # Mock get_log_index_from_signatures to return a higher value
+    mocker.patch(
+        "dangerzone.updater.signatures.get_log_index_from_signatures",
+        return_value=100,
+    )
+
+    # Call store_signatures
+    store_signatures(signatures, image_digest, TEST_PUBKEY_PATH)
+
+    # Verify that the log index file was updated
+    assert (signatures_path / "last_log_index").exists()
+    with open(signatures_path / "last_log_index", "r") as f:
+        assert f.read() == "100"
 
 
 def test_is_update_available_nothing_local():

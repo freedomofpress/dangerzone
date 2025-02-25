@@ -210,7 +210,7 @@ def test_store_signatures_with_different_digests(
 ):
     signatures = [valid_signature, signature_other_digest]
     breakpoint()
-    pass
+    valid_signature, signature_other_digest, mocker, tmp_path
 
 
 def test_store_signatures_digest_mismatch():

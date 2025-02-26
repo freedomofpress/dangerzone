@@ -22,13 +22,17 @@ except ImportError:
     import appdirs as platformdirs  # type: ignore[no-redef]
 
 
-def get_config_dir() -> Path:
-    return Path(platformdirs.user_config_dir("dangerzone"))
+def appdata_dir() -> Path:
+    return Path(platformdirs.user_data_dir("dangerzone"))
 
+
+# RELEASE: Bump this value to the log index of the latest signature
+# to ensures the software can't upgrade to container images that predates it.
+DEFAULT_LOG_INDEX = 0
 
 # XXX Store this somewhere else.
 DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
-SIGNATURES_PATH = get_config_dir() / "signatures"
+SIGNATURES_PATH = appdata_dir() / "signatures"
 LAST_LOG_INDEX = SIGNATURES_PATH / "last_log_index"
 
 __all__ = [
@@ -61,9 +65,14 @@ def signature_to_bundle(sig: Dict) -> Dict:
     }
 
 
-def verify_signature(signature: dict, image_digest: str, pubkey: str) -> bool:
-    """Verify a signature against a given public key"""
-    # XXX - Also verfy the identity/docker-reference field against the expected value
+def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> None:
+    """
+    Verifies that:
+
+    - the signature has been signed by the given public key
+    - the signature matches the given image digest
+    """
+    # XXX - Also verify the identity/docker-reference field against the expected value
     # e.g. ghcr.io/freedomofpress/dangerzone/dangerzone
 
     cosign.ensure_installed()
@@ -75,7 +84,8 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str) -> bool:
     ]
     if payload_digest != f"sha256:{image_digest}":
         raise errors.SignatureMismatch(
-            f"The signature does not match the image digest ({payload_digest}, {image_digest})"
+            "The given signature does not match the expected image digest "
+            f"({payload_digest}, {image_digest})"
         )
 
     with (
@@ -99,14 +109,10 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str) -> bool:
         ]
         log.debug(" ".join(cmd))
         result = subprocess.run(cmd, capture_output=True)
-        if result.returncode != 0:
-            # XXX Raise instead?
+        if result.returncode != 0 or result.stderr != b"Verified OK\n":
             log.debug("Failed to verify signature", result.stderr)
             raise errors.SignatureVerificationError("Failed to verify signature")
-        if result.stderr == b"Verified OK\n":
-            log.debug("Signature verified")
-            return True
-    return False
+        log.debug("Signature verified")
 
 
 class Signature:
@@ -144,15 +150,14 @@ def verify_signatures(
     pubkey: str,
 ) -> bool:
     for signature in signatures:
-        if not verify_signature(signature, image_digest, pubkey):
-            raise errors.SignatureVerificationError()
+        verify_signature(signature, image_digest, pubkey)
     return True
 
 
 def get_last_log_index() -> int:
     SIGNATURES_PATH.mkdir(parents=True, exist_ok=True)
     if not LAST_LOG_INDEX.exists():
-        return 0
+        return DEFAULT_LOG_INDEX
 
     with open(LAST_LOG_INDEX) as f:
         return int(f.read())

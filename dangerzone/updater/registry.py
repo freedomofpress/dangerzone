@@ -5,6 +5,8 @@ from typing import Dict, Optional, Tuple
 
 import requests
 
+from .. import container_utils as runtime
+from .. import errors as dzerrors
 from . import errors, log
 
 __all__ = [
@@ -114,3 +116,24 @@ def get_manifest_digest(
         tag_manifest_content = get_manifest(image_str).content
 
     return sha256(tag_manifest_content).hexdigest()
+
+
+def is_new_remote_image_available(image_str: str) -> Tuple[bool, str]:
+    """
+    Check if a new remote image is available on the registry.
+    """
+    remote_digest = get_manifest_digest(image_str)
+    image = parse_image_location(image_str)
+    if image.digest:
+        local_digest = image.digest
+    else:
+        try:
+            local_digest = runtime.get_local_image_digest(image_str)
+        except dzerrors.ImageNotPresentException:
+            log.debug("No local image found")
+            return True, remote_digest
+
+    log.debug("Remote digest: %s", remote_digest)
+    log.debug("Local digest: %s", local_digest)
+
+    return (remote_digest != local_digest, remote_digest)

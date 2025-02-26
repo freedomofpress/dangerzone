@@ -453,7 +453,7 @@ def prepare_airgapped_archive(image_name: str, destination: str) -> None:
             archive.add(tmpdir, arcname=".")
 
 
-def upgrade_container_image(image: str, manifest_digest: str, pubkey: str) -> bool:
+def upgrade_container_image(image: str, manifest_digest: str, pubkey: str) -> str:
     """Verify and upgrade the image to the latest, if signed."""
     update_available, _ = is_update_available(image)
     if not update_available:
@@ -462,20 +462,17 @@ def upgrade_container_image(image: str, manifest_digest: str, pubkey: str) -> bo
     signatures = get_remote_signatures(image, manifest_digest)
     verify_signatures(signatures, manifest_digest, pubkey)
 
-    # Ensure that we only upgrade if the log index is higher than the last known one
+    # Only upgrade if the log index is higher than the last known one
     incoming_log_index = get_log_index_from_signatures(signatures)
     last_log_index = get_last_log_index()
 
     if incoming_log_index < last_log_index:
         raise errors.InvalidLogIndex(
-            "The log index is not higher than the last known one"
+            "Trying to upgrade to an image with a lower log index"
         )
 
-    # let's upgrade the image
-    # XXX Use the image digest here to avoid race conditions
-    upgraded = runtime.container_pull(image)
+    runtime.container_pull(image, manifest_digest)
 
-    # At this point, the signatures are verified
-    # We store the signatures just now to avoid storing unverified signatures
+    # Store the signatures just now to avoid storing them unverified
     store_signatures(signatures, manifest_digest, pubkey)
-    return upgraded
+    return manifest_digest

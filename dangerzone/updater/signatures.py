@@ -367,6 +367,8 @@ def store_signatures(signatures: list[Dict], image_digest: str, pubkey: str) -> 
 
     It can be converted to the one expected by cosign verify --bundle with
     the `signature_to_bundle()` function.
+
+    This function must be used only if the provided signatures have been verified.
     """
 
     def _get_digest(sig: Dict) -> str:

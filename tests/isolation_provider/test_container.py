@@ -83,6 +83,10 @@ class TestContainer(IsolationProviderTest):
         self, mocker: MockerFixture, provider: Container, fp: FakeProcess
     ) -> None:
         """When an image keep being not installed, it should return False"""
+        fp.register_subprocess(
+            ["podman", "version", "-f", "{{.Client.Version}}"],
+            stdout="4.0.0",
+        )
 
         fp.register_subprocess(
             [container_utils.get_runtime(), "image", "ls"],

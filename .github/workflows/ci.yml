@@ -473,30 +473,3 @@ jobs:
           #     file successfully.
           xvfb-run -s '-ac' ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
               bash -c 'cd dangerzone; poetry run make test'
-
-  check-reproducibility:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install dev. dependencies
-        run: |-
-          sudo apt-get update
-          sudo apt-get install -y git python3-poetry --no-install-recommends
-          poetry install --only package
-
-      - name: Verify that the Dockerfile matches the commited template and params
-        run: |-
-          cp Dockerfile Dockerfile.orig
-          make Dockerfile
-          diff Dockerfile.orig Dockerfile
-
-      - name: Build Dangerzone container image
-        run: |
-          python3 ./install/common/build-image.py --no-save
-
-      - name: Reproduce the same container image
-        run: |
-          ./dev_scripts/reproduce-image.py

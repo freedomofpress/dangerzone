@@ -1,0 +1,248 @@
+name: Build and push multi-arch container image
+
+on:
+  workflow_call:
+    inputs:
+      registry:
+        required: true
+        type: string
+      registry_user:
+        required: true
+        type: string
+      image_name:
+        required: true
+        type: string
+      reproduce:
+        required: true
+        type: boolean
+    secrets:
+      registry_token:
+        required: true
+
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dev. dependencies
+        run: |-
+          sudo apt-get update
+          sudo apt-get install -y git python3-poetry --no-install-recommends
+          poetry install --only package
+
+      - name: Verify that the Dockerfile matches the commited template and params
+        run: |-
+          cp Dockerfile Dockerfile.orig
+          make Dockerfile
+          diff Dockerfile.orig Dockerfile
+
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      debian_archive_date: ${{ steps.params.outputs.debian_archive_date }}
+      source_date_epoch: ${{ steps.params.outputs.source_date_epoch }}
+      image: ${{ steps.params.outputs.full_image_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute image parameters
+        id: params
+        run: |
+          source Dockerfile.env
+          DEBIAN_ARCHIVE_DATE=$(date -u +'%Y%m%d')
+          SOURCE_DATE_EPOCH=$(date -u -d ${DEBIAN_ARCHIVE_DATE} +"%s")
+          TAG=${DEBIAN_ARCHIVE_DATE}-$(git describe --long --first-parent | tail -c +2)
+          FULL_IMAGE_NAME=${{ inputs.registry }}/${{ inputs.image_name }}:${TAG}
+
+          echo "debian_archive_date=${DEBIAN_ARCHIVE_DATE}" >> $GITHUB_OUTPUT
+          echo "source_date_epoch=${SOURCE_DATE_EPOCH}" >> $GITHUB_OUTPUT
+          echo "tag=${DEBIAN_ARCHIVE_DATE}-${TAG}" >> $GITHUB_OUTPUT
+          echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "buildkit_image=${BUILDKIT_IMAGE}" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build ${{ matrix.platform.name }} image
+    runs-on: ${{ matrix.platform.runs-on }}
+    needs:
+      - prepare
+    outputs:
+      debian_archive_date: ${{ needs.prepare.outputs.debian_archive_date }}
+      source_date_epoch: ${{ needs.prepare.outputs.source_date_epoch }}
+      image: ${{ needs.prepare.outputs.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runs-on: "ubuntu-24.04"
+            name: "linux/amd64"
+          - runs-on: "ubuntu-24.04-arm"
+            name: "linux/arm64"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform.name }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ inputs.registry_user }}
+          password: ${{ secrets.registry_token }}
+
+      # Instructions for reproducibly building a container image are taken from:
+      # https://github.com/freedomofpress/repro-build?tab=readme-ov-file#build-and-push-a-container-image-on-github-actions
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: image=${{ needs.prepare.outputs.buildkit_image }}
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./dangerzone/
+          file: Dockerfile
+          build-args: |
+            DEBIAN_ARCHIVE_DATE=${{ needs.prepare.outputs.debian_archive_date }}
+            SOURCE_DATE_EPOCH=${{ needs.prepare.outputs.source_date_epoch }}
+          provenance: false
+          outputs: type=image,"name=${{ inputs.registry }}/${{ inputs.image_name }}",push-by-digest=true,push=true,rewrite-timestamp=true,name-canonical=true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Export digest
+        run: |
+          mkdir -p ${{ runner.temp }}/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+          echo "Image digest is: ${digest}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    outputs:
+      debian_archive_date: ${{ needs.build.outputs.debian_archive_date }}
+      source_date_epoch: ${{ needs.build.outputs.source_date_epoch }}
+      image: ${{ needs.build.outputs.image }}
+      digest_root: ${{ steps.image.outputs.digest_root }}
+      digest_amd64: ${{ steps.image.outputs.digest_amd64 }}
+      digest_arm64: ${{ steps.image.outputs.digest_arm64 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ inputs.registry_user }}
+          password: ${{ secrets.registry_token }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: image=${{ env.BUILDKIT_IMAGE }}
+
+      - name: Create manifest list and push
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          DIGESTS=$(printf '${{ needs.build.outputs.image }}@sha256:%s ' *)
+          docker buildx imagetools create -t ${{ needs.build.outputs.image }} ${DIGESTS}
+
+      - name: Inspect image
+        id: image
+        run: |
+          # Inspect the image
+          docker buildx imagetools inspect ${{ needs.build.outputs.image }}
+          docker buildx imagetools inspect ${{ needs.build.outputs.image }} --format "{{json .Manifest}}" > manifest
+
+          # Calculate and print the digests
+          digest_root=$(jq -r .digest manifest)
+          digest_amd64=$(jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest' manifest)
+          digest_arm64=$(jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest' manifest)
+
+          echo "The image digests are:"
+          echo "  Root: $digest_root"
+          echo "  linux/amd64: $digest_amd64"
+          echo "  linux/arm64: $digest_arm64"
+
+          # NOTE: Set the digests as an output because the `env` context is not
+          # available to the inputs of a reusable workflow call.
+          echo "digest_root=$digest_root" >> "$GITHUB_OUTPUT"
+          echo "digest_amd64=$digest_amd64" >> "$GITHUB_OUTPUT"
+          echo "digest_arm64=$digest_arm64" >> "$GITHUB_OUTPUT"
+
+  # This step calls the container workflow to generate provenance and push it to
+  # the container registry.
+  provenance:
+    needs:
+      - merge
+    strategy:
+      matrix:
+        manifest_type:
+          - root
+          - amd64
+          - arm64
+    permissions:
+      actions: read # for detecting the Github Actions environment.
+      id-token: write # for creating OIDC tokens for signing.
+      packages: write # for uploading attestations.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.0.0
+    with:
+      digest: ${{ needs.merge.outputs[format('digest_{0}', matrix.manifest_type)] }}
+      image: ${{ needs.merge.outputs.image }}
+      registry-username: ${{ inputs.registry_user }}
+    secrets:
+      registry-password: ${{ secrets.registry_token }}
+
+  # This step ensures that the image is reproducible
+  check-reproducibility:
+    if: ${{ inputs.reproduce }}
+    needs:
+      - merge
+    runs-on: ${{ matrix.platform.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - runs-on: "ubuntu-24.04"
+            name: "amd64"
+          - runs-on: "ubuntu-24.04-arm"
+            name: "arm64"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reproduce the same container image
+        run: |
+          ./dev_scripts/reproduce-image.py \
+            --runtime \
+            docker \
+            --debian-archive-date \
+            ${{ needs.merge.outputs.debian_archive_date }} \
+            --platform \
+            linux/${{ matrix.platform.name }} \
+            ${{ needs.merge.outputs[format('digest_{0}', matrix.platform.name)] }}

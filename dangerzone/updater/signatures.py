@@ -61,9 +61,14 @@ def signature_to_bundle(sig: Dict) -> Dict:
     }
 
 
-def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> bool:
-    """Verify a signature against a given public key"""
-    # XXX - Also verfy the identity/docker-reference field against the expected value
+def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> None:
+    """
+    Verifies that:
+
+    - the signature has been signed by the given public key
+    - the signature matches the given image digest
+    """
+    # XXX - Also verify the identity/docker-reference field against the expected value
     # e.g. ghcr.io/freedomofpress/dangerzone/dangerzone
 
     cosign.ensure_installed()
@@ -79,7 +84,8 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> 
         )
     if payload_digest != f"sha256:{image_digest}":
         raise errors.SignatureMismatch(
-            f"The signature does not match the image digest ({payload_digest}, {image_digest})"
+            "The given signature does not match the expected image digest "
+            f"({payload_digest}, {image_digest})"
         )
 
     with (
@@ -106,14 +112,10 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> 
         ]
         log.debug(" ".join(cmd))
         result = subprocess.run(cmd, capture_output=True)
-        if result.returncode != 0:
-            # XXX Raise instead?
+        if result.returncode != 0 or result.stderr != b"Verified OK\n":
             log.debug("Failed to verify signature", result.stderr)
             raise errors.SignatureVerificationError("Failed to verify signature")
-        if result.stderr == b"Verified OK\n":
-            log.debug("Signature verified")
-            return True
-    return False
+        log.debug("Signature verified")
 
 
 class Signature:

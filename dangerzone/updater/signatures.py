@@ -26,6 +26,10 @@ def appdata_dir() -> Path:
     return Path(platformdirs.user_data_dir("dangerzone"))
 
 
+# RELEASE: Bump this value to the log index of the latest signature
+# to ensures the software can't upgrade to container images that predates it.
+DEFAULT_LOG_INDEX = 0
+
 # XXX Store this somewhere else.
 DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
 SIGNATURES_PATH = appdata_dir() / "signatures"
@@ -156,17 +160,14 @@ def verify_signatures(
         raise errors.SignatureVerificationError("No signatures found")
 
     for signature in signatures:
-        if not verify_signature(signature, image_digest, pubkey):
-            msg = f"Unable to verify signature for {image_digest} with pubkey {pubkey}"
-            raise errors.SignatureVerificationError(msg)
-
+        verify_signature(signature, image_digest, pubkey)
     return True
 
 
 def get_last_log_index() -> int:
     SIGNATURES_PATH.mkdir(parents=True, exist_ok=True)
     if not LAST_LOG_INDEX.exists():
-        return 0
+        return DEFAULT_LOG_INDEX
 
     with open(LAST_LOG_INDEX) as f:
         return int(f.read())

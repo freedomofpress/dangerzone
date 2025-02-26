@@ -97,6 +97,7 @@ class Container(IsolationProvider):
                 f"Could not find a Dangerzone container image with tag '{expected_tag}'"
             )
             for tag in old_tags:
+                tag = container_utils.CONTAINER_NAME + ":" + tag
                 container_utils.delete_image_tag(tag)
         else:
             return True

@@ -29,11 +29,10 @@ def upgrade(image: str, pubkey: str) -> None:
     """Upgrade the image to the latest signed version."""
     manifest_digest = registry.get_manifest_digest(image)
     try:
-        is_upgraded = signatures.upgrade_container_image(image, manifest_digest, pubkey)
-        if is_upgraded:
-            click.echo(f"✅ The local image {image} has been upgraded")
-            click.echo(f"✅ The image has been signed with {pubkey}")
-            click.echo(f"✅ Signatures has been verified and stored locally")
+        signatures.upgrade_container_image(image, manifest_digest, pubkey)
+        click.echo(f"✅ The local image {image} has been upgraded")
+        click.echo(f"✅ The image has been signed with {pubkey}")
+        click.echo(f"✅ Signatures has been verified and stored locally")
 
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")

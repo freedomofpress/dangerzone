@@ -95,18 +95,26 @@ def list_image_tags() -> List[str]:
     )
 
 
+def add_image_tag(image_id: str, new_tag: str) -> None:
+    """Add a tag to the Dangerzone image."""
+    log.debug(f"Adding tag '{new_tag}' to image '{image_id}'")
+    subprocess.check_output(
+        [get_runtime(), "tag", image_id, new_tag],
+        startupinfo=get_subprocess_startupinfo(),
+    )
+
+
 def delete_image_tag(tag: str) -> None:
     """Delete a Dangerzone image tag."""
-    name = CONTAINER_NAME + ":" + tag
-    log.warning(f"Deleting old container image: {name}")
+    log.warning(f"Deleting old container image: {tag}")
     try:
         subprocess.check_output(
-            [get_runtime(), "rmi", "--force", name],
+            [get_runtime(), "rmi", "--force", tag],
             startupinfo=get_subprocess_startupinfo(),
         )
     except Exception as e:
         log.warning(
-            f"Couldn't delete old container image '{name}', so leaving it there."
+            f"Couldn't delete old container image '{tag}', so leaving it there."
             f" Original error: {e}"
         )
 
@@ -120,22 +128,43 @@ def get_expected_tag() -> str:
 def load_image_tarball() -> None:
     log.info("Installing Dangerzone container image...")
     tarball_path = get_resource_path("container.tar")
-    with open(tarball_path) as f:
-        try:
-            subprocess.run(
-                [get_runtime(), "load"],
-                stdin=f,
-                startupinfo=get_subprocess_startupinfo(),
-                capture_output=True,
-                check=True,
-            )
-        except subprocess.CalledProcessError as e:
-            if e.stderr:
-                error = e.stderr.decode()
-            else:
-                error = "No output"
-            raise errors.ImageInstallationException(
-                f"Could not install container image: {error}"
-            )
+    try:
+        res = subprocess.run(
+            [get_runtime(), "load", "-i", tarball_path],
+            startupinfo=get_subprocess_startupinfo(),
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        if e.stderr:
+            error = e.stderr.decode()
+        else:
+            error = "No output"
+        raise errors.ImageInstallationException(
+            f"Could not install container image: {error}"
+        )
+
+    # Loading an image built with Buildkit in Podman 3.4 messes up its name. The tag
+    # somehow becomes the name of the loaded image [1].
+    #
+    # We know that older Podman versions are not generally affected, since Podman v3.0.1
+    # on Debian Bullseye works properly. Also, Podman v4.0 is not affected, so it makes
+    # sense to target only Podman v3.4 for a fix.
+    #
+    # The fix is simple, tag the image properly based on the expected tag from
+    # `share/image-id.txt` and delete the incorrect tag.
+    #
+    # [1] https://github.com/containers/podman/issues/16490
+    if get_runtime_name() == "podman" and get_runtime_version() == (3, 4):
+        expected_tag = get_expected_tag()
+        bad_tag = f"localhost/{expected_tag}:latest"
+        good_tag = f"{CONTAINER_NAME}:{expected_tag}"
+
+        log.debug(
+            f"Dangerzone images loaded in Podman v3.4 usually have an invalid tag."
+            " Fixing it..."
+        )
+        add_image_tag(bad_tag, good_tag)
+        delete_image_tag(bad_tag)
 
     log.info("Successfully installed container image")

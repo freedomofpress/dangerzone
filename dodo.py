@@ -57,7 +57,7 @@ IMAGE_DEPS = [
     *list_files("dangerzone/container_helpers"),
     "install/common/build-image.py",
 ]
-IMAGE_TARGETS = ["share/container.tar.gz", "share/image-id.txt"]
+IMAGE_TARGETS = ["share/container.tar", "share/image-id.txt"]
 
 SOURCE_DEPS = [
     *list_files("assets"),
@@ -188,8 +188,8 @@ def task_download_tessdata():
 
 def task_build_image():
     """Build the container image using ./install/common/build-image.py"""
-    img_src = "share/container.tar.gz"
-    img_dst = RELEASE_DIR / f"container-{VERSION}-{ARCH}.tar.gz"  # FIXME: Add arch
+    img_src = "share/container.tar"
+    img_dst = RELEASE_DIR / f"container-{VERSION}-{ARCH}.tar"  # FIXME: Add arch
     img_id_src = "share/image-id.txt"
     img_id_dst = RELEASE_DIR / "image-id.txt"  # FIXME: Add arch
 

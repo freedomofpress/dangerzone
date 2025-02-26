@@ -8,6 +8,7 @@ from pytest_subprocess import FakeProcess
 from dangerzone import container_utils, errors
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
+from dangerzone.util import get_resource_path
 
 from .base import IsolationProviderTermination, IsolationProviderTest
 
@@ -47,7 +48,7 @@ class TestContainer(IsolationProviderTest):
         provider.is_available()
 
     def test_install_raise_if_image_cant_be_installed(
-        self, mocker: MockerFixture, provider: Container, fp: FakeProcess
+        self, provider: Container, fp: FakeProcess
     ) -> None:
         """When an image installation fails, an exception should be raised"""
 
@@ -68,11 +69,13 @@ class TestContainer(IsolationProviderTest):
             occurrences=2,
         )
 
-        # Make podman load fail
-        mocker.patch("gzip.open", mocker.mock_open(read_data=""))
-
         fp.register_subprocess(
-            [container_utils.get_runtime(), "load"],
+            [
+                container_utils.get_runtime(),
+                "load",
+                "-i",
+                get_resource_path("container.tar"),
+            ],
             returncode=-1,
         )
 
@@ -80,7 +83,7 @@ class TestContainer(IsolationProviderTest):
             provider.install()
 
     def test_install_raises_if_still_not_installed(
-        self, mocker: MockerFixture, provider: Container, fp: FakeProcess
+        self, provider: Container, fp: FakeProcess
     ) -> None:
         """When an image keep being not installed, it should return False"""
 
@@ -101,10 +104,13 @@ class TestContainer(IsolationProviderTest):
             occurrences=2,
         )
 
-        # Patch gzip.open and podman load so that it works
-        mocker.patch("gzip.open", mocker.mock_open(read_data=""))
         fp.register_subprocess(
-            [container_utils.get_runtime(), "load"],
+            [
+                container_utils.get_runtime(),
+                "load",
+                "-i",
+                get_resource_path("container.tar"),
+            ],
         )
         with pytest.raises(errors.ImageNotPresentException):
             provider.install()
@@ -191,7 +197,7 @@ class TestContainer(IsolationProviderTest):
         reason="Linux specific",
     )
     def test_linux_skips_desktop_version_check_returns_true(
-        self, mocker: MockerFixture, provider: Container
+        self, provider: Container
     ) -> None:
         assert (True, "") == provider.check_docker_desktop_version()
 

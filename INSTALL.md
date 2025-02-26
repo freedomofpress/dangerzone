@@ -269,7 +269,7 @@ Our [GitHub Releases page](https://github.com/freedomofpress/dangerzone/releases
 hosts the following files:
 * Windows installer (`Dangerzone-<version>.msi`)
 * macOS archives (`Dangerzone-<version>-<arch>.dmg`)
-* Container images (`container-<version>-<arch>.tar.gz`)
+* Container images (`container-<version>-<arch>.tar`)
 * Source package (`dangerzone-<version>.tar.gz`)
 
 All these files are accompanied by signatures (as `.asc` files). We'll explain
@@ -297,7 +297,7 @@ gpg --verify Dangerzone-0.6.1-i686.dmg.asc Dangerzone-0.6.1-i686.dmg
 For the container images:
 
 ```
-gpg --verify container-0.6.1-i686.tar.gz.asc container-0.6.1-i686.tar.gz
+gpg --verify container-0.6.1-i686.tar.asc container-0.6.1-i686.tar
 ```
 
 For the source package:

@@ -59,9 +59,9 @@ jobs:
         id: cache-container-image
         uses: actions/cache@v4
         with:
-          key: v4-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
+          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |-
-            share/container.tar.gz
+            share/container.tar
             share/image-id.txt
 
       - name: Build Dangerzone container image
@@ -72,8 +72,8 @@ jobs:
       - name: Upload container image
         uses: actions/upload-artifact@v4
         with:
-          name: container.tar.gz
-          path: share/container.tar.gz
+          name: container.tar
+          path: share/container.tar
 
   download-tessdata:
     name: Download and cache Tesseract data
@@ -226,9 +226,9 @@ jobs:
       - name: Restore container cache
         uses: actions/cache/restore@v4
         with:
-          key: v4-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
+          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |-
-            share/container.tar.gz
+            share/container.tar
             share/image-id.txt
           fail-on-cache-miss: true
 
@@ -333,9 +333,9 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v4-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
+          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |-
-            share/container.tar.gz
+            share/container.tar
             share/image-id.txt
           fail-on-cache-miss: true
 
@@ -430,9 +430,9 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v4-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
+          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |-
-            share/container.tar.gz
+            share/container.tar
             share/image-id.txt
           fail-on-cache-miss: true
 

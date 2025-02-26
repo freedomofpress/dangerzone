@@ -66,14 +66,14 @@ def build(build_dir, qubes=False):
     print("* Creating a Python sdist")
     tessdata = root / "share" / "tessdata"
     tessdata_bak = root / "tessdata.bak"
-    container_tar_gz = root / "share" / "container.tar.gz"
-    container_tar_gz_bak = root / "container.tar.gz.bak"
+    container_tar = root / "share" / "container.tar"
+    container_tar_bak = root / "container.tar.bak"
 
     if tessdata.exists():
         tessdata.rename(tessdata_bak)
-    stash_container = qubes and container_tar_gz.exists()
-    if stash_container and container_tar_gz.exists():
-        container_tar_gz.rename(container_tar_gz_bak)
+    stash_container = qubes and container_tar.exists()
+    if stash_container and container_tar.exists():
+        container_tar.rename(container_tar_bak)
     try:
         subprocess.run(["poetry", "build", "-f", "sdist"], cwd=root, check=True)
         # Copy and unlink the Dangerzone sdist, instead of just renaming it. If the
@@ -84,8 +84,8 @@ def build(build_dir, qubes=False):
     finally:
         if tessdata_bak.exists():
             tessdata_bak.rename(tessdata)
-        if stash_container and container_tar_gz_bak.exists():
-            container_tar_gz_bak.rename(container_tar_gz)
+        if stash_container and container_tar_bak.exists():
+            container_tar_bak.rename(container_tar)
 
     print("* Building RPM package")
     cmd = [

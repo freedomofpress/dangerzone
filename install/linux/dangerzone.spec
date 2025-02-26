@@ -18,7 +18,7 @@
 #
 #    * Qubes packages include some extra files under /etc/qubes-rpc, whereas
 #      regular RPM packages include the container image under
-#      /usr/share/container.tar.gz
+#      /usr/share/container.tar
 #    * Qubes packages have some extra dependencies.
 # 3. It is best to consume this SPEC file using the `install/linux/build-rpm.py`
 #    script, which handles the necessary scaffolding for building the package.

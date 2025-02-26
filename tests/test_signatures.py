@@ -108,7 +108,8 @@ def test_get_log_index_from_missing_log_index():
 
 def test_upgrade_container_image_if_already_up_to_date(mocker):
     mocker.patch(
-        "dangerzone.updater.signatures.is_update_available", return_value=(False, None)
+        "dangerzone.updater.registry.is_new_remote_image_available",
+        return_value=(False, None),
     )
     with pytest.raises(errors.ImageAlreadyUpToDate):
         upgrade_container_image(
@@ -118,7 +119,7 @@ def test_upgrade_container_image_if_already_up_to_date(mocker):
 
 def test_upgrade_container_without_signatures(mocker):
     mocker.patch(
-        "dangerzone.updater.signatures.is_update_available",
+        "dangerzone.updater.registry.is_new_remote_image_available",
         return_value=(True, "sha256:123456"),
     )
     mocker.patch("dangerzone.updater.signatures.get_remote_signatures", return_value=[])
@@ -139,7 +140,7 @@ def test_upgrade_container_lower_log_index(mocker):
         signatures_path=VALID_SIGNATURES_PATH,
     )
     mocker.patch(
-        "dangerzone.updater.signatures.is_update_available",
+        "dangerzone.updater.registry.is_new_remote_image_available",
         return_value=(
             True,
             image_digest,
@@ -335,29 +336,77 @@ def test_get_file_digest():
         assert f.read() == "100"
 
 
-def test_is_update_available_when_no_local_image(mocker):
+def test_is_update_available_when_remote_image_available(mocker):
     """
-    Test that is_update_available returns True when no local image is
-    currently present.
+    Test that is_update_available returns True when a new image is available
+    and all checks pass
     """
-    # Mock container_image_exists to return False
+    # Mock is_new_remote_image_available to return True and digest
     mocker.patch(
-        "dangerzone.container_utils.get_local_image_digest",
-        side_effect=dzerrors.ImageNotPresentException,
+        "dangerzone.updater.registry.is_new_remote_image_available",
+        return_value=(True, RANDOM_DIGEST),
     )
 
-    # Mock get_manifest_digest to return a digest
+    # Mock check_signatures_and_logindex to not raise any exceptions
     mocker.patch(
-        "dangerzone.updater.registry.get_manifest_digest",
-        return_value=RANDOM_DIGEST,
+        "dangerzone.updater.signatures.check_signatures_and_logindex",
+        return_value=[{"some": "signature"}],
     )
 
     # Call is_update_available
-    update_available, digest = is_update_available("ghcr.io/freedomofpress/dangerzone")
+    update_available, digest = is_update_available(
+        "ghcr.io/freedomofpress/dangerzone", "test.pub"
+    )
 
     # Verify the result
     assert update_available is True
     assert digest == RANDOM_DIGEST
+
+
+def test_is_update_available_when_no_remote_image(mocker):
+    """
+    Test that is_update_available returns False when no remote image is available
+    """
+    # Mock is_new_remote_image_available to return False
+    mocker.patch(
+        "dangerzone.updater.registry.is_new_remote_image_available",
+        return_value=(False, None),
+    )
+
+    # Call is_update_available
+    update_available, digest = is_update_available(
+        "ghcr.io/freedomofpress/dangerzone", "test.pub"
+    )
+
+    # Verify the result
+    assert update_available is False
+    assert digest is None
+
+
+def test_is_update_available_with_invalid_log_index(mocker):
+    """
+    Test that is_update_available returns False when the log index is invalid
+    """
+    # Mock is_new_remote_image_available to return True
+    mocker.patch(
+        "dangerzone.updater.registry.is_new_remote_image_available",
+        return_value=(True, RANDOM_DIGEST),
+    )
+
+    # Mock check_signatures_and_logindex to raise InvalidLogIndex
+    mocker.patch(
+        "dangerzone.updater.signatures.check_signatures_and_logindex",
+        side_effect=errors.InvalidLogIndex("Invalid log index"),
+    )
+
+    # Call is_update_available
+    update_available, digest = is_update_available(
+        "ghcr.io/freedomofpress/dangerzone", "test.pub"
+    )
+
+    # Verify the result
+    assert update_available is False
+    assert digest is None
 
 
 def test_verify_signature(valid_signature):

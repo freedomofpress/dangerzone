@@ -38,6 +38,9 @@ def upgrade(image: str, pubkey: str) -> None:
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
         raise click.Abort()
+    except Exception as e:
+        click.echo(f"❌ {e}")
+        raise click.Abort()
 
 
 @main.command()

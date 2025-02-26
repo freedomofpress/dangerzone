@@ -228,13 +228,14 @@ def get_image_id_by_digest(digest: str) -> str:
     return process.stdout.decode().strip().split("\n")[0]
 
 
-def container_pull(image: str) -> bool:
+def container_pull(image: str, manifest_digest: str):
     """Pull a container image from a registry."""
     runtime = Runtime()
-    cmd = [str(runtime.path), "pull", f"{image}"]
+    cmd = [str(runtime.path), "pull", f"{image}@sha256:{manifest_digest}"]
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     process.communicate()
-    return process.returncode == 0
+    if process.returncode != 0:
+        raise errors.ContainerPullException(f"Could not pull the container image: {e}")
 
 
 def get_local_image_digest(image: str) -> str:

@@ -22,13 +22,13 @@ except ImportError:
     import appdirs as platformdirs  # type: ignore[no-redef]
 
 
-def get_config_dir() -> Path:
-    return Path(platformdirs.user_config_dir("dangerzone"))
+def appdata_dir() -> Path:
+    return Path(platformdirs.user_data_dir("dangerzone"))
 
 
 # XXX Store this somewhere else.
 DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
-SIGNATURES_PATH = get_config_dir() / "signatures"
+SIGNATURES_PATH = appdata_dir() / "signatures"
 LAST_LOG_INDEX = SIGNATURES_PATH / "last_log_index"
 
 __all__ = [

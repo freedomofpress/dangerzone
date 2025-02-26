@@ -9,7 +9,6 @@ from dangerzone import errors as dzerrors
 from dangerzone.updater import errors
 from dangerzone.updater.signatures import (
     Signature,
-    get_config_dir,
     get_last_log_index,
     get_log_index_from_signatures,
     get_remote_signatures,

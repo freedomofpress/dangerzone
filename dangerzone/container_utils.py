@@ -1,4 +1,3 @@
-import gzip
 import logging
 import platform
 import shutil
@@ -120,30 +119,23 @@ def get_expected_tag() -> str:
 
 def load_image_tarball() -> None:
     log.info("Installing Dangerzone container image...")
-    p = subprocess.Popen(
-        [get_runtime(), "load"],
-        stdin=subprocess.PIPE,
-        startupinfo=get_subprocess_startupinfo(),
-    )
-
-    chunk_size = 4 << 20
-    compressed_container_path = get_resource_path("container.tar.gz")
-    with gzip.open(compressed_container_path) as f:
-        while True:
-            chunk = f.read(chunk_size)
-            if len(chunk) > 0:
-                if p.stdin:
-                    p.stdin.write(chunk)
+    tarball_path = get_resource_path("container.tar")
+    with open(tarball_path) as f:
+        try:
+            subprocess.run(
+                [get_runtime(), "load"],
+                stdin=f,
+                startupinfo=get_subprocess_startupinfo(),
+                capture_output=True,
+                check=True,
+            )
+        except subprocess.CalledProcessError as e:
+            if e.stderr:
+                error = e.stderr.decode()
             else:
-                break
-    _, err = p.communicate()
-    if p.returncode < 0:
-        if err:
-            error = err.decode()
-        else:
-            error = "No output"
-        raise errors.ImageInstallationException(
-            f"Could not install container image: {error}"
-        )
+                error = "No output"
+            raise errors.ImageInstallationException(
+                f"Could not install container image: {error}"
+            )
 
-    log.info("Successfully installed container image from")
+    log.info("Successfully installed container image")

@@ -195,8 +195,9 @@ def get_local_image_digest(image: str) -> str:
     """
     Returns a image hash from a local image name
     """
-    # Get the image hash from the podman images command, as
-    # podman inspect returns a the digest of the architecture-bound image
+    # Get the image hash from the "podman images" command.
+    # It's not possible to use "podman inspect" here as it
+    # returns the digest of the architecture-bound image
     cmd = [get_runtime_name(), "images", image, "--format", "{{.Digest}}"]
     log.debug(" ".join(cmd))
     try:

@@ -47,21 +47,21 @@ trigger a CI error.
 
 For a simple way to reproduce a Dangerzone container image, you can checkout the
 commit this image was built from (you can find it from the image tag in its
-`g<commit>` portion), and run the following command in a Linux environment:
+`g<commit>` portion), retrieve the date it was built (also included in the image
+tag), and run the following command in any environment:
 
 ```
-./dev_scripts/reproduce-image.py --source <image>
+./dev_scripts/reproduce-image.py \
+    --debian-archive-date <date> \
+    <digest>
 ```
 
-This command will download the `diffoci` helper, build a container image from
-the current Git commit, and ensure that the built image matches the source one,
-with the exception of image names and file timestamps.
+where:
+* `<date>` should be given in YYYYMMDD format, e.g, 20250226
+* `<digest>` is the SHA-256 hash of the image for the **current platform**, with
+  or without the `sha256:` prefix.
 
-> [!TIP]
-> If the source image is not pushed to a registry, and is local instead, you
-> can prefix it with `docker://` or `podman://` accordingly, so that `diffoci`
-> can load it from the local Docker / Podman container engine. For example:
->
-> ```
-> ./dev_scripts/reproduce.py --source podman://dangerzone.rocks/dangerzone:0.8.0-125-g725ce3b
-> ```
+This command will build a container image from the current Git commit and the
+provided date for the Debian archives. Then, it will compare the digest of the
+manifest against the provided one. This is a simple way to ensure that the
+created image is bit-for-bit reproducible.

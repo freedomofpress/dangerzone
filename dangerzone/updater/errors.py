@@ -56,3 +56,9 @@ class CosignNotInstalledError(SignatureError):
 
 class InvalidLogIndex(SignatureError):
     pass
+
+
+class NeedUserInput(UpdaterError):
+    """The user has not yet been prompted to know if they want to check for updates."""
+
+    pass

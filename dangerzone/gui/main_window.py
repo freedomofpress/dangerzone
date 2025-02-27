@@ -26,9 +26,9 @@ else:
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
 from ..isolation_provider.qubes import is_qubes_native_conversion
+from ..updater.releases import UpdateReport
 from ..util import format_exception, get_resource_path, get_version
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
-from .updater import UpdateReport
 
 log = logging.getLogger(__name__)
 

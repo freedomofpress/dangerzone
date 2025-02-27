@@ -24,9 +24,10 @@ from dangerzone.gui.main_window import (
     QtGui,
     WaitingWidgetContainer,
 )
-from dangerzone.gui.updater import UpdateReport, UpdaterThread
+from dangerzone.gui.updater import UpdaterThread
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.dummy import Dummy
+from dangerzone.updater import releases
 
 from .test_updater import assert_report_equal, default_updater_settings
 
@@ -147,7 +148,7 @@ def test_no_update(
 
     # Check that the callback function gets an empty report.
     handle_updates_spy.assert_called_once()
-    assert_report_equal(handle_updates_spy.call_args.args[0], UpdateReport())
+    assert_report_equal(handle_updates_spy.call_args.args[0], releases.UpdateReport())
 
     # Check that the menu entries remain exactly the same.
     menu_actions_after = window.hamburger_button.menu().actions()
@@ -171,8 +172,8 @@ def test_update_detected(
 
     # Make requests.get().json() return the following dictionary.
     mock_upstream_info = {"tag_name": "99.9.9", "body": "changelog"}
-    mocker.patch("dangerzone.gui.updater.requests.get")
-    requests_mock = updater_module.requests.get
+    mocker.patch("dangerzone.updater.releases.requests.get")
+    requests_mock = releases.requests.get
     requests_mock().status_code = 200  # type: ignore [call-arg]
     requests_mock().json.return_value = mock_upstream_info  # type: ignore [attr-defined, call-arg]
 
@@ -191,7 +192,8 @@ def test_update_detected(
     # Check that the callback function gets an update report.
     handle_updates_spy.assert_called_once()
     assert_report_equal(
-        handle_updates_spy.call_args.args[0], UpdateReport("99.9.9", "<p>changelog</p>")
+        handle_updates_spy.call_args.args[0],
+        releases.UpdateReport("99.9.9", "<p>changelog</p>"),
     )
 
     # Check that the settings have been updated properly.
@@ -281,9 +283,9 @@ def test_update_error(
     qt_updater.dangerzone.settings.set("updater_last_check", 0)
     qt_updater.dangerzone.settings.set("updater_errors", 0)
 
-    # Make requests.get() return an errorthe following dictionary.
-    mocker.patch("dangerzone.gui.updater.requests.get")
-    requests_mock = updater_module.requests.get
+    # Make requests.get() return an error
+    mocker.patch("dangerzone.updater.releases.requests.get")
+    requests_mock = releases.requests.get
     requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
 
     window = MainWindow(qt_updater.dangerzone)

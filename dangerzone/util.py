@@ -70,6 +70,7 @@ def get_tessdata_dir() -> pathlib.Path:
 
 
 def get_version() -> str:
+    """Returns the Dangerzone version string."""
     try:
         with open(get_resource_path("version.txt")) as f:
             version = f.read().strip()

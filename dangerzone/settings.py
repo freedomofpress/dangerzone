@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import platform
 from typing import TYPE_CHECKING, Any, Dict
 
 from packaging import version

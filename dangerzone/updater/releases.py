@@ -114,14 +114,14 @@ def should_check_for_releases(settings: Settings) -> bool:
     * Thus we will always show to the user the cached info about the new version,
         and won't make a new update check.
     """
-    check = settings.get("updater_check")
+    check = settings.get("updater_check_all")
 
     log.debug("Checking platform type")
     # TODO: Disable updates for Homebrew installations.
     if platform.system() == "Linux" and not getattr(sys, "dangerzone_dev", False):
         log.debug("Running on Linux, disabling updates")
         if not check:  # if not overidden by user
-            settings.set("updater_check", False, autosave=True)
+            settings.set("updater_check_all", False, autosave=True)
             return False
 
     log.debug("Checking if first run of Dangerzone")

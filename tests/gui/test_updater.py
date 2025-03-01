@@ -106,7 +106,7 @@ def test_post_0_4_2_settings(
 def test_linux_no_check(updater: UpdaterThread, monkeypatch: MonkeyPatch) -> None:
     """Ensure that Dangerzone on Linux does not make any update check."""
     expected_settings = default_updater_settings()
-    expected_settings["updater_check"] = False
+    expected_settings["updater_check_all"] = False
     expected_settings["updater_last_check"] = None
 
     # XXX: Simulate Dangerzone installed via package manager.
@@ -124,7 +124,7 @@ def test_user_prompts(updater: UpdaterThread, mocker: MockerFixture) -> None:
     # When Dangerzone runs for the first time, users should not be asked to enable
     # updates.
     expected_settings = default_updater_settings()
-    expected_settings["updater_check"] = None
+    expected_settings["updater_check_all"] = None
     expected_settings["updater_last_check"] = 0
     assert updater.should_check_for_updates() is False
     assert settings.get_updater_settings() == expected_settings
@@ -139,14 +139,14 @@ def test_user_prompts(updater: UpdaterThread, mocker: MockerFixture) -> None:
 
     # Check disabling update checks.
     prompt_mock().launch.return_value = False  # type: ignore [attr-defined]
-    expected_settings["updater_check"] = False
+    expected_settings["updater_check_all"] = False
     assert updater.should_check_for_updates() is False
     assert settings.get_updater_settings() == expected_settings
 
-    # Reset the "updater_check" field and check enabling update checks.
-    settings.set("updater_check", None)
+    # Reset the "updater_check_all" field and check enabling update checks.
+    settings.set("updater_check_all", None)
     prompt_mock().launch.return_value = True  # type: ignore [attr-defined]
-    expected_settings["updater_check"] = True
+    expected_settings["updater_check_all"] = True
     assert updater.should_check_for_updates() is True
     assert settings.get_updater_settings() == expected_settings
 
@@ -156,7 +156,7 @@ def test_user_prompts(updater: UpdaterThread, mocker: MockerFixture) -> None:
     # checks.
     prompt_mock().side_effect = RuntimeError("Should not be called")  # type: ignore [attr-defined]
     for check in [True, False]:
-        settings.set("updater_check", check)
+        settings.set("updater_check_all", check)
         assert updater.should_check_for_updates() == check
 
 
@@ -211,7 +211,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     """Make sure Dangerzone only checks for updates every X hours"""
     settings = updater.dangerzone.settings
 
-    settings.set("updater_check", True)
+    settings.set("updater_check_all", True)
     settings.set("updater_last_check", 0)
 
     # Mock some functions before the tests start
@@ -393,7 +393,7 @@ def test_update_check_prompt(
 
     # Test 2 - Check that when the user chooses to enable update checks, we
     # store that decision in the settings.
-    settings.set("updater_check", None, autosave=True)
+    settings.set("updater_check_all", None, autosave=True)
 
     def click_ok() -> None:
         dialog = qt_updater.dangerzone.app.activeWindow()
@@ -403,11 +403,11 @@ def test_update_check_prompt(
     res = qt_updater.should_check_for_updates()
 
     assert res is True
-    assert settings.get("updater_check") is True
+    assert settings.get("updater_check_all") is True
 
     # Test 3 - Same as the previous test, but check that clicking on cancel stores the
     # opposite decision.
-    settings.set("updater_check", None)  # type: ignore [unreachable]
+    settings.set("updater_check_all", None)  # type: ignore [unreachable]
 
     def click_cancel() -> None:
         dialog = qt_updater.dangerzone.app.activeWindow()
@@ -417,11 +417,11 @@ def test_update_check_prompt(
     res = qt_updater.should_check_for_updates()
 
     assert res is False
-    assert settings.get("updater_check") is False
+    assert settings.get("updater_check_all") is False
 
     # Test 4 - Same as the previous test, but check that clicking on "X" does not store
     # any decision.
-    settings.set("updater_check", None, autosave=True)
+    settings.set("updater_check_all", None, autosave=True)
 
     def click_x() -> None:
         dialog = qt_updater.dangerzone.app.activeWindow()
@@ -431,4 +431,4 @@ def test_update_check_prompt(
     res = qt_updater.should_check_for_updates()
 
     assert res is False
-    assert settings.get("updater_check") is None
+    assert settings.get("updater_check_all") is None

@@ -106,7 +106,7 @@ class UpdaterThread(QtCore.QThread):
             should_check = self.prompt_for_checks()
             if should_check is not None:
                 self.dangerzone.settings.set(
-                    "updater_check", should_check, autosave=True
+                    "updater_check_all", should_check, autosave=True
                 )
         return bool(should_check)
 

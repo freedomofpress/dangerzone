@@ -171,7 +171,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toggle_updates_action.triggered.connect(self.toggle_updates_triggered)
         self.toggle_updates_action.setCheckable(True)
         self.toggle_updates_action.setChecked(
-            bool(self.dangerzone.settings.get("updater_check"))
+            bool(self.dangerzone.settings.get("updater_check_all"))
         )
 
         # Add the "Exit" action
@@ -284,7 +284,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def toggle_updates_triggered(self) -> None:
         """Change the underlying update check settings based on the user's choice."""
         check = self.toggle_updates_action.isChecked()
-        self.dangerzone.settings.set("updater_check", check)
+        self.dangerzone.settings.set("updater_check_all", check)
         self.dangerzone.settings.save()
 
     def handle_docker_desktop_version_check(

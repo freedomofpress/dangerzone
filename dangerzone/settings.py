@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import platform
 from typing import TYPE_CHECKING, Any, Dict
 
 from packaging import version
@@ -38,7 +37,7 @@ class Settings:
             "open": True,
             "open_app": None,
             "safe_extension": SAFE_EXTENSION,
-            "updater_check": None,
+            "updater_check_all": None,
             "updater_last_check": None,  # last check in UNIX epoch (secs since 1970)
             # FIXME: How to invalidate those if they change upstream?
             "updater_latest_version": get_version(),

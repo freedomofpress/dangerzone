@@ -3,7 +3,7 @@ import os
 import platform
 import shlex
 import subprocess
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 from .. import container_utils, errors, updater
 from ..container_utils import Runtime
@@ -94,27 +94,38 @@ class Container(IsolationProvider):
         return security_args
 
     @staticmethod
-    def install() -> bool:
+    def install(
+        should_upgrade: bool, callback: Callable, last_try: bool = False
+    ) -> bool:
         """Check if an update is available and install it if necessary."""
-        # XXX Do this only if users have opted in to auto-updates
-        if False:  # Comment this for now, just as an exemple of this can be implemented
-            # # Load the image tarball into the container runtime.
+        if not should_upgrade:
+            log.debug("Skipping container upgrade check as requested by the settings")
+        else:
             update_available, image_digest = updater.is_update_available(
-                container_utils.CONTAINER_NAME
+                container_utils.CONTAINER_NAME,
+                updater.DEFAULT_PUBKEY_LOCATION,
             )
             if update_available and image_digest:
+                log.debug("Upgrading container image to %s", image_digest)
                 updater.upgrade_container_image(
                     container_utils.CONTAINER_NAME,
                     image_digest,
                     updater.DEFAULT_PUBKEY_LOCATION,
+                    callback=callback,
                 )
-            for tag in old_tags:
-                tag = container_utils.CONTAINER_NAME + ":" + tag
-                container_utils.delete_image_tag(tag)
-
-        updater.verify_local_image(
-            container_utils.CONTAINER_NAME, updater.DEFAULT_PUBKEY_LOCATION
-        )
+            else:
+                log.debug("No update available for the container")
+        try:
+            updater.verify_local_image(
+                container_utils.CONTAINER_NAME, updater.DEFAULT_PUBKEY_LOCATION
+            )
+        except errors.ImageNotPresentException:
+            if last_try:
+                raise
+            log.debug("Container image not found, trying to install it.")
+            return Container.install(
+                should_upgrade=should_upgrade, callback=callback, last_try=True
+            )
 
         return True
 

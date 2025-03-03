@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import platform
@@ -5,22 +6,24 @@ import tempfile
 import typing
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
     from PySide2.QtCore import Qt
+    from PySide2.QtGui import QTextCursor
     from PySide2.QtWidgets import QAction, QTextEdit
 else:
     try:
         from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide6.QtCore import Qt
-        from PySide6.QtGui import QAction
+        from PySide6.QtGui import QAction, QTextCursor
         from PySide6.QtWidgets import QTextEdit
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide2.QtCore import Qt
+        from PySide2.QtGui import QTextCursor
         from PySide2.QtWidgets import QAction, QTextEdit
 
 from .. import errors
@@ -439,15 +442,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
 class InstallContainerThread(QtCore.QThread):
     finished = QtCore.Signal(str)
+    process_stdout = QtCore.Signal(str)
 
-    def __init__(self, dangerzone: DangerzoneGui) -> None:
+    def __init__(
+        self, dangerzone: DangerzoneGui, callback: Optional[Callable] = None
+    ) -> None:
         super(InstallContainerThread, self).__init__()
         self.dangerzone = dangerzone
 
     def run(self) -> None:
         error = None
         try:
-            installed = self.dangerzone.isolation_provider.install()
+            should_upgrade = self.dangerzone.settings.get("updater_check_all")
+            installed = self.dangerzone.isolation_provider.install(
+                should_upgrade=bool(should_upgrade), callback=self.process_stdout.emit
+            )
         except Exception as e:
             log.error("Container installation problem")
             error = format_exception(e)
@@ -482,10 +491,19 @@ class TracebackWidget(QTextEdit):
         # Enable copying
         self.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
+        self.current_output = ""
+
     def set_content(self, error: Optional[str] = None) -> None:
         if error:
             self.setPlainText(error)
             self.setVisible(True)
+
+    def process_output(self, line):
+        self.current_output += line
+        self.setText(self.current_output)
+        cursor = self.textCursor()
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        self.setTextCursor(cursor)
 
 
 class WaitingWidgetContainer(WaitingWidget):
@@ -613,8 +631,14 @@ class WaitingWidgetContainer(WaitingWidget):
                 "Installing the Dangerzone container image.<br><br>"
                 "This might take a few minutes..."
             )
+            self.traceback.setVisible(True)
+
             self.install_container_t = InstallContainerThread(self.dangerzone)
             self.install_container_t.finished.connect(self.installation_finished)
+
+            self.install_container_t.process_stdout.connect(
+                self.traceback.process_output
+            )
             self.install_container_t.start()
 
 

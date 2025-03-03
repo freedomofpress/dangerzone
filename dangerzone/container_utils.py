@@ -3,13 +3,13 @@ import logging
 import platform
 import shutil
 import subprocess
-from typing import List, Optional, Tuple
+from typing import IO, Callable, List, Optional, Tuple
 
 from . import errors
 from .util import get_resource_path, get_subprocess_startupinfo
 
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
-CONTAINER_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
+CONTAINER_NAME = "ghcr.io/almet/dangerzone/dangerzone"  # FIXME: Change this to the correct container name
 
 log = logging.getLogger(__name__)
 
@@ -180,15 +180,26 @@ def get_image_id_by_digest(digest: str) -> str:
     return process.stdout.decode().strip().split("\n")[0]
 
 
-def container_pull(image: str, manifest_digest: str):
+def container_pull(image: str, manifest_digest: str, callback: Callable):
     """Pull a container image from a registry."""
     cmd = [get_runtime_name(), "pull", f"{image}@sha256:{manifest_digest}"]
-    try:
-        subprocess_run(cmd, check=True)
-    except subprocess.CalledProcessError as e:
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+        universal_newlines=True,
+    )
+
+    for line in process.stdout:  # type: ignore
+        callback(line)
+
+    process.wait()
+    if process.returncode != 0:
         raise errors.ContainerPullException(
-            f"Could not pull the container image: {e}"
-        ) from e
+            f"Could not pull the container image: {process.returncode}"
+        )
 
 
 def get_local_image_digest(image: str) -> str:

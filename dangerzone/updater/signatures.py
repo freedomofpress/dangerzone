@@ -9,7 +9,7 @@ from hashlib import sha256
 from io import BytesIO
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from .. import container_utils as runtime
 from .. import errors as dzerrors
@@ -369,7 +369,9 @@ def load_and_verify_signatures(
     return signatures
 
 
-def store_signatures(signatures: list[Dict], image_digest: str, pubkey: str) -> None:
+def store_signatures(
+    signatures: list[Dict], image_digest: str, pubkey: str, update_logindex: bool = True
+) -> None:
     """
     Store signatures locally in the SIGNATURE_PATH folder, like this:
 
@@ -414,7 +416,8 @@ def store_signatures(signatures: list[Dict], image_digest: str, pubkey: str) -> 
         )
         json.dump(signatures, f)
 
-    write_log_index(get_log_index_from_signatures(signatures))
+    if update_logindex:
+        write_log_index(get_log_index_from_signatures(signatures))
 
 
 def verify_local_image(image: str, pubkey: str) -> bool:
@@ -478,14 +481,16 @@ def prepare_airgapped_archive(image_name: str, destination: str) -> None:
             archive.add(tmpdir, arcname=".")
 
 
-def upgrade_container_image(image: str, manifest_digest: str, pubkey: str) -> str:
+def upgrade_container_image(
+    image: str, manifest_digest: str, pubkey: str, callback: Callable
+) -> str:
     """Verify and upgrade the image to the latest, if signed."""
     update_available, remote_digest = registry.is_new_remote_image_available(image)
     if not update_available:
         raise errors.ImageAlreadyUpToDate("The image is already up to date")
 
     signatures = check_signatures_and_logindex(image, remote_digest, pubkey)
-    runtime.container_pull(image, manifest_digest)
+    runtime.container_pull(image, manifest_digest, callback=callback)
 
     # Store the signatures just now to avoid storing them unverified
     store_signatures(signatures, manifest_digest, pubkey)

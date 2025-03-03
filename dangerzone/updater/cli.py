@@ -43,6 +43,17 @@ def upgrade(image: str, pubkey: str) -> None:
 
 
 @main.command()
+@click.argument("image", default=DEFAULT_IMAGE_NAME)
+@click.option("--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION)
+def store_signatures(image: str, pubkey: str) -> None:
+    manifest_digest = registry.get_manifest_digest(image)
+    sigs = signatures.get_remote_signatures(image, manifest_digest)
+    signatures.verify_signatures(sigs, manifest_digest, pubkey)
+    signatures.store_signatures(sigs, manifest_digest, pubkey, update_logindex=False)
+    click.echo(f"✅ Signatures has been verified and stored locally")
+
+
+@main.command()
 @click.argument("image_filename")
 @click.option("--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION)
 def load_archive(image_filename: str, pubkey: str) -> None:

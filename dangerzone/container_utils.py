@@ -10,6 +10,7 @@ from .util import get_resource_path, get_subprocess_startupinfo
 
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 CONTAINER_NAME = "ghcr.io/almet/dangerzone/dangerzone"  # FIXME: Change this to the correct container name
+RUNTIME_NAME = "podman" if platform.system() == "Linux" else "docker"
 
 log = logging.getLogger(__name__)
 
@@ -20,10 +21,7 @@ def subprocess_run(*args, **kwargs) -> subprocess.CompletedProcess:
 
 
 def get_runtime_name() -> str:
-    if platform.system() == "Linux":
-        return "podman"
-    # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
-    return "docker"
+    return RUNTIME_NAME
 
 
 def get_runtime_version() -> Tuple[int, int]:
@@ -189,7 +187,6 @@ def container_pull(image: str, manifest_digest: str, callback: Callable):
         stderr=subprocess.STDOUT,
         text=True,
         bufsize=1,
-        universal_newlines=True,
     )
 
     for line in process.stdout:  # type: ignore

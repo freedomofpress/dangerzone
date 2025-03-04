@@ -215,7 +215,9 @@ def _get_blob(tmpdir: str, digest: str) -> Path:
     return Path(tmpdir) / "blobs" / "sha256" / digest.replace("sha256:", "")
 
 
-def upgrade_container_image_airgapped(container_tar: str, pubkey: str) -> str:
+def upgrade_container_image_airgapped(
+    container_tar: str, pubkey: str, bypass_logindex: bool = False
+) -> str:
     """
     Verify the given archive against its self-contained signatures, then
     upgrade the image and retag it to the expected tag.
@@ -261,14 +263,15 @@ def upgrade_container_image_airgapped(container_tar: str, pubkey: str) -> str:
             image_name, signatures = convert_oci_images_signatures(json.load(f), tmpdir)
         log.info(f"Found image name: {image_name}")
 
-        # Ensure that we only upgrade if the log index is higher than the last known one
-        incoming_log_index = get_log_index_from_signatures(signatures)
-        last_log_index = get_last_log_index()
+        if not bypass_logindex:
+            # Ensure that we only upgrade if the log index is higher than the last known one
+            incoming_log_index = get_log_index_from_signatures(signatures)
+            last_log_index = get_last_log_index()
 
-        if incoming_log_index < last_log_index:
-            raise errors.InvalidLogIndex(
-                "The log index is not higher than the last known one"
-            )
+            if incoming_log_index < last_log_index:
+                raise errors.InvalidLogIndex(
+                    "The log index is not higher than the last known one"
+                )
 
         image_digest = index_json["manifests"][0].get("digest").replace("sha256:", "")
 

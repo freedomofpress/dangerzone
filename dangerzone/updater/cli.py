@@ -1,9 +1,12 @@
 #!/usr/bin/python
 
+import functools
 import logging
 
 import click
 
+from .. import container_utils
+from ..container_utils import get_runtime_name
 from . import attestations, errors, log, registry, signatures
 
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
@@ -13,13 +16,18 @@ DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 
 @click.group()
 @click.option("--debug", is_flag=True)
-def main(debug: bool) -> None:
+@click.option("--runtime", default=get_runtime_name())
+def main(debug: bool, runtime: str) -> None:
     if debug:
         click.echo("Debug mode enabled")
         level = logging.DEBUG
     else:
         level = logging.INFO
     logging.basicConfig(level=level)
+
+    if runtime != get_runtime_name():
+        click.echo(f"Using container runtime: {runtime}")
+        container_utils.RUNTIME_NAME = runtime
 
 
 @main.command()
@@ -28,8 +36,10 @@ def main(debug: bool) -> None:
 def upgrade(image: str, pubkey: str) -> None:
     """Upgrade the image to the latest signed version."""
     manifest_digest = registry.get_manifest_digest(image)
+
     try:
-        signatures.upgrade_container_image(image, manifest_digest, pubkey)
+        callback = functools.partial(click.echo, nl=False)
+        signatures.upgrade_container_image(image, manifest_digest, pubkey, callback)
         click.echo(f"✅ The local image {image} has been upgraded")
         click.echo(f"✅ The image has been signed with {pubkey}")
         click.echo(f"✅ Signatures has been verified and stored locally")
@@ -56,17 +66,23 @@ def store_signatures(image: str, pubkey: str) -> None:
 @main.command()
 @click.argument("image_filename")
 @click.option("--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION)
-def load_archive(image_filename: str, pubkey: str) -> None:
+@click.option("--force", is_flag=True)
+def load_archive(image_filename: str, pubkey: str, force: bool) -> None:
     """Upgrade the local image to the one in the archive."""
     try:
         loaded_image = signatures.upgrade_container_image_airgapped(
-            image_filename, pubkey
+            image_filename, pubkey, bypass_logindex=force
         )
         click.echo(
             f"✅ Installed image {image_filename} on the system as {loaded_image}"
         )
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
+    except errors.InvalidLogIndex as e:
+        click.echo(f"❌ Trying to install image older that the currently installed one")
+        raise click.Abort()
+    except Exception as e:
+        click.echo(f"❌ {e}")
         raise click.Abort()
 
 

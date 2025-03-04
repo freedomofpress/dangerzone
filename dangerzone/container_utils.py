@@ -240,7 +240,6 @@ def container_pull(image: str, manifest_digest: str, callback: Callable):
         stderr=subprocess.STDOUT,
         text=True,
         bufsize=1,
-        universal_newlines=True,
     )
 
     for line in process.stdout:  # type: ignore

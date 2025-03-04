@@ -478,13 +478,13 @@ poetry shell
 Install [.NET SDK](https://dotnet.microsoft.com/en-us/download) version 6 or later. Then, open a terminal and install the latest version of [WiX Toolset .NET tool](https://wixtoolset.org/) **v5** with:
 
 ```sh
-dotnet tool install --global wix --version 5.*
+dotnet tool install --global wix --version 5.0.2
 ```
 
 Install the WiX UI extension. You may need to open a new terminal in order to use the newly installed `wix` .NET tool:
 
 ```sh
-wix extension add --global WixToolset.UI.wixext/5.x.y
+wix extension add --global WixToolset.UI.wixext/5.0.2
 ```
 
 > [!IMPORTANT]

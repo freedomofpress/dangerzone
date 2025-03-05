@@ -122,7 +122,7 @@ test_docs_compressed_dir = Path(__file__).parent.joinpath(SAMPLE_COMPRESSED_DIRE
 
 test_docs = [
     p
-    for p in test_docs_dir.rglob("*")
+    for p in test_docs_dir.glob("*")
     if p.is_file()
     and not (p.name.endswith(SAFE_EXTENSION) or p.name.startswith("sample_bad"))
 ]

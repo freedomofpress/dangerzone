@@ -13,6 +13,7 @@ from dangerzone.gui import Application
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
 
 
+
 # Use this fixture to make `pytest-qt` invoke our custom QApplication.
 # See https://pytest-qt.readthedocs.io/en/latest/qapplication.html#testing-custom-qapplications
 @pytest.fixture(scope="session")
@@ -131,6 +132,7 @@ test_docs = [
 for_each_doc = pytest.mark.parametrize(
     "doc", test_docs, ids=[str(doc.name) for doc in test_docs]
 )
+
 
 
 # External Docs - base64 docs encoded for externally sourced documents

@@ -2,14 +2,14 @@
 # Dockerfile args below. For more info about this file, read
 # docs/developer/reproducibility.md.
 
-ARG DEBIAN_IMAGE_DATE=20250113
+ARG DEBIAN_IMAGE_DATE=20250224
 
-FROM debian:bookworm-${DEBIAN_IMAGE_DATE}-slim as dangerzone-image
+FROM debian:bookworm-${DEBIAN_IMAGE_DATE}-slim AS dangerzone-image
 
-ARG GVISOR_ARCHIVE_DATE=20250120
-ARG DEBIAN_ARCHIVE_DATE=20250127
-ARG H2ORESTART_CHECKSUM=7760dc2963332c50d15eee285933ec4b48d6a1de9e0c0f6082946f93090bd132
-ARG H2ORESTART_VERSION=v0.7.0
+ARG GVISOR_ARCHIVE_DATE=20250217
+ARG DEBIAN_ARCHIVE_DATE=20250226
+ARG H2ORESTART_CHECKSUM=452331f8603ef456264bd72db6fa8a11ca72b392019a8135c0b2f3095037d7b1
+ARG H2ORESTART_VERSION=v0.7.1
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -22,8 +22,8 @@ RUN \
   --mount=type=bind,source=./container_helpers/repro-sources-list.sh,target=/usr/local/bin/repro-sources-list.sh \
   --mount=type=bind,source=./container_helpers/gvisor.key,target=/tmp/gvisor.key \
   : "Hacky way to set a date for the Debian snapshot repos" && \
-  touch -d ${DEBIAN_ARCHIVE_DATE} /etc/apt/sources.list.d/debian.sources && \
-  touch -d ${DEBIAN_ARCHIVE_DATE} /etc/apt/sources.list && \
+  touch -d ${DEBIAN_ARCHIVE_DATE}Z /etc/apt/sources.list.d/debian.sources && \
+  touch -d ${DEBIAN_ARCHIVE_DATE}Z /etc/apt/sources.list && \
   repro-sources-list.sh && \
   : "Setup APT to install gVisor from its separate APT repo" && \
   apt-get update && \
@@ -52,9 +52,13 @@ RUN mkdir /opt/libreoffice_ext && cd /opt/libreoffice_ext \
     && rm /root/.wget-hsts
 
 # Create an unprivileged user both for gVisor and for running Dangerzone.
+# XXX: Make the shadow field "date of last password change" a constant
+# number.
 RUN addgroup --gid 1000 dangerzone
 RUN adduser --uid 1000 --ingroup dangerzone --shell /bin/true \
-    --disabled-password --home /home/dangerzone dangerzone
+    --disabled-password --home /home/dangerzone dangerzone \
+    && chage -d 99999 dangerzone \
+    && rm /etc/shadow-
 
 # Copy Dangerzone's conversion logic under /opt/dangerzone, and allow Python to
 # import it.
@@ -165,20 +169,47 @@ RUN mkdir /home/dangerzone/.containers
 # The `ln` binary, even if you specify it by its full path, cannot run
 # (probably because `ld-linux.so` can't be found). For this reason, we have
 # to create the symlinks beforehand, in a previous build stage. Then, in an
-# empty contianer image (scratch images), we can copy these symlinks and the
-# /usr, and stich everything together.
+# empty container image (scratch images), we can copy these symlinks and the
+# /usr, and stitch everything together.
 ###############################################################################
 
 # Create the filesystem hierarchy that will be used to symlink /usr.
 
-RUN mkdir /new_root
-RUN mkdir /new_root/root /new_root/run /new_root/tmp
-RUN chmod 777 /new_root/tmp
+RUN mkdir -p \
+    /new_root \
+    /new_root/root \
+    /new_root/run \
+    /new_root/tmp \
+    /new_root/home/dangerzone/dangerzone-image/rootfs
+
+# XXX: Remove /etc/resolv.conf, so that the network configuration of the host
+# does not leak.
+RUN cp -r /etc /var /new_root/ \
+    && rm /new_root/etc/resolv.conf
+RUN cp -r /etc /opt /usr /new_root/home/dangerzone/dangerzone-image/rootfs \
+    && rm /new_root/home/dangerzone/dangerzone-image/rootfs/etc/resolv.conf
+
 RUN ln -s /home/dangerzone/dangerzone-image/rootfs/usr /new_root/usr
 RUN ln -s usr/bin /new_root/bin
 RUN ln -s usr/lib /new_root/lib
 RUN ln -s usr/lib64 /new_root/lib64
 RUN ln -s usr/sbin /new_root/sbin
+RUN ln -s usr/bin /new_root/home/dangerzone/dangerzone-image/rootfs/bin
+RUN ln -s usr/lib /new_root/home/dangerzone/dangerzone-image/rootfs/lib
+RUN ln -s usr/lib64 /new_root/home/dangerzone/dangerzone-image/rootfs/lib64
+
+# Fix permissions in /home/dangerzone, so that our entrypoint script can make
+# changes in the following folders.
+RUN chown dangerzone:dangerzone \
+    /new_root/home/dangerzone \
+    /new_root/home/dangerzone/dangerzone-image/
+# Fix permissions in /tmp, so that it can be used by unprivileged users.
+RUN chmod 777 /new_root/tmp
+
+COPY container_helpers/entrypoint.py /new_root
+# HACK: For reasons that we are not sure yet, we need to explicitly specify the
+# modification time of this file.
+RUN touch -d ${DEBIAN_ARCHIVE_DATE}Z /new_root/entrypoint.py
 
 ## Final image
 
@@ -188,24 +219,7 @@ FROM scratch
 # /usr can be a symlink.
 COPY --from=dangerzone-image /new_root/ /
 
-# Copy the bare minimum to run Dangerzone in the inner container image.
-COPY --from=dangerzone-image /etc/ /home/dangerzone/dangerzone-image/rootfs/etc/
-COPY --from=dangerzone-image /opt/ /home/dangerzone/dangerzone-image/rootfs/opt/
-COPY --from=dangerzone-image /usr/ /home/dangerzone/dangerzone-image/rootfs/usr/
-RUN ln -s usr/bin /home/dangerzone/dangerzone-image/rootfs/bin
-RUN ln -s usr/lib /home/dangerzone/dangerzone-image/rootfs/lib
-RUN ln -s usr/lib64 /home/dangerzone/dangerzone-image/rootfs/lib64
-
-# Copy the bare minimum to let the security scanner find vulnerabilities.
-COPY --from=dangerzone-image /etc/ /etc/
-COPY --from=dangerzone-image /var/ /var/
-
-# Allow our entrypoint script to make changes in the following folders.
-RUN chown dangerzone:dangerzone /home/dangerzone /home/dangerzone/dangerzone-image/
-
 # Switch to the dangerzone user for the rest of the script.
 USER dangerzone
-
-COPY container_helpers/entrypoint.py /
 
 ENTRYPOINT ["/entrypoint.py"]

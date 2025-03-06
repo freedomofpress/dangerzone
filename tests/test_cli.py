@@ -11,6 +11,7 @@ import traceback
 from pathlib import Path
 from typing import Optional, Sequence
 
+import fitz
 import pytest
 from click.testing import CliRunner, Result
 from pytest_mock import MockerFixture
@@ -191,9 +192,26 @@ class TestCliConversion(TestCliBasic):
         result.assert_failure()
 
     @for_each_doc
-    def test_formats(self, doc: Path) -> None:
-        result = self.run_cli(str(doc))
+    def test_formats(self, doc: Path, tmp_path_factory: pytest.TempPathFactory) -> None:
+        reference = (doc.parent / "reference" / doc.stem).with_suffix(".pdf")
+        destination = tmp_path_factory.mktemp(doc.stem).with_suffix(".pdf")
+
+        result = self.run_cli([str(doc), "--output-filename", str(destination)])
         result.assert_success()
+        # When needed, regenerate the reference PDFs by uncommenting the following line:
+        # reference.parent.mkdir(parents=True, exist_ok=True)
+        # shutil.copy(destination, reference)
+
+        converted = fitz.open(destination)
+        ref = fitz.open(reference)
+        assert len(converted) == len(ref), "different number of pages"
+
+        for page, ref_page in zip(converted, ref):
+            page.get_pixmap(dpi=150)
+            ref_page.get_pixmap(dpi=150)
+            assert page.get_pixmap().tobytes() == ref_page.get_pixmap().tobytes(), (
+                f"different page content for page {page.number}"
+            )
 
     def test_output_filename(self, sample_pdf: str) -> None:
         temp_dir = tempfile.mkdtemp(prefix="dangerzone-")

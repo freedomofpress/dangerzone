@@ -64,7 +64,6 @@ jobs:
           echo "source_date_epoch=${SOURCE_DATE_EPOCH}" >> $GITHUB_OUTPUT
           echo "tag=${DEBIAN_ARCHIVE_DATE}-${TAG}" >> $GITHUB_OUTPUT
           echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_OUTPUT
-          echo "${{ secrets.registry_token }}" | sha256sum
 
   build:
     name: Build ${{ matrix.platform.name }} image

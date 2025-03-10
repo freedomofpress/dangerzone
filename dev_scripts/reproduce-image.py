@@ -102,7 +102,7 @@ def main():
         f"Check that the reproduced image has the expected digest: {args.digest}"
     )
     run(
-        "./dev_scripts/repro-build",
+        "./dev_scripts/repro-build.py",
         "analyze",
         "--show-contents",
         "share/container.tar",

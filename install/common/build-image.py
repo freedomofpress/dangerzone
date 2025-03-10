@@ -122,7 +122,7 @@ def main():
 
     subprocess.run(
         [
-            "./dev_scripts/repro-build",
+            "./dev_scripts/repro-build.py",
             "build",
             "--runtime",
             args.runtime,

@@ -55,13 +55,6 @@ about updates.</p>
 HAMBURGER_MENU_SIZE = 30
 
 
-WARNING_MESSAGE = """\
-<p><b>Warning:</b> Ubuntu Focal systems and their derivatives will
-stop being supported in subsequent Dangerzone releases. We encourage you to upgrade to a
-more recent version of your operating system in order to get security updates.</p>
-"""
-
-
 def load_svg_image(filename: str, width: int, height: int) -> QtGui.QPixmap:
     """Load an SVG image from a filename.
 
@@ -632,10 +625,6 @@ class ContentWidget(QtWidgets.QWidget):
             os_release_path = Path("/etc/os-release")
             if os_release_path.exists():
                 os_release = os_release_path.read_text()
-                if "Ubuntu 20.04" in os_release or "focal" in os_release:
-                    self.warning_label = QtWidgets.QLabel(WARNING_MESSAGE)
-                    self.warning_label.setWordWrap(True)
-                    self.warning_label.setProperty("style", "warning")
 
         # Doc selection widget
         self.doc_selection_widget = DocSelectionWidget(self.dangerzone)
@@ -894,22 +883,16 @@ class SettingsWidget(QtWidgets.QWidget):
         self.safe_extension_name_layout.setSpacing(0)
         self.safe_extension_name_layout.addWidget(self.safe_extension_filename)
         self.safe_extension_name_layout.addWidget(self.safe_extension)
-        # FIXME: Workaround for https://github.com/freedomofpress/dangerzone/issues/339.
-        # We should drop this once we drop Ubuntu Focal support.
-        if hasattr(QtGui, "QRegularExpressionValidator"):
-            QRegEx = QtCore.QRegularExpression
-            QRegExValidator = QtGui.QRegularExpressionValidator
-        else:
-            QRegEx = QtCore.QRegExp  # type: ignore [assignment]
-            QRegExValidator = QtGui.QRegExpValidator  # type: ignore [assignment]
-        self.dot_pdf_validator = QRegExValidator(QRegEx(r".*\.[Pp][Dd][Ff]"))
+        self.dot_pdf_validator = QtGui.QRegExpValidator(
+            QtCore.QRegExp(r".*\.[Pp][Dd][Ff]")
+        )
         if platform.system() == "Linux":
             illegal_chars_regex = r"[/]"
         elif platform.system() == "Darwin":
             illegal_chars_regex = r"[\\]"
         else:
             illegal_chars_regex = r"[\"*/:<>?\\|]"
-        self.illegal_chars_regex = QRegEx(illegal_chars_regex)
+        self.illegal_chars_regex = QtCore.QRegExp(illegal_chars_regex)
         self.safe_extension_layout = QtWidgets.QHBoxLayout()
         self.safe_extension_layout.addWidget(self.save_checkbox)
         self.safe_extension_layout.addWidget(self.safe_extension_label)

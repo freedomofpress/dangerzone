@@ -197,9 +197,9 @@ jobs:
     strategy:
       matrix:
         manifest_type:
-          - root  # The top-level manifest
-          - amd64  # The manifest for the amd64 architecture
-          - arm64  # The manifest for the arm64 architecture
+          - root
+          - amd64
+          - arm64
     permissions:
       actions: read # for detecting the Github Actions environment.
       id-token: write # for creating OIDC tokens for signing.

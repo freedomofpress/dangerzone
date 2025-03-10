@@ -251,29 +251,6 @@ Install dependencies:
 </table>
 
 
-<table>
-  <tr>
-      <td>
-<details>
-  <summary><i>:memo: Expand this section if you are on Ubuntu 20.04 (Focal).</i></summary>
-  </br>
-
-  The default Python version that ships with Ubuntu Focal (3.8) is not
-  compatible with PySide6, which requires Python 3.9 or greater.
-
-  You can install Python 3.9 using the `python3.9` package.
-
-  ```bash
-  sudo apt install -y python3.9
-  ```
-
-  Poetry will automatically pick up the correct version when running.
-</details>
-    </td>
-  </tr>
-</table>
-
-
 ```sh
 sudo apt install -y podman dh-python build-essential make libqt6gui6 \
     pipx python3 python3-dev
@@ -1033,11 +1010,6 @@ class QADebianBookworm(QADebianBased):
 class QADebianTrixie(QADebianBased):
     DISTRO = "debian"
     VERSION = "trixie"
-
-
-class QAUbuntu2004(QADebianBased):
-    DISTRO = "ubuntu"
-    VERSION = "20.04"
 
 
 class QAUbuntu2204(QADebianBased):

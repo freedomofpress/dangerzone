@@ -9,7 +9,7 @@ from doit.action import CmdAction
 ARCH = "arm64" if platform.machine() == "arm64" else "i686"
 VERSION = open("share/version.txt").read().strip()
 FEDORA_VERSIONS = ["40", "41"]
-DEBIAN_VERSIONS = ["bullseye", "focal", "jammy", "mantic", "noble", "trixie"]
+DEBIAN_VERSIONS = ["bullseye", "jammy", "mantic", "noble", "trixie"]
 
 ### Global parameters
 

@@ -55,13 +55,6 @@ about updates.</p>
 HAMBURGER_MENU_SIZE = 30
 
 
-WARNING_MESSAGE = """\
-<p><b>Warning:</b> Ubuntu Focal systems and their derivatives will
-stop being supported in subsequent Dangerzone releases. We encourage you to upgrade to a
-more recent version of your operating system in order to get security updates.</p>
-"""
-
-
 def load_svg_image(filename: str, width: int, height: int) -> QtGui.QPixmap:
     """Load an SVG image from a filename.
 
@@ -192,6 +185,9 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(self.hamburger_button)
         header_layout.addSpacing(15)
 
+        # Content widget, contains all the window content except waiting widget
+        self.content_widget = ContentWidget(self.dangerzone)
+
         if self.dangerzone.isolation_provider.should_wait_install():
             # Waiting widget replaces content widget while container runtime isn't available
             self.waiting_widget: WaitingWidget = WaitingWidgetContainer(self.dangerzone)
@@ -200,9 +196,6 @@ class MainWindow(QtWidgets.QMainWindow):
             # Don't wait with dummy converter and on Qubes.
             self.waiting_widget = WaitingWidget()
             self.dangerzone.is_waiting_finished = True
-
-        # Content widget, contains all the window content except waiting widget
-        self.content_widget = ContentWidget(self.dangerzone)
 
         # Only use the waiting widget if container runtime isn't available
         if self.dangerzone.is_waiting_finished:
@@ -626,17 +619,6 @@ class ContentWidget(QtWidgets.QWidget):
         self.dangerzone = dangerzone
         self.conversion_started = False
 
-        self.warning_label = None
-        if platform.system() == "Linux":
-            # Add the warning message only for ubuntu focal
-            os_release_path = Path("/etc/os-release")
-            if os_release_path.exists():
-                os_release = os_release_path.read_text()
-                if "Ubuntu 20.04" in os_release or "focal" in os_release:
-                    self.warning_label = QtWidgets.QLabel(WARNING_MESSAGE)
-                    self.warning_label.setWordWrap(True)
-                    self.warning_label.setProperty("style", "warning")
-
         # Doc selection widget
         self.doc_selection_widget = DocSelectionWidget(self.dangerzone)
         self.doc_selection_widget.documents_selected.connect(self.documents_selected)
@@ -662,8 +644,6 @@ class ContentWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
-        if self.warning_label:
-            layout.addWidget(self.warning_label)  # Add warning at the top
         layout.addWidget(self.settings_widget, stretch=1)
         layout.addWidget(self.documents_list, stretch=1)
         layout.addWidget(self.doc_selection_wrapper, stretch=1)
@@ -894,22 +874,16 @@ class SettingsWidget(QtWidgets.QWidget):
         self.safe_extension_name_layout.setSpacing(0)
         self.safe_extension_name_layout.addWidget(self.safe_extension_filename)
         self.safe_extension_name_layout.addWidget(self.safe_extension)
-        # FIXME: Workaround for https://github.com/freedomofpress/dangerzone/issues/339.
-        # We should drop this once we drop Ubuntu Focal support.
-        if hasattr(QtGui, "QRegularExpressionValidator"):
-            QRegEx = QtCore.QRegularExpression
-            QRegExValidator = QtGui.QRegularExpressionValidator
-        else:
-            QRegEx = QtCore.QRegExp  # type: ignore [assignment]
-            QRegExValidator = QtGui.QRegExpValidator  # type: ignore [assignment]
-        self.dot_pdf_validator = QRegExValidator(QRegEx(r".*\.[Pp][Dd][Ff]"))
+        self.dot_pdf_validator = QtGui.QRegularExpressionValidator(
+            QtCore.QRegularExpression(r".*\.[Pp][Dd][Ff]")
+        )
         if platform.system() == "Linux":
             illegal_chars_regex = r"[/]"
         elif platform.system() == "Darwin":
             illegal_chars_regex = r"[\\]"
         else:
             illegal_chars_regex = r"[\"*/:<>?\\|]"
-        self.illegal_chars_regex = QRegEx(illegal_chars_regex)
+        self.illegal_chars_regex = QtCore.QRegularExpression(illegal_chars_regex)
         self.safe_extension_layout = QtWidgets.QHBoxLayout()
         self.safe_extension_layout.addWidget(self.save_checkbox)
         self.safe_extension_layout.addWidget(self.safe_extension_label)

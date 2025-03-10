@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Hi, and thanks for taking the time to open this bug report. 
+        Hi, and thanks for taking the time to open this bug report.
   - type: textarea
     id: what-happened
     attributes:
@@ -21,7 +21,7 @@ body:
       label: Linux distribution
       description: |
         What is the name and version of your Linux distribution? You can find it out with `cat /etc/os-release`
-      placeholder: Ubuntu 20.04.6 LTS
+      placeholder: Ubuntu 22.04.5 LTS
     validations:
       required: true
   - type: textarea

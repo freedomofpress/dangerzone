@@ -66,16 +66,16 @@ jobs:
 
   build:
     name: Build ${{ matrix.platform.name }} image
-    runs-on: ubuntu-24.04${{ matrix.platform.suffix }}
+    runs-on: ${{ matrix.platform.runs-on }}
     needs:
       - prepare
     strategy:
       fail-fast: false
       matrix:
         platform:
-          - suffix: ""
+          - runs-on: "ubuntu-24.04"
             name: "linux/amd64"
-          - suffix: "-arm"
+          - runs-on: "ubuntu-24.04-arm"
             name: "linux/arm64"
     steps:
       - uses: actions/checkout@v4
@@ -218,14 +218,14 @@ jobs:
     needs:
       - prepare
       - merge
-    runs-on: ubuntu-24.04${{ matrix.platform.suffix }}
+    runs-on: ${{ matrix.platform.runs-on }}
     strategy:
       fail-fast: false
       matrix:
         platform:
-          - suffix: ""
+          - runs-on: "ubuntu-24.04"
             name: "amd64"
-          - suffix: "-arm"
+          - runs-on: "ubuntu-24.04-arm"
             name: "arm64"
     steps:
       - uses: actions/checkout@v4

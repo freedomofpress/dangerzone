@@ -619,13 +619,6 @@ class ContentWidget(QtWidgets.QWidget):
         self.dangerzone = dangerzone
         self.conversion_started = False
 
-        self.warning_label = None
-        if platform.system() == "Linux":
-            # Add the warning message only for ubuntu focal
-            os_release_path = Path("/etc/os-release")
-            if os_release_path.exists():
-                os_release = os_release_path.read_text()
-
         # Doc selection widget
         self.doc_selection_widget = DocSelectionWidget(self.dangerzone)
         self.doc_selection_widget.documents_selected.connect(self.documents_selected)
@@ -651,8 +644,6 @@ class ContentWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
-        if self.warning_label:
-            layout.addWidget(self.warning_label)  # Add warning at the top
         layout.addWidget(self.settings_widget, stretch=1)
         layout.addWidget(self.documents_list, stretch=1)
         layout.addWidget(self.doc_selection_wrapper, stretch=1)

@@ -193,6 +193,14 @@ class TestCliConversion(TestCliBasic):
         result = self.run_cli([sample_pdf, "--ocr-lang", "piglatin"])
         result.assert_failure()
 
+    @pytest.mark.reference_generator
+    @for_each_doc
+    def test_regenerate_reference(self, doc: Path) -> None:
+        reference = (doc.parent / "reference" / doc.stem).with_suffix(".pdf")
+
+        result = self.run_cli([str(doc), "--output-filename", str(reference)])
+        result.assert_success()
+
     @for_each_doc
     def test_formats(self, doc: Path, tmp_path_factory: pytest.TempPathFactory) -> None:
         reference = (doc.parent / "reference" / doc.stem).with_suffix(".pdf")

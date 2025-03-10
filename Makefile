@@ -66,6 +66,9 @@ build-macos-arm: build-clean
 build-linux: build-clean
 	doit -n 8 fedora_rpm debian_deb
 
+.PHONY: regenerate-reference-pdfs
+regenerate-reference-pdfs:
+	pytest tests/test_cli.py -k regenerate --generate-reference-pdfs
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" and any make targets that might appear between : and ##

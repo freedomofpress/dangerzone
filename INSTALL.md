@@ -39,7 +39,7 @@ Dangerzone is available for:
   <tr>
     <td>
 <details>
-  <summary><i>:information_source: Backport notice for Ubuntu 24.04 (Noble) users regarding the <code>conmon</code> package</i></summary>
+  <summary><i>:information_source: Backport notice for Ubuntu 22.04 (Jammy) users regarding the <code>conmon</code> package</i></summary>
   </br>
 
   The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug

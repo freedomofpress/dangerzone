@@ -20,9 +20,6 @@ on:
         required: true
 
 
-env:
-  BUILDKIT_IMAGE: "docker.io/moby/buildkit:v19.0@sha256:14aa1b4dd92ea0a4cd03a54d0c6079046ea98cd0c0ae6176bdd7036ba370cbbe"
-
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -55,6 +52,7 @@ jobs:
       - name: Compute image parameters
         id: params
         run: |
+          source Dockerfile.env
           DEBIAN_ARCHIVE_DATE=$(date -u +'%Y%m%d')
           SOURCE_DATE_EPOCH=$(date -u -d ${DEBIAN_ARCHIVE_DATE} +"%s")
           TAG=${DEBIAN_ARCHIVE_DATE}-$(git describe --long --first-parent | tail -c +2)
@@ -64,6 +62,7 @@ jobs:
           echo "source_date_epoch=${SOURCE_DATE_EPOCH}" >> $GITHUB_OUTPUT
           echo "tag=${DEBIAN_ARCHIVE_DATE}-${TAG}" >> $GITHUB_OUTPUT
           echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "buildkit_image=${BUILDKIT_IMAGE}" >> $GITHUB_OUTPUT
 
   build:
     name: Build ${{ matrix.platform.name }} image
@@ -98,7 +97,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          driver-opts: image=${{ env.BUILDKIT_IMAGE }}
+          driver-opts: image=${{ needs.prepare.outputs.buildkit_image }}
 
       - name: Build and push by digest
         id: build

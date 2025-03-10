@@ -220,7 +220,22 @@ def oci_normalize_path(path):
 
 
 def oci_get_file_from_tarball(tar: tarfile.TarFile, path: str) -> dict:
-    return
+    """Get file from an OCI tarball.
+
+    If the filename cannot be found, search again by prefixing it with "./", since we
+    have encountered path names in OCI tarballs prefixed with "./".
+    """
+    try:
+        return tar.extractfile(path).read().decode()
+    except KeyError:
+        if not path.startswith("./") and not path.startswith("/"):
+            path = "./" + path
+            try:
+                return tar.extractfile(path).read().decode()
+            except KeyError:
+                # Do not raise here, so that we can raise the original exception below.
+                pass
+        raise
 
 
 def oci_parse_manifest(tar: tarfile.TarFile, path: str, platform: dict | None) -> dict:
@@ -231,7 +246,7 @@ def oci_parse_manifest(tar: tarfile.TarFile, path: str, platform: dict | None) -
     carry it from the previous manifest and include in the info here.
     """
     path = oci_normalize_path(path)
-    contents = tar.extractfile(path).read().decode()
+    contents = oci_get_file_from_tarball(tar, path)
     digest = "sha256:" + hashlib.sha256(contents.encode()).hexdigest()
     contents_dict = json.loads(contents)
     media_type = get_key(contents_dict, "mediaType")

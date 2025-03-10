@@ -96,6 +96,7 @@ RUN apt-get update \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends dh-python make build-essential \
         git {qt_deps} pipx python3 python3-pip python3-venv dpkg-dev debhelper python3-setuptools \
+        python3-dev \
     && rm -rf /var/lib/apt/lists/*
 RUN pipx install poetry
 RUN apt-get update \
@@ -106,7 +107,7 @@ RUN apt-get update \
 # FIXME: Install Poetry on Fedora via package manager.
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
 RUN dnf install -y git rpm-build podman python3 python3-devel python3-poetry-core \
-    pipx make qt6-qtbase-gui \
+    pipx make qt6-qtbase-gui gcc gcc-c++\
     && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.

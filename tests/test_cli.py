@@ -7,11 +7,13 @@ import platform
 import shutil
 import sys
 import tempfile
+import time
 import traceback
 from pathlib import Path
 from typing import Optional, Sequence
 
 import fitz
+import numpy as np
 import pytest
 from click.testing import CliRunner, Result
 from pytest_mock import MockerFixture
@@ -198,19 +200,47 @@ class TestCliConversion(TestCliBasic):
 
         result = self.run_cli([str(doc), "--output-filename", str(destination)])
         result.assert_success()
-        # When needed, regenerate the reference PDFs by uncommenting the following line:
-        # reference.parent.mkdir(parents=True, exist_ok=True)
-        # shutil.copy(destination, reference)
 
         converted = fitz.open(destination)
         ref = fitz.open(reference)
-        assert len(converted) == len(ref), "different number of pages"
+        errors = []
+        if len(converted) != len(ref):
+            errors.append("different number of pages")
 
+        diffs = doc.parent / "diffs"
+        diffs.mkdir(parents=True, exist_ok=True)
         for page, ref_page in zip(converted, ref):
-            page.get_pixmap(dpi=150)
-            ref_page.get_pixmap(dpi=150)
-            assert page.get_pixmap().tobytes() == ref_page.get_pixmap().tobytes(), (
-                f"different page content for page {page.number}"
+            curr_pixmap = page.get_pixmap(dpi=150)
+            ref_pixmap = ref_page.get_pixmap(dpi=150)
+            if curr_pixmap.tobytes() != ref_pixmap.tobytes():
+                errors.append(f"page {page.number} differs")
+
+                t0 = time.perf_counter()
+
+                arr_ref = np.frombuffer(ref_pixmap.samples, dtype=np.uint8).reshape(
+                    ref_pixmap.height, ref_pixmap.width, ref_pixmap.n
+                )
+                arr_curr = np.frombuffer(curr_pixmap.samples, dtype=np.uint8).reshape(
+                    curr_pixmap.height, curr_pixmap.width, curr_pixmap.n
+                )
+
+                # Find differences (any channel differs)
+                diff = (arr_ref != arr_curr).any(axis=2)
+
+                # Get coordinates of differences
+                diff_coords = np.where(diff)
+                # Mark differences in red
+                for y, x in zip(diff_coords[0], diff_coords[1]):
+                    # Note: PyMuPDF's set_pixel takes (x, y) not (y, x)
+                    ref_pixmap.set_pixel(int(x), int(y), (255, 0, 0))  # Red
+
+                t1 = time.perf_counter()
+                print(f"diff took {t1 - t0} seconds")
+                ref_pixmap.save(diffs / f"{destination.stem}_{page.number}.jpeg")
+
+        if len(errors) > 0:
+            raise AssertionError(
+                f"The resulting document differs from the reference. See {str(diffs)} for a visual diff."
             )
 
     def test_output_filename(self, sample_pdf: str) -> None:

@@ -185,6 +185,9 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(self.hamburger_button)
         header_layout.addSpacing(15)
 
+        # Content widget, contains all the window content except waiting widget
+        self.content_widget = ContentWidget(self.dangerzone)
+
         if self.dangerzone.isolation_provider.should_wait_install():
             # Waiting widget replaces content widget while container runtime isn't available
             self.waiting_widget: WaitingWidget = WaitingWidgetContainer(self.dangerzone)
@@ -193,9 +196,6 @@ class MainWindow(QtWidgets.QMainWindow):
             # Don't wait with dummy converter and on Qubes.
             self.waiting_widget = WaitingWidget()
             self.dangerzone.is_waiting_finished = True
-
-        # Content widget, contains all the window content except waiting widget
-        self.content_widget = ContentWidget(self.dangerzone)
 
         # Only use the waiting widget if container runtime isn't available
         if self.dangerzone.is_waiting_finished:
@@ -874,8 +874,8 @@ class SettingsWidget(QtWidgets.QWidget):
         self.safe_extension_name_layout.setSpacing(0)
         self.safe_extension_name_layout.addWidget(self.safe_extension_filename)
         self.safe_extension_name_layout.addWidget(self.safe_extension)
-        self.dot_pdf_validator = QtGui.QRegExpValidator(
-            QtCore.QRegExp(r".*\.[Pp][Dd][Ff]")
+        self.dot_pdf_validator = QtGui.QRegularExpressionValidator(
+            QtCore.QRegularExpression(r".*\.[Pp][Dd][Ff]")
         )
         if platform.system() == "Linux":
             illegal_chars_regex = r"[/]"
@@ -883,7 +883,7 @@ class SettingsWidget(QtWidgets.QWidget):
             illegal_chars_regex = r"[\\]"
         else:
             illegal_chars_regex = r"[\"*/:<>?\\|]"
-        self.illegal_chars_regex = QtCore.QRegExp(illegal_chars_regex)
+        self.illegal_chars_regex = QtCore.QRegularExpression(illegal_chars_regex)
         self.safe_extension_layout = QtWidgets.QHBoxLayout()
         self.safe_extension_layout.addWidget(self.save_checkbox)
         self.safe_extension_layout.addWidget(self.safe_extension_label)

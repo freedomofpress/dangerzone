@@ -131,7 +131,7 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     needs:
-      - prepare
+      - prepare  # implied by build, but required here to access image params
       - build
     outputs:
       digest_root: ${{ steps.image.outputs.digest_root }}
@@ -192,7 +192,7 @@ jobs:
   # the container registry.
   provenance:
     needs:
-      - prepare
+      - prepare  # implied by merge, but required here to access image params
       - merge
     strategy:
       matrix:
@@ -216,7 +216,7 @@ jobs:
   check-reproducibility:
     if: ${{ inputs.reproduce }}
     needs:
-      - prepare
+      - prepare  # implied by merge, but required here to access image params
       - merge
     runs-on: ${{ matrix.platform.runs-on }}
     strategy:

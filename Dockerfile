@@ -182,8 +182,11 @@ RUN mkdir -p \
     /new_root/tmp \
     /new_root/home/dangerzone/dangerzone-image/rootfs
 
-# XXX: Remove /etc/resolv.conf, so that the network configuration of the host
-# does not leak.
+# Copy the /etc and /var directories under the new root directory. Also,
+# copy /etc/, /opt, and /usr to the Dangerzone image rootfs.
+#
+# XXX: We also have to remove the resolv.conf file, in order to not leak any DNS
+# servers added there during image build time.
 RUN cp -r /etc /var /new_root/ \
     && rm /new_root/etc/resolv.conf
 RUN cp -r /etc /opt /usr /new_root/home/dangerzone/dangerzone-image/rootfs \

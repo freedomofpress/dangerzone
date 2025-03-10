@@ -69,7 +69,7 @@ class TestContainer(IsolationProviderTest):
         )
 
         # Make podman load fail
-        mocker.patch("gzip.open", mocker.mock_open(read_data=""))
+        mocker.patch("builtins.open", mocker.mock_open(read_data=""))
 
         fp.register_subprocess(
             [container_utils.get_runtime(), "load"],
@@ -83,6 +83,10 @@ class TestContainer(IsolationProviderTest):
         self, mocker: MockerFixture, provider: Container, fp: FakeProcess
     ) -> None:
         """When an image keep being not installed, it should return False"""
+        fp.register_subprocess(
+            ["podman", "version", "-f", "{{.Client.Version}}"],
+            stdout="4.0.0",
+        )
 
         fp.register_subprocess(
             [container_utils.get_runtime(), "image", "ls"],
@@ -101,8 +105,8 @@ class TestContainer(IsolationProviderTest):
             occurrences=2,
         )
 
-        # Patch gzip.open and podman load so that it works
-        mocker.patch("gzip.open", mocker.mock_open(read_data=""))
+        # Patch open and podman load so that it works
+        mocker.patch("builtins.open", mocker.mock_open(read_data=""))
         fp.register_subprocess(
             [container_utils.get_runtime(), "load"],
         )

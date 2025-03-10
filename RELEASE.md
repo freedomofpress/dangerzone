@@ -150,7 +150,7 @@ Here is what you need to do:
   poetry run ./install/common/download-tessdata.py
 
   # Copy the container image to the assets folder
-  cp share/container.tar.gz ~dz/release-assets/$VERSION/dangerzone-$VERSION-arm64.tar.gz
+  cp share/container.tar ~dz/release-assets/$VERSION/dangerzone-$VERSION-arm64.tar
   cp share/image-id.txt ~dz/release-assets/$VERSION/.
   ```
 
@@ -227,7 +227,7 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
 
 - [ ] Copy the container image into the VM
   > [!IMPORTANT]
-  > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar.gz` and `share/image-id.txt` from the host into the `share` folder in the VM.
+  > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar` and `share/image-id.txt` from the host into the `share` folder in the VM.
 - [ ] Run `poetry run .\install\windows\build-app.bat`
 - [ ] When you're done you will have `dist\Dangerzone.msi`
 
@@ -318,9 +318,8 @@ To publish the release, you can follow these steps:
 
 - [ ] Run container scan on the produced container images (some time may have passed since the artifacts were built)
   ```bash
-  gunzip --keep -c ./share/container.tar.gz > /tmp/container.tar
   docker pull anchore/grype:latest
-  docker run --rm -v /tmp/container.tar:/container.tar anchore/grype:latest /container.tar
+  docker run --rm -v ./share/container.tar:/container.tar anchore/grype:latest /container.tar
   ```
 
 - [ ] Collect the assets in a single directory, calculate their SHA-256 hashes, and sign them.

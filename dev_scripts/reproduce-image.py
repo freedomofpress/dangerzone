@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import logging
 import pathlib
+import platform
 import stat
 import subprocess
 import sys
@@ -11,131 +12,72 @@ import urllib.request
 
 logger = logging.getLogger(__name__)
 
-DIFFOCI_URL = "https://github.com/reproducible-containers/diffoci/releases/download/v0.1.5/diffoci-v0.1.5.linux-amd64"
-DIFFOCI_CHECKSUM = "01d25fe690196945a6bd510d30559338aa489c034d3a1b895a0d82a4b860698f"
-DIFFOCI_PATH = (
-    pathlib.Path.home() / ".local" / "share" / "dangerzone-dev" / "helpers" / "diffoci"
-)
-IMAGE_NAME = "dangerzone.rocks/dangerzone"
+if platform.system() in ["Darwin", "Windows"]:
+    CONTAINER_RUNTIME = "docker"
+elif platform.system() == "Linux":
+    CONTAINER_RUNTIME = "podman"
 
 
 def run(*args):
-    """Simple function that runs a command, validates it, and returns the output"""
+    """Simple function that runs a command and checks the result."""
     logger.debug(f"Running command: {' '.join(args)}")
-    return subprocess.run(
-        args,
-        check=True,
-        stdout=subprocess.PIPE,
-    ).stdout
+    return subprocess.run(args, check=True)
 
 
-def git_commit_get():
-    return run("git", "rev-parse", "--short", "HEAD").decode().strip()
-
-
-def git_determine_tag():
-    return run("git", "describe", "--long", "--first-parent").decode().strip()[1:]
-
-
-def git_verify(commit, source):
-    if not commit in source:
-        raise RuntimeError(
-            f"Image '{source}' does not seem to be built from commit '{commit}'"
-        )
-
-
-def diffoci_hash_matches(diffoci):
-    """Check if the hash of the downloaded diffoci bin matches the expected one."""
-    m = hashlib.sha256()
-    m.update(diffoci)
-    diffoci_checksum = m.hexdigest()
-    return diffoci_checksum == DIFFOCI_CHECKSUM
-
-
-def diffoci_is_installed():
-    """Determine if diffoci has been installed.
-
-    Determine if diffoci has been installed, by checking if the binary exists, and if
-    its hash is the expected one. If the binary exists but the hash is different, then
-    this is a sign that we need to update the local diffoci binary.
-    """
-    if not DIFFOCI_PATH.exists():
-        return False
-    return diffoci_hash_matches(DIFFOCI_PATH.open("rb").read())
-
-
-def diffoci_download():
-    """Download the diffoci tool, based on a URL and its checksum."""
-    with urllib.request.urlopen(DIFFOCI_URL) as f:
-        diffoci_bin = f.read()
-
-    if not diffoci_hash_matches(diffoci_bin):
-        raise ValueError(
-            "Unexpected checksum for downloaded diffoci binary:"
-            f" {diffoci_checksum} !={DIFFOCI_CHECKSUM}"
-        )
-
-    DIFFOCI_PATH.parent.mkdir(parents=True, exist_ok=True)
-    DIFFOCI_PATH.open("wb+").write(diffoci_bin)
-    DIFFOCI_PATH.chmod(DIFFOCI_PATH.stat().st_mode | stat.S_IEXEC)
-
-
-def diffoci_diff(source, local_target):
-    """Diff the source image against the recently built target image using diffoci."""
-    target = f"podman://{local_target}"
-    try:
-        return run(
-            str(DIFFOCI_PATH),
-            "diff",
-            source,
-            target,
-            "--semantic",
-            "--verbose",
-        )
-    except subprocess.CalledProcessError as e:
-        error = e.stdout.decode()
-        raise RuntimeError(
-            f"Could not rebuild an identical image to {source}. Diffoci report:\n{error}"
-        )
-
-
-def build_image(tag, use_cache=False):
+def build_image(
+    platform=None,
+    runtime=None,
+    cache=True,
+    date=None,
+):
     """Build the Dangerzone container image with a special tag."""
+    platform_args = [] if not platform else ["--platform", platform]
+    runtime_args = [] if not runtime else ["--runtime", runtime]
+    cache_args = [] if cache else ["--use-cache", "no"]
+    date_args = [] if not date else ["--debian-archive-date", date]
     run(
         "python3",
         "./install/common/build-image.py",
-        "--no-save",
-        "--use-cache",
-        str(use_cache),
-        "--tag",
-        tag,
+        *platform_args,
+        *runtime_args,
+        *cache_args,
+        *date_args,
     )
 
 
 def parse_args():
-    image_tag = git_determine_tag()
-    # TODO: Remove the local "podman://" prefix once we have started pushing images to a
-    # remote.
-    default_image_name = f"podman://{IMAGE_NAME}:{image_tag}"
-
     parser = argparse.ArgumentParser(
         prog=sys.argv[0],
         description="Dev script for verifying container image reproducibility",
     )
     parser.add_argument(
-        "--source",
-        default=default_image_name,
+        "--platform",
+        default=None,
+        help=f"The platform for building the image (default: current platform)",
+    )
+    parser.add_argument(
+        "--runtime",
+        choices=["docker", "podman"],
+        default=CONTAINER_RUNTIME,
+        help=f"The container runtime for building the image (default: {CONTAINER_RUNTIME})",
+    )
+    parser.add_argument(
+        "--no-cache",
+        default=False,
+        action="store_true",
         help=(
-            "The name of the image that you want to reproduce. If the image resides in"
-            " the local Docker / Podman engine, you can prefix it with podman:// or"
-            f" docker:// accordingly (default: {default_image_name})"
+            "Do not use existing cached images for the container build."
+            " Build from the start with a new set of cached layers."
         ),
     )
     parser.add_argument(
-        "--use-cache",
-        default=False,
-        action="store_true",
-        help="Whether to reuse the build cache (off by default for better reproducibility)",
+        "--debian-archive-date",
+        default=None,
+        help="Use a specific Debian snapshot archive, by its date",
+    )
+    parser.add_argument(
+        "digest",
+        help="The digest of the image that you want to reproduce",
     )
     return parser.parse_args()
 
@@ -148,32 +90,25 @@ def main():
     )
     args = parse_args()
 
-    logger.info(f"Ensuring that current Git commit matches image '{args.source}'")
-    commit = git_commit_get()
-    git_verify(commit, args.source)
-
-    if not diffoci_is_installed():
-        logger.info(f"Downloading diffoci helper from {DIFFOCI_URL}")
-        diffoci_download()
-
-    tag = f"reproduce-{commit}"
-    target = f"{IMAGE_NAME}:{tag}"
-    logger.info(f"Building container image and tagging it as '{target}'")
-    build_image(tag, args.use_cache)
+    logger.info(f"Building container image")
+    build_image(
+        args.platform,
+        args.runtime,
+        not args.no_cache,
+        args.debian_archive_date,
+    )
 
     logger.info(
-        f"Ensuring that source image '{args.source}' is semantically identical with"
-        f" built image '{target}'"
+        f"Check that the reproduced image has the expected digest: {args.digest}"
     )
-    try:
-        diffoci_diff(args.source, target)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(
-            f"Could not reproduce image {args.source} for commit {commit}"
-        )
-        breakpoint()
-
-    logger.info(f"Successfully reproduced image '{args.source}' from commit '{commit}'")
+    run(
+        "./dev_scripts/repro-build.py",
+        "analyze",
+        "--show-contents",
+        "share/container.tar",
+        "--expected-image-digest",
+        args.digest,
+    )
 
 
 if __name__ == "__main__":

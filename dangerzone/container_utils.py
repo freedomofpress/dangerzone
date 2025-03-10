@@ -128,23 +128,21 @@ def get_expected_tag() -> str:
 def load_image_tarball() -> None:
     log.info("Installing Dangerzone container image...")
     tarball_path = get_resource_path("container.tar")
-    with open(tarball_path) as f:
-        try:
-            res = subprocess.run(
-                [get_runtime(), "load"],
-                stdin=f,
-                startupinfo=get_subprocess_startupinfo(),
-                capture_output=True,
-                check=True,
-            )
-        except subprocess.CalledProcessError as e:
-            if e.stderr:
-                error = e.stderr.decode()
-            else:
-                error = "No output"
-            raise errors.ImageInstallationException(
-                f"Could not install container image: {error}"
-            )
+    try:
+        res = subprocess.run(
+            [get_runtime(), "load", "-i", tarball_path],
+            startupinfo=get_subprocess_startupinfo(),
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        if e.stderr:
+            error = e.stderr.decode()
+        else:
+            error = "No output"
+        raise errors.ImageInstallationException(
+            f"Could not install container image: {error}"
+        )
 
     # Loading an image built with Buildkit in Podman 3.4 messes up its name. The tag
     # somehow becomes the name of the loaded image [1].

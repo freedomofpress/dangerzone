@@ -160,3 +160,22 @@ def for_each_external_doc(glob_pattern: str = "*") -> Callable:
 
 class TestBase:
     sample_doc = str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--generate-reference-pdfs",
+        action="store_true",
+        default=False,
+        help="Regenerate reference PDFs",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    if not config.getoption("--generate-reference-pdfs"):
+        skip_generator = pytest.mark.skip(
+            reason="Only run when --generate-reference-pdfs is provided"
+        )
+        for item in items:
+            if "reference_generator" in item.keywords:
+                item.add_marker(skip_generator)

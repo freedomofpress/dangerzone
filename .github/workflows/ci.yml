@@ -473,3 +473,11 @@ jobs:
           #     file successfully.
           xvfb-run -s '-ac' ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
               bash -c 'cd dangerzone; poetry run make test'
+      
+      - name: Upload PDF diffs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-diffs-${{ matrix.distro }}-${{ matrix.version }}
+          path: tests/test_docs/diffs/*.jpeg
+        # Always run this step to publish test results, even on failures
+        if: ${{ always() }}

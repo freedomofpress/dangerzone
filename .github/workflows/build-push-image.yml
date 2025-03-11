@@ -206,7 +206,7 @@ jobs:
       packages: write # for uploading attestations.
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.0.0
     with:
-      digest: ${{ needs.merge.outputs[format('digest_{0}', matrix.digest)] }}
+      digest: ${{ needs.merge.outputs[format('digest_{0}', matrix.manifest_type)] }}
       image: ${{ needs.prepare.outputs.image }}
       registry-username: ${{ inputs.registry_user }}
     secrets:

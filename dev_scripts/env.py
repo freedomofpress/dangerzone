@@ -60,24 +60,6 @@ Run Dangerzone in the end-user environment:
 
 """
 
-# NOTE: For Ubuntu 20.04 specifically, we need to install some extra deps, mainly for
-# Podman. This needs to take place both in our dev and end-user environment. See the
-# corresponding note in our Installation section:
-#
-# https://github.com/freedomofpress/dangerzone/blob/main/INSTALL.md#ubuntu-debian
-DOCKERFILE_UBUNTU_2004_DEPS = r"""
-ARG DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update \
-    && apt-get install -y python-all python3.9 curl wget gnupg2 \
-    && rm -rf /var/lib/apt/lists/*
-RUN . /etc/os-release \
-    && sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_$VERSION_ID/ /' \
-        > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list" \
-    && wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_$VERSION_ID/Release.key -O- \
-        | apt-key add -
-"""
-
 # XXX: overcome the fact that ubuntu images (starting on 23.04) ship with the 'ubuntu'
 # user by default https://bugs.launchpad.net/cloud-images/+bug/2005129
 # Related issue https://github.com/freedomofpress/dangerzone/pull/461
@@ -115,15 +97,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends dh-python make build-essential \
         git {qt_deps} pipx python3 python3-pip python3-venv dpkg-dev debhelper python3-setuptools \
     && rm -rf /var/lib/apt/lists/*
-# NOTE: `pipx install poetry` fails on Ubuntu Focal, when installed through APT. By
-# installing the latest version, we sidestep this issue.
-RUN bash -c 'if [[ "$(pipx --version)" < "1" ]]; then \
-                apt-get update \
-                && apt-get remove -y pipx \
-                && apt-get install -y --no-install-recommends python3-pip \
-                && pip install pipx \
-                && rm -rf /var/lib/apt/lists/*; \
-              else true; fi'
+RUN pipx install poetry
 RUN apt-get update \
     && apt-get install -y --no-install-recommends mupdf thunar \
     && rm -rf /var/lib/apt/lists/*
@@ -573,12 +547,7 @@ class Env:
             # See https://github.com/freedomofpress/dangerzone/issues/482
             qt_deps = "libqt6gui6 libxcb-cursor0"
             install_deps = DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
-            if self.distro == "ubuntu" and self.version in ("20.04", "focal"):
-                qt_deps = "libqt5gui5 libxcb-cursor0"  # Ubuntu Focal has only Qt5.
-                install_deps = (
-                    DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
-                )
-            elif self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
+            if self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
                 # Ubuntu Jammy misses a dependency to `libxkbcommon-x11-0`, which we can
                 # install indirectly via `qt6-qpa-plugins`.
                 qt_deps += " qt6-qpa-plugins"
@@ -642,11 +611,7 @@ class Env:
             install_cmd = "dnf install -y"
         else:
             install_deps = DOCKERFILE_BUILD_DEBIAN_DEPS
-            if self.distro == "ubuntu" and self.version in ("20.04", "focal"):
-                install_deps = (
-                    DOCKERFILE_UBUNTU_2004_DEPS + DOCKERFILE_BUILD_DEBIAN_DEPS
-                )
-            elif self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
+            if self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
                 # Ubuntu Jammy requires a more up-to-date conmon
                 # package (see https://github.com/freedomofpress/dangerzone/issues/685)
                 install_deps = DOCKERFILE_CONMON_UPDATE + DOCKERFILE_BUILD_DEBIAN_DEPS

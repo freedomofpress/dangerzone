@@ -25,7 +25,6 @@ Dangerzone is available for:
 - Ubuntu 24.10 (oracular)
 - Ubuntu 24.04 (noble)
 - Ubuntu 22.04 (jammy)
-- Ubuntu 20.04 (focal)
 - Debian 13 (trixie)
 - Debian 12 (bookworm)
 - Debian 11 (bullseye)
@@ -40,35 +39,7 @@ Dangerzone is available for:
   <tr>
     <td>
 <details>
-  <summary><i>:memo: Expand this section if you are on Ubuntu 20.04 (Focal).</i></summary>
-  </br>
-
-  Dangerzone requires [Podman](https://podman.io/), which is not available
-  through the official Ubuntu Focal repos. To proceed with the Dangerzone
-  installation, you need to add an extra OpenSUSE repo that provides Podman to
-  Ubuntu Focal users. You can follow the instructions below, which have been
-  copied from the [official Podman blog](https://podman.io/new/2021/06/16/new.html):
-
-  ```bash
-  sudo apt-get update && sudo apt-get install curl wget gnupg2 -y
-  . /etc/os-release
-  sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' \
-    > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
-  wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- \
-    | sudo apt-key add -
-  sudo apt update
-  ```
-
-</details>
-    </td>
-  </tr>
-</table>
-
-<table>
-  <tr>
-    <td>
-<details>
-  <summary><i>:information_source: Backport notice for Ubuntu 24.04 (Noble) users regarding the <code>conmon</code> package</i></summary>
+  <summary><i>:information_source: Backport notice for Ubuntu 22.04 (Jammy) users regarding the <code>conmon</code> package</i></summary>
   </br>
 
   The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug

@@ -25,8 +25,6 @@ jobs:
             version: "24.04"  # noble
           - distro: ubuntu
             version: "22.04"  # jammy
-          - distro: ubuntu
-            version: "20.04"  # focal
           - distro: debian
             version: "trixie"  # 13
           - distro: debian
@@ -34,18 +32,6 @@ jobs:
           - distro: debian
             version: "11"  # bullseye
     steps:
-      - name: Add Podman repo for Ubuntu Focal
-        if: matrix.distro == 'ubuntu' && matrix.version == 20.04
-        run: |
-          apt-get update && apt-get -y install curl wget gnupg2
-          . /etc/os-release
-          sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' \
-            > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
-          wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- \
-            | apt-key add -
-          apt update
-          apt-get install python-all -y
-
       - name: Add packages.freedom.press PGP key (gpg)
         if: matrix.version != 'trixie'
         run: |

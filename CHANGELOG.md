@@ -7,7 +7,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...HEAD)
 
-- 
+- Platform support: Drop support for Ubuntu Focal, since it's nearing end-of-life ([#1018](https://github.com/freedomofpress/dangerzone/issues/1018))
 
 ## [0.8.1](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...0.8.0)
 

@@ -95,7 +95,7 @@ class IsolationProvider(ABC):
         return self.debug or getattr(sys, "dangerzone_dev", False)
 
     @abstractmethod
-    def install(self) -> bool:
+    def install(self, should_upgrade: bool, callback: Callable) -> bool:
         pass
 
     def convert(

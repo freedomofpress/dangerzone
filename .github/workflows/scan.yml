@@ -21,19 +21,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install container build dependencies
-        run: |
-          sudo apt install pipx
-          pipx install poetry
-          pipx inject poetry poetry-plugin-export
-          poetry install --only package
-      - name: Bump date of Debian snapshot archive
-        run: |
-          date=$(date "+%Y%m%d")
-          sed -i "s/DEBIAN_ARCHIVE_DATE=[0-9]\+/DEBIAN_ARCHIVE_DATE=${date}/" Dockerfile.env
-          make Dockerfile
       - name: Build container image
-        run: python3 ./install/common/build-image.py --runtime docker --no-save
+        run: |
+          python3 ./install/common/build-image.py \
+            --debian-archive-date $(date "+%Y%m%d") \
+            --runtime docker
+          docker load -i share/container.tar
       - name: Get image tag
         id: tag
         run: echo "tag=$(cat share/image-id.txt)" >> $GITHUB_OUTPUT

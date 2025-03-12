@@ -68,8 +68,6 @@ class TestLargeSet(TestCli):
                 "dev_scripts/dangerzone-cli",
                 "--output-filename",
                 output_file_path,
-                "--ocr-lang",
-                "eng",
                 str(doc),
             ],
             stdout=subprocess.PIPE,

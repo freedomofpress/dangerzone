@@ -49,7 +49,6 @@ jobs:
     strategy:
       matrix:
         group: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -96,5 +95,55 @@ jobs:
       - name: Upload results
         uses: actions/upload-artifact@v4
         with:
-          name: results_${{ matrix.group }}
+          name: results-${{ matrix.group }}
           path: tests/test_docs_large/results/junit
+          if-no-files-found: error
+          retention-days: 1
+
+  report:
+    runs-on: ubuntu-latest
+    needs:
+      - run-large-tests
+    steps:
+      - name: Download results
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/results
+          pattern: results-*
+          merge-multiple: true
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install requirements
+        run: |-
+          sudo apt update -y
+          sudo apt install -y git-lfs libxml2-utils make
+
+      - name: Download the large test repo
+        run: |-
+          make test-large-init
+
+      - name: Combine the results
+        run: |-
+          dev_scripts/merge_large_tests_results.py \
+             ${{ runner.temp }}/results ${{ runner.temp }}/results/results.xml
+
+      - name: Generate a report
+        run: |-
+	      python tests/test_docs_large/report.py \
+              ${{ runner.temp }}/results/results.xml \
+              | tee ${{ runner.temp }}/results/report.txt
+
+      - name: Upload final results and report
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-results
+          path: ${{ runner.temp }}/results
+          if-no-files-found: error

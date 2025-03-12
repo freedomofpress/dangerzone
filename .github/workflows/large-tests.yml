@@ -126,7 +126,10 @@ jobs:
       - name: Install requirements
         run: |-
           sudo apt update -y
-          sudo apt install -y git-lfs libxml2-utils make
+          sudo apt install -y \
+            podman git-lfs libxml2-utils \
+            python3 python3-poetry make
+          poetry install
 
       - name: Download the large test repo
         run: |-
@@ -134,18 +137,20 @@ jobs:
 
       - name: Combine the results
         run: |-
+          mkdir -p ${{ runner.temp }}/final_results
           dev_scripts/merge_large_tests_results.py \
-             ${{ runner.temp }}/results ${{ runner.temp }}/results/results.xml
+             ${{ runner.temp }}/results \
+             ${{ runner.temp }}/final_results/results.xml
 
       - name: Generate a report
         run: |-
-	      python tests/test_docs_large/report.py \
-              ${{ runner.temp }}/results/results.xml \
-              | tee ${{ runner.temp }}/results/report.txt
+          poetry run python tests/test_docs_large/report.py \
+              ${{ runner.temp }}/final_results/results.xml \
+              | tee ${{ runner.temp }}/final_results/report.txt
 
       - name: Upload final results and report
         uses: actions/upload-artifact@v4
         with:
           name: final-results
-          path: ${{ runner.temp }}/results
+          path: ${{ runner.temp }}/final_results
           if-no-files-found: error

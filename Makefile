@@ -1,6 +1,9 @@
 LARGE_TEST_REPO_DIR:=tests/test_docs_large
 GIT_DESC=$$(git describe)
 JUNIT_FLAGS := --capture=sys -o junit_logging=all
+TEST_GROUP_COUNT ?= 1
+TEST_GROUP ?= 1
+TEST_GROUP_RANDOM_SEED ?= 999999999
 
 .PHONY: lint
 lint: ## Check the code for linting, formatting, and typing issues with ruff and mypy
@@ -33,10 +36,18 @@ test-large-init: test-large-requirements
 	git submodule update $(LARGE_TEST_REPO_DIR)
 	cd $(LARGE_TEST_REPO_DIR) && $(MAKE) clone-docs
 
-TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC).junit.xml
+TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC)_$(TEST_GROUP).junit.xml
 .PHONY: test-large
 test-large: test-large-init  ## Run large test set
-	python -m pytest --tb=no tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)
+	python -m pytest \
+		--tb=no \
+		--test-group-count=$(TEST_GROUP_COUNT) \
+		--test-group=$(TEST_GROUP) \
+		--test-group-random-seed=$(TEST_GROUP_RANDOM_SEED) \
+		--junitxml=$(TEST_LARGE_RESULTS) \
+		$(JUNIT_FLAGS) \
+		-v \
+		tests/test_large_set.py::TestLargeSet
 	python $(TEST_LARGE_RESULTS)/report.py $(TEST_LARGE_RESULTS)
 
 Dockerfile: Dockerfile.env Dockerfile.in ## Regenerate the Dockerfile from its template

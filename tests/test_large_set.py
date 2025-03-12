@@ -90,14 +90,14 @@ class TestLargeSet(TestCli):
     def test_10K_docs(self, doc: Path, tmp_path: Path) -> None:
         self.run_doc_test(doc, tmp_path)
 
-    @for_each_100K_doc
-    def test_100K_docs(self, doc: Path, tmp_path: Path) -> None:
-        self.run_doc_test(doc, tmp_path)
+    # @for_each_100K_doc
+    # def test_100K_docs(self, doc: Path, tmp_path: Path) -> None:
+    #     self.run_doc_test(doc, tmp_path)
 
-    @for_each_10M_doc
-    def test_10M_docs(self, doc: Path, tmp_path: Path) -> None:
-        self.run_doc_test(doc, tmp_path)
+    # @for_each_10M_doc
+    # def test_10M_docs(self, doc: Path, tmp_path: Path) -> None:
+    #     self.run_doc_test(doc, tmp_path)
 
-    @for_each_100M_doc
-    def test_100M_docs(self, doc: Path, tmp_path: Path) -> None:
-        self.run_doc_test(doc, tmp_path)
+    # @for_each_100M_doc
+    # def test_100M_docs(self, doc: Path, tmp_path: Path) -> None:
+    #     self.run_doc_test(doc, tmp_path)

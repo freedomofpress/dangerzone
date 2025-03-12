@@ -121,6 +121,8 @@ jobs:
         with:
           python-version: '3.11'
 
+      - uses: lhotari/action-upterm@v1
+
       - name: Install requirements
         run: |-
           sudo apt update -y

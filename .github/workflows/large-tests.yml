@@ -53,6 +53,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get current date
         id: date
@@ -76,11 +78,20 @@ jobs:
             python3 python3-poetry make
           poetry install
 
+      - name: Smoke test before the party begins
+        run: |-
+          poetry run ./dev_scripts/dangerzone-cli tests/test_docs/sample-pdf.pdf
+
       - name: Run large tests
+        continue-on-error: true  # we expect test failures
         run: |-
           export TEST_GROUP_COUNT=20
           export TEST_GROUP=${{ matrix.group }}
           poetry run make test-large
+
+      - name: Show results
+        run: |-
+          cat tests/test_docs_large/results/junit/*
 
       - name: Upload results
         uses: actions/upload-artifact@v4

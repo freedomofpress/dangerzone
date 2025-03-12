@@ -1,5 +1,5 @@
 LARGE_TEST_REPO_DIR:=tests/test_docs_large
-GIT_DESC=$$(git describe)
+GIT_DESC=$$(git describe --always)
 JUNIT_FLAGS := --capture=sys -o junit_logging=all
 TEST_GROUP_COUNT ?= 1
 TEST_GROUP ?= 1
@@ -48,7 +48,7 @@ test-large: test-large-init  ## Run large test set
 		$(JUNIT_FLAGS) \
 		-v \
 		tests/test_large_set.py::TestLargeSet
-	python $(TEST_LARGE_RESULTS)/report.py $(TEST_LARGE_RESULTS)
+	python $(LARGE_TEST_REPO_DIR)/report.py $(TEST_LARGE_RESULTS)
 
 Dockerfile: Dockerfile.env Dockerfile.in ## Regenerate the Dockerfile from its template
 	poetry run jinja2 Dockerfile.in Dockerfile.env > Dockerfile

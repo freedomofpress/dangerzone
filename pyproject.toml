@@ -57,6 +57,7 @@ pytest-cov = "^5.0.0"
 strip-ansi = "*"
 pytest-subprocess = "^1.5.2"
 pytest-rerunfailures = "^14.0"
+pytest-test-groups = "^1.1.0"
 
 [tool.poetry.group.debian.dependencies]
 pymupdf = "1.24.11" # Last version to support python 3.8 (needed for Ubuntu Focal support)

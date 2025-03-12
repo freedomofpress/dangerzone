@@ -162,7 +162,7 @@ class TestBase:
     sample_doc = str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
 
 
-def pytest_addoption(parser):
+def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption(
         "--generate-reference-pdfs",
         action="store_true",
@@ -171,7 +171,9 @@ def pytest_addoption(parser):
     )
 
 
-def pytest_collection_modifyitems(config, items):
+def pytest_collection_modifyitems(
+    config: pytest.Config, items: List[pytest.Item]
+) -> None:
     if not config.getoption("--generate-reference-pdfs"):
         skip_generator = pytest.mark.skip(
             reason="Only run when --generate-reference-pdfs is provided"

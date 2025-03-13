@@ -22,6 +22,8 @@ Follow the instructions for each platform:
 * [Qubes OS (beta)](https://github.com/freedomofpress/dangerzone/blob/v0.8.0/INSTALL.md#qubes-os)
 * [Tails](https://github.com/freedomofpress/dangerzone/blob/v0.8.1/INSTALL.md#tails)
 
+You can read more about our operating system support [here](https://github.com/freedomofpress/dangerzone/blob/v0.8.1/INSTALL.md#operating-system-support).
+
 ## Some features
 
 - Sandboxes don't have network access, so if a malicious document can compromise one, it can't phone home

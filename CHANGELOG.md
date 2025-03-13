@@ -10,6 +10,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Platform support: Drop support for Ubuntu Focal, since it's nearing end-of-life ([#1018](https://github.com/freedomofpress/dangerzone/issues/1018))
 - Platform support: Add support for Fedora 42 ([#1091](https://github.com/freedomofpress/dangerzone/issues/1091))
 - Platform support: Add support for Ubuntu 25.04 (Plucky Puffin)([#1090](https://github.com/freedomofpress/dangerzone/issues/1090))
+- Document Operating System support [#986](https://github.com/freedomofpress/dangerzone/issues/986)
 
 ## [0.8.1](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...0.8.0)
 

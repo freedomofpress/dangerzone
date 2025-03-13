@@ -1,4 +1,34 @@
+## Operating system support
+
+Dangerzone can run on a varieties of Operating systems, and have automated tests for a subset of them.
+This section explains what is the support you should expect from us.
+
+You can find general support information in this table, and more details in the following sections.
+
+(Unless specified, the architecture is AMD64)
+
+| Distribution | Supported versions        | Automated tests        | Manual QA         |
+| ------------ | ------------------------- | ---------------------- | ----------------- |
+| Windows      | 3 last releases           | Last release only      | Last version only |
+| macOS intel  | 3 last releases           | Last release only      | Last release only |
+| macOS ARM    | 3 last releases           | Last release only      | Last release only |
+| Ubuntu       | Follow upstream support ✰ | 🗹                      | 🗹                |
+| Debian       | Current stable, Oldstable and LTS releases | 🗹     | 🗹                |
+| Fedora       | Follow upstream support   | 🗹                      | 🗹                |
+| Qubes OS     | [Beta support](https://github.com/freedomofpress/dangerzone/issues/413) ✢ | 🗷 | Latest Fedora template |
+| Tails        | Only the latest version   | 🗷 | Last release only |
+
+Notes:
+
+✰ Support for Ubuntu Focal [was dropped](https://github.com/freedomofpress/dangerzone/issues/1018)
+
+✢ Qubes OS support is done via the use of other OSes (e.g. Fedora or Debian) for the VMs, so the versions we support are tied to them.
+
 ## MacOS
+
+We support the versions of macOS that are still within Apple's servicing timeline. Apple usually provides security updates for the latest 3 releases, but this isn’t consistently applied and security fixes aren’t guaranteed for the non-latest releases.
+
+We have automated tests for the latest version of macOS only.
 
 - Download [Dangerzone 0.8.1 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1-arm64.dmg)
 - Download [Dangerzone 0.8.1 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1-i686.dmg)
@@ -11,6 +41,12 @@ You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `bre
 
 ## Windows
 
+We generally support the versions of Windows that are still within [Microsoft’s servicing timeline](https://support.microsoft.com/en-us/help/13853/windows-lifecycle-fact-sheet).
+
+For Windows, Docker sets the bottom line:
+
+> Docker only supports Docker Desktop on Windows for those versions of Windows that are still within [Microsoft’s servicing timeline](https://support.microsoft.com/en-us/help/13853/windows-lifecycle-fact-sheet). Docker Desktop is not supported on server versions of Windows, such as Windows Server 2019 or Windows Server 2022. 
+
 - Download [Dangerzone 0.8.1 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1.msi)
 
 > **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
@@ -18,10 +54,18 @@ You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `bre
 > create the secure environment.
 
 ## Linux
+
+We support Ubuntu, Debian, and Fedora versions that are still within their respective servicing timelines, with a few twists:
+
+- Ubuntu: We follow upstream support with an extra cutoff date. No support for versions prior to the second oldest LTS release. 
+- Fedora: We follow upstream support
+- Debian: current stable, oldstable and LTS releases.
+
 On Linux, Dangerzone uses [Podman](https://podman.io/) instead of Docker Desktop for creating
 an isolated environment. It will be installed automatically when installing Dangerzone.
 
 Dangerzone is available for:
+
 - Ubuntu 24.10 (oracular)
 - Ubuntu 24.04 (noble)
 - Ubuntu 22.04 (jammy)

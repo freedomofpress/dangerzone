@@ -141,7 +141,7 @@ RUN dnf install -y python3.12
 # FIXME: Install Poetry on Fedora via package manager.
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
 RUN dnf install -y git rpm-build podman python3 python3-devel python3-poetry-core \
-    pipx make qt6-qtbase-gui \
+    pipx make qt6-qtbase-gui gcc gcc-c++\
     && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.

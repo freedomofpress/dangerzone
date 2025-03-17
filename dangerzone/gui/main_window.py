@@ -3,6 +3,7 @@ import os
 import platform
 import tempfile
 import typing
+from multiprocessing import freeze_support
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import List, Optional
@@ -1220,6 +1221,9 @@ class DocumentsListWidget(QtWidgets.QListWidget):
     def start_conversion(self) -> None:
         if not self.thread_pool_initized:
             max_jobs = self.dangerzone.isolation_provider.get_max_parallel_conversions()
+            # Call freeze_support() to avoid passing unknown options to the subprocess.
+            # See https://github.com/freedomofpress/dangerzone/issues/873
+            freeze_support()
             self.thread_pool = ThreadPool(max_jobs)
 
         for doc in self.docs_list:

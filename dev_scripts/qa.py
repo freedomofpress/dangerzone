@@ -327,28 +327,6 @@ sudo dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
     pipx qt6-qtbase-gui
 ```
 
-<table>
-  <tr>
-      <td>
-<details>
-  <summary><i>:memo: Expand this section if you are on Fedora 41.</i></summary>
-  </br>
-
-  The default Python version that ships with Fedora 41 (3.13) is not
-  compatible with PySide6, which requires Python 3.12 or earlier.
-
-  You can install Python 3.12 using the `python3.12` package.
-
-  ```bash
-  sudo dnf install -y python3.12
-  ```
-
-  Poetry will automatically pick up the correct version when running.
-</details>
-    </td>
-  </tr>
-</table>
-
 Install Poetry using `pipx`:
 
 ```sh
@@ -1042,6 +1020,10 @@ class QAFedora(QALinux):
         self.container_run(
             "./dangerzone/install/linux/build-rpm.py",
         )
+
+
+class QAFedora42(QAFedora):
+    VERSION = "42"
 
 
 class QAFedora41(QAFedora):

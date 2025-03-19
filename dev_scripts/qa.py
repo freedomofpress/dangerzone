@@ -1005,6 +1005,11 @@ class QAUbuntu2410(QADebianBased):
     VERSION = "24.10"
 
 
+class QAUbuntu2504(QADebianBased):
+    DISTRO = "ubuntu"
+    VERSION = "25.04"
+
+
 class QAFedora(QALinux):
     """Base class for Fedora distros.
 

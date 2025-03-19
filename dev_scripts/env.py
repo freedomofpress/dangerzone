@@ -551,6 +551,8 @@ class Env:
                 "noble",
                 "24.10",
                 "ocular",
+                "25.04",
+                "plucky",
             ):
                 install_deps = (
                     DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
@@ -610,6 +612,8 @@ class Env:
                 "noble",
                 "24.10",
                 "ocular",
+                "25.04",
+                "plucky",
             ):
                 install_deps = DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS
             package_pattern = f"dangerzone_{version}-*_*.deb"

@@ -22,6 +22,7 @@ On Linux, Dangerzone uses [Podman](https://podman.io/) instead of Docker Desktop
 an isolated environment. It will be installed automatically when installing Dangerzone.
 
 Dangerzone is available for:
+- Ubuntu 25.04 (plucky)
 - Ubuntu 24.10 (oracular)
 - Ubuntu 24.04 (noble)
 - Ubuntu 22.04 (jammy)

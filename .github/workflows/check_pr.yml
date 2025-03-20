@@ -31,5 +31,6 @@ jobs:
         shell: bash
         run: |
           if git diff --exit-code "origin/${BASE_REF}" -- CHANGELOG.md; then
-              echo "::warning::No CHANGELOG.md modifications were found in this pull request."
+              echo "::error::No CHANGELOG.md modifications were found in this pull request."
+              return -1;
           fi

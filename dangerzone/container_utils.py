@@ -5,6 +5,7 @@ import subprocess
 from typing import List, Tuple
 
 from . import errors
+from .settings import Settings
 from .util import get_resource_path, get_subprocess_startupinfo
 
 CONTAINER_NAME = "dangerzone.rocks/dangerzone"

@@ -17,6 +17,7 @@ Here is a list of tasks that should be done before issuing the release:
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
 - [ ] [Bump the minimum Docker Desktop versions](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#bump-the-minimum-docker-desktop-version) in `isolation_provider/container.py`
 - [ ] Bump the dates and versions in the `Dockerfile`
+- [ ] Update the download links in our `INSTALL.md` page to point to the new version (the download links will be populated after the release)
 - [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
 - [ ] A draft release should be created. Copy the release notes text from the template at [`docs/templates/release-notes`](https://github.com/freedomofpress/dangerzone/tree/main/docs/templates/)
@@ -340,7 +341,7 @@ To publish the release, you can follow these steps:
 
 - [ ] Update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers.
 - [ ] Update the brew cask release of Dangerzone with a [PR like this one](https://github.com/Homebrew/homebrew-cask/pull/116319)
-- [ ] Update version and download links in `README.md`
+- [ ] Update version and links to our installation instructions (`INSTALL.md`) in `README.md`
 
 ## Post-release
 

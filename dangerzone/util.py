@@ -1,9 +1,9 @@
-import pathlib
 import platform
 import subprocess
 import sys
 import traceback
 import unicodedata
+from pathlib import Path
 
 try:
     import platformdirs
@@ -11,40 +11,39 @@ except ImportError:
     import appdirs as platformdirs
 
 
-def get_config_dir() -> str:
-    return platformdirs.user_config_dir("dangerzone")
+def get_config_dir() -> Path:
+    return Path(platformdirs.user_config_dir("dangerzone"))
 
 
-def get_resource_path(filename: str) -> str:
+def get_resource_path(filename: str) -> Path:
     if getattr(sys, "dangerzone_dev", False):
         # Look for resources directory relative to python file
-        project_root = pathlib.Path(__file__).parent.parent
+        project_root = Path(__file__).parent.parent
         prefix = project_root / "share"
     else:
         if platform.system() == "Darwin":
-            bin_path = pathlib.Path(sys.executable)
+            bin_path = Path(sys.executable)
             app_path = bin_path.parent.parent
             prefix = app_path / "Resources" / "share"
         elif platform.system() == "Linux":
-            prefix = pathlib.Path(sys.prefix) / "share" / "dangerzone"
+            prefix = Path(sys.prefix) / "share" / "dangerzone"
         elif platform.system() == "Windows":
-            exe_path = pathlib.Path(sys.executable)
+            exe_path = Path(sys.executable)
             dz_install_path = exe_path.parent
             prefix = dz_install_path / "share"
         else:
             raise NotImplementedError(f"Unsupported system {platform.system()}")
-    resource_path = prefix / filename
-    return str(resource_path)
+    return prefix / filename
 
 
-def get_tessdata_dir() -> pathlib.Path:
+def get_tessdata_dir() -> Path:
     if getattr(sys, "dangerzone_dev", False) or platform.system() in (
         "Windows",
         "Darwin",
     ):
         # Always use the tessdata path from the Dangerzone ./share directory, for
         # development builds, or in Windows/macOS platforms.
-        return pathlib.Path(get_resource_path("tessdata"))
+        return get_resource_path("tessdata")
 
     # In case of Linux systems, grab the Tesseract data from any of the following
     # locations. We have found some of the locations through trial and error, whereas
@@ -55,11 +54,11 @@ def get_tessdata_dir() -> pathlib.Path:
     #
     # [1] https://tesseract-ocr.github.io/tessdoc/Installation.html
     tessdata_dirs = [
-        pathlib.Path("/usr/share/tessdata/"),  # on some Debian
-        pathlib.Path("/usr/share/tesseract/tessdata/"),  # on Fedora
-        pathlib.Path("/usr/share/tesseract-ocr/tessdata/"),  # ? (documented)
-        pathlib.Path("/usr/share/tesseract-ocr/4.00/tessdata/"),  # on Debian Bullseye
-        pathlib.Path("/usr/share/tesseract-ocr/5/tessdata/"),  # on Debian Trixie
+        Path("/usr/share/tessdata/"),  # on some Debian
+        Path("/usr/share/tesseract/tessdata/"),  # on Fedora
+        Path("/usr/share/tesseract-ocr/tessdata/"),  # ? (documented)
+        Path("/usr/share/tesseract-ocr/4.00/tessdata/"),  # on Debian Bullseye
+        Path("/usr/share/tesseract-ocr/5/tessdata/"),  # on Debian Trixie
     ]
 
     for dir in tessdata_dirs:
@@ -71,7 +70,7 @@ def get_tessdata_dir() -> pathlib.Path:
 
 def get_version() -> str:
     try:
-        with open(get_resource_path("version.txt")) as f:
+        with get_resource_path("version.txt").open() as f:
             version = f.read().strip()
     except FileNotFoundError:
         # In dev mode, in Windows, get_resource_path doesn't work properly for the container, but luckily

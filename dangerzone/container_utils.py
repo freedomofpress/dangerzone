@@ -121,7 +121,7 @@ def delete_image_tag(tag: str) -> None:
 
 def get_expected_tag() -> str:
     """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
-    with open(get_resource_path("image-id.txt")) as f:
+    with get_resource_path("image-id.txt").open() as f:
         return f.read().strip()
 
 
@@ -130,7 +130,7 @@ def load_image_tarball() -> None:
     tarball_path = get_resource_path("container.tar")
     try:
         res = subprocess.run(
-            [get_runtime(), "load", "-i", tarball_path],
+            [get_runtime(), "load", "-i", str(tarball_path)],
             startupinfo=get_subprocess_startupinfo(),
             capture_output=True,
             check=True,

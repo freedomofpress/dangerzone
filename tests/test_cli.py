@@ -209,6 +209,10 @@ class TestCliConversion(TestCliBasic):
         result = self.run_cli([str(doc), "--output-filename", str(destination)])
         result.assert_success()
 
+        # Do not check against reference versions when using a dummy isolation provider
+        if os.environ.get("DUMMY_CONVERSION", False):
+            return
+
         converted = fitz.open(destination)
         ref = fitz.open(reference)
         errors = []

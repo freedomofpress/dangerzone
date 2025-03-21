@@ -23,16 +23,13 @@ class DangerzoneCore(object):
         # Initialize terminal colors
         colorama.init(autoreset=True)
 
-        # App data folder
-        self.appdata_path = util.get_config_dir()
-
         # Languages supported by tesseract
         with get_resource_path("ocr-languages.json").open("r") as f:
             unsorted_ocr_languages = json.load(f)
             self.ocr_languages = dict(sorted(unsorted_ocr_languages.items()))
 
         # Load settings
-        self.settings = Settings(self)
+        self.settings = Settings()
         self.documents: List[Document] = []
         self.isolation_provider = isolation_provider
 

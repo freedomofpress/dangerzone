@@ -122,7 +122,7 @@ test_docs_compressed_dir = Path(__file__).parent.joinpath(SAMPLE_COMPRESSED_DIRE
 
 test_docs = [
     p
-    for p in test_docs_dir.rglob("*")
+    for p in test_docs_dir.glob("*")
     if p.is_file()
     and not (p.name.endswith(SAFE_EXTENSION) or p.name.startswith("sample_bad"))
 ]
@@ -160,3 +160,31 @@ def for_each_external_doc(glob_pattern: str = "*") -> Callable:
 
 class TestBase:
     sample_doc = str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line(
+        "markers",
+        "env(reference-generator): Used to mark the test cases that regenerate reference documents",
+    )
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--generate-reference-pdfs",
+        action="store_true",
+        default=False,
+        help="Regenerate reference PDFs",
+    )
+
+
+def pytest_collection_modifyitems(
+    config: pytest.Config, items: List[pytest.Item]
+) -> None:
+    if not config.getoption("--generate-reference-pdfs"):
+        skip_generator = pytest.mark.skip(
+            reason="Only run when --generate-reference-pdfs is provided"
+        )
+        for item in items:
+            if "reference_generator" in item.keywords:
+                item.add_marker(skip_generator)

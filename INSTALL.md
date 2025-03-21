@@ -1,7 +1,41 @@
+## Operating System support
+
+Dangerzone can run on various Operating Systems (OS), and has automated tests
+for most of them.
+This section explains which OS we support, how long we support each version, and
+how do we test Dangerzone against these.
+
+You can find general support information in this table, and more details in the
+following sections.
+
+(Unless specified, the architecture of the OS is AMD64)
+
+| Distribution  | Supported releases        | Automated tests        | Manual QA |
+| ------------  | ------------------------- | ---------------------- | --------- |
+| Windows       | 2 last releases           | 🗹 (`windows-latest`) ◎ | 🗹         |
+| macOS intel   | 3 last releases           | 🗹 (`macos-13`) ◎       | 🗹         |
+| macOS silicon | 3 last releases           | 🗹 (`macos-latest`) ◎   | 🗹         |
+| Ubuntu        | Follow upstream support ✰ | 🗹                      | 🗹         |
+| Debian        | Current stable, Oldstable and LTS releases | 🗹     | 🗹         |
+| Fedora        | Follow upstream support   | 🗹                      | 🗹         |
+| Qubes OS      | [Beta support](https://github.com/freedomofpress/dangerzone/issues/413) ✢ | 🗷 | Latest Fedora template |
+| Tails         | Only the last release   | 🗷 | Last release only |
+
+Notes:
+
+✰ Support for Ubuntu Focal [was dropped](https://github.com/freedomofpress/dangerzone/issues/1018)
+
+✢ Qubes OS support assumes the use of a Fedora template. The supported releases follow our general support for Fedora.
+
+◎ More information about where that points [in the runner-images repository](https://github.com/actions/runner-images/tree/main)
+
 ## MacOS
 
 - Download [Dangerzone 0.8.1 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1-arm64.dmg)
 - Download [Dangerzone 0.8.1 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1-i686.dmg)
+
+> [!TIP]
+> We support the releases of macOS that are still within Apple's servicing timeline. Apple usually provides security updates for the latest 3 releases, but this isn’t consistently applied and security fixes aren’t guaranteed for the non-latest releases. We are also dependent on [Docker Desktop windows support](https://docs.docker.com/desktop/setup/install/mac-install/)
 
 You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`
 
@@ -17,11 +51,30 @@ You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `bre
 > This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
 > create the secure environment.
 
+> [!TIP]
+> We generally support Windows releases that are still within [Microsoft’s servicing timeline](https://support.microsoft.com/en-us/help/13853/windows-lifecycle-fact-sheet).
+> 
+> Docker sets the bottom line:
+>
+> > Docker only supports Docker Desktop on Windows for those versions of Windows that are still within [Microsoft’s servicing timeline](https://support.microsoft.com/en-us/help/13853/windows-lifecycle-fact-sheet). Docker Desktop is not supported on server versions of Windows, such as Windows Server 2019 or Windows Server 2022. 
+
+
 ## Linux
+
 On Linux, Dangerzone uses [Podman](https://podman.io/) instead of Docker Desktop for creating
 an isolated environment. It will be installed automatically when installing Dangerzone.
 
+> [!TIP]
+> We support Ubuntu, Debian, and Fedora releases that are still within
+> their respective servicing timelines, with a few twists:
+>
+> - Ubuntu: We follow upstream support with an extra cutoff date. No support for
+>   versions prior to the second oldest LTS release.
+> - Fedora: We follow upstream support
+> - Debian: current stable, oldstable and LTS releases.
+
 Dangerzone is available for:
+
 - Ubuntu 25.04 (plucky)
 - Ubuntu 24.10 (oracular)
 - Ubuntu 24.04 (noble)
@@ -29,6 +82,7 @@ Dangerzone is available for:
 - Debian 13 (trixie)
 - Debian 12 (bookworm)
 - Debian 11 (bullseye)
+- Fedora 42
 - Fedora 41
 - Fedora 40
 - Tails

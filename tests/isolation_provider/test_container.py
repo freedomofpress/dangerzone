@@ -74,7 +74,7 @@ class TestContainer(IsolationProviderTest):
                 container_utils.get_runtime(),
                 "load",
                 "-i",
-                get_resource_path("container.tar"),
+                get_resource_path("container.tar").absolute(),
             ],
             returncode=-1,
         )
@@ -113,7 +113,7 @@ class TestContainer(IsolationProviderTest):
                 container_utils.get_runtime(),
                 "load",
                 "-i",
-                get_resource_path("container.tar"),
+                get_resource_path("container.tar").absolute(),
             ],
         )
         with pytest.raises(errors.ImageNotPresentException):

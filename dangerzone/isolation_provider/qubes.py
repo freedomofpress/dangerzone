@@ -130,7 +130,6 @@ def is_qubes_native_conversion() -> bool:
         # This disambiguates if it is running a Qubes targetted build or not
         # (Qubes-specific builds don't ship the container image)
 
-        container_image_path = get_resource_path("container.tar")
-        return not os.path.exists(container_image_path)
+        return not get_resource_path("container.tar").exists()
     else:
         return False

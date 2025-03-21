@@ -27,7 +27,7 @@ class DangerzoneCore(object):
         self.appdata_path = util.get_config_dir()
 
         # Languages supported by tesseract
-        with open(get_resource_path("ocr-languages.json"), "r") as f:
+        with get_resource_path("ocr-languages.json").open("r") as f:
             unsorted_ocr_languages = json.load(f)
             self.ocr_languages = dict(sorted(unsorted_ocr_languages.items()))
 

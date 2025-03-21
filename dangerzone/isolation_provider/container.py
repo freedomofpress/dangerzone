@@ -64,7 +64,7 @@ class Container(IsolationProvider):
         #
         # [1] https://github.com/freedomofpress/dangerzone/issues/846
         # [2] https://github.com/containers/common/blob/d3283f8401eeeb21f3c59a425b5461f069e199a7/pkg/seccomp/seccomp.json
-        seccomp_json_path = get_resource_path("seccomp.gvisor.json")
+        seccomp_json_path = str(get_resource_path("seccomp.gvisor.json"))
         security_args += ["--security-opt", f"seccomp={seccomp_json_path}"]
 
         security_args += ["--cap-drop", "all"]

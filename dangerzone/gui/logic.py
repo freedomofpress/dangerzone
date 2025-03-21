@@ -63,7 +63,7 @@ class DangerzoneGui(DangerzoneCore):
             path = get_resource_path("dangerzone.ico")
         else:
             path = get_resource_path("icon.png")
-        return QtGui.QIcon(path)
+        return QtGui.QIcon(str(path))
 
     def open_pdf_viewer(self, filename: str) -> None:
         if platform.system() == "Darwin":
@@ -252,7 +252,7 @@ class Alert(Dialog):
     def create_layout(self) -> QtWidgets.QBoxLayout:
         logo = QtWidgets.QLabel()
         logo.setPixmap(
-            QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("icon.png")))
+            QtGui.QPixmap.fromImage(QtGui.QImage(str(get_resource_path("icon.png"))))
         )
 
         label = QtWidgets.QLabel()

@@ -62,7 +62,7 @@ def load_svg_image(filename: str, width: int, height: int) -> QtGui.QPixmap:
     This answer is basically taken from: https://stackoverflow.com/a/25689790
     """
     path = get_resource_path(filename)
-    svg_renderer = QtSvg.QSvgRenderer(path)
+    svg_renderer = QtSvg.QSvgRenderer(str(path))
     image = QtGui.QImage(width, height, QtGui.QImage.Format_ARGB32)
     # Set the ARGB to 0 to prevent rendering artifacts
     image.fill(0x00000000)
@@ -130,9 +130,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Header
         logo = QtWidgets.QLabel()
-        logo.setPixmap(
-            QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("icon.png")))
-        )
+        icon_path = str(get_resource_path("icon.png"))
+        logo.setPixmap(QtGui.QPixmap.fromImage(QtGui.QImage(icon_path)))
         header_label = QtWidgets.QLabel("Dangerzone")
         header_label.setFont(self.dangerzone.fixed_font)
         header_label.setStyleSheet("QLabel { font-weight: bold; font-size: 50px; }")
@@ -1306,7 +1305,7 @@ class DocumentWidget(QtWidgets.QWidget):
 
     def load_status_image(self, filename: str) -> QtGui.QPixmap:
         path = get_resource_path(filename)
-        img = QtGui.QImage(path)
+        img = QtGui.QImage(str(path))
         image = QtGui.QPixmap.fromImage(img)
         return image.scaled(QtCore.QSize(15, 15))
 

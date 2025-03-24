@@ -1,4 +1,5 @@
 import logging
+import os
 import platform
 import shutil
 import subprocess
@@ -26,6 +27,11 @@ def get_runtime() -> str:
     container_tech = get_runtime_name()
     runtime = shutil.which(container_tech)
     if runtime is None:
+        # Fallback to the container runtime path from the settings
+        settings = Settings()
+        runtime_path = settings.get("container_runtime_path")
+        if os.path.exists(runtime_path):
+            return runtime_path
         raise errors.NoContainerTechException(container_tech)
     return runtime
 

@@ -143,7 +143,10 @@ class Container(IsolationProvider):
     def check_docker_desktop_version(self) -> Tuple[bool, str]:
         # On windows and darwin, check that the minimum version is met
         version = ""
-        if platform.system() != "Linux":
+        runtime_is_docker = container_utils.get_runtime_name() == "docker"
+        platform_is_not_linux = platform.system() != "Linux"
+
+        if runtime_is_docker and platform_is_not_linux:
             with subprocess.Popen(
                 ["docker", "version", "--format", "{{.Server.Platform.Name}}"],
                 stdout=subprocess.PIPE,

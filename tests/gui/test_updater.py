@@ -15,7 +15,6 @@ from dangerzone.gui import updater as updater_module
 from dangerzone.gui.updater import UpdateReport, UpdaterThread
 from dangerzone.util import get_version
 
-from ..test_settings import default_settings_0_4_1, save_settings
 from .conftest import generate_isolated_updater
 
 
@@ -27,7 +26,7 @@ def default_updater_settings() -> dict:
     """
     return {
         key: val
-        for key, val in settings.Settings.generate_default_settings().items()
+        for key, val in settings.generate_default_settings().items()
         if key.startswith("updater_")
     }
 
@@ -43,13 +42,15 @@ def test_default_updater_settings(updater: UpdaterThread) -> None:
 
     This test is mostly a sanity check.
     """
-    assert (
-        updater.dangerzone.settings.get_updater_settings() == default_updater_settings()
-    )
+    assert settings.get_updater_settings() == default_updater_settings()
 
 
 def test_pre_0_4_2_settings(
-    tmp_path: Path, monkeypatch: MonkeyPatch, mocker: MockerFixture
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+    mocker: MockerFixture,
+    mock_settings: Path,
+    default_settings_0_4_1: dict,
 ) -> None:
     """Check settings of installations prior to 0.4.2.
 
@@ -57,11 +58,10 @@ def test_pre_0_4_2_settings(
     will automatically get the default updater settings, even though they never existed
     in their settings.json file.
     """
-    save_settings(tmp_path, default_settings_0_4_1())
+    settings.SETTINGS = default_settings_0_4_1
+    settings.save()
     updater = generate_isolated_updater(tmp_path, monkeypatch, mocker)
-    assert (
-        updater.dangerzone.settings.get_updater_settings() == default_updater_settings()
-    )
+    assert settings.get_updater_settings() == default_updater_settings()
 
 
 def test_post_0_4_2_settings(
@@ -75,9 +75,8 @@ def test_post_0_4_2_settings(
     erroneously prompted to a version they already have.
     """
     # Store the settings of Dangerzone 0.4.2 to the filesystem.
-    old_settings = settings.Settings.generate_default_settings()
-    old_settings["updater_latest_version"] = "0.4.2"
-    save_settings(tmp_path, old_settings)
+    settings.SETTINGS = settings.generate_default_settings()
+    settings.set("updater_latest_version", "0.4.2", autosave=True)
 
     # Mimic an upgrade to version 0.4.3, by making Dangerzone report that the current
     # version is 0.4.3.
@@ -89,19 +88,17 @@ def test_post_0_4_2_settings(
 
     # Ensure that the Settings class will correct the latest version field to 0.4.3.
     updater = generate_isolated_updater(tmp_path, monkeypatch, mocker)
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    assert settings.get_updater_settings() == expected_settings
 
     # Simulate an updater check that found a newer Dangerzone version (e.g., 0.4.4).
     expected_settings["updater_latest_version"] = "0.4.4"
-    updater.dangerzone.settings.set(
-        "updater_latest_version", expected_settings["updater_latest_version"]
-    )
-    updater.dangerzone.settings.save()
+    settings.set("updater_latest_version", expected_settings["updater_latest_version"])
+    settings.save()
 
     # Ensure that the Settings class will leave the "updater_latest_version" field
     # intact the next time we reload the settings.
-    updater.dangerzone.settings.load()
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    settings.load()
+    assert settings.get_updater_settings() == expected_settings
 
 
 @pytest.mark.skipif(platform.system() != "Linux", reason="Linux-only test")
@@ -115,7 +112,7 @@ def test_linux_no_check(updater: UpdaterThread, monkeypatch: MonkeyPatch) -> Non
     monkeypatch.delattr(sys, "dangerzone_dev")
 
     assert updater.should_check_for_updates() is False
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    assert settings.get_updater_settings() == expected_settings
 
 
 def test_user_prompts(
@@ -130,7 +127,7 @@ def test_user_prompts(
     expected_settings["updater_check"] = None
     expected_settings["updater_last_check"] = 0
     assert updater.should_check_for_updates() is False
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    assert settings.get_updater_settings() == expected_settings
 
     # Second run
     #
@@ -144,14 +141,14 @@ def test_user_prompts(
     prompt_mock().launch.return_value = False  # type: ignore [attr-defined]
     expected_settings["updater_check"] = False
     assert updater.should_check_for_updates() is False
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    assert settings.get_updater_settings() == expected_settings
 
     # Reset the "updater_check" field and check enabling update checks.
-    updater.dangerzone.settings.set("updater_check", None)
+    settings.set("updater_check", None)
     prompt_mock().launch.return_value = True  # type: ignore [attr-defined]
     expected_settings["updater_check"] = True
     assert updater.should_check_for_updates() is True
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    assert settings.get_updater_settings() == expected_settings
 
     # Third run
     #
@@ -159,7 +156,7 @@ def test_user_prompts(
     # checks.
     prompt_mock().side_effect = RuntimeError("Should not be called")  # type: ignore [attr-defined]
     for check in [True, False]:
-        updater.dangerzone.settings.set("updater_check", check)
+        settings.set("updater_check", check)
         assert updater.should_check_for_updates() == check
 
 
@@ -200,8 +197,8 @@ def test_update_checks(
     assert_report_equal(report, UpdateReport(error=error_msg))
 
     # Test 4 - Check that cached version/changelog info do not trigger an update check.
-    updater.dangerzone.settings.set("updater_latest_version", "99.9.9")
-    updater.dangerzone.settings.set("updater_latest_changelog", "<p>changelog</p>")
+    settings.set("updater_latest_version", "99.9.9")
+    settings.set("updater_latest_changelog", "<p>changelog</p>")
 
     report = updater.check_for_updates()
     assert_report_equal(
@@ -211,8 +208,8 @@ def test_update_checks(
 
 def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -> None:
     """Make sure Dangerzone only checks for updates every X hours"""
-    updater.dangerzone.settings.set("updater_check", True)
-    updater.dangerzone.settings.set("updater_last_check", 0)
+    settings.set("updater_check", True)
+    settings.set("updater_last_check", 0)
 
     # Mock some functions before the tests start
     cooldown_spy = mocker.spy(updater, "_should_postpone_update_check")
@@ -233,7 +230,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
 
     report = updater.check_for_updates()
     assert cooldown_spy.spy_return is False
-    assert updater.dangerzone.settings.get("updater_last_check") == curtime
+    assert settings.get("updater_last_check") == curtime
     assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
 
     # Test 2: Advance the current time by 1 second, and ensure that no update will take
@@ -242,12 +239,12 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     curtime += 1
     timestamp_mock.return_value = curtime
     requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
-    updater.dangerzone.settings.set("updater_latest_version", get_version())
-    updater.dangerzone.settings.set("updater_latest_changelog", None)
+    settings.set("updater_latest_version", get_version())
+    settings.set("updater_latest_changelog", None)
 
     report = updater.check_for_updates()
     assert cooldown_spy.spy_return is True
-    assert updater.dangerzone.settings.get("updater_last_check") == curtime - 1  # type: ignore [unreachable]
+    assert settings.get("updater_last_check") == curtime - 1  # type: ignore [unreachable]
     assert_report_equal(report, UpdateReport())
 
     # Test 3: Advance the current time by <cooldown period> seconds. Ensure that
@@ -258,14 +255,14 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
 
     report = updater.check_for_updates()
     assert cooldown_spy.spy_return is False
-    assert updater.dangerzone.settings.get("updater_last_check") == curtime
+    assert settings.get("updater_last_check") == curtime
     assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
 
     # Test 4: Make Dangerzone check for updates again, but this time, it should
     # encounter an error while doing so. In that case, the last check timestamp
     # should be bumped, so that subsequent checks don't take place.
-    updater.dangerzone.settings.set("updater_latest_version", get_version())
-    updater.dangerzone.settings.set("updater_latest_changelog", None)
+    settings.set("updater_latest_version", get_version())
+    settings.set("updater_latest_changelog", None)
 
     curtime += updater_module.UPDATE_CHECK_COOLDOWN_SECS
     timestamp_mock.return_value = curtime
@@ -273,7 +270,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
 
     report = updater.check_for_updates()
     assert cooldown_spy.spy_return is False
-    assert updater.dangerzone.settings.get("updater_last_check") == curtime
+    assert settings.get("updater_last_check") == curtime
     error_msg = (
         f"Encountered an exception while checking {updater.GH_RELEASE_URL}: failed"
     )
@@ -375,7 +372,7 @@ def test_update_check_prompt(
 ) -> None:
     """Test that the prompt to enable update checks works properly."""
     # Force Dangerzone to check immediately for updates
-    qt_updater.dangerzone.settings.set("updater_last_check", 0)
+    qt_settings.set("updater_last_check", 0)
 
     # Test 1 - Check that on the second run of Dangerzone, the user is prompted to
     # choose if they want to enable update checks.

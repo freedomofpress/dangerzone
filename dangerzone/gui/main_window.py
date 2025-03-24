@@ -8,6 +8,8 @@ from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import List, Optional
 
+from .. import settings
+
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
@@ -163,9 +165,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toggle_updates_action = hamburger_menu.addAction("Check for updates")
         self.toggle_updates_action.triggered.connect(self.toggle_updates_triggered)
         self.toggle_updates_action.setCheckable(True)
-        self.toggle_updates_action.setChecked(
-            bool(self.dangerzone.settings.get("updater_check"))
-        )
+        self.toggle_updates_action.setChecked(bool(settings.get("updater_check")))
 
         # Add the "Exit" action
         hamburger_menu.addSeparator()
@@ -231,8 +231,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def show_update_success(self) -> None:
         """Inform the user about a new Dangerzone release."""
-        version = self.dangerzone.settings.get("updater_latest_version")
-        changelog = self.dangerzone.settings.get("updater_latest_changelog")
+        version = settings.get("updater_latest_version")
+        changelog = settings.get("updater_latest_changelog")
 
         changelog_widget = CollapsibleBox("What's New?")
         changelog_layout = QtWidgets.QVBoxLayout()
@@ -277,8 +277,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def toggle_updates_triggered(self) -> None:
         """Change the underlying update check settings based on the user's choice."""
         check = self.toggle_updates_action.isChecked()
-        self.dangerzone.settings.set("updater_check", check)
-        self.dangerzone.settings.save()
+        settings.set("updater_check", check)
+        settings.save()
 
     def handle_docker_desktop_version_check(
         self, is_version_valid: bool, version: str
@@ -328,16 +328,16 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         # If there are no new updates, reset the error counter (if any) and return.
         if report.empty():
-            self.dangerzone.settings.set("updater_errors", 0, autosave=True)
+            settings.set("updater_errors", 0, autosave=True)
             return
 
         hamburger_menu = self.hamburger_button.menu()
 
         if report.error:
             log.error(f"Encountered an error during an update check: {report.error}")
-            errors = self.dangerzone.settings.get("updater_errors") + 1
-            self.dangerzone.settings.set("updater_errors", errors)
-            self.dangerzone.settings.save()
+            errors = settings.get("updater_errors") + 1
+            settings.set("updater_errors", errors)
+            settings.save()
             self.updater_error = report.error
 
             # If we encounter more than three errors in a row, show a red notification
@@ -369,13 +369,13 @@ class MainWindow(QtWidgets.QMainWindow):
             hamburger_menu.insertAction(sep, error_action)
         else:
             log.debug(f"Handling new version: {report.version}")
-            self.dangerzone.settings.set("updater_latest_version", report.version)
-            self.dangerzone.settings.set("updater_latest_changelog", report.changelog)
-            self.dangerzone.settings.set("updater_errors", 0)
+            settings.set("updater_latest_version", report.version)
+            settings.set("updater_latest_changelog", report.changelog)
+            settings.set("updater_errors", 0)
 
             # FIXME: Save the settings to the filesystem only when they have really changed,
             # maybe with a dirty bit.
-            self.dangerzone.settings.save()
+            settings.save()
 
             self.hamburger_button.setIcon(
                 QtGui.QIcon(
@@ -985,39 +985,37 @@ class SettingsWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
         # Load values from settings
-        if self.dangerzone.settings.get("save"):
+        if settings.get("save"):
             self.save_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
             self.save_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-        if self.dangerzone.settings.get("safe_extension"):
-            self.safe_extension.setText(self.dangerzone.settings.get("safe_extension"))
+        if settings.get("safe_extension"):
+            self.safe_extension.setText(settings.get("safe_extension"))
         else:
             self.safe_extension.setText(SAFE_EXTENSION)
 
-        if self.dangerzone.settings.get("archive"):
+        if settings.get("archive"):
             self.radio_move_untrusted.setChecked(True)
         else:
             self.radio_save_to.setChecked(True)
 
-        if self.dangerzone.settings.get("ocr"):
+        if settings.get("ocr"):
             self.ocr_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
             self.ocr_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-        index = self.ocr_combobox.findText(self.dangerzone.settings.get("ocr_language"))
+        index = self.ocr_combobox.findText(settings.get("ocr_language"))
         if index != -1:
             self.ocr_combobox.setCurrentIndex(index)
 
-        if self.dangerzone.settings.get("open"):
+        if settings.get("open"):
             self.open_checkbox.setCheckState(QtCore.Qt.Checked)
         else:
             self.open_checkbox.setCheckState(QtCore.Qt.Unchecked)
 
         if platform.system() == "Linux":
-            index = self.open_combobox.findText(
-                self.dangerzone.settings.get("open_app")
-            )
+            index = self.open_combobox.findText(settings.get("open_app"))
             if index != -1:
                 self.open_combobox.setCurrentIndex(index)
 
@@ -1138,21 +1136,15 @@ class SettingsWidget(QtWidgets.QWidget):
                 document.output_filename = tmp
 
         # Update settings
-        self.dangerzone.settings.set(
-            "save", self.save_checkbox.checkState() == QtCore.Qt.Checked
-        )
-        self.dangerzone.settings.set("safe_extension", self.safe_extension.text())
-        self.dangerzone.settings.set("archive", self.radio_move_untrusted.isChecked())
-        self.dangerzone.settings.set(
-            "ocr", self.ocr_checkbox.checkState() == QtCore.Qt.Checked
-        )
-        self.dangerzone.settings.set("ocr_language", self.ocr_combobox.currentText())
-        self.dangerzone.settings.set(
-            "open", self.open_checkbox.checkState() == QtCore.Qt.Checked
-        )
+        settings.set("save", self.save_checkbox.checkState() == QtCore.Qt.Checked)
+        settings.set("safe_extension", self.safe_extension.text())
+        settings.set("archive", self.radio_move_untrusted.isChecked())
+        settings.set("ocr", self.ocr_checkbox.checkState() == QtCore.Qt.Checked)
+        settings.set("ocr_language", self.ocr_combobox.currentText())
+        settings.set("open", self.open_checkbox.checkState() == QtCore.Qt.Checked)
         if platform.system() == "Linux":
-            self.dangerzone.settings.set("open_app", self.open_combobox.currentText())
-        self.dangerzone.settings.save()
+            settings.set("open_app", self.open_combobox.currentText())
+        settings.save()
 
         # Start!
         self.start_clicked.emit()
@@ -1234,10 +1226,8 @@ class DocumentsListWidget(QtWidgets.QListWidget):
 
     def get_ocr_lang(self) -> Optional[str]:
         ocr_lang = None
-        if self.dangerzone.settings.get("ocr"):
-            ocr_lang = self.dangerzone.ocr_languages[
-                self.dangerzone.settings.get("ocr_language")
-            ]
+        if settings.get("ocr"):
+            ocr_lang = self.dangerzone.ocr_languages[settings.get("ocr_language")]
         return ocr_lang
 
 
@@ -1326,7 +1316,7 @@ class DocumentWidget(QtWidgets.QWidget):
             return
 
         # Open
-        if self.dangerzone.settings.get("open"):
+        if settings.get("open"):
             self.dangerzone.open_pdf_viewer(self.document.output_filename)
 
 

@@ -10,81 +10,78 @@ from .util import get_config_dir, get_version
 
 log = logging.getLogger(__name__)
 
-SETTINGS_FILENAME: str = "settings.json"
+FILENAME = get_config_dir() / "settings.json"
+
+SETTINGS: dict = {}
 
 
-class Settings:
-    settings: Dict[str, Any]
+def generate_default_settings() -> Dict[str, Any]:
+    return {
+        "save": True,
+        "archive": True,
+        "ocr": True,
+        "ocr_language": "English",
+        "open": True,
+        "open_app": None,
+        "safe_extension": SAFE_EXTENSION,
+        "updater_check": None,
+        "updater_last_check": None,  # last check in UNIX epoch (secs since 1970)
+        # FIXME: How to invalidate those if they change upstream?
+        "updater_latest_version": get_version(),
+        "updater_latest_changelog": "",
+        "updater_errors": 0,
+    }
 
-    def __init__(self) -> None:
-        self.settings_filename = get_config_dir() / SETTINGS_FILENAME
-        self.default_settings: Dict[str, Any] = self.generate_default_settings()
-        self.load()
 
-    @classmethod
-    def generate_default_settings(cls) -> Dict[str, Any]:
-        return {
-            "save": True,
-            "archive": True,
-            "ocr": True,
-            "ocr_language": "English",
-            "open": True,
-            "open_app": None,
-            "safe_extension": SAFE_EXTENSION,
-            "updater_check": None,
-            "updater_last_check": None,  # last check in UNIX epoch (secs since 1970)
-            # FIXME: How to invalidate those if they change upstream?
-            "updater_latest_version": get_version(),
-            "updater_latest_changelog": "",
-            "updater_errors": 0,
-        }
+def get(key: str) -> Any:
+    return SETTINGS[key]
 
-    def get(self, key: str) -> Any:
-        return self.settings[key]
 
-    def set(self, key: str, val: Any, autosave: bool = False) -> None:
+def set(key: str, val: Any, autosave: bool = False) -> None:
+    global SETTINGS
+    try:
+        old_val = SETTINGS.get(key)
+    except KeyError:
+        old_val = None
+    SETTINGS[key] = val
+    if autosave and val != old_val:
+        save()
+
+
+def get_updater_settings() -> Dict[str, Any]:
+    return {key: val for key, val in SETTINGS.items() if key.startswith("updater_")}
+
+
+def load() -> None:
+    global SETTINGS
+    default_settings = generate_default_settings()
+    if FILENAME.is_file() and FILENAME.exists():
+        # If the settings file exists, load it
         try:
-            old_val = self.get(key)
-        except KeyError:
-            old_val = None
-        self.settings[key] = val
-        if autosave and val != old_val:
-            self.save()
+            with FILENAME.open("r") as settings_file:
+                SETTINGS = json.load(settings_file)
 
-    def get_updater_settings(self) -> Dict[str, Any]:
-        return {
-            key: val for key, val in self.settings.items() if key.startswith("updater_")
-        }
+            # If it's missing any fields, add them from the default settings
+            for key in default_settings:
+                if key not in SETTINGS:
+                    SETTINGS[key] = default_settings[key]
+                elif key == "updater_latest_version":
+                    if version.parse(get_version()) > version.parse(get(key)):
+                        set(key, get_version())
 
-    def load(self) -> None:
-        if os.path.isfile(self.settings_filename):
-            self.settings = self.default_settings
+        except Exception:
+            log.error("Error loading settings, falling back to default")
+            SETTINGS = default_settings
 
-            # If the settings file exists, load it
-            try:
-                with open(self.settings_filename, "r") as settings_file:
-                    self.settings = json.load(settings_file)
+    else:
+        # Save with default settings
+        log.info("Settings file doesn't exist, starting with default")
+        SETTINGS = default_settings
 
-                # If it's missing any fields, add them from the default settings
-                for key in self.default_settings:
-                    if key not in self.settings:
-                        self.settings[key] = self.default_settings[key]
-                    elif key == "updater_latest_version":
-                        if version.parse(get_version()) > version.parse(self.get(key)):
-                            self.set(key, get_version())
+    save()
 
-            except Exception:
-                log.error("Error loading settings, falling back to default")
-                self.settings = self.default_settings
 
-        else:
-            # Save with default settings
-            log.info("Settings file doesn't exist, starting with default")
-            self.settings = self.default_settings
-
-        self.save()
-
-    def save(self) -> None:
-        self.settings_filename.parent.mkdir(parents=True, exist_ok=True)
-        with self.settings_filename.open("w") as settings_file:
-            json.dump(self.settings, settings_file, indent=4)
+def save() -> None:
+    FILENAME.parent.mkdir(parents=True, exist_ok=True)
+    with FILENAME.open("w") as settings_file:
+        json.dump(SETTINGS, settings_file, indent=4)

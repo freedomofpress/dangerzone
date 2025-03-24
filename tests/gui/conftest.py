@@ -30,25 +30,20 @@ def generate_isolated_updater(
     else:
         app = get_qt_app()
 
-    dummy = Dummy()
-    # XXX: We can monkey-patch global state without wrapping it in a context manager, or
-    # worrying that it will leak between tests, for two reasons:
-    #
-    # 1. Parallel tests in PyTest take place in different processes.
-    # 2. The monkeypatch fixture tears down the monkey-patch after each test ends.
-    monkeypatch.setattr(util, "get_config_dir", lambda: tmp_path)
-    dangerzone = DangerzoneGui(app, isolation_provider=dummy)
+    dangerzone = DangerzoneGui(app, isolation_provider=Dummy())
     updater = UpdaterThread(dangerzone)
     return updater
 
 
 @pytest.fixture
 def updater(
-    tmp_path: Path, monkeypatch: MonkeyPatch, mocker: MockerFixture
+    tmp_path: Path, monkeypatch: MonkeyPatch, mocker: MockerFixture, mock_settings: Path
 ) -> UpdaterThread:
     return generate_isolated_updater(tmp_path, monkeypatch, mocker)
 
 
 @pytest.fixture
-def qt_updater(tmp_path: Path, monkeypatch: MonkeyPatch) -> UpdaterThread:
+def qt_updater(
+    tmp_path: Path, monkeypatch: MonkeyPatch, mock_settings: Path
+) -> UpdaterThread:
     return generate_isolated_updater(tmp_path, monkeypatch)

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Callable, List
 
 import pytest
+from pytest_mock import MockerFixture
 
 from dangerzone.document import SAFE_EXTENSION
 from dangerzone.gui import Application
@@ -109,6 +110,26 @@ def sample_bad_width() -> str:
 @pytest.fixture
 def sample_pdf() -> str:
     return str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
+
+
+@pytest.fixture
+def mock_settings(mocker: MockerFixture, tmp_path: Path) -> Path:
+    mocker.patch("dangerzone.settings.FILENAME", tmp_path / "settings.json")
+    return tmp_path
+
+
+@pytest.fixture
+def default_settings_0_4_1() -> dict:
+    """Get the default settings for the 0.4.1 Dangerzone release."""
+    return {
+        "save": True,
+        "archive": True,
+        "ocr": True,
+        "ocr_language": "English",
+        "open": True,
+        "open_app": None,
+        "safe_extension": "-safe.pdf",
+    }
 
 
 SAMPLE_DIRECTORY = "test_docs"

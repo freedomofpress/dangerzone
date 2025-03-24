@@ -10,6 +10,8 @@ from typing import Optional
 
 from packaging import version
 
+from .. import settings
+
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtWidgets
 else:
@@ -126,11 +128,11 @@ class UpdaterThread(QtCore.QThread):
 
     @property
     def check(self) -> Optional[bool]:
-        return self.dangerzone.settings.get("updater_check")
+        return settings.get("updater_check")
 
     @check.setter
     def check(self, val: bool) -> None:
-        self.dangerzone.settings.set("updater_check", val, autosave=True)
+        settings.set("updater_check", val, autosave=True)
 
     def prompt_for_checks(self) -> Optional[bool]:
         """Ask the user if they want to be informed about Dangerzone updates."""
@@ -169,9 +171,9 @@ class UpdaterThread(QtCore.QThread):
                 return False
 
         log.debug("Checking if first run of Dangerzone")
-        if self.dangerzone.settings.get("updater_last_check") is None:
+        if settings.get("updater_last_check") is None:
             log.debug("Dangerzone is running for the first time, updates are stalled")
-            self.dangerzone.settings.set("updater_last_check", 0, autosave=True)
+            settings.set("updater_last_check", 0, autosave=True)
             return False
 
         log.debug("Checking if user has already expressed their preference")
@@ -204,7 +206,7 @@ class UpdaterThread(QtCore.QThread):
         again.
         """
         current_time = self._get_now_timestamp()
-        last_check = self.dangerzone.settings.get("updater_last_check")
+        last_check = settings.get("updater_last_check")
         if current_time < last_check + UPDATE_CHECK_COOLDOWN_SECS:
             log.debug("Cooling down update checks")
             return True
@@ -256,12 +258,12 @@ class UpdaterThread(QtCore.QThread):
         2. In GitHub, by hitting the latest releases API.
         """
         log.debug("Checking for Dangerzone updates")
-        latest_version = self.dangerzone.settings.get("updater_latest_version")
+        latest_version = settings.get("updater_latest_version")
         if version.parse(get_version()) < version.parse(latest_version):
             log.debug("Determined that there is an update due to cached results")
             return UpdateReport(
                 version=latest_version,
-                changelog=self.dangerzone.settings.get("updater_latest_changelog"),
+                changelog=settings.get("updater_latest_changelog"),
             )
 
         # If the previous check happened before the cooldown period expires, do not
@@ -271,9 +273,7 @@ class UpdaterThread(QtCore.QThread):
         if self._should_postpone_update_check():
             return UpdateReport()
         else:
-            self.dangerzone.settings.set(
-                "updater_last_check", self._get_now_timestamp(), autosave=True
-            )
+            settings.set("updater_last_check", self._get_now_timestamp(), autosave=True)
 
         log.debug("Checking the latest GitHub release")
         report = self.get_latest_info()

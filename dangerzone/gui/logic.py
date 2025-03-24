@@ -12,6 +12,8 @@ from typing import Optional
 
 from colorama import Fore
 
+from .. import settings
+
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtWidgets
@@ -80,7 +82,7 @@ class DangerzoneGui(DangerzoneCore):
 
         elif platform.system() == "Linux":
             # Get the PDF reader command
-            args = shlex.split(self.pdf_viewers[self.settings.get("open_app")])
+            args = shlex.split(self.pdf_viewers[settings.get("open_app")])
             # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
             for i in range(len(args)):
                 if (

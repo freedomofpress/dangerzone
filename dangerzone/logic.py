@@ -5,10 +5,9 @@ from typing import Callable, List, Optional
 
 import colorama
 
-from . import errors, util
+from . import errors, settings, util
 from .document import Document
 from .isolation_provider.base import IsolationProvider
-from .settings import Settings
 from .util import get_resource_path
 
 log = logging.getLogger(__name__)
@@ -28,8 +27,6 @@ class DangerzoneCore(object):
             unsorted_ocr_languages = json.load(f)
             self.ocr_languages = dict(sorted(unsorted_ocr_languages.items()))
 
-        # Load settings
-        self.settings = Settings()
         self.documents: List[Document] = []
         self.isolation_provider = isolation_provider
 

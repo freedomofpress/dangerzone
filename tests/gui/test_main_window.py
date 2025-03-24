@@ -3,13 +3,14 @@ import pathlib
 import platform
 import shutil
 import time
+from pathlib import Path
 from typing import List
 
 from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
 
-from dangerzone import errors
+from dangerzone import errors, settings
 from dangerzone.document import Document
 from dangerzone.gui import MainWindow
 from dangerzone.gui import main_window as main_window_module
@@ -96,7 +97,7 @@ def test_default_menu(
     updater: UpdaterThread,
 ) -> None:
     """Check that the default menu entries are in order."""
-    updater.dangerzone.settings.set("updater_check", True)
+    settings.set("updater_check", True)
 
     window = MainWindow(updater.dangerzone)
     menu_actions = window.hamburger_button.menu().actions()
@@ -114,7 +115,7 @@ def test_default_menu(
 
     toggle_updates_action.trigger()
     assert not toggle_updates_action.isChecked()
-    assert updater.dangerzone.settings.get("updater_check") is False
+    assert settings.get("updater_check") is False
 
 
 def test_no_update(
@@ -127,9 +128,9 @@ def test_no_update(
     # Check that when no update is detected, e.g., due to update cooldown, an empty
     # report is received that does not affect the menu entries.
     curtime = int(time.time())
-    updater.dangerzone.settings.set("updater_check", True)
-    updater.dangerzone.settings.set("updater_errors", 9)
-    updater.dangerzone.settings.set("updater_last_check", curtime)
+    settings.set("updater_check", True)
+    settings.set("updater_errors", 9)
+    settings.set("updater_last_check", curtime)
 
     expected_settings = default_updater_settings()
     expected_settings["updater_check"] = True
@@ -154,7 +155,7 @@ def test_no_update(
     assert menu_actions_before == menu_actions_after
 
     # Check that any previous update errors are cleared.
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    assert settings.get_updater_settings() == expected_settings
 
 
 def test_update_detected(
@@ -165,9 +166,9 @@ def test_update_detected(
 ) -> None:
     """Test that a newly detected version leads to a notification to the user."""
 
-    qt_updater.dangerzone.settings.set("updater_check", True)
-    qt_updater.dangerzone.settings.set("updater_last_check", 0)
-    qt_updater.dangerzone.settings.set("updater_errors", 9)
+    settings.set("updater_check", True)
+    settings.set("updater_last_check", 0)
+    settings.set("updater_errors", 9)
 
     # Make requests.get().json() return the following dictionary.
     mock_upstream_info = {"tag_name": "99.9.9", "body": "changelog"}
@@ -197,13 +198,11 @@ def test_update_detected(
     # Check that the settings have been updated properly.
     expected_settings = default_updater_settings()
     expected_settings["updater_check"] = True
-    expected_settings["updater_last_check"] = qt_updater.dangerzone.settings.get(
-        "updater_last_check"
-    )
+    expected_settings["updater_last_check"] = settings.get("updater_last_check")
     expected_settings["updater_latest_version"] = "99.9.9"
     expected_settings["updater_latest_changelog"] = "<p>changelog</p>"
     expected_settings["updater_errors"] = 0
-    assert qt_updater.dangerzone.settings.get_updater_settings() == expected_settings
+    assert settings.get_updater_settings() == expected_settings
 
     # Check that the hamburger icon has changed with the expected SVG image.
     assert load_svg_spy.call_count == 2
@@ -228,7 +227,7 @@ def test_update_detected(
     update_dialog_spy = mocker.spy(main_window_module, "UpdateDialog")
 
     def check_dialog() -> None:
-        dialog = qt_updater.dangerzone.app.activeWindow()
+        dialog = qt_app.activeWindow()
 
         update_dialog_spy.assert_called_once()
         kwargs = update_dialog_spy.call_args.kwargs
@@ -274,12 +273,13 @@ def test_update_error(
     qt_updater: UpdaterThread,
     monkeypatch: MonkeyPatch,
     mocker: MockerFixture,
+    mock_settings: Path,
 ) -> None:
     """Test that an error during an update check leads to a notification to the user."""
     # Test 1 - Check that the first error does not notify the user.
-    qt_updater.dangerzone.settings.set("updater_check", True)
-    qt_updater.dangerzone.settings.set("updater_last_check", 0)
-    qt_updater.dangerzone.settings.set("updater_errors", 0)
+    settings.set("updater_check", True)
+    settings.set("updater_last_check", 0)
+    settings.set("updater_errors", 0)
 
     # Make requests.get() return an errorthe following dictionary.
     mocker.patch("dangerzone.gui.updater.requests.get")
@@ -305,11 +305,9 @@ def test_update_error(
     # Check that the settings have been updated properly.
     expected_settings = default_updater_settings()
     expected_settings["updater_check"] = True
-    expected_settings["updater_last_check"] = qt_updater.dangerzone.settings.get(
-        "updater_last_check"
-    )
+    expected_settings["updater_last_check"] = settings.get("updater_last_check")
     expected_settings["updater_errors"] += 1
-    assert qt_updater.dangerzone.settings.get_updater_settings() == expected_settings
+    assert settings.get_updater_settings() == expected_settings
 
     # Check that the hamburger icon has not changed.
     assert load_svg_spy.call_count == 0
@@ -318,7 +316,7 @@ def test_update_error(
     assert menu_actions_before == menu_actions_after
 
     # Test 2 - Check that the second error does not notify the user either.
-    qt_updater.dangerzone.settings.set("updater_last_check", 0)
+    settings.set("updater_last_check", 0)
     with qtbot.waitSignal(qt_updater.finished):
         qt_updater.start()
 
@@ -326,16 +324,14 @@ def test_update_error(
 
     # Check that the settings have been updated properly.
     expected_settings["updater_errors"] += 1
-    expected_settings["updater_last_check"] = qt_updater.dangerzone.settings.get(
-        "updater_last_check"
-    )
-    assert qt_updater.dangerzone.settings.get_updater_settings() == expected_settings
+    expected_settings["updater_last_check"] = settings.get("updater_last_check")
+    assert settings.get_updater_settings() == expected_settings
 
     # Check that no menu entries have been added.
     assert menu_actions_before == menu_actions_after
 
     # Test 3 - Check that a third error shows a new menu entry.
-    qt_updater.dangerzone.settings.set("updater_last_check", 0)
+    settings.set("updater_last_check", 0)
     with qtbot.waitSignal(qt_updater.finished):
         qt_updater.start()
 
@@ -360,7 +356,7 @@ def test_update_error(
     update_dialog_spy = mocker.spy(main_window_module, "UpdateDialog")
 
     def check_dialog() -> None:
-        dialog = qt_updater.dangerzone.app.activeWindow()
+        dialog = qt_app.activeWindow()
 
         update_dialog_spy.assert_called_once()
         kwargs = update_dialog_spy.call_args.kwargs

@@ -87,7 +87,7 @@ class TestContainer(IsolationProviderTest):
     ) -> None:
         """When an image keep being not installed, it should return False"""
         fp.register_subprocess(
-            ["podman", "version", "-f", "{{.Client.Version}}"],
+            [container_utils.get_runtime(), "version", "-f", "{{.Client.Version}}"],
             stdout="4.0.0",
         )
 

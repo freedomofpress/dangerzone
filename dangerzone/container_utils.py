@@ -5,6 +5,7 @@ import subprocess
 from typing import List, Tuple
 
 from . import errors
+from .settings import Settings
 from .util import get_resource_path, get_subprocess_startupinfo
 
 CONTAINER_NAME = "dangerzone.rocks/dangerzone"
@@ -13,12 +14,20 @@ log = logging.getLogger(__name__)
 
 
 def get_runtime_name() -> str:
-    if platform.system() == "Linux":
-        runtime_name = "podman"
-    else:
-        # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
-        runtime_name = "docker"
+    settings = Settings()
+    try:
+        runtime_name = settings.get("container_runtime")
+    except KeyError:
+        return "podman" if platform.system() == "Linux" else "docker"
     return runtime_name
+
+
+def get_runtime() -> str:
+    container_tech = get_runtime_name()
+    runtime = shutil.which(container_tech)
+    if runtime is None:
+        raise errors.NoContainerTechException(container_tech)
+    return runtime
 
 
 def get_runtime_version() -> Tuple[int, int]:
@@ -31,13 +40,14 @@ def get_runtime_version() -> Tuple[int, int]:
     semver parser is an overkill.
     """
     # Get the Docker/Podman version, using a Go template.
-    runtime = get_runtime_name()
-    if runtime == "podman":
+    runtime_name = get_runtime_name()
+
+    if runtime_name == "podman":
         query = "{{.Client.Version}}"
     else:
         query = "{{.Server.Version}}"
 
-    cmd = [runtime, "version", "-f", query]
+    cmd = [get_runtime(), "version", "-f", query]
     try:
         version = subprocess.run(
             cmd,
@@ -46,7 +56,7 @@ def get_runtime_version() -> Tuple[int, int]:
             check=True,
         ).stdout.decode()
     except Exception as e:
-        msg = f"Could not get the version of the {runtime.capitalize()} tool: {e}"
+        msg = f"Could not get the version of the {runtime.name.capitalize()} tool: {e}"
         raise RuntimeError(msg) from e
 
     # Parse this version and return the major/minor parts, since we don't need the
@@ -56,18 +66,10 @@ def get_runtime_version() -> Tuple[int, int]:
         return (int(major), int(minor))
     except Exception as e:
         msg = (
-            f"Could not parse the version of the {runtime.capitalize()} tool"
+            f"Could not parse the version of the {runtime_name.capitalize()} tool"
             f" (found: '{version}') due to the following error: {e}"
         )
         raise RuntimeError(msg)
-
-
-def get_runtime() -> str:
-    container_tech = get_runtime_name()
-    runtime = shutil.which(container_tech)
-    if runtime is None:
-        raise errors.NoContainerTechException(container_tech)
-    return runtime
 
 
 def list_image_tags() -> List[str]:

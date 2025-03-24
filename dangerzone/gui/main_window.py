@@ -574,8 +574,15 @@ class WaitingWidgetContainer(WaitingWidget):
             self.finished.emit()
 
     def state_change(self, state: str, error: Optional[str] = None) -> None:
+        custom_runtime = self.dangerzone.settings.custom_runtime_specified()
+
         if state == "not_installed":
-            if platform.system() == "Linux":
+            if custom_runtime:
+                self.show_error(
+                    "<strong>We could not find the container runtime defined in your settings</strong><br><br>"
+                    "Please check your settings, install it if needed, and retry."
+                )
+            elif platform.system() == "Linux":
                 self.show_error(
                     "<strong>Dangerzone requires Podman</strong><br><br>"
                     "Install it and retry."
@@ -588,7 +595,12 @@ class WaitingWidgetContainer(WaitingWidget):
                 )
 
         elif state == "not_running":
-            if platform.system() == "Linux":
+            if custom_runtime:
+                self.show_error(
+                    "<strong>We were unable to start the container runtime defined in your settings</strong><br><br>"
+                    "Please check your settings, install it if needed, and retry."
+                )
+            elif platform.system() == "Linux":
                 # "not_running" here means that the `podman image ls` command failed.
                 message = (
                     "<strong>Dangerzone requires Podman</strong><br><br>"

@@ -39,6 +39,9 @@ class Settings:
             "updater_errors": 0,
         }
 
+    def custom_runtime_specified(self) -> bool:
+        return "container_runtime" in self.settings
+
     def get(self, key: str) -> Any:
         return self.settings[key]
 

@@ -21,6 +21,13 @@ def default_settings_0_4_1() -> dict:
     }
 
 
+def save_settings(tmp_path: Path, settings: dict) -> None:
+    """Mimic the way Settings save a dictionary to a settings.json file."""
+    settings_filename = tmp_path / "settings.json"
+    with open(settings_filename, "w") as settings_file:
+        json.dump(settings, settings_file, indent=4)
+
+
 def test_no_settings_file_creates_new_one(
     tmp_path: Path,
     mocker: MockerFixture,

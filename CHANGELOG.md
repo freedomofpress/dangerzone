@@ -29,6 +29,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Platform support: Drop support for Fedora 39, since it's end-of-life ([#999](https://github.com/freedomofpress/dangerzone/pull/999))
 
+## Updated
+
+- Bump `slsa-framework/slsa-github-generator` from 2.0.0 to 2.1.0 ([#1109](https://github.com/freedomofpress/dangerzone/pull/1109))
+
 ### Development changes
 
   Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.

@@ -5,21 +5,35 @@
 - Download [Dangerzone 0.8.1 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1-arm64.dmg)
 - Download [Dangerzone 0.8.1 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1-i686.dmg)
 
-You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`
+You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/):
 
-> **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
-> This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
-> create the secure environment.
+```bash
+brew install --cask dangerzone
+```
+
+
+:::{note}
+
+You will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
+create the secure environment.
+
+:::
 
 ## Windows
 
 - Download [Dangerzone 0.8.1 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1.msi)
 
-> **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
-> This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
-> create the secure environment.
+:::{note}
+
+You will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
+create the secure environment.
+
+:::
 
 ## Linux
+
 On Linux, Dangerzone uses [Podman](https://podman.io/) instead of Docker Desktop for creating
 an isolated environment. It will be installed automatically when installing Dangerzone.
 
@@ -38,25 +52,13 @@ Dangerzone is available for:
 
 ### Ubuntu, Debian
 
-<table>
-  <tr>
-    <td>
-<details>
-  <summary><i>:information_source: Backport notice for Ubuntu 22.04 (Jammy) users regarding the <code>conmon</code> package</i></summary>
-  </br>
+:::{admonition} Backport notice for Ubuntu 22.04 (Jammy) users regarding the `conmon` package
+:collapsible: closed
 
-  The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug
-  that gets triggered by Dangerzone
-  (more details in https://github.com/freedomofpress/dangerzone/issues/685).
-  To fix this, we provide our own `conmon` package through our APT repo, which
-  was built with the following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
-  This package is essentially a backport of the `conmon` package
-  [provided](https://packages.debian.org/source/oldstable/conmon) by Debian
-  Bullseye.
-</details>
-    </td>
-  </tr>
-</table>
+The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug that gets triggered by Dangerzone (more details in https://github.com/freedomofpress/dangerzone/issues/685). To fix this, we provide our own `conmon` package through our APT repo, which was built with the following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
+
+This package is essentially a backport of the `conmon` package [provided](https://packages.debian.org/source/oldstable/conmon) by Debian Bullseye.
+:::
 
 First, retrieve the PGP keys.
 
@@ -100,27 +102,20 @@ sudo apt update
 sudo apt install -y dangerzone
 ```
 
-<table>
-  <tr>
-    <td>
-<details>
-  <summary><i>:memo: Expand this section for a security notice on third-party Debian repos</i></summary>
-  </br>
+:::{admonition} Security notice on third-party Debian repos</i></summary>
+:collapsible: closed
 
-  This section follows the official instructions on configuring [third-party
-  Debian repos](https://wiki.debian.org/DebianRepository/UseThirdParty).
+This section follows the official instructions on configuring [third-party
+Debian repos](https://wiki.debian.org/DebianRepository/UseThirdParty).
 
-  To mitigate a class of attacks against our APT repo (e.g., injecting packages
-  signed with an attacker key), we add an additional step in our instructions to
-  verify the downloaded GPG key against its fingerprint.
+To mitigate a class of attacks against our APT repo (e.g., injecting packages
+signed with an attacker key), we add an additional step in our instructions to
+verify the downloaded GPG key against its fingerprint.
 
-  Aside from these protections, the user needs to be aware that Debian packages
-  run as `root` during the installation phase, so they need to place some trust
-  on our signed Debian packages. This holds for any third-party Debian repo.
-</details>
-    </td>
-  </tr>
-</table>
+Aside from these protections, the user needs to be aware that Debian packages
+run as `root` during the installation phase, so they need to place some trust
+on our signed Debian packages. This holds for any third-party Debian repo.
+:::
 
 ### Fedora
 
@@ -134,12 +129,8 @@ sudo dnf install dangerzone
 
 ##### Verifying Dangerzone GPG key
 
-<table>
-  <tr>
-    <td>
-<details>
-<summary>Importing GPG key 0x22604281: ... Is this ok [y/N]:</summary>
-</br>
+:::{admonition} Importing GPG key 0x22604281: ... Is this ok [y/N]:
+:collapsible: closed
 
 After some minutes of running the above command (depending on your internet speed) you'll be asked to confirm the fingerprint of our signing key. This is to make sure that in the case our servers are compromised your computer stays safe. It should look like this:
 
@@ -153,34 +144,32 @@ Importing GPG key 0x22604281:
  From       : /etc/pki/rpm-gpg/RPM-GPG-dangerzone.pub
 Is this ok [y/N]:
 ```
+:::
 
-> **Note**: If it does not show this fingerprint confirmation or the fingerprint does not match, it is possible that our servers were compromised. Be distrustful and reach out to us.
+:::{note}
+If it does not show this fingerprint confirmation or the fingerprint does not match, it is possible that our servers were compromised. Be distrustful and reach out to us.
+:::
 
 The `Fingerprint` should be `DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281`. For extra security, you should confirm it matches the one at the bottom of our website ([dangerzone.rocks](https://dangerzone.rocks)) and our [Mastodon account](https://fosstodon.org/@dangerzone) bio.
 
 After confirming that it matches, type `y` (for yes) and the installation should proceed.
 
-</details>
-    </td>
-  </tr>
-</table>
-
 ### Qubes OS
 
-> [!WARNING]
-> This section is for the beta version of native Qubes support. If you
-> want to try out the stable Dangerzone version (which uses containers instead
-> of virtual machines for isolation), please follow the Fedora or Debian
-> instructions and adapt them as needed.
->
-> **If you followed these instructions before October 25, 2023, please read [this security advisory](docs/advisories/2023-10-25.md).**
-> This notice will be removed with the 1.0.0 release of Dangerzone.
+:::{warning}
+This section is for the beta version of native Qubes support. If you
+want to try out the stable Dangerzone version (which uses containers instead
+of virtual machines for isolation), please follow the Fedora or Debian
+instructions and adapt them as needed.
+**If you followed these instructions before October 25, 2023, please read [this security advisory](docs/advisories/2023-10-25.md).**
+This notice will be removed with the 1.0.0 release of Dangerzone.
+:::
 
-
-> [!IMPORTANT]
-> This section will install Dangerzone in your **default template**
-> (`fedora-40` as of writing this). If you want to install it in a different
-> one, make sure to replace `fedora-40` with the template of your choice.
+:::{important}
+This section will install Dangerzone in your **default template**
+(`fedora-40` as of writing this). If you want to install it in a different
+one, make sure to replace `fedora-40` with the template of your choice.
+:::
 
 The following steps must be completed once. Make sure you run them in the
 specified qubes.

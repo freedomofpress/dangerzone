@@ -5,9 +5,10 @@
 import sphinx_rtd_theme
 import os
 
-extensions = [
-    "sphinx_rtd_theme",
-    "myst_parser",
+extensions = ["sphinx_rtd_theme", "myst_parser"]
+
+myst_enable_extensions = [
+    "colon_fence",
 ]
 
 myst_enable_extensions = ["colon_fence"]

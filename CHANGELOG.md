@@ -16,6 +16,15 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Document Operating System support [#986](https://github.com/freedomofpress/dangerzone/issues/986)
 - Tests: Look for regressions when converting PDFs [#321](https://github.com/freedomofpress/dangerzone/issues/321)
 
+## Added
+
+- (experimental): It is now possible to specify a custom container runtime in
+  the settings, by using the `container_runtime` key. It should contain the path
+  to the container runtime you want to use. Please note that this doesn't mean
+  we support more container runtimes than Podman and Docker for the time being,
+  but enables you to chose which one you want to use, independently of your
+  platform. ([#925](https://github.com/freedomofpress/dangerzone/issues/925))
+
 ## [0.8.1](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...0.8.0)
 
 - Update the container image

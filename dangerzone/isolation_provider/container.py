@@ -6,6 +6,7 @@ import subprocess
 from typing import List, Tuple
 
 from .. import container_utils, errors
+from ..container_utils import Runtime
 from ..document import Document
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
@@ -50,7 +51,8 @@ class Container(IsolationProvider):
         * Do not map the host user to the container, with `--userns nomap` (available
           from Podman 4.1 onwards)
         """
-        if container_utils.get_runtime_name() == "podman":
+        runtime = Runtime()
+        if runtime.name == "podman":
             security_args = ["--log-driver", "none"]
             security_args += ["--security-opt", "no-new-privileges"]
             if container_utils.get_runtime_version() >= (4, 1):
@@ -123,12 +125,11 @@ class Container(IsolationProvider):
 
     @staticmethod
     def is_available() -> bool:
-        container_runtime = container_utils.get_runtime()
-        runtime_name = container_utils.get_runtime_name()
+        runtime = Runtime()
 
         # Can we run `docker/podman image ls` without an error
         with subprocess.Popen(
-            [container_runtime, "image", "ls"],
+            [str(runtime.path), "image", "ls"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
             startupinfo=get_subprocess_startupinfo(),
@@ -136,14 +137,15 @@ class Container(IsolationProvider):
             _, stderr = p.communicate()
             if p.returncode != 0:
                 raise errors.NotAvailableContainerTechException(
-                    runtime_name, stderr.decode()
+                    runtime.name, stderr.decode()
                 )
             return True
 
     def check_docker_desktop_version(self) -> Tuple[bool, str]:
         # On windows and darwin, check that the minimum version is met
         version = ""
-        runtime_is_docker = container_utils.get_runtime_name() == "docker"
+        runtime = Runtime()
+        runtime_is_docker = runtime.name == "docker"
         platform_is_not_linux = platform.system() != "Linux"
 
         if runtime_is_docker and platform_is_not_linux:
@@ -196,7 +198,7 @@ class Container(IsolationProvider):
         command: List[str],
         name: str,
     ) -> subprocess.Popen:
-        container_runtime = container_utils.get_runtime()
+        runtime = Runtime()
         security_args = self.get_runtime_security_args()
         debug_args = []
         if self.debug:
@@ -218,7 +220,7 @@ class Container(IsolationProvider):
             + image_name
             + command
         )
-        return self.exec([container_runtime] + args)
+        return self.exec([str(runtime.path)] + args)
 
     def kill_container(self, name: str) -> None:
         """Terminate a spawned container.
@@ -230,8 +232,8 @@ class Container(IsolationProvider):
         connected to the Docker daemon, and killing it will just close the associated
         standard streams.
         """
-        container_runtime = container_utils.get_runtime()
-        cmd = [container_runtime, "kill", name]
+        runtime = Runtime()
+        cmd = [str(runtime.path), "kill", name]
         try:
             # We do not check the exit code of the process here, since the container may
             # have stopped right before invoking this command. In that case, the
@@ -287,10 +289,10 @@ class Container(IsolationProvider):
         # after a podman kill / docker kill invocation, this will likely be the case,
         # else the container runtime (Docker/Podman) has experienced a problem, and we
         # should report it.
-        container_runtime = container_utils.get_runtime()
+        runtime = Runtime()
         name = self.doc_to_pixels_container_name(document)
         all_containers = subprocess.run(
-            [container_runtime, "ps", "-a"],
+            [str(runtime.path), "ps", "-a"],
             capture_output=True,
             startupinfo=get_subprocess_startupinfo(),
         )
@@ -301,19 +303,20 @@ class Container(IsolationProvider):
         # FIXME hardcoded 1 until length conversions are better handled
         # https://github.com/freedomofpress/dangerzone/issues/257
         return 1
+        runtime = Runtime()  # type: ignore [unreachable]
 
-        n_cpu = 1  # type: ignore [unreachable]
+        n_cpu = 1
         if platform.system() == "Linux":
             # if on linux containers run natively
             cpu_count = os.cpu_count()
             if cpu_count is not None:
                 n_cpu = cpu_count
 
-        elif container_utils.get_runtime_name() == "docker":
+        elif runtime.name == "docker":
             # For Windows and MacOS containers run in VM
             # So we obtain the CPU count for the VM
             n_cpu_str = subprocess.check_output(
-                [container_utils.get_runtime(), "info", "--format", "{{.NCPU}}"],
+                [str(runtime.path), "info", "--format", "{{.NCPU}}"],
                 text=True,
                 startupinfo=get_subprocess_startupinfo(),
             )

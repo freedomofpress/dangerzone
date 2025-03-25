@@ -451,7 +451,7 @@ wix extension add --global WixToolset.UI.wixext/5.0.2
 
 You'll need a code signing certificate.
 
-## To make a .exe
+### To make a .exe
 
 Open a command prompt, cd into the dangerzone directory, and run:
 

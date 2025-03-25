@@ -1,3 +1,5 @@
+# Install Dangerzone
+
 ## MacOS
 
 - Download [Dangerzone 0.8.1 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.8.1/Dangerzone-0.8.1-arm64.dmg)
@@ -238,7 +240,7 @@ for Tails users.
 
 ## Build from source
 
-If you'd like to build from source, follow the [build instructions](BUILD.md).
+If you'd like to build from source, follow the [build instructions](build.md).
 
 ## Verifying PGP signatures
 

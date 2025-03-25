@@ -66,6 +66,10 @@ build-macos-arm: build-clean
 build-linux: build-clean
 	doit -n 8 fedora_rpm debian_deb
 
+.PHONY: docs
+develop-docs: ## Compile the documentation
+	poetry run sphinx-autobuild docs docs/_build/html
+
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" and any make targets that might appear between : and ##

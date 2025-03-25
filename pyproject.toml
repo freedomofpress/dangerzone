@@ -58,6 +58,13 @@ strip-ansi = "*"
 pytest-subprocess = "^1.5.2"
 pytest-rerunfailures = "^14.0"
 
+# Dependencies required for the documentation
+[tool.poetry.group.docs.dependencies]
+sphinx = "^7.4"
+sphinx-autobuild = "^2024.10.3"
+sphinx-rtd-theme = "^3.0.2"
+myst-parser = "^3.0.0"
+
 [tool.poetry.group.debian.dependencies]
 pymupdf = "^1.24.11"
 

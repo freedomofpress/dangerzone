@@ -110,7 +110,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Removed the python shebang from some files
 
 
-## Dangerzone 0.6.1
+## 0.6.1
 
 ### Added
 
@@ -134,14 +134,14 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Use the newest reimplementation of the PyMuPDF rendering engine (`fitz`) ([issue #700](https://github.com/freedomofpress/dangerzone/issues/700))
 - Development: Build Dangerzone using the latest Wix 3.14 release ([#746](https://github.com/freedomofpress/dangerzone/pull/746)
 
-## Dangerzone 0.6.0
+## 0.6.0
 
 ### Added
 
 - Platform support: Fedora 39 ([issue #606](https://github.com/freedomofpress/dangerzone/issues/606))
 - Add new file formats: epub svg and several image formats (BMP, PNM, BPM, PPM) ([issue #697](https://github.com/freedomofpress/dangerzone/issues/697))
 
-## Fixed
+### Fixed
 
 - Fix mismatched between between original document and converted one ([issue #626](https://github.com/freedomofpress/dangerzone/issues/)). This does not affect the quality of the final document.
 - Capitalize "dangerzone" on the application as well as on the Linux desktop shortcut, thanks to [@sudwhiwdh](https://github.com/sudwhiwdh) [#676](https://github.com/freedomofpress/dangerzone/pull/676)
@@ -163,7 +163,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Removed timeouts ([issue #687](https://github.com/freedomofpress/dangerzone/issues/687))
 - Platform support: Drop Ubuntu 23.04 (Lunar Lobster), since it's end-of-life ([issue #705](https://github.com/freedomofpress/dangerzone/issues/705))
 
-## Dangerzone 0.5.1
+## 0.5.1
 
 ### Fixed
 
@@ -185,7 +185,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   officially communicated on the advisory date and is only included here since
   this is the first release since it was announced.
 
-## Dangerzone 0.5.0
+## 0.5.0
 
 ### Added
 
@@ -235,7 +235,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Do not allow attackers to show error or log messages to Qubes users ([issue #456](https://github.com/freedomofpress/dangerzone/issues/456))
 
-## Dangerzone 0.4.2
+## 0.4.2
 
 ### Added
 
@@ -271,7 +271,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Sanitize potentially unsafe characters from strings that are shown in the
   GUI/terminal ([PR #491](https://github.com/freedomofpress/dangerzone/pull/491))
 
-## Dangerzone 0.4.1
+## 0.4.1
 
 ### Added
 
@@ -324,7 +324,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Bug fix: Do not print debug logs in end-user executables ([issue #316](https://github.com/freedomofpress/dangerzone/issues/316))
 
-## Dangerzone 0.4.0
+## 0.4.0
 
 - Platform support: Re-add Fedora 37 support
 - Platform support: Add Debian Bookworm (12) support ([issue #172](https://github.com/freedomofpress/dangerzone/issues/172))
@@ -342,60 +342,60 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Bug fix: (macOS) quit Dangerzone when main window is closed ([issue #271](https://github.com/freedomofpress/dangerzone/issues/271))
 
 
-## Dangerzone 0.3.2
+## 0.3.2
 - Bug fix: some non-ascii characters like “ would prevent Dangerzone from working  ([issue #144](https://github.com/freedomofpress/dangerzone/issues/144))
 - Bug fix: error where Dangerzone would show "permission denied: '/tmp/input_file'" ([issue #157](https://github.com/freedomofpress/dangerzone/issues/157))
 - Bug fix: remove containers after use, enabling Dangerzone to run after 1000+ converted docs ([issue #197](https://github.com/freedomofpress/dangerzone/pull/197))
 - Security: limit container capabilities, run in container as non-root and limit privilege escalation ([issue #169](https://github.com/freedomofpress/dangerzone/issues/169))
 
 
-## Dangerzone 0.3.1
+## 0.3.1
 
 - Bug fix: Allow converting documents on different mounted filesystems than the container volume
 - Bug fix: In GUI mode, don't always OCR document
 - Bug fix: In macOS, fix "open with" Dangerzone so documents are automatically selected
 - Windows: Change packaging to avoid anti-virus false positives
 
-## Dangerzone 0.3
+## 0.3
 
 - Removes the need for internet access by shipping the Dangerzone container image directly with the software
 - Friendly user experience with a progress bar
 - Support for Macs with M1 chips
 
-## Dangerzone 0.2.1
+## 0.2.1
 
 - Switch from Docker to Podman for Linux
 - Improve CLI colors
 
-## Dangerzone 0.2
+## 0.2
 
 - Command line support and improved terminal output
 - Additional container hardening
 - Fix macOS crash on quit
 - Fix --custom-container CLI argument
 
-## Dangerzone 0.1.5
+## 0.1.5
 
 - Add support for macOS Big Sur
 - Drop support for Ubuntu 19.10
 
-## Dangerzone 0.1.4
+## 0.1.4
 
 - Suppress confusing stderr output, and fix bug when converting specific documents
 - Switch from PyQt5 to PySide2
 - Improve Windows and Mac packaging
 - Add support for Fedora 32
 
-## Dangerzone 0.1.3
+## 0.1.3
 
 - Add support for Ubuntu 20.04 LTS (#79)
 - Prevent crash in macOS if specific PDF viewers are installed (#75)
 
-## Dangerzone 0.1.2 (Linux only)
+## 0.1.2 (Linux only)
 
 - Add support for Ubuntu 18.04 LTS
 
-## Dangerzone 0.1.1
+## 0.1.1
 
 - Fix macOS bug that caused a crash on versions earlier than Catalina
 - Fix macOS app bundle ODF extensions (`.ods .odt`)
@@ -405,6 +405,6 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Allow opening `.docm` files
 - Allow using a custom container for testing
 
-## Dangerzone 0.1
+## 0.1
 
 - First release

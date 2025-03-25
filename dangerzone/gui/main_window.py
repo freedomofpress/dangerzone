@@ -221,11 +221,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
 
         if hasattr(self.dangerzone.isolation_provider, "check_docker_desktop_version"):
-            is_version_valid, version = (
-                self.dangerzone.isolation_provider.check_docker_desktop_version()
-            )
-            if not is_version_valid:
-                self.handle_docker_desktop_version_check(is_version_valid, version)
+            try:
+                is_version_valid, version = (
+                    self.dangerzone.isolation_provider.check_docker_desktop_version()
+                )
+                if not is_version_valid:
+                    self.handle_docker_desktop_version_check(is_version_valid, version)
+            except errors.UnsupportedContainerRuntime as e:
+                pass  # It's catched later in the flow.
 
         self.show()
 

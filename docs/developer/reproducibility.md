@@ -2,7 +2,7 @@
 
 We want to improve the transparency and auditability of our build artifacts, and
 a way to achieve this is via reproducible builds. For a broader understanding of
-what reproducible builds entail, check out https://reproducible-builds.org/.
+what reproducible builds entail, check out [reproducible-builds.org](https://reproducible-builds.org)
 
 Our build artifacts consist of:
 * Container images (`amd64` and `arm64` architectures)

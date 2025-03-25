@@ -75,24 +75,25 @@ Once we are confident that the release will be out shortly, and doesn't need any
   ```
   **Note**: release candidates are suffixed by `-rcX`.
 
-> [!IMPORTANT]
-> Because we don't have [reproducible builds](https://github.com/freedomofpress/dangerzone/issues/188)
-> yet, building the Dangerzone container image in various platforms would lead
-> to different container image IDs / hashes, due to different timestamps. To
-> avoid this issue, we should build the final container image for x86_64
-> architectures on **one** platform, and then copy it to the rest of the
-> platforms, before creating our .deb / .rpm / .msi / app bundles.
+:::{important}
+Because we don't have [reproducible builds](https://github.com/freedomofpress/dangerzone/issues/188)
+yet, building the Dangerzone container image in various platforms would lead
+to different container image IDs / hashes, due to different timestamps. To
+avoid this issue, we should build the final container image for x86_64
+architectures on **one** platform, and then copy it to the rest of the
+platforms, before creating our .deb / .rpm / .msi / app bundles.
+:::
 
 ### macOS Release
 
-> [!TIP]
-> You can automate these steps from your macOS terminal app with:
->
-> ```
-> export APPLE_ID=<email>
-> make build-macos-intel  # for Intel macOS
-> make build-macos-arm    # for Apple Silicon macOS
-> ```
+:::{tip}
+You can automate these steps from your macOS terminal app with:
+```
+export APPLE_ID=<email>
+make build-macos-intel  # for Intel macOS
+make build-macos-arm    # for Apple Silicon macOS
+```
+:::
 
 The following needs to happen for both Silicon and Intel chipsets.
 
@@ -274,9 +275,10 @@ repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 #### Fedora
 
-> **NOTE**: This procedure will have to be done for every supported Fedora version.
->
-> In this section, we'll use Fedora 41 as an example.
+:::{note}
+This procedure will have to be done for every supported Fedora version.
+In this section, we'll use Fedora 41 as an example.
+:::
 
 Create a Fedora development environment. You can [follow the
 instructions in our build section](https://github.com/freedomofpress/dangerzone/blob/main/BUILD.md#fedora),

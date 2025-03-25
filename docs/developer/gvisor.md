@@ -1,10 +1,5 @@
 # gVisor integration
 
-> [!NOTE]
-> **Update on 2025-01-13:** There is no longer a copied container image under
-> `/home/dangerzone/dangerzone-image/rootfs`. We now reuse the same container
-> image both for the inner and outer container. See
-> [#1048](https://github.com/freedomofpress/dangerzone/issues/1048).
 
 Dangerzone has relied on the container runtime available in each supported
 operating system (Docker Desktop on Windows / macOS, Podman on Linux) to isolate
@@ -26,6 +21,13 @@ Our threat model considers the computation and output of the first container
 as **untrusted**, and the computation and output of the second container as
 trusted. For this reason, and because we are about to remove the need for the
 second container, our integration plan will focus on the first container.
+
+:::{versionchanged} 0.9.0
+There is no longer a copied container image under
+`/home/dangerzone/dangerzone-image/rootfs`. We now reuse the same container
+image both for the inner and outer container. See
+[#1048](https://github.com/freedomofpress/dangerzone/issues/1048).
+:::
 
 ## Design overview
 

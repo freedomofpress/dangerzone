@@ -4,34 +4,25 @@
 
 Install dependencies:
 
-<table>
-  <tr>
-      <td>
-<details>
-  <summary><i>:memo: Expand this section if you are on Ubuntu 22.04 (Jammy).</i></summary>
-  </br>
+:::{admonition} Read this section if you are on Ubuntu 22.04 (Jammy).</i></summary>
+:collapsible: closed
+The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug
+that gets triggered by Dangerzone
+(more details in https://github.com/freedomofpress/dangerzone/issues/685).
+If you want to run Dangerzone from source, you are advised to install a
+patched `conmon` version. A simple way to do so is to enable our
+apt-tools-prod repo, just for the `conmon` package:
 
-  The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug
-  that gets triggered by Dangerzone
-  (more details in https://github.com/freedomofpress/dangerzone/issues/685).
-  If you want to run Dangerzone from source, you are advised to install a
-  patched `conmon` version. A simple way to do so is to enable our
-  apt-tools-prod repo, just for the `conmon` package:
+```bash
+sudo cp ./dev_scripts/apt-tools-prod.sources /etc/apt/sources.list.d/
+sudo cp ./dev_scripts/apt-tools-prod.pref /etc/apt/preferences.d/
+```
 
-  ```bash
-  sudo cp ./dev_scripts/apt-tools-prod.sources /etc/apt/sources.list.d/
-  sudo cp ./dev_scripts/apt-tools-prod.pref /etc/apt/preferences.d/
-  ```
-
-  The `conmon` package provided in the above repo was built with the
-  following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
-  Alternatively, you can install a `conmon` version higher than `v2.0.25` from
-  any repo you prefer.
-
-</details>
-    </td>
-  </tr>
-</table>
+The `conmon` package provided in the above repo was built with the
+following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
+Alternatively, you can install a `conmon` version higher than `v2.0.25` from
+any repo you prefer.
+:::
 
 
 ```sh
@@ -156,9 +147,9 @@ poetry shell
 ./dev_scripts/dangerzone
 ```
 
-> [!NOTE]
-> Prefer running the following command in a Fedora development environment,
-> created by `./dev_script/env.py`.
+:::{note}
+Prefer running the following command in a Fedora development environment, created by `./dev_script/env.py`. You can read more about how to do that [here](./environments).
+:::
 
 Create a .rpm:
 
@@ -169,11 +160,12 @@ Create a .rpm:
 ## Qubes OS
 
 
-> :warning: Native Qubes support is in beta stage, so the instructions below
-> require switching between qubes, and are subject to change.
->
-> If you want to build Dangerzone on Qubes and use containers instead of disposable
-> qubes, please follow the instructions of Fedora / Debian instead.
+:::{warning}
+Native Qubes support is in beta stage, so the instructions below require
+switching between qubes, and are subject to change. If you want to build
+Dangerzone on Qubes and use containers instead of disposable qubes, please
+follow the instructions of Fedora / Debian instead.
+:::
 
 
 ### Initial Setup
@@ -293,9 +285,11 @@ QUBES_CONVERSION=1 poetry run ./dev_scripts/dangerzone
 
 And when creating a `.rpm` you'll need to enable the `--qubes` flag.
 
-> [!NOTE]
-> Prefer running the following command in a Fedora development environment,
-> created by `./dev_script/env.py`.
+:::{note}
+Prefer running the following command in a Fedora development environment,
+created by `./dev_script/env.py`.
+You can read more about how to do that [here](./environments).
+:::
 
 ```sh
 ./install/linux/build-rpm.py --qubes
@@ -442,10 +436,10 @@ Install the WiX UI extension. You may need to open a new terminal in order to us
 wix extension add --global WixToolset.UI.wixext/5.0.2
 ```
 
-> [!IMPORTANT]
-> To avoid compatibility issues, ensure the WiX UI extension version matches the version of the WiX Toolset.
->
-> Run `wix --version` to check the version of WiX Toolset you have installed and replace `5.x.y` with the full version number without the Git revision.
+:::{important}
+To avoid compatibility issues, ensure the WiX UI extension version matches the version of the WiX Toolset.
+Run `wix --version` to check the version of WiX Toolset you have installed and replace `5.x.y` with the full version number without the Git revision.
+:::
 
 ### If you want to sign binaries with Authenticode
 

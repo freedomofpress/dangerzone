@@ -1,6 +1,7 @@
 name: Check branch conformity
 on:
   pull_request:
+    types: ["opened", "labeled", "unlabeled", "reopened", "synchronize"]
 
 jobs:
   prevent-fixup-commits:
@@ -20,17 +21,10 @@ jobs:
 
   check-changelog:
     runs-on: ubuntu-latest
+    name: Ensure CHANGELOG.md is populated for user-visible changes
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # Pin the GitHub action to a specific commit that we have audited and know
+      # how it works.
+      - uses: tarides/changelog-check-action@509965da3b8ac786a5e2da30c2ccf9661189121f
         with:
-          fetch-depth: 0
-      - name: ensure CHANGELOG.md is populated
-        env:
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
-        shell: bash
-        run: |
-          if git diff --exit-code "origin/${BASE_REF}" -- CHANGELOG.md; then
-              echo "::error::No CHANGELOG.md modifications were found in this pull request."
-              return -1;
-          fi
+          changelog: CHANGELOG.md

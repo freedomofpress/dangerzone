@@ -21,6 +21,8 @@ class Runtime(object):
 
         if settings.custom_runtime_specified():
             self.path = Path(settings.get("container_runtime"))
+            if not self.path.exists():
+                raise errors.UnsupportedContainerRuntime(self.path)
             self.name = self.path.stem
         else:
             self.name = self.get_default_runtime_name()
@@ -28,6 +30,9 @@ class Runtime(object):
             if binary_path is None or not os.path.exists(binary_path):
                 raise errors.NoContainerTechException(self.name)
             self.path = Path(binary_path)
+
+        if self.name not in ("podman", "docker"):
+            raise errors.UnsupportedContainerRuntime(self.name)
 
     @staticmethod
     def get_default_runtime_name() -> str:

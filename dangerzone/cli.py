@@ -11,6 +11,7 @@ from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
+from .settings import Settings
 from .util import get_version, replace_control_chars
 
 
@@ -48,6 +49,11 @@ def print_header(s: str) -> None:
     flag_value=True,
     help="Run Dangerzone in debug mode, to get logs from gVisor.",
 )
+@click.option(
+    "--set-container-runtime",
+    required=False,
+    help="The path to the container runtime you want to set in the settings",
+)
 @click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
 def cli_main(
@@ -57,8 +63,14 @@ def cli_main(
     archive: bool,
     dummy_conversion: bool,
     debug: bool,
+    set_container_runtime: Optional[str] = None,
 ) -> None:
     setup_logging()
+    display_banner()
+    if set_container_runtime:
+        settings = Settings()
+        settings.set("container_runtime", set_container_runtime, autosave=True)
+        click.echo(f"Set the settings container_runtime to {set_container_runtime}")
 
     if getattr(sys, "dangerzone_dev", False) and dummy_conversion:
         dangerzone = DangerzoneCore(Dummy())
@@ -67,7 +79,6 @@ def cli_main(
     else:
         dangerzone = DangerzoneCore(Container(debug=debug))
 
-    display_banner()
     if len(filenames) == 1 and output_filename:
         dangerzone.add_document_from_filename(filenames[0], output_filename, archive)
     elif len(filenames) > 1 and output_filename:

@@ -320,4 +320,10 @@ def display_banner() -> None:
         + Style.DIM
         + "│"
     )
-    print(Back.BLACK + Fore.YELLOW + Style.DIM + "╰──────────────────────────╯")
+    print(
+        Back.BLACK
+        + Fore.YELLOW
+        + Style.DIM
+        + "╰──────────────────────────╯"
+        + Style.RESET_ALL
+    )

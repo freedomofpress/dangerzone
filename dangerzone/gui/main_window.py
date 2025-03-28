@@ -62,7 +62,7 @@ def load_svg_image(filename: str, width: int, height: int) -> QtGui.QPixmap:
     This answer is basically taken from: https://stackoverflow.com/a/25689790
     """
     path = get_resource_path(filename)
-    svg_renderer = QtSvg.QSvgRenderer(path)
+    svg_renderer = QtSvg.QSvgRenderer(str(path))
     image = QtGui.QImage(width, height, QtGui.QImage.Format_ARGB32)
     # Set the ARGB to 0 to prevent rendering artifacts
     image.fill(0x00000000)
@@ -130,9 +130,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Header
         logo = QtWidgets.QLabel()
-        logo.setPixmap(
-            QtGui.QPixmap.fromImage(QtGui.QImage(get_resource_path("icon.png")))
-        )
+        icon_path = str(get_resource_path("icon.png"))
+        logo.setPixmap(QtGui.QPixmap.fromImage(QtGui.QImage(icon_path)))
         header_label = QtWidgets.QLabel("Dangerzone")
         header_label.setFont(self.dangerzone.fixed_font)
         header_label.setStyleSheet("QLabel { font-weight: bold; font-size: 50px; }")
@@ -575,8 +574,15 @@ class WaitingWidgetContainer(WaitingWidget):
             self.finished.emit()
 
     def state_change(self, state: str, error: Optional[str] = None) -> None:
+        custom_runtime = self.dangerzone.settings.custom_runtime_specified()
+
         if state == "not_installed":
-            if platform.system() == "Linux":
+            if custom_runtime:
+                self.show_error(
+                    "<strong>We could not find the container runtime defined in your settings</strong><br><br>"
+                    "Please check your settings, install it if needed, and retry."
+                )
+            elif platform.system() == "Linux":
                 self.show_error(
                     "<strong>Dangerzone requires Podman</strong><br><br>"
                     "Install it and retry."
@@ -589,7 +595,12 @@ class WaitingWidgetContainer(WaitingWidget):
                 )
 
         elif state == "not_running":
-            if platform.system() == "Linux":
+            if custom_runtime:
+                self.show_error(
+                    "<strong>We were unable to start the container runtime defined in your settings</strong><br><br>"
+                    "Please check your settings, install it if needed, and retry."
+                )
+            elif platform.system() == "Linux":
                 # "not_running" here means that the `podman image ls` command failed.
                 message = (
                     "<strong>Dangerzone requires Podman</strong><br><br>"
@@ -1306,7 +1317,7 @@ class DocumentWidget(QtWidgets.QWidget):
 
     def load_status_image(self, filename: str) -> QtGui.QPixmap:
         path = get_resource_path(filename)
-        img = QtGui.QImage(path)
+        img = QtGui.QImage(str(path))
         image = QtGui.QPixmap.fromImage(img)
         return image.scaled(QtCore.QSize(15, 15))
 

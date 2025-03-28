@@ -140,3 +140,7 @@ class NotAvailableContainerTechException(Exception):
         self.error = error
         self.container_tech = container_tech
         super().__init__(f"{container_tech} is not available")
+
+
+class UnsupportedContainerRuntime(Exception):
+    pass

@@ -48,9 +48,7 @@ def test_default_updater_settings(updater: UpdaterThread) -> None:
     )
 
 
-def test_pre_0_4_2_settings(
-    tmp_path: Path, monkeypatch: MonkeyPatch, mocker: MockerFixture
-) -> None:
+def test_pre_0_4_2_settings(tmp_path: Path, mocker: MockerFixture) -> None:
     """Check settings of installations prior to 0.4.2.
 
     Check that installations that have been upgraded from a version < 0.4.2 to >= 0.4.2
@@ -58,7 +56,7 @@ def test_pre_0_4_2_settings(
     in their settings.json file.
     """
     save_settings(tmp_path, default_settings_0_4_1())
-    updater = generate_isolated_updater(tmp_path, monkeypatch, mocker)
+    updater = generate_isolated_updater(tmp_path, mocker, mock_app=True)
     assert (
         updater.dangerzone.settings.get_updater_settings() == default_updater_settings()
     )
@@ -83,12 +81,10 @@ def test_post_0_4_2_settings(
     # version is 0.4.3.
     expected_settings = default_updater_settings()
     expected_settings["updater_latest_version"] = "0.4.3"
-    monkeypatch.setattr(
-        settings, "get_version", lambda: expected_settings["updater_latest_version"]
-    )
+    monkeypatch.setattr(settings, "get_version", lambda: "0.4.3")
 
     # Ensure that the Settings class will correct the latest version field to 0.4.3.
-    updater = generate_isolated_updater(tmp_path, monkeypatch, mocker)
+    updater = generate_isolated_updater(tmp_path, mocker, mock_app=True)
     assert updater.dangerzone.settings.get_updater_settings() == expected_settings
 
     # Simulate an updater check that found a newer Dangerzone version (e.g., 0.4.4).
@@ -118,9 +114,7 @@ def test_linux_no_check(updater: UpdaterThread, monkeypatch: MonkeyPatch) -> Non
     assert updater.dangerzone.settings.get_updater_settings() == expected_settings
 
 
-def test_user_prompts(
-    updater: UpdaterThread, monkeypatch: MonkeyPatch, mocker: MockerFixture
-) -> None:
+def test_user_prompts(updater: UpdaterThread, mocker: MockerFixture) -> None:
     """Test prompting users to ask them if they want to enable update checks."""
     # First run
     #
@@ -370,8 +364,6 @@ def test_update_errors(
 def test_update_check_prompt(
     qtbot: QtBot,
     qt_updater: UpdaterThread,
-    monkeypatch: MonkeyPatch,
-    mocker: MockerFixture,
 ) -> None:
     """Test that the prompt to enable update checks works properly."""
     # Force Dangerzone to check immediately for updates

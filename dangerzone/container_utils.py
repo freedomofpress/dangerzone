@@ -1,10 +1,13 @@
 import logging
+import os
 import platform
 import shutil
 import subprocess
-from typing import List, Tuple
+from pathlib import Path
+from typing import List, Optional, Tuple
 
 from . import errors
+from .settings import Settings
 from .util import get_resource_path, get_subprocess_startupinfo
 
 CONTAINER_NAME = "dangerzone.rocks/dangerzone"
@@ -12,16 +15,31 @@ CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 log = logging.getLogger(__name__)
 
 
-def get_runtime_name() -> str:
-    if platform.system() == "Linux":
-        runtime_name = "podman"
-    else:
-        # Windows, Darwin, and unknown use docker for now, dangerzone-vm eventually
-        runtime_name = "docker"
-    return runtime_name
+class Runtime(object):
+    def __init__(self) -> None:
+        settings = Settings()
+
+        if settings.custom_runtime_specified():
+            self.path = Path(settings.get("container_runtime"))
+            if not self.path.exists():
+                raise errors.UnsupportedContainerRuntime(self.path)
+            self.name = self.path.stem
+        else:
+            self.name = self.get_default_runtime_name()
+            binary_path = shutil.which(self.name)
+            if binary_path is None or not os.path.exists(binary_path):
+                raise errors.NoContainerTechException(self.name)
+            self.path = Path(binary_path)
+
+        if self.name not in ("podman", "docker"):
+            raise errors.UnsupportedContainerRuntime(self.name)
+
+    @staticmethod
+    def get_default_runtime_name() -> str:
+        return "podman" if platform.system() == "Linux" else "docker"
 
 
-def get_runtime_version() -> Tuple[int, int]:
+def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
     """Get the major/minor parts of the Docker/Podman version.
 
     Some of the operations we perform in this module rely on some Podman features
@@ -30,14 +48,15 @@ def get_runtime_version() -> Tuple[int, int]:
     just knowing the major and minor version, since writing/installing a full-blown
     semver parser is an overkill.
     """
+    runtime = runtime or Runtime()
+
     # Get the Docker/Podman version, using a Go template.
-    runtime = get_runtime_name()
-    if runtime == "podman":
+    if runtime.name == "podman":
         query = "{{.Client.Version}}"
     else:
         query = "{{.Server.Version}}"
 
-    cmd = [runtime, "version", "-f", query]
+    cmd = [str(runtime.path), "version", "-f", query]
     try:
         version = subprocess.run(
             cmd,
@@ -46,7 +65,7 @@ def get_runtime_version() -> Tuple[int, int]:
             check=True,
         ).stdout.decode()
     except Exception as e:
-        msg = f"Could not get the version of the {runtime.capitalize()} tool: {e}"
+        msg = f"Could not get the version of the {runtime.name.capitalize()} tool: {e}"
         raise RuntimeError(msg) from e
 
     # Parse this version and return the major/minor parts, since we don't need the
@@ -56,18 +75,10 @@ def get_runtime_version() -> Tuple[int, int]:
         return (int(major), int(minor))
     except Exception as e:
         msg = (
-            f"Could not parse the version of the {runtime.capitalize()} tool"
+            f"Could not parse the version of the {runtime.name.capitalize()} tool"
             f" (found: '{version}') due to the following error: {e}"
         )
         raise RuntimeError(msg)
-
-
-def get_runtime() -> str:
-    container_tech = get_runtime_name()
-    runtime = shutil.which(container_tech)
-    if runtime is None:
-        raise errors.NoContainerTechException(container_tech)
-    return runtime
 
 
 def list_image_tags() -> List[str]:
@@ -77,10 +88,11 @@ def list_image_tags() -> List[str]:
     images. This can be useful when we want to find which are the local image tags,
     and which image ID does the "latest" tag point to.
     """
+    runtime = Runtime()
     return (
         subprocess.check_output(
             [
-                get_runtime(),
+                str(runtime.path),
                 "image",
                 "list",
                 "--format",
@@ -97,19 +109,21 @@ def list_image_tags() -> List[str]:
 
 def add_image_tag(image_id: str, new_tag: str) -> None:
     """Add a tag to the Dangerzone image."""
+    runtime = Runtime()
     log.debug(f"Adding tag '{new_tag}' to image '{image_id}'")
     subprocess.check_output(
-        [get_runtime(), "tag", image_id, new_tag],
+        [str(runtime.path), "tag", image_id, new_tag],
         startupinfo=get_subprocess_startupinfo(),
     )
 
 
 def delete_image_tag(tag: str) -> None:
     """Delete a Dangerzone image tag."""
+    runtime = Runtime()
     log.warning(f"Deleting old container image: {tag}")
     try:
         subprocess.check_output(
-            [get_runtime(), "rmi", "--force", tag],
+            [str(runtime.name), "rmi", "--force", tag],
             startupinfo=get_subprocess_startupinfo(),
         )
     except Exception as e:
@@ -121,16 +135,17 @@ def delete_image_tag(tag: str) -> None:
 
 def get_expected_tag() -> str:
     """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
-    with open(get_resource_path("image-id.txt")) as f:
+    with get_resource_path("image-id.txt").open() as f:
         return f.read().strip()
 
 
 def load_image_tarball() -> None:
+    runtime = Runtime()
     log.info("Installing Dangerzone container image...")
     tarball_path = get_resource_path("container.tar")
     try:
         res = subprocess.run(
-            [get_runtime(), "load", "-i", tarball_path],
+            [str(runtime.path), "load", "-i", str(tarball_path)],
             startupinfo=get_subprocess_startupinfo(),
             capture_output=True,
             check=True,
@@ -155,7 +170,7 @@ def load_image_tarball() -> None:
     # `share/image-id.txt` and delete the incorrect tag.
     #
     # [1] https://github.com/containers/podman/issues/16490
-    if get_runtime_name() == "podman" and get_runtime_version() == (3, 4):
+    if runtime.name == "podman" and get_runtime_version(runtime) == (3, 4):
         expected_tag = get_expected_tag()
         bad_tag = f"localhost/{expected_tag}:latest"
         good_tag = f"{CONTAINER_NAME}:{expected_tag}"

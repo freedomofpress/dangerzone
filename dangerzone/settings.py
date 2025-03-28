@@ -6,12 +6,9 @@ from typing import TYPE_CHECKING, Any, Dict
 from packaging import version
 
 from .document import SAFE_EXTENSION
-from .util import get_version
+from .util import get_config_dir, get_version
 
 log = logging.getLogger(__name__)
-
-if TYPE_CHECKING:
-    from .logic import DangerzoneCore
 
 SETTINGS_FILENAME: str = "settings.json"
 
@@ -19,11 +16,8 @@ SETTINGS_FILENAME: str = "settings.json"
 class Settings:
     settings: Dict[str, Any]
 
-    def __init__(self, dangerzone: "DangerzoneCore") -> None:
-        self.dangerzone = dangerzone
-        self.settings_filename = os.path.join(
-            self.dangerzone.appdata_path, SETTINGS_FILENAME
-        )
+    def __init__(self) -> None:
+        self.settings_filename = get_config_dir() / SETTINGS_FILENAME
         self.default_settings: Dict[str, Any] = self.generate_default_settings()
         self.load()
 
@@ -44,6 +38,9 @@ class Settings:
             "updater_latest_changelog": "",
             "updater_errors": 0,
         }
+
+    def custom_runtime_specified(self) -> bool:
+        return "container_runtime" in self.settings
 
     def get(self, key: str) -> Any:
         return self.settings[key]
@@ -91,6 +88,6 @@ class Settings:
         self.save()
 
     def save(self) -> None:
-        os.makedirs(self.dangerzone.appdata_path, exist_ok=True)
-        with open(self.settings_filename, "w") as settings_file:
+        self.settings_filename.parent.mkdir(parents=True, exist_ok=True)
+        with self.settings_filename.open("w") as settings_file:
             json.dump(self.settings, settings_file, indent=4)

@@ -16,6 +16,14 @@ log = logging.getLogger(__name__)
 
 
 class Runtime(object):
+    """Represents the container runtime to use.
+
+    - It can be specified via the settings, using the "container_runtime" key,
+      which should point to the full path of the runtime;
+    - If the runtime is not specified via the settings, it defaults
+      to "podman" on Linux and "docker" on macOS and Windows.
+    """
+
     def __init__(self) -> None:
         settings = Settings()
 
@@ -26,13 +34,21 @@ class Runtime(object):
             self.name = self.path.stem
         else:
             self.name = self.get_default_runtime_name()
-            binary_path = shutil.which(self.name)
-            if binary_path is None or not os.path.exists(binary_path):
-                raise errors.NoContainerTechException(self.name)
-            self.path = Path(binary_path)
+            self.path = Runtime.path_from_name(self.name)
 
         if self.name not in ("podman", "docker"):
             raise errors.UnsupportedContainerRuntime(self.name)
+
+    @staticmethod
+    def path_from_name(name: str) -> Path:
+        name_path = Path(name)
+        if name_path.is_file():
+            return name_path
+        else:
+            runtime = shutil.which(name_path)
+            if runtime is None:
+                raise errors.NoContainerTechException(name)
+            return Path(runtime)
 
     @staticmethod
     def get_default_runtime_name() -> str:

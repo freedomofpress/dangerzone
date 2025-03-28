@@ -605,17 +605,18 @@ class WaitingWidgetContainer(WaitingWidget):
                 )
             elif platform.system() == "Linux":
                 # "not_running" here means that the `podman image ls` command failed.
-                message = (
+                self.show_error(
                     "<strong>Dangerzone requires Podman</strong><br><br>"
-                    "Podman is installed but cannot run properly. See errors below"
+                    "Podman is installed but cannot run properly. See errors below",
+                    error,
                 )
             else:
-                message = (
+                self.show_error(
                     "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
                     "Docker is installed but isn't running.<br><br>"
-                    "Open Docker and make sure it's running in the background."
+                    "Open Docker and make sure it's running in the background.",
+                    error,
                 )
-            self.show_error(message, error)
         else:
             self.show_message(
                 "Installing the Dangerzone container image.<br><br>"

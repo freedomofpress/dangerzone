@@ -28,7 +28,7 @@ def main():
     )
 
     logger.info("Getting PyMuPDF deps as requirements.txt")
-    cmd = ["poetry", "export", "--only", "debian"]
+    cmd = ["uv", "export", "--only-group", "debian"]
     container_requirements_txt = subprocess.check_output(cmd)
 
     logger.info(f"Vendoring PyMuPDF under '{args.dest}'")
@@ -36,12 +36,9 @@ def main():
     # instructed here:
     # https://pip.pypa.io/en/latest/user_guide/#using-pip-from-your-program
     cmd = [
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "--no-cache-dir",
-        "--no-compile",
+        "uv", "pip", "install", 
+        "--no-cache",
+        "--no-compile-bytecode",
         "--target",
         args.dest,
         "--requirement",

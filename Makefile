@@ -19,7 +19,7 @@ lint: ## Check the code for linting, formatting, and typing issues with ruff and
 .PHONY: fix
 fix: ## apply all the suggestions from ruff
 	ruff check --fix
-	ruff format
+	ruff format .
 
 .PHONY: test
 test:
@@ -42,13 +42,14 @@ test-large-init: test-large-requirements
 	cd $(LARGE_TEST_REPO_DIR) && $(MAKE) clone-docs
 
 TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC).junit.xml
+
 .PHONY: test-large
 test-large: test-large-init  ## Run large test set
 	python -m pytest --tb=no tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)
 	python $(TEST_LARGE_RESULTS)/report.py $(TEST_LARGE_RESULTS)
 
 Dockerfile: Dockerfile.env Dockerfile.in
-	poetry run jinja2 Dockerfile.in Dockerfile.env > Dockerfile
+	uv run --group package jinja2 Dockerfile.in Dockerfile.env > Dockerfile
 
 .PHONY: build-clean
 build-clean:

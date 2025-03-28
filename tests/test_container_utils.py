@@ -49,7 +49,7 @@ def test_get_runtime_name_non_linux(mocker: MockerFixture, tmp_path: Path) -> No
     assert Runtime().name == "docker"
 
 
-def test_get_unsupported_runtime_name(mocker: MockerFixture, tmp_path: Path):
+def test_get_unsupported_runtime_name(mocker: MockerFixture, tmp_path: Path) -> None:
     mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
     settings = Settings()
     settings.set(

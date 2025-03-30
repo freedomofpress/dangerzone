@@ -2,9 +2,9 @@
 # Dockerfile args below. For more info about this file, read
 # docs/developer/reproducibility.md.
 
-ARG DEBIAN_IMAGE_DATE=20250224
+ARG DEBIAN_IMAGE_DIGEST=sha256:12c396bd585df7ec21d5679bb6a83d4878bc4415ce926c9e5ea6426d23c60bdc
 
-FROM debian:bookworm-${DEBIAN_IMAGE_DATE}-slim AS dangerzone-image
+FROM debian@${DEBIAN_IMAGE_DIGEST} AS dangerzone-image
 
 ARG GVISOR_ARCHIVE_DATE=20250217
 ARG DEBIAN_ARCHIVE_DATE=20250226
@@ -185,8 +185,8 @@ RUN mkdir -p \
 # Copy the /etc and /var directories under the new root directory. Also,
 # copy /etc/, /opt, and /usr to the Dangerzone image rootfs.
 #
-# NOTE: We also have to remove the resolv.conf file, in order to not leak any DNS
-# servers added there during image build time.
+# NOTE: We also have to remove the resolv.conf file, in order to not leak any
+# DNS servers added there during image build time.
 RUN cp -r /etc /var /new_root/ \
     && rm /new_root/etc/resolv.conf
 RUN cp -r /etc /opt /usr /new_root/home/dangerzone/dangerzone-image/rootfs \

@@ -27,7 +27,7 @@ This means that rebuilding the image without updating our Dockerfile will
 
 Here are the necessary variables that make up our image in the `Dockerfile.env`
 file:
-* `DEBIAN_IMAGE_DATE`: The date that the Debian container image was released
+* `DEBIAN_IMAGE_DIGEST`: The index digest for the Debian container image
 * `DEBIAN_ARCHIVE_DATE`: The Debian snapshot repo that we want to use
 * `GVISOR_ARCHIVE_DATE`: The gVisor APT repo that we want to use
 * `H2ORESTART_CHECKSUM`: The SHA-256 checksum of the H2ORestart plugin

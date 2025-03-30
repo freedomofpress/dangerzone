@@ -2,9 +2,9 @@
 # Dockerfile args below. For more info about this file, read
 # docs/developer/reproducibility.md.
 
-ARG DEBIAN_IMAGE_DATE={{DEBIAN_IMAGE_DATE}}
+ARG DEBIAN_IMAGE_DIGEST={{DEBIAN_IMAGE_DIGEST}}
 
-FROM debian:bookworm-${DEBIAN_IMAGE_DATE}-slim AS dangerzone-image
+FROM debian@${DEBIAN_IMAGE_DIGEST} AS dangerzone-image
 
 ARG GVISOR_ARCHIVE_DATE={{GVISOR_ARCHIVE_DATE}}
 ARG DEBIAN_ARCHIVE_DATE={{DEBIAN_ARCHIVE_DATE}}

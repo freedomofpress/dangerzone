@@ -25,6 +25,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   but enables you to chose which one you want to use, independently of your
   platform. ([#925](https://github.com/freedomofpress/dangerzone/issues/925))
 
+### Changed
+
+- The `debian` base image is now fetched by digest. As a result, your local
+  container storage will no longer show a tag for this dependency.
+
 ## [0.8.1](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...0.8.0)
 
 - Update the container image

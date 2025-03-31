@@ -5,32 +5,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...HEAD)
+## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
 
-- Platform support: Drop support for Ubuntu Focal, since it's nearing end-of-life ([#1018](https://github.com/freedomofpress/dangerzone/issues/1018))
-- Platform support: Add support for Fedora 42 ([#1091](https://github.com/freedomofpress/dangerzone/issues/1091))
-- Platform support: Add support for Ubuntu 25.04 (Plucky Puffin)([#1090](https://github.com/freedomofpress/dangerzone/issues/1090))
+## [0.9.0](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...0.8.1)
 
 ### Added
 
-- Document Operating System support [#986](https://github.com/freedomofpress/dangerzone/issues/986)
-- Tests: Look for regressions when converting PDFs [#321](https://github.com/freedomofpress/dangerzone/issues/321)
-
-## Added
-
+- Platform support: Add support for Fedora 42 ([#1091](https://github.com/freedomofpress/dangerzone/issues/1091))
+- Platform support: Add support for Ubuntu 25.04 (Plucky Puffin) ([#1090](https://github.com/freedomofpress/dangerzone/issues/1090))
 - (experimental): It is now possible to specify a custom container runtime in
   the settings, by using the `container_runtime` key. It should contain the path
   to the container runtime you want to use. Please note that this doesn't mean
   we support more container runtimes than Podman and Docker for the time being,
   but enables you to chose which one you want to use, independently of your
   platform. ([#925](https://github.com/freedomofpress/dangerzone/issues/925))
+- Document Operating System support [#986](https://github.com/freedomofpress/dangerzone/issues/986)
+- Tests: Look for regressions when converting PDFs [#321](https://github.com/freedomofpress/dangerzone/issues/321)
+- Ensure container image reproducibilty across different container runtimes and versions ([#1074](https://github.com/freedomofpress/dangerzone/issues/1074))
+- Implement container image attestations ([#1035](https://github.com/freedomofpress/dangerzone/issues/1035))
+- Inform user of outdated Docker Desktop Version ([#693](https://github.com/freedomofpress/dangerzone/issues/693))
+- Add support for Python 3.13 ([#992](https://github.com/freedomofpress/dangerzone/issues/992))
+- Publish the built artifacts in our CI pipelines ([#972](https://github.com/freedomofpress/dangerzone/pull/972))
 
-### Changed
+### Fixed
 
+- Fix our Debian Trixie installation instructions using Sequoia PGP ([#1052](https://github.com/freedomofpress/dangerzone/issues/1052))
+- Fix the way multiprocessing works on macOS ([#873](https://github.com/freedomofpress/dangerzone/issues/873))
+
+### Removed
+
+- Platform support: Drop support for Ubuntu Focal, since it's nearing end-of-life ([#1018](https://github.com/freedomofpress/dangerzone/issues/1018))
+- Platform support: Drop support for Fedora 39 ([#999](https://github.com/freedomofpress/dangerzone/issues/999))
+
+## Changed
+
+- Switch base image to Debian Stable ([#1046](https://github.com/freedomofpress/dangerzone/issues/1046))
+- Track image tags instead of image IDs in `image-id.txt` ([#1020](https://github.com/freedomofpress/dangerzone/issues/1020))
+- Migrate to Wix 4 (windows building tool) ([#602](https://github.com/freedomofpress/dangerzone/issues/602)).
+  Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
+- Add a `--debug` flag to the CLI to help retrieve more logs ([#941](https://github.com/freedomofpress/dangerzone/pull/941))
 - The `debian` base image is now fetched by digest. As a result, your local
-  container storage will no longer show a tag for this dependency.
+  container storage will no longer show a tag for this dependency
+  ([#1116](https://github.com/freedomofpress/dangerzone/pull/1116)).
+  Thanks [@sudoforge](https://github.com/sudoforge) for the contribution.
 - The `debian` base image is now referenced with a fully qualified URI,
-  including the registry hostname.
+  including the registry hostname ([#1118](https://github.com/freedomofpress/dangerzone/pull/1118)).
+  Thanks [@sudoforge](https://github.com/sudoforge) for the contribution.
+
+### Development changes
+
+- Make container image scanning work for Silicon macOS ([#1008](https://github.com/freedomofpress/dangerzone/issues/1008))
+- Automate the main bulk of our release tasks ([#1016](https://github.com/freedomofpress/dangerzone/issues/1016))
+- CI: Enforce updating the CHANGELOG in the CI ([#1108](https://github.com/freedomofpress/dangerzone/pull/1108))
+- Add reference to funding.json (required by floss.fund application) ([#1092](https://github.com/freedomofpress/dangerzone/pull/1092))
+- Lint: add ruff for linting and formatting ([#1029](https://github.com/freedomofpress/dangerzone/pull/1029)).
+  Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
+- Work around a `cx_freeze` build issue ([#974](https://github.com/freedomofpress/dangerzone/issues/974))
+- tests: mark the hancom office suite tests for rerun on failures ([#991](https://github.com/freedomofpress/dangerzone/pull/991))
 
 ## [0.8.1](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...0.8.0)
 

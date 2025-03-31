@@ -13,8 +13,8 @@ from .base import IsolationProvider, terminate_process_group
 
 TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
 MINIMUM_DOCKER_DESKTOP = {
-    "Darwin": "4.36.0",
-    "Windows": "4.36.0",
+    "Darwin": "4.40.0",
+    "Windows": "4.40.0",
 }
 
 # Define startupinfo for subprocesses

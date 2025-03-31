@@ -31,6 +31,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Fix our Debian Trixie installation instructions using Sequoia PGP ([#1052](https://github.com/freedomofpress/dangerzone/issues/1052))
 - Fix the way multiprocessing works on macOS ([#873](https://github.com/freedomofpress/dangerzone/issues/873))
+- Update minimum Docker Desktop version to fix an stdout truncation issue ([#1101](https://github.com/freedomofpress/dangerzone/issues/1101))
 
 ### Removed
 

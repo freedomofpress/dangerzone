@@ -51,6 +51,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - The `debian` base image is now referenced with a fully qualified URI,
   including the registry hostname ([#1118](https://github.com/freedomofpress/dangerzone/pull/1118)).
   Thanks [@sudoforge](https://github.com/sudoforge) for the contribution.
+- Update the Dangerzone container image and its dependencies (gVisor, Debian base image, H2Orestart) to the latest versions:
+  * Debian image release: `bookworm-20250317-slim@sha256:1209d8fd77def86ceb6663deef7956481cc6c14a25e1e64daec12c0ceffcc19d`
+  * Debian snapshots date: `2025-03-31`
+  * gVisor release date: `2025-03-26`
+  * H2Orestart plugin: `v0.7.2` (`d09bc5c93fe2483a7e4a57985d2a8d0e4efae2efb04375fe4b59a68afd7241e2`)
 
 ### Development changes
 

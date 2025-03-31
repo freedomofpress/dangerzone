@@ -29,6 +29,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - The `debian` base image is now fetched by digest. As a result, your local
   container storage will no longer show a tag for this dependency.
+- The `debian` base image is now referenced with a fully qualified URI,
+  including the registry hostname.
 
 ## [0.8.1](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...0.8.0)
 

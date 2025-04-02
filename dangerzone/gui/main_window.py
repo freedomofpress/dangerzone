@@ -228,7 +228,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 if not is_version_valid:
                     self.handle_docker_desktop_version_check(is_version_valid, version)
             except errors.UnsupportedContainerRuntime as e:
-                pass  # It's catched later in the flow.
+                pass  # It's caught later in the flow.
+            except errors.NoContainerTechException as e:
+                pass  # It's caught later in the flow.
 
         self.show()
 

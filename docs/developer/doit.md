@@ -42,7 +42,8 @@ doit <task>
 ## Tips and tricks
 
 * You can run `doit list --all -s` to see the full list of tasks, their
-  dependencies, and whether they are up to date.
+  dependencies, and whether they are up to date (U) or will run (R). Note that
+  certain small tasks are always configured to run.
 * You can run `doit info <task>` to see which dependencies are missing.
 * You can pass the following environment variables to the script, in order to
   affect some global parameters:

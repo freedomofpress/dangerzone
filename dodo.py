@@ -43,7 +43,6 @@ def list_language_data():
     tessdata_dir = Path("share") / "tessdata"
     langs = json.loads(open(tessdata_dir.parent / "ocr-languages.json").read()).values()
     targets = [tessdata_dir / f"{lang}.traineddata" for lang in langs]
-    targets.append(tessdata_dir)
     return targets
 
 

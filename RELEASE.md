@@ -141,7 +141,7 @@ Here is what you need to do:
   poetry env remove --all
 
   # Install the dependencies
-  poetry install --sync
+  poetry sync
   ```
 
 - [ ] Build the container image and the OCR language data
@@ -223,7 +223,7 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
   poetry env remove --all
 
   # Install the dependencies
-  poetry install --sync
+  poetry sync
   ```
 
 - [ ] Copy the container image into the VM

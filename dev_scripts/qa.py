@@ -331,7 +331,7 @@ Install Poetry using `pipx`:
 
 ```sh
 pipx install poetry
-pipx inject poetry poetry-plugin-export
+pipx inject poetry
 ```
 
 Clone this repository:
@@ -397,7 +397,7 @@ Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build 
 Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
 
 ```
-python -m pip install poetry poetry-plugin-export
+python -m pip install poetry
 ```
 
 Install git from [here](https://git-scm.com/download/win), open a Windows terminal (`cmd.exe`) and clone this repository:
@@ -835,7 +835,7 @@ class QAWindows(QABase):
         "Install Poetry and the project's dependencies", ref=REF_BUILD, auto=True
     )
     def install_poetry(self):
-        self.run("python", "-m", "pip", "install", "poetry", "poetry-plugin-export")
+        self.run("python", "-m", "pip", "install", "poetry")
         self.run("poetry", "sync")
 
     @QABase.task("Build Dangerzone container image", ref=REF_BUILD, auto=True)

@@ -51,6 +51,8 @@ def main():
         if files == expected_files:
             logger.info("Skipping tessdata download, language data already exists")
             return
+        elif not files:
+            logger.info("Tesseract dir is empty, proceeding to download language data")
         else:
             logger.info(f"Found {tessdata_dir} but contents do not match")
             return 1

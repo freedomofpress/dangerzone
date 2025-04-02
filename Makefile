@@ -54,22 +54,21 @@ Dockerfile: Dockerfile.env Dockerfile.in
 poetry-install:
 	poetry install
 
-
 .PHONY: build-clean
 build-clean:
-	doit clean
+	poetry run doit clean
 
 .PHONY: build-macos-intel
 build-macos-intel: build-clean poetry-install
-	doit -n 8
+	poetry run doit -n 8
 
 .PHONY: build-macos-arm
 build-macos-arm: build-clean poetry-install
-	doit -n 8 macos_build_dmg
+	poetry run doit -n 8 macos_build_dmg
 
 .PHONY: build-linux
 build-linux: build-clean poetry-install
-	doit -n 8 fedora_rpm debian_deb
+	poetry run doit -n 8 fedora_rpm debian_deb
 
 .PHONY: regenerate-reference-pdfs
 regenerate-reference-pdfs:

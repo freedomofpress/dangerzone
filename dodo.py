@@ -206,7 +206,7 @@ def task_build_image():
 
 def task_poetry_install():
     """Setup the Poetry environment"""
-    return {"actions": ["poetry install --sync"], "clean": ["poetry env remove --all"]}
+    return {"actions": ["poetry sync"], "clean": ["poetry env remove --all"]}
 
 
 def task_macos_build_dmg():

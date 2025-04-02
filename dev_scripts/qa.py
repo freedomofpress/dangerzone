@@ -836,7 +836,7 @@ class QAWindows(QABase):
     )
     def install_poetry(self):
         self.run("python", "-m", "pip", "install", "poetry", "poetry-plugin-export")
-        self.run("poetry", "install", "--sync")
+        self.run("poetry", "sync")
 
     @QABase.task("Build Dangerzone container image", ref=REF_BUILD, auto=True)
     def build_image(self):

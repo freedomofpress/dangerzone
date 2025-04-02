@@ -8,7 +8,7 @@ from doit.action import CmdAction
 
 ARCH = "arm64" if platform.machine() == "arm64" else "i686"
 VERSION = open("share/version.txt").read().strip()
-FEDORA_VERSIONS = ["40", "41"]
+FEDORA_VERSIONS = ["40", "41", "42"]
 DEBIAN_VERSIONS = ["bullseye", "jammy", "mantic", "noble", "trixie"]
 
 ### Global parameters
@@ -124,7 +124,7 @@ def build_deb(cwd):
 
 def build_rpm(version, cwd, qubes=False):
     """Build an .rpm package on the requested Fedora distro."""
-    return build_linux_pkg(distro="Fedora", version=version, cwd=cwd, qubes=qubes)
+    return build_linux_pkg(distro="fedora", version=version, cwd=cwd, qubes=qubes)
 
 
 ### Tasks

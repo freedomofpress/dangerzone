@@ -52,6 +52,10 @@ class Settings:
             self.save()
         return container_runtime
 
+    def unset_custom_runtime(self) -> None:
+        self.settings.pop("container_runtime")
+        self.save()
+
     def get(self, key: str) -> Any:
         return self.settings[key]
 

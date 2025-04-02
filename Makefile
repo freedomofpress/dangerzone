@@ -50,20 +50,25 @@ test-large: test-large-init  ## Run large test set
 Dockerfile: Dockerfile.env Dockerfile.in
 	poetry run jinja2 Dockerfile.in Dockerfile.env > Dockerfile
 
+.PHONY: poetry-install
+poetry-install:
+	poetry install
+
+
 .PHONY: build-clean
 build-clean:
 	doit clean
 
 .PHONY: build-macos-intel
-build-macos-intel: build-clean
+build-macos-intel: build-clean poetry-install
 	doit -n 8
 
 .PHONY: build-macos-arm
-build-macos-arm: build-clean
+build-macos-arm: build-clean poetry-install
 	doit -n 8 macos_build_dmg
 
 .PHONY: build-linux
-build-linux: build-clean
+build-linux: build-clean poetry-install
 	doit -n 8 fedora_rpm debian_deb
 
 .PHONY: regenerate-reference-pdfs

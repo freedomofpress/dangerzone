@@ -52,7 +52,11 @@ def print_header(s: str) -> None:
 @click.option(
     "--set-container-runtime",
     required=False,
-    help="The path to the container runtime you want to set in the settings",
+    help=(
+        "The name or full path of the container runtime you want Dangerzone to use."
+        " You can specify the value 'default' if you want to take back your choice, and"
+        " let Dangerzone use the default runtime for this OS"
+    ),
 )
 @click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
@@ -69,10 +73,16 @@ def cli_main(
     display_banner()
     if set_container_runtime:
         settings = Settings()
-        container_runtime = settings.set_custom_runtime(
-            set_container_runtime, autosave=True
-        )
-        click.echo(f"Set the settings container_runtime to {container_runtime}")
+        if set_container_runtime == "default":
+            settings.unset_custom_runtime()
+            click.echo(
+                "Instructed Dangerzone to use the default container runtime for this OS"
+            )
+        else:
+            container_runtime = settings.set_custom_runtime(
+                set_container_runtime, autosave=True
+            )
+            click.echo(f"Set the settings container_runtime to {container_runtime}")
         sys.exit(0)
     elif not filenames:
         raise click.UsageError("Missing argument 'FILENAMES...'")

@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-BUILD_CONTEXT = "dangerzone/"
+BUILD_CONTEXT = "dangerzone"
 IMAGE_NAME = "dangerzone.rocks/dangerzone"
 if platform.system() in ["Darwin", "Windows"]:
     CONTAINER_RUNTIME = "docker"
@@ -122,7 +122,8 @@ def main():
 
     subprocess.run(
         [
-            "./dev_scripts/repro-build.py",
+            sys.executable,
+            str(Path("dev_scripts") / "repro-build.py"),
             "build",
             "--runtime",
             args.runtime,

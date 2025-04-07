@@ -22,7 +22,7 @@ fix: ## apply all the suggestions from ruff
 	ruff format
 
 .PHONY: test
-test:
+test: ## Run the tests
 	# Make each GUI test run as a separate process, to avoid segfaults due to
 	# shared state.
 	# See more in https://github.com/freedomofpress/dangerzone/issues/493
@@ -47,11 +47,11 @@ test-large: test-large-init  ## Run large test set
 	python -m pytest --tb=no tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)
 	python $(TEST_LARGE_RESULTS)/report.py $(TEST_LARGE_RESULTS)
 
-Dockerfile: Dockerfile.env Dockerfile.in
+Dockerfile: Dockerfile.env Dockerfile.in ## Regenerate the Dockerfile from its template
 	poetry run jinja2 Dockerfile.in Dockerfile.env > Dockerfile
 
 .PHONY: poetry-install
-poetry-install:
+poetry-install: ## Install project dependencies
 	poetry install
 
 .PHONY: build-clean
@@ -59,19 +59,19 @@ build-clean:
 	poetry run doit clean
 
 .PHONY: build-macos-intel
-build-macos-intel: build-clean poetry-install
+build-macos-intel: build-clean poetry-install ## Build macOS intel package (.dmg)
 	poetry run doit -n 8
 
 .PHONY: build-macos-arm
-build-macos-arm: build-clean poetry-install
+build-macos-arm: build-clean poetry-install ## Build macOS Apple Silicon package (.dmg)
 	poetry run doit -n 8 macos_build_dmg
 
 .PHONY: build-linux
-build-linux: build-clean poetry-install
+build-linux: build-clean poetry-install ## Build linux packages (.rpm and .deb)
 	poetry run doit -n 8 fedora_rpm debian_deb
 
 .PHONY: regenerate-reference-pdfs
-regenerate-reference-pdfs:
+regenerate-reference-pdfs: ## Regenerate the reference PDFs
 	pytest tests/test_cli.py -k regenerate --generate-reference-pdfs
 # Makefile self-help borrowed from the securedrop-client project
 # Explaination of the below shell command should it ever break.

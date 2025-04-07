@@ -4,6 +4,12 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+# Call freeze_support() to avoid passing unknown options to the subprocess.
+# See https://github.com/freedomofpress/dangerzone/issues/873
+import multiprocessing
+
+multiprocessing.freeze_support()
+
 
 try:
     from . import vendor  # type: ignore [attr-defined]

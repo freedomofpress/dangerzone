@@ -68,6 +68,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 - Work around a `cx_freeze` build issue ([#974](https://github.com/freedomofpress/dangerzone/issues/974))
 - tests: mark the hancom office suite tests for rerun on failures ([#991](https://github.com/freedomofpress/dangerzone/pull/991))
+- Update reference template for Qubes to Fedora 41 ([#1078](https://github.com/freedomofpress/dangerzone/issues/1078))
 
 ## [0.8.1](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...0.8.0)
 

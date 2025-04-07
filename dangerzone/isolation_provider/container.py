@@ -56,7 +56,14 @@ class Container(IsolationProvider):
             security_args = ["--log-driver", "none"]
             security_args += ["--security-opt", "no-new-privileges"]
             if container_utils.get_runtime_version() >= (4, 1):
-                security_args += ["--userns", "nomap"]
+                # We perform a platform check to avoid the following Podman Desktop
+                # error on Windows:
+                #
+                #   Error: nomap is only supported in rootless mode
+                #
+                # See also: https://github.com/freedomofpress/dangerzone/issues/1127
+                if platform.system() != "Windows":
+                    security_args += ["--userns", "nomap"]
         else:
             security_args = ["--security-opt=no-new-privileges:true"]
 
@@ -67,7 +74,15 @@ class Container(IsolationProvider):
         # [1] https://github.com/freedomofpress/dangerzone/issues/846
         # [2] https://github.com/containers/common/blob/d3283f8401eeeb21f3c59a425b5461f069e199a7/pkg/seccomp/seccomp.json
         seccomp_json_path = str(get_resource_path("seccomp.gvisor.json"))
-        security_args += ["--security-opt", f"seccomp={seccomp_json_path}"]
+        # We perform a platform check to avoid the following Podman Desktop
+        # error on Windows:
+        #
+        #   Error: opening seccomp profile failed: open
+        #   C:\[...]\dangerzone\share\seccomp.gvisor.json: no such file or directory
+        #
+        # See also: https://github.com/freedomofpress/dangerzone/issues/1127
+        if runtime.name == "podman" and platform.system() != "Windows":
+            security_args += ["--security-opt", f"seccomp={seccomp_json_path}"]
 
         security_args += ["--cap-drop", "all"]
         security_args += ["--cap-add", "SYS_CHROOT"]

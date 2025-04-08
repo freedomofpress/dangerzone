@@ -21,6 +21,7 @@ Here is a list of tasks that should be done before issuing the release:
 - [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
 - [ ] A draft release should be created. Copy the release notes text from the template at [`docs/templates/release-notes`](https://github.com/freedomofpress/dangerzone/tree/main/docs/templates/)
+- [ ] Send the release notes to editorial for review
 - [ ] Do the QA tasks
 
 ## Add new Linux platforms and remove obsolete ones

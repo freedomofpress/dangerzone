@@ -193,7 +193,7 @@ def main():
         Path="C:\\Program Files (x86)\\Dangerzone",
     )
     ET.SubElement(directory_search_el, "FileSearch", Name="dangerzone.exe")
-    registry_search_el = ET.SubElement(package_el, "Property", Id="DANGERZONE080FOUND")
+    registry_search_el = ET.SubElement(package_el, "Property", Id="DANGERZONE08FOUND")
     ET.SubElement(
         registry_search_el,
         "RegistrySearch",
@@ -203,9 +203,17 @@ def main():
         Type="raw",
     )
     ET.SubElement(
+        registry_search_el,
+        "RegistrySearch",
+        Root="HKLM",
+        Key="SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{8AAC0808-3556-4164-9D15-6EC1FB673AB2}",
+        Name="DisplayName",
+        Type="raw",
+    )
+    ET.SubElement(
         package_el,
         "Launch",
-        Condition="NOT OLDDANGERZONEFOUND AND NOT DANGERZONE080FOUND",
+        Condition="NOT OLDDANGERZONEFOUND AND NOT DANGERZONE08FOUND",
         Message="A previous version of [ProductName] is already installed. Please uninstall it from Programs and Features before proceeding with the installation.",
     )
 

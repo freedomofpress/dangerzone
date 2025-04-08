@@ -82,3 +82,7 @@ Dangerzone gets updates to improve its features _and_ to fix problems. So, updat
 1. Check which version of Dangerzone you are currently using: run Dangerzone, then look for a series of numbers to the right of the logo within the app. The format of the numbers will look similar to `0.4.1`
 2. Now find the latest available version of Dangerzone: go to the [download page](https://dangerzone.rocks/#downloads). Look for the version number displayed. The number will be using the same format as in Step 1.
 3. Is the version on the Dangerzone download page higher than the version of your installed app? Go ahead and update.
+
+### Can I use Podman Desktop?
+
+Yes! We've introduced [experimental support for Podman Desktop](https://github.com/freedomofpress/dangerzone/blob/main/docs/podman-desktop.md) on Windows and macOS.

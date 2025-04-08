@@ -214,7 +214,7 @@ def main():
         package_el,
         "Launch",
         Condition="NOT OLDDANGERZONEFOUND AND NOT DANGERZONE08FOUND",
-        Message="A previous version of [ProductName] is already installed. Please uninstall it from Programs and Features before proceeding with the installation.",
+        Message='A previous version of [ProductName] is already installed. Please uninstall it from "Apps & Features" before proceeding with the installation.',
     )
 
     # Add the ProgramMenuFolder StandardDirectory

@@ -12,7 +12,20 @@ You will be required to open a terminal and follow these steps:
 
 ## On macOS
 
-To set the container runtime to podman, use this command:
+You will need to configure podman to access the shared Dangerzone resources:
+
+```bash
+podman machine stop
+podman machine rm
+cat > ~/.config/containers/containers.conf <<EOF
+[machine]
+volumes = ["/Users:/Users", "/private:/private", "/var/folders:/var/folders", "/Applications/Dangerzone.app:/Applications/Dangerzone.app"]
+EOF
+podman machine init
+podman machine set --rootful=false  
+podman machine start
+```
+Then, set the container runtime to podman using this command:
 
 ```bash
 /Applications/Dangerzone.app/Contents/MacOS/dangerzone-cli --set-container-runtime podman

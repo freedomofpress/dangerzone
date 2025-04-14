@@ -20,7 +20,7 @@ jobs:
       - name: Download container image for the latest release and load it
         run: |
           VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | grep "tag_name" | cut -d '"' -f 4)
-          CONTAINER_FILENAME=container-${VERSION:1}-${{ matrix.arch }}.tar.gz
+          CONTAINER_FILENAME=container-${VERSION:1}-${{ matrix.arch }}.tar
           wget https://github.com/freedomofpress/dangerzone/releases/download/${VERSION}/${CONTAINER_FILENAME} -O ${CONTAINER_FILENAME}
           docker load -i ${CONTAINER_FILENAME}
       - name: Get image tag

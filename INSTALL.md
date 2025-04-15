@@ -110,30 +110,30 @@ Dangerzone is available for:
   </tr>
 </table>
 
-First, retrieve the PGP keys.
+First, retrieve the PGP keys. The instructions differ depending on the specific
+distribution you are using:
 
-Starting with Trixie, follow these instructions to download the PGP keys:
+For Debian Trixie and Ubuntu Plucky (25.04), follow these instructions to
+download the PGP keys:
 
 ```bash
-sudo apt-get update && sudo apt-get install sq -y
-mkdir -p /etc/apt/keyrings/
+sudo apt-get update && sudo apt-get install sq ca-certificates -y
 sq network keyserver \
    --server hkps://keys.openpgp.org \
    search "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
-   --output /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
+   --output - | sq packet dearmor fpfdz.gpg
+sudo mkdir -p /etc/apt/keyrings/
+sudo mv fpfdz.gpg /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
 ```
 
 On other Debian-derivatives:
 
 ```sh
 sudo apt-get update && sudo apt-get install gnupg2 ca-certificates -y
-gpg --keyserver hkps://keys.openpgp.org \
-    --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
-    --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
 sudo mkdir -p /etc/apt/keyrings/
-sudo gpg --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
-    --armor --export "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
-    > /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
+sudo gpg --keyserver hkps://keys.openpgp.org \
+    --no-default-keyring --keyring /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg \
+    --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
 ```
 
 Then, on all distributions, add the URL of the repo in your APT sources:

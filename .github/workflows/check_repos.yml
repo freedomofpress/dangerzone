@@ -34,8 +34,8 @@ jobs:
           - distro: debian
             version: "11"  # bullseye
     steps:
-      - name: Add packages.freedom.press PGP key (gpg)
-        if: matrix.version != 'trixie'
+      - name: Add packages.freedom.press PGP key (gpg --keyring)
+        if: matrix.version != 'trixie' && matrix.version != "25.04"
         run: |
           apt-get update && apt-get install -y gnupg2 ca-certificates
           dirmngr  # NOTE: This is a command that's necessary only in containers
@@ -48,7 +48,7 @@ jobs:
           mv ./fpf-apt-tools-archive-keyring.gpg /etc/apt/keyrings/.
 
       - name: Add packages.freedom.press PGP key (sq)
-        if: matrix.version == 'trixie'
+        if: matrix.version == 'trixie' || matrix.version == '25.04'
         run: |
           apt-get update && apt-get install -y ca-certificates sq
           mkdir -p /etc/apt/keyrings/
@@ -57,7 +57,10 @@ jobs:
           sq network keyserver \
              --server hkps://keys.openpgp.org \
              search "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
-             --output /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
+             --output - \
+          | sq packet dearmor \
+          > /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
+
       - name: Add packages.freedom.press to our APT sources
         run: |
           . /etc/os-release

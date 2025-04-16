@@ -11,9 +11,7 @@ from .settings import Settings
 from .util import get_resource_path, get_subprocess_startupinfo
 
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
-CONTAINER_NAME = (
-    "ghcr.io/almet/dangerzone/dangerzone"
-)  # FIXME: Change this to the correct container name
+CONTAINER_NAME = "ghcr.io/almet/dangerzone/dangerzone"  # FIXME: Change this to the correct container name
 
 log = logging.getLogger(__name__)
 
@@ -230,7 +228,9 @@ def get_image_id_by_digest(digest: str) -> str:
     return process.stdout.decode().strip().split("\n")[0]
 
 
-def container_pull(image: str, manifest_digest: str, callback: Callable):
+def container_pull(
+    image: str, manifest_digest: str, callback: Optional[Callable] = None
+):
     """Pull a container image from a registry."""
     runtime = Runtime()
     cmd = [str(runtime.path), "pull", f"{image}@sha256:{manifest_digest}"]
@@ -242,8 +242,9 @@ def container_pull(image: str, manifest_digest: str, callback: Callable):
         bufsize=1,
     )
 
-    for line in process.stdout:  # type: ignore
-        callback(line)
+    if callback:
+        for line in process.stdout:  # type: ignore
+            callback(line)
 
     process.wait()
     if process.returncode != 0:

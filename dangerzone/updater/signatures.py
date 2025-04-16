@@ -486,7 +486,7 @@ def prepare_airgapped_archive(image_name: str, destination: str) -> None:
 
 
 def upgrade_container_image(
-    image: str, manifest_digest: str, pubkey: str, callback: Callable
+    image: str, manifest_digest: str, pubkey: str, callback: Optional[Callable] = None
 ) -> str:
     """Verify and upgrade the image to the latest, if signed."""
     update_available, remote_digest = registry.is_new_remote_image_available(image)

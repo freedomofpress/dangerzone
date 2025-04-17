@@ -3,11 +3,20 @@ import os
 import platform
 import shlex
 import subprocess
-from typing import Callable, List, Tuple
+import sys
+from typing import Callable, List, Optional, Tuple
 
-from .. import container_utils, errors, updater
-from ..container_utils import Runtime
+from .. import container_utils, errors
+from ..container_utils import CONTAINER_NAME, Runtime
 from ..document import Document
+from ..updater import (
+    DEFAULT_PUBKEY_LOCATION,
+    UpdaterError,
+    install_local_container_tar,
+    is_update_available,
+    upgrade_container_image,
+    verify_local_image,
+)
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
 

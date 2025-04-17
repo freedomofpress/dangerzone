@@ -22,7 +22,7 @@ elif os.environ.get("DUMMY_CONVERSION", False):
 
 
 @pytest.fixture
-def provider() -> Container:
+def provider(skip_image_verification: None) -> Container:
     return Container()
 
 

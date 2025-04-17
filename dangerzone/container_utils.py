@@ -4,13 +4,14 @@ import platform
 import shutil
 import subprocess
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import IO, Callable, List, Optional, Tuple
 
 from . import errors
 from .settings import Settings
 from .util import get_resource_path, get_subprocess_startupinfo
 
-CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+CONTAINER_NAME = "ghcr.io/almet/dangerzone/dangerzone"  # FIXME: Change this to the correct container name
 
 log = logging.getLogger(__name__)
 
@@ -55,6 +56,11 @@ class Runtime(object):
         return "podman" if platform.system() == "Linux" else "docker"
 
 
+def subprocess_run(*args, **kwargs) -> subprocess.CompletedProcess:
+    """subprocess.run with the correct startupinfo for Windows."""
+    return subprocess.run(*args, startupinfo=get_subprocess_startupinfo(), **kwargs)
+
+
 def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
     """Get the major/minor parts of the Docker/Podman version.
 
@@ -74,9 +80,8 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
 
     cmd = [str(runtime.path), "version", "-f", query]
     try:
-        version = subprocess.run(
+        version = subprocess_run(
             cmd,
-            startupinfo=get_subprocess_startupinfo(),
             capture_output=True,
             check=True,
         ).stdout.decode()
@@ -149,12 +154,6 @@ def delete_image_tag(tag: str) -> None:
         )
 
 
-def get_expected_tag() -> str:
-    """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
-    with get_resource_path("image-id.txt").open() as f:
-        return f.read().strip()
-
-
 def load_image_tarball() -> None:
     runtime = Runtime()
     log.info("Installing Dangerzone container image...")
@@ -198,4 +197,90 @@ def load_image_tarball() -> None:
         add_image_tag(bad_tag, good_tag)
         delete_image_tag(bad_tag)
 
-    log.info("Successfully installed container image")
+
+def tag_image_by_digest(digest: str, tag: str) -> None:
+    """Tag a container image by digest.
+    The sha256: prefix should be omitted from the digest.
+    """
+    runtime = Runtime()
+    image_id = get_image_id_by_digest(digest)
+    cmd = [str(runtime.path), "tag", image_id, tag]
+    log.debug(" ".join(cmd))
+    subprocess_run(cmd, check=True)
+
+
+def get_image_id_by_digest(digest: str) -> str:
+    """Get an image ID from a digest.
+    The sha256: prefix should be omitted from the digest.
+    """
+    runtime = Runtime()
+    cmd = [
+        str(runtime.path),
+        "images",
+        "-f",
+        f"digest=sha256:{digest}",
+        "--format",
+        "{{.Id}}",
+    ]
+    log.debug(" ".join(cmd))
+    process = subprocess_run(cmd, check=True, capture_output=True)
+    # In case we have multiple lines, we only want the first one.
+    return process.stdout.decode().strip().split("\n")[0]
+
+
+def container_pull(
+    image: str, manifest_digest: str, callback: Optional[Callable] = None
+):
+    """Pull a container image from a registry."""
+    runtime = Runtime()
+    cmd = [str(runtime.path), "pull", f"{image}@sha256:{manifest_digest}"]
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+
+    if callback:
+        for line in process.stdout:  # type: ignore
+            callback(line)
+
+    process.wait()
+    if process.returncode != 0:
+        raise errors.ContainerPullException(
+            f"Could not pull the container image: {process.returncode}"
+        )
+
+
+def get_local_image_digest(image: str) -> str:
+    """
+    Returns a image hash from a local image name
+    """
+    # Get the image hash from the "podman images" command.
+    # It's not possible to use "podman inspect" here as it
+    # returns the digest of the architecture-bound image
+    runtime = Runtime()
+    cmd = [str(runtime.path), "images", image, "--format", "{{.Digest}}"]
+    log.debug(" ".join(cmd))
+    try:
+        result = subprocess_run(
+            cmd,
+            capture_output=True,
+            check=True,
+        )
+        lines = result.stdout.decode().strip().split("\n")
+        if len(lines) != 1:
+            raise errors.MultipleImagesFoundException(
+                f"Expected a single line of output, got {len(lines)} lines"
+            )
+        image_digest = lines[0].replace("sha256:", "")
+        if not image_digest:
+            raise errors.ImageNotPresentException(
+                f"The image {image} does not exist locally"
+            )
+        return image_digest
+    except subprocess.CalledProcessError as e:
+        raise errors.ImageNotPresentException(
+            f"The image {image} does not exist locally"
+        )

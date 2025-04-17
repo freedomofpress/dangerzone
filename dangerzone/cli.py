@@ -71,8 +71,8 @@ def cli_main(
 ) -> None:
     setup_logging()
     display_banner()
+    settings = Settings()
     if set_container_runtime:
-        settings = Settings()
         if set_container_runtime == "default":
             settings.unset_custom_runtime()
             click.echo(
@@ -117,7 +117,8 @@ def cli_main(
             sys.exit(1)
 
     # Ensure container is installed
-    dangerzone.isolation_provider.install()
+    should_upgrade = bool(settings.get("updater_check_all"))
+    dangerzone.isolation_provider.install(should_upgrade)
 
     # Convert the document
     print_header("Converting document to safe PDF")

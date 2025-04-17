@@ -3,11 +3,20 @@ import os
 import platform
 import shlex
 import subprocess
-from typing import List, Tuple
+import sys
+from typing import Callable, List, Optional, Tuple
 
 from .. import container_utils, errors
-from ..container_utils import Runtime
+from ..container_utils import CONTAINER_NAME, Runtime
 from ..document import Document
+from ..updater import (
+    DEFAULT_PUBKEY_LOCATION,
+    UpdaterError,
+    install_local_container_tar,
+    is_update_available,
+    upgrade_container_image,
+    verify_local_image,
+)
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
 
@@ -94,42 +103,55 @@ class Container(IsolationProvider):
         return security_args
 
     @staticmethod
-    def install() -> bool:
-        """Install the container image tarball, or verify that it's already installed.
-
-        Perform the following actions:
-        1. Get the tags of any locally available images that match Dangerzone's image
-           name.
-        2. Get the expected image tag from the image-id.txt file.
-           - If this tag is present in the local images, then we can return.
-           - Else, prune the older container images and continue.
-        3. Load the image tarball and make sure it matches the expected tag.
+    def install(
+        should_upgrade: bool,
+        callback: Optional[Callable] = sys.stdout.write,
+        last_try: bool = False,
+    ) -> bool:
         """
-        old_tags = container_utils.list_image_tags()
-        expected_tag = container_utils.get_expected_tag()
+        Install a (local or remote) container image.
 
-        if expected_tag not in old_tags:
-            # Prune older container images.
-            log.info(
-                f"Could not find a Dangerzone container image with tag '{expected_tag}'"
-            )
-            for tag in old_tags:
-                tag = container_utils.CONTAINER_NAME + ":" + tag
-                container_utils.delete_image_tag(tag)
+        Use the local `container.tar` image if:
+
+        - No image is currently installed and `should_upgrade` is set to False
+        - No image is currently installed and no upgrades are available
+
+        Upgrade to the last remote container image if:
+
+        - An upgrade is available and `should_upgrade` is set to True
+        """
+
+        installed_tags = container_utils.list_image_tags()
+        if not should_upgrade:
+            log.debug("Skipping container upgrade check as requested by the settings")
+            if not installed_tags:
+                install_local_container_tar()
         else:
-            return True
-
-        # Load the image tarball into the container runtime.
-        container_utils.load_image_tarball()
-
-        # Check that the container image has the expected image tag.
-        # See https://github.com/freedomofpress/dangerzone/issues/988 for an example
-        # where this was not the case.
-        new_tags = container_utils.list_image_tags()
-        if expected_tag not in new_tags:
-            raise errors.ImageNotPresentException(
-                f"Could not find expected tag '{expected_tag}' after loading the"
-                " container image tarball"
+            update_available, image_digest = is_update_available(
+                CONTAINER_NAME,
+                DEFAULT_PUBKEY_LOCATION,
+            )
+            if update_available and image_digest:
+                log.debug("Upgrading container image to %s", image_digest)
+                upgrade_container_image(
+                    CONTAINER_NAME,
+                    image_digest,
+                    DEFAULT_PUBKEY_LOCATION,
+                    callback=callback,
+                )
+            else:
+                log.debug("No update available for the container.")
+                if not installed_tags:
+                    install_local_container_tar()
+        try:
+            verify_local_image(CONTAINER_NAME)
+        except UpdaterError:
+            # delete_image()
+            if last_try:
+                raise
+            log.debug("Container image not found, trying to install it.")
+            return Container.install(
+                should_upgrade=should_upgrade, callback=callback, last_try=True
             )
 
         return True
@@ -214,6 +236,9 @@ class Container(IsolationProvider):
         name: str,
     ) -> subprocess.Popen:
         runtime = Runtime()
+
+        image_digest = container_utils.get_local_image_digest(CONTAINER_NAME)
+        verify_local_image(CONTAINER_NAME)
         security_args = self.get_runtime_security_args()
         debug_args = []
         if self.debug:
@@ -222,9 +247,7 @@ class Container(IsolationProvider):
         enable_stdin = ["-i"]
         set_name = ["--name", name]
         prevent_leakage_args = ["--rm"]
-        image_name = [
-            container_utils.CONTAINER_NAME + ":" + container_utils.get_expected_tag()
-        ]
+        image_name = [CONTAINER_NAME + "@sha256:" + image_digest]
         args = (
             ["run"]
             + security_args

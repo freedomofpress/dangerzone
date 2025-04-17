@@ -9,6 +9,7 @@ import pytest
 
 from dangerzone.document import SAFE_EXTENSION
 from dangerzone.gui import Application
+from dangerzone.isolation_provider import container
 
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
 
@@ -109,6 +110,14 @@ def sample_bad_width() -> str:
 @pytest.fixture
 def sample_pdf() -> str:
     return str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
+
+
+@pytest.fixture
+def skip_image_verification(monkeypatch):
+    def noop(*args, **kwargs):
+        return True
+
+    monkeypatch.setattr(container, "verify_local_image", noop)
 
 
 SAMPLE_DIRECTORY = "test_docs"

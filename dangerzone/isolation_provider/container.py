@@ -95,31 +95,49 @@ class Container(IsolationProvider):
 
     @staticmethod
     def install(
-        should_upgrade: bool, callback: Callable, last_try: bool = False
+        should_upgrade: bool,
+        callback: Optional[Callable] = sys.stdout.write,
+        last_try: bool = False,
     ) -> bool:
-        """Check if an update is available and install it if necessary."""
+        """
+        Install a (local or remote) container image.
+
+        Use the local `container.tar` image if:
+
+        - No image is currently installed and `should_upgrade` is set to False
+        - No image is currently installed and no upgrades are available
+
+        Upgrade to the last remote container image if:
+
+        - An upgrade is available and `should_upgrade` is set to True
+        """
+
+        installed_tags = container_utils.list_image_tags()
         if not should_upgrade:
             log.debug("Skipping container upgrade check as requested by the settings")
+            if not installed_tags:
+                install_local_container_tar()
         else:
-            update_available, image_digest = updater.is_update_available(
-                container_utils.CONTAINER_NAME,
-                updater.DEFAULT_PUBKEY_LOCATION,
+            update_available, image_digest = is_update_available(
+                CONTAINER_NAME,
+                DEFAULT_PUBKEY_LOCATION,
             )
             if update_available and image_digest:
                 log.debug("Upgrading container image to %s", image_digest)
-                updater.upgrade_container_image(
-                    container_utils.CONTAINER_NAME,
+                upgrade_container_image(
+                    CONTAINER_NAME,
                     image_digest,
-                    updater.DEFAULT_PUBKEY_LOCATION,
+                    DEFAULT_PUBKEY_LOCATION,
                     callback=callback,
                 )
             else:
-                log.debug("No update available for the container")
+                log.debug("No update available for the container.")
+                if not installed_tags:
+                    install_local_container_tar()
         try:
-            updater.verify_local_image(
-                container_utils.CONTAINER_NAME, updater.DEFAULT_PUBKEY_LOCATION
-            )
-        except errors.ImageNotPresentException:
+            verify_local_image(CONTAINER_NAME)
+        except UpdaterError:
+            # delete_image()
             if last_try:
                 raise
             log.debug("Container image not found, trying to install it.")
@@ -210,13 +228,8 @@ class Container(IsolationProvider):
     ) -> subprocess.Popen:
         runtime = Runtime()
 
-        image_digest = container_utils.get_local_image_digest(
-            container_utils.CONTAINER_NAME
-        )
-        updater.verify_local_image(
-            container_utils.CONTAINER_NAME,
-            updater.DEFAULT_PUBKEY_LOCATION,
-        )
+        image_digest = container_utils.get_local_image_digest(CONTAINER_NAME)
+        verify_local_image(CONTAINER_NAME)
         security_args = self.get_runtime_security_args()
         debug_args = []
         if self.debug:
@@ -225,7 +238,7 @@ class Container(IsolationProvider):
         enable_stdin = ["-i"]
         set_name = ["--name", name]
         prevent_leakage_args = ["--rm"]
-        image_name = [container_utils.CONTAINER_NAME + "@sha256:" + image_digest]
+        image_name = [CONTAINER_NAME + "@sha256:" + image_digest]
         args = (
             ["run"]
             + security_args

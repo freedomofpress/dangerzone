@@ -36,7 +36,7 @@ class Dummy(IsolationProvider):
             )
         super().__init__()
 
-    def install(self) -> bool:
+    def install(self, *args, **kwargs) -> bool:
         return True
 
     @staticmethod

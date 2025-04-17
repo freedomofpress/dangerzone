@@ -9,6 +9,7 @@ import pytest
 
 from dangerzone.document import SAFE_EXTENSION
 from dangerzone.gui import Application
+from dangerzone.isolation_provider import container
 
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
 

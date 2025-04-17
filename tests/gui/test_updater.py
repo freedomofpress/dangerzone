@@ -283,12 +283,12 @@ def test_update_errors(
 ) -> None:
     """Test update check errors."""
     settings = updater.dangerzone.settings
+    # Always assume that we can perform multiple update checks in a row.
+    monkeypatch.setattr(releases, "_should_postpone_update_check", lambda _: False)
+
     # Mock requests.get().
     mocker.patch("dangerzone.updater.releases.requests.get")
     requests_mock = releases.requests.get
-
-    # Always assume that we can perform multiple update checks in a row.
-    monkeypatch.setattr(releases, "_should_postpone_update_check", lambda: False)
 
     # Test 1 - Check that request exceptions are being detected as errors.
     requests_mock.side_effect = Exception("bad url")  # type: ignore [attr-defined]

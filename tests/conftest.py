@@ -9,9 +9,9 @@ import pytest
 
 from dangerzone.document import SAFE_EXTENSION
 from dangerzone.gui import Application
+from dangerzone.isolation_provider import container
 
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
-
 
 
 # Use this fixture to make `pytest-qt` invoke our custom QApplication.
@@ -132,7 +132,6 @@ test_docs = [
 for_each_doc = pytest.mark.parametrize(
     "doc", test_docs, ids=[str(doc.name) for doc in test_docs]
 )
-
 
 
 # External Docs - base64 docs encoded for externally sourced documents

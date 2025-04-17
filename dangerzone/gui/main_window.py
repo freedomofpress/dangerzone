@@ -450,9 +450,9 @@ class InstallContainerThread(QtCore.QThread):
     def run(self) -> None:
         error = None
         try:
-            should_upgrade = self.dangerzone.settings.get("updater_check_all")
+            should_upgrade = bool(self.dangerzone.settings.get("updater_check_all"))
             installed = self.dangerzone.isolation_provider.install(
-                should_upgrade=bool(should_upgrade), callback=self.process_stdout.emit
+                should_upgrade=should_upgrade, callback=self.process_stdout.emit
             )
         except Exception as e:
             log.error("Container installation problem")

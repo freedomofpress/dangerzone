@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 class Qubes(IsolationProvider):
     """Uses a disposable qube for performing the conversion"""
 
-    def install(self) -> bool:
+    def install(self, *args, **kwargs) -> bool:
         return True
 
     @staticmethod

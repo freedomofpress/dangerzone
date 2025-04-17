@@ -498,3 +498,11 @@ def upgrade_container_image(
     # Store the signatures just now to avoid storing them unverified
     store_signatures(signatures, manifest_digest, pubkey)
     return manifest_digest
+
+
+def install_local_container_tar(
+    pubkey: Optional[str] = DEFAULT_PUBKEY_LOCATION,
+) -> None:
+    tarball_path = get_resource_path("container.tar")
+    log.debug("Installing container image %s", tarball_path)
+    upgrade_container_image_airgapped(tarball_path, pubkey)

@@ -423,7 +423,7 @@ def store_signatures(
         write_log_index(get_log_index_from_signatures(signatures))
 
 
-def verify_local_image(image: str, pubkey: str) -> bool:
+def verify_local_image(image: str, pubkey: str = DEFAULT_PUBKEY_LOCATION) -> bool:
     """
     Verifies that a local image has a valid signature
     """

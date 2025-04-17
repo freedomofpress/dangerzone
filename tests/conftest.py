@@ -112,6 +112,14 @@ def sample_pdf() -> str:
     return str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
 
 
+@pytest.fixture
+def skip_image_verification(monkeypatch):
+    def noop(*args, **kwargs):
+        return True
+
+    monkeypatch.setattr(container, "verify_local_image", noop)
+
+
 SAMPLE_DIRECTORY = "test_docs"
 BASIC_SAMPLE_PDF = "sample-pdf.pdf"
 BASIC_SAMPLE_DOC = "sample-doc.doc"

@@ -11,7 +11,7 @@ from .settings import Settings
 from .util import get_resource_path, get_subprocess_startupinfo
 
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
-CONTAINER_NAME = "ghcr.io/almet/dangerzone/dangerzone"  # FIXME: Change this to the correct container name
+CONTAINER_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 
 log = logging.getLogger(__name__)
 

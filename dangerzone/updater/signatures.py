@@ -358,12 +358,21 @@ def load_and_verify_signatures(
     pubkey_signatures = signatures_path / get_file_digest(pubkey)
     if not pubkey_signatures.exists():
         msg = (
-            f"Cannot find a '{pubkey_signatures}' folder."
+            f"Cannot find a '{pubkey_signatures}' folder. "
             "You might need to download the image signatures first."
         )
         raise errors.SignaturesFolderDoesNotExist(msg)
 
-    with open(pubkey_signatures / f"{image_digest}.json") as f:
+    signatures_file = pubkey_signatures / f"{image_digest}.json"
+
+    if not signatures_file.exists():
+        msg = (
+            f"Cannot find a '{signatures_file}' file. "
+            "You might need to download the image signatures first."
+        )
+        raise errors.LocalSignatureNotFound(msg)
+
+    with open(signatures_file) as f:
         log.debug("Loading signatures from %s", f.name)
         signatures = json.load(f)
 

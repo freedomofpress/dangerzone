@@ -156,7 +156,7 @@ def parse_buildkit_args(args, runtime: str) -> str:
         return []
 
     if runtime != "podman":
-        raise RuntimeError("Cannot specify BuildKit arguments using the Podman runtime")
+        raise RuntimeError("Cannot specify BuildKit arguments using the Docker runtime")
 
     return shlex.split(args.buildkit_args)
 

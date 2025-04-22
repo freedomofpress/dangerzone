@@ -15,10 +15,25 @@ on:
       reproduce:
         required: true
         type: boolean
+      sign:
+        required: true
+        type: boolean
+      key_name:
+        required: false
+        type: string
+        default: "dangerzone-tests"
+      key_cache:
+        required: false
+        type: string
+        # cosign keys are unique for the ref
+        default: "v1-keypair-${{ github.ref_name }}"
     secrets:
       registry_token:
         required: true
-
+    outputs:
+      image_uri:
+        description: "The published container image location, with the tag and checksum"
+        value: ${{ jobs.merge.outputs.image_uri }}
 
 jobs:
   lint:
@@ -44,6 +59,7 @@ jobs:
       debian_archive_date: ${{ steps.params.outputs.debian_archive_date }}
       source_date_epoch: ${{ steps.params.outputs.source_date_epoch }}
       image: ${{ steps.params.outputs.full_image_name }}
+      tag: ${{ steps.params.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -57,10 +73,9 @@ jobs:
           SOURCE_DATE_EPOCH=$(date -u -d ${DEBIAN_ARCHIVE_DATE} +"%s")
           TAG=${DEBIAN_ARCHIVE_DATE}-$(git describe --long --first-parent | tail -c +2)
           FULL_IMAGE_NAME=${{ inputs.registry }}/${{ inputs.image_name }}:${TAG}
-
           echo "debian_archive_date=${DEBIAN_ARCHIVE_DATE}" >> $GITHUB_OUTPUT
           echo "source_date_epoch=${SOURCE_DATE_EPOCH}" >> $GITHUB_OUTPUT
-          echo "tag=${DEBIAN_ARCHIVE_DATE}-${TAG}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_OUTPUT
           echo "buildkit_image=${BUILDKIT_IMAGE}" >> $GITHUB_OUTPUT
 
@@ -73,6 +88,7 @@ jobs:
       debian_archive_date: ${{ needs.prepare.outputs.debian_archive_date }}
       source_date_epoch: ${{ needs.prepare.outputs.source_date_epoch }}
       image: ${{ needs.prepare.outputs.image }}
+      tag: ${{ needs.prepare.outputs.tag }}
     strategy:
       fail-fast: false
       matrix:
@@ -140,6 +156,8 @@ jobs:
       debian_archive_date: ${{ needs.build.outputs.debian_archive_date }}
       source_date_epoch: ${{ needs.build.outputs.source_date_epoch }}
       image: ${{ needs.build.outputs.image }}
+      image_uri: ${{ needs.build.output.image }}@${{ steps.image.outputs.digest_root }}"
+      tag: ${{ needs.build.outputs.tag }}
       digest_root: ${{ steps.image.outputs.digest_root }}
       digest_amd64: ${{ steps.image.outputs.digest_amd64 }}
       digest_arm64: ${{ steps.image.outputs.digest_arm64 }}
@@ -246,3 +264,80 @@ jobs:
             --platform \
             linux/${{ matrix.platform.name }} \
             ${{ needs.merge.outputs[format('digest_{0}', matrix.platform.name)] }}
+
+  sign:
+    if: ${{ inputs.sign }}
+    runs-on: "ubuntu-latest"
+    env:
+      COSIGN_PASSWORD: "password"
+      COSIGN_YES: true
+    needs:
+      - merge
+    outputs:
+      image_uri: ${{ steps.params.outputs.image_uri }}
+    steps:
+      - name: Prepare env
+        run: |-
+          echo "IMAGE_URI=${{ inputs.registry }}/${{ inputs.image_name }}:${{ needs.merge.outputs.tag }}@${{ needs.merge.outputs.digest_root }}" >> $GITHUB_ENV
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a
+        with:
+          cosign-release: 'v2.5.0'
+      - name: Check install
+        run: cosign version
+      - name: Cache keypair
+        id: cache-keypair
+        uses: actions/cache@v4
+        with:
+          path: "${{ inputs.key_name }}.*"
+          key: ${{ inputs.key_cache }}
+          enableCrossOsArchive: true
+      - if: ${{ steps.cache-keypair.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        name: Generate keypair
+        run: |-
+          cosign generate-key-pair --output-key-prefix="${{ inputs.key_name }}"
+      - name: Cache keypair
+        uses: actions/cache@v4
+        with:
+          path: "${{ inputs.key_name }}.*"
+          key: ${{ inputs.key_cache }}
+          enableCrossOsArchive: true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ inputs.registry_user }}
+          password: ${{ secrets.registry_token }}
+
+      - name: Sign container
+        run: |-
+          cosign sign -d --yes --key=${{ inputs.key_name }}.key "${{ env.IMAGE_URI }}"
+        shell: bash
+
+      - name: Get the container image from the registry
+        # It contains the image and the signatures
+        run: |-
+          cosign save ${{ env.IMAGE_URI }} --dir dz-container
+          mkdir share
+          cd dz-container
+          tar -cvf ../share/container.tar .
+          cd ..
+
+      - name: Cache container image
+        id: cache-container-image
+        uses: actions/cache@v4
+        with:
+          key: v6-container-${{ env.IMAGE_URI }}
+          path: |-
+            share/container.tar
+
+      - name: Upload pubkey
+        uses: actions/upload-artifact@v4
+        with:
+          name: pubkey
+          path: "${{inputs.key_name}}.pub"
+          if-no-files-found: error
+          compression-level: 0

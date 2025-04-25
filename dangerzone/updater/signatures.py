@@ -31,7 +31,7 @@ def appdata_dir() -> Path:
 DEFAULT_LOG_INDEX = 0
 
 # XXX Store this somewhere else.
-DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
+DEFAULT_PUBKEY_LOCATION = str(get_resource_path("freedomofpress-dangerzone-pub.key"))
 SIGNATURES_PATH = appdata_dir() / "signatures"
 LAST_LOG_INDEX = SIGNATURES_PATH / "last_log_index"
 

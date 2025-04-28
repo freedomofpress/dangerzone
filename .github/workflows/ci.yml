@@ -186,7 +186,10 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          path: share/container.tar
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone-pub.key
+            share/image-name.txt
           enableCrossOsArchive: true
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
@@ -292,7 +295,10 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          path: share/container.tar
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone-pub.key
+            share/image-name.txt
           enableCrossOsArchive: true
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
@@ -404,7 +410,10 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          path: share/container.tar
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone-pub.key
+            share/image-name.txt
           enableCrossOsArchive: true
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}

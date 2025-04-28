@@ -1,4 +1,5 @@
 import logging
+import subprocess
 import sys
 from typing import List, Optional
 
@@ -7,6 +8,7 @@ from colorama import Back, Fore, Style
 
 from . import args, errors
 from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION
+from .isolation_provider import container
 from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
@@ -115,6 +117,21 @@ def cli_main(
             for lang in dangerzone.ocr_languages:
                 click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}")
             sys.exit(1)
+
+    # Ensuring that Podman machine exists
+    click.echo("Checking that Podman machine 'dz' is initialized...")
+    if not container.podman_machine_is_initialized():
+        click.echo("Podman machine 'dz' is NOT initialized")
+        click.echo("Initializing it now. We need to download the VM image first, which is roughly 1GiB")
+        container.podman_machine_init()
+    click.echo("Podman machine 'dz' is initialized")
+
+
+    click.echo("Checking that Podman machine 'dz' is started...")
+    if not container.podman_machine_has_started():
+        click.echo("Starting Podman machine 'dz'...")
+        container.podman_machine_start()
+    click.echo("Podman machine 'dz' is started")
 
     # Ensure container is installed
     dangerzone.isolation_provider.install()

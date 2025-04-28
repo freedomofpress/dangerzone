@@ -3,6 +3,7 @@ import os
 import platform
 import shlex
 import subprocess
+from pathlib import Path
 from typing import List, Tuple
 
 from .. import container_utils, errors
@@ -26,6 +27,43 @@ else:
 
 
 log = logging.getLogger(__name__)
+
+
+def podman_run(*cmd, capture_output=False):
+    project_root = Path(__file__).parent.parent.parent
+    os.environ["PATH"] += os.pathsep + str(project_root / "share")
+    env = os.environ.copy()
+    env["CONTAINERS_CONF"] = project_root / "share" / "containers.conf"
+
+    ret = subprocess.run(
+        ["podman"] + list(cmd),
+        env=env,
+        check=True,
+        capture_output=capture_output
+    )
+    if capture_output:
+        return ret.stdout
+
+
+def podman_machine_is_initialized():
+    try:
+        podman_run("machine", "inspect", "dz", capture_output=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def podman_machine_init():
+    podman_run("machine", "init", "dz")
+
+
+def podman_machine_has_started():
+    state = podman_run("machine", "inspect", "dz", "--format", "{{.State}}", capture_output=True)
+    return state.decode().strip() == "running"
+
+
+def podman_machine_start():
+    podman_run("machine", "start", "dz")
 
 
 class Container(IsolationProvider):
@@ -81,8 +119,8 @@ class Container(IsolationProvider):
         #   C:\[...]\dangerzone\share\seccomp.gvisor.json: no such file or directory
         #
         # See also: https://github.com/freedomofpress/dangerzone/issues/1127
-        if runtime.name == "podman" and platform.system() != "Windows":
-            security_args += ["--security-opt", f"seccomp={seccomp_json_path}"]
+        #if runtime.name == "podman" and platform.system() != "Windows":
+        #    security_args += ["--security-opt", f"seccomp={seccomp_json_path}"]
 
         security_args += ["--cap-drop", "all"]
         security_args += ["--cap-add", "SYS_CHROOT"]

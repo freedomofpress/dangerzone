@@ -67,8 +67,12 @@ jobs:
           fetch-depth: 0
       - name: Checkout the latest released tag
         run: |
+          # Grab the latest Grype ignore list before git checkout overwrites it.
+          cp .grype.yaml .grype.yaml.new
           VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | jq -r '.tag_name')
           git checkout $VERSION
+          # Restore the newest Grype ignore list.
+          mv .grype.yaml.new .grype.yaml
       # NOTE: Scan first without failing, else we won't be able to read the scan
       # report.
       - name: Scan application (no fail)

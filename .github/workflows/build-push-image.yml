@@ -156,7 +156,7 @@ jobs:
       debian_archive_date: ${{ needs.build.outputs.debian_archive_date }}
       source_date_epoch: ${{ needs.build.outputs.source_date_epoch }}
       image: ${{ needs.build.outputs.image }}
-      image_uri: ${{ needs.build.output.image }}@${{ steps.image.outputs.digest_root }}"
+      image_uri: ${{ needs.build.outputs.image }}@${{ steps.image.outputs.digest_root }}
       tag: ${{ needs.build.outputs.tag }}
       digest_root: ${{ steps.image.outputs.digest_root }}
       digest_amd64: ${{ steps.image.outputs.digest_amd64 }}
@@ -298,12 +298,6 @@ jobs:
         name: Generate keypair
         run: |-
           cosign generate-key-pair --output-key-prefix="${{ inputs.key_name }}"
-      - name: Cache keypair
-        uses: actions/cache@v4
-        with:
-          path: "${{ inputs.key_name }}.*"
-          key: ${{ inputs.key_cache }}
-          enableCrossOsArchive: true
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -317,14 +311,15 @@ jobs:
           cosign sign -d --yes --key=${{ inputs.key_name }}.key "${{ env.IMAGE_URI }}"
         shell: bash
 
-      - name: Get the container image from the registry
-        # It contains the image and the signatures
+      - name: Prepare cached assets
         run: |-
           cosign save ${{ env.IMAGE_URI }} --dir dz-container
           mkdir share
           cd dz-container
           tar -cvf ../share/container.tar .
           cd ..
+          mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone-pub.key
+          echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
 
       - name: Cache container image
         id: cache-container-image
@@ -333,11 +328,13 @@ jobs:
           key: v6-container-${{ env.IMAGE_URI }}
           path: |-
             share/container.tar
+            share/freedomofpress-dangerzone-pub.key
+            share/image-name.txt
 
       - name: Upload pubkey
         uses: actions/upload-artifact@v4
         with:
           name: pubkey
-          path: "${{inputs.key_name}}.pub"
+          path: share/freedomofpress-dangerzone-pub.key
           if-no-files-found: error
           compression-level: 0

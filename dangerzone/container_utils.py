@@ -11,7 +11,6 @@ from .settings import Settings
 from .util import get_resource_path, get_subprocess_startupinfo
 
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
-CONTAINER_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 
 log = logging.getLogger(__name__)
 
@@ -110,6 +109,7 @@ def list_image_tags() -> List[str]:
     and which image ID does the "latest" tag point to.
     """
     runtime = Runtime()
+    container_name = expected_image_name()
     return (
         subprocess.check_output(
             [
@@ -118,7 +118,7 @@ def list_image_tags() -> List[str]:
                 "list",
                 "--format",
                 "{{ .Tag }}",
-                CONTAINER_NAME,
+                container_name,
             ],
             text=True,
             startupinfo=get_subprocess_startupinfo(),
@@ -154,10 +154,11 @@ def delete_image_tag(tag: str) -> None:
         )
 
 
-def load_image_tarball() -> None:
+def load_image_tarball(tarball_path: Optional[Path] = None) -> None:
     runtime = Runtime()
     log.info("Installing Dangerzone container image...")
-    tarball_path = get_resource_path("container.tar")
+    if not tarball_path:
+        tarball_path = get_resource_path("container.tar")
     try:
         res = subprocess.run(
             [str(runtime.path), "load", "-i", str(tarball_path)],
@@ -185,17 +186,18 @@ def load_image_tarball() -> None:
     # `share/image-id.txt` and delete the incorrect tag.
     #
     # [1] https://github.com/containers/podman/issues/16490
-    if runtime.name == "podman" and get_runtime_version(runtime) == (3, 4):
-        expected_tag = get_expected_tag()
-        bad_tag = f"localhost/{expected_tag}:latest"
-        good_tag = f"{CONTAINER_NAME}:{expected_tag}"
+    # if runtime.name == "podman" and get_runtime_version(runtime) == (3, 4):
+    # FIXME image-id.txt has been removed, this needs to be adapted.
+    # expected_tag = get_expected_tag()
+    # bad_tag = f"localhost/{expected_tag}:latest"
+    # good_tag = f"{CONTAINER_NAME}:{expected_tag}"
 
-        log.debug(
-            f"Dangerzone images loaded in Podman v3.4 usually have an invalid tag."
-            " Fixing it..."
-        )
-        add_image_tag(bad_tag, good_tag)
-        delete_image_tag(bad_tag)
+    # log.debug(
+    #     f"Dangerzone images loaded in Podman v3.4 usually have an invalid tag."
+    #     " Fixing it..."
+    # )
+    # add_image_tag(bad_tag, good_tag)
+    # delete_image_tag(bad_tag)
 
 
 def tag_image_by_digest(digest: str, tag: str) -> None:
@@ -228,6 +230,11 @@ def get_image_id_by_digest(digest: str) -> str:
     return process.stdout.decode().strip().split("\n")[0]
 
 
+def expected_image_name():
+    image_name_path = get_resource_path("image-name.txt")
+    return image_name_path.read_text().strip("\n")
+
+
 def container_pull(
     image: str, manifest_digest: str, callback: Optional[Callable] = None
 ):
@@ -253,10 +260,11 @@ def container_pull(
         )
 
 
-def get_local_image_digest(image: str) -> str:
+def get_local_image_digest(image: Optional[str] = None) -> str:
     """
     Returns a image hash from a local image name
     """
+    image = image or expected_image_name()
     # Get the image hash from the "podman images" command.
     # It's not possible to use "podman inspect" here as it
     # returns the digest of the architecture-bound image

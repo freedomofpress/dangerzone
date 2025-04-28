@@ -7,7 +7,7 @@ import sys
 from typing import Callable, List, Optional, Tuple
 
 from .. import container_utils, errors
-from ..container_utils import CONTAINER_NAME, Runtime
+from ..container_utils import Runtime
 from ..document import Document
 from ..updater import (
     DEFAULT_PUBKEY_LOCATION,
@@ -127,24 +127,20 @@ class Container(IsolationProvider):
             if not installed_tags:
                 install_local_container_tar()
         else:
+            container_name = container_utils.expected_image_name()
             update_available, image_digest = is_update_available(
-                CONTAINER_NAME,
+                container_name,
                 DEFAULT_PUBKEY_LOCATION,
             )
             if update_available and image_digest:
                 log.debug("Upgrading container image to %s", image_digest)
-                upgrade_container_image(
-                    CONTAINER_NAME,
-                    image_digest,
-                    DEFAULT_PUBKEY_LOCATION,
-                    callback=callback,
-                )
+                upgrade_container_image(image_digest, callback=callback)
             else:
                 log.debug("No update available for the container.")
                 if not installed_tags:
                     install_local_container_tar()
         try:
-            verify_local_image(CONTAINER_NAME)
+            verify_local_image()
         except UpdaterError:
             # delete_image()
             if last_try:
@@ -236,9 +232,11 @@ class Container(IsolationProvider):
         name: str,
     ) -> subprocess.Popen:
         runtime = Runtime()
+        container_name = container_utils.expected_image_name()
 
-        image_digest = container_utils.get_local_image_digest(CONTAINER_NAME)
-        verify_local_image(CONTAINER_NAME)
+        # FIXME: Image digest is also computed inside the verify_local_image
+        image_digest = container_utils.get_local_image_digest()
+        verify_local_image()
         security_args = self.get_runtime_security_args()
         debug_args = []
         if self.debug:
@@ -247,7 +245,7 @@ class Container(IsolationProvider):
         enable_stdin = ["-i"]
         set_name = ["--name", name]
         prevent_leakage_args = ["--rm"]
-        image_name = [CONTAINER_NAME + "@sha256:" + image_digest]
+        image_name = [container_name + "@sha256:" + image_digest]
         args = (
             ["run"]
             + security_args

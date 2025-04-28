@@ -287,7 +287,7 @@ def upgrade_container_image_airgapped(
                 archive.add(Path(tmpdir) / "oci-layout", arcname="oci-layout")
                 archive.add(Path(tmpdir) / "blobs", arcname="blobs")
 
-            runtime.load_image_tarball_from_tar(temporary_tar.name)
+            runtime.load_image_tarball(temporary_tar.name)
             runtime.tag_image_by_digest(image_digest, image_name)
 
     store_signatures(signatures, image_digest, pubkey)
@@ -433,10 +433,13 @@ def store_signatures(
         write_log_index(get_log_index_from_signatures(signatures))
 
 
-def verify_local_image(image: str, pubkey: str = DEFAULT_PUBKEY_LOCATION) -> bool:
+def verify_local_image(
+    image: Optional[str] = None, pubkey: str = DEFAULT_PUBKEY_LOCATION
+) -> bool:
     """
     Verifies that a local image has a valid signature
     """
+    image = image or runtime.expected_image_name()
     log.info(f"Verifying local image {image} against pubkey {pubkey}")
     try:
         image_digest = runtime.get_local_image_digest(image)
@@ -495,9 +498,13 @@ def prepare_airgapped_archive(image_name: str, destination: str) -> None:
 
 
 def upgrade_container_image(
-    image: str, manifest_digest: str, pubkey: str, callback: Optional[Callable] = None
+    manifest_digest: str,
+    image: Optional[str] = None,
+    pubkey: Optional[str] = DEFAULT_PUBKEY_LOCATION,
+    callback: Optional[Callable] = None,
 ) -> str:
     """Verify and upgrade the image to the latest, if signed."""
+    image = image or runtime.expected_image_name()
     update_available, remote_digest = registry.is_new_remote_image_available(image)
     if not update_available:
         raise errors.ImageAlreadyUpToDate("The image is already up to date")

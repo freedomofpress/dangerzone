@@ -6,7 +6,7 @@ from pytest_mock import MockerFixture
 from pytest_subprocess import FakeProcess
 
 from dangerzone import errors
-from dangerzone.container_utils import CONTAINER_NAME, Runtime
+from dangerzone.container_utils import Runtime, expected_image_name
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 from dangerzone.updater import SignatureError, UpdaterError
@@ -80,7 +80,7 @@ class TestContainer(IsolationProviderTest):
                 "list",
                 "--format",
                 "{{ .Tag }}",
-                CONTAINER_NAME,
+                expected_image_name(),
             ],
             occurrences=2,
         )

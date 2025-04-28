@@ -367,8 +367,7 @@ def test_update_errors(
 
 
 def test_update_check_prompt(
-    qtbot: QtBot,
-    qt_updater: UpdaterThread,
+    qtbot: QtBot, qt_updater: UpdaterThread, mocker: MockerFixture
 ) -> None:
     """Test that the prompt to enable update checks works properly."""
     # Force Dangerzone to check immediately for updates

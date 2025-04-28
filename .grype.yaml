@@ -45,4 +45,12 @@ ignore:
   # present in Debian Bookworm. Also, libcurl is an HTTP client, and the
   # Dangerzone container does not make any network calls.
   - vulnerability: CVE-2025-0665
-
+  # CVE-2025-43859
+  # ==============
+  #
+  # GitHub advisory: https://github.com/advisories/GHSA-vqfr-h8mv-ghfj
+  # Verdict: Dangerzone is not affected because the vulnerable code is triggered
+  # when parsing HTTP requests, e.g., by web **servers**. Dangerzone on the
+  # other hand performs HTTP requests, i.e., it operates as **client**.
+  - vulnerability: CVE-2025-43859
+  - vulnerability: GHSA-vqfr-h8mv-ghfj

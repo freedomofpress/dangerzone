@@ -495,7 +495,7 @@ class TracebackWidget(QTextEdit):
             self.setPlainText(error)
             self.setVisible(True)
 
-    def process_output(self, line):
+    def process_output(self, line: str) -> None:
         self.current_output += line
         self.setText(self.current_output)
         cursor = self.textCursor()

@@ -30,8 +30,8 @@ def appdata_dir() -> Path:
 # to ensures the software can't upgrade to container images that predates it.
 DEFAULT_LOG_INDEX = 0
 
-# XXX Store this somewhere else.
-DEFAULT_PUBKEY_LOCATION = str(get_resource_path("freedomofpress-dangerzone-pub.key"))
+# FIXME Store this somewhere else.
+DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
 SIGNATURES_PATH = appdata_dir() / "signatures"
 LAST_LOG_INDEX = SIGNATURES_PATH / "last_log_index"
 
@@ -65,7 +65,7 @@ def signature_to_bundle(sig: Dict) -> Dict:
     }
 
 
-def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> None:
+def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
     """
     Verifies that:
 
@@ -102,9 +102,6 @@ def verify_signature(signature: dict, image_digest: str, pubkey: str | Path) -> 
         payload_file.write(payload_bytes)
         payload_file.flush()
 
-        if isinstance(pubkey, str):
-            pubkey = Path(pubkey)
-
         cmd = [
             "cosign",
             "verify-blob",
@@ -136,7 +133,7 @@ class Signature:
         return full_digest.replace("sha256:", "")
 
 
-def is_update_available(image_str: str, pubkey: str) -> Tuple[bool, Optional[str]]:
+def is_update_available(image_str: str, pubkey: Path) -> Tuple[bool, Optional[str]]:
     """
     Check if a new image is available, doing all the necessary checks ensuring it
     would be safe to upgrade.
@@ -155,7 +152,7 @@ def is_update_available(image_str: str, pubkey: str) -> Tuple[bool, Optional[str
 
 
 def check_signatures_and_logindex(
-    image_str: str, remote_digest: str, pubkey: str
+    image_str: str, remote_digest: str, pubkey: Path
 ) -> list[Dict]:
     signatures = get_remote_signatures(image_str, remote_digest)
     verify_signatures(signatures, remote_digest, pubkey)
@@ -174,7 +171,7 @@ def check_signatures_and_logindex(
 def verify_signatures(
     signatures: List[Dict],
     image_digest: str,
-    pubkey: str,
+    pubkey: Path,
 ) -> bool:
     if len(signatures) < 1:
         raise errors.SignatureVerificationError("No signatures found")
@@ -217,7 +214,7 @@ def _get_blob(tmpdir: str, digest: str) -> Path:
 
 
 def upgrade_container_image_airgapped(
-    container_tar: str, pubkey: str, bypass_logindex: bool = False
+    container_tar: Path, pubkey: Path, bypass_logindex: bool = False
 ) -> str:
     """
     Verify the given archive against its self-contained signatures, then
@@ -287,7 +284,7 @@ def upgrade_container_image_airgapped(
                 archive.add(Path(tmpdir) / "oci-layout", arcname="oci-layout")
                 archive.add(Path(tmpdir) / "blobs", arcname="blobs")
 
-            runtime.load_image_tarball(temporary_tar.name)
+            runtime.load_image_tarball(Path(temporary_tar.name))
             runtime.tag_image_by_digest(image_digest, image_name)
 
     store_signatures(signatures, image_digest, pubkey)
@@ -329,12 +326,14 @@ def convert_oci_images_signatures(
     return image_name, signatures
 
 
-def get_file_digest(file: Optional[str] = None, content: Optional[bytes] = None) -> str:
+def get_file_digest(
+    path: Optional[Path] = None, content: Optional[bytes] = None
+) -> str:
     """Get the sha256 digest of a file or content"""
-    if not file and not content:
+    if not path and not content:
         raise errors.UpdaterError("No file or content provided")
-    if file:
-        with open(file, "rb") as f:
+    if path:
+        with path.open("rb") as f:
             content = f.read()
     if content:
         return sha256(content).hexdigest()
@@ -343,7 +342,7 @@ def get_file_digest(file: Optional[str] = None, content: Optional[bytes] = None)
 
 def load_and_verify_signatures(
     image_digest: str,
-    pubkey: str,
+    pubkey: Path,
     bypass_verification: bool = False,
     signatures_path: Optional[Path] = None,
 ) -> List[Dict]:
@@ -383,7 +382,10 @@ def load_and_verify_signatures(
 
 
 def store_signatures(
-    signatures: list[Dict], image_digest: str, pubkey: str, update_logindex: bool = True
+    signatures: list[Dict],
+    image_digest: str,
+    pubkey: Path,
+    update_logindex: bool = True,
 ) -> None:
     """
     Store signatures locally in the SIGNATURE_PATH folder, like this:
@@ -434,12 +436,13 @@ def store_signatures(
 
 
 def verify_local_image(
-    image: Optional[str] = None, pubkey: str = DEFAULT_PUBKEY_LOCATION
+    image: Optional[str] = None, pubkey: Path = DEFAULT_PUBKEY_LOCATION
 ) -> bool:
     """
     Verifies that a local image has a valid signature
     """
-    image = image or runtime.expected_image_name()
+    if image is None:
+        image = runtime.expected_image_name()
     log.info(f"Verifying local image {image} against pubkey {pubkey}")
     try:
         image_digest = runtime.get_local_image_digest(image)
@@ -500,7 +503,7 @@ def prepare_airgapped_archive(image_name: str, destination: str) -> None:
 def upgrade_container_image(
     manifest_digest: str,
     image: Optional[str] = None,
-    pubkey: Optional[str] = DEFAULT_PUBKEY_LOCATION,
+    pubkey: Path = DEFAULT_PUBKEY_LOCATION,
     callback: Optional[Callable] = None,
 ) -> str:
     """Verify and upgrade the image to the latest, if signed."""
@@ -518,7 +521,7 @@ def upgrade_container_image(
 
 
 def install_local_container_tar(
-    pubkey: Optional[str] = DEFAULT_PUBKEY_LOCATION,
+    pubkey: Path = DEFAULT_PUBKEY_LOCATION,
 ) -> None:
     tarball_path = get_resource_path("container.tar")
     log.debug("Installing container image %s", tarball_path)

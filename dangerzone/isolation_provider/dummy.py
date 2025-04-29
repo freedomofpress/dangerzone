@@ -1,6 +1,7 @@
 import logging
 import subprocess
 import sys
+from typing import Callable, Optional
 
 from ..conversion.common import DangerzoneConverter
 from ..document import Document
@@ -36,7 +37,9 @@ class Dummy(IsolationProvider):
             )
         super().__init__()
 
-    def install(self, *args, **kwargs) -> bool:
+    def install(
+        self, should_upgrade: bool, callback: Optional[Callable] = None
+    ) -> bool:
         return True
 
     @staticmethod

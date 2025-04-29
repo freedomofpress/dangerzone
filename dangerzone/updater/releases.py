@@ -42,7 +42,7 @@ def _get_now_timestamp() -> int:
     return int(time.time())
 
 
-def _should_postpone_update_check(settings) -> bool:
+def _should_postpone_update_check(settings: Settings) -> bool:
     """Consult and update cooldown timer.
 
     If the previous check happened before the cooldown period expires, do not check
@@ -141,7 +141,7 @@ def should_check_for_releases(settings: Settings) -> bool:
     return True
 
 
-def check_for_updates(settings) -> UpdateReport:
+def check_for_updates(settings: Settings) -> UpdateReport:
     """Check for updates locally and remotely.
 
     Check for updates (locally and remotely) and return a report with the findings:

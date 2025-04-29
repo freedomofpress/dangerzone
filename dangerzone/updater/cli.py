@@ -2,11 +2,12 @@
 
 import functools
 import logging
+from pathlib import Path
 
 import click
 
 from .. import container_utils
-from ..container_utils import get_runtime_name
+from ..container_utils import Runtime
 from . import attestations, errors, log, registry, signatures
 
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
@@ -16,7 +17,6 @@ DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 
 @click.group()
 @click.option("--debug", is_flag=True)
-@click.option("--runtime", default=get_runtime_name())
 def main(debug: bool, runtime: str) -> None:
     if debug:
         click.echo("Debug mode enabled")
@@ -25,15 +25,13 @@ def main(debug: bool, runtime: str) -> None:
         level = logging.INFO
     logging.basicConfig(level=level)
 
-    if runtime != get_runtime_name():
-        click.echo(f"Using container runtime: {runtime}")
-        container_utils.RUNTIME_NAME = runtime
-
 
 @main.command()
 @click.argument("image", default=DEFAULT_IMAGE_NAME)
-@click.option("--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION)
-def upgrade(image: str, pubkey: str) -> None:
+@click.option(
+    "--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION, type=click.Path(exists=True)
+)
+def upgrade(image: str, pubkey: Path) -> None:
     """Upgrade the image to the latest signed version."""
     manifest_digest = registry.get_manifest_digest(image)
 
@@ -54,8 +52,10 @@ def upgrade(image: str, pubkey: str) -> None:
 
 @main.command()
 @click.argument("image", default=DEFAULT_IMAGE_NAME)
-@click.option("--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION)
-def store_signatures(image: str, pubkey: str) -> None:
+@click.option(
+    "--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION, type=click.Path(exists=True)
+)
+def store_signatures(image: str, pubkey: Path) -> None:
     manifest_digest = registry.get_manifest_digest(image)
     sigs = signatures.get_remote_signatures(image, manifest_digest)
     signatures.verify_signatures(sigs, manifest_digest, pubkey)
@@ -64,17 +64,19 @@ def store_signatures(image: str, pubkey: str) -> None:
 
 
 @main.command()
-@click.argument("image_filename")
-@click.option("--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION)
+@click.argument("image_filename", type=click.Path(exists=True))
+@click.option(
+    "--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION, type=click.Path(exists=True)
+)
 @click.option("--force", is_flag=True)
-def load_archive(image_filename: str, pubkey: str, force: bool) -> None:
+def load_archive(image_filename: Path, pubkey: Path, force: bool) -> None:
     """Upgrade the local image to the one in the archive."""
     try:
         loaded_image = signatures.upgrade_container_image_airgapped(
             image_filename, pubkey, bypass_logindex=force
         )
         click.echo(
-            f"✅ Installed image {image_filename} on the system as {loaded_image}"
+            f"✅ Installed image {str(image_filename)} on the system as {loaded_image}"
         )
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
@@ -97,8 +99,10 @@ def prepare_archive(image: str, output: str) -> None:
 
 @main.command()
 @click.argument("image", default=DEFAULT_IMAGE_NAME)
-@click.option("--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION)
-def verify_local(image: str, pubkey: str) -> None:
+@click.option(
+    "--pubkey", default=signatures.DEFAULT_PUBKEY_LOCATION, type=click.Path(exists=True)
+)
+def verify_local(image: str, pubkey: Path) -> None:
     """
     Verify the local image signature against a public key and the stored signatures.
     """

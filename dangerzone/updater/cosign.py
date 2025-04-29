@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 
 from . import errors, log
 
@@ -10,7 +11,7 @@ def ensure_installed() -> None:
         raise errors.CosignNotInstalledError()
 
 
-def verify_local_image(oci_image_folder: str, pubkey: str) -> bool:
+def verify_local_image(oci_image_folder: str, pubkey: Path) -> bool:
     """Verify the given path against the given public key"""
 
     ensure_installed()
@@ -18,7 +19,7 @@ def verify_local_image(oci_image_folder: str, pubkey: str) -> bool:
         "cosign",
         "verify",
         "--key",
-        pubkey,
+        str(pubkey),
         "--offline",
         "--local-image",
         oci_image_folder,

@@ -1,3 +1,4 @@
+import functools
 import logging
 import os
 import platform
@@ -55,9 +56,11 @@ class Runtime(object):
         return "podman" if platform.system() == "Linux" else "docker"
 
 
-def subprocess_run(*args, **kwargs) -> subprocess.CompletedProcess:
-    """subprocess.run with the correct startupinfo for Windows."""
-    return subprocess.run(*args, startupinfo=get_subprocess_startupinfo(), **kwargs)
+# subprocess.run with the correct startupinfo for Windows.
+# We use a partial here to better profit from type checking
+subprocess_run = functools.partial(
+    subprocess.run, startupinfo=get_subprocess_startupinfo()
+)
 
 
 def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
@@ -230,14 +233,14 @@ def get_image_id_by_digest(digest: str) -> str:
     return process.stdout.decode().strip().split("\n")[0]
 
 
-def expected_image_name():
+def expected_image_name() -> str:
     image_name_path = get_resource_path("image-name.txt")
     return image_name_path.read_text().strip("\n")
 
 
 def container_pull(
     image: str, manifest_digest: str, callback: Optional[Callable] = None
-):
+) -> None:
     """Pull a container image from a registry."""
     runtime = Runtime()
     cmd = [str(runtime.path), "pull", f"{image}@sha256:{manifest_digest}"]
@@ -264,12 +267,12 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
     """
     Returns a image hash from a local image name
     """
-    image = image or expected_image_name()
+    expected_image = image or expected_image_name()
     # Get the image hash from the "podman images" command.
     # It's not possible to use "podman inspect" here as it
     # returns the digest of the architecture-bound image
     runtime = Runtime()
-    cmd = [str(runtime.path), "images", image, "--format", "{{.Digest}}"]
+    cmd = [str(runtime.path), "images", expected_image, "--format", "{{.Digest}}"]
     log.debug(" ".join(cmd))
     try:
         result = subprocess_run(
@@ -285,10 +288,10 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
         image_digest = lines[0].replace("sha256:", "")
         if not image_digest:
             raise errors.ImageNotPresentException(
-                f"The image {image} does not exist locally"
+                f"The image {expected_image} does not exist locally"
             )
         return image_digest
     except subprocess.CalledProcessError as e:
         raise errors.ImageNotPresentException(
-            f"The image {image} does not exist locally"
+            f"The image {expected_image} does not exist locally"
         )

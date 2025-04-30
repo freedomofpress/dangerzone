@@ -77,7 +77,7 @@ class UpdaterThread(QtCore.QThread):
     When finished, this thread triggers a signal with the results.
     """
 
-    finished = QtCore.Signal(releases.UpdateReport)
+    finished = QtCore.Signal(releases.UpdaterReport)
 
     def __init__(self, dangerzone: DangerzoneGui):
         super().__init__()
@@ -99,7 +99,7 @@ class UpdaterThread(QtCore.QThread):
 
     def should_check_for_updates(self) -> bool:
         try:
-            should_check: Optional[bool] = releases.should_check_for_releases(
+            should_check: Optional[bool] = releases.should_check_for_updates(
                 self.dangerzone.settings
             )
         except errors.NeedUserInput:

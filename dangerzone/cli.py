@@ -117,7 +117,7 @@ def cli_main(
             sys.exit(1)
 
     # Ensure container is installed
-    should_upgrade = bool(settings.get("updater_check_all"))
+    should_upgrade = bool(settings.get("updater_container_needs_update"))
     dangerzone.isolation_provider.install(should_upgrade)
 
     # Convert the document

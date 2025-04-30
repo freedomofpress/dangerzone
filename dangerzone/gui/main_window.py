@@ -29,7 +29,7 @@ else:
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
 from ..isolation_provider.qubes import is_qubes_native_conversion
-from ..updater.releases import UpdateReport
+from ..updater.releases import UpdaterReport
 from ..util import format_exception, get_resource_path, get_version
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 
@@ -327,14 +327,14 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         )
 
-    def handle_updates(self, report: UpdateReport) -> None:
+    def handle_updates(self, report: UpdaterReport) -> None:
         """Handle update reports from the update checker thread.
 
-        See Updater.check_for_updates() to find the different types of reports that it
+        See UpdaterReport to find the different types of reports that it
         may send back, depending on the outcome of an update check.
         """
         # If there are no new updates, reset the error counter (if any) and return.
-        if report.empty():
+        if report.is_empty:
             self.dangerzone.settings.set("updater_errors", 0, autosave=True)
             return
 
@@ -376,33 +376,45 @@ class MainWindow(QtWidgets.QMainWindow):
             hamburger_menu.insertAction(sep, error_action)
         else:
             log.debug(f"Handling new version: {report.version}")
-            self.dangerzone.settings.set("updater_latest_version", report.version)
-            self.dangerzone.settings.set("updater_latest_changelog", report.changelog)
             self.dangerzone.settings.set("updater_errors", 0)
+            if report.new_github_release:
+                log.debug(f"New Dangerzone release: {report.version}")
+                self.dangerzone.settings.set("updater_latest_version", report.version)
+                self.dangerzone.settings.set(
+                    "updater_latest_changelog", report.changelog
+                )
+                self.hamburger_button.setIcon(
+                    QtGui.QIcon(
+                        load_svg_image(
+                            "hamburger_menu_update_success.svg", width=64, height=64
+                        )
+                    )
+                )
+
+                sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
+                success_action = QAction("New version available", hamburger_menu)
+                success_action.setIcon(
+                    QtGui.QIcon(
+                        load_svg_image(
+                            "hamburger_menu_update_dot_available.svg",
+                            width=64,
+                            height=64,
+                        )
+                    )
+                )
+                success_action.triggered.connect(self.show_update_success)
+                hamburger_menu.insertAction(sep, success_action)
+
+            if report.new_container_release:
+                log.debug(f"New container image release available")
+                self.dangerzone.settings.set(
+                    "updater_container_needs_update",
+                    report.container_needs_update,
+                )
 
             # FIXME: Save the settings to the filesystem only when they have really changed,
             # maybe with a dirty bit.
             self.dangerzone.settings.save()
-
-            self.hamburger_button.setIcon(
-                QtGui.QIcon(
-                    load_svg_image(
-                        "hamburger_menu_update_success.svg", width=64, height=64
-                    )
-                )
-            )
-
-            sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
-            success_action = QAction("New version available", hamburger_menu)
-            success_action.setIcon(
-                QtGui.QIcon(
-                    load_svg_image(
-                        "hamburger_menu_update_dot_available.svg", width=64, height=64
-                    )
-                )
-            )
-            success_action.triggered.connect(self.show_update_success)
-            hamburger_menu.insertAction(sep, success_action)
 
     def register_update_handler(self, signal: QtCore.SignalInstance) -> None:
         signal.connect(self.handle_updates)

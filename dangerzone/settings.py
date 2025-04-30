@@ -38,6 +38,7 @@ class Settings:
             # FIXME: How to invalidate those if they change upstream?
             "updater_latest_version": get_version(),
             "updater_latest_changelog": "",
+            "updater_container_needs_update": False,
             "updater_errors": 0,
         }
 

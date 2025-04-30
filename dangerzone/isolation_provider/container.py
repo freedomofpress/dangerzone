@@ -9,6 +9,7 @@ from typing import Callable, List, Optional, Tuple
 from .. import container_utils, errors
 from ..container_utils import Runtime
 from ..document import Document
+from ..settings import Settings
 from ..updater import (
     DEFAULT_PUBKEY_LOCATION,
     UpdaterError,
@@ -135,6 +136,9 @@ class Container(IsolationProvider):
             if update_available and image_digest:
                 log.debug("Upgrading container image to %s", image_digest)
                 upgrade_container_image(image_digest, callback=callback)
+
+                settings = Settings()
+                settings.set("updater_container_needs_update", False, autosave=True)
             else:
                 log.debug("No update available for the container.")
                 if not installed_tags:

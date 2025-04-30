@@ -14,7 +14,7 @@ from dangerzone import settings
 from dangerzone.gui import updater as updater_module
 from dangerzone.gui.updater import UpdaterThread
 from dangerzone.updater import releases
-from dangerzone.updater.releases import UpdateReport
+from dangerzone.updater.releases import UpdaterReport
 from dangerzone.util import get_version
 
 from ..test_settings import default_settings_0_4_1, save_settings
@@ -34,7 +34,7 @@ def default_updater_settings() -> dict:
     }
 
 
-def assert_report_equal(report1: UpdateReport, report2: UpdateReport) -> None:
+def assert_report_equal(report1: UpdaterReport, report2: UpdaterReport) -> None:
     assert report1.version == report2.version
     assert report1.changelog == report2.changelog
     assert report1.error == report2.error
@@ -174,6 +174,11 @@ def test_update_checks(
     requests_mock().status_code = 200  # type: ignore [call-arg]
     requests_mock().json.return_value = mock_upstream_info  # type: ignore [attr-defined, call-arg]
 
+    mocker.patch(
+        "dangerzone.updater.releases.is_container_update_available",
+        return_value=[False, None],
+    )
+
     # Always assume that we can perform multiple update checks in a row.
     mocker.patch(
         "dangerzone.updater.releases._should_postpone_update_check", return_value=False
@@ -181,21 +186,21 @@ def test_update_checks(
 
     # Test 1 - Check that the current version triggers no updates.
     report = releases.check_for_updates(settings)
-    assert_report_equal(report, UpdateReport())
+    assert_report_equal(report, UpdaterReport())
 
     # Test 2 - Check that a newer version triggers updates, and that the changelog is
     # rendered from Markdown to HTML.
     mock_upstream_info["tag_name"] = "v99.9.9"
     report = releases.check_for_updates(settings)
     assert_report_equal(
-        report, UpdateReport(version="99.9.9", changelog="<p>changelog</p>")
+        report, UpdaterReport(version="99.9.9", changelog="<p>changelog</p>")
     )
 
     # Test 3 - Check that HTTP errors are converted to error reports.
     requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
     report = releases.check_for_updates(settings)
     error_msg = f"Encountered an exception while checking {updater_module.releases.GH_RELEASE_URL}: failed"
-    assert_report_equal(report, UpdateReport(error=error_msg))
+    assert_report_equal(report, UpdaterReport(error=error_msg))
 
     # Test 4 - Check that cached version/changelog info do not trigger an update check.
     settings.set("updater_latest_version", "99.9.9")
@@ -203,7 +208,7 @@ def test_update_checks(
 
     report = releases.check_for_updates(settings)
     assert_report_equal(
-        report, UpdateReport(version="99.9.9", changelog="<p>changelog</p>")
+        report, UpdaterReport(version="99.9.9", changelog="<p>changelog</p>")
     )
 
 
@@ -220,6 +225,12 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     mocker.patch("dangerzone.updater.releases.requests.get")
     requests_mock = updater_module.releases.requests.get
 
+    # Mock the response of the container updater check
+    mocker.patch(
+        "dangerzone.updater.releases.is_container_update_available",
+        return_value=[False, None],
+    )
+
     # # Make requests.get().json() return the version info that we want.
     mock_upstream_info = {"tag_name": "99.9.9", "body": "changelog"}
     requests_mock().status_code = 200  # type: ignore [call-arg]
@@ -234,7 +245,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     report = releases.check_for_updates(settings)
     assert cooldown_spy.spy_return is False
     assert settings.get("updater_last_check") == curtime
-    assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
+    assert_report_equal(report, UpdaterReport("99.9.9", "<p>changelog</p>"))
 
     # Test 2: Advance the current time by 1 second, and ensure that no update will take
     # place, due to the cooldown period. The last check timestamp should remain the
@@ -248,7 +259,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     report = releases.check_for_updates(settings)
     assert cooldown_spy.spy_return is True
     assert settings.get("updater_last_check") == curtime - 1  # type: ignore [unreachable]
-    assert_report_equal(report, UpdateReport())
+    assert_report_equal(report, UpdaterReport())
 
     # Test 3: Advance the current time by <cooldown period> seconds. Ensure that
     # Dangerzone checks for updates again, and the last check timestamp gets bumped.
@@ -259,7 +270,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     report = releases.check_for_updates(settings)
     assert cooldown_spy.spy_return is False
     assert settings.get("updater_last_check") == curtime
-    assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
+    assert_report_equal(report, UpdaterReport("99.9.9", "<p>changelog</p>"))
 
     # Test 4: Make Dangerzone check for updates again, but this time, it should
     # encounter an error while doing so. In that case, the last check timestamp
@@ -275,7 +286,7 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     assert cooldown_spy.spy_return is False
     assert settings.get("updater_last_check") == curtime
     error_msg = f"Encountered an exception while checking {updater_module.releases.GH_RELEASE_URL}: failed"
-    assert_report_equal(report, UpdateReport(error=error_msg))
+    assert_report_equal(report, UpdaterReport(error=error_msg))
 
 
 def test_update_errors(
@@ -285,6 +296,10 @@ def test_update_errors(
     settings = updater.dangerzone.settings
     # Always assume that we can perform multiple update checks in a row.
     monkeypatch.setattr(releases, "_should_postpone_update_check", lambda _: False)
+    mocker.patch(
+        "dangerzone.updater.releases.is_container_update_available",
+        return_value=[False, None],
+    )
 
     # Mock requests.get().
     mocker.patch("dangerzone.updater.releases.requests.get")
@@ -363,7 +378,7 @@ def test_update_errors(
 
     requests_mock.return_value = MockResponseValid()  # type: ignore [attr-defined]
     report = releases.check_for_updates(settings)
-    assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
+    assert_report_equal(report, UpdaterReport("99.9.9", "<p>changelog</p>"))
 
 
 def test_update_check_prompt(

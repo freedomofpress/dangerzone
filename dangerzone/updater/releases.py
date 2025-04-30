@@ -2,15 +2,22 @@ import json
 import platform
 import sys
 import time
-from typing import Optional
+from dataclasses import dataclass
+from typing import Optional, Tuple
 
 import markdown
 import requests
 from packaging import version
 
-from .. import util
+from .. import container_utils, util
 from ..settings import Settings
 from . import errors, log
+from .signatures import (
+    DEFAULT_PUBKEY_LOCATION,
+)
+from .signatures import (
+    is_update_available as is_container_update_available,
+)
 
 # Check for updates at most every 12 hours.
 UPDATE_CHECK_COOLDOWN_SECS = 60 * 60 * 12
@@ -21,21 +28,30 @@ GH_RELEASE_URL = (
 REQ_TIMEOUT = 15
 
 
-class UpdateReport:
+@dataclass
+class UpdaterReport:
     """A report for an update check."""
 
-    def __init__(
-        self,
-        version: Optional[str] = None,
-        changelog: Optional[str] = None,
-        error: Optional[str] = None,
-    ):
-        self.version = version
-        self.changelog = changelog
-        self.error = error
+    version: Optional[str] = None
+    changelog: Optional[str] = None
+    container_needs_update: Optional[bool] = None
+    error: Optional[str] = None
 
-    def empty(self) -> bool:
+    @property
+    def new_github_release(self) -> bool:
+        return self.version is not None
+
+    @property
+    def new_container_release(self) -> bool:
+        return self.container_needs_update is True
+
+    @property
+    def is_empty(self) -> bool:
         return self.version is None and self.changelog is None and self.error is None
+
+    @property
+    def is_error(self) -> bool:
+        return self.error is not None
 
 
 def _get_now_timestamp() -> int:
@@ -61,18 +77,20 @@ def ensure_sane_update(cur_version: str, latest_version: str) -> bool:
     if version.parse(cur_version) == version.parse(latest_version):
         return False
     elif version.parse(cur_version) > version.parse(latest_version):
-        # FIXME: This is a sanity check, but we should improve its wording.
-        raise Exception("Received version is older than the latest version")
+        raise Exception(
+            "The version received from Github Releases is older than the latest known version"
+        )
     else:
         return True
 
 
-def fetch_release_info() -> UpdateReport:
+def fetch_github_release_info() -> Tuple[str, str]:
     """Get the latest release info from GitHub.
 
     Also, render the changelog from Markdown format to HTML, so that we can show it
     to the users.
     """
+    log.debug("Checking the latest GitHub release")
     try:
         res = requests.get(GH_RELEASE_URL, timeout=REQ_TIMEOUT)
     except Exception as e:
@@ -99,10 +117,11 @@ def fetch_release_info() -> UpdateReport:
             f"Missing required fields in JSON response from {GH_RELEASE_URL}"
         )
 
-    return UpdateReport(version=version, changelog=changelog)
+    log.debug(f"Latest version in GitHub is {version}")
+    return version, changelog
 
 
-def should_check_for_releases(settings: Settings) -> bool:
+def should_check_for_updates(settings: Settings) -> bool:
     """Determine if we can check for release updates based on settings and user prefs.
 
     Note that this method only checks if the user has expressed an interest for
@@ -112,7 +131,7 @@ def should_check_for_releases(settings: Settings) -> bool:
     * A user may have expressed that they want to learn about new updates.
     * A previous update check may have found out that there's a new version out.
     * Thus we will always show to the user the cached info about the new version,
-        and won't make a new update check.
+      and won't make a new update check.
     """
     check = settings.get("updater_check_all")
 
@@ -141,7 +160,7 @@ def should_check_for_releases(settings: Settings) -> bool:
     return True
 
 
-def check_for_updates(settings: Settings) -> UpdateReport:
+def check_for_updates(settings: Settings) -> UpdaterReport:
     """Check for updates locally and remotely.
 
     Check for updates (locally and remotely) and return a report with the findings:
@@ -156,36 +175,56 @@ def check_for_updates(settings: Settings) -> UpdateReport:
         message.
     """
     try:
-        log.debug("Checking for Dangerzone updates")
+        log.debug("Checking for new DZ releases and container updates")
         latest_version = settings.get("updater_latest_version")
-        if version.parse(util.get_version()) < version.parse(latest_version):
+        new_gh_version = version.parse(util.get_version()) < version.parse(
+            latest_version
+        )
+        new_container_update = settings.get("updater_container_needs_update")
+
+        report = UpdaterReport()
+
+        if new_gh_version:
+            report.version = latest_version
+            report.changelog = settings.get("updater_latest_changelog")
+
+        if new_container_update:
             log.debug("Determined that there is an update due to cached results")
-            return UpdateReport(
-                version=latest_version,
-                changelog=settings.get("updater_latest_changelog"),
-            )
+            report.container_needs_update = new_container_update
+
+        if not report.is_empty:
+            return report
 
         # If the previous check happened before the cooldown period expires, do not
         # check again. Else, bump the last check timestamp, before making the actual
         # check. This is to ensure that even failed update checks respect the cooldown
         # period.
         if _should_postpone_update_check(settings):
-            return UpdateReport()
+            return UpdaterReport()
         else:
             settings.set("updater_last_check", _get_now_timestamp(), autosave=True)
 
-        log.debug("Checking the latest GitHub release")
-        report = fetch_release_info()
-        log.debug(f"Latest version in GitHub is {report.version}")
-        if report.version and ensure_sane_update(latest_version, report.version):
+        report = UpdaterReport()
+        gh_version, gh_changelog = fetch_github_release_info()
+        if gh_version and ensure_sane_update(latest_version, gh_version):
             log.debug(
                 f"Determined that there is an update due to a new GitHub version:"
-                f" {latest_version} < {report.version}"
+                f" {latest_version} < {gh_version}"
             )
-            return report
+            report.version = gh_version
+            report.changelog = gh_changelog
 
-        log.debug("No need to update")
-        return UpdateReport()
+        container_name = container_utils.expected_image_name()
+        container_needs_update, _ = is_container_update_available(
+            container_name, DEFAULT_PUBKEY_LOCATION
+        )
+        report.container_needs_update = container_needs_update
+
+        settings.set(
+            "updater_container_needs_update", container_needs_update, autosave=True
+        )
+        return report
+
     except Exception as e:
         log.exception("Encountered an error while checking for upgrades")
-        return UpdateReport(error=str(e))
+        return UpdaterReport(error=str(e))

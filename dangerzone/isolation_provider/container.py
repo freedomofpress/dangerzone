@@ -122,26 +122,24 @@ class Container(IsolationProvider):
         - An upgrade is available and `should_upgrade` is set to True
         """
 
-        installed_tags = container_utils.list_image_tags()
+        is_installed = container_utils.list_image_digests()
         if not should_upgrade:
             log.debug("Skipping container upgrade check as requested by the settings")
-            if not installed_tags:
+            if not is_installed:
                 install_local_container_tar()
         else:
             container_name = container_utils.expected_image_name()
-            update_available, image_digest = is_update_available(
-                container_name,
-                DEFAULT_PUBKEY_LOCATION,
-            )
+            update_available, image_digest = is_update_available(container_name)
             if update_available and image_digest:
                 log.debug("Upgrading container image to %s", image_digest)
                 upgrade_container_image(image_digest, callback=callback)
+                container_utils.clear_old_images(digest_to_keep=image_digest)
 
                 settings = Settings()
                 settings.set("updater_container_needs_update", False, autosave=True)
             else:
                 log.debug("No update available for the container.")
-                if not installed_tags:
+                if not is_installed:
                     install_local_container_tar()
         try:
             verify_local_image()

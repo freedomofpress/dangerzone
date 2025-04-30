@@ -104,7 +104,7 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
         raise RuntimeError(msg)
 
 
-def list_image_tags() -> List[str]:
+def list_image_digests() -> List[str]:
     """Get the tags of all loaded Dangerzone images.
 
     This method returns a mapping of image tags to image IDs, for all Dangerzone
@@ -120,7 +120,7 @@ def list_image_tags() -> List[str]:
                 "image",
                 "list",
                 "--format",
-                "{{ .Tag }}",
+                "{{ .Digest }}",
                 container_name,
             ],
             text=True,
@@ -141,20 +141,32 @@ def add_image_tag(image_id: str, new_tag: str) -> None:
     )
 
 
-def delete_image_tag(tag: str) -> None:
-    """Delete a Dangerzone image tag."""
+def delete_image_digests(
+    digests: List[str], container_name: Optional[str] = None
+) -> None:
+    """Delete a Dangerzone image by its id."""
+    container_name = container_name or expected_image_name()
     runtime = Runtime()
-    log.warning(f"Deleting old container image: {tag}")
+    full_digests = [f"{container_name}@{digest}" for digest in digests]
+    log.warning(f"Deleting old container images: {' '.join(full_digests)}")
     try:
         subprocess.check_output(
-            [str(runtime.name), "rmi", "--force", tag],
+            [str(runtime.name), "rmi", "--force", *full_digests],
             startupinfo=get_subprocess_startupinfo(),
         )
     except Exception as e:
         log.warning(
-            f"Couldn't delete old container image '{tag}', so leaving it there."
+            f"Couldn't delete old container images '{' '.join(full_digests)}', so leaving it there."
             f" Original error: {e}"
         )
+
+
+def clear_old_images(digest_to_keep: str) -> None:
+    log.debug(f"Digest to keep: {digest_to_keep}")
+    digests = list_image_digests()
+    log.debug(f"Digests installed: {digests}")
+    to_remove = filter(lambda x: x != f"sha256:{digest_to_keep}", digests)
+    delete_image_digests(to_remove)
 
 
 def load_image_tarball(tarball_path: Optional[Path] = None) -> None:

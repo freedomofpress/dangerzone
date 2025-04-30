@@ -133,7 +133,9 @@ class Signature:
         return full_digest.replace("sha256:", "")
 
 
-def is_update_available(image_str: str, pubkey: Path) -> Tuple[bool, Optional[str]]:
+def is_update_available(
+    image_str: str, pubkey: Path = DEFAULT_PUBKEY_LOCATION
+) -> Tuple[bool, Optional[str]]:
     """
     Check if a new image is available, doing all the necessary checks ensuring it
     would be safe to upgrade.

@@ -462,7 +462,9 @@ class InstallContainerThread(QtCore.QThread):
     def run(self) -> None:
         error = None
         try:
-            should_upgrade = bool(self.dangerzone.settings.get("updater_check_all"))
+            should_upgrade = bool(
+                self.dangerzone.settings.get("updater_container_needs_update")
+            )
             installed = self.dangerzone.isolation_provider.install(
                 should_upgrade=should_upgrade, callback=self.process_stdout.emit
             )
@@ -526,6 +528,26 @@ class WaitingWidgetContainer(WaitingWidget):
     # Linux states
     # - "install_container"
 
+    def _create_button(
+        self, label: str, event: QtCore.Signal, hide: bool = False
+    ) -> QtWidgets.QWidget:
+        button = QtWidgets.QPushButton(label)
+        button.clicked.connect(event)
+        buttons_layout = QtWidgets.QHBoxLayout()
+        buttons_layout.addStretch()
+        buttons_layout.addWidget(button)
+        buttons_layout.addStretch()
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(buttons_layout)
+        if hide:
+            widget.hide()
+        return widget
+
+    def _hide_buttons(self) -> None:
+        self.button_check.hide()
+        self.button_cancel.hide()
+
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(WaitingWidgetContainer, self).__init__()
         self.dangerzone = dangerzone
@@ -537,14 +559,10 @@ class WaitingWidgetContainer(WaitingWidget):
         self.label.setStyleSheet("QLabel { font-size: 20px; }")
 
         # Buttons
-        check_button = QtWidgets.QPushButton("Check Again")
-        check_button.clicked.connect(self.check_state)
-        buttons_layout = QtWidgets.QHBoxLayout()
-        buttons_layout.addStretch()
-        buttons_layout.addWidget(check_button)
-        buttons_layout.addStretch()
-        self.buttons = QtWidgets.QWidget()
-        self.buttons.setLayout(buttons_layout)
+        self.button_check = self._create_button("Check Again", self.check_state)
+        self.button_cancel = self._create_button(
+            "Cancel", self.cancel_install, hide=True
+        )
 
         self.traceback = TracebackWidget()
 
@@ -554,7 +572,8 @@ class WaitingWidgetContainer(WaitingWidget):
         layout.addWidget(self.label)
         layout.addWidget(self.traceback)
         layout.addStretch()
-        layout.addWidget(self.buttons)
+        layout.addWidget(self.button_check)
+        layout.addWidget(self.button_cancel)
         layout.addStretch()
         self.setLayout(layout)
 
@@ -584,18 +603,22 @@ class WaitingWidgetContainer(WaitingWidget):
         # Update the state
         self.state_change(state, error)
 
+    def cancel_install(self) -> None:
+        self.install_container_t.terminate()
+        self.finished.emit()
+
     def show_error(self, msg: str, details: Optional[str] = None) -> None:
         self.label.setText(msg)
         show_traceback = details is not None
         if show_traceback:
             self.traceback.set_content(details)
         self.traceback.setVisible(show_traceback)
-        self.buttons.show()
+        self.button_check.show()
 
     def show_message(self, msg: str) -> None:
         self.label.setText(msg)
         self.traceback.setVisible(False)
-        self.buttons.hide()
+        self._hide_buttons()
 
     def installation_finished(self, error: Optional[str] = None) -> None:
         if error:
@@ -649,11 +672,23 @@ class WaitingWidgetContainer(WaitingWidget):
                     error,
                 )
         else:
-            self.show_message(
-                "Installing the Dangerzone container image.<br><br>"
-                "This might take a few minutes..."
+            needs_update = bool(
+                self.dangerzone.settings.get("updater_container_needs_update")
             )
+            if needs_update:
+                message = (
+                    "Downloading and upgrading the Dangerzone container image.<br><br>"
+                    "This might take a few minutes..."
+                )
+            else:
+                message = (
+                    "Installing the Dangerzone container image.<br><br>"
+                    "This might take a few minutes..."
+                )
+            self.show_message(message)
             self.traceback.setVisible(True)
+            self.button_cancel.show()
+            self.button_check.hide()
 
             self.install_container_t = InstallContainerThread(self.dangerzone)
             self.install_container_t.finished.connect(self.installation_finished)

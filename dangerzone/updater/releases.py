@@ -169,8 +169,9 @@ def check_for_updates(settings: Settings) -> UpdaterReport:
     slightly different answer:
 
     1. No new updates: Return an empty update report.
-    2. Updates are available: Return an update report with the latest version and
-        changelog, in HTML format.
+    2. Updates are available:
+         Return an update report with the latest version and changelog, or with the
+         information the container image needs to be updated.
     3. Update check failed: Return an update report that holds just the error
         message.
     """
@@ -215,9 +216,7 @@ def check_for_updates(settings: Settings) -> UpdaterReport:
             report.changelog = gh_changelog
 
         container_name = container_utils.expected_image_name()
-        container_needs_update, _ = is_container_update_available(
-            container_name, DEFAULT_PUBKEY_LOCATION
-        )
+        container_needs_update, _ = is_container_update_available(container_name)
         report.container_needs_update = container_needs_update
 
         settings.set(

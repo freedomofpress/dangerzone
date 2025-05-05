@@ -529,7 +529,7 @@ class WaitingWidgetContainer(WaitingWidget):
     # - "install_container"
 
     def _create_button(
-        self, label: str, event: QtCore.Signal, hide: bool = False
+        self, label: str, event: Callable, hide: bool = False
     ) -> QtWidgets.QWidget:
         button = QtWidgets.QPushButton(label)
         button.clicked.connect(event)

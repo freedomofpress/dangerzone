@@ -1,0 +1,170 @@
+[asset.podman]
+repo = "containers/podman"
+version = ">=5.4.2"
+platform."windows/amd64" = "podman-remote-release-windows_amd64.zip"
+platform."darwin/amd64" = "podman-remote-release-darwin_amd64.zip"
+platform."darwin/arm64" = "podman-remote-release-darwin_arm64.zip"
+destination = "share/vendor/podman"
+executable = true
+extract.globs = ["**/bin/*"]
+extract.flatten = true
+
+[asset.gvproxy]
+repo = "containers/gvisor-tap-vsock"
+version = ">=0.8.5"
+platform."darwin/amd64" = "gvproxy-darwin"
+platform."darwin/arm64" = "gvproxy-darwin"
+executable = true
+destination = "share/vendor/podman/gvproxy"
+
+[asset.vfkit]
+repo = "crc-org/vfkit"
+version = ">=0.6.1"
+platform."darwin/amd64" = "vfkit"
+platform."darwin/arm64" = "vfkit"
+executable = true
+destination = "share/vendor/podman/vfkit"
+
+[asset.cosign]
+repo = "sigstore/cosign"
+version = ">=2.5.0"
+platform."darwin/amd64" = "cosign-darwin-amd64"
+platform."darwin/arm64" = "cosign-darwin-arm64"
+platform."linux/amd64" = "cosign-linux-amd64"
+platform."windows/amd64" = "cosign-windows-amd64.exe"
+executable = true
+destination = "share/vendor/cosign"
+
+[asset.tessdata]
+repo = "tesseract-ocr/tessdata_fast"
+version = ">=4.0.0"
+platform.all= "!tarball"
+destination = "share/tessdata"
+# HACK: Globs taken with:
+# python -c 'import json; f = open("share/ocr-languages.json"); values = json.loads(f.read()).values(); [print(f"  \"*/{v}.traineddata\",") for v in values]'
+extract.globs = [
+  "*/afr.traineddata",
+  "*/amh.traineddata",
+  "*/ara.traineddata",
+  "*/asm.traineddata",
+  "*/aze.traineddata",
+  "*/aze_cyrl.traineddata",
+  "*/bel.traineddata",
+  "*/ben.traineddata",
+  "*/bod.traineddata",
+  "*/bos.traineddata",
+  "*/bre.traineddata",
+  "*/bul.traineddata",
+  "*/cat.traineddata",
+  "*/ceb.traineddata",
+  "*/ces.traineddata",
+  "*/chi_sim.traineddata",
+  "*/chi_sim_vert.traineddata",
+  "*/chi_tra.traineddata",
+  "*/chi_tra_vert.traineddata",
+  "*/chr.traineddata",
+  "*/cos.traineddata",
+  "*/cym.traineddata",
+  "*/dan.traineddata",
+  "*/deu.traineddata",
+  "*/div.traineddata",
+  "*/dzo.traineddata",
+  "*/ell.traineddata",
+  "*/eng.traineddata",
+  "*/enm.traineddata",
+  "*/epo.traineddata",
+  "*/est.traineddata",
+  "*/eus.traineddata",
+  "*/fao.traineddata",
+  "*/fas.traineddata",
+  "*/fil.traineddata",
+  "*/fin.traineddata",
+  "*/fra.traineddata",
+  "*/frk.traineddata",
+  "*/frm.traineddata",
+  "*/fry.traineddata",
+  "*/gla.traineddata",
+  "*/gle.traineddata",
+  "*/glg.traineddata",
+  "*/grc.traineddata",
+  "*/guj.traineddata",
+  "*/hat.traineddata",
+  "*/heb.traineddata",
+  "*/hin.traineddata",
+  "*/hrv.traineddata",
+  "*/hun.traineddata",
+  "*/hye.traineddata",
+  "*/iku.traineddata",
+  "*/ind.traineddata",
+  "*/isl.traineddata",
+  "*/ita.traineddata",
+  "*/ita_old.traineddata",
+  "*/jav.traineddata",
+  "*/jpn.traineddata",
+  "*/jpn_vert.traineddata",
+  "*/kan.traineddata",
+  "*/kat.traineddata",
+  "*/kat_old.traineddata",
+  "*/kaz.traineddata",
+  "*/khm.traineddata",
+  "*/kir.traineddata",
+  "*/kmr.traineddata",
+  "*/kor.traineddata",
+  "*/kor_vert.traineddata",
+  "*/lao.traineddata",
+  "*/lat.traineddata",
+  "*/lav.traineddata",
+  "*/lit.traineddata",
+  "*/ltz.traineddata",
+  "*/mal.traineddata",
+  "*/mar.traineddata",
+  "*/mkd.traineddata",
+  "*/mlt.traineddata",
+  "*/mon.traineddata",
+  "*/mri.traineddata",
+  "*/msa.traineddata",
+  "*/mya.traineddata",
+  "*/nep.traineddata",
+  "*/nld.traineddata",
+  "*/nor.traineddata",
+  "*/oci.traineddata",
+  "*/ori.traineddata",
+  "*/pan.traineddata",
+  "*/pol.traineddata",
+  "*/por.traineddata",
+  "*/pus.traineddata",
+  "*/que.traineddata",
+  "*/ron.traineddata",
+  "*/rus.traineddata",
+  "*/san.traineddata",
+  "*/sin.traineddata",
+  "*/slk.traineddata",
+  "*/slv.traineddata",
+  "*/snd.traineddata",
+  "*/spa.traineddata",
+  "*/spa_old.traineddata",
+  "*/sqi.traineddata",
+  "*/srp.traineddata",
+  "*/srp_latn.traineddata",
+  "*/sun.traineddata",
+  "*/swa.traineddata",
+  "*/swe.traineddata",
+  "*/syr.traineddata",
+  "*/tam.traineddata",
+  "*/tat.traineddata",
+  "*/tel.traineddata",
+  "*/tgk.traineddata",
+  "*/tha.traineddata",
+  "*/tir.traineddata",
+  "*/ton.traineddata",
+  "*/tur.traineddata",
+  "*/uig.traineddata",
+  "*/ukr.traineddata",
+  "*/urd.traineddata",
+  "*/uzb.traineddata",
+  "*/uzb_cyrl.traineddata",
+  "*/vie.traineddata",
+  "*/yid.traineddata",
+  "*/yor.traineddata",
+]
+extract.flatten = true

@@ -5,7 +5,7 @@ import platform
 import shutil
 import subprocess
 from pathlib import Path
-from typing import IO, Callable, List, Optional, Tuple
+from typing import IO, Callable, Iterable, List, Optional, Tuple
 
 from . import errors
 from .settings import Settings
@@ -86,7 +86,7 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
             cmd,
             capture_output=True,
             check=True,
-        ).stdout.decode()
+        ).stdout.decode()  # type:ignore[attr-defined]
     except Exception as e:
         msg = f"Could not get the version of the {runtime.name.capitalize()} tool: {e}"
         raise RuntimeError(msg) from e
@@ -142,7 +142,7 @@ def add_image_tag(image_id: str, new_tag: str) -> None:
 
 
 def delete_image_digests(
-    digests: List[str], container_name: Optional[str] = None
+    digests: Iterable[str], container_name: Optional[str] = None
 ) -> None:
     """Delete a Dangerzone image by its id."""
     container_name = container_name or expected_image_name()
@@ -242,7 +242,7 @@ def get_image_id_by_digest(digest: str) -> str:
     log.debug(" ".join(cmd))
     process = subprocess_run(cmd, check=True, capture_output=True)
     # In case we have multiple lines, we only want the first one.
-    return process.stdout.decode().strip().split("\n")[0]
+    return process.stdout.decode().strip().split("\n")[0]  # type:ignore[attr-defined]
 
 
 def expected_image_name() -> str:
@@ -292,7 +292,7 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
             capture_output=True,
             check=True,
         )
-        lines = result.stdout.decode().strip().split("\n")
+        lines = result.stdout.decode().strip().split("\n")  # type:ignore[attr-defined]
         if len(lines) != 1:
             raise errors.MultipleImagesFoundException(
                 f"Expected a single line of output, got {len(lines)} lines"

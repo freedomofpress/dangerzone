@@ -60,9 +60,6 @@ def report_error(verbose=False, fail=False):
     except InvException as e:
         if not verbose:
             print(f"{Fore.RED}{e}{Style.RESET_ALL}", file=sys.stderr)
-        elif verbose < 2:
-            traceback.print_exception(e, limit=1, chain=False)
-            breakpoint()
         else:
             traceback.print_exception(e, chain=True)
     except Exception as e:
@@ -185,7 +182,7 @@ def download_to_cache(url):
     if cached:
         return cached
 
-    logger.debug(f"Downloading {url} into cache...")
+    logger.info(f"Downloading {url} into cache...")
     response = requests.get(url, stream=True)
     response.raise_for_status()
 
@@ -413,7 +410,7 @@ def extract_asset(archive_path, destination, options):
 
     For tarfiles, use filter="data" when extracting to mitigate malicious tar entries.
     """
-    logger.debug(f"Extracting '{archive_path}' to '{destination}'...")
+    logger.info(f"Extracting '{archive_path}' to '{destination}'...")
     ft = options["filetype"]
     globs = options["globs"]
     flatten = options["flatten"]
@@ -511,7 +508,7 @@ def compute_asset_lock(asset_name, asset):
             extract = extract.copy()
             extract["filetype"] = detect_archive_type(plat_name)
 
-        logger.debug(
+        logger.info(
             f"Hashing asset '{asset_name}' of repo '{repo}' for platform"
             f" '{plat_key}'..."
         )
@@ -528,6 +525,49 @@ def compute_asset_lock(asset_name, asset):
         }
 
     return asset_lock_data
+
+
+def sync_asset(asset_name, target_plat, asset):
+    # If an asset.entry contains "platform.all", then we should fallback to that, if
+    # the specific platform we're looking for is not defined.
+    if target_plat not in asset:
+        if "all" in asset:
+            target_plat = "all"
+        else:
+            raise InvException(
+                f"No entry for platform '{target_plat}' or 'platform.all'"
+            )
+
+    info = asset[target_plat]
+    download_url = info["download_url"]
+    destination = Path(info["destination"])
+    expected_checksum = info["checksum"]
+    executable = info["executable"]
+    extract = info.get("extract", False)
+
+    cached_file = download_to_cache_and_verify(
+        download_url, destination, expected_checksum
+    )
+    # Remove destination if it exists already.
+    if destination.exists():
+        if destination.is_dir():
+            shutil.rmtree(destination)
+        else:
+            destination.unlink()
+    # If extraction is requested
+    if extract:
+        destination.mkdir(parents=True, exist_ok=True)
+        filename = download_url.split("/")[-1]
+        extract_asset(
+            cached_file,
+            destination,
+            options=extract,
+        )
+    else:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(cached_file, destination)
+    if executable:
+        chmod_exec(destination)
 
 
 # COMMAND FUNCTIONS
@@ -565,16 +605,17 @@ def cmd_lock(args):
 
     lock_assets = lock["assets"]
     for asset_name, asset in assets_cfg.items():
-        logger.info(f"Processing asset '{asset_name}'...")
+        print(f"Processing asset '{asset_name}'...")
         try:
             lock_assets[asset_name] = compute_asset_lock(asset_name, asset)
         except Exception as e:
             raise InvException(
                 f"Error when processing asset '{asset_name}': {e}"
             ) from e
+        logger.debug(f"Successfully processed asset '{asset_name}'")
 
     write_lock(lock)
-    logger.info(f"Lock file '{LOCK_FILE}' updated.")
+    print(f"Lock file '{LOCK_FILE}' updated.")
 
 
 def cmd_sync(args):
@@ -596,7 +637,7 @@ def cmd_sync(args):
     """
     lock = load_lock()
     target_plat = args.platform if args.platform else detect_platform()
-    print(f"Target platform: {target_plat}")
+    logger.debug(f"Target platform: {target_plat}")
     lock_assets = lock["assets"]
     asset_list = (
         args.assets
@@ -607,55 +648,17 @@ def cmd_sync(args):
     # Validate asset names and platform entries
     for asset_name in asset_list:
         if asset_name not in lock_assets:
-            raise Exception(f"Asset '{asset_name}' not found in the lock file.")
-        asset_entry = lock_assets[asset_name]
+            raise InvException(f"Asset '{asset_name}' not found in the lock file.")
 
-        # If an asset.entry contains "platform.all", then we should fallback to that, if
-        # the specific platform we're looking for is not defined.
-        if target_plat not in asset_entry:
-            if "all" in asset_entry:
-                target_plat = "all"
-            else:
-                raise Exception(
-                    f"No entry for platform '{target_plat}' or 'platform.all' in asset"
-                    f" '{asset_name}'"
-                )
-
-        info = asset_entry[target_plat]
-        download_url = info["download_url"]
-        destination = Path(info["destination"])
-        expected_checksum = info["checksum"]
-        executable = info["executable"]
-        extract = info.get("extract", False)
+        print(f"Syncing asset '{asset_name}'...")
+        asset = lock_assets[asset_name]
         try:
-            print(f"Processing asset '{asset_name}' for platform '{target_plat}'...")
-            cached_file = download_to_cache_and_verify(
-                download_url, destination, expected_checksum
-            )
-            # Remove destination if it exists already.
-            if destination.exists():
-                if destination.is_dir():
-                    shutil.rmtree(destination)
-                else:
-                    destination.unlink()
-            # If extraction is requested
-            if extract:
-                destination.mkdir(parents=True, exist_ok=True)
-                filename = download_url.split("/")[-1]
-                extract_asset(
-                    cached_file,
-                    destination,
-                    options=extract,
-                )
-            else:
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(cached_file, destination)
-            if executable:
-                chmod_exec(destination)
+            sync_asset(asset_name, target_plat, asset)
         except Exception as e:
-            raise InvException(f"Error processing asset '{asset_name}': {e}") from e
+            raise InvException(f"Error when syncing asset '{asset_name}': {e}") from e
+        logger.debug(f"Successfully synced asset '{asset_name}'")
 
-    print("Downloads completed")
+    print(f"Synced {len(asset_list)} assets")
 
 
 def cmd_list(args):

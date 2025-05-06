@@ -316,6 +316,12 @@ jobs:
           cosign save ${{ env.IMAGE_URI }} --dir dz-container
           mkdir share
           cd dz-container
+          mv index.json dangerzone.json
+          # XXX reuse the python code instead (in `dz.updater.signatures`)
+          jq '. + {manifests: [.manifests[]
+              | select(.annotations.kind == "dev.cosignproject.cosign/imageIndex"
+                       or .annotations.kind == "dev.cosignproject.cosign/image")]}' \
+            dangerzone.json > index.json
           tar -cvf ../share/container.tar .
           cd ..
           mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone-pub.key

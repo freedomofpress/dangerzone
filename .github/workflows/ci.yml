@@ -94,7 +94,8 @@ jobs:
           key: v1-inventory-windows-${{ hashFiles('./inventory.lock') }}
       - name: Sync inventory
         if: steps.cache-inventory.outputs.cache-hit != 'true'
-        run: poetry run python3 .\dev_scripts\inventory.py sync
+        run: |
+          poetry run python .\dev_scripts\inventory.py sync
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment

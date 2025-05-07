@@ -49,7 +49,7 @@ jobs:
     with:
       registry: "ghcr.io/${{ github.repository_owner }}"
       registry_user: ${{ github.actor }}
-      image_name: "dangerzone/dangerzone-staging"
+      image_name: "dangerzone/dangerzone-testing"
       reproduce: false
       sign: true
       key_name: "dangerzone-tests"

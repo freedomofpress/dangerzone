@@ -45,7 +45,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
+  - [ ] Download the necessary assets using `./dev_scripts/inventory.py sync`
   - [ ] Run the Dangerzone tests.
   - [ ] Build and run the Dangerzone .exe
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -54,7 +54,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
+  - [ ] Download the necessary assets using `./dev_scripts/inventory.py sync`
   - [ ] Run the Dangerzone tests.
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -63,7 +63,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
+  - [ ] Download the necessary assets using `./dev_scripts/inventory.py sync`
   - [ ] Run the Dangerzone tests.
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -72,7 +72,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
+  - [ ] Download the necessary assets using `./dev_scripts/inventory.py sync`
   - [ ] Run the Dangerzone tests.
   - [ ] Create a .deb package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -81,7 +81,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
+  - [ ] Download the necessary assets using `./dev_scripts/inventory.py sync`
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -292,10 +292,10 @@ Build the latest container:
 python3 ./install/common/build-image.py
 ```
 
-Download the OCR language data:
+Download the necessary assets:
 
 ```sh
-python3 ./install/common/download-tessdata.py
+poetry run python3 ./dev_scripts/inventory.py sync
 ```
 
 Run from source tree:
@@ -355,10 +355,10 @@ Build the latest container:
 python3 ./install/common/build-image.py
 ```
 
-Download the OCR language data:
+Download the necessary assets:
 
 ```sh
-python3 ./install/common/download-tessdata.py
+poetry run python3 ./dev_scripts/inventory.py sync
 ```
 
 Run from source tree:
@@ -419,10 +419,10 @@ Build the dangerzone container image:
 python3 .\install\common\build-image.py
 ```
 
-Download the OCR language data:
+Download the necessary assets:
 
 ```sh
-python3 .\install\common\download-tessdata.py
+poetry run python3 .\dev_scripts\inventory.py sync
 ```
 
 After that you can launch dangerzone during development with:
@@ -758,9 +758,11 @@ class QABase(abc.ABC):
                 self.prompt("Does it pass?", choices=["y", "n"])
         logger.info("Successfully completed QA scenarios")
 
-    @task("Download Tesseract data", auto=True)
-    def download_tessdata(self):
-        self.run("python", str(Path("install", "common", "download-tessdata.py")))
+    @task("Download the necessary assets", auto=True)
+    def sync_inventory(self):
+        self.run(
+            "poetry", "run", "python", str(Path("dev_scripts", "inventory.py")), "sync"
+        )
 
     @classmethod
     @abc.abstractmethod
@@ -862,7 +864,7 @@ class QAWindows(QABase):
         self.install_docker()
         self.install_poetry()
         self.build_image()
-        self.download_tessdata()
+        self.sync_inventory()
         self.run_tests()
         self.build_dangerzone_exe()
 
@@ -954,7 +956,7 @@ class QALinux(QABase):
     def start(self):
         self.build_dev_image()
         self.build_container_image()
-        self.download_tessdata()
+        self.sync_inventory()
         self.run_tests()
         self.build_package()
         self.build_qa_image()

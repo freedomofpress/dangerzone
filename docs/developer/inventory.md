@@ -1,122 +1,162 @@
-# Inventory Tool Developer Documentation
-
-This document describes how to run the Inventory tool, what each command does, and provides details on the supported configuration fields in the inventory TOML file.
-
----
+# Using the Inventory Asset Management Tool
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Config Spec](#config-spec)
+  - [General Structure](#general-structure)
+  - [Fields Description](#fields-description)
 - [Running the Script](#running-the-script)
-  - [Commands Overview](#commands-overview)
     - [lock](#lock)
     - [sync](#sync)
     - [list](#list)
-  - [Examples](#examples)
-- [inventory.toml Format Specification](#inventorytoml-format-specification)
-  - [General Structure](#general-structure)
-  - [Fields Description](#fields-description)
+  - [Common Arguments](#common-arguments)
 
 ---
 
 ## Overview
 
-The Inventory tool is a Python script designed to manage asset versions from GitHub repositories. It can query GitHub for release information, compute checksums for assets, update a lock file (JSON format) and sync assets as described in a configuration file (in TOML format).
+The `dev_scripts/inventory.py` tool is a Python script designed to manage assets
+from GitHub releases. It expects a configuration file (in TOML format) that
+contains a list of assets and some parameters. Using this config file, it can
+query GitHub for release information, compute checksums for assets, update a
+lock file (JSON format) and sync assets as described in the lock file.
 
-The main script supports three commands:
-- `lock`
-- `sync`
-- `list`
+If you come from a Python background, think of it like "Poetry, but for GitHub
+assets".
 
----
+## Config Spec
 
-## Running the Script
-
-### Commands Overview
-
-#### lock
-
-The `lock` command updates the lock file based on the configuration defined in `config.toml`. For each asset, it reads configuration details, queries GitHub to find the appropriate release and asset URL, computes a checksum if the asset is available locally, uses caching for fetching and hashing, renders filenames that contain `{version}`, and supports assets that are platform-agnostic using `platform.all`.
-
-Usage Example:
-```
-python inventory.py lock -C /path/to/config --verbose
-```
-
-#### sync
-
-The `sync` command synchronizes (downloads or copies) assets as specified in the lock file for the given platform (or the current platform if none is provided). It downloads assets into a cache, verifies them against an expected hash, copies them to the destination, marks files as executable if required, and extracts files based on the provided extraction criteria.
-
-Usage Example for syncing all assets:
-```
-python inventory.py sync -p linux/amd64
-```
-Usage Example for syncing only specific assets:
-```
-python inventory.py sync asset1 asset2 -p windows/amd64
-```
-
-#### list
-
-The `list` command lists all assets stored in the lock file along with their version numbers and download URLs for a specified or detected platform.
-
-Usage Example:
-```
-python inventory.py list -p darwin/arm64
-```
-
-### Common Arguments
-
-Each command supports the following optional arguments:
-
-- `-p, --platform`:
-  Specify the platform for which the assets should be processed. Examples include:
-  `windows/amd64`, `linux/amd64`, `darwin/amd64`, `darwin/arm64`.
-  If not provided, the current platform is auto-detected.
-
-- `-v, --verbose`:
-  Enable verbose logging. Use `-v` for INFO level or `-vv` (or more) for DEBUG level messaging.
-
-- `-C, --directory`:
-  Specify the working directory for the script. Defaults to the current working directory if not provided.
-
----
-
-## inventory.toml Format Specification
+Before you begin working with the script, you must create a configuration file
+in one of the following locations of your project:
+* `inventory.toml`: This is a config file written specifically for this tool.
+* `pyproject.toml`: This is a config file written for a Python project. The
+  inventory tool expects a `[tool.inventory]` section in this file.
 
 ### General Structure
 
 Each asset is defined as an entry under the `[asset]` section. For example:
 
 ```toml
-[asset.myAsset]
+[asset.example]
 repo = "owner/repo"
 version = ">=1.0.1"
-platform."windows/amd64" = "asset-windows.exe"
+platform."darwin/arm64"  = "asset-macos"
 platform."linux/amd64"   = "asset-linux"
-platform.all             = "universal-asset.zip"
+platform.all             = "asset-universal"
 executable = true
-destination = "./downloads/asset.exe"
+destination = "./downloads/asset"
 extract = false
 ```
 
+If you are using `pyproject.toml` as a config file, then you need to prepend
+`tool.inventory` to the section name, e.g., `[tool.inventory.asset.example]`.
+
 ### Fields Description
 
-The table below lists the configuration fields supported for each asset entry along with their possible values.
+The table below lists the configuration fields supported for each asset entry
+along with their possible values.
 
-| Field         | Description                                                                                                                                                      | Possible Values                                                                                                                                                                                                         |
-|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| repo          | The GitHub repository identifier in the format `"owner/repo"`.                                                                                                   | Any valid GitHub repository string (e.g., `"octocat/Hello-World"`).                                                                                                        |
-| version       | A semantic versioning (semver) expression specifying the release version constraint for the asset.                                                               | Any valid semver expression, such as `">=1.0.1"`, `"=2.0.0"`, `"~1.2"`.                                                                                                     |
-| Platform keys | Define the asset file for specific platforms. Assets may have different filenames per platform. A fallback `platform.all` key can be used for platform-agnostic assets. | Keys like `platform."windows/amd64"`, `platform."linux/amd64"`, `platform."darwin/arm64"`; **Fallback Key:** `platform.all`. The value is the filename as a string. Templates with `{version}` are allowed. |
-| executable    | Indicates whether the downloaded asset should be marked as executable.                                                                                           | `true` or `false`.                                                                                                                                                                                                     |
-| destination   | The local file path where the asset should be saved after download.                                                                                              | Any valid file path string (e.g., `"./downloads/asset.exe"`).                                                                                                                                                           |
-| extract       | Instructions for file extraction from the downloaded asset.                                                                                                    | `false` (or omitted) for no extraction; a list of glob strings (e.g., `[ "*.exe", "*.dll" ]`) to extract matching files; or a table with keys `globs` (list of glob strings) and `flatten` (`true` or `false`).  |
+| Field         | Required | Description                                                                                                                                                      | Possible Values                                                                                                                                                                                                         |
+|---------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `repo`                | yes | The GitHub repository identifier in the format `"owner/repo"`.                                                                                                   | Any valid GitHub repository string (e.g., `"octocat/Hello-World"`).                                                                                                        |
+| `version`             | yes | A semantic versioning (semver) expression specifying the release version constraint for the asset. | Any valid semver expression, such as `">=1.0.1"`, `"==2.0.0"` ([options](https://python-semver.readthedocs.io/en/latest/usage/compare-versions-through-expression.html)).                                                                                                     |
+| `platform.<platform>` | yes | Define the asset filename for specific platforms. Assets may have different filenames per platform. A fallback `platform.all` key can be used for platform-agnostic assets. | Keys like `platform."windows/amd64"`, `platform."linux/amd64"`, `platform."darwin/arm64"`; **Fallback Key:** `platform.all`. The value is the filename as a string. Templates with `{version}` are allowed. Use `"!tarball"` or `"!zipball"` to get the GitHub-generated source archives. |
+| `executable`          | no  | Indicates whether the downloaded asset should be marked as executable.                                                                                           | `true` or `false` (default).                                                                                                                                                                                                     |
+| `destination`         | yes | The local path where the asset should be saved after download. If the asset is a file, the destination will be its filename. Else, it will be the directory where the contents will be extracted in | Any valid file path string (e.g., `"downloads/asset.exe"`).                                                                                                                                                           |
+| `extract`             | no  | Instructions for file extraction from the downloaded asset.                                                                                                    | `false` (default) for no extraction; a list of glob strings to extract matching files; or a table with keys (see below). |
+| `extract.globs`       | no  | a list of glob strings to match specific files from an archive | Any valid glob such as `*.exe`, `bin/**/asset` ([options](https://docs.python.org/3/library/fnmatch.html)). Will extract all files in the archive if omitted.  |
+| `extract.flatten`     | no  | copy the files to the destination root | `true` or `false` (default) |
 
----
+## Running the Script
 
-## Summary
+The inventory script supports three commands:
+- `lock`
+- `sync`
+- `list`
 
-The Inventory tool automates dependency and version management by syncing assets from GitHub using a configuration file (`inventory.toml`) and creating a lock file. It provides three commands—`lock`, `sync`, and `list`—each accommodating platform-specific behavior, verbosity options, and custom working directories. The configuration file offers flexibility with platform-specific asset definitions and extraction behavior, making it a versatile component for asset management in development workflows.
+#### lock
 
-For further details or contributions, please refer to the source code comments and inline documentation.
+The `lock` command updates the lock file based on the configuration defined in
+`pyproject.toml` / `inventory.toml`. For each asset, it reads its details,
+queries GitHub to find the appropriate release and asset URL, computes a
+checksum if the asset is available locally, uses caching for fetching and
+hashing, renders filenames that contain the `{version}` template string, and
+supports assets that are platform-agnostic using `platform.all`.
+
+Example:
+
+```
+./dev_scripts/inventory.py lock
+Processing 'asset1'
+Processing 'asset2'
+Lock file 'inventory.lock' updated.
+```
+
+#### sync
+
+The `sync` command synchronizes (downloads or copies) assets as specified in the
+lock file for the given platform (or the current platform if none is provided).
+It downloads assets into a cache, verifies them against an expected hash, copies
+them to the destination, marks files as executable if required, and extracts
+files based on the provided extraction criteria.
+
+Examples:
+
+Sync all assets for the current platform:
+
+```
+./dev_scripts/inventory.py sync
+Syncing 'asset1'
+Syncing 'asset2'
+Synced 2 assets.
+```
+
+Sync all assets for the provided platform:
+
+```
+./dev_scripts/inventory.py sync -p darwin/amd64
+Syncing 'asset3'
+Synced 1 assets.
+```
+
+Sync only specific assets:
+
+```
+./dev_scripts/inventory.py sync asset1
+Syncing 'asset1'
+Synced 1 assets.
+```
+
+#### list
+
+The `list` command lists all assets defined for a specific platform, or the
+current one, if not specified. The list output contains the name of the asset,
+its version, and its download URL.
+
+Example:
+
+```
+./dev_scripts/inventory.py list
+asset1 0.0.1 https://github.com/owner/repo/releases/download/v0.0.1/asset1
+asset2 1.2.3 https://github.com/owner/other/releases/download/v0.0.1/asset2
+```
+
+Pass `-vv` to get full details for each asset entry.
+
+### Common Arguments
+
+Each command supports the following optional arguments:
+
+- `-p, --platform`:
+  Specify the platform for which the assets should be processed. Examples
+  include: `windows/amd64`, `linux/amd64`, `darwin/amd64`, `darwin/arm64`.
+  If not provided, the current platform is auto-detected.
+
+- `-v, --verbose`:
+  Enable verbose logging. Use `-v` for INFO level or `-vv` (or more) for DEBUG
+  level messaging.
+
+- `-C, --directory`:
+  Specify the working directory for the script. Defaults to the current working
+  directory if not provided.

@@ -122,7 +122,7 @@ def check_lock_stale(lock):
     if config_hash != lock["config_checksum"]:
         raise InvException(
             "You have made changes to the inventory since you last updated the lock"
-            " file. You need to run the 'lock' command again."
+            " file. Please run the 'lock' command again."
         )
 
 
@@ -320,7 +320,7 @@ def get_download_url(release, name):
         if asset.get("name") == expected_name:
             return asset.get("browser_download_url")
 
-    raise InvException(f"Could not find an asset with '{name}'")
+    raise InvException(f"Could not find asset '{name}'")
 
 
 def hash_asset(url):
@@ -344,11 +344,11 @@ def hash_asset(url):
     return checksum
 
 
-def download_to_cache_and_verify(url, destination, expected_checksum):
+def download_to_cache_and_verify(url, expected_checksum):
     """
     Using caching, first download an asset to the cache dir.
     Verify its checksum against the expected_checksum.
-    If they match, copy to destination.
+    If they match, return the cached file.
     If not, remove the cached file and raise an exception.
     """
     cached_file = download_to_cache(url)
@@ -574,17 +574,23 @@ def sync_asset(asset_name, target_plat, asset):
     executable = info["executable"]
     extract = info.get("extract", False)
 
-    cached_file = download_to_cache_and_verify(
-        download_url, destination, expected_checksum
+    logger.debug(
+        f"Downloading asset '{asset_name}' with URL '{download_url}' and verifying its"
+        f" checksum matches '{expected_checksum}'..."
     )
+    cached_file = download_to_cache_and_verify(download_url, expected_checksum)
     # Remove destination if it exists already.
     if destination.exists():
+        logger.debug(
+            f"Removing destination path '{destination}' of asset '{asset_name}'"
+        )
         if destination.is_dir():
             shutil.rmtree(destination)
         else:
             destination.unlink()
     # If extraction is requested
     if extract:
+        logger.debug(f"Extracting asset '{asset_name}' to '{destination}'")
         destination.mkdir(parents=True, exist_ok=True)
         filename = download_url.split("/")[-1]
         extract_asset(
@@ -593,10 +599,12 @@ def sync_asset(asset_name, target_plat, asset):
             options=extract,
         )
     else:
+        logger.debug(f"Copying asset '{asset_name}' to '{destination}'")
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(cached_file, destination)
-    if executable:
-        chmod_exec(destination)
+        if executable:
+            logger.debug(f"Marking '{destination}' as executable")
+            chmod_exec(destination)
 
 
 # COMMAND FUNCTIONS
@@ -687,7 +695,7 @@ def cmd_sync(args):
             raise InvException(f"Error when syncing asset '{asset_name}': {e}") from e
         logger.debug(f"Successfully synced asset '{asset_name}'")
 
-    print(f"Synced {len(asset_list)} assets")
+    print(f"Synced {len(asset_list)} assets.")
 
 
 def cmd_list(args):
@@ -701,6 +709,7 @@ def cmd_list(args):
     for asset_name in sorted(assets.keys()):
         asset = assets[asset_name]
         print(f"{asset_name} {asset['version']} {asset['download_url']}")
+        logger.debug(f"Full asset details: {asset}")
 
 
 def parse_args():

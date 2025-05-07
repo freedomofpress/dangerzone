@@ -315,7 +315,7 @@ jobs:
             dangerzone.json > index.json
           tar -cvf ../share/container.tar .
           cd ..
-          mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone-pub.key
+          mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
           echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
 
       - name: Cache container image
@@ -325,5 +325,5 @@ jobs:
           key: v6-container-${{ env.IMAGE_URI }}
           path: |-
             share/container.tar
-            share/freedomofpress-dangerzone-pub.key
+            share/freedomofpress-dangerzone.pub
             share/image-name.txt

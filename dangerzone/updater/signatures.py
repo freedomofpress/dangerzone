@@ -31,7 +31,7 @@ def appdata_dir() -> Path:
 # to ensure the software can't upgrade to container images that predates it.
 DEFAULT_LOG_INDEX = 0
 
-DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
+DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone.pub")
 SIGNATURES_PATH = appdata_dir() / "signatures"
 LAST_LOG_INDEX = SIGNATURES_PATH / "last_log_index"
 DANGERZONE_MANIFEST = "dangerzone.json"

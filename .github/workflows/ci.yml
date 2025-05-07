@@ -218,7 +218,7 @@ jobs:
         with:
           path: |-
             share/container.tar
-            share/freedomofpress-dangerzone-pub.key
+            share/freedomofpress-dangerzone.pub
             share/image-name.txt
           enableCrossOsArchive: true
           fail-on-cache-miss: true
@@ -327,7 +327,7 @@ jobs:
         with:
           path: |-
             share/container.tar
-            share/freedomofpress-dangerzone-pub.key
+            share/freedomofpress-dangerzone.pub
             share/image-name.txt
           enableCrossOsArchive: true
           fail-on-cache-miss: true
@@ -426,7 +426,7 @@ jobs:
         with:
           path: |-
             share/container.tar
-            share/freedomofpress-dangerzone-pub.key
+            share/freedomofpress-dangerzone.pub
             share/image-name.txt
           enableCrossOsArchive: true
           fail-on-cache-miss: true

@@ -37,6 +37,13 @@ pyinstaller = {version = "*", platform = "darwin"}
 doit = "^0.36.0"
 jinja2-cli = "^0.8.2"
 
+[tool.poetry.group.inventory.dependencies]
+colorama = "*"
+platformdirs = "*"
+requests = "*"
+semver = "*"
+toml = "*"
+
 # Dependencies required for linting the code.
 [tool.poetry.group.lint.dependencies]
 click = "*" # Install click so mypy is able to reason about it.

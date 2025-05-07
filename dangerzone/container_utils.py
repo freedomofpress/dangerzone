@@ -105,12 +105,7 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
 
 
 def list_image_digests() -> List[str]:
-    """Get the tags of all loaded Dangerzone images.
-
-    This method returns a mapping of image tags to image IDs, for all Dangerzone
-    images. This can be useful when we want to find which are the local image tags,
-    and which image ID does the "latest" tag point to.
-    """
+    """Get the digests of all loaded Dangerzone images."""
     runtime = Runtime()
     container_name = expected_image_name()
     return (

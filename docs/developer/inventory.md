@@ -75,6 +75,8 @@ The inventory script supports three commands:
 - `sync`
 - `list`
 
+The following sections assume you invoke the script with `poetry run`.
+
 #### lock
 
 The `lock` command updates the lock file based on the configuration defined in

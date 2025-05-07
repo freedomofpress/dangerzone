@@ -46,8 +46,8 @@ def list_language_data():
     return targets
 
 
-TESSDATA_DEPS = ["install/common/download-tessdata.py", "share/ocr-languages.json"]
-TESSDATA_TARGETS = list_language_data()
+INVENTORY_DEPS = ["dev_scripts/inventory.py", "inventory.lock"]
+INVENTORY_TARGETS = list_language_data()
 
 IMAGE_DEPS = [
     "Dockerfile",
@@ -67,7 +67,7 @@ PYTHON_DEPS = ["poetry.lock", "pyproject.toml"]
 
 DMG_DEPS = [
     *list_files("install/macos"),
-    *TESSDATA_TARGETS,
+    *INVENTORY_TARGETS,
     *IMAGE_TARGETS,
     *PYTHON_DEPS,
     *SOURCE_DEPS,
@@ -174,12 +174,12 @@ def task_init_release_dir():
     }
 
 
-def task_download_tessdata():
-    """Download the Tesseract data using ./install/common/download-tessdata.py"""
+def task_sync_inventory():
+    """Download the necessary assets using ./dev_scripts/inventory.py sync"""
     return {
-        "actions": ["python install/common/download-tessdata.py"],
-        "file_dep": TESSDATA_DEPS,
-        "targets": TESSDATA_TARGETS,
+        "actions": ["poetry run python3 dev_scripts/inventory.py sync"],
+        "file_dep": INVENTORY_DEPS,
+        "targets": INVENTORY_TARGETS,
         "clean": True,
     }
 
@@ -233,7 +233,7 @@ def task_macos_build_dmg():
             "macos_check_system",
             "init_release_dir",
             "poetry_install",
-            "download_tessdata",
+            "inventory",
         ],
         "targets": [dmg_src, dmg_dst],
         "clean": True,

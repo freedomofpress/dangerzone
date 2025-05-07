@@ -75,33 +75,8 @@ jobs:
           name: container.tar
           path: share/container.tar
 
-  download-tessdata:
-    name: Download and cache Tesseract data
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Cache Tessdata
-      id: cache-tessdata
-      uses: actions/cache@v4
-      with:
-        path: share/tessdata/
-        key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
-        enableCrossOsArchive: true
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    - name: Download Tessdata
-      run: |-
-          if [ -f "share/tessdata" ]; then
-            echo "Already cached, skipping"
-          else
-            python3 ./install/common/download-tessdata.py
-          fi
-
   windows:
     runs-on: windows-latest
-    needs:
-      - download-tessdata
     env:
       DUMMY_CONVERSION: 1
     steps:
@@ -111,13 +86,15 @@ jobs:
           python-version: "3.12"
       - run: pip install poetry
       - run: poetry install
-      - name: Restore cached tessdata
-        uses: actions/cache/restore@v4
+      - name: Cache inventory
+        id: cache-inventory
+        uses: actions/cache@v4
         with:
           path: share/tessdata/
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
+          key: v1-inventory-windows-${{ hashFiles('./inventory.lock') }}
+      - name: Sync inventory
+        if: steps.cache-inventory.outputs.cache-hit != 'true'
+        run: poetry run python .\dev_scripts\inventory.py sync
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment
@@ -142,8 +119,6 @@ jobs:
   macOS:
     name: "macOS (${{ matrix.arch }})"
     runs-on: ${{ matrix.runner }}
-    needs:
-      - download-tessdata
     strategy:
       matrix:
         include:
@@ -158,15 +133,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Restore cached tessdata
-        uses: actions/cache/restore@v4
-        with:
-          path: share/tessdata/
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
       - run: pip install poetry
       - run: poetry install
+      - name: Cache inventory
+        id: cache-inventory
+        uses: actions/cache@v4
+        with:
+          path: share/tessdata/
+          key: v1-inventory-darwin-${{ matrix.arch }}-${{ hashFiles('./inventory.lock') }}
+      - name: Sync inventory
+        if: steps.cache-inventory.outputs.cache-hit != 'true'
+        run: poetry run python3 ./dev_scripts/inventory.py sync
       - name: Run CLI tests
         run: poetry run make test
       - name: Build macOS app
@@ -206,7 +183,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Login to GHCR
         run: |
@@ -379,7 +356,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-container-image
-      - download-tessdata
     strategy:
       matrix:
         include:
@@ -410,7 +386,24 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
+
+      - name: Install inventory dependencies
+        run: |
+          sudo apt install pipx
+          pipx install poetry
+          poetry install
+
+      - name: Cache inventory
+        id: cache-inventory
+        uses: actions/cache@v4
+        with:
+          path: share/tessdata/
+          key: v1-inventory-linux-${{ hashFiles('./inventory.lock') }}
+
+      - name: Sync inventory
+        if: steps.cache-inventory.outputs.cache-hit != 'true'
+        run: poetry run python3 ./dev_scripts/inventory.py sync
 
       - name: Login to GHCR
         run: |
@@ -435,14 +428,6 @@ jobs:
             share/container.tar
             share/image-id.txt
           fail-on-cache-miss: true
-
-      - name: Restore cached tessdata
-        uses: actions/cache/restore@v4
-        with:
-          path: share/tessdata/
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
 
       - name: Setup xvfb (Linux)
         run: |
@@ -473,7 +458,7 @@ jobs:
           #     file successfully.
           xvfb-run -s '-ac' ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
               bash -c 'cd dangerzone; poetry run make test'
-      
+
       - name: Upload PDF diffs
         uses: actions/upload-artifact@v4
         with:

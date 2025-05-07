@@ -17,7 +17,7 @@ DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
 
 @click.group()
 @click.option("--debug", is_flag=True)
-def main(debug: bool, runtime: str) -> None:
+def main(debug: bool) -> None:
     if debug:
         click.echo("Debug mode enabled")
         level = logging.DEBUG
@@ -82,9 +82,6 @@ def load_archive(image_filename: Path, pubkey: Path, force: bool) -> None:
         click.echo(f"✅ {e}")
     except errors.InvalidLogIndex as e:
         click.echo(f"❌ Trying to install image older that the currently installed one")
-        raise click.Abort()
-    except Exception as e:
-        click.echo(f"❌ {e}")
         raise click.Abort()
 
 

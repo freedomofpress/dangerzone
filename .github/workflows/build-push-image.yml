@@ -276,6 +276,9 @@ jobs:
     outputs:
       image_uri: ${{ steps.params.outputs.image_uri }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Prepare env
         run: |-
           echo "IMAGE_URI=${{ inputs.registry }}/${{ inputs.image_name }}:${{ needs.merge.outputs.tag }}@${{ needs.merge.outputs.digest_root }}" >> $GITHUB_ENV
@@ -286,18 +289,6 @@ jobs:
           cosign-release: 'v2.5.0'
       - name: Check install
         run: cosign version
-      - name: Cache keypair
-        id: cache-keypair
-        uses: actions/cache@v4
-        with:
-          path: "${{ inputs.key_name }}.*"
-          key: ${{ inputs.key_cache }}
-          enableCrossOsArchive: true
-      - if: ${{ steps.cache-keypair.outputs.cache-hit != 'true' }}
-        continue-on-error: true
-        name: Generate keypair
-        run: |-
-          cosign generate-key-pair --output-key-prefix="${{ inputs.key_name }}"
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -336,11 +327,3 @@ jobs:
             share/container.tar
             share/freedomofpress-dangerzone-pub.key
             share/image-name.txt
-
-      - name: Upload pubkey
-        uses: actions/upload-artifact@v4
-        with:
-          name: pubkey
-          path: share/freedomofpress-dangerzone-pub.key
-          if-no-files-found: error
-          compression-level: 0

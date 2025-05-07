@@ -52,8 +52,7 @@ jobs:
       image_name: "dangerzone/dangerzone-testing"
       reproduce: false
       sign: true
-      key_name: "dangerzone-tests"
-      key_cache: "v1-test-keypair-${{ github.ref_name }}"
+      key_name: "tests/assets/dangerzone-testing"
     secrets:
       registry_token: ${{ secrets.GITHUB_TOKEN }}
 

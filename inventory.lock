@@ -1,0 +1,269 @@
+{
+  "assets": {
+    "podman": {
+      "windows/amd64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.4.2/podman-remote-release-windows_amd64.zip",
+        "version": "5.4.2",
+        "checksum": "8b2f0efb4aae1e31ac6cef381fec73895f2d2e1a801e068aafe0b71ceb285ba2",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      },
+      "darwin/amd64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.4.2/podman-remote-release-darwin_amd64.zip",
+        "version": "5.4.2",
+        "checksum": "fb9f2e585954c61be6c0faab4cb8492bdd4a1cea2ec0df41c6cf2f6d2e359597",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      },
+      "darwin/arm64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.4.2/podman-remote-release-darwin_arm64.zip",
+        "version": "5.4.2",
+        "checksum": "cd87d2285a75a65edb39af3f1fbc1d830c69ea8e62d6bedfe60639ba05b2f014",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      }
+    },
+    "gvproxy": {
+      "darwin/amd64": {
+        "repo": "containers/gvisor-tap-vsock",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.6/gvproxy-darwin",
+        "version": "0.8.6",
+        "checksum": "e18161fd2dbc67046f4b2a138807fdd1e7f8545b37850328e5a647684e9a809e",
+        "executable": true,
+        "destination": "share/vendor/podman/gvproxy",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "containers/gvisor-tap-vsock",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.6/gvproxy-darwin",
+        "version": "0.8.6",
+        "checksum": "e18161fd2dbc67046f4b2a138807fdd1e7f8545b37850328e5a647684e9a809e",
+        "executable": true,
+        "destination": "share/vendor/podman/gvproxy",
+        "extract": false
+      }
+    },
+    "vfkit": {
+      "darwin/amd64": {
+        "repo": "crc-org/vfkit",
+        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.1/vfkit",
+        "version": "0.6.1",
+        "checksum": "751fb934d8234c0fa0e6558d86010eb36f156a92547f791c5573767af38a2936",
+        "executable": true,
+        "destination": "share/vendor/podman/vfkit",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "crc-org/vfkit",
+        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.1/vfkit",
+        "version": "0.6.1",
+        "checksum": "751fb934d8234c0fa0e6558d86010eb36f156a92547f791c5573767af38a2936",
+        "executable": true,
+        "destination": "share/vendor/podman/vfkit",
+        "extract": false
+      }
+    },
+    "cosign": {
+      "darwin/amd64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.0/cosign-darwin-amd64",
+        "version": "2.5.0",
+        "checksum": "d61cc50f6f32c2b63cb81cd8a935e5dd1be8520d639242031a1102092bee44d4",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.0/cosign-darwin-arm64",
+        "version": "2.5.0",
+        "checksum": "780da3654d9601367b0d54686ac65cb9716578610cabe292d725c7008de4db85",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      },
+      "linux/amd64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.0/cosign-linux-amd64",
+        "version": "2.5.0",
+        "checksum": "1f6c194dd0891eb345b436bb71ff9f996768355f5e0ce02dde88567029ac2188",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      },
+      "windows/amd64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.0/cosign-windows-amd64.exe",
+        "version": "2.5.0",
+        "checksum": "2345667cbcf60767c1a6f678755cbb7465367761084e9d2cbb59ae0cc1a94437",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      }
+    },
+    "tessdata": {
+      "all": {
+        "repo": "tesseract-ocr/tessdata_fast",
+        "download_url": "https://api.github.com/repos/tesseract-ocr/tessdata_fast/tarball/4.1.0",
+        "version": "4.1.0",
+        "checksum": "54d80714745d79955e7997fa0df6d3c43b1b1989179d5e64a67290a2eea8be64",
+        "executable": false,
+        "destination": "share/tessdata",
+        "extract": {
+          "globs": [
+            "*/afr.traineddata",
+            "*/amh.traineddata",
+            "*/ara.traineddata",
+            "*/asm.traineddata",
+            "*/aze.traineddata",
+            "*/aze_cyrl.traineddata",
+            "*/bel.traineddata",
+            "*/ben.traineddata",
+            "*/bod.traineddata",
+            "*/bos.traineddata",
+            "*/bre.traineddata",
+            "*/bul.traineddata",
+            "*/cat.traineddata",
+            "*/ceb.traineddata",
+            "*/ces.traineddata",
+            "*/chi_sim.traineddata",
+            "*/chi_sim_vert.traineddata",
+            "*/chi_tra.traineddata",
+            "*/chi_tra_vert.traineddata",
+            "*/chr.traineddata",
+            "*/cos.traineddata",
+            "*/cym.traineddata",
+            "*/dan.traineddata",
+            "*/deu.traineddata",
+            "*/div.traineddata",
+            "*/dzo.traineddata",
+            "*/ell.traineddata",
+            "*/eng.traineddata",
+            "*/enm.traineddata",
+            "*/epo.traineddata",
+            "*/est.traineddata",
+            "*/eus.traineddata",
+            "*/fao.traineddata",
+            "*/fas.traineddata",
+            "*/fil.traineddata",
+            "*/fin.traineddata",
+            "*/fra.traineddata",
+            "*/frk.traineddata",
+            "*/frm.traineddata",
+            "*/fry.traineddata",
+            "*/gla.traineddata",
+            "*/gle.traineddata",
+            "*/glg.traineddata",
+            "*/grc.traineddata",
+            "*/guj.traineddata",
+            "*/hat.traineddata",
+            "*/heb.traineddata",
+            "*/hin.traineddata",
+            "*/hrv.traineddata",
+            "*/hun.traineddata",
+            "*/hye.traineddata",
+            "*/iku.traineddata",
+            "*/ind.traineddata",
+            "*/isl.traineddata",
+            "*/ita.traineddata",
+            "*/ita_old.traineddata",
+            "*/jav.traineddata",
+            "*/jpn.traineddata",
+            "*/jpn_vert.traineddata",
+            "*/kan.traineddata",
+            "*/kat.traineddata",
+            "*/kat_old.traineddata",
+            "*/kaz.traineddata",
+            "*/khm.traineddata",
+            "*/kir.traineddata",
+            "*/kmr.traineddata",
+            "*/kor.traineddata",
+            "*/kor_vert.traineddata",
+            "*/lao.traineddata",
+            "*/lat.traineddata",
+            "*/lav.traineddata",
+            "*/lit.traineddata",
+            "*/ltz.traineddata",
+            "*/mal.traineddata",
+            "*/mar.traineddata",
+            "*/mkd.traineddata",
+            "*/mlt.traineddata",
+            "*/mon.traineddata",
+            "*/mri.traineddata",
+            "*/msa.traineddata",
+            "*/mya.traineddata",
+            "*/nep.traineddata",
+            "*/nld.traineddata",
+            "*/nor.traineddata",
+            "*/oci.traineddata",
+            "*/ori.traineddata",
+            "*/pan.traineddata",
+            "*/pol.traineddata",
+            "*/por.traineddata",
+            "*/pus.traineddata",
+            "*/que.traineddata",
+            "*/ron.traineddata",
+            "*/rus.traineddata",
+            "*/san.traineddata",
+            "*/sin.traineddata",
+            "*/slk.traineddata",
+            "*/slv.traineddata",
+            "*/snd.traineddata",
+            "*/spa.traineddata",
+            "*/spa_old.traineddata",
+            "*/sqi.traineddata",
+            "*/srp.traineddata",
+            "*/srp_latn.traineddata",
+            "*/sun.traineddata",
+            "*/swa.traineddata",
+            "*/swe.traineddata",
+            "*/syr.traineddata",
+            "*/tam.traineddata",
+            "*/tat.traineddata",
+            "*/tel.traineddata",
+            "*/tgk.traineddata",
+            "*/tha.traineddata",
+            "*/tir.traineddata",
+            "*/ton.traineddata",
+            "*/tur.traineddata",
+            "*/uig.traineddata",
+            "*/ukr.traineddata",
+            "*/urd.traineddata",
+            "*/uzb.traineddata",
+            "*/uzb_cyrl.traineddata",
+            "*/vie.traineddata",
+            "*/yid.traineddata",
+            "*/yor.traineddata"
+          ],
+          "flatten": true,
+          "filetype": "tar.gz"
+        }
+      }
+    }
+  },
+  "config_checksum": "d146ff7aebc7fd64b159df074ec8e82ec06cf3db40087c3e911296a68faca3b5"
+}

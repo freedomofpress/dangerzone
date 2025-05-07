@@ -30,8 +30,9 @@ from colorama import Back, Fore, Style
 from platformdirs import user_cache_dir
 
 # CONSTANTS
-CONFIG_FILE = "inventory.toml"
-LOCK_FILE = "inventory.lock"
+CONFIG_FILE = Path("inventory.toml")
+PYPROJECT_FILE = Path("pyproject.toml")
+LOCK_FILE = Path("inventory.lock")
 GITHUB_API_URL = "https://api.github.com"
 
 # Determine the cache directory using platformdirs
@@ -72,11 +73,39 @@ def report_error(verbose=False, fail=False):
 
 
 def read_config():
-    try:
-        with open(CONFIG_FILE, "r") as fp:
-            return toml.load(fp)
-    except Exception as e:
-        raise InvException(f"Could not load configuration file '{CONFIG_FILE}'") from e
+    """
+    Read the config for the inventory tool, either from its own configuration file
+    (inventory.toml) or a [tool.inventory] section in pyproject.toml.
+    """
+    if CONFIG_FILE.exists():
+        # First, attempt to read the configuration from inventory.toml.
+        try:
+            return toml.load(CONFIG_FILE.open("r"))
+        except Exception as e:
+            msg = f"Could not load configuration file '{CONFIG_FILE}': {e}"
+            raise InvException(msg) from e
+    elif PYPROJECT_FILE.exists():
+        # Then, attempt to read the configuration from pyproject.toml.
+        try:
+            config = toml.load(PYPROJECT_FILE.open("r"))
+        except Exception as e:
+            msg = f"Could not load configuration file '{PYRPROJECT_FILE}': {e}"
+            raise InvException(msg) from e
+
+        # If the pyproject.toml file does not have a [tool.inventory] section, return an
+        # error.
+        config = config.get("tool", {}).get("inventory")
+        if not config:
+            raise InvException(
+                f"Missing a '[tool.inventory]' section in {PYPROJECT_FILE} or"
+                f" a separate {CONFIG_FILE}"
+            )
+        return config
+
+    raise InvException(
+        f"Missing a {PYPROJECT_FILE} with a '[tool.inventory]' or a separate"
+        f" {CONFIG_FILE}"
+    )
 
 
 def write_lock(lock_data):

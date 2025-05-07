@@ -137,10 +137,10 @@ Build the latest container:
 python3 ./install/common/build-image.py
 ```
 
-Download the OCR language data and other useful assets:
+Download the necessary assets:
 
 ```sh
-python3 ./dev_scripts/inventory sync
+poetry run python3 ./dev_scripts/inventory.py sync
 ```
 
 Run from source tree:

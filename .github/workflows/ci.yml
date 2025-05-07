@@ -87,17 +87,14 @@ jobs:
       - run: pip install poetry
       - run: poetry install
       - name: Cache inventory
+        id: cache-inventory
         uses: actions/cache@v4
         with:
           path: share/tessdata/
           key: v1-inventory-windows-${{ hashFiles('./inventory.lock') }}
       - name: Sync inventory
-        run: |-
-            if [ -f "share/tessdata" ]; then
-              echo "Already cached, skipping"
-            else
-              poetry run python3 ./dev_scripts/inventory.py sync
-            fi
+        if: steps.cache-inventory.outputs.cache-hit != 'true'
+        run: poetry run python3 .\dev_scripts\inventory.py sync
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment
@@ -139,17 +136,14 @@ jobs:
       - run: pip install poetry
       - run: poetry install
       - name: Cache inventory
+        id: cache-inventory
         uses: actions/cache@v4
         with:
           path: share/tessdata/
           key: v1-inventory-darwin-${{ matrix.arch }}-${{ hashFiles('./inventory.lock') }}
       - name: Sync inventory
-        run: |-
-            if [ -f "share/tessdata" ]; then
-              echo "Already cached, skipping"
-            else
-              poetry run python3 ./dev_scripts/inventory.py sync
-            fi
+        if: steps.cache-inventory.outputs.cache-hit != 'true'
+        run: poetry run python3 ./dev_scripts/inventory.py sync
       - name: Run CLI tests
         run: poetry run make test
       - name: Build macOS app
@@ -401,18 +395,15 @@ jobs:
           poetry install
 
       - name: Cache inventory
+        id: cache-inventory
         uses: actions/cache@v4
         with:
           path: share/tessdata/
           key: v1-inventory-linux-${{ hashFiles('./inventory.lock') }}
 
       - name: Sync inventory
-        run: |-
-            if [ -f "share/tessdata" ]; then
-              echo "Already cached, skipping"
-            else
-              poetry run python3 ./dev_scripts/inventory.py sync
-            fi
+        if: steps.cache-inventory.outputs.cache-hit != 'true'
+        run: poetry run python3 ./dev_scripts/inventory.py sync
 
       - name: Login to GHCR
         run: |

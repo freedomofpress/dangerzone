@@ -79,7 +79,7 @@ class TestContainer(IsolationProviderTest):
                 "image",
                 "list",
                 "--format",
-                "{{ .Tag }}",
+                "{{ .Digest }}",
                 expected_image_name(),
             ],
             occurrences=2,
@@ -102,8 +102,8 @@ class TestContainer(IsolationProviderTest):
         """In case an image has been installed but its signature cannot be verified, an exception should be raised"""
 
         mocker.patch(
-            "dangerzone.isolation_provider.container.container_utils.list_image_tags",
-            return_value=["a-tag"],
+            "dangerzone.isolation_provider.container.container_utils.list_image_digests",
+            return_value=["a-digest"],
         )
         mocker.patch(
             "dangerzone.isolation_provider.container.verify_local_image",
@@ -123,8 +123,8 @@ class TestContainer(IsolationProviderTest):
         """In case an image has been installed but its signature cannot be verified, an exception should be raised"""
 
         mocker.patch(
-            "dangerzone.isolation_provider.container.container_utils.list_image_tags",
-            return_value=["a-tag"],
+            "dangerzone.isolation_provider.container.container_utils.list_image_digests",
+            return_value=["a-digest"],
         )
         mocker.patch(
             "dangerzone.isolation_provider.container.verify_local_image",
@@ -143,8 +143,8 @@ class TestContainer(IsolationProviderTest):
         """In case an image has been installed but its signature cannot be verified, an exception should be raised"""
 
         mocker.patch(
-            "dangerzone.isolation_provider.container.container_utils.list_image_tags",
-            return_value=["a-tag"],
+            "dangerzone.isolation_provider.container.container_utils.list_image_digests",
+            return_value=["a-digest"],
         )
         mocker.patch(
             "dangerzone.isolation_provider.container.is_update_available",

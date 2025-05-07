@@ -1,22 +1,22 @@
-name: Release multi-arch container image
+#name: Release multi-arch container image
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-      - "test/**"
-  schedule:
-    - cron: "0 0 * * *" # Run every day at 00:00 UTC.
+#on:
+#  workflow_dispatch:
+#  push:
+#    branches:
+#      - main
+#      - "test/**"
+#  schedule:
+#    - cron: "0 0 * * *" # Run every day at 00:00 UTC.
 
 
-jobs:
-  build-push-image:
-    uses: ./.github/workflows/build-push-image.yml
-    with:
-      registry: ghcr.io/${{ github.repository_owner }}
-      registry_user: ${{ github.actor }}
-      image_name: dangerzone/dangerzone
-      reproduce: true
-    secrets:
-      registry_token: ${{ secrets.GITHUB_TOKEN }}
+#jobs:
+#  build-push-image:
+#    uses: ./.github/workflows/build-push-image.yml
+#    with:
+#      registry: ghcr.io/${{ github.repository_owner }}
+#      registry_user: ${{ github.actor }}
+#      image_name: dangerzone/dangerzone
+#      reproduce: true
+#    secrets:
+#      registry_token: ${{ secrets.GITHUB_TOKEN }}

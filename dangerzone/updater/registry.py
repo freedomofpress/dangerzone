@@ -115,6 +115,7 @@ def get_blob(image: Image, digest: str) -> requests.Response:
 def get_manifest_digest(
     image_str: str, tag_manifest_content: Optional[bytes] = None
 ) -> str:
+    """Get the manifest for the specified image and return its digest."""
     if not tag_manifest_content:
         tag_manifest_content = get_manifest(image_str).content
 
@@ -124,17 +125,17 @@ def get_manifest_digest(
 def is_new_remote_image_available(image_str: str) -> Tuple[bool, str]:
     """
     Check if a new remote image is available on the registry.
+
+    Lookup the remote image registry and find out if
+    the remote image is different than the local one.
     """
     remote_digest = get_manifest_digest(image_str)
-    image = parse_image_location(image_str)
-    if image.digest:
-        local_digest = image.digest
-    else:
-        try:
-            local_digest = runtime.get_local_image_digest()
-        except dzerrors.ImageNotPresentException:
-            log.debug("No local image found")
-            return True, remote_digest
+
+    try:
+        local_digest = runtime.get_local_image_digest(image_str)
+    except dzerrors.ImageNotPresentException:
+        log.debug("No local image found, will return the last remote update")
+        return True, remote_digest
 
     log.debug("Remote digest: %s", remote_digest)
     log.debug("Local digest: %s", local_digest)

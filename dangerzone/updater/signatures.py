@@ -140,40 +140,24 @@ class Signature:
         return full_digest.replace("sha256:", "")
 
 
-def is_update_available(
-    image_str: str, pubkey: Path = DEFAULT_PUBKEY_LOCATION
-) -> Tuple[bool, Optional[str]]:
-    """
-    Check if a new image is available, doing all the necessary checks ensuring it
-    would be safe to upgrade.
-    """
-    new_image_available, remote_digest = registry.is_new_remote_image_available(
-        image_str
-    )
-    if not new_image_available:
-        return False, None
-
-    try:
-        check_signatures_and_logindex(image_str, remote_digest, pubkey)
-        return True, remote_digest
-    except errors.InvalidLogIndex:
-        return False, None
-
-
 def check_signatures_and_logindex(
-    image_str: str, remote_digest: str, pubkey: Path
+    image_str: str,
+    remote_digest: str,
+    pubkey: Path,
+    bypass_logindex_check: bool = False,
 ) -> list[Dict]:
     signatures = get_remote_signatures(image_str, remote_digest)
     verify_signatures(signatures, remote_digest, pubkey)
 
-    incoming_log_index = get_log_index_from_signatures(signatures)
-    last_log_index = get_last_log_index()
+    if not bypass_logindex_check:
+        incoming_log_index = get_log_index_from_signatures(signatures)
+        last_log_index = get_last_log_index()
 
-    if incoming_log_index < last_log_index:
-        raise errors.InvalidLogIndex(
-            f"The incoming log index ({incoming_log_index}) is "
-            f"lower than the last known log index ({last_log_index})"
-        )
+        if incoming_log_index < last_log_index:
+            raise errors.InvalidLogIndex(
+                f"The incoming log index ({incoming_log_index}) is "
+                f"lower than the last known log index ({last_log_index})"
+            )
     return signatures
 
 
@@ -573,22 +557,59 @@ def prepare_airgapped_archive(image_name: str, destination: str) -> None:
             archive.add(str(tmppath), arcname=".")
 
 
+def is_update_available(
+    image_str: str, pubkey: Path = DEFAULT_PUBKEY_LOCATION
+) -> Tuple[bool, Optional[str]]:
+    """
+    Check if a new image is available, doing all the necessary checks ensuring it
+    would be safe to upgrade.
+
+    If image_str is refering to a specific digest,
+    bypass the log index checks, and install it right away.
+    """
+    new_image_available, remote_digest = registry.is_new_remote_image_available(
+        image_str
+    )
+    if not new_image_available:
+        return False, None
+
+    try:
+        check_signatures_and_logindex(image_str, remote_digest, pubkey)
+        return True, remote_digest
+    except errors.InvalidLogIndex as e:
+        log.info(f"Invalid log index {e}")
+        return False, None
+
+
 def upgrade_container_image(
     manifest_digest: str,
-    image: Optional[str] = None,
+    image_str: Optional[str] = None,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
+    bypass_logindex_check=False,
     callback: Optional[Callable] = None,
 ) -> str:
     """Verify and upgrade the image to the latest, if signed."""
-    image = image or runtime.expected_image_name()
-    update_available, remote_digest = registry.is_new_remote_image_available(image)
-    if not update_available:
-        raise errors.ImageAlreadyUpToDate("The image is already up to date")
+    image_str = image_str or runtime.expected_image_name()
 
-    signatures = check_signatures_and_logindex(image, remote_digest, pubkey)
-    runtime.container_pull(image, manifest_digest, callback=callback)
+    # If a digest is present in the specified image and matches
+    # the provided one, skip the remote check and upgrade to this
+    # digest instead.
+    image = registry.parse_image_location(image_str)
+    if image.digest and image.digest == f"sha256:{manifest_digest}":
+        remote_digest = image.digest
+    else:
+        update_available, remote_digest = registry.is_new_remote_image_available(
+            image_str
+        )
+        if not update_available:
+            raise errors.ImageAlreadyUpToDate("The image is already up to date")
 
-    # Store the signatures just now to avoid storing them unverified
+    signatures = check_signatures_and_logindex(
+        image_str, remote_digest, pubkey, bypass_logindex_check=bypass_logindex_check
+    )
+    runtime.container_pull(image_str, manifest_digest, callback=callback)
+
+    # Now that they are verified, store the signatures
     store_signatures(signatures, manifest_digest, pubkey)
     return manifest_digest
 

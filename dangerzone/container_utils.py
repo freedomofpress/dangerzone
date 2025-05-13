@@ -170,7 +170,7 @@ def load_image_tarball(tarball_path: Optional[Path] = None) -> None:
     if not tarball_path:
         tarball_path = get_resource_path("container.tar")
     try:
-        res = subprocess.run(
+        res = subprocess_run(
             [str(runtime.path), "load", "-i", str(tarball_path)],
             startupinfo=get_subprocess_startupinfo(),
             capture_output=True,

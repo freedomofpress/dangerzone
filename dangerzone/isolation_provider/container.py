@@ -7,7 +7,7 @@ import sys
 from typing import Callable, List, Optional, Tuple
 
 from .. import container_utils, errors
-from ..container_utils import Runtime
+from ..container_utils import Runtime, subprocess_run
 from ..document import Document
 from ..settings import Settings
 from ..updater import (
@@ -281,7 +281,7 @@ class Container(IsolationProvider):
             # NOTE: We specify a timeout for this command, since we've seen it hang
             # indefinitely for specific files. See:
             # https://github.com/freedomofpress/dangerzone/issues/854
-            subprocess.run(
+            subprocess_run(
                 cmd,
                 capture_output=True,
                 startupinfo=get_subprocess_startupinfo(),
@@ -329,12 +329,12 @@ class Container(IsolationProvider):
         # should report it.
         runtime = Runtime()
         name = self.doc_to_pixels_container_name(document)
-        all_containers = subprocess.run(
+        all_containers = subprocess_run(
             [str(runtime.path), "ps", "-a"],
             capture_output=True,
             startupinfo=get_subprocess_startupinfo(),
         )
-        if name in all_containers.stdout.decode():
+        if name in all_containers.stdout.decode():  # type:ignore[attr-defined]
             log.warning(f"Container '{name}' did not stop gracefully")
 
     def get_max_parallel_conversions(self) -> int:

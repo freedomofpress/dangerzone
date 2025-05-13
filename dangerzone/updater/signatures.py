@@ -180,7 +180,7 @@ def check_signatures_and_logindex(
 def verify_signatures(
     signatures: List[Dict],
     image_digest: str,
-    pubkey: Path,
+    pubkey: Path = DEFAULT_PUBKEY_LOCATION,
 ) -> bool:
     if len(signatures) < 1:
         raise errors.SignatureVerificationError("No signatures found")
@@ -243,7 +243,9 @@ def _get_signature_filename(input: Dict) -> PurePath:
 
 
 def upgrade_container_image_airgapped(
-    container_tar: Path, pubkey: Path, bypass_logindex: bool = False
+    container_tar: Path,
+    pubkey: Path = DEFAULT_PUBKEY_LOCATION,
+    bypass_logindex: bool = False,
 ) -> str:
     """
     Verify the given archive against its self-contained signatures, then
@@ -258,7 +260,6 @@ def upgrade_container_image_airgapped(
     :return: The loaded image name
     """
 
-    # XXX Use a memory buffer instead of the filesystem
     with TemporaryDirectory() as _tempdir, tarfile.open(container_tar, "r") as archive:
         # First, check that we have a "signatures.json" file
         files = archive.getnames()
@@ -422,7 +423,7 @@ def load_and_verify_signatures(
 def store_signatures(
     signatures: list[Dict],
     image_digest: str,
-    pubkey: Path,
+    pubkey: Path = DEFAULT_PUBKEY_LOCATION,
     update_logindex: bool = True,
 ) -> None:
     """

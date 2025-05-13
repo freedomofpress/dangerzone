@@ -16,6 +16,9 @@ __all__ = [
     "parse_image_location",
 ]
 
+# This client interacts with container registries as defined by:
+# https://github.com/opencontainers/distribution-spec/blob/main/spec.md#endpoints
+
 SIGSTORE_BUNDLE = "application/vnd.dev.sigstore.bundle.v0.3+json"
 IMAGE_INDEX_MEDIA_TYPE = "application/vnd.oci.image.index.v1+json"
 ACCEPT_MANIFESTS_HEADER = ",".join(

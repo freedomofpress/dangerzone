@@ -7,13 +7,13 @@ from pathlib import Path
 import click
 
 from .. import container_utils
-from ..container_utils import Runtime
+from ..container_utils import Runtime, expected_image_name
 from . import attestations, errors, log, registry, signatures
 from .signatures import DEFAULT_PUBKEY_LOCATION
 
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
 DEFAULT_BRANCH = "main"
-DEFAULT_IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/dangerzone"
+DEFAULT_IMAGE_NAME = expected_image_name()
 
 
 @click.group()
@@ -28,18 +28,38 @@ def main(debug: bool) -> None:
 
 
 @main.command()
-@click.argument("image", default=DEFAULT_IMAGE_NAME)
-def upgrade(image: str) -> None:
-    """Upgrade the image to the latest signed version."""
-    manifest_digest = registry.get_manifest_digest(image)
+@click.argument(
+    "image",
+    default=DEFAULT_IMAGE_NAME,
+    help="The image to upgrade to. By default it will be the value specified in share/image-name.txt. It is possible to specify a digest with image-name@digest, in which case this digest will be the one installed.",
+)
+@click.option(
+    "force",
+    is_flag=True,
+    help="If this flag is set, installation will be forced, and the verification that logindex should be greater than the ones installed will be bypassed",
+)
+def upgrade(image: str, force: bool) -> None:
+    """Upgrade the image to the latest version (only if it is signed).
+
+    If a digest is passed as part of the image,
+    the upgrade will be done to the specified digest instead.
+
+    """
+    image_obj = registry.parse_image_location(image)
+    if image_obj.digest:
+        manifest_digest = image_obj.digest
+    else:
+        manifest_digest = registry.get_manifest_digest(image)
 
     try:
         callback = functools.partial(click.echo, nl=False)
-        signatures.upgrade_container_image(image, manifest_digest, callback=callback)
+        signatures.upgrade_container_image(
+            manifest_digest, image, bypass_logindex_check=force, callback=callback
+        )
         click.echo(f"✅ The local image {image} has been upgraded")
         click.echo(f"✅ The image has been signed with {DEFAULT_PUBKEY_LOCATION}")
         click.echo(f"✅ Signatures has been verified and stored locally")
-s
+
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
         raise click.Abort()

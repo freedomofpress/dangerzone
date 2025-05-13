@@ -113,7 +113,7 @@ def test_upgrade_container_image_if_already_up_to_date(mocker):
     )
     with pytest.raises(errors.ImageAlreadyUpToDate):
         upgrade_container_image(
-            "ghcr.io/freedomofpress/dangerzone/dangerzone", "sha256:123456", "test.pub"
+            "sha256:123456", "ghcr.io/freedomofpress/dangerzone/dangerzone", "test.pub"
         )
 
 
@@ -125,8 +125,8 @@ def test_upgrade_container_without_signatures(mocker):
     mocker.patch("dangerzone.updater.signatures.get_remote_signatures", return_value=[])
     with pytest.raises(errors.SignatureVerificationError):
         upgrade_container_image(
-            "ghcr.io/freedomofpress/dangerzone/dangerzone",
             "sha256:123456",
+            "ghcr.io/freedomofpress/dangerzone/dangerzone",
             "test.pub",
         )
 
@@ -150,7 +150,7 @@ def test_upgrade_container_lower_log_index(mocker):
         "dangerzone.updater.signatures.get_remote_signatures",
         return_value=signatures,
     )
-    # Mock to avoid loosing time on test failures
+    # Mock to avoid losing time on test failures
     mocker.patch("dangerzone.container_utils.container_pull")
     # The log index of the incoming signatures is 168652066
     mocker.patch(
@@ -160,10 +160,44 @@ def test_upgrade_container_lower_log_index(mocker):
 
     with pytest.raises(errors.InvalidLogIndex):
         upgrade_container_image(
-            "ghcr.io/freedomofpress/dangerzone/dangerzone",
             image_digest,
+            "ghcr.io/freedomofpress/dangerzone/dangerzone",
             TEST_PUBKEY_PATH,
         )
+
+    # And it should go trough if we ask to bypass the logindex checks
+    upgrade_container_image(
+        image_digest,
+        "ghcr.io/freedomofpress/dangerzone/dangerzone",
+        TEST_PUBKEY_PATH,
+        bypass_logindex_check=True,
+    )
+
+
+def test_upgrade_container_with_specified_digest(mocker):
+    """
+    When a digest is specified in the image, no network calls are made
+    and this digest is used in subsequent calls.
+    """
+    image_digest = "4da441235e84e93518778827a5c5745d532d7a4079886e1647924bee7ef1c14d"
+    # Mock everything we can, here we don't want to check that the
+    # signatures logic is valid, but instead ensure that no network
+    # calls are made when a digest is passed.
+    network_call = mocker.patch(
+        "dangerzone.updater.registry.is_new_remote_image_available",
+    )
+
+    mocker.patch("dangerzone.updater.signatures.check_signatures_and_logindex")
+    mocker.patch("dangerzone.container_utils.container_pull")
+    mocker.patch(
+        "dangerzone.updater.signatures.store_signatures",
+    )
+
+    upgrade_container_image(
+        image_digest,
+        f"ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:{image_digest}",
+    )
+    network_call.assert_not_called()
 
 
 def test_prepare_airgapped_archive_requires_digest():

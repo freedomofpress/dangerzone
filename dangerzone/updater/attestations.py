@@ -1,6 +1,6 @@
-import subprocess
 from tempfile import NamedTemporaryFile
 
+from ..container_utils import subprocess_run
 from . import cosign
 
 # NOTE: You can grab the SLSA attestation for an image/tag pair with the following
@@ -83,8 +83,8 @@ def verify(
             image_name,
         ]
 
-        result = subprocess.run(cmd, capture_output=True)
+        result = subprocess_run(cmd, capture_output=True)
         if result.returncode != 0:
-            error = result.stderr.decode()
+            error = result.stderr.decode()  # type:ignore[attr-defined]
             raise Exception(f"Attestation cannot be verified. {error}")
         return True

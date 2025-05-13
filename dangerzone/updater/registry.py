@@ -128,7 +128,7 @@ def is_new_remote_image_available(image_str: str) -> Tuple[bool, str]:
         local_digest = image.digest
     else:
         try:
-            local_digest = runtime.get_local_image_digest(image_str)
+            local_digest = runtime.get_local_image_digest()
         except dzerrors.ImageNotPresentException:
             log.debug("No local image found")
             return True, remote_digest

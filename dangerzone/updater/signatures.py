@@ -14,6 +14,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 from .. import container_utils as runtime
 from .. import errors as dzerrors
+from ..container_utils import subprocess_run
 from ..util import get_resource_path
 from . import cosign, errors, log, registry
 
@@ -114,7 +115,9 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
             payload_file.name,
         ]
         log.debug(" ".join(cmd))
-        result = subprocess.run(cmd, capture_output=True)
+        result = subprocess_run(cmd, capture_output=True)
+        # If the process return code is not 0, or doesn't contain the expected
+        # string, we raise an error.
         if result.returncode != 0 or result.stderr != b"Verified OK\n":
             log.debug("Failed to verify signature", result.stderr)
             raise errors.SignatureVerificationError("Failed to verify signature")
@@ -494,7 +497,7 @@ def get_remote_signatures(image: str, digest: str) -> List[Dict]:
     cosign.ensure_installed()
 
     try:
-        process = subprocess.run(
+        process = subprocess_run(
             ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
             capture_output=True,
             check=True,
@@ -537,7 +540,7 @@ def prepare_airgapped_archive(image_name: str, destination: str) -> None:
         msg = f"Downloading image {image_name}. \nIt might take a while."
         log.info(msg)
 
-        process = subprocess.run(
+        process = subprocess_run(
             ["cosign", "save", image_name, "--dir", tmpdir],
             capture_output=True,
             check=True,

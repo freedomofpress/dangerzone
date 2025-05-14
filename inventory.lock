@@ -3,9 +3,9 @@
     "tessdata": {
       "all": {
         "repo": "tesseract-ocr/tessdata_fast",
-        "download_url": "https://api.github.com/repos/tesseract-ocr/tessdata_fast/tarball/4.1.0",
+        "download_url": "https://api.github.com/repos/tesseract-ocr/tessdata_fast/zipball/4.1.0",
         "version": "4.1.0",
-        "checksum": "54d80714745d79955e7997fa0df6d3c43b1b1989179d5e64a67290a2eea8be64",
+        "checksum": "cbbdb9b61061452b13cf77f45cccd051648a71bba01cc98b59ac014bb72f44f1",
         "executable": false,
         "destination": "share/tessdata",
         "extract": {
@@ -135,10 +135,10 @@
             "*/yor.traineddata"
           ],
           "flatten": true,
-          "filetype": "tar.gz"
+          "filetype": "zip"
         }
       }
     }
   },
-  "config_checksum": "0e14891d44a275e84d0511e382f6601aff2fa732972eee1b3a7df2d21ea21ded"
+  "config_checksum": "5d5b78b909f93102025e30cf7a7170dcac6b6582082f42799437a747f72914bb"
 }

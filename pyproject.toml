@@ -88,7 +88,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.inventory.asset.tessdata]
 repo = "tesseract-ocr/tessdata_fast"
 version = ">=4.1.0"
-platform.all= "!tarball"
+platform.all= "!zipball"
 destination = "share/tessdata"
 # HACK: Globs taken with:
 # python -c 'import json; f = open("share/ocr-languages.json"); values = json.loads(f.read()).values(); [print(f"  \"*/{v}.traineddata\",") for v in values]'

@@ -77,9 +77,8 @@ jobs:
         id: params
         run: |
           source Dockerfile.env
-          ALTER_IMAGE="${{ inputs.alter_image }}"
-          if [[ "${ALTER_IMAGE,,}" == "true" ]]; then
-            DEBIAN_ARCHIVE_DATE=$(date -u +'%Y%m%d' -d "tomorrow")
+          if [[ "${{ inputs.alter_image }}" == "true" ]]; then
+            DEBIAN_ARCHIVE_DATE=$(date -u +'%Y%m%d' -d "1d")
           else
             DEBIAN_ARCHIVE_DATE=$(date -u +'%Y%m%d')
           fi

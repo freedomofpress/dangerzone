@@ -58,7 +58,7 @@ jobs:
       registry_token: ${{ secrets.GITHUB_TOKEN }}
 
   build-altered-image:
-    name: Build, push and sign coan altered image
+    name: Build, push and sign an altered image
     uses: ./.github/workflows/build-push-image.yml
     with:
       registry: "ghcr.io/${{ github.repository_owner }}"

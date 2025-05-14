@@ -382,6 +382,35 @@ def determine_extract_opts(extract):
     }
 
 
+def filter_files(files, globs):
+    """Filter filenames against a list of globs.
+
+    Filtering a list of filenames (N) against a list of globs (k) can be seen as
+    quadratic in nature, if k is as large as N. In most cases though, we expect that
+    users will pass a small number of globs, and therefore the main slowdown of this
+    function will be pattern-matching the list of files in an archive against a few
+    globs.
+
+    To make things faster, this function uses `fnmatch.filter()` [1] for a more
+    efficient pattern-matching against the list of provided files. Whenever we have a
+    match, we remove it from the list of files, so that we don't return duplicates, and
+    to speedup the operation.
+
+    [1] https://docs.python.org/3/library/fnmatch.html#fnmatch.filter
+    """
+    files = set(files)
+    matched = False
+
+    for glob in globs:
+        for m in fnmatch.filter(files, glob):
+            matched = True
+            files.remove(m)
+            yield m
+
+    if not matched:
+        raise InvException("Globs did not match any files in the archive")
+
+
 def detect_archive_type(name):
     """
     Detect the filetype of the archive based on its name.
@@ -419,53 +448,35 @@ def flatten_extracted_files(destination):
                 pass
 
 
-def extract_asset(archive_path, destination, options):
+def extract_asset(archive_path, destination, filetype, globs=(), flatten=False):
     """
     Extract the asset from archive_path to destination.
 
-    Accepts a dictionary with the following options:
+    Also accepts the following options:
+    * 'filetype': The type of the archive, which indicates how it will get extracted.
     * 'globs': A list of patterns that will be used to match members in the archive.
       If a member does not match a pattern, it will not be extracted.
     * 'flatten': A boolean value. If true, after extraction, move all files to the
        destination root.
-    * 'filetype': The type of the archive, which indicates how it will get extracted.
 
     For tarfiles, use filter="data" when extracting to mitigate malicious tar entries.
     """
     logger.info(f"Extracting '{archive_path}' to '{destination}'...")
-    filetype = options["filetype"]
-    globs = options["globs"]
-    flatten = options["flatten"]
 
-    if filetype in ("tar.gz", "tar"):
-        mode = "r:gz" if filetype == "tar.gz" else "r"
-        try:
+    try:
+        if filetype in ("tar.gz", "tar"):
+            mode = "r:gz" if filetype == "tar.gz" else "r"
             with tarfile.open(archive_path, mode) as tar:
-                members = [
-                    m
-                    for m in tar.getmembers()
-                    if any(fnmatch.fnmatch(m.name, glob) for glob in globs)
-                ]
-                if not members:
-                    raise InvException("Globs did not match any files in the archive")
+                members = filter_files({m.name for m in tar.getmembers()}, globs)
                 tar.extractall(path=destination, members=members, filter="data")
-        except Exception as e:
-            raise InvException(f"Error extracting '{archive_path}': {e}") from e
-    elif filetype == "zip":
-        try:
+        elif filetype == "zip":
             with zipfile.ZipFile(archive_path, "r") as zip_ref:
-                members = [
-                    m
-                    for m in zip_ref.namelist()
-                    if any(fnmatch.fnmatch(m, glob) for glob in globs)
-                ]
-                if not members:
-                    raise InvException("Globs did not match any files in the archive")
+                members = filter_files(zip_ref.namelist(), globs)
                 zip_ref.extractall(path=destination, members=members)
-        except Exception as e:
-            raise InvException(f"Error extracting zip archive: {e}") from e
-    else:
-        raise InvException(f"Unsupported archive type for file {archive_path}")
+        else:
+            raise InvException(f"Unsupported archive type: {filetype}")
+    except Exception as e:
+        raise InvException(f"Error extracting '{archive_path}': {e}") from e
 
     if flatten:
         flatten_extracted_files(destination)
@@ -589,7 +600,7 @@ def sync_asset(asset_name, target_plat, asset):
         extract_asset(
             cached_file,
             destination,
-            options=extract,
+            **extract,
         )
     else:
         logger.debug(f"Copying asset '{asset_name}' to '{destination}'")

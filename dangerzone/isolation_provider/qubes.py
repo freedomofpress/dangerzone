@@ -5,7 +5,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from typing import IO
+from typing import IO, Callable, Optional
 
 from ..conversion.common import running_on_qubes
 from ..document import Document
@@ -18,7 +18,9 @@ log = logging.getLogger(__name__)
 class Qubes(IsolationProvider):
     """Uses a disposable qube for performing the conversion"""
 
-    def install(self) -> bool:
+    def install(
+        self, should_upgrade: bool, callback: Optional[Callable] = None
+    ) -> bool:
         return True
 
     @staticmethod

@@ -190,6 +190,7 @@ def get_log_index_from_signatures(signatures: List[Dict]) -> int:
         try:
             logIndex = int(signature["Bundle"]["Payload"]["logIndex"])
         except (KeyError, ValueError):
+            log.debug("Discarding invalid logindex")
             return accumulator
         return max(accumulator, logIndex)
 

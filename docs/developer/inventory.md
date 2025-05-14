@@ -3,13 +3,20 @@
 ## Table of Contents
 
 - [Overview](#overview)
-- [Config Spec](#config-spec)
-  - [General Structure](#general-structure)
-  - [Fields Description](#fields-description)
-- [Running the Script](#running-the-script)
-    - [lock](#lock)
-    - [install](#install)
-    - [list](#list)
+- [Configuration](#configuration)
+  - [Examples](#examples)
+  - [`repo`](#repo)
+  - [`version`](#version)
+  - [`platform.<platform>`](#platformplatform)
+  - [`executable`](#executable)
+  - [`destination`](#destination)
+  - [`extract`](#extract)
+  - [`extract.globs`](#extractglobs)
+  - [`extract.flatten`](#extractflatten)
+- [Commands](#commands)
+  - [`lock`](#lock)
+  - [`install`](#install)
+  - [`list`](#list)
   - [Common Arguments](#common-arguments)
 
 ---
@@ -25,7 +32,7 @@ lock file (JSON format) and install assets as described in the lock file.
 If you come from a Python background, think of it like "Poetry, but for GitHub
 assets".
 
-## Config Spec
+## Configuration
 
 Before you begin working with the script, you must create a configuration file
 in one of the following locations of your project:
@@ -33,7 +40,7 @@ in one of the following locations of your project:
 * `pyproject.toml`: This is a config file written for a Python project. The
   inventory tool expects a `[tool.inventory]` section in this file.
 
-### General Structure
+### Examples
 
 Each asset is defined as an entry under the `[asset]` section. For example:
 
@@ -52,23 +59,91 @@ extract = false
 If you are using `pyproject.toml` as a config file, then you need to prepend
 `tool.inventory` to the section name, e.g., `[tool.inventory.asset.example]`.
 
-### Fields Description
+### `repo`
 
-The table below lists the configuration fields supported for each asset entry
-along with their possible values.
+**Type:** `string`
 
-| Field         | Required | Description                                                                                                                                                      | Possible Values                                                                                                                                                                                                         |
-|---------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `repo`                | yes | The GitHub repository identifier in the format `"owner/repo"`.                                                                                                   | Any valid GitHub repository string (e.g., `"octocat/Hello-World"`).                                                                                                        |
-| `version`             | yes | A semantic versioning (semver) expression specifying the release version constraint for the asset. | Any valid semver expression, such as `">=1.0.1"`, `"==2.0.0"` ([options](https://python-semver.readthedocs.io/en/latest/usage/compare-versions-through-expression.html)).                                                                                                     |
-| `platform.<platform>` | yes | Define the asset filename for specific platforms. Assets may have different filenames per platform. A fallback `platform.all` key can be used for platform-agnostic assets. | Keys like `platform."windows/amd64"`, `platform."linux/amd64"`, `platform."darwin/arm64"`; **Fallback Key:** `platform.all`. The value is the filename as a string. Templates with `{version}` are allowed. Use `"!tarball"` or `"!zipball"` to get the GitHub-generated source archives. |
-| `executable`          | no  | Indicates whether the downloaded asset should be marked as executable.                                                                                           | `true` or `false` (default).                                                                                                                                                                                                     |
-| `destination`         | yes | The local path where the asset should be saved after download. If the asset is a file, the destination will be its filename. Else, it will be the directory where the contents will be extracted in | Any valid file path string (e.g., `"downloads/asset.exe"`).                                                                                                                                                           |
-| `extract`             | no  | Instructions for file extraction from the downloaded asset.                                                                                                    | `false` (default) for no extraction; a list of glob strings to extract matching files; or a table with keys (see below). |
-| `extract.globs`       | no  | a list of glob strings to match specific files from an archive | Any valid glob such as `*.exe`, `bin/**/asset` ([options](https://docs.python.org/3/library/fnmatch.html)). Will extract all files in the archive if omitted.  |
-| `extract.flatten`     | no  | copy the files to the destination root | `true` or `false` (default) |
+The GitHub repository identifier in the format `"owner/repo"`.
 
-## Running the Script
+### `version`
+
+**Type:** `string`
+
+A semantic versioning (semver) expression specifying the release version
+constraint for the asset, such as `">=1.0.1"`, `"==2.0.0"`
+([options](https://python-semver.readthedocs.io/en/latest/usage/compare-versions-through-expression.html)).
+
+### `platform.<platform>`
+
+**Type:** `string`
+
+The filename of an asset for a specific platform, since assets may have
+different filenames per platform.
+
+Allowed argument names:
+* Strings like `platform."windows/amd64"`, `platform."linux/amd64"`,
+  `platform."darwin/arm64"`.
+* `platform.all`, for platform-agnostic assets, i.e., assets that should be
+  installed regardless of the platform type.
+
+Allowed values:
+* Strings like `asset-linux-amd64`, `foo-0.1.0.zip`
+* Template strings like `foo-{version}.zip`, where `{version}` will be replaced
+  during install time with the version of the asset (minus the leading `v`)
+* Special strings `"!tarball"` or `"!zipball"`, to get the GitHub-generated
+  source archives for a release.
+
+### `executable`
+
+**Type:** `boolean`
+
+**Default:** `false`
+
+Indicates whether the downloaded asset should be marked as executable.
+
+### `destination`
+
+**Type:** `string`
+
+The local path where the asset should be installed. If the asset is a file, the
+destination will be its filename. Else, it will be the directory where the
+contents will be extracted in.
+
+### `extract`
+
+**Type:** `boolean | list of strings | dict`
+
+**Default:** `false`
+
+Extraction options for zip/tar files. By default no extraction will take place.
+If set to `true`, then the contents of the archive will be extracted to the
+destination. If a list of globs is provided, only the matching filenames in the
+archive will be extracted.
+
+See [`extract.globs`](#extractglobs) and [`extract.flatten`](#extractflatten)
+for more info.
+
+### `extract.globs`
+
+**Type:** `list of strings`
+
+**Default:** `["*"]`
+
+A list of glob strings to match specific files from an archive. Accepted values
+are any valid glob such as `*.exe`, `bin/**/asset`
+([options](https://docs.python.org/3/library/fnmatch.html)). Will extract all
+files in the archive if omitted.
+
+### `extract.flatten`
+
+**Type:** `boolean`
+
+**Default:** `false`
+
+Indicates whether the contents of the archive should be copied to the
+destination root. By default the file hierarchy in the archive is preserved.
+
+## Commands
 
 The inventory script supports three commands:
 - `lock`
@@ -77,7 +152,7 @@ The inventory script supports three commands:
 
 The following sections assume you invoke the script with `poetry run`.
 
-#### lock
+### `lock`
 
 The `lock` command updates the lock file based on the configuration defined in
 `pyproject.toml` / `inventory.toml`. For each asset, it reads its details,
@@ -95,7 +170,7 @@ Processing 'asset2'
 Lock file 'inventory.lock' updated.
 ```
 
-#### install
+### `install`
 
 The `install` command installs (downloads or copies) assets as specified in the
 lock file for the given platform (or the current platform if none is provided).
@@ -130,7 +205,7 @@ Installing 'asset1'
 Installed 1 assets.
 ```
 
-#### list
+### `list`
 
 The `list` command lists all assets defined for a specific platform, or the
 current one, if not specified. The list output contains the name of the asset,

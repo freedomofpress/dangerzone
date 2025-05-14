@@ -560,18 +560,16 @@ def compute_asset_lock(asset_name, asset):
     return asset_lock_data
 
 
-def sync_asset(asset_name, target_plat, asset):
-    # If an asset.entry contains "platform.all", then we should fallback to that, if
+def sync_asset(name, platform, asset_dict):
+    # If an asset entry contains "platform.all", then we should fallback to that, if
     # the specific platform we're looking for is not defined.
-    if target_plat not in asset:
-        if "all" in asset:
-            target_plat = "all"
+    if platform not in asset_dict:
+        if "all" in asset_dict:
+            platform = "all"
         else:
-            raise InvException(
-                f"No entry for platform '{target_plat}' or 'platform.all'"
-            )
+            raise InvException(f"No entry for platform '{platform}' or 'platform.all'")
 
-    info = asset[target_plat]
+    info = asset_dict[platform]
     download_url = info["download_url"]
     destination = Path(info["destination"])
     expected_checksum = info["checksum"]
@@ -579,22 +577,20 @@ def sync_asset(asset_name, target_plat, asset):
     extract = info.get("extract", False)
 
     logger.debug(
-        f"Downloading asset '{asset_name}' with URL '{download_url}' and verifying its"
+        f"Downloading asset '{name}' with URL '{download_url}' and verifying its"
         f" checksum matches '{expected_checksum}'..."
     )
     cached_file = download_to_cache_and_verify(download_url, expected_checksum)
     # Remove destination if it exists already.
     if destination.exists():
-        logger.debug(
-            f"Removing destination path '{destination}' of asset '{asset_name}'"
-        )
+        logger.debug(f"Removing destination path '{destination}' of asset '{name}'")
         if destination.is_dir():
             shutil.rmtree(destination)
         else:
             destination.unlink()
     # If extraction is requested
     if extract:
-        logger.debug(f"Extracting asset '{asset_name}' to '{destination}'")
+        logger.debug(f"Extracting asset '{name}' to '{destination}'")
         destination.mkdir(parents=True, exist_ok=True)
         filename = download_url.split("/")[-1]
         extract_asset(
@@ -603,7 +599,7 @@ def sync_asset(asset_name, target_plat, asset):
             **extract,
         )
     else:
-        logger.debug(f"Copying asset '{asset_name}' to '{destination}'")
+        logger.debug(f"Copying asset '{name}' to '{destination}'")
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(cached_file, destination)
         if executable:

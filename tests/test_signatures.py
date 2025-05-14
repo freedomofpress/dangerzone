@@ -33,6 +33,7 @@ RANDOM_DIGEST = "aacc9b586648bbe3040f2822153b1d5ead2779af45ff750fd6f04daf4a9f64b
 
 @pytest.fixture
 def valid_signature():
+    # Use next() as we don't really care which signature we get.
     signature_file = next(VALID_SIGNATURES_PATH.glob("**/*.json"))
     with open(signature_file, "r") as signature_file:
         signatures = json.load(signature_file)

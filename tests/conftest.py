@@ -18,7 +18,7 @@ ASSETS_PATH = Path(__file__).parent / "assets"
 TEST_PUBKEY_PATH = ASSETS_PATH / "test.pub.key"
 INVALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "invalid"
 VALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "valid"
-TEMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tempered"
+TAMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tampered"
 
 
 # Use this fixture to make `pytest-qt` invoke our custom QApplication.

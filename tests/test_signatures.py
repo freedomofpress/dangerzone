@@ -26,7 +26,7 @@ ASSETS_PATH = Path(__file__).parent / "assets"
 TEST_PUBKEY_PATH = ASSETS_PATH / "test.pub.key"
 INVALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "invalid"
 VALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "valid"
-TEMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tempered"
+TAMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tampered"
 
 RANDOM_DIGEST = "aacc9b586648bbe3040f2822153b1d5ead2779af45ff750fd6f04daf4a9f64b4"
 
@@ -41,8 +41,8 @@ def valid_signature():
 
 
 @pytest.fixture
-def tempered_signature():
-    signature_file = next(TEMPERED_SIGNATURES_PATH.glob("**/*.json"))
+def tampered_signature():
+    signature_file = next(TAMPERED_SIGNATURES_PATH.glob("**/*.json"))
     with open(signature_file, "r") as signature_file:
         signatures = json.load(signature_file)
         return signatures.pop()
@@ -76,13 +76,13 @@ def test_load_invalid_signatures(mocker):
             load_and_verify_signatures(file.stem, TEST_PUBKEY_PATH)
 
 
-def test_load_tempered_signatures(mocker):
+def test_load_tampered_signatures(mocker):
     mocker.patch(
-        "dangerzone.updater.signatures.SIGNATURES_PATH", TEMPERED_SIGNATURES_PATH
+        "dangerzone.updater.signatures.SIGNATURES_PATH", TAMPERED_SIGNATURES_PATH
     )
-    tempered_signatures = list(TEMPERED_SIGNATURES_PATH.glob("**/*.json"))
-    assert len(tempered_signatures) > 0
-    for file in tempered_signatures:
+    tampered_signatures = list(TAMPERED_SIGNATURES_PATH.glob("**/*.json"))
+    assert len(tampered_signatures) > 0
+    for file in tampered_signatures:
         with pytest.raises(errors.SignatureError):
             load_and_verify_signatures(file.stem, TEST_PUBKEY_PATH)
 
@@ -404,13 +404,13 @@ def test_verify_signature(valid_signature):
     )
 
 
-def test_verify_signature_tempered(tempered_signature):
+def test_verify_signature_tampered(tampered_signature):
     """Test that verify_signature raises an error when the payload digest doesn't match."""
     # Call verify_signature and expect an error
     with pytest.raises(errors.SignatureError):
         verify_signature(
-            tempered_signature,
-            Signature(tempered_signature).manifest_digest,
+            tampered_signature,
+            Signature(tampered_signature).manifest_digest,
             TEST_PUBKEY_PATH,
         )
 

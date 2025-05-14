@@ -28,34 +28,18 @@ def main(debug: bool) -> None:
 
 
 @main.command()
-@click.argument(
-    "image",
-    default=DEFAULT_IMAGE_NAME,
-    help="The image to upgrade to. By default it will be the value specified in share/image-name.txt. It is possible to specify a digest with image-name@digest, in which case this digest will be the one installed.",
-)
-@click.option(
-    "force",
-    is_flag=True,
-    help="If this flag is set, installation will be forced, and the verification that logindex should be greater than the ones installed will be bypassed",
-)
-def upgrade(image: str, force: bool) -> None:
+def upgrade() -> None:
     """Upgrade the image to the latest version (only if it is signed).
 
-    If a digest is passed as part of the image,
-    the upgrade will be done to the specified digest instead.
-
+    It is not possible to upgrade to a different image than the one specific in share/image-name.txt using this CLI invocation.
+    If you want to do so, please use "prepare-archive" and "load-archive" instead.
     """
-    image_obj = registry.parse_image_location(image)
-    if image_obj.digest:
-        manifest_digest = image_obj.digest
-    else:
-        manifest_digest = registry.get_manifest_digest(image)
+    image = expected_image_name()
+    manifest_digest = registry.get_manifest_digest(image)
 
     try:
         callback = functools.partial(click.echo, nl=False)
-        signatures.upgrade_container_image(
-            manifest_digest, image, bypass_logindex_check=force, callback=callback
-        )
+        signatures.upgrade_container_image(manifest_digest, image, callback=callback)
         click.echo(f"✅ The local image {image} has been upgraded")
         click.echo(f"✅ The image has been signed with {DEFAULT_PUBKEY_LOCATION}")
         click.echo(f"✅ Signatures has been verified and stored locally")

@@ -121,8 +121,8 @@ def check_lock_stale(lock):
     config_hash = hashlib.sha256(json.dumps(config).encode()).hexdigest()
     if config_hash != lock["config_checksum"]:
         raise InvException(
-            "You have made changes to the inventory since you last updated the lock"
-            " file. Please run the 'lock' command again."
+            f"The asset list and the {LOCK_FILE} file are not in sync. This can be"
+            " fixed by running the 'lock' command."
         )
 
 

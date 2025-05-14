@@ -202,9 +202,10 @@ def test_upgrade_container_with_specified_digest(mocker):
 
 
 def test_prepare_airgapped_archive_requires_digest():
+    """The given image should actually contain a digest, otherwise it throws an error"""
     with pytest.raises(errors.AirgappedImageDownloadError):
         prepare_airgapped_archive(
-            "ghcr.io/freedomofpress/dangerzone/dangerzone", "test.tar"
+            "ghcr.io/freedomofpress/dangerzone/dangerzone", "test.tar", "amd64"
         )
 
 

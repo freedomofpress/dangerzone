@@ -232,16 +232,7 @@ def download_to_cache(url):
 def detect_platform():
     """Detect the platform that the script runs in"""
     # Return a string like 'windows/amd64' or 'linux/amd64' or 'darwin/amd64'
-    sys_platform = sys.platform
-    if sys_platform.startswith("win"):
-        os_name = "windows"
-    elif sys_platform.startswith("linux"):
-        os_name = "linux"
-    elif sys_platform.startswith("darwin"):
-        os_name = "darwin"
-    else:
-        os_name = sys_platform
-
+    os_name = platform.system().lower()
     machine = platform.machine().lower()
     # Normalize architecture names
     arch = {"x86_64": "amd64", "amd64": "amd64", "arm64": "arm64"}.get(machine, machine)

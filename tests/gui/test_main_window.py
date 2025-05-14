@@ -113,9 +113,14 @@ def test_default_menu(
     exit_action = menu_actions[2]
     assert exit_action.text() == "Exit"
 
+    # Let's pretend we planned to have a update already
+    updater.dangerzone.settings.set(
+        "updater_container_needs_update", True, autosave=True
+    )
     toggle_updates_action.trigger()
     assert not toggle_updates_action.isChecked()
     assert updater.dangerzone.settings.get("updater_check_all") is False
+    assert updater.dangerzone.settings.get("updater_container_needs_update") is False
 
 
 def test_no_new_release(

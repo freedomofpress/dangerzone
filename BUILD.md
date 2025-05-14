@@ -78,7 +78,7 @@ python3 ./install/common/build-image.py
 Download the necessary assets:
 
 ```sh
-poetry run python3 ./dev_scripts/inventory.py sync
+poetry run python3 ./dev_scripts/inventory.py install
 ```
 
 Run from source tree:
@@ -140,7 +140,7 @@ python3 ./install/common/build-image.py
 Download the necessary assets:
 
 ```sh
-poetry run python3 ./dev_scripts/inventory.py sync
+poetry run python3 ./dev_scripts/inventory.py install
 ```
 
 Run from source tree:
@@ -345,7 +345,7 @@ python3 ./install/common/build-image.py
 Download the necessary assets:
 
 ```sh
-poetry run python3 ./dev_scripts/inventory.py sync
+poetry run python3 ./dev_scripts/inventory.py install
 ```
 
 Run from source tree:
@@ -412,7 +412,7 @@ python3 .\install\common\build-image.py
 Download the necessary assets:
 
 ```sh
-poetry run python3 .\dev_scripts\inventory.py sync
+poetry run python3 .\dev_scripts\inventory.py install
 ```
 
 After that you can launch dangerzone during development with:

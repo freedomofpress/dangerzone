@@ -174,10 +174,10 @@ def task_init_release_dir():
     }
 
 
-def task_sync_inventory():
-    """Download the necessary assets using ./dev_scripts/inventory.py sync"""
+def task_install_inventory():
+    """Download the necessary assets using ./dev_scripts/inventory.py install"""
     return {
-        "actions": ["poetry run python3 dev_scripts/inventory.py sync"],
+        "actions": ["poetry run python3 dev_scripts/inventory.py install"],
         "file_dep": INVENTORY_DEPS,
         "targets": INVENTORY_TARGETS,
         "clean": True,

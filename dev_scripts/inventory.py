@@ -588,7 +588,7 @@ def compute_asset_lock(asset_name, asset):
     return asset_lock_data
 
 
-def sync_asset(name, platform, asset_dict):
+def install_asset(name, platform, asset_dict):
     # If an asset entry contains "platform.all", then we should fallback to that, if
     # the specific platform we're looking for is not defined.
     if platform not in asset_dict:
@@ -678,9 +678,9 @@ def cmd_lock(args):
     print(f"Lock file '{LOCK_FILE}' updated.")
 
 
-def cmd_sync(args):
+def cmd_install(args):
     """
-    Sync assets based on the lock file. Accepts an optional platform argument
+    Install assets based on the lock file. Accepts an optional platform argument
     to limit downloads and an optional list of asset names.
 
     Features:
@@ -710,15 +710,17 @@ def cmd_sync(args):
         if asset_name not in lock_assets:
             raise InvException(f"Asset '{asset_name}' not found in the lock file.")
 
-        print(f"Syncing asset '{asset_name}'...")
+        print(f"Installing asset '{asset_name}'...")
         asset = lock_assets[asset_name]
         try:
-            sync_asset(asset_name, target_plat, asset)
+            install_asset(asset_name, target_plat, asset)
         except Exception as e:
-            raise InvException(f"Error when syncing asset '{asset_name}': {e}") from e
-        logger.debug(f"Successfully synced asset '{asset_name}'")
+            raise InvException(
+                f"Error when installing asset '{asset_name}': {e}"
+            ) from e
+        logger.debug(f"Successfully installed asset '{asset_name}'")
 
-    print(f"Synced {len(asset_list)} assets.")
+    print(f"Installed {len(asset_list)} assets.")
 
 
 def cmd_list(args):
@@ -742,13 +744,15 @@ def parse_args():
     lock_parser = subparsers.add_parser("lock", help="Update lock file from config")
     lock_parser.set_defaults(func=cmd_lock)
 
-    sync_parser = subparsers.add_parser("sync", help="Sync assets as per lock file")
-    sync_parser.add_argument(
+    install_parser = subparsers.add_parser(
+        "install", help="Install assets as per lock file"
+    )
+    install_parser.add_argument(
         "assets",
         nargs="*",
         help="Specific asset names to download. If omitted, download all assets.",
     )
-    sync_parser.set_defaults(func=cmd_sync)
+    install_parser.set_defaults(func=cmd_install)
 
     list_parser = subparsers.add_parser("list", help="List assets for a platform")
     list_parser.set_defaults(func=cmd_list)

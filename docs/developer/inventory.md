@@ -108,7 +108,7 @@ Examples:
 Sync all assets for the current platform:
 
 ```
-./dev_scripts/inventory.py sync
+./dev_scripts/inventory.py install
 Syncing 'asset1'
 Syncing 'asset2'
 Synced 2 assets.
@@ -117,7 +117,7 @@ Synced 2 assets.
 Sync all assets for the provided platform:
 
 ```
-./dev_scripts/inventory.py sync -p darwin/amd64
+./dev_scripts/inventory.py install -p darwin/amd64
 Syncing 'asset3'
 Synced 1 assets.
 ```
@@ -125,7 +125,7 @@ Synced 1 assets.
 Sync only specific assets:
 
 ```
-./dev_scripts/inventory.py sync asset1
+./dev_scripts/inventory.py install asset1
 Syncing 'asset1'
 Synced 1 assets.
 ```

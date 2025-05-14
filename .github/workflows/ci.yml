@@ -94,7 +94,7 @@ jobs:
           key: v1-inventory-windows-${{ hashFiles('./inventory.lock') }}
       - name: Sync inventory
         if: steps.cache-inventory.outputs.cache-hit != 'true'
-        run: poetry run python .\dev_scripts\inventory.py sync
+        run: poetry run python .\dev_scripts\inventory.py install
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment
@@ -143,7 +143,7 @@ jobs:
           key: v1-inventory-darwin-${{ matrix.arch }}-${{ hashFiles('./inventory.lock') }}
       - name: Sync inventory
         if: steps.cache-inventory.outputs.cache-hit != 'true'
-        run: poetry run python3 ./dev_scripts/inventory.py sync
+        run: poetry run python3 ./dev_scripts/inventory.py install
       - name: Run CLI tests
         run: poetry run make test
       - name: Build macOS app
@@ -403,7 +403,7 @@ jobs:
 
       - name: Sync inventory
         if: steps.cache-inventory.outputs.cache-hit != 'true'
-        run: poetry run python3 ./dev_scripts/inventory.py sync
+        run: poetry run python3 ./dev_scripts/inventory.py install
 
       - name: Login to GHCR
         run: |

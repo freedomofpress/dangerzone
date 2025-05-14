@@ -94,13 +94,13 @@ def read_config():
 
         # If the pyproject.toml file does not have a [tool.inventory] section, return an
         # error.
-        config = config.get("tool", {}).get("inventory")
-        if not config:
+        try:
+            return config["tool"]["inventory"]
+        except KeyError:
             raise InvException(
                 f"Missing a '[tool.inventory]' section in {PYPROJECT_FILE} or"
                 f" a separate {CONFIG_FILE}"
             )
-        return config
 
     raise InvException(
         f"Missing a {PYPROJECT_FILE} with a '[tool.inventory]' or a separate"

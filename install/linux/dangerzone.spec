@@ -257,6 +257,7 @@ fi
 %files -f %{pyproject_files}
 /usr/bin/dangerzone
 /usr/bin/dangerzone-cli
+/usr/bin/dangerzone-image
 /usr/share/
 %license LICENSE
 %doc README.md

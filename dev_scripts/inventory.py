@@ -80,7 +80,7 @@ def read_config():
     if CONFIG_FILE.exists():
         # First, attempt to read the configuration from inventory.toml.
         try:
-            return toml.load(CONFIG_FILE.open("r"))
+            return toml.loads(CONFIG_FILE.read_text())
         except Exception as e:
             msg = f"Could not load configuration file '{CONFIG_FILE}': {e}"
             raise InvException(msg) from e

@@ -8,7 +8,7 @@
   - [Fields Description](#fields-description)
 - [Running the Script](#running-the-script)
     - [lock](#lock)
-    - [sync](#sync)
+    - [install](#install)
     - [list](#list)
   - [Common Arguments](#common-arguments)
 
@@ -20,7 +20,7 @@ The `dev_scripts/inventory.py` tool is a Python script designed to manage assets
 from GitHub releases. It expects a configuration file (in TOML format) that
 contains a list of assets and some parameters. Using this config file, it can
 query GitHub for release information, compute checksums for assets, update a
-lock file (JSON format) and sync assets as described in the lock file.
+lock file (JSON format) and install assets as described in the lock file.
 
 If you come from a Python background, think of it like "Poetry, but for GitHub
 assets".
@@ -72,7 +72,7 @@ along with their possible values.
 
 The inventory script supports three commands:
 - `lock`
-- `sync`
+- `install`
 - `list`
 
 The following sections assume you invoke the script with `poetry run`.
@@ -95,9 +95,9 @@ Processing 'asset2'
 Lock file 'inventory.lock' updated.
 ```
 
-#### sync
+#### install
 
-The `sync` command synchronizes (downloads or copies) assets as specified in the
+The `install` command installs (downloads or copies) assets as specified in the
 lock file for the given platform (or the current platform if none is provided).
 It downloads assets into a cache, verifies them against an expected hash, copies
 them to the destination, marks files as executable if required, and extracts
@@ -105,29 +105,29 @@ files based on the provided extraction criteria.
 
 Examples:
 
-Sync all assets for the current platform:
+Install all assets for the current platform:
 
 ```
 ./dev_scripts/inventory.py install
-Syncing 'asset1'
-Syncing 'asset2'
-Synced 2 assets.
+Installing 'asset1'
+Installing 'asset2'
+Installed 2 assets.
 ```
 
-Sync all assets for the provided platform:
+Install all assets for the provided platform:
 
 ```
 ./dev_scripts/inventory.py install -p darwin/amd64
-Syncing 'asset3'
-Synced 1 assets.
+Installing 'asset3'
+Installed 1 assets.
 ```
 
-Sync only specific assets:
+Install only specific assets:
 
 ```
 ./dev_scripts/inventory.py install asset1
-Syncing 'asset1'
-Synced 1 assets.
+Installing 'asset1'
+Installed 1 assets.
 ```
 
 #### list

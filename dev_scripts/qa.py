@@ -759,7 +759,7 @@ class QABase(abc.ABC):
         logger.info("Successfully completed QA scenarios")
 
     @task("Download the necessary assets", auto=True)
-    def sync_inventory(self):
+    def instal_inventory(self):
         self.run(
             "poetry", "run", "python", str(Path("dev_scripts", "inventory.py")), "sync"
         )
@@ -864,7 +864,7 @@ class QAWindows(QABase):
         self.install_docker()
         self.install_poetry()
         self.build_image()
-        self.sync_inventory()
+        self.install_inventory()
         self.run_tests()
         self.build_dangerzone_exe()
 
@@ -956,7 +956,7 @@ class QALinux(QABase):
     def start(self):
         self.build_dev_image()
         self.build_container_image()
-        self.sync_inventory()
+        self.install_inventory()
         self.run_tests()
         self.build_package()
         self.build_qa_image()

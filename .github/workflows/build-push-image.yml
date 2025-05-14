@@ -302,18 +302,16 @@ jobs:
           cosign sign --recursive -d --yes --key=${{ inputs.key_name }}.key "${{ env.IMAGE_URI }}"
         shell: bash
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install poetry
+      - run: poetry install
       - name: Prepare cached assets
         run: |-
-          cosign save ${{ env.IMAGE_URI }} --dir dz-container
-          cd dz-container
-          mv index.json dangerzone.json
-          # XXX reuse the python code instead (in `dz.updater.signatures`)
-          jq '. + {manifests: [.manifests[]
-              | select(.annotations.kind == "dev.cosignproject.cosign/imageIndex"
-                       or .annotations.kind == "dev.cosignproject.cosign/image")]}' \
-            dangerzone.json > index.json
-          tar -cvf ../share/container.tar .
-          cd ..
+          # For now, we don't need to prepare multiple archives as it's not
+          # possible to run the CI tests on macOS with nested virtualisation
+          poetry run dangerzone-image prepare-archive ${{ env.IMAGE_URI }} --arch amd64 --output-template="share/container.tar"
           mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
           echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
 

@@ -696,7 +696,7 @@ def cmd_install(args):
         platform is not found.
     """
     lock = load_lock()
-    target_plat = args.platform if args.platform else detect_platform()
+    target_plat = args.platform
     logger.debug(f"Target platform: {target_plat}")
     lock_assets = lock["assets"]
     asset_list = (
@@ -762,10 +762,11 @@ def parse_args():
         subparser.add_argument(
             "-p",
             "--platform",
+            default=detect_platform(),
             help=(
                 "The platform to choose when determining which inventory assets to work"
-                " on. Examples: windows/amd64, linux/amd64, darwin/amd64, darwin/arm64"
-                " (default: %(default)s)"
+                " on. Examples: windows/amd64, linux/amd64, darwin/amd64, darwin/arm64."
+                " Defaults to the current platform if not provided (%(default)s)."
             ),
         )
         subparser.add_argument(

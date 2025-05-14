@@ -89,7 +89,7 @@ def read_config():
         try:
             config = toml.load(PYPROJECT_FILE.open("r"))
         except Exception as e:
-            msg = f"Could not load configuration file '{PYRPROJECT_FILE}': {e}"
+            msg = f"Could not load configuration file '{PYPROJECT_FILE}': {e}"
             raise InvException(msg) from e
 
         # If the pyproject.toml file does not have a [tool.inventory] section, return an
@@ -152,7 +152,7 @@ def cache_file_path(url):
     Generate a safe cache file path for a given URL, using the SHA-256 hash of the path,
     plus the asset name.
     """
-    # Calculate a unique hash for this URL name, so that it doesn't class with different
+    # Calculate a unique hash for this URL name, so that it doesn't clash with different
     # versions of the same asset.
     url_hash = hashlib.sha256(url.encode("utf-8")).hexdigest()
 
@@ -264,7 +264,6 @@ def get_latest_release(repo, semver_range):
     matching = []
     for release in releases:
         tag = release.get("tag_name", "")
-        # Strip any prefix 'v' if necessary
         version_str = tag.lstrip("v")
 
         # Attempt to parse asset version as semver. If the project has a tag that does
@@ -430,7 +429,7 @@ def extract_asset(archive_path, destination, options):
     """
     Extract the asset from archive_path to destination.
 
-    Accepts a dictionary withe the following options:
+    Accepts a dictionary with the following options:
     * 'globs': A list of patterns that will be used to match members in the archive.
       If a member does not match a pattern, it will not be extracted.
     * 'flatten': A boolean value. If true, after extraction, move all files to the
@@ -440,14 +439,14 @@ def extract_asset(archive_path, destination, options):
     For tarfiles, use filter="data" when extracting to mitigate malicious tar entries.
     """
     logger.info(f"Extracting '{archive_path}' to '{destination}'...")
-    ft = options["filetype"]
+    filetype = options["filetype"]
     globs = options["globs"]
     flatten = options["flatten"]
 
-    if ft in ("tar.gz", "tar"):
-        mode = "r:gz" if ft == "tar.gz" else "r"
+    if filetype in ("tar.gz", "tar"):
+        mode = "r:gz" if filetype == "tar.gz" else "r"
         try:
-            with tarfile.open(archive_path, "r:gz") as tar:
+            with tarfile.open(archive_path, mode) as tar:
                 members = [
                     m
                     for m in tar.getmembers()
@@ -458,7 +457,7 @@ def extract_asset(archive_path, destination, options):
                 tar.extractall(path=destination, members=members, filter="data")
         except Exception as e:
             raise InvException(f"Error extracting '{archive_path}': {e}") from e
-    elif ft == "zip":
+    elif filetype == "zip":
         try:
             with zipfile.ZipFile(archive_path, "r") as zip_ref:
                 members = [
@@ -749,7 +748,7 @@ def parse_args():
             help="Enable verbose logging",
         )
         subparser.add_argument(
-            "-C",
+            "-d",
             "--directory",
             help=(
                 "The working directory for the script (defaults to the current working"

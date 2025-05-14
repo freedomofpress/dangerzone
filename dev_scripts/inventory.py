@@ -9,6 +9,7 @@ checksums, and downloads assets based on a JSON “lock” file.
 
 import argparse
 import contextlib
+import dataclasses
 import enum
 import fnmatch
 import hashlib
@@ -46,6 +47,33 @@ class InvException(Exception):
     """Inventory-specific error."""
 
     pass
+
+
+@dataclasses.dataclass
+class ExtractOpts:
+    """Extract options for the asset, as taken from the lock file."""
+
+    globs: list[str]
+    filetype: str | None = None
+    flatten: bool = False
+
+
+@dataclasses.dataclass
+class Asset:
+    """Asset information, as taken from the lock file."""
+
+    repo: str
+    download_url: str
+    version: str
+    destination: str
+    checksum: str
+    executable: bool = False
+    extract: ExtractOpts | bool | dict = False
+
+    def __post_init__(self):
+        self.destination = Path(self.destination)
+        if isinstance(self.extract, dict):
+            self.extract = ExtractOpts(**self.extract)
 
 
 # HELPER FUNCTIONS
@@ -569,42 +597,37 @@ def sync_asset(name, platform, asset_dict):
         else:
             raise InvException(f"No entry for platform '{platform}' or 'platform.all'")
 
-    info = asset_dict[platform]
-    download_url = info["download_url"]
-    destination = Path(info["destination"])
-    expected_checksum = info["checksum"]
-    executable = info["executable"]
-    extract = info.get("extract", False)
+    asset = Asset(**asset_dict[platform])
 
     logger.debug(
-        f"Downloading asset '{name}' with URL '{download_url}' and verifying its"
-        f" checksum matches '{expected_checksum}'..."
+        f"Downloading asset '{name}' with URL '{asset.download_url}' and"
+        f" verifying its checksum matches '{asset.checksum}'..."
     )
-    cached_file = download_to_cache_and_verify(download_url, expected_checksum)
+    cached_file = download_to_cache_and_verify(asset.download_url, asset.checksum)
     # Remove destination if it exists already.
-    if destination.exists():
-        logger.debug(f"Removing destination path '{destination}' of asset '{name}'")
-        if destination.is_dir():
-            shutil.rmtree(destination)
+    if asset.destination.exists():
+        logger.debug(
+            f"Removing destination path '{asset.destination}' of asset '{name}'"
+        )
+        if asset.destination.is_dir():
+            shutil.rmtree(asset.destination)
         else:
-            destination.unlink()
+            asset.destination.unlink()
     # If extraction is requested
-    if extract:
-        logger.debug(f"Extracting asset '{name}' to '{destination}'")
-        destination.mkdir(parents=True, exist_ok=True)
-        filename = download_url.split("/")[-1]
+    if asset.extract:
+        logger.debug(f"Extracting asset '{name}' to '{asset.destination}'")
+        asset.destination.mkdir(parents=True, exist_ok=True)
+        filename = asset.download_url.split("/")[-1]
         extract_asset(
-            cached_file,
-            destination,
-            **extract,
+            cached_file, asset.destination, **dataclasses.asdict(asset.extract)
         )
     else:
-        logger.debug(f"Copying asset '{name}' to '{destination}'")
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(cached_file, destination)
-        if executable:
-            logger.debug(f"Marking '{destination}' as executable")
-            chmod_exec(destination)
+        logger.debug(f"Copying asset '{name}' to '{asset.destination}'")
+        asset.destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(cached_file, asset.destination)
+        if asset.executable:
+            logger.debug(f"Marking '{asset.destination}' as executable")
+            chmod_exec(asset.destination)
 
 
 # COMMAND FUNCTIONS

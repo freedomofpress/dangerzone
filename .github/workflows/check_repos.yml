@@ -35,7 +35,7 @@ jobs:
             version: "11"  # bullseye
     steps:
       - name: Add packages.freedom.press PGP key (gpg --keyring)
-        if: matrix.version != 'trixie' && matrix.version != "25.04"
+        if: matrix.version != 'trixie' && matrix.version != '25.04'
         run: |
           apt-get update && apt-get install -y gnupg2 ca-certificates
           dirmngr  # NOTE: This is a command that's necessary only in containers

@@ -160,6 +160,9 @@ def cache_file_path(url):
     # URL. However, if the asset is the GitHub-generated zipball/tarball, use a
     # different naming scheme.
     parsed = url.split("/")
+    if len(parsed) < 3:
+        raise InvException(f"Malformed download URL: {url}")
+
     asset_name = parsed[-1]
     if parsed[-2] in ("zipball", "tarball"):
         repo_name = parsed[-3]

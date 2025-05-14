@@ -43,7 +43,7 @@ class Image:
     tag: Optional[str] = None
     digest: Optional[str] = None
 
-    def to_str(self):
+    def to_str(self) -> str:
         string = f"{self.registry}/{self.namespace}/{self.image_name}"
         # Do not output tag + digest if tag is latest
         # Only output the tag if:
@@ -79,7 +79,7 @@ def parse_image_location(input_string: str) -> Image:
     )
 
 
-def replace_image_digest(image_str: str, digest: str, remove_tag=True) -> str:
+def replace_image_digest(image_str: str, digest: str, remove_tag: bool = True) -> str:
     image = parse_image_location(image_str)
     image.digest = digest
     if remove_tag:
@@ -131,7 +131,7 @@ def get_manifest(image_str: str) -> requests.Response:
     return response
 
 
-def get_digest_for_arch(image_str: str, architecture=str) -> str:
+def get_digest_for_arch(image_str: str, architecture: str) -> str:
     """Return the digest of the matching architecture, for the specified image, without the sha256: prefix"""
     manifest = get_manifest(image_str).json()
 

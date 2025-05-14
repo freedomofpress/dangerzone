@@ -590,7 +590,7 @@ def upgrade_container_image(
     manifest_digest: str,
     image_str: Optional[str] = None,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
-    bypass_logindex_check=False,
+    bypass_logindex_check: bool = False,
     callback: Optional[Callable] = None,
 ) -> str:
     """Verify and upgrade the image to the latest, if signed."""

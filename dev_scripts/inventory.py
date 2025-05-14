@@ -813,6 +813,9 @@ def main():
     setup_logging(args.verbose)
 
     with report_error(verbose=args.verbose, fail=False):
+        if args.directory:
+            logger.info(f"Changing current working dir to '{args.directory}'")
+            os.chdir(args.directory)
         return args.func(args)
 
 

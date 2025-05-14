@@ -68,7 +68,7 @@ class InvalidDangerzoneManifest(InvalidImageArchive):
     """Raised when the dangerzone.json manifest does not match the index.json
     manifest in a container.tar image.
 
-    This could mean that the container image has been tempered and is not safe
+    This could mean that the container image has been tampered and is not safe
     to load, so we bail out.
     """
 

@@ -69,10 +69,7 @@ def signature_to_bundle(sig: Dict) -> Dict:
 
 def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
     """
-    Verifies that:
-
-    - the signature has been signed by the given public key
-    - the signature matches the given image digest
+    Verifies that the signature matches the given public key and image digest.
     """
     # FIXME Also verify the identity/docker-reference field against
     # `container_utils.expected_image_name()`

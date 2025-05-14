@@ -244,19 +244,6 @@ def test_get_remote_signatures_cosign_error(mocker, fp: FakeProcess):
         get_remote_signatures(image, digest)
 
 
-def test_get_remote_signatures_cosign_error(mocker, fp: FakeProcess):
-    image = "ghcr.io/freedomofpress/dangerzone/dangerzone"
-    digest = "123456"
-    mocker.patch("dangerzone.updater.cosign.ensure_installed", return_value=True)
-    fp.register_subprocess(
-        ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
-        returncode=1,
-        stderr="Error: no signatures associated",
-    )
-    with pytest.raises(errors.NoRemoteSignatures):
-        get_remote_signatures(image, digest)
-
-
 def test_store_signatures_with_different_digests(
     valid_signature, signature_other_digest, mocker, tmp_path
 ):

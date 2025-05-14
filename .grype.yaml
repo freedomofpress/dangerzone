@@ -54,3 +54,10 @@ ignore:
   # other hand performs HTTP requests, i.e., it operates as **client**.
   - vulnerability: CVE-2025-43859
   - vulnerability: GHSA-vqfr-h8mv-ghfj
+  # CVE-2025-2866
+  # ==============
+  #
+  # Debian tracker: https://security-tracker.debian.org/tracker/CVE-2025-2866
+  # Verdict: Dangerzone is not affected because it does not rely on the
+  # signature checking feature of LibreOffice.
+  - vulnerability: CVE-2025-2866

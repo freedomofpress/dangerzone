@@ -496,18 +496,19 @@ def get_remote_signatures(image: str, digest: str) -> List[Dict]:
     return signatures
 
 
-def prepare_airgapped_archive(image_name: str, destination: str) -> None:
+def prepare_airgapped_archive(
+    image_name: str, destination: str, architecture: str
+) -> None:
     """
-    Prepare a container image tarball to be used in environments that do not
-    want to make a {podman,docker} pull.
+    Prepare a container image tarball to be used in environments without doing
+    a {podman,docker} pull.
 
     Podman and Docker are not able to load archives for which the index.json file
-    contains signatures and attestations, so we need to remove them from the
-    index.json present in the archive.
+    contains signatures and attestations, so they are removed from the resuling
+    index.json.
 
-    Because we still want to retain the signatures somehow, we copy original
-    index.json to signatures.json, and refer to it when we need to verify the
-    signatures.
+    The original index.json is copied to dangerzone.json to be able to refer to
+    it when verifying the signatures.
     """
     if "@sha256:" not in image_name:
         raise errors.AirgappedImageDownloadError(
@@ -517,14 +518,20 @@ def prepare_airgapped_archive(image_name: str, destination: str) -> None:
 
     cosign.ensure_installed()
 
+    # Find out if this is a multi-archi image or not
+    arch_digest = registry.get_digest_for_arch(image_name, architecture)
+    arch_image = registry.replace_image_digest(image_name, arch_digest)
+
+    log.info(f"Found an image for architecture '{architecture}' at '{arch_image}'")
+
     # Get the image from the registry
     with TemporaryDirectory() as tmpdir:
         tmppath = Path(tmpdir)
-        msg = f"Downloading image {image_name}. \nIt might take a while."
+        msg = f"Downloading image {arch_image}. \nIt might take a while."
         log.info(msg)
 
         process = subprocess_run(
-            ["cosign", "save", image_name, "--dir", tmpdir],
+            ["cosign", "save", arch_image, "--dir", tmpdir],
             capture_output=True,
             check=True,
         )

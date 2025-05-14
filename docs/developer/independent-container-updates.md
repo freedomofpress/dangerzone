@@ -1,6 +1,6 @@
 # Independent Container Updates
 
-Since version 0.9.0, Dangerzone is able to ship container images independently
+Since version 0.10.0, Dangerzone is able to ship container images independently
 from releases of the software.
 
 One of the main benefits of doing so is to shorten the time neede to distribute the security fixes for the containers. Being the place where the actual conversion of documents happen, it's a way to keep dangerzone users secure.
@@ -37,7 +37,7 @@ Once the image has been reproduced locally, we can add a signature to the contai
 and update the `latest` tag to point to the proper hash.
 
 ```bash
-cosign sign --sk ghcr.io/freedomofpress/dangerzone/dangerzone:${TAG}@sha256:${DIGEST}
+cosign sign --recursive --sk ghcr.io/freedomofpress/dangerzone/dangerzone:${TAG}@sha256:${DIGEST}
 
 # And mark bump latest
 crane auth login ghcr.io -u USERNAME --password $(cat pat_token)
@@ -46,10 +46,10 @@ crane tag ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST} latest
 
 ## Install updates
 
-To check if a new container image has been released, and update your local installation with it, you can use the following commands:
+To check if a new container image has been released, and update your local installation with it, you can use the following command:
 
 ```bash
-dangerzone-image upgrade ghcr.io/freedomofpress/dangerzone/dangerzone
+dangerzone-image upgrade
 ```
 
 ## Verify locally
@@ -73,7 +73,7 @@ This archive will contain all the needed material to validate that the new conta
 On the machine on which you prepare the packages:
 
 ```bash
-dangerzone-image prepare-archive --output dz-fa94872.tar ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:<digest>
+dangerzone-image prepare-archive --arch amd64 --output "dz-{arch}".tar ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:<digest>
 ```
 
 On the airgapped machine, copy the file and run the following command:

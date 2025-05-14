@@ -8,6 +8,7 @@ import click
 
 from .. import container_utils
 from ..container_utils import Runtime, expected_image_name
+from ..util import get_architecture
 from . import attestations, errors, log, registry, signatures
 from .signatures import DEFAULT_PUBKEY_LOCATION
 
@@ -83,10 +84,16 @@ def load_archive(image_filename: Path, force: bool) -> None:
 
 @main.command()
 @click.argument("image")
-@click.option("--output", default="dangerzone-airgapped.tar")
-def prepare_archive(image: str, output: str) -> None:
-    """Prepare an archive to upgrade the dangerzone image on an airgapped environment."""
-    signatures.prepare_airgapped_archive(image, output)
+@click.option("--output-template", default="dangerzone-{arch}.tar")
+@click.option(
+    "--arch",
+    default=get_architecture(),
+    help="The architecture you want to prepare the archive for. By default, it uses your platform.",
+)
+def prepare_archive(image: str, output_template: str, arch: str) -> None:
+    """Prepare an archive to upgrade the dangerzone image (useful for airgapped environment)"""
+    output = output_template.format(arch=arch)
+    signatures.prepare_airgapped_archive(image, output, arch)
     click.echo(f"✅ Archive {output} created")
 
 

@@ -11,6 +11,13 @@ except ImportError:
     import appdirs as platformdirs
 
 
+def get_architecture() -> str:
+    """Return the currently detected architecture (amd64 or arm64)"""
+    machine = platform.machine().lower()
+    # Normalize architecture names
+    return {"x86_64": "amd64", "amd64": "amd64", "arm64": "arm64"}.get(machine, machine)
+
+
 def get_config_dir() -> Path:
     return Path(platformdirs.user_config_dir("dangerzone"))
 

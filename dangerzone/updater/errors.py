@@ -18,6 +18,17 @@ class RegistryError(UpdaterError):
     pass
 
 
+class InvalidMutliArchImage(RegistryError):
+    """The queried image is not a multi-arch image"""
+
+    pass
+
+
+class ArchitectureNotFound(RegistryError):
+    """The required architecture was not found in the
+    provided manifest"""
+
+
 class AirgappedImageDownloadError(UpdaterError):
     pass
 

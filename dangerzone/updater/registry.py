@@ -1,5 +1,6 @@
 import re
 from collections import namedtuple
+from dataclasses import dataclass
 from hashlib import sha256
 from typing import Dict, Optional, Tuple
 
@@ -21,19 +22,38 @@ __all__ = [
 
 SIGSTORE_BUNDLE = "application/vnd.dev.sigstore.bundle.v0.3+json"
 IMAGE_INDEX_MEDIA_TYPE = "application/vnd.oci.image.index.v1+json"
+IMAGE_LIST_MEDIA_TYPE = "application/vnd.docker.distribution.manifest.list.v2+json"
 ACCEPT_MANIFESTS_HEADER = ",".join(
     [
         "application/vnd.docker.distribution.manifest.v1+json",
         "application/vnd.docker.distribution.manifest.v1+prettyjws",
         "application/vnd.docker.distribution.manifest.v2+json",
         "application/vnd.oci.image.manifest.v1+json",
-        "application/vnd.docker.distribution.manifest.list.v2+json",
+        IMAGE_LIST_MEDIA_TYPE,
         IMAGE_INDEX_MEDIA_TYPE,
     ]
 )
 
 
-Image = namedtuple("Image", ["registry", "namespace", "image_name", "tag", "digest"])
+@dataclass
+class Image:
+    registry: str
+    namespace: str
+    image_name: str
+    tag: Optional[str] = None
+    digest: Optional[str] = None
+
+    def to_str(self):
+        string = f"{self.registry}/{self.namespace}/{self.image_name}"
+        # Do not output tag + digest if tag is latest
+        # Only output the tag if:
+        # - a tag is set and no digest is set
+        # - OR a digest is set and the tag is latest
+        if (self.tag and not self.digest) or (self.tag == "latest" and self.digest):
+            string += f":{self.tag}"
+        if self.digest:
+            string += f"@sha256:{self.digest}"
+        return string
 
 
 def parse_image_location(input_string: str) -> Image:
@@ -57,6 +77,14 @@ def parse_image_location(input_string: str) -> Image:
         tag=match.group("tag") or "latest",
         digest=match.group("digest"),
     )
+
+
+def replace_image_digest(image_str: str, digest: str, remove_tag=True) -> str:
+    image = parse_image_location(image_str)
+    image.digest = digest
+    if remove_tag:
+        image.tag = None
+    return image.to_str()
 
 
 def _get_auth_header(image: Image) -> Dict[str, str]:
@@ -98,6 +126,24 @@ def get_manifest(image_str: str) -> requests.Response:
     response = requests.get(manifest_url, headers=headers)
     response.raise_for_status()
     return response
+
+
+def get_digest_for_arch(image_str: str, architecture=str) -> str:
+    """Return the digest of the matching architecture, for the specified image, without the sha256: prefix"""
+    manifest = get_manifest(image_str).json()
+
+    if manifest.get("mediaType") != IMAGE_LIST_MEDIA_TYPE:
+        raise errors.InvalidMutliArchImage()
+
+    arch_manifests = [
+        m["digest"].replace("sha256:", "")
+        for m in manifest.get("manifests")
+        if m["platform"]["architecture"] == architecture
+    ]
+    # There should be only one anyway, so let's return the first if there is one
+    if not arch_manifests:
+        raise errors.ArchitectureNotFound()
+    return arch_manifests[0]
 
 
 def list_manifests(image_str: str) -> list:

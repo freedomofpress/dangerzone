@@ -299,7 +299,7 @@ jobs:
 
       - name: Sign container
         run: |-
-          cosign sign -d --yes --key=${{ inputs.key_name }}.key "${{ env.IMAGE_URI }}"
+          cosign sign --recursive -d --yes --key=${{ inputs.key_name }}.key "${{ env.IMAGE_URI }}"
         shell: bash
 
       - name: Prepare cached assets

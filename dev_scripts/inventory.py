@@ -43,7 +43,7 @@ CACHE_ROOT = Path(user_cache_dir("dz-inventory"))
 logger = logging.getLogger(__name__)
 
 
-class InvException(Exception):
+class AssetException(Exception):
     """Inventory-specific error."""
 
     pass
@@ -86,7 +86,7 @@ def report_error(verbose=False, fail=False):
     """
     try:
         yield
-    except InvException as e:
+    except AssetException as e:
         if not verbose:
             print(f"{Fore.RED}{e}{Style.RESET_ALL}", file=sys.stderr)
         else:
@@ -111,26 +111,26 @@ def read_config():
             return toml.loads(CONFIG_FILE.read_text())
         except Exception as e:
             msg = f"Could not load configuration file '{CONFIG_FILE}': {e}"
-            raise InvException(msg) from e
+            raise AssetException(msg) from e
     elif PYPROJECT_FILE.exists():
         # Then, attempt to read the configuration from pyproject.toml.
         try:
             config = toml.load(PYPROJECT_FILE.open("r"))
         except Exception as e:
             msg = f"Could not load configuration file '{PYPROJECT_FILE}': {e}"
-            raise InvException(msg) from e
+            raise AssetException(msg) from e
 
         # If the pyproject.toml file does not have a [tool.inventory] section, return an
         # error.
         try:
             return config["tool"]["inventory"]
         except KeyError:
-            raise InvException(
+            raise AssetException(
                 f"Missing a '[tool.inventory]' section in {PYPROJECT_FILE} or"
                 f" a separate {CONFIG_FILE}"
             )
 
-    raise InvException(
+    raise AssetException(
         f"Missing a {PYPROJECT_FILE} with a '[tool.inventory]' or a separate"
         f" {CONFIG_FILE}"
     )
@@ -148,7 +148,7 @@ def check_lock_stale(lock):
     config = read_config()
     config_hash = hashlib.sha256(json.dumps(config).encode()).hexdigest()
     if config_hash != lock["config_checksum"]:
-        raise InvException(
+        raise AssetException(
             f"The asset list and the {LOCK_FILE} file are not in sync. This can be"
             " fixed by running the 'lock' command."
         )
@@ -162,7 +162,7 @@ def load_lock(check=True):
                 check_lock_stale(lock)
             return lock
     except Exception as e:
-        raise InvException(f"Could not load lock file '{LOCK_FILE}': {e}") from e
+        raise AssetException(f"Could not load lock file '{LOCK_FILE}': {e}") from e
 
 
 def calc_checksum(stream):
@@ -189,7 +189,7 @@ def cache_file_path(url):
     # different naming scheme.
     parsed = url.split("/")
     if len(parsed) < 3:
-        raise InvException(f"Malformed download URL: {url}")
+        raise AssetException(f"Malformed download URL: {url}")
 
     asset_name = parsed[-1]
     if parsed[-2] in ("zipball", "tarball"):
@@ -277,7 +277,7 @@ def get_latest_release(repo, semver_range):
     response = requests.get(url)
     response.raise_for_status()
     if response.status_code != 200:
-        raise InvException(
+        raise AssetException(
             f"Unexpected response when fetching releases for repo '{repo}': HTTP"
             f" {response.status_code}"
         )
@@ -314,7 +314,7 @@ def get_latest_release(repo, semver_range):
         matching.append((release, version))
 
     if not matching:
-        raise InvException(
+        raise AssetException(
             f"No releases match version requirement {semver_range} for repo '{repo}'"
         )
 
@@ -341,7 +341,7 @@ def get_download_url(release, name):
         if asset.get("name") == expected_name:
             return asset.get("browser_download_url")
 
-    raise InvException(f"Could not find asset '{name}'")
+    raise AssetException(f"Could not find asset '{name}'")
 
 
 def hash_asset(url):
@@ -381,7 +381,7 @@ def download_to_cache_and_verify(url, expected_checksum):
         # Remove cache file and its checksum file
         cached_file.unlink(missing_ok=True)
         checksum_file.unlink(missing_ok=True)
-        raise InvException(
+        raise AssetException(
             f"Hash mismatch for URL {url}: computed '{computed_checksum}',"
             f" expected '{expected_checksum}'"
         )
@@ -402,7 +402,7 @@ def determine_extract_opts(extract):
         globs = ["*"]
         flatten = False
     else:
-        raise InvException(f"Unexpected format for 'extract' field: {extract}")
+        raise AssetException(f"Unexpected format for 'extract' field: {extract}")
 
     return {
         "globs": globs,
@@ -436,7 +436,7 @@ def filter_files(files, globs):
             yield m
 
     if not matched:
-        raise InvException("Globs did not match any files in the archive")
+        raise AssetException("Globs did not match any files in the archive")
 
 
 def detect_archive_type(name):
@@ -449,7 +449,7 @@ def detect_archive_type(name):
         return "tar"
     if name.endswith(".zip") or name == "!zipball":
         return "zip"
-    raise InvException(f"Unsupported archive type for extraction: {name}")
+    raise AssetException(f"Unsupported archive type for extraction: {name}")
 
 
 def flatten_extracted_files(destination):
@@ -502,9 +502,9 @@ def extract_asset(archive_path, destination, filetype, globs=(), flatten=False):
                 members = filter_files(zip_ref.namelist(), globs)
                 zip_ref.extractall(path=destination, members=members)
         else:
-            raise InvException(f"Unsupported archive type: {filetype}")
+            raise AssetException(f"Unsupported archive type: {filetype}")
     except Exception as e:
-        raise InvException(f"Error extracting '{archive_path}': {e}") from e
+        raise AssetException(f"Error extracting '{archive_path}': {e}") from e
 
     if flatten:
         flatten_extracted_files(destination)
@@ -545,7 +545,7 @@ def compute_asset_lock(asset_name, asset):
         executable = asset.get("executable", False)
         extract = asset.get("extract", False)
     except KeyError as e:
-        raise InvException(f"Required field {e} is missing")
+        raise AssetException(f"Required field {e} is missing")
 
     if extract:
         extract = determine_extract_opts(extract)
@@ -595,7 +595,9 @@ def install_asset(name, platform, asset_dict):
         if "all" in asset_dict:
             platform = "all"
         else:
-            raise InvException(f"No entry for platform '{platform}' or 'platform.all'")
+            raise AssetException(
+                f"No entry for platform '{platform}' or 'platform.all'"
+            )
 
     asset = Asset(**asset_dict[platform])
 
@@ -659,7 +661,7 @@ def cmd_lock(args):
     #             and flatten = True|False.
     assets_cfg = config.get("asset", {})
     if not assets_cfg:
-        raise InvException(
+        raise AssetException(
             "No assets defined under the [asset] section in the config file."
         )
 
@@ -669,7 +671,7 @@ def cmd_lock(args):
         try:
             lock_assets[asset_name] = compute_asset_lock(asset_name, asset)
         except Exception as e:
-            raise InvException(
+            raise AssetException(
                 f"Error when processing asset '{asset_name}': {e}"
             ) from e
         logger.debug(f"Successfully processed asset '{asset_name}'")
@@ -708,14 +710,14 @@ def cmd_install(args):
     # Validate asset names and platform entries
     for asset_name in asset_list:
         if asset_name not in lock_assets:
-            raise InvException(f"Asset '{asset_name}' not found in the lock file.")
+            raise AssetException(f"Asset '{asset_name}' not found in the lock file.")
 
         print(f"Installing asset '{asset_name}'...")
         asset = lock_assets[asset_name]
         try:
             install_asset(asset_name, target_plat, asset)
         except Exception as e:
-            raise InvException(
+            raise AssetException(
                 f"Error when installing asset '{asset_name}': {e}"
             ) from e
         logger.debug(f"Successfully installed asset '{asset_name}'")

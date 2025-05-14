@@ -12,6 +12,7 @@ from dangerzone.updater.registry import (
     get_manifest_digest,
     list_tags,
     parse_image_location,
+    replace_image_digest,
 )
 
 
@@ -74,6 +75,23 @@ def test_parse_invalid_image_location():
     for invalid_image in invalid_image_locations:
         with pytest.raises(ValueError, match="Malformed image location"):
             parse_image_location(invalid_image)
+
+
+def test_replace_image_digest():
+    assert (
+        replace_image_digest(
+            "ghcr.io/freedomofpress/dangerzone/dangerzone-testing@sha256:123456",
+            "777777",
+        )
+        == "ghcr.io/freedomofpress/dangerzone/dangerzone-testing@sha256:777777"
+    )
+    assert (
+        replace_image_digest(
+            "ghcr.io/freedomofpress/dangerzone/dangerzone-testing:latest@sha256:123456",
+            "777777",
+        )
+        == "ghcr.io/freedomofpress/dangerzone/dangerzone-testing@sha256:777777"
+    )
 
 
 def test_list_tags(mocker: MockerFixture):

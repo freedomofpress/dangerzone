@@ -117,7 +117,10 @@ def list_tags(image_str: str) -> list:
 def get_manifest(image_str: str) -> requests.Response:
     """Get manifest information for a specific tag"""
     image = parse_image_location(image_str)
-    manifest_url = f"{_url(image)}/manifests/{image.tag}"
+    if image.digest:
+        manifest_url = f"{_url(image)}/manifests/{image.digest}"
+    else:
+        manifest_url = f"{_url(image)}/manifests/{image.tag}"
     headers = {
         "Accept": ACCEPT_MANIFESTS_HEADER,
     }

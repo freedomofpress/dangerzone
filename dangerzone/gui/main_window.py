@@ -285,6 +285,11 @@ class MainWindow(QtWidgets.QMainWindow):
         """Change the underlying update check settings based on the user's choice."""
         check = self.toggle_updates_action.isChecked()
         self.dangerzone.settings.set("updater_check_all", check)
+        # Also disable any planned upgrade when disabling the updates as one may
+        # be already fetched (might actually be the reason why the user want to
+        # disable updates in the first place)
+        if check == False:
+            self.dangerzone.settings.set("updater_container_needs_update", False)
         self.dangerzone.settings.save()
 
     def handle_docker_desktop_version_check(

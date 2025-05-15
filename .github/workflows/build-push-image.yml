@@ -160,6 +160,7 @@ jobs:
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
+          overwrite: true
 
   merge:
     runs-on: ubuntu-latest

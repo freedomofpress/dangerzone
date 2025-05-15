@@ -45,7 +45,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the necessary assets using `./dev_scripts/inventory.py install`
+  - [ ] Download the necessary assets using `poetry run assets install`
   - [ ] Run the Dangerzone tests.
   - [ ] Build and run the Dangerzone .exe
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -54,7 +54,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the necessary assets using `./dev_scripts/inventory.py install`
+  - [ ] Download the necessary assets using `poetry run assets install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -63,7 +63,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the necessary assets using `./dev_scripts/inventory.py install`
+  - [ ] Download the necessary assets using `poetry run assets install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -72,7 +72,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the necessary assets using `./dev_scripts/inventory.py install`
+  - [ ] Download the necessary assets using `poetry run assets install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create a .deb package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -81,7 +81,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the necessary assets using `./dev_scripts/inventory.py install`
+  - [ ] Download the necessary assets using `poetry run assets install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -295,7 +295,7 @@ python3 ./install/common/build-image.py
 Download the necessary assets:
 
 ```sh
-poetry run python3 ./dev_scripts/inventory.py install
+poetry run assets install
 ```
 
 Run from source tree:
@@ -358,7 +358,7 @@ python3 ./install/common/build-image.py
 Download the necessary assets:
 
 ```sh
-poetry run python3 ./dev_scripts/inventory.py install
+poetry run assets install
 ```
 
 Run from source tree:
@@ -422,7 +422,7 @@ python3 .\install\common\build-image.py
 Download the necessary assets:
 
 ```sh
-poetry run python3 .\dev_scripts\inventory.py install
+poetry run assets install
 ```
 
 After that you can launch dangerzone during development with:
@@ -760,9 +760,7 @@ class QABase(abc.ABC):
 
     @task("Download the necessary assets", auto=True)
     def instal_inventory(self):
-        self.run(
-            "poetry", "run", "python", str(Path("dev_scripts", "inventory.py")), "sync"
-        )
+        self.run("poetry", "run", "assets", "install")
 
     @classmethod
     @abc.abstractmethod

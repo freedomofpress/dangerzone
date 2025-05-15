@@ -46,7 +46,7 @@ def list_language_data():
     return targets
 
 
-INVENTORY_DEPS = ["dev_scripts/inventory.py", "inventory.lock"]
+INVENTORY_DEPS = ["inventory.lock"]
 INVENTORY_TARGETS = list_language_data()
 
 IMAGE_DEPS = [
@@ -175,9 +175,9 @@ def task_init_release_dir():
 
 
 def task_install_inventory():
-    """Download the necessary assets using ./dev_scripts/inventory.py install"""
+    """Download the necessary assets using `poetry run assets install`"""
     return {
-        "actions": ["poetry run python3 dev_scripts/inventory.py install"],
+        "actions": ["poetry run assets install"],
         "file_dep": INVENTORY_DEPS,
         "targets": INVENTORY_TARGETS,
         "clean": True,

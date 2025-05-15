@@ -58,8 +58,8 @@ toml = ">=0.10.2"
 [package.source]
 type = "git"
 url = "https://github.com/freedomofpress/assets"
-reference = "dz"
-resolved_reference = "1e840ca33e9cab82c9d45b1b60969b090ea5af9b"
+reference = "HEAD"
+resolved_reference = "bf6c1155934a4f1289f315b8010181a6155e06a0"
 
 [[package]]
 name = "certifi"
@@ -1533,4 +1533,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.14"
-content-hash = "9bf6afddc02352a97a3c0591a71a3365864520efbfd1d7061dc8b0895098abb4"
+content-hash = "8c31a41fa0c5fb0b4b2af0a263d525dbfa24e5f01ba81e9c50f89c03cdecea85"

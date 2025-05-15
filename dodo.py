@@ -46,8 +46,8 @@ def list_language_data():
     return targets
 
 
-INVENTORY_DEPS = ["inventory.lock"]
-INVENTORY_TARGETS = list_language_data()
+ASSETS_DEPS = ["assets.lock"]
+ASSETS_TARGETS = list_language_data()
 
 IMAGE_DEPS = [
     "Dockerfile",
@@ -67,7 +67,7 @@ PYTHON_DEPS = ["poetry.lock", "pyproject.toml"]
 
 DMG_DEPS = [
     *list_files("install/macos"),
-    *INVENTORY_TARGETS,
+    *ASSETS_TARGETS,
     *IMAGE_TARGETS,
     *PYTHON_DEPS,
     *SOURCE_DEPS,
@@ -174,12 +174,12 @@ def task_init_release_dir():
     }
 
 
-def task_install_inventory():
+def task_install_assets():
     """Download the necessary assets using `poetry run assets install`"""
     return {
         "actions": ["poetry run assets install"],
-        "file_dep": INVENTORY_DEPS,
-        "targets": INVENTORY_TARGETS,
+        "file_dep": ASSETS_DEPS,
+        "targets": ASSETS_TARGETS,
         "clean": True,
     }
 
@@ -233,7 +233,7 @@ def task_macos_build_dmg():
             "macos_check_system",
             "init_release_dir",
             "poetry_install",
-            "inventory",
+            "install_assets",
         ],
         "targets": [dmg_src, dmg_dst],
         "clean": True,

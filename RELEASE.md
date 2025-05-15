@@ -149,7 +149,7 @@ Here is what you need to do:
 
   ```bash
   poetry run ./install/common/build-image.py
-  poetry run poetry run assets install
+  poetry run assets install
 
   # Copy the container image to the assets folder
   cp share/container.tar ~dz/release-assets/$VERSION/dangerzone-$VERSION-arm64.tar

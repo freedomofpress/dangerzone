@@ -86,14 +86,14 @@ jobs:
           python-version: "3.12"
       - run: pip install poetry
       - run: poetry install
-      - name: Cache inventory
-        id: cache-inventory
+      - name: Cache assets
+        id: cache-assets
         uses: actions/cache@v4
         with:
           path: share/tessdata/
-          key: v1-inventory-windows-${{ hashFiles('./inventory.lock') }}
-      - name: Sync inventory
-        if: steps.cache-inventory.outputs.cache-hit != 'true'
+          key: v1-assets-windows-${{ hashFiles('./assets.lock') }}
+      - name: Install assets
+        if: steps.cache-assets.outputs.cache-hit != 'true'
         run: poetry run assets install
       - name: Run CLI tests
         run: poetry run make test
@@ -135,14 +135,14 @@ jobs:
           python-version: "3.12"
       - run: pip install poetry
       - run: poetry install
-      - name: Cache inventory
-        id: cache-inventory
+      - name: Cache assets
+        id: cache-assets
         uses: actions/cache@v4
         with:
           path: share/tessdata/
-          key: v1-inventory-darwin-${{ matrix.arch }}-${{ hashFiles('./inventory.lock') }}
-      - name: Sync inventory
-        if: steps.cache-inventory.outputs.cache-hit != 'true'
+          key: v1-assets-darwin-${{ matrix.arch }}-${{ hashFiles('./assets.lock') }}
+      - name: Install assets
+        if: steps.cache-assets.outputs.cache-hit != 'true'
         run: poetry run assets install
       - name: Run CLI tests
         run: poetry run make test
@@ -388,21 +388,21 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install inventory dependencies
+      - name: Install assets tool
         run: |
           sudo apt install pipx
           pipx install poetry
           poetry install
 
-      - name: Cache inventory
-        id: cache-inventory
+      - name: Cache assets
+        id: cache-assets
         uses: actions/cache@v4
         with:
           path: share/tessdata/
-          key: v1-inventory-linux-${{ hashFiles('./inventory.lock') }}
+          key: v1-assets-linux-${{ hashFiles('./assets.lock') }}
 
-      - name: Sync inventory
-        if: steps.cache-inventory.outputs.cache-hit != 'true'
+      - name: Install assets
+        if: steps.cache-assets.outputs.cache-hit != 'true'
         run: poetry run assets install
 
       - name: Login to GHCR

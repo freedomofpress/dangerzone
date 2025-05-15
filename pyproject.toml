@@ -23,7 +23,6 @@ pyxdg = {version = "*", platform = "linux"}
 requests = "*"
 markdown = "*"
 packaging = "*"
-assets = { git = "https://github.com/freedomofpress/assets" }
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
@@ -38,6 +37,7 @@ pywin32 = {version = "*", platform = "win32"}
 pyinstaller = {version = "*", platform = "darwin"}
 doit = "^0.36.0"
 jinja2-cli = "^0.8.2"
+assets = { git = "https://github.com/freedomofpress/assets" }
 
 # Dependencies required for linting the code.
 [tool.poetry.group.lint.dependencies]

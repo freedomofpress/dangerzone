@@ -334,9 +334,9 @@ jobs:
         run: |-
           # For now, we don't need to prepare multiple archives as it's not
           # possible to run the CI tests on macOS with nested virtualisation
+          echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
           poetry run dangerzone-image prepare-archive ${{ needs.sign.outputs.image_uri }} --arch amd64 --output-template="share/container.tar"
           mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
-          echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
 
       - name: Cache container image
         id: cache-container-image

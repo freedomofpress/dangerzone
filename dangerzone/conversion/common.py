@@ -7,7 +7,7 @@ from typing import Callable, List, Optional, TextIO, Tuple
 DEFAULT_DPI = 150  # Pixels per inch
 INT_BYTES = 2
 
-# HEY.
+# HEY..
 
 
 def running_on_qubes() -> bool:

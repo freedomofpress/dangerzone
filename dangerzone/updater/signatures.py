@@ -75,7 +75,6 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
     # `container_utils.expected_image_name()`
     # e.g. ghcr.io/freedomofpress/dangerzone/dangerzone
 
-    cosign.ensure_installed()
     signature_bundle = signature_to_bundle(signature)
     try:
         payload_bytes = b64decode(signature_bundle["Payload"])
@@ -102,22 +101,7 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
         payload_file.write(payload_bytes)
         payload_file.flush()
 
-        cmd = [
-            "cosign",
-            "verify-blob",
-            "--key",
-            str(pubkey.absolute()),
-            "--bundle",
-            signature_file.name,
-            payload_file.name,
-        ]
-        log.debug(" ".join(cmd))
-        result = subprocess_run(cmd, capture_output=True)
-        # If the process return code is not 0, or doesn't contain the expected
-        # string, we raise an error.
-        if result.returncode != 0 or result.stderr != b"Verified OK\n":
-            log.debug("Failed to verify signature", result.stderr)
-            raise errors.SignatureVerificationError("Failed to verify signature")
+        cosign.verify_blob(pubkey, signature_file.name, payload_file.name)
         log.debug("Signature verified")
 
 
@@ -477,19 +461,7 @@ def verify_local_image(
 
 def get_remote_signatures(image: str, digest: str) -> List[Dict]:
     """Retrieve the signatures from the registry, via `cosign download signatures`."""
-    cosign.ensure_installed()
-
-    try:
-        process = subprocess_run(
-            ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
-            capture_output=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as e:
-        raise errors.NoRemoteSignatures(e)
-
-    # Remove the last return, split on newlines, convert from JSON
-    signatures_raw = process.stdout.decode("utf-8").strip().split("\n")  # type:ignore[attr-defined]
+    signatures_raw = cosign.download_signature(image, digest)
     signatures = list(filter(bool, map(json.loads, signatures_raw)))
     if len(signatures) < 1:
         raise errors.NoRemoteSignatures("No signatures found for the image")
@@ -516,8 +488,6 @@ def prepare_airgapped_archive(
             "e.g. ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:123456"
         )
 
-    cosign.ensure_installed()
-
     # Find out if this is a multi-archi image or not
     arch_digest = registry.get_digest_for_arch(image_name, architecture)
     arch_image = registry.replace_image_digest(image_name, arch_digest)
@@ -530,13 +500,7 @@ def prepare_airgapped_archive(
         msg = f"Downloading image {arch_image}. \nIt might take a while."
         log.info(msg)
 
-        process = subprocess_run(
-            ["cosign", "save", arch_image, "--dir", tmpdir],
-            capture_output=True,
-            check=True,
-        )
-        if process.returncode != 0:
-            raise errors.AirgappedImageDownloadError()
+        cosign.save(arch_image, tmppath)
 
         # Read from index.json, save it as DANGERZONE_MANIFEST
         # and then change the index.json contents to only contain

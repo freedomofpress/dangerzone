@@ -61,3 +61,28 @@ ignore:
   # Verdict: Dangerzone is not affected because it does not rely on the
   # signature checking feature of LibreOffice.
   - vulnerability: CVE-2025-2866
+  # CVE-2025-4802
+  # ==============
+  #
+  # Debian tracker: https://security-tracker.debian.org/tracker/CVE-2025-4802
+  # Verdict: Dangerzone is not affected for three reasons:
+  # 1. We don't ship custom setuid programs, only the ones that get installed
+  #    through the official repos. This is important because as the glibc
+  #    advisory mentions:
+  #
+  #      The only viable vector for exploitation of this bug is local, if a
+  #      static setuid program exists, and that program calls dlopen, then it
+  #      may search LD_LIBRARY_PATH to locate the SONAME to load. No such
+  #      program has been discovered at the time of publishing this advisory,
+  #      but the presence of custom setuid programs, although strongly
+  #      discouraged as a security practice, cannot be discounted.
+  #
+  # 2. We do not allow programs to elevate their privileges, either on the
+  #    gVisor sandbox or the outer container, via the `no-new-privileges` flag.
+  # 3. A quick search with `find / -perm 6000` in our container image yields no
+  #    setuid programs. That's most likely due to the way we package our
+  #    Dangerzone image, where we copy-paste binaries from the outer container
+  #    to the inner one, destroying the setuid bits in the process.
+  #
+  # [1] https://sourceware.org/cgit/glibc/tree/advisories/GLIBC-SA-2025-0002
+  - vulnerability: CVE-2025-4802

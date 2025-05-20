@@ -146,7 +146,7 @@ def delete_image_digests(
     log.warning(f"Deleting old container images: {' '.join(full_digests)}")
     try:
         subprocess.check_output(
-            [str(runtime.name), "rmi", "--force", *full_digests],
+            [str(runtime.path), "rmi", "--force", *full_digests],
             startupinfo=get_subprocess_startupinfo(),
         )
     except Exception as e:

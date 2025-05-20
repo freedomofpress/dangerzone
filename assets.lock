@@ -138,7 +138,45 @@
           "filetype": "zip"
         }
       }
+    },
+    "cosign": {
+      "darwin/amd64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.0/cosign-darwin-amd64",
+        "version": "2.5.0",
+        "checksum": "d61cc50f6f32c2b63cb81cd8a935e5dd1be8520d639242031a1102092bee44d4",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.0/cosign-darwin-arm64",
+        "version": "2.5.0",
+        "checksum": "780da3654d9601367b0d54686ac65cb9716578610cabe292d725c7008de4db85",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      },
+      "linux/amd64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.0/cosign-linux-amd64",
+        "version": "2.5.0",
+        "checksum": "1f6c194dd0891eb345b436bb71ff9f996768355f5e0ce02dde88567029ac2188",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      },
+      "windows/amd64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.0/cosign-windows-amd64.exe",
+        "version": "2.5.0",
+        "checksum": "2345667cbcf60767c1a6f678755cbb7465367761084e9d2cbb59ae0cc1a94437",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      }
     }
   },
-  "config_checksum": "5d5b78b909f93102025e30cf7a7170dcac6b6582082f42799437a747f72914bb"
+  "config_checksum": "2a66bc2317b33aa43d8c2dce52da7b5f4a69ccd05fb913e51908ff2f1a08d58a"
 }

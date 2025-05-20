@@ -11,8 +11,7 @@ https://github.com/freedomofpress/dangerzone/wiki/Updates
 
 ## Design overview
 
-This feature introduces a hamburger icon that will be visible across almost all
-of the Dangerzone windows. This will be used to notify the users about updates.
+A hamburger icon is visible across almost all of the Dangerzone windows, and is used to notify the users when there are new releases.
 
 ### First run
 
@@ -21,8 +20,7 @@ _We detect it's the first time Dangerzone runs because the
 
 Add the following keys in our `settings.json` file.
 
-* `"updater_check": None`: Whether to check for updates or not. `None` means
-  that the user has not decided yet, and is the default.
+* `"updater_check_all": True`: Whether or not to check and apply independent container updates and check for new releases.
 * `"updater_last_check": None`: The last time we checked for updates (in seconds
   from Unix epoch). None means that we haven't checked yet.
 * `"updater_latest_version": "0.4.2"`: The latest version that the Dangerzone
@@ -32,43 +30,19 @@ Add the following keys in our `settings.json` file.
 * `"updater_errors: 0`: The number of update check errors that we have
   encountered in a row.
 
-Note:
-
-* If on Linux, make `"updater_check": False`, since we normally have
-  other update channels for these platforms.
+Previously, `"updater_check"` was used to determine if we should check for new releases, and has been replaced by `"updater_check_all"` when adding support for independent container updates.
 
 ### Second run
 
 _We detect it's the second time Dangerzone runs because
-`settings["updater_check"] is not None and settings["updater_last_check"] is
+`settings["updater_check_all"] is not None and settings["updater_last_check"] is
 None`._
 
-Before starting up the main window, show this window:
-
-* Title: Dangerzone Updater
-* Body:
-
-  > Do you want Dangerzone to automatically check for updates?
-  >
-  > If you accept, Dangerzone will check the latest releases page in github.com
-  > on startup. Otherwise it will make no network requests and won't inform you
-  > about new releases.
-  >
-  > If you prefer another way of getting notified about new releases, we suggest adding
-  > to your RSS reader our [Mastodon feed](https://fosstodon.org/@dangerzone.rss). For more information
-  > about updates, check [this webpage](https://github.com/freedomofpress/dangerzone/wiki/Updates).
-
-* Buttons:
-   - Check Automaticaly: Store `settings["updater_check"] = True`
-   - Don't Check: Store `settings["updater_check"] = False`
-
-Note:
-* Users will be able to change their choice from the hamburger menu, which will
-  contain an entry called "Check for updates", that users can check and uncheck.
+Before starting up the main window, the user is prompted if they want to enable update checks.
 
 ### Subsequent runs
 
-_We perform the following only if `settings["updater_check"] == True`._
+_We perform the following only if `settings["updater_check_all"] == True`._
 
 1. Spawn a new thread so that we don't block the main window.
 2. Check if we have cached information about a release (version and changelog).

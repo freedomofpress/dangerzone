@@ -6,9 +6,10 @@ from pytest_mock import MockerFixture
 from pytest_subprocess import FakeProcess
 
 from dangerzone import errors
-from dangerzone.container_utils import Runtime
+from dangerzone.container_utils import Runtime, expected_image_name
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
+from dangerzone.updater import SignatureError, UpdaterError
 from dangerzone.util import get_resource_path
 
 from .base import IsolationProviderTermination, IsolationProviderTest
@@ -21,7 +22,7 @@ elif os.environ.get("DUMMY_CONVERSION", False):
 
 
 @pytest.fixture
-def provider() -> Container:
+def provider(skip_image_verification: None) -> Container:
     return Container()
 
 
@@ -57,8 +58,13 @@ class TestContainer(IsolationProviderTest):
         )
         provider.is_available()
 
-    def test_install_raise_if_image_cant_be_installed(
-        self, provider: Container, fp: FakeProcess, runtime_path: str
+    def test_install_raise_if_local_image_cant_be_installed(
+        self,
+        provider: Container,
+        fp: FakeProcess,
+        runtime_path: str,
+        skip_image_verification,
+        mocker: MockerFixture,
     ) -> None:
         """When an image installation fails, an exception should be raised"""
 
@@ -73,61 +79,86 @@ class TestContainer(IsolationProviderTest):
                 "image",
                 "list",
                 "--format",
-                "{{ .Tag }}",
-                "dangerzone.rocks/dangerzone",
+                "{{ .Digest }}",
+                expected_image_name(),
             ],
             occurrences=2,
         )
-
-        fp.register_subprocess(
-            [
-                runtime_path,
-                "load",
-                "-i",
-                get_resource_path("container.tar").absolute(),
-            ],
-            returncode=-1,
+        mocker.patch(
+            "dangerzone.isolation_provider.container.install_local_container_tar",
+            side_effect=UpdaterError,
         )
 
-        with pytest.raises(errors.ImageInstallationException):
-            provider.install()
+        with pytest.raises(UpdaterError):
+            provider.install(should_upgrade=False)
 
-    def test_install_raises_if_still_not_installed(
-        self, provider: Container, fp: FakeProcess, runtime_path: str
+    def test_install_raise_if_local_image_cant_be_verified(
+        self,
+        provider: Container,
+        runtime_path: str,
+        skip_image_verification,
+        mocker: MockerFixture,
     ) -> None:
-        """When an image keep being not installed, it should return False"""
-        fp.register_subprocess(
-            [runtime_path, "version", "-f", "{{.Client.Version}}"],
-            stdout="4.0.0",
+        """In case an image has been installed but its signature cannot be verified, an exception should be raised"""
+
+        mocker.patch(
+            "dangerzone.isolation_provider.container.container_utils.list_image_digests",
+            return_value=["a-digest"],
+        )
+        mocker.patch(
+            "dangerzone.isolation_provider.container.verify_local_image",
+            side_effect=SignatureError,
         )
 
-        fp.register_subprocess(
-            [runtime_path, "image", "ls"],
+        with pytest.raises(SignatureError):
+            provider.install(should_upgrade=False)
+
+    def test_install_raise_if_local_image_install_works_on_second_try(
+        self,
+        provider: Container,
+        runtime_path: str,
+        skip_image_verification,
+        mocker: MockerFixture,
+    ) -> None:
+        """In case an image has been installed but its signature cannot be verified, an exception should be raised"""
+
+        mocker.patch(
+            "dangerzone.isolation_provider.container.container_utils.list_image_digests",
+            return_value=["a-digest"],
+        )
+        mocker.patch(
+            "dangerzone.isolation_provider.container.verify_local_image",
+            side_effect=[SignatureError, True],
         )
 
-        # First check should return nothing.
-        fp.register_subprocess(
-            [
-                runtime_path,
-                "image",
-                "list",
-                "--format",
-                "{{ .Tag }}",
-                "dangerzone.rocks/dangerzone",
-            ],
-            occurrences=2,
+        provider.install(should_upgrade=False)
+
+    def test_install_upgrades_if_available(
+        self,
+        provider: Container,
+        runtime_path: str,
+        skip_image_verification,
+        mocker: MockerFixture,
+    ) -> None:
+        """In case an image has been installed but its signature cannot be verified, an exception should be raised"""
+
+        mocker.patch(
+            "dangerzone.isolation_provider.container.container_utils.list_image_digests",
+            return_value=["a-digest"],
+        )
+        mocker.patch(
+            "dangerzone.isolation_provider.container.is_update_available",
+            return_value=(True, "digest"),
+        )
+        upgrade = mocker.patch(
+            "dangerzone.isolation_provider.container.upgrade_container_image",
+        )
+        mocker.patch(
+            "dangerzone.isolation_provider.container.verify_local_image",
         )
 
-        fp.register_subprocess(
-            [
-                runtime_path,
-                "load",
-                "-i",
-                get_resource_path("container.tar").absolute(),
-            ],
-        )
-        with pytest.raises(errors.ImageNotPresentException):
-            provider.install()
+        provider.install(should_upgrade=True)
+        upgrade.assert_called()
 
     @pytest.mark.skipif(
         platform.system() not in ("Windows", "Darwin"),

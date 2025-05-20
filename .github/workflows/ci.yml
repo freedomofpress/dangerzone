@@ -484,7 +484,8 @@ jobs:
     # 0. Prepare a second  signed container image and push it to the registry. Tag it with :latest
     # 1. Install dangerzone with a shipped container.tar image embedded
     # 2. Run a conversion
-    # 3. Set .config/dangerzone/settings.json container_needs_update to True
+    # 3. Set .config/dangerzone/settings.json container_needs_update to
+    #    True (XXX we do this to avoid anothe run, should we let it detect the update instead?)
     # 4. Run another conversion, it should update to the latest version of the container.
     # 5. Ensure that we upgraded to this last version.
 
@@ -493,7 +494,6 @@ jobs:
     needs:
       - build-container-image
       - build-altered-image
-      - download-tessdata
     strategy:
       matrix:
         include:
@@ -548,16 +548,12 @@ jobs:
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
-      - name: Restore cached tessdata
-        uses: actions/cache/restore@v4
-        with:
-          path: share/tessdata/
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v1-tessdata-${{ hashFiles('./install/common/download-tessdata.py') }}
+      - name: Setup xvfb (Linux)
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run --dev poetry run ./dev_scripts/dangerzone-cli doc.pdf
 
-      # - name: Setup xvfb (Linux)
-      #   run: |
       #     sudo apt update
       #     # Stuff copied wildly from several stackoverflow posts
       #     sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libxcb-shape0 libglib2.0-0 libgl1-mesa-dev '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev

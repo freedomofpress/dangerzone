@@ -78,7 +78,7 @@ jobs:
         run: |
           source Dockerfile.env
           if [[ "${{ inputs.alter_image }}" == "true" ]]; then
-            DEBIAN_ARCHIVE_DATE=$(date -u +'%Y%m%d' -d "1d")
+            DEBIAN_ARCHIVE_DATE=$(date -u +'%Y%m%d' -d "last month")
           else
             DEBIAN_ARCHIVE_DATE=$(date -u +'%Y%m%d')
           fi
@@ -335,7 +335,7 @@ jobs:
           # For now, we don't need to prepare multiple archives as it's not
           # possible to run the CI tests on macOS with nested virtualisation
           echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
-          poetry run dangerzone-image prepare-archive ${{ needs.sign.outputs.image_uri }} --arch amd64 --output-template="share/container.tar"
+          poetry run ./dev_scripts/dangerzone-image prepare-archive ${{ needs.sign.outputs.image_uri }} --arch amd64 --output-template="share/container.tar"
           mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
 
       - name: Cache container image

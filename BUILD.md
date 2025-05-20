@@ -75,10 +75,12 @@ Build the latest container:
 python3 ./install/common/build-image.py
 ```
 
-Download the OCR language data:
+Dangerzone depends on some assets that should be downloaded in order to run
+(think binaries and others resources). This can be done with the following
+command:
 
 ```sh
-python3 ./install/common/download-tessdata.py
+poetry run assets install
 ```
 
 Run from source tree:
@@ -137,10 +139,12 @@ Build the latest container:
 python3 ./install/common/build-image.py
 ```
 
-Download the OCR language data:
+Dangerzone depends on some assets that should be downloaded in order to run
+(think binaries and others resources). This can be done with the following
+command:
 
 ```sh
-python3 ./install/common/download-tessdata.py
+poetry run assets install
 ```
 
 Run from source tree:
@@ -342,10 +346,12 @@ Build the dangerzone container image:
 python3 ./install/common/build-image.py
 ```
 
-Download the OCR language data:
+Dangerzone depends on some assets that should be downloaded in order to run
+(think binaries and others resources). This can be done with the following
+command:
 
 ```sh
-python3 ./install/common/download-tessdata.py
+poetry run assets install
 ```
 
 Run from source tree:
@@ -409,10 +415,12 @@ Build the dangerzone container image:
 python3 .\install\common\build-image.py
 ```
 
-Download the OCR language data:
+Dangerzone depends on some assets that should be downloaded in order to run
+(think binaries and others resources). This can be done with the following
+command:
 
 ```sh
-python3 .\install\common\download-tessdata.py
+poetry run assets install
 ```
 
 After that you can launch dangerzone during development with:

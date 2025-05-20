@@ -26,7 +26,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
+  - [ ] Download the necessary assets using `poetry run assets install`
   - [ ] Run the Dangerzone tests.
   - [ ] Build and run the Dangerzone .exe
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -35,7 +35,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
+  - [ ] Download the necessary assets using `poetry run assets install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -44,7 +44,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
+  - [ ] Download the necessary assets using `poetry run assets install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create and run an app bundle.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -53,7 +53,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
+  - [ ] Download the necessary assets using `poetry run assets install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create a .deb package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
@@ -62,7 +62,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
     the new image.
-  - [ ] Download the OCR language data using `./install/common/download-tessdata.py`
+  - [ ] Download the necessary assets using `poetry run assets install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).

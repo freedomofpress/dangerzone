@@ -11,6 +11,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Update installation instructions (and CI checks) for Debian derivatives ([#1141](https://github.com/freedomofpress/dangerzone/pull/1141))
 
+### Development changes
+
+- Vendor GitHub assets using the `assets` tool ([#1146](https://github.com/freedomofpress/dangerzone/issues/1146))
+
 ## [0.9.0](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...0.8.1)
 
 ### Added

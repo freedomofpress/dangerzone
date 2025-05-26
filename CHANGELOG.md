@@ -10,6 +10,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 ## Changed
 
 - Update installation instructions (and CI checks) for Debian derivatives ([#1141](https://github.com/freedomofpress/dangerzone/pull/1141))
+- (Docs) Point to relevant install sections in the OS-support table ([#1160](https://github.com/freedomofpress/dangerzone/pull/1160))
 
 ### Development changes
 

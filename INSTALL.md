@@ -10,16 +10,16 @@ following sections.
 
 (Unless specified, the architecture of the OS is AMD64)
 
-| Distribution  | Supported releases        | Automated tests        | Manual QA |
-| ------------  | ------------------------- | ---------------------- | --------- |
-| Windows       | 2 last releases           | 🗹 (`windows-latest`) ◎ | 🗹         |
-| macOS intel   | 3 last releases           | 🗹 (`macos-13`) ◎       | 🗹         |
-| macOS silicon | 3 last releases           | 🗹 (`macos-latest`) ◎   | 🗹         |
-| Ubuntu        | Follow upstream support ✰ | 🗹                      | 🗹         |
-| Debian        | Current stable, Oldstable and LTS releases | 🗹     | 🗹         |
-| Fedora        | Follow upstream support   | 🗹                      | 🗹         |
-| Qubes OS      | [Beta support](https://github.com/freedomofpress/dangerzone/issues/413) ✢ | 🗷 | Latest Fedora template |
-| Tails         | Only the last release   | 🗷 | Last release only |
+| Distribution             | Supported releases        | Automated tests        | Manual QA |
+| ------------------------ | ------------------------- | ---------------------- | --------- |
+| [Windows](#windows)      | 2 last releases           | 🗹 (`windows-latest`) ◎ | 🗹         |
+| [macOS intel](#macOS)    | 3 last releases           | 🗹 (`macos-13`) ◎       | 🗹         |
+| [macOS silicon](#macOS)  | 3 last releases           | 🗹 (`macos-latest`) ◎   | 🗹         |
+| [Ubuntu](#ubuntu-debian) | Follow upstream support ✰ | 🗹                      | 🗹         |
+| [Debian](#ubuntu-debian) | Current stable, Oldstable and LTS releases | 🗹     | 🗹         |
+| [Fedora](#fedora)        | Follow upstream support   | 🗹                      | 🗹         |
+| [Qubes OS](#qubes-os)    | [Beta support](https://github.com/freedomofpress/dangerzone/issues/413) ✢ | 🗷 | Latest Fedora template |
+| [Tails](#tails)          | Only the last release     | 🗷              | Last release only |
 
 Notes:
 

@@ -7,6 +7,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
 
+## Fixed
+
+- Fix Debian and Ubuntu installation instructions ([#1161](https://github.com/freedomofpress/dangerzone/pull/1161))
+
 ## Changed
 
 - Update installation instructions (and CI checks) for Debian derivatives ([#1141](https://github.com/freedomofpress/dangerzone/pull/1141))

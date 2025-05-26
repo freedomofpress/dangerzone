@@ -110,10 +110,22 @@ Dangerzone is available for:
   </tr>
 </table>
 
-First, retrieve the PGP keys. The instructions differ depending on the specific
-distribution you are using:
+First, retrieve the PGP keys.
 
-For Debian Trixie and Ubuntu Plucky (25.04), follow these instructions to
+**The instructions differ depending on the specific distribution you are using**
+
+For all distributions **except Debian Trixie and Ubuntu Plucky (25.04)**:
+
+```sh
+sudo apt-get update && sudo apt-get install gnupg2 ca-certificates -y
+sudo mkdir -p /etc/apt/keyrings/
+sudo dirmngr&
+sudo gpg --keyserver hkps://keys.openpgp.org \
+    --no-default-keyring --keyring /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg \
+    --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
+```
+
+For **Debian Trixie** and **Ubuntu Plucky (25.04)**, follow these instructions to
 download the PGP keys:
 
 ```bash
@@ -126,15 +138,6 @@ sudo mkdir -p /etc/apt/keyrings/
 sudo mv fpfdz.gpg /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
 ```
 
-On other Debian-derivatives:
-
-```sh
-sudo apt-get update && sudo apt-get install gnupg2 ca-certificates -y
-sudo mkdir -p /etc/apt/keyrings/
-sudo gpg --keyserver hkps://keys.openpgp.org \
-    --no-default-keyring --keyring /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg \
-    --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
-```
 
 Then, on all distributions, add the URL of the repo in your APT sources:
 

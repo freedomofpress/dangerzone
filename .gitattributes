@@ -3,4 +3,4 @@
 *.jpg -text
 *.gif -text
 *.png -text
-*.key -text
+*.key text eol=lf

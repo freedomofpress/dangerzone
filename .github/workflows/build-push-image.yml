@@ -336,6 +336,7 @@ jobs:
           # for which it's not possible to run the tests due to the lack of
           # nested virtualisation.
           echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
+          poetry run assets install cosign
           poetry run ./dev_scripts/dangerzone-image prepare-archive ${{ needs.sign.outputs.image_uri }} --arch amd64 --output-template="share/container.tar"
           mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
 

@@ -288,7 +288,7 @@ jobs:
     needs:
       - merge
     outputs:
-      image_uri: ${{ steps.merge.outputs.image_uri }}
+      image_uri: ${{ needs.merge.outputs.image_uri }}
     steps:
       - uses: actions/checkout@v4
         with:

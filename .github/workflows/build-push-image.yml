@@ -288,7 +288,7 @@ jobs:
     needs:
       - merge
     outputs:
-      image_uri: ${{ steps.params.outputs.image_uri }}
+      image_uri: ${{ steps.merge.outputs.image_uri }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -332,8 +332,9 @@ jobs:
       - run: poetry install
       - name: Prepare cached assets
         run: |-
-          # For now, we don't need to prepare multiple archives as it's not
-          # possible to run the CI tests on macOS with nested virtualisation
+          # Only prepare an amd64 image as arm64 images are only used for macOS,
+          # for which it's not possible to run the tests due to the lack of
+          # nested virtualisation.
           echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
           poetry run ./dev_scripts/dangerzone-image prepare-archive ${{ needs.sign.outputs.image_uri }} --arch amd64 --output-template="share/container.tar"
           mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub

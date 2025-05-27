@@ -7,6 +7,7 @@ from pytest_subprocess import FakeProcess
 
 from dangerzone import errors as dzerrors
 from dangerzone.updater import errors
+from dangerzone.updater.cosign import _COSIGN_BINARY
 from dangerzone.updater.signatures import (
     Signature,
     get_last_log_index,
@@ -212,9 +213,9 @@ def test_prepare_airgapped_archive_requires_digest():
 def test_get_remote_signatures_error(fp: FakeProcess, mocker):
     image = "ghcr.io/freedomofpress/dangerzone/dangerzone"
     digest = "123456"
-    mocker.patch("dangerzone.updater.cosign.ensure_installed", return_value=True)
     fp.register_subprocess(
-        ["cosign", "download", "signature", f"{image}@sha256:{digest}"], returncode=1
+        [_COSIGN_BINARY, "download", "signature", f"{image}@sha256:{digest}"],
+        returncode=1,
     )
     with pytest.raises(errors.NoRemoteSignatures):
         get_remote_signatures(image, digest)
@@ -223,9 +224,8 @@ def test_get_remote_signatures_error(fp: FakeProcess, mocker):
 def test_get_remote_signatures_empty(fp: FakeProcess, mocker):
     image = "ghcr.io/freedomofpress/dangerzone/dangerzone"
     digest = "123456"
-    mocker.patch("dangerzone.updater.cosign.ensure_installed", return_value=True)
     fp.register_subprocess(
-        ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
+        [_COSIGN_BINARY, "download", "signature", f"{image}@sha256:{digest}"],
         stdout=json.dumps({}),
     )
     with pytest.raises(errors.NoRemoteSignatures):
@@ -235,9 +235,9 @@ def test_get_remote_signatures_empty(fp: FakeProcess, mocker):
 def test_get_remote_signatures_cosign_error(mocker, fp: FakeProcess):
     image = "ghcr.io/freedomofpress/dangerzone/dangerzone"
     digest = "123456"
-    mocker.patch("dangerzone.updater.cosign.ensure_installed", return_value=True)
+
     fp.register_subprocess(
-        ["cosign", "download", "signature", f"{image}@sha256:{digest}"],
+        [_COSIGN_BINARY, "download", "signature", f"{image}@sha256:{digest}"],
         returncode=1,
         stderr="Error: no signatures associated",
     )

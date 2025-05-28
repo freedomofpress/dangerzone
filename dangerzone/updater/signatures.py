@@ -1,5 +1,6 @@
 import json
 import platform
+import os
 import re
 import subprocess
 import tarfile
@@ -91,9 +92,19 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
             f"({payload_digest}, {image_digest})"
         )
 
+    # Note: Pass delete=False here to avoid deleting the file before usage.
+    # The file is read outside of the context manager otherwise it fails
+    # on Windows, where the file can't be opened concurrently.
+    #
+    # Using a O_TEMPORARY flag mentioned in [0] is not practical here as how
+    # cosign opens the file is not configurable.
+    #
+    # Hence the os.remove calls after calling cosign.verify_blob.
+    #
+    # [0] https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
     with (
-        NamedTemporaryFile(mode="w") as signature_file,
-        NamedTemporaryFile(mode="bw") as payload_file,
+        NamedTemporaryFile(mode="w", delete=False) as signature_file,
+        NamedTemporaryFile(mode="bw", delete=False) as payload_file,
     ):
         json.dump(signature_bundle, signature_file)
         signature_file.flush()
@@ -101,8 +112,11 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
         payload_file.write(payload_bytes)
         payload_file.flush()
 
-        cosign.verify_blob(pubkey, signature_file.name, payload_file.name)
-        log.debug("Signature verified")
+    cosign.verify_blob(pubkey, signature_file.name, payload_file.name)
+    log.debug("Signature verified")
+
+    os.remove(signature_file.name)
+    os.remove(payload_file.name)
 
 
 @dataclass

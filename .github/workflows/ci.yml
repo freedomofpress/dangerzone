@@ -77,6 +77,8 @@ jobs:
       - name: Install assets
         if: steps.cache-assets.outputs.cache-hit != 'true'
         run: poetry run assets install
+      - name: Check cosign is present
+        run: ls share/vendor
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment

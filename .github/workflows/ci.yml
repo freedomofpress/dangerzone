@@ -72,8 +72,10 @@ jobs:
         id: cache-assets
         uses: actions/cache@v4
         with:
-          path: share/tessdata/
-          key: v2-assets-windows-${{ hashFiles('./assets.lock') }}
+          path: |
+            share/tessdata/
+            share/vendor/
+          key: v3-assets-windows-${{ hashFiles('./assets.lock') }}
       - name: Install assets
         if: steps.cache-assets.outputs.cache-hit != 'true'
         run: poetry run assets install
@@ -123,8 +125,10 @@ jobs:
         id: cache-assets
         uses: actions/cache@v4
         with:
-          path: share/tessdata/
-          key: v2-assets-darwin-${{ matrix.arch }}-${{ hashFiles('./assets.lock') }}
+          path: |
+            share/tessdata/
+            share/vendor/
+          key: v3-assets-darwin-${{ matrix.arch }}-${{ hashFiles('./assets.lock') }}
       - name: Install assets
         if: steps.cache-assets.outputs.cache-hit != 'true'
         run: poetry run assets install
@@ -293,8 +297,10 @@ jobs:
         id: cache-assets
         uses: actions/cache@v4
         with:
-          path: share/tessdata/
-          key: v2-assets-linux-${{ hashFiles('./assets.lock') }}
+          path: |
+            share/tessdata/
+            share/vendor/
+          key: v3-assets-linux-${{ hashFiles('./assets.lock') }}
 
       - name: Install assets
         if: steps.cache-assets.outputs.cache-hit != 'true'
@@ -404,8 +410,10 @@ jobs:
         id: cache-assets
         uses: actions/cache@v4
         with:
-          path: share/tessdata/
-          key: v2-assets-linux-${{ hashFiles('./assets.lock') }}
+          path: |
+            share/tessdata/
+            share/vendor/
+          key: v3-assets-linux-${{ hashFiles('./assets.lock') }}
 
       - name: Install assets
         if: steps.cache-assets.outputs.cache-hit != 'true'

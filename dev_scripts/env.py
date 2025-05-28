@@ -192,6 +192,7 @@ RUN echo user:2000:2000 > /etc/subuid
 RUN echo user:2000:2000 > /etc/subgid
 
 USER user
+RUN mkdir -p /home/user/.local/share/
 WORKDIR /home/user
 
 ########################################

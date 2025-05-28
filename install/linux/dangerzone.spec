@@ -228,19 +228,28 @@ convert the documents within a secure sandbox.
 
 # Create some extra directories for non-Python data, which are not covered by
 # pyproject_save_files.
-install -m 755 -d %{buildroot}/usr/share/
-install -m 755 -d %{buildroot}/usr/share/applications/
-install -m 755 -d %{buildroot}/usr/share/dangerzone/
-install -m 755 -d %{buildroot}/usr/share/pixmaps/
-install -m 644 install/linux/press.freedom.dangerzone.desktop %{buildroot}/usr/share/applications/
-install -m 644 install/linux/press.freedom.dangerzone.png %{buildroot}/usr/share/pixmaps/
-install -m 644 share/* %{buildroot}/usr/share/dangerzone
+install -pm 755 -d %{buildroot}/usr/share/
+install -pm 755 -d %{buildroot}/usr/share/applications/
+install -pm 755 -d %{buildroot}/usr/share/dangerzone/
+install -pm 755 -d %{buildroot}/usr/share/dangerzone/vendor/
+install -pm 755 -d %{buildroot}/usr/share/pixmaps/
+install -pm 644 install/linux/press.freedom.dangerzone.desktop %{buildroot}/usr/share/applications/
+install -pm 644 install/linux/press.freedom.dangerzone.png %{buildroot}/usr/share/pixmaps/
+
+# Use extglob to select everything inside the share folder except vendors
+# (as a folder, it makes the copy fail)
+shopt -s extglob
+install -pm 644 share/!(*vendor) %{buildroot}/usr/share/dangerzone
+shopt -u extglob
+
+# Copy what's inside the folder separately
+install -pm 755 share/vendor/* %{buildroot}/usr/share/dangerzone/vendor
 
 # In case we create a package for Qubes, add some extra files under
 # /etc/qubes-rpc.
 %if 0%{?_qubes}
-install -m 755 -d %{buildroot}/etc/qubes-rpc
-install -m 755 qubes/* %{buildroot}/etc/qubes-rpc
+install -pm 755 -d %{buildroot}/etc/qubes-rpc
+install -pm 755 qubes/* %{buildroot}/etc/qubes-rpc
 %endif
 
 %check
@@ -257,6 +266,7 @@ fi
 %files -f %{pyproject_files}
 /usr/bin/dangerzone
 /usr/bin/dangerzone-cli
+/usr/bin/dangerzone-image
 /usr/share/
 %license LICENSE
 %doc README.md

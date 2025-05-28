@@ -1,4 +1,5 @@
 import functools
+import json
 import logging
 import os
 import platform
@@ -226,18 +227,29 @@ def get_image_id_by_digest(digest: str) -> str:
     The sha256: prefix should be omitted from the digest.
     """
     runtime = Runtime()
+    # There is a "digest" filter that you can use with
+    # podman images -f digest:<digest>, but it's only available
+    # starting with podman >=4.4 (and at least bookworm ships 4.3)
+    # So, fallback on the json format instead
     cmd = [
         str(runtime.path),
         "images",
-        "-f",
-        f"digest=sha256:{digest}",
         "--format",
-        "{{.Id}}",
+        "json",
     ]
     log.debug(" ".join(cmd))
     process = subprocess_run(cmd, check=True, capture_output=True)
-    # In case we have multiple lines, we only want the first one.
-    return process.stdout.decode().strip().split("\n")[0]  # type:ignore[attr-defined]
+
+    images = json.loads(process.stdout.decode().strip())  # type:ignore[attr-defined]
+    filtered_images = [
+        image["Id"] for image in images if image["Digest"] == f"sha256:{digest}"
+    ]
+
+    if not filtered_images:
+        raise errors.ImageNotPresentException(
+            f"Unable to find an image with digest {digest}"
+        )
+    return filtered_images[0]
 
 
 def expected_image_name() -> str:

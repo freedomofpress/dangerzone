@@ -1,6 +1,6 @@
 import json
-import platform
 import os
+import platform
 import re
 import subprocess
 import tarfile

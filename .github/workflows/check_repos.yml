@@ -15,7 +15,6 @@ jobs:
   install-from-apt-repo:
     name: "Install Dangerzone on ${{ matrix.distro}} ${{ matrix.version }}"
     runs-on: ubuntu-latest
-    container: ${{ matrix.distro }}:${{ matrix.version }}
     strategy:
       matrix:
         include:
@@ -28,50 +27,18 @@ jobs:
           - distro: ubuntu
             version: "22.04"  # jammy
           - distro: debian
-            version: "trixie"  # 13
+            version: "trixie-slim"  # trixie / 13
           - distro: debian
-            version: "12"  # bookworm
+            version: "bookworm-slim"  # bookworm / 12
           - distro: debian
-            version: "11"  # bullseye
+            version: "bullseye-slim"  # bullseye / 11
     steps:
-      - name: Add packages.freedom.press PGP key (gpg --keyring)
-        if: matrix.version != 'trixie' && matrix.version != '25.04'
+      - uses: actions/checkout@v4
+      - name: Check installation instructions in a container
         run: |
-          apt-get update && apt-get install -y gnupg2 ca-certificates
-          dirmngr  # NOTE: This is a command that's necessary only in containers
-          # The key needs to be in the GPG keybox database format so the
-          # signing subkey is detected by apt-secure.
-          gpg --keyserver hkps://keys.openpgp.org \
-              --no-default-keyring --keyring ./fpf-apt-tools-archive-keyring.gpg \
-              --recv-keys "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281"
-          mkdir -p /etc/apt/keyrings/
-          mv ./fpf-apt-tools-archive-keyring.gpg /etc/apt/keyrings/.
-
-      - name: Add packages.freedom.press PGP key (sq)
-        if: matrix.version == 'trixie' || matrix.version == '25.04'
-        run: |
-          apt-get update && apt-get install -y ca-certificates sq
-          mkdir -p /etc/apt/keyrings/
-          # On debian trixie, apt-secure uses `sqv` to verify the signatures
-          # so we need to retrieve PGP keys and store them using the base64 format.
-          sq network keyserver \
-             --server hkps://keys.openpgp.org \
-             search "DE28 AB24 1FA4 8260 FAC9 B8BA A7C9 B385 2260 4281" \
-             --output - \
-          | sq packet dearmor \
-          > /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
-
-      - name: Add packages.freedom.press to our APT sources
-        run: |
-          . /etc/os-release
-          echo "deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
-              https://packages.freedom.press/apt-tools-prod ${VERSION_CODENAME?} main" \
-              | tee /etc/apt/sources.list.d/fpf-apt-tools.list
-
-      - name: Install Dangerzone
-        run: |
-          apt update
-          apt install -y dangerzone
+          podman build .github/workflows/test_check_repos/ \
+              --build-arg DISTRO=${{ matrix.distro }} \
+              --build-arg VERSION=${{ matrix.version }}
 
   install-from-yum-repo:
     name: "Install Dangerzone on ${{ matrix.distro}} ${{ matrix.version }}"

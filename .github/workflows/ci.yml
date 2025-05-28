@@ -296,6 +296,23 @@ jobs:
         run: |
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
+      - name: Install assets tool
+        run: |
+          sudo apt install pipx
+          pipx install poetry
+          poetry install
+
+      - name: Cache assets
+        id: cache-assets
+        uses: actions/cache@v4
+        with:
+          path: share/tessdata/
+          key: v2-assets-linux-${{ hashFiles('./assets.lock') }}
+
+      - name: Install assets
+        if: steps.cache-assets.outputs.cache-hit != 'true'
+        run: poetry run assets install
+
       - name: Get the dev environment
         run: |
           ./dev_scripts/env.py \

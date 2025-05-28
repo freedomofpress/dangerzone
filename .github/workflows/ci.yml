@@ -453,6 +453,9 @@ jobs:
 
           # start xvfb in the background
           sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
+      
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
 
       - name: Run CI tests
         run: |-

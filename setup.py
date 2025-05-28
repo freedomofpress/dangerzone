@@ -49,6 +49,7 @@ convert the documents within a secure sandbox.
         "dangerzone.conversion",
         "dangerzone.gui",
         "dangerzone.isolation_provider",
+        "dangerzone.updater",
     ],
     data_files=data_files_list(),
     classifiers=[
@@ -60,6 +61,7 @@ convert the documents within a secure sandbox.
         "console_scripts": [
             "dangerzone = dangerzone:main",
             "dangerzone-cli = dangerzone:main",
+            "dangerzone-image = dangerzone.updater.cli:main",
         ]
     },
 )

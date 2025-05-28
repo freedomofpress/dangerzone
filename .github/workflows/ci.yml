@@ -57,21 +57,6 @@ jobs:
     secrets:
       registry_token: ${{ secrets.GITHUB_TOKEN }}
 
-  build-altered-image:
-    name: Build, push and sign an altered image
-    uses: ./.github/workflows/build-push-image.yml
-    with:
-      registry: "ghcr.io/${{ github.repository_owner }}"
-      registry_user: ${{ github.actor }}
-      image_name: "dangerzone/dangerzone-testing"
-      alter_image: true
-      sign: true
-      fill_cache: false
-      reproduce: false
-      key_name: "tests/assets/dangerzone-testing"
-    secrets:
-      registry_token: ${{ secrets.GITHUB_TOKEN }}
-
   windows:
     runs-on: windows-latest
     env:

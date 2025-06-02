@@ -26,6 +26,7 @@ def data_files_list():
             ["install/linux/press.freedom.dangerzone.png"],
         ),
         ("share/dangerzone", file_list("share")),
+        ("share/dangerzone/vendor", file_list("share/vendor")),
     ]
     return data_files
 

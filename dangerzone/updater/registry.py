@@ -171,27 +171,6 @@ def get_manifest_digest(
     return sha256(tag_manifest_content).hexdigest()
 
 
-def is_new_remote_image_available(image_str: str) -> Tuple[bool, str]:
-    """
-    Check if a new remote image is available on the registry.
-
-    Lookup the remote image registry and find out if
-    the remote image is different than the local one.
-    """
-    remote_digest = get_manifest_digest(image_str)
-
-    try:
-        local_digest = runtime.get_local_image_digest(image_str)
-    except dzerrors.ImageNotPresentException:
-        log.debug("No local image found, will return the last remote update")
-        return True, remote_digest
-
-    log.debug("Remote digest: %s", remote_digest)
-    log.debug("Local digest: %s", local_digest)
-
-    return (remote_digest != local_digest, remote_digest)
-
-
 def get_signature_manifest(image_str: str) -> Dict:
     """Returns the content of a signature for the given image"""
     digest = get_manifest_digest(image_str)

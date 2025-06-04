@@ -47,7 +47,7 @@ class Dummy(IsolationProvider):
         return True
 
     @staticmethod
-    def should_wait_install() -> bool:
+    def requires_install() -> bool:
         return False
 
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:

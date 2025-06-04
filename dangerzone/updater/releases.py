@@ -14,9 +14,7 @@ from ..settings import Settings
 from . import errors, log
 from .signatures import (
     DEFAULT_PUBKEY_LOCATION,
-)
-from .signatures import (
-    is_update_available as is_container_update_available,
+    get_remote_digest_and_logindex,
 )
 
 # Check for updates at most every 12 hours.
@@ -34,16 +32,12 @@ class UpdaterReport:
 
     version: Optional[str] = None
     changelog: Optional[str] = None
-    container_needs_update: Optional[bool] = None
+    remote_log_index: Optional[int] = None
     error: Optional[str] = None
 
     @property
     def new_github_release(self) -> bool:
         return self.version is not None
-
-    @property
-    def new_container_release(self) -> bool:
-        return self.container_needs_update is True
 
     @property
     def is_empty(self) -> bool:
@@ -135,7 +129,6 @@ def should_check_for_updates(settings: Settings) -> bool:
     """
     check = settings.get("updater_check_all")
 
-    log.debug("Checking platform type")
     # TODO: Disable updates for Homebrew installations.
     if platform.system() == "Linux" and not getattr(sys, "dangerzone_dev", False):
         log.debug("Running on Linux, disabling updates")
@@ -143,13 +136,11 @@ def should_check_for_updates(settings: Settings) -> bool:
             settings.set("updater_check_all", False, autosave=True)
             return False
 
-    log.debug("Checking if first run of Dangerzone")
     if settings.get("updater_last_check") is None:
         log.debug("Dangerzone is running for the first time, updates are stalled")
         settings.set("updater_last_check", 0, autosave=True)
         return False
 
-    log.debug("Checking if user has already expressed their preference")
     if check is None:
         log.debug("User has not been asked yet for update checks")
         raise errors.NeedUserInput()
@@ -176,22 +167,15 @@ def check_for_updates(settings: Settings) -> UpdaterReport:
         message.
     """
     try:
-        log.debug("Checking for new DZ releases and container updates")
         latest_version = settings.get("updater_latest_version")
         new_gh_version = version.parse(util.get_version()) < version.parse(
             latest_version
         )
-        new_container_update = settings.get("updater_container_needs_update")
-
         report = UpdaterReport()
 
         if new_gh_version:
             report.version = latest_version
             report.changelog = settings.get("updater_latest_changelog")
-
-        if new_container_update:
-            log.debug("Determined that there is an update due to cached results")
-            report.container_needs_update = new_container_update
 
         if not report.is_empty:
             return report
@@ -216,12 +200,10 @@ def check_for_updates(settings: Settings) -> UpdaterReport:
             report.changelog = gh_changelog
 
         container_name = container_utils.expected_image_name()
-        container_needs_update, _ = is_container_update_available(container_name)
-        report.container_needs_update = container_needs_update
+        _, remote_log_index = get_remote_digest_and_logindex(container_name)
+        report.remote_log_index = remote_log_index
 
-        settings.set(
-            "updater_container_needs_update", container_needs_update, autosave=True
-        )
+        settings.set("updater_remote_log_index", remote_log_index, autosave=True)
         return report
 
     except Exception as e:

@@ -1,33 +1,59 @@
+import logging
+from enum import Enum
 from typing import Callable, Optional
 
-from signatures import (
+from .. import container_utils as runtime
+from ..settings import Settings
+from . import registry, signatures
+from .signatures import (
     BUNDLED_LOG_INDEX,
     LAST_LOG_INDEX,
     get_last_log_index,
-    get_remote_log_index,
+    get_remote_digest_and_logindex,
     install_local_container_tar,
-    is_update_available,
     upgrade_container_image,
+    verify_local_image,
 )
 
-from .. import container_utils as runtime
-from .. import log
-from ..settings import Settings
-from . import registry, signatures
+log = logging.getLogger(__name__)
 
 
-def install(callback: Optional[Callable] = None):
+class Strategy(Enum):
+    DO_NOTHING = 1
+    INSTALL_LOCAL_CONTAINER = 2
+    INSTALL_REMOTE_CONTAINER = 3
+
+
+def apply_installation_strategy(
+    strategy: Strategy, callback: Optional[Callable] = None
+):
+    """
+    Install or upgrade a container registry, based on previous computations.
+    """
+    if strategy == Strategy.DO_NOTHING:
+        return
+    elif strategy == Strategy.INSTALL_LOCAL_CONTAINER:
+        log.debug("Install the local container tarball")
+        install_local_container_tar()
+    elif strategy == Strategy.INSTALL_REMOTE_CONTAINER:
+        log.debug("Download and install a remote container image")
+        container_name = runtime.expected_image_name()
+        remote_digest, remote_log_index = get_remote_digest_and_logindex(container_name)
+        upgrade_container_image(remote_digest, callback=callback)
+        verify_local_image()
+        runtime.clear_old_images(digest_to_keep=remote_digest)
+
+
+def get_installation_strategy():
     """
     Check if there is a need to update the Dangerzone container image,
     taking into account the user preference, the installed container images
     and the released container images if updates are enabled.
-
-    In case an update needs to be applied, apply it.
     """
     # The logic to decide what to install is comparing the following
     # indexes:
     #
-    # local_log_index:
+    # local_log_index:get_remote_digest_and_logindex
     #
     #   The largest log index of any installed container image.
     #
@@ -77,11 +103,11 @@ def install(callback: Optional[Callable] = None):
         local_log_index = get_last_log_index()
 
     # Compute the remote log index
-    if not settings.get("update_check_all"):
+    if not settings.get("updater_check_all"):
         log.debug("Skipping remote container upgrade (applying user settings)")
         remote_log_index = 0
     else:
-        remote_log_index = signatures.get_remote_log_index(container_name) or 0
+        remote_log_index = settings.get("updater_remote_log_index")
 
     # Get the greatest log index, and store it as our target number
     max_log_index = max(local_log_index, remote_log_index, BUNDLED_LOG_INDEX)
@@ -93,20 +119,17 @@ def install(callback: Optional[Callable] = None):
     if local_log_index == max_log_index:
         # The application is either up-to-date, has disabled upgrades, or has downgraded.
         # Matching scenarios: 6, 7, 8, 10 (already installed by CLI), 12 (already installed by CLI)
-        log.debug("Don't need to upgrade the container image")
-        return
-    elif bundled_log_index == max_log_index:
+        log.debug("Installation strategy: Do nothing")
+        return Strategy.DO_NOTHING
+    elif BUNDLED_LOG_INDEX == max_log_index:
         # The bundled container image is fresher than the installed version,
         # or just as fresh as the remote one.
         # Matching scenarios: 1, 2, 3, 9a (if log indexes are the same), 9b, 11 (if no remote updates)
-        log.debug("Install the bundled container image")
-        install_local_container_tar()
+        log.debug("Installation strategy: Install the local container")
+        return Strategy.INSTALL_LOCAL_CONTAINER
     else:
         # There is a remote update that is fresher than the currently installed/available tarball
         #
         # Matching scenarios: 5, 9a, 11 (if more recent remote updates)
-        log.debug("Install remote container update")
-        _, image_digest = is_update_available(container_name)
-        upgrade_container_image(image_digest, callback=callback)
-        verify_local_image()
-        runtime.clear_old_images(digest_to_keep=image_digest)
+        log.debug("Installation strategy: Remote container update")
+        return Strategy.INSTALL_REMOTE_CONTAINER

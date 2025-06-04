@@ -17,11 +17,19 @@ SETTINGS_FILENAME: str = "settings.json"
 
 class Settings:
     settings: Dict[str, Any]
+    _singleton = None
+
+    def __new__(cls) -> "Settings":
+        if cls._singleton is None:
+            cls._singleton = super(Settings, cls).__new__(cls)
+        return cls._singleton
 
     def __init__(self) -> None:
         self.settings_filename = get_config_dir() / SETTINGS_FILENAME
         self.default_settings: Dict[str, Any] = self.generate_default_settings()
-        self.load()
+        # Singletons call multiple times the __init__ method
+        if not hasattr(self, "settings"):
+            self.load()
 
     @classmethod
     def generate_default_settings(cls) -> Dict[str, Any]:
@@ -38,7 +46,7 @@ class Settings:
             # FIXME: How to invalidate those if they change upstream?
             "updater_latest_version": get_version(),
             "updater_latest_changelog": "",
-            "updater_container_needs_update": False,
+            "updater_remote_log_index": 0,
             "updater_errors": 0,
         }
 
@@ -92,8 +100,8 @@ class Settings:
                         if version.parse(get_version()) > version.parse(self.get(key)):
                             self.set(key, get_version())
 
-            except Exception:
-                log.error("Error loading settings, falling back to default")
+            except Exception as e:
+                log.error(f"Error loading settings, falling back to default {e}")
                 self.settings = self.default_settings
 
         else:

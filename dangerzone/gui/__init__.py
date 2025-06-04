@@ -158,11 +158,10 @@ def gui_main(dummy_conversion: bool, filenames: Optional[List[str]]) -> bool:
     window = MainWindow(dangerzone)
 
     # Check for updates
-    log.debug("Setting up Dangerzone updater")
+    log.debug("Setting up Dangerzone updater in a separate thread")
     updater = UpdaterThread(dangerzone)
     window.register_update_handler(updater.finished)
 
-    log.debug("Consulting updater settings before checking for updates")
     should_check = updater.should_check_for_updates()
 
     if should_check:

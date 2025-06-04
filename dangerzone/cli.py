@@ -12,6 +12,7 @@ from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
 from .settings import Settings
+from .updater import install
 from .util import get_version, replace_control_chars
 
 
@@ -117,8 +118,7 @@ def cli_main(
             sys.exit(1)
 
     # Ensure container is installed
-    should_upgrade = bool(settings.get("updater_container_needs_update"))
-    dangerzone.isolation_provider.install(should_upgrade)
+    install()
 
     # Convert the document
     print_header("Converting document to safe PDF")

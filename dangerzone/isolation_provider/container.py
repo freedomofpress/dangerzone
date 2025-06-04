@@ -13,11 +13,9 @@ from ..settings import Settings
 from ..updater import (
     DEFAULT_PUBKEY_LOCATION,
     UpdaterError,
-    is_update_available,
     upgrade_container_image,
     verify_local_image,
 )
-from ..updater.installer import install
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
 
@@ -104,7 +102,7 @@ class Container(IsolationProvider):
         return security_args
 
     @staticmethod
-    def should_wait_install() -> bool:
+    def requires_install() -> bool:
         return True
 
     @staticmethod

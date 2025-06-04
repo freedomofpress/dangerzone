@@ -29,7 +29,12 @@ else:
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
 from ..isolation_provider.qubes import is_qubes_native_conversion
-from ..updater import UpdaterReport, install
+from ..updater import (
+    InstallationStrategy,
+    UpdaterReport,
+    apply_installation_strategy,
+    get_installation_strategy,
+)
 from ..util import format_exception, get_resource_path, get_version
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 
@@ -190,7 +195,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Content widget, contains all the window content except waiting widget
         self.content_widget = ContentWidget(self.dangerzone)
 
-        if self.dangerzone.isolation_provider.should_wait_install():
+        if self.dangerzone.isolation_provider.requires_install():
             # Waiting widget replaces content widget while container runtime isn't available
             self.waiting_widget: WaitingWidget = WaitingWidgetContainer(self.dangerzone)
             self.waiting_widget.finished.connect(self.waiting_finished)
@@ -285,11 +290,6 @@ class MainWindow(QtWidgets.QMainWindow):
         """Change the underlying update check settings based on the user's choice."""
         check = self.toggle_updates_action.isChecked()
         self.dangerzone.settings.set("updater_check_all", check)
-        # Also disable any planned upgrade when disabling the updates as one may
-        # be already fetched (might actually be the reason why the user want to
-        # disable updates in the first place)
-        if check == False:
-            self.dangerzone.settings.set("updater_container_needs_update", False)
         self.dangerzone.settings.save()
 
     def handle_docker_desktop_version_check(
@@ -410,13 +410,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 success_action.triggered.connect(self.show_update_success)
                 hamburger_menu.insertAction(sep, success_action)
 
-            if report.new_container_release:
-                log.debug(f"New container image release available")
-                self.dangerzone.settings.set(
-                    "updater_container_needs_update",
-                    report.container_needs_update,
-                )
-
             # FIXME: Save the settings to the filesystem only when they have really changed,
             # maybe with a dirty bit.
             self.dangerzone.settings.save()
@@ -459,22 +452,24 @@ class InstallContainerThread(QtCore.QThread):
     process_stdout = QtCore.Signal(str)
 
     def __init__(
-        self, dangerzone: DangerzoneGui, callback: Optional[Callable] = None
+        self,
+        dangerzone: DangerzoneGui,
+        installation_strategy: InstallationStrategy,
     ) -> None:
         super(InstallContainerThread, self).__init__()
         self.dangerzone = dangerzone
+        self.installation_strategy = installation_strategy
 
     def run(self) -> None:
         error = None
         try:
-            if self.dangerzone.isolation_provider.should_wait_install():
-                install(callback=self.process_stdout.emit)
+            if self.dangerzone.isolation_provider.requires_install():
+                apply_installation_strategy(
+                    self.installation_strategy, callback=self.process_stdout.emit
+                )
         except Exception as e:
             log.error("Container installation problem")
             error = format_exception(e)
-        else:
-            if not installed:
-                error = "The image cannot be found. This can be caused by a faulty container image."
         finally:
             self.finished.emit(error)
 
@@ -673,25 +668,29 @@ class WaitingWidgetContainer(WaitingWidget):
                     error,
                 )
         else:
-            needs_update = bool(
-                self.dangerzone.settings.get("updater_container_needs_update")
-            )
-            if needs_update:
+            strategy = get_installation_strategy()
+            if strategy == InstallationStrategy.DO_NOTHING:
+                message = "Nothing to do"
+                # FIXME we should be able to return directly here
+                # but for some reason it's not working when I just
+                # do self.finished.emit()
+            if strategy == InstallationStrategy.INSTALL_REMOTE_CONTAINER:
                 message = (
                     "Downloading and upgrading the Dangerzone container image.<br><br>"
                     "This might take a few minutes..."
                 )
-            else:
+            elif strategy == InstallationStrategy.INSTALL_LOCAL_CONTAINER:
                 message = (
                     "Installing the Dangerzone container image.<br><br>"
                     "This might take a few minutes..."
                 )
-            self.show_message(message)
             self.traceback.setVisible(True)
+            self.show_message(message)
             self.button_cancel.show()
             self.button_check.hide()
 
-            self.install_container_t = InstallContainerThread(self.dangerzone)
+            breakpoint()
+            self.install_container_t = InstallContainerThread(self.dangerzone, strategy)
             self.install_container_t.finished.connect(self.installation_finished)
 
             self.install_container_t.process_stdout.connect(

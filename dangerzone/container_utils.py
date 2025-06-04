@@ -228,8 +228,8 @@ def get_image_id_by_digest(digest: str) -> str:
     """
     runtime = Runtime()
     # There is a "digest" filter that you can use with
-    # podman images -f digest:<digest>, but it's only available
-    # starting with podman >=4.4 (and at least bookworm ships 4.3)
+    # "podman images -f digest:<digest>", but it's only available
+    # for podman >=4.4 (and bookworm ships 4.3)
     # So, fallback on the json format instead
     cmd = [
         str(runtime.path),
@@ -299,12 +299,15 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
             capture_output=True,
             check=True,
         )
-        lines = result.stdout.decode().strip().split("\n")  # type:ignore[attr-defined]
+        output = result.stdout.decode().strip().split("\n")  # type:ignore[attr-defined]
+        # In some cases, the output can be multiple lines with the same digest
+        # sets are used to reduce them.
+        lines = set(output)
         if len(lines) != 1:
             raise errors.MultipleImagesFoundException(
-                f"Expected a single line of output, got {len(lines)} lines"
+                f"Expected a single line of output, got {len(lines)} lines: {lines}"
             )
-        image_digest = lines[0].replace("sha256:", "")
+        image_digest = lines.pop().replace("sha256:", "")
         if not image_digest:
             raise errors.ImageNotPresentException(
                 f"The image {expected_image} does not exist locally"

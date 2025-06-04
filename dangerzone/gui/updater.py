@@ -17,25 +17,20 @@ log = logging.getLogger(__name__)
 
 MSG_CONFIRM_UPDATE_CHECKS = """\
 <p>
-    <b>Do you want Dangerzone to automatically check for updates and apply them?</b>
+    <b>Enable automatic sandbox updates?</b>
 </p>
 
-<p>If you accept, Dangerzone will check for updates of the sandbox and apply them
-automatically. This will ensure that you always have the latest version of the sandbox,
-which is critical for the software to operate securely.</p>
+<p>If enabled, Dangerzone will periodically fetch and install updates for the
+internal sandbox that it uses to convert documents. It will also notify you of
+new Dangerzone releases.</p>
 
-<p>Sandbox updates may include security patches and bug fixes, but won't include new features.</p>
-
-<p>Additionally, Dangerzone will check the
-<a href="https://github.com/freedomofpress/dangerzone/releases">latest releases page</a>
-in github.com, and inform you about new releases.
-
-Otherwise it will make no network requests and won't inform you about new releases.</p>
-
-<p>If you prefer another way of getting notified about new releases, we suggest adding
-to your RSS reader our
-<a href="https://dangerzone.rocks/feed.xml">Dangerzone News feed</a>.</p>
+<p>This is recommended in most settings. For alternative methods to keep
+Dangerzone up-to-date and secure (e.g., in a networkless environment),
+see our documentation.</p>
 """
+# FIXME: Add a link to the documentation.
+OK_TEXT = "Yes, enable sandbox updates"
+CANCEL_TEXT = "No, disable sandbox updates"
 
 
 class UpdateCheckPrompt(Alert):
@@ -89,8 +84,8 @@ class UpdaterThread(QtCore.QThread):
         prompt = UpdateCheckPrompt(
             self.dangerzone,
             message=MSG_CONFIRM_UPDATE_CHECKS,
-            ok_text="Enable sandbox updates",
-            cancel_text="Do not make any requests",
+            ok_text=OK_TEXT,
+            cancel_text=CANCEL_TEXT,
         )
         check = prompt.launch()
         if not check and prompt.x_pressed:

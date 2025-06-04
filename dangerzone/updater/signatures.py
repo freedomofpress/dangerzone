@@ -568,61 +568,41 @@ def prepare_airgapped_archive(
             archive.add(str(tmppath), arcname=".")
 
 
-def is_update_available(
+def get_remote_digest_and_logindex(
     image_str: str, pubkey: Path = DEFAULT_PUBKEY_LOCATION
-) -> Tuple[bool, Optional[str]]:
+) -> Tuple[str, int]:
     """
-    Check if a new image is available, doing all the necessary checks ensuring it
-    would be safe to upgrade.
+    Check the remote container registry for updates, downloads and verify
+    the signatures and extract log index from them.
 
-    If image_str is refering to a specific digest,
-    bypass the log index checks, and install it right away.
+    Returns a tuple of (remote_digest, remote_log_index)
     """
-    new_image_available, remote_digest = registry.is_new_remote_image_available(
-        image_str
-    )
-    if not new_image_available:
-        return False, None
+    remote_digest = registry.get_manifest_digest(image_str)
 
-    try:
-        check_signatures_and_logindex(image_str, remote_digest, pubkey)
-        return True, remote_digest
-    except errors.InvalidLogIndex as e:
-        log.info(f"Invalid log index {e}")
-        return False, None
+    signatures = get_remote_signatures(image_str, remote_digest)
+    verify_signatures(signatures, remote_digest, pubkey)
+
+    remote_log_index = get_log_index_from_signatures(signatures)
+    return (remote_digest, remote_log_index)
 
 
 def upgrade_container_image(
-    manifest_digest: str,
+    remote_digest: str,
     image_str: Optional[str] = None,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
     bypass_logindex_check: bool = False,
     callback: Optional[Callable] = None,
-) -> str:
+) -> None:
     """Verify and upgrade the image to the latest, if signed."""
     image_str = image_str or runtime.expected_image_name()
-
-    # If a digest is present in the specified image and matches
-    # the provided one, skip the remote check and upgrade to this
-    # digest instead.
-    image = registry.parse_image_location(image_str)
-    if image.digest and image.digest == f"sha256:{manifest_digest}":
-        remote_digest = image.digest
-    else:
-        update_available, remote_digest = registry.is_new_remote_image_available(
-            image_str
-        )
-        if not update_available:
-            raise errors.ImageAlreadyUpToDate("The image is already up to date")
 
     signatures = check_signatures_and_logindex(
         image_str, remote_digest, pubkey, bypass_logindex_check=bypass_logindex_check
     )
-    runtime.container_pull(image_str, manifest_digest, callback=callback)
+    runtime.container_pull(image_str, remote_digest, callback=callback)
 
     # Now that they are verified, store the signatures
-    store_signatures(signatures, manifest_digest, pubkey)
-    return manifest_digest
+    store_signatures(signatures, remote_digest, pubkey)
 
 
 def install_local_container_tar(

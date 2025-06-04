@@ -31,7 +31,7 @@ def appdata_dir() -> Path:
 
 # RELEASE: Bump this value to the log index of the latest signature
 # to ensure the software can't upgrade to container images that predates it.
-DEFAULT_LOG_INDEX = 0
+BUNDLED_LOG_INDEX = 207673688
 
 DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone.pub")
 SIGNATURES_PATH = appdata_dir() / "signatures"
@@ -174,7 +174,7 @@ def verify_signatures(
 def get_last_log_index() -> int:
     SIGNATURES_PATH.mkdir(parents=True, exist_ok=True)
     if not LAST_LOG_INDEX.exists():
-        return DEFAULT_LOG_INDEX
+        return BUNDLED_LOG_INDEX
 
     with open(LAST_LOG_INDEX) as f:
         return int(f.read())
@@ -312,6 +312,11 @@ def get_blob_from_archive(digest: str, tmppath: Path, archive: tarfile.TarFile) 
 def convert_oci_images_signatures(
     signatures_manifest: Dict, archive: tarfile.TarFile, tmppath: Path
 ) -> Tuple[str, List[Dict]]:
+    """
+    Convert OCI images signatures (from the registry) to
+    cosign-compatible signatures.
+    """
+
     def _to_cosign_signature(layer: Dict) -> Dict:
         signature = layer["annotations"]["dev.cosignproject.cosign/signature"]
         bundle = json.loads(layer["annotations"]["dev.sigstore.cosign/bundle"])
@@ -343,6 +348,29 @@ def convert_oci_images_signatures(
         image_name = payload["critical"]["identity"]["docker-reference"]
 
     return image_name, signatures
+
+
+def get_remote_log_index(image_str: str) -> int:
+    """Check the registry to find the remote log index for the given image"""
+    try:
+        signature_manifest = registry.get_signature_manifest(image_str)
+        return get_log_index_from_oci_signatures(signature_manifest)
+    except:
+        return 0
+
+
+def get_log_index_from_oci_signatures(signature_manifest: dict) -> int:
+    """
+    Extracts the log index from OCI signatures without having
+    to parse and verify the whole signature.
+    """
+    remote_log_index = 0
+    for layer in signature_manifest["layers"]:
+        bundle = json.loads(layer["annotations"]["dev.sigstore.cosign/bundle"])
+        log_index = bundle["Payload"]["logIndex"]
+        if log_index > remote_log_index:
+            remote_log_index = log_index
+    return remote_log_index
 
 
 def get_file_digest(

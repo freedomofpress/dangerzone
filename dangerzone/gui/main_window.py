@@ -29,7 +29,7 @@ else:
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
 from ..isolation_provider.qubes import is_qubes_native_conversion
-from ..updater.releases import UpdaterReport
+from ..updater import UpdaterReport, install
 from ..util import format_exception, get_resource_path, get_version
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 
@@ -467,12 +467,8 @@ class InstallContainerThread(QtCore.QThread):
     def run(self) -> None:
         error = None
         try:
-            should_upgrade = bool(
-                self.dangerzone.settings.get("updater_container_needs_update")
-            )
-            installed = self.dangerzone.isolation_provider.install(
-                should_upgrade=should_upgrade, callback=self.process_stdout.emit
-            )
+            if self.dangerzone.isolation_provider.should_wait_install():
+                install(callback=self.process_stdout.emit)
         except Exception as e:
             log.error("Container installation problem")
             error = format_exception(e)

@@ -13,11 +13,11 @@ from ..settings import Settings
 from ..updater import (
     DEFAULT_PUBKEY_LOCATION,
     UpdaterError,
-    install_local_container_tar,
     is_update_available,
     upgrade_container_image,
     verify_local_image,
 )
+from ..updater.installer import install
 from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
 
@@ -102,57 +102,6 @@ class Container(IsolationProvider):
         security_args += ["-u", "dangerzone"]
 
         return security_args
-
-    @staticmethod
-    def install(
-        should_upgrade: bool,
-        callback: Optional[Callable] = sys.stdout.write,
-        last_try: bool = False,
-    ) -> bool:
-        """
-        Install a (local or remote) container image.
-
-        Use the local `container.tar` image if:
-
-        - No image is currently installed and `should_upgrade` is set to False
-        - No image is currently installed and no upgrades are available
-
-        Upgrade to the last remote container image if:
-
-        - An upgrade is available and `should_upgrade` is set to True
-        """
-
-        is_installed = container_utils.list_image_digests()
-        if not should_upgrade:
-            log.debug("Skipping container upgrade check as requested by the settings")
-            if not is_installed:
-                install_local_container_tar()
-        else:
-            container_name = container_utils.expected_image_name()
-            update_available, image_digest = is_update_available(container_name)
-            if update_available and image_digest:
-                log.debug("Upgrading container image to %s", image_digest)
-                upgrade_container_image(image_digest, callback=callback)
-                container_utils.clear_old_images(digest_to_keep=image_digest)
-
-                settings = Settings()
-                settings.set("updater_container_needs_update", False, autosave=True)
-            else:
-                log.debug("No update available for the container.")
-                if not is_installed:
-                    install_local_container_tar()
-        try:
-            verify_local_image()
-        except UpdaterError:
-            # delete_image()
-            if last_try:
-                raise
-            log.debug("Container image not found, trying to install it.")
-            return Container.install(
-                should_upgrade=should_upgrade, callback=callback, last_try=True
-            )
-
-        return True
 
     @staticmethod
     def should_wait_install() -> bool:

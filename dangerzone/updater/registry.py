@@ -190,3 +190,12 @@ def is_new_remote_image_available(image_str: str) -> Tuple[bool, str]:
     log.debug("Local digest: %s", local_digest)
 
     return (remote_digest != local_digest, remote_digest)
+
+
+def get_signature_manifest(image_str: str) -> Dict:
+    """Returns the content of a signature for the given image"""
+    digest = get_manifest_digest(image_str)
+    image = parse_image_location(image_str)
+    image.tag = "sha256-{digest}.sig"
+    resp = get_manifest(image.to_str())
+    return resp.json()

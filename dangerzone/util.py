@@ -1,4 +1,6 @@
+import os
 import platform
+import shutil
 import subprocess
 import sys
 import traceback
@@ -66,6 +68,17 @@ def get_tessdata_dir() -> Path:
             return dir
 
     raise RuntimeError("Tesseract language data are not installed in the system")
+
+
+def get_binary_path(name: str) -> Path:
+    search_paths = [get_resource_path("vendor") / "crane"]
+    if env_path := os.environ.get("PATH"):
+        search_paths.append(env_path)
+    search_paths.append(os.defpath)
+    search_paths = os.pathsep.join(str(path) for path in search_paths)
+
+    path = shutil.which(name, path=search_paths)
+    return Path(path)
 
 
 def get_version() -> str:

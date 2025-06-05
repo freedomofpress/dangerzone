@@ -27,6 +27,7 @@ packaging = "*"
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
 dangerzone-cli = 'dangerzone:main'
+dangerzone-podman = 'dangerzone.podman.cli:cli'
 #assets = 'assets:main'
 
 # Dependencies required for packaging the code on various platforms.

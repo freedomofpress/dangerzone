@@ -47,6 +47,7 @@ def apply_installation_strategy(
     elif strategy == Strategy.INSTALL_LOCAL_CONTAINER:
         log.debug("Install the local container tarball")
         install_local_container_tar()
+        verify_local_image()
     elif strategy == Strategy.INSTALL_REMOTE_CONTAINER:
         log.debug("Download and install a remote container image")
         container_name = runtime.expected_image_name()

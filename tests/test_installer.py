@@ -1,6 +1,42 @@
-from dangerzone.updater.installer import Strategy, get_installation_strategy
+import pytest
+from pytest_mock import MockerFixture
+
+from dangerzone.updater import SignatureError, UpdaterError
+from dangerzone.updater.installer import (
+    Strategy,
+    apply_installation_strategy,
+    get_installation_strategy,
+)
 
 installer = "dangerzone.updater.installer"
+
+
+def test_install_raise_if_local_image_cant_be_installed(
+    mocker: MockerFixture,
+) -> None:
+    """When an image installation fails, an exception should be raised"""
+
+    mocker.patch(
+        "dangerzone.updater.installer.install_local_container_tar",
+        side_effect=UpdaterError,
+    )
+
+    with pytest.raises(UpdaterError):
+        apply_installation_strategy(Strategy.INSTALL_LOCAL_CONTAINER)
+
+
+def test_install_raise_if_local_image_cant_be_verified(
+    mocker: MockerFixture,
+) -> None:
+    """In case an image has been installed but its signature cannot be verified, an exception should be raised"""
+
+    mocker.patch(
+        "dangerzone.updater.installer.verify_local_image",
+        side_effect=SignatureError,
+    )
+
+    with pytest.raises(SignatureError):
+        apply_installation_strategy(Strategy.INSTALL_LOCAL_CONTAINER)
 
 
 def test_user_installs_dangerzone_for_the_first_time(mocker):

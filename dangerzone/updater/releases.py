@@ -32,7 +32,7 @@ class UpdaterReport:
 
     version: Optional[str] = None
     changelog: Optional[str] = None
-    remote_log_index: Optional[int] = None
+    container_image_bump: Optional[bool] = None
     error: Optional[str] = None
 
     @property
@@ -200,8 +200,11 @@ def check_for_updates(settings: Settings) -> UpdaterReport:
             report.changelog = gh_changelog
 
         container_name = container_utils.expected_image_name()
-        _, remote_log_index = get_remote_digest_and_logindex(container_name)
-        report.remote_log_index = remote_log_index
+        previous_remote_log_index = settings.get("updater_remote_log_index")
+        _, remote_log_index, _ = get_remote_digest_and_logindex(container_name)
+
+        if previous_remote_log_index < remote_log_index:
+            report.container_image_bump = True
 
         settings.set("updater_remote_log_index", remote_log_index, autosave=True)
         return report

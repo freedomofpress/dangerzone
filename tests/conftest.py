@@ -10,6 +10,7 @@ import pytest
 from dangerzone.document import SAFE_EXTENSION
 from dangerzone.gui import Application
 from dangerzone.isolation_provider import container
+from dangerzone.settings import Settings
 
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
 
@@ -19,6 +20,14 @@ TEST_PUBKEY_PATH = ASSETS_PATH / "test.pub.key"
 INVALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "invalid"
 VALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "valid"
 TAMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tampered"
+
+
+@pytest.fixture(autouse=True)
+def setup_function():
+    # Because the settings are a singleton
+    # We want to actually reset it between each test
+    Settings._singleton = None
+    yield
 
 
 # Use this fixture to make `pytest-qt` invoke our custom QApplication.

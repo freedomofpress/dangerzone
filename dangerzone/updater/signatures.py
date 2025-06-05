@@ -134,6 +134,10 @@ class Signature:
         full_digest = self.payload["critical"]["image"]["docker-manifest-digest"]
         return full_digest.replace("sha256:", "")
 
+    @property
+    def log_index(self) -> int:
+        return self.signature["Bundle"]["Payload"]["logIndex"]
+
 
 def check_signatures_and_logindex(
     image_str: str,

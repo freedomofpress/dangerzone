@@ -12,7 +12,7 @@ from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
 from .settings import Settings
-from .updater import install
+from .updater import apply_installation_strategy, get_installation_strategy
 from .util import get_version, replace_control_chars
 
 
@@ -118,7 +118,8 @@ def cli_main(
             sys.exit(1)
 
     # Ensure container is installed
-    install()
+    strategy = get_installation_strategy()
+    apply_installation_strategy(strategy)
 
     # Convert the document
     print_header("Converting document to safe PDF")

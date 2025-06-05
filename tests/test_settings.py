@@ -8,11 +8,6 @@ from pytest_mock import MockerFixture
 from dangerzone.settings import SETTINGS_FILENAME, Settings
 
 
-def setup_function(function):
-    # Resets the singleton between function runs
-    Settings._singleton = None
-
-
 def default_settings_0_4_1() -> dict:
     """Get the default settings for the 0.4.1 Dangerzone release."""
     return {

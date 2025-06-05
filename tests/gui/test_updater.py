@@ -38,6 +38,7 @@ def assert_report_equal(report1: UpdaterReport, report2: UpdaterReport) -> None:
     assert report1.version == report2.version
     assert report1.changelog == report2.changelog
     assert report1.error == report2.error
+    assert report1.container_image_bump == report2.container_image_bump
 
 
 def test_default_updater_settings(updater: UpdaterThread) -> None:
@@ -175,8 +176,8 @@ def test_update_checks(
     requests_mock().json.return_value = mock_upstream_info  # type: ignore [attr-defined, call-arg]
 
     mocker.patch(
-        "dangerzone.updater.releases.is_container_update_available",
-        return_value=[False, None],
+        "dangerzone.updater.releases.get_remote_digest_and_logindex",
+        return_value=[None, 0, None],
     )
 
     # Always assume that we can perform multiple update checks in a row.
@@ -227,8 +228,8 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
 
     # Mock the response of the container updater check
     mocker.patch(
-        "dangerzone.updater.releases.is_container_update_available",
-        return_value=[False, None],
+        "dangerzone.updater.releases.get_remote_digest_and_logindex",
+        return_value=[None, 0, None],
     )
 
     # # Make requests.get().json() return the version info that we want.
@@ -297,8 +298,8 @@ def test_update_errors(
     # Always assume that we can perform multiple update checks in a row.
     monkeypatch.setattr(releases, "_should_postpone_update_check", lambda _: False)
     mocker.patch(
-        "dangerzone.updater.releases.is_container_update_available",
-        return_value=[False, None],
+        "dangerzone.updater.releases.get_remote_digest_and_logindex",
+        return_value=[None, 0, None],
     )
 
     # Mock requests.get().
@@ -393,8 +394,8 @@ def test_update_check_prompt(
     # choose if they want to enable update checks.
     def check_button_labels() -> None:
         dialog = qt_updater.dangerzone.app.activeWindow()
-        assert dialog.ok_button.text() == "Enable sandbox updates"  # type: ignore [attr-defined]
-        assert dialog.cancel_button.text() == "Do not make any requests"  # type: ignore [attr-defined]
+        assert dialog.ok_button.text() == updater_module.OK_TEXT  # type: ignore [attr-defined]
+        assert dialog.cancel_button.text() == updater_module.CANCEL_TEXT  # type: ignore [attr-defined]
         dialog.ok_button.click()  # type: ignore [attr-defined]
 
     QtCore.QTimer.singleShot(500, check_button_labels)

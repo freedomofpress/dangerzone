@@ -409,6 +409,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 )
                 success_action.triggered.connect(self.show_update_success)
                 hamburger_menu.insertAction(sep, success_action)
+            if report.container_image_bump:
+                # XXX Check what's the installation strategy, and apply it.
+                # For now, don't do anything, it will be done on the next run.
+                # To apply this, we will need to:
+                # - Ensure if an update is already ongoing, in case just let it happen.
+                # - Show the install dialog again here, with a specific message saying
+                #   that a sandbox update has been detected.
+                pass
 
             # FIXME: Save the settings to the filesystem only when they have really changed,
             # maybe with a dirty bit.

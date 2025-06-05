@@ -12,8 +12,8 @@ from dangerzone.updater.signatures import (
     Signature,
     get_last_log_index,
     get_log_index_from_signatures,
+    get_remote_digest_and_logindex,
     get_remote_signatures,
-    is_update_available,
     load_and_verify_signatures,
     prepare_airgapped_archive,
     store_signatures,
@@ -108,28 +108,15 @@ def test_get_log_index_from_missing_log_index():
     assert get_log_index_from_signatures(signatures) == 0
 
 
-def test_upgrade_container_image_if_already_up_to_date(mocker):
-    mocker.patch(
-        "dangerzone.updater.registry.is_new_remote_image_available",
-        return_value=(False, None),
-    )
-    with pytest.raises(errors.ImageAlreadyUpToDate):
-        upgrade_container_image(
-            "sha256:123456", "ghcr.io/freedomofpress/dangerzone/dangerzone", "test.pub"
-        )
-
-
 def test_upgrade_container_without_signatures(mocker):
-    mocker.patch(
-        "dangerzone.updater.registry.is_new_remote_image_available",
-        return_value=(True, "sha256:123456"),
-    )
+    # Need to patch here, because if we pass signatures=[]
+    # it will be considered empty and trigger a download anyway ([] is Falsey)
     mocker.patch("dangerzone.updater.signatures.get_remote_signatures", return_value=[])
     with pytest.raises(errors.SignatureVerificationError):
         upgrade_container_image(
             "sha256:123456",
             "ghcr.io/freedomofpress/dangerzone/dangerzone",
-            "test.pub",
+            TEST_PUBKEY_PATH,
         )
 
 
@@ -141,17 +128,7 @@ def test_upgrade_container_lower_log_index(mocker):
         bypass_verification=True,
         signatures_path=VALID_SIGNATURES_PATH,
     )
-    mocker.patch(
-        "dangerzone.updater.registry.is_new_remote_image_available",
-        return_value=(
-            True,
-            image_digest,
-        ),
-    )
-    mocker.patch(
-        "dangerzone.updater.signatures.get_remote_signatures",
-        return_value=signatures,
-    )
+
     # Mock to avoid losing time on test failures
     mocker.patch("dangerzone.container_utils.container_pull")
     # The log index of the incoming signatures is 168652066
@@ -165,6 +142,7 @@ def test_upgrade_container_lower_log_index(mocker):
             image_digest,
             "ghcr.io/freedomofpress/dangerzone/dangerzone",
             TEST_PUBKEY_PATH,
+            signatures=signatures,
         )
 
     # And it should go trough if we ask to bypass the logindex checks
@@ -173,33 +151,8 @@ def test_upgrade_container_lower_log_index(mocker):
         "ghcr.io/freedomofpress/dangerzone/dangerzone",
         TEST_PUBKEY_PATH,
         bypass_logindex_check=True,
+        signatures=signatures,
     )
-
-
-def test_upgrade_container_with_specified_digest(mocker):
-    """
-    When a digest is specified in the image, no network calls are made
-    and this digest is used in subsequent calls.
-    """
-    image_digest = "4da441235e84e93518778827a5c5745d532d7a4079886e1647924bee7ef1c14d"
-    # Mock everything we can, here we don't want to check that the
-    # signatures logic is valid, but instead ensure that no network
-    # calls are made when a digest is passed.
-    network_call = mocker.patch(
-        "dangerzone.updater.registry.is_new_remote_image_available",
-    )
-
-    mocker.patch("dangerzone.updater.signatures.check_signatures_and_logindex")
-    mocker.patch("dangerzone.container_utils.container_pull")
-    mocker.patch(
-        "dangerzone.updater.signatures.store_signatures",
-    )
-
-    upgrade_container_image(
-        image_digest,
-        f"ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:{image_digest}",
-    )
-    network_call.assert_not_called()
 
 
 def test_prepare_airgapped_archive_requires_digest():
@@ -310,77 +263,33 @@ def test_stores_signatures_updates_last_log_index(valid_signature, mocker, tmp_p
         assert f.read() == "100"
 
 
-def test_is_update_available_when_remote_image_available(mocker):
+def test_get_remote_digest_and_logindex_when_remote_image_available(
+    mocker, valid_signature
+):
     """
     Test that is_update_available returns True when a new image is available
     and all checks pass
     """
+    signature = Signature(valid_signature)
     # Mock is_new_remote_image_available to return True and digest
     mocker.patch(
-        "dangerzone.updater.registry.is_new_remote_image_available",
-        return_value=(True, RANDOM_DIGEST),
+        "dangerzone.updater.registry.get_manifest_digest",
+        return_value=signature.manifest_digest,
     )
-
-    # Mock check_signatures_and_logindex to not raise any exceptions
     mocker.patch(
-        "dangerzone.updater.signatures.check_signatures_and_logindex",
-        return_value=[{"some": "signature"}],
+        "dangerzone.updater.signatures.get_remote_signatures",
+        return_value=[signature.signature],
     )
 
     # Call is_update_available
-    update_available, digest = is_update_available(
-        "ghcr.io/freedomofpress/dangerzone", "test.pub"
+    digest, log_index, signatures = get_remote_digest_and_logindex(
+        "ghcr.io/freedomofpress/dangerzone",
+        TEST_PUBKEY_PATH,
     )
 
     # Verify the result
-    assert update_available is True
-    assert digest == RANDOM_DIGEST
-
-
-def test_is_update_available_when_no_remote_image(mocker):
-    """
-    Test that is_update_available returns False when no remote image is available
-    """
-    # Mock is_new_remote_image_available to return False
-    mocker.patch(
-        "dangerzone.updater.registry.is_new_remote_image_available",
-        return_value=(False, None),
-    )
-
-    # Call is_update_available
-    update_available, digest = is_update_available(
-        "ghcr.io/freedomofpress/dangerzone", "test.pub"
-    )
-
-    # Verify the result
-    assert update_available is False
-    assert digest is None
-
-
-def test_is_update_available_with_invalid_log_index(mocker):
-    """
-    Test that is_update_available returns False when the log index is invalid
-    """
-    # Mock is_new_remote_image_available to return True
-    mocker.patch(
-        "dangerzone.updater.registry.is_new_remote_image_available",
-        return_value=(True, RANDOM_DIGEST),
-    )
-
-    # Mock check_signatures_and_logindex to raise InvalidLogIndex
-    mocker.patch(
-        "dangerzone.updater.signatures.check_signatures_and_logindex",
-        side_effect=errors.InvalidLogIndex("Invalid log index"),
-    )
-
-    # Call is_update_available
-    update_available, digest = is_update_available(
-        "ghcr.io/freedomofpress/dangerzone", "test.pub"
-    )
-
-    # Verify the result
-    assert update_available is False
-    assert digest is None
+    assert digest == signature.manifest_digest
+    assert log_index == signature.log_index
 
 
 def test_verify_signature(valid_signature):

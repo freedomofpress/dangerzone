@@ -86,6 +86,93 @@
         "extract": false
       }
     },
+    "podman": {
+      "windows/amd64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.5.0/podman-remote-release-windows_amd64.zip",
+        "version": "5.5.0",
+        "checksum": "ba7ebd9d07001adde6e667d8fcce79b78eecaf6970d2ebcb12031f22822ad02a",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      },
+      "darwin/amd64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.5.0/podman-remote-release-darwin_amd64.zip",
+        "version": "5.5.0",
+        "checksum": "569f77483328fe844330c73215e1a224e55b51f1e39483354e30b67dbc48e7ad",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      },
+      "darwin/arm64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.5.0/podman-remote-release-darwin_arm64.zip",
+        "version": "5.5.0",
+        "checksum": "dd1df0e4c510cf05b621606c6ee1ffc306be41a664f0623ebfbde83640dbd4d7",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      }
+    },
+    "gvproxy": {
+      "darwin/amd64": {
+        "repo": "containers/gvisor-tap-vsock",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.6/gvproxy-darwin",
+        "version": "0.8.6",
+        "checksum": "e18161fd2dbc67046f4b2a138807fdd1e7f8545b37850328e5a647684e9a809e",
+        "executable": true,
+        "destination": "share/vendor/podman/gvproxy",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "containers/gvisor-tap-vsock",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.6/gvproxy-darwin",
+        "version": "0.8.6",
+        "checksum": "e18161fd2dbc67046f4b2a138807fdd1e7f8545b37850328e5a647684e9a809e",
+        "executable": true,
+        "destination": "share/vendor/podman/gvproxy",
+        "extract": false
+      }
+    },
+    "vfkit": {
+      "darwin/amd64": {
+        "repo": "crc-org/vfkit",
+        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.1/vfkit",
+        "version": "0.6.1",
+        "checksum": "751fb934d8234c0fa0e6558d86010eb36f156a92547f791c5573767af38a2936",
+        "executable": true,
+        "destination": "share/vendor/podman/vfkit",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "crc-org/vfkit",
+        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.1/vfkit",
+        "version": "0.6.1",
+        "checksum": "751fb934d8234c0fa0e6558d86010eb36f156a92547f791c5573767af38a2936",
+        "executable": true,
+        "destination": "share/vendor/podman/vfkit",
+        "extract": false
+      }
+    },
     "tessdata": {
       "all": {
         "repo": "tesseract-ocr/tessdata_fast",
@@ -226,5 +313,5 @@
       }
     }
   },
-  "config_checksum": "32018fb694b8ef3aac0fea65d5f7b44103d94e30b200233dacc90f0408aa9268"
+  "config_checksum": "22c12559a5feecc64c4224a6b8efbe965064dfd22de1d95371149da333faba86"
 }

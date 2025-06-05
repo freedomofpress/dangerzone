@@ -99,6 +99,33 @@ platform."darwin/amd64" = "podman-machine.x86_64.tar"
 platform."darwin/arm64" = "podman-machine.aarch64.tar"
 destination = "share/vendor/podman-machine.tar"
 
+[tool.assets.asset.podman]
+repo = "containers/podman"
+version = ">=5.5.0"
+platform."windows/amd64" = "podman-remote-release-windows_amd64.zip"
+platform."darwin/amd64" = "podman-remote-release-darwin_amd64.zip"
+platform."darwin/arm64" = "podman-remote-release-darwin_arm64.zip"
+destination = "share/vendor/podman"
+executable = true
+extract.globs = ["**/bin/*"]
+extract.flatten = true
+
+[tool.assets.asset.gvproxy]
+repo = "containers/gvisor-tap-vsock"
+version = ">=0.8.5"
+platform."darwin/amd64" = "gvproxy-darwin"
+platform."darwin/arm64" = "gvproxy-darwin"
+executable = true
+destination = "share/vendor/podman/gvproxy"
+
+[tool.assets.asset.vfkit]
+repo = "crc-org/vfkit"
+version = ">=0.6.1"
+platform."darwin/amd64" = "vfkit"
+platform."darwin/arm64" = "vfkit"
+executable = true
+destination = "share/vendor/podman/vfkit"
+
 [tool.assets.asset.tessdata]
 repo = "tesseract-ocr/tessdata_fast"
 version = ">=4.1.0"

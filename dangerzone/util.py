@@ -71,7 +71,7 @@ def get_tessdata_dir() -> Path:
 
 
 def get_binary_path(name: str) -> Path:
-    search_paths = [get_resource_path("vendor") / "crane"]
+    search_paths = [get_resource_path("vendor") / "podman"]
     if env_path := os.environ.get("PATH"):
         search_paths.append(env_path)
     search_paths.append(os.defpath)

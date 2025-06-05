@@ -20,16 +20,17 @@ class Runner:
 
     def construct(self, *args, **kwargs) -> list[str]:
         cmd = []
+        for arg in args:
+            if arg is not None:
+                cmd.append(arg)
         for arg, value in kwargs.items():
             option_name = "--" + arg.replace("_", "-")
             if value is True:
                 cmd.append(option_name)
-            elif value:
+            elif value is not None and value is not False:
                 if not isinstance(value, str):
                     value = str(value)
                 cmd += [option_name, value]
-        for arg in args:
-            cmd.append(arg)
         return cmd
 
     def display(self, cmd):

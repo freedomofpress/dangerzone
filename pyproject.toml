@@ -106,7 +106,7 @@ platform."windows/amd64" = "podman-remote-release-windows_amd64.zip"
 platform."darwin/amd64" = "podman-remote-release-darwin_amd64.zip"
 platform."darwin/arm64" = "podman-remote-release-darwin_arm64.zip"
 destination = "share/vendor/podman"
-executable = true
+executable = true  # FIXME: It's not actually executable!!!
 extract.globs = ["**/bin/*"]
 extract.flatten = true
 

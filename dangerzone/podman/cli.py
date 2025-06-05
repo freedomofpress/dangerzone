@@ -58,9 +58,47 @@ def list(podman):
 @click.option("--memory", "-m", help="Podman machine RAM (in MiB)", type=int)
 @click.option("--disk-size", help="Podman machine disk sizse (in GiB)", type=int)
 @click.option("--now", flag_value=True, help="Start the Podman machine now")
-@click.argument("name", required=False)
+# FIXME: Change this name to something more unique
+@click.argument("name", default="dz")
 @click.pass_obj
 def init(podman, image, cpus, memory, disk_size, now, name):
     podman.machine.init(
         image=image, cpus=cpus, memory=memory, disk_size=disk_size, now=now, name=name
     )
+
+
+@machine.command()
+# FIXME: Change this name to something more unique
+@click.argument("name", default="dz")
+@click.pass_obj
+def start(podman, name):
+    podman.machine.start(name=name)
+
+
+@machine.command()
+# FIXME: Change this name to something more unique
+@click.argument("name", default="dz")
+@click.pass_obj
+def stop(podman, name):
+    podman.machine.stop(name=name)
+
+
+@machine.command()
+# FIXME: Change this name to something more unique
+@click.argument("name", default="dz")
+@click.option(
+    "--force", "-f", flag_value=True, help="Stop and delete without confirmation"
+)
+@click.option("--save_image", flag_value=True, help="Do not delete the VM image")
+@click.pass_obj
+def remove(podman, force, save_image, name):
+    podman.machine.remove(name=name, force=force, save_image=save_image)
+
+
+@machine.command()
+@click.option(
+    "--force", "-f", flag_value=True, help="Stop and delete without confirmation"
+)
+@click.pass_obj
+def reset(podman, force):
+    podman.machine.reset(force=force)

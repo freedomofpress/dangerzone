@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 
 import sys
+import tempfile
 
 import click
 
-from ..util import get_binary_path
+from ..util import get_binary_path, get_resource_path
 from . import binary, errors
+
+CONTAINERS_CONF = """\
+[engine]
+helper_binaries_dir={helper_binaries_dir}
+
+[machine]
+cpus={cpus}
+volumes=[]
+"""
 
 
 def main():
@@ -21,8 +31,18 @@ def main():
 @click.group()
 @click.pass_context
 def cli(ctx):
+    # FIXME: Delete the temporary file on closure
+    with tempfile.NamedTemporaryFile(mode="w+", delete=False) as f:
+        cpus = 4
+        helper_binaries_dir = get_resource_path("vendor") / "podman"
+        conf = CONTAINERS_CONF.format(
+            cpus=cpus, helper_binaries_dir=helper_binaries_dir
+        )
+        f.write(conf)
+        f.flush()
+
     path = get_binary_path("podman")
-    podman = binary.PodmanBinary(path)
+    podman = binary.PodmanBinary(path, containers_conf=f.name)
     ctx.obj = podman
 
 

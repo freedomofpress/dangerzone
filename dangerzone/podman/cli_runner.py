@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 
 from ..util import get_subprocess_startupinfo
+from . import errors
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,8 @@ class Runner:
             if value is True:
                 cmd.append(option_name)
             elif value:
+                if not isinstance(value, str):
+                    value = str(value)
                 cmd += [option_name, value]
         for arg in args:
             cmd.append(arg)
@@ -47,13 +50,16 @@ class Runner:
             env["ENV_CONTAINERS_CONF"] = containers_conf
 
         logger.warn(f"Running: {self.display(cmd)}")
-        ret = subprocess.run(
-            cmd,
-            env=env,
-            check=check,
-            capture_output=capture_output,
-            startupinfo=get_subprocess_startupinfo(),
-            **skwargs,
-        )
+        try:
+            ret = subprocess.run(
+                cmd,
+                env=env,
+                check=check,
+                capture_output=capture_output,
+                startupinfo=get_subprocess_startupinfo(),
+                **skwargs,
+            )
+        except subprocess.CalledProcessError as e:
+            raise errors.PodmanCommandError(e) from e
         if capture_output:
             return ret.stdout.decode().rstrip()

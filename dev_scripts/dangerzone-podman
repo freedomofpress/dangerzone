@@ -10,4 +10,4 @@ sys.dangerzone_dev = True
 
 from dangerzone.podman import cli
 
-cli.cli()
+cli.main()

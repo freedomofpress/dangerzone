@@ -28,6 +28,14 @@ def save_settings(tmp_path: Path, settings: dict) -> None:
         json.dump(settings, settings_file, indent=4)
 
 
+def test_is_singleton(tmp_path: Path, mocker: MockerFixture):
+    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
+    s1 = Settings()
+    s2 = Settings()
+    s3 = Settings()
+    assert s1 == s2 == s3
+
+
 def test_no_settings_file_creates_new_one(
     tmp_path: Path,
     mocker: MockerFixture,
@@ -72,6 +80,8 @@ def test_new_default_setting(tmp_path: Path, mocker: MockerFixture) -> None:
         return_value={"mock_setting": 1},
     )
 
+    Settings._singleton = None
+
     settings2 = Settings()
     assert settings2.get("mock_setting") == 1
 
@@ -86,6 +96,7 @@ def test_new_settings_added(tmp_path: Path, mocker: MockerFixture) -> None:
     )  # XXX has to be afterwards; otherwise this will be saved
 
     # Simulate new app startup (settings recreation)
+    Settings._singleton = None
     settings2 = Settings()
 
     # Check if new setting persisted

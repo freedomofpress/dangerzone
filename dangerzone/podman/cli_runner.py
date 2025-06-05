@@ -51,8 +51,9 @@ class Runner:
             cmd,
             env=env,
             check=check,
-            capture_output=True,
+            capture_output=capture_output,
             startupinfo=get_subprocess_startupinfo(),
             **skwargs,
         )
-        return ret.stdout.decode().rstrip()
+        if capture_output:
+            return ret.stdout.decode().rstrip()

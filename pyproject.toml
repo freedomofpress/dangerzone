@@ -80,6 +80,17 @@ select = [
 requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.assets.asset.crane]
+repo = "google/go-containerregistry"
+version = ">=0.20.5"
+platform."linux/amd64" = "go-containerregistry_Linux_x86_64.tar.gz"
+platform."windows/amd64" = "go-containerregistry_Windows_x86_64.tar.gz"
+platform."darwin/amd64" = "go-containerregistry_Darwin_x86_64.tar.gz"
+platform."darwin/arm64" = "go-containerregistry_Darwin_arm64.tar.gz"
+destination = "share/vendor/crane"
+extract = ["crane", "crane.exe"]
+executable = true
+
 [tool.assets.asset.tessdata]
 repo = "tesseract-ocr/tessdata_fast"
 version = ">=4.1.0"

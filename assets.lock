@@ -1,5 +1,71 @@
 {
   "assets": {
+    "crane": {
+      "linux/amd64": {
+        "repo": "google/go-containerregistry",
+        "download_url": "https://github.com/google/go-containerregistry/releases/download/v0.20.5/go-containerregistry_Linux_x86_64.tar.gz",
+        "version": "0.20.5",
+        "checksum": "ad4cd9af2568c62c97e346de6d1295ee8c6ce3341f7b71cf02d41292b4532680",
+        "executable": true,
+        "destination": "share/vendor/crane",
+        "extract": {
+          "globs": [
+            "crane",
+            "crane.exe"
+          ],
+          "flatten": false,
+          "filetype": "tar.gz"
+        }
+      },
+      "windows/amd64": {
+        "repo": "google/go-containerregistry",
+        "download_url": "https://github.com/google/go-containerregistry/releases/download/v0.20.5/go-containerregistry_Windows_x86_64.tar.gz",
+        "version": "0.20.5",
+        "checksum": "0cc402eec89240ac831d487d7919799c74680bde2e1f9b1628aec6b526dca114",
+        "executable": true,
+        "destination": "share/vendor/crane",
+        "extract": {
+          "globs": [
+            "crane",
+            "crane.exe"
+          ],
+          "flatten": false,
+          "filetype": "tar.gz"
+        }
+      },
+      "darwin/amd64": {
+        "repo": "google/go-containerregistry",
+        "download_url": "https://github.com/google/go-containerregistry/releases/download/v0.20.5/go-containerregistry_Darwin_x86_64.tar.gz",
+        "version": "0.20.5",
+        "checksum": "7a72dab4524858e0a0fa3537ce1f88952b814c3fd7663432c5ba4b2b075e8677",
+        "executable": true,
+        "destination": "share/vendor/crane",
+        "extract": {
+          "globs": [
+            "crane",
+            "crane.exe"
+          ],
+          "flatten": false,
+          "filetype": "tar.gz"
+        }
+      },
+      "darwin/arm64": {
+        "repo": "google/go-containerregistry",
+        "download_url": "https://github.com/google/go-containerregistry/releases/download/v0.20.5/go-containerregistry_Darwin_arm64.tar.gz",
+        "version": "0.20.5",
+        "checksum": "d615563e282086a19db0a5ee28c523351bb7d0c8a3a986521672a235adda3b76",
+        "executable": true,
+        "destination": "share/vendor/crane",
+        "extract": {
+          "globs": [
+            "crane",
+            "crane.exe"
+          ],
+          "flatten": false,
+          "filetype": "tar.gz"
+        }
+      }
+    },
     "tessdata": {
       "all": {
         "repo": "tesseract-ocr/tessdata_fast",
@@ -140,5 +206,5 @@
       }
     }
   },
-  "config_checksum": "5d5b78b909f93102025e30cf7a7170dcac6b6582082f42799437a747f72914bb"
+  "config_checksum": "e1340042c61bed7a0c1312712433d46653310c2f27e820055c346f1a1714d43b"
 }

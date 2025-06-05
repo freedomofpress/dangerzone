@@ -21,7 +21,7 @@
         "repo": "google/go-containerregistry",
         "download_url": "https://github.com/google/go-containerregistry/releases/download/v0.20.5/go-containerregistry_Windows_x86_64.tar.gz",
         "version": "0.20.5",
-        "checksum": "0cc402eec89240ac831d487d7919799c74680bde2e1f9b1628aec6b526dca114",
+        "checksum": "b7af8867918c9a35309914edee3967fb52a987472ef5d4f999f8eb613a503fc8",
         "executable": true,
         "destination": "share/vendor/crane",
         "extract": {
@@ -53,7 +53,7 @@
         "repo": "google/go-containerregistry",
         "download_url": "https://github.com/google/go-containerregistry/releases/download/v0.20.5/go-containerregistry_Darwin_arm64.tar.gz",
         "version": "0.20.5",
-        "checksum": "d615563e282086a19db0a5ee28c523351bb7d0c8a3a986521672a235adda3b76",
+        "checksum": "97164cd39211ba0f48945c653635b37121be485c5024273fe933b819a349f9ba",
         "executable": true,
         "destination": "share/vendor/crane",
         "extract": {
@@ -64,6 +64,26 @@
           "flatten": false,
           "filetype": "tar.gz"
         }
+      }
+    },
+    "machine-os": {
+      "darwin/amd64": {
+        "repo": "containers/podman-machine-os",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.5.0/podman-machine.x86_64.tar",
+        "version": "5.5.0",
+        "checksum": "ac3efa2bed9d85dc2d8f047750d783f5779e412f8c516b114ce4a58452dd84ef",
+        "executable": false,
+        "destination": "share/vendor/podman-machine.tar",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "containers/podman-machine-os",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.5.0/podman-machine.aarch64.tar",
+        "version": "5.5.0",
+        "checksum": "c046f0f66603b65bf1aba5fdbaf981677ceac93f8e8a33a5d63295cb25cd93f1",
+        "executable": false,
+        "destination": "share/vendor/podman-machine.tar",
+        "extract": false
       }
     },
     "tessdata": {
@@ -206,5 +226,5 @@
       }
     }
   },
-  "config_checksum": "e1340042c61bed7a0c1312712433d46653310c2f27e820055c346f1a1714d43b"
+  "config_checksum": "32018fb694b8ef3aac0fea65d5f7b44103d94e30b200233dacc90f0408aa9268"
 }

@@ -92,6 +92,13 @@ destination = "share/vendor/crane"
 extract = ["crane", "crane.exe"]
 executable = true
 
+[tool.assets.asset.machine-os]
+repo = "containers/podman-machine-os"
+version = ">=5.5.0"
+platform."darwin/amd64" = "podman-machine.x86_64.tar"
+platform."darwin/arm64" = "podman-machine.aarch64.tar"
+destination = "share/vendor/podman-machine.tar"
+
 [tool.assets.asset.tessdata]
 repo = "tesseract-ocr/tessdata_fast"
 version = ">=4.1.0"

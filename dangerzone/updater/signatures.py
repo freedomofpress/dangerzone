@@ -139,9 +139,9 @@ def check_signatures_and_logindex(
     image_str: str,
     remote_digest: str,
     pubkey: Path,
+    signatures: List[Dict],
     bypass_logindex_check: bool = False,
 ) -> list[Dict]:
-    signatures = get_remote_signatures(image_str, remote_digest)
     verify_signatures(signatures, remote_digest, pubkey)
 
     if not bypass_logindex_check:
@@ -570,20 +570,25 @@ def prepare_airgapped_archive(
 
 def get_remote_digest_and_logindex(
     image_str: str, pubkey: Path = DEFAULT_PUBKEY_LOCATION
-) -> Tuple[str, int]:
+) -> Tuple[str, int, List[Dict]]:
     """
     Check the remote container registry for updates, downloads and verify
     the signatures and extract log index from them.
 
     Returns a tuple of (remote_digest, remote_log_index)
     """
+    log.info("Get manifest digests")
     remote_digest = registry.get_manifest_digest(image_str)
 
+    log.info("Get remote signatures")
     signatures = get_remote_signatures(image_str, remote_digest)
+
+    log.info("Verify signatures")
     verify_signatures(signatures, remote_digest, pubkey)
 
+    log.info("Getting log index from signatures")
     remote_log_index = get_log_index_from_signatures(signatures)
-    return (remote_digest, remote_log_index)
+    return (remote_digest, remote_log_index, signatures)
 
 
 def upgrade_container_image(
@@ -592,12 +597,21 @@ def upgrade_container_image(
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
     bypass_logindex_check: bool = False,
     callback: Optional[Callable] = None,
+    signatures: Optional[List[Dict]] = None,
 ) -> None:
     """Verify and upgrade the image to the latest, if signed."""
     image_str = image_str or runtime.expected_image_name()
 
-    signatures = check_signatures_and_logindex(
-        image_str, remote_digest, pubkey, bypass_logindex_check=bypass_logindex_check
+    # Avoid downloading again the signatures if we just did it previously
+    if not signatures:
+        signatures = get_remote_signatures(image_str, remote_digest)
+
+    check_signatures_and_logindex(
+        image_str,
+        remote_digest,
+        pubkey,
+        signatures,
+        bypass_logindex_check,
     )
     runtime.container_pull(image_str, remote_digest, callback=callback)
 

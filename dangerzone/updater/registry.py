@@ -88,6 +88,7 @@ def replace_image_digest(image_str: str, digest: str, remove_tag: bool = True) -
 
 
 def _get_auth_header(image: Image) -> Dict[str, str]:
+    log.info("Logging to the remote registry")
     auth_url = f"https://{image.registry}/token"
     response = requests.get(
         auth_url,

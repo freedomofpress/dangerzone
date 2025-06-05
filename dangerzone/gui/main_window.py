@@ -506,6 +506,7 @@ class TracebackWidget(QTextEdit):
             self.setVisible(True)
 
     def process_output(self, line: str) -> None:
+        self.setVisible(True)
         self.current_output += line
         self.setText(self.current_output)
         cursor = self.textCursor()
@@ -671,6 +672,7 @@ class WaitingWidgetContainer(WaitingWidget):
             strategy = get_installation_strategy()
             if strategy == InstallationStrategy.DO_NOTHING:
                 message = "Nothing to do"
+                self.installation_finished()
                 # FIXME we should be able to return directly here
                 # but for some reason it's not working when I just
                 # do self.finished.emit()
@@ -689,7 +691,7 @@ class WaitingWidgetContainer(WaitingWidget):
             self.button_cancel.show()
             self.button_check.hide()
 
-            breakpoint()
+            # TODO: Do not run the thread if we know there is nothing to install
             self.install_container_t = InstallContainerThread(self.dangerzone, strategy)
             self.install_container_t.finished.connect(self.installation_finished)
 

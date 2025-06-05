@@ -45,7 +45,7 @@ def verify_blob(pubkey: Path, bundle: str, payload: str) -> bool:
     if result.returncode != 0 or result.stderr != b"Verified OK\n":
         log.debug("Failed to verify signature", result)
         raise errors.SignatureVerificationError("Failed to verify signature", result)
-    log.debug("Signature verified")
+    log.debug("Verify blob: OK")
     return True
 
 

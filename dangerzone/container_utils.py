@@ -142,8 +142,11 @@ def delete_image_digests(
 ) -> None:
     """Delete a Dangerzone image by its id."""
     container_name = container_name or expected_image_name()
-    runtime = Runtime()
     full_digests = [f"{container_name}@{digest}" for digest in digests]
+    if not full_digests:
+        log.debug("Skipping image digest deletion: nothing to remove")
+        return
+    runtime = Runtime()
     log.warning(f"Deleting old container images: {' '.join(full_digests)}")
     try:
         subprocess.check_output(

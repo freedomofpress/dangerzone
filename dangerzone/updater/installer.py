@@ -1,9 +1,11 @@
 import logging
 from enum import Enum
+from logging import Handler
 from typing import Callable, Optional
 
 from .. import container_utils as runtime
 from ..settings import Settings
+from . import log as updater_log
 from . import registry, signatures
 from .signatures import (
     BUNDLED_LOG_INDEX,
@@ -16,6 +18,16 @@ from .signatures import (
 )
 
 log = logging.getLogger(__name__)
+
+
+class CallbackHandler(Handler):
+    def __init__(self, callback):
+        super().__init__()
+        self.callback = callback
+
+    def emit(self, record):
+        if record.levelname == "INFO":
+            self.callback(f"{record.getMessage()}\n")
 
 
 class Strategy(Enum):
@@ -38,8 +50,14 @@ def apply_installation_strategy(
     elif strategy == Strategy.INSTALL_REMOTE_CONTAINER:
         log.debug("Download and install a remote container image")
         container_name = runtime.expected_image_name()
-        remote_digest, remote_log_index = get_remote_digest_and_logindex(container_name)
-        upgrade_container_image(remote_digest, callback=callback)
+
+        # Also copy the logs INFO to the user interface
+        updater_log.addHandler(CallbackHandler(callback))
+
+        remote_digest, remote_log_index, signatures = get_remote_digest_and_logindex(
+            container_name
+        )
+        upgrade_container_image(remote_digest, callback=callback, signatures=signatures)
         verify_local_image()
         runtime.clear_old_images(digest_to_keep=remote_digest)
 

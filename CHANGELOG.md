@@ -9,6 +9,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## Changed
 
+- (Docs) Update installation instructions for Fedora. `dnf config-manager` is not a plugin ([#1176](https://github.com/freedomofpress/dangerzone/pull/1176))
 - (Docs) Update installation instructions (and CI checks) for Debian derivatives ([#1141](https://github.com/freedomofpress/dangerzone/pull/1141),
   [#1163](https://github.com/freedomofpress/dangerzone/pull/1163))
 - (Docs) Point to relevant install sections in the OS-support table ([#1160](https://github.com/freedomofpress/dangerzone/pull/1160))

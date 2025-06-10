@@ -34,7 +34,7 @@ def cli(ctx):
     # FIXME: Delete the temporary file on closure
     with tempfile.NamedTemporaryFile(mode="w+", delete=False) as f:
         cpus = 4
-        helper_binaries_dir = get_resource_path("vendor") / "podman"
+        helper_binaries_dir = [str(get_resource_path("vendor") / "podman")]
         conf = CONTAINERS_CONF.format(
             cpus=cpus, helper_binaries_dir=helper_binaries_dir
         )

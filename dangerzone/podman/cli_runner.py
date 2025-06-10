@@ -48,7 +48,7 @@ class Runner:
         cmd = [self.podman_path] + cmd
         env = os.environ.copy()
         if self.containers_conf:
-            env["ENV_CONTAINERS_CONF"] = self.containers_conf
+            env["CONTAINERS_CONF"] = self.containers_conf
 
         logger.warn(f"Running: {self.display(cmd)}")
         try:

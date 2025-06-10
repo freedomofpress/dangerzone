@@ -86,3 +86,12 @@ ignore:
   #
   # [1] https://sourceware.org/cgit/glibc/tree/advisories/GLIBC-SA-2025-0002
   - vulnerability: CVE-2025-4802
+  # CVE-2025-4517
+  # =============
+  #
+  # Debian tracker: https://security-tracker.debian.org/tracker/CVE-2025-4517
+  # Verdict: Dangerzone is not affected for two reasons:
+  # 1. We don't use `filter="data"` in our code.
+  # 2. Our container image is based on Debian Bookworm, which is not affected by
+  #    this bug.
+  - vulnerability: CVE-2025-4517

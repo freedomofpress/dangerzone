@@ -7,6 +7,12 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
 
+### Added
+
+- Add an option to automatically upgrade container images to their latest
+  version ([#1006](https://github.com/freedomofpress/dangerzone/issues/1006)).
+  This allows for more security. Read more about this feature [in our docs](https://github.com/freedomofpress/dangerzone/blob/main/docs/independent-container-updates.md).
+
 ### Fixed
 
 - Fix a Dangerzone error that manifested in recent Debian-based environments

@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import platform
@@ -5,30 +6,37 @@ import tempfile
 import typing
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
     from PySide2.QtCore import Qt
+    from PySide2.QtGui import QTextCursor
     from PySide2.QtWidgets import QAction, QTextEdit
 else:
     try:
         from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide6.QtCore import Qt
-        from PySide6.QtGui import QAction
+        from PySide6.QtGui import QAction, QTextCursor
         from PySide6.QtWidgets import QTextEdit
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide2.QtCore import Qt
+        from PySide2.QtGui import QTextCursor
         from PySide2.QtWidgets import QAction, QTextEdit
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
 from ..isolation_provider.qubes import is_qubes_native_conversion
+from ..updater import (
+    InstallationStrategy,
+    UpdaterReport,
+    apply_installation_strategy,
+    get_installation_strategy,
+)
 from ..util import format_exception, get_resource_path, get_version
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
-from .updater import UpdateReport
 
 log = logging.getLogger(__name__)
 
@@ -163,7 +171,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toggle_updates_action.triggered.connect(self.toggle_updates_triggered)
         self.toggle_updates_action.setCheckable(True)
         self.toggle_updates_action.setChecked(
-            bool(self.dangerzone.settings.get("updater_check"))
+            bool(self.dangerzone.settings.get("updater_check_all"))
         )
 
         # Add the "Exit" action
@@ -187,7 +195,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Content widget, contains all the window content except waiting widget
         self.content_widget = ContentWidget(self.dangerzone)
 
-        if self.dangerzone.isolation_provider.should_wait_install():
+        if self.dangerzone.isolation_provider.requires_install():
             # Waiting widget replaces content widget while container runtime isn't available
             self.waiting_widget: WaitingWidget = WaitingWidgetContainer(self.dangerzone)
             self.waiting_widget.finished.connect(self.waiting_finished)
@@ -281,7 +289,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def toggle_updates_triggered(self) -> None:
         """Change the underlying update check settings based on the user's choice."""
         check = self.toggle_updates_action.isChecked()
-        self.dangerzone.settings.set("updater_check", check)
+        self.dangerzone.settings.set("updater_check_all", check)
         self.dangerzone.settings.save()
 
     def handle_docker_desktop_version_check(
@@ -324,14 +332,14 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         )
 
-    def handle_updates(self, report: UpdateReport) -> None:
+    def handle_updates(self, report: UpdaterReport) -> None:
         """Handle update reports from the update checker thread.
 
-        See Updater.check_for_updates() to find the different types of reports that it
+        See UpdaterReport to find the different types of reports that it
         may send back, depending on the outcome of an update check.
         """
         # If there are no new updates, reset the error counter (if any) and return.
-        if report.empty():
+        if report.is_empty:
             self.dangerzone.settings.set("updater_errors", 0, autosave=True)
             return
 
@@ -373,33 +381,46 @@ class MainWindow(QtWidgets.QMainWindow):
             hamburger_menu.insertAction(sep, error_action)
         else:
             log.debug(f"Handling new version: {report.version}")
-            self.dangerzone.settings.set("updater_latest_version", report.version)
-            self.dangerzone.settings.set("updater_latest_changelog", report.changelog)
             self.dangerzone.settings.set("updater_errors", 0)
+            if report.new_github_release:
+                log.debug(f"New Dangerzone release: {report.version}")
+                self.dangerzone.settings.set("updater_latest_version", report.version)
+                self.dangerzone.settings.set(
+                    "updater_latest_changelog", report.changelog
+                )
+                self.hamburger_button.setIcon(
+                    QtGui.QIcon(
+                        load_svg_image(
+                            "hamburger_menu_update_success.svg", width=64, height=64
+                        )
+                    )
+                )
+
+                sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
+                success_action = QAction("New version available", hamburger_menu)
+                success_action.setIcon(
+                    QtGui.QIcon(
+                        load_svg_image(
+                            "hamburger_menu_update_dot_available.svg",
+                            width=64,
+                            height=64,
+                        )
+                    )
+                )
+                success_action.triggered.connect(self.show_update_success)
+                hamburger_menu.insertAction(sep, success_action)
+            if report.container_image_bump:
+                # XXX Check what's the installation strategy, and apply it.
+                # For now, don't do anything, it will be done on the next run.
+                # To apply this, we will need to:
+                # - Ensure if an update is already ongoing, in case just let it happen.
+                # - Show the install dialog again here, with a specific message saying
+                #   that a sandbox update has been detected.
+                pass
 
             # FIXME: Save the settings to the filesystem only when they have really changed,
             # maybe with a dirty bit.
             self.dangerzone.settings.save()
-
-            self.hamburger_button.setIcon(
-                QtGui.QIcon(
-                    load_svg_image(
-                        "hamburger_menu_update_success.svg", width=64, height=64
-                    )
-                )
-            )
-
-            sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
-            success_action = QAction("New version available", hamburger_menu)
-            success_action.setIcon(
-                QtGui.QIcon(
-                    load_svg_image(
-                        "hamburger_menu_update_dot_available.svg", width=64, height=64
-                    )
-                )
-            )
-            success_action.triggered.connect(self.show_update_success)
-            hamburger_menu.insertAction(sep, success_action)
 
     def register_update_handler(self, signal: QtCore.SignalInstance) -> None:
         signal.connect(self.handle_updates)
@@ -436,21 +457,27 @@ class MainWindow(QtWidgets.QMainWindow):
 
 class InstallContainerThread(QtCore.QThread):
     finished = QtCore.Signal(str)
+    process_stdout = QtCore.Signal(str)
 
-    def __init__(self, dangerzone: DangerzoneGui) -> None:
+    def __init__(
+        self,
+        dangerzone: DangerzoneGui,
+        installation_strategy: InstallationStrategy,
+    ) -> None:
         super(InstallContainerThread, self).__init__()
         self.dangerzone = dangerzone
+        self.installation_strategy = installation_strategy
 
     def run(self) -> None:
         error = None
         try:
-            installed = self.dangerzone.isolation_provider.install()
+            if self.dangerzone.isolation_provider.requires_install():
+                apply_installation_strategy(
+                    self.installation_strategy, callback=self.process_stdout.emit
+                )
         except Exception as e:
             log.error("Container installation problem")
             error = format_exception(e)
-        else:
-            if not installed:
-                error = "The image cannot be found. This can be caused by a faulty container image."
         finally:
             self.finished.emit(error)
 
@@ -479,10 +506,20 @@ class TracebackWidget(QTextEdit):
         # Enable copying
         self.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
+        self.current_output = ""
+
     def set_content(self, error: Optional[str] = None) -> None:
         if error:
             self.setPlainText(error)
             self.setVisible(True)
+
+    def process_output(self, line: str) -> None:
+        self.setVisible(True)
+        self.current_output += line
+        self.setText(self.current_output)
+        cursor = self.textCursor()
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        self.setTextCursor(cursor)
 
 
 class WaitingWidgetContainer(WaitingWidget):
@@ -496,6 +533,26 @@ class WaitingWidgetContainer(WaitingWidget):
     # Linux states
     # - "install_container"
 
+    def _create_button(
+        self, label: str, event: Callable, hide: bool = False
+    ) -> QtWidgets.QWidget:
+        button = QtWidgets.QPushButton(label)
+        button.clicked.connect(event)
+        buttons_layout = QtWidgets.QHBoxLayout()
+        buttons_layout.addStretch()
+        buttons_layout.addWidget(button)
+        buttons_layout.addStretch()
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(buttons_layout)
+        if hide:
+            widget.hide()
+        return widget
+
+    def _hide_buttons(self) -> None:
+        self.button_check.hide()
+        self.button_cancel.hide()
+
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(WaitingWidgetContainer, self).__init__()
         self.dangerzone = dangerzone
@@ -507,14 +564,10 @@ class WaitingWidgetContainer(WaitingWidget):
         self.label.setStyleSheet("QLabel { font-size: 20px; }")
 
         # Buttons
-        check_button = QtWidgets.QPushButton("Check Again")
-        check_button.clicked.connect(self.check_state)
-        buttons_layout = QtWidgets.QHBoxLayout()
-        buttons_layout.addStretch()
-        buttons_layout.addWidget(check_button)
-        buttons_layout.addStretch()
-        self.buttons = QtWidgets.QWidget()
-        self.buttons.setLayout(buttons_layout)
+        self.button_check = self._create_button("Check Again", self.check_state)
+        self.button_cancel = self._create_button(
+            "Cancel", self.cancel_install, hide=True
+        )
 
         self.traceback = TracebackWidget()
 
@@ -524,7 +577,8 @@ class WaitingWidgetContainer(WaitingWidget):
         layout.addWidget(self.label)
         layout.addWidget(self.traceback)
         layout.addStretch()
-        layout.addWidget(self.buttons)
+        layout.addWidget(self.button_check)
+        layout.addWidget(self.button_cancel)
         layout.addStretch()
         self.setLayout(layout)
 
@@ -554,18 +608,22 @@ class WaitingWidgetContainer(WaitingWidget):
         # Update the state
         self.state_change(state, error)
 
+    def cancel_install(self) -> None:
+        self.install_container_t.terminate()
+        self.finished.emit()
+
     def show_error(self, msg: str, details: Optional[str] = None) -> None:
         self.label.setText(msg)
         show_traceback = details is not None
         if show_traceback:
             self.traceback.set_content(details)
         self.traceback.setVisible(show_traceback)
-        self.buttons.show()
+        self.button_check.show()
 
     def show_message(self, msg: str) -> None:
         self.label.setText(msg)
         self.traceback.setVisible(False)
-        self.buttons.hide()
+        self._hide_buttons()
 
     def installation_finished(self, error: Optional[str] = None) -> None:
         if error:
@@ -619,12 +677,35 @@ class WaitingWidgetContainer(WaitingWidget):
                     error,
                 )
         else:
-            self.show_message(
-                "Installing the Dangerzone container image.<br><br>"
-                "This might take a few minutes..."
-            )
-            self.install_container_t = InstallContainerThread(self.dangerzone)
+            strategy = get_installation_strategy()
+            if strategy == InstallationStrategy.DO_NOTHING:
+                message = "Nothing to do"
+                self.installation_finished()
+                # FIXME we should be able to return directly here
+                # but for some reason it's not working when I just
+                # do self.finished.emit()
+            if strategy == InstallationStrategy.INSTALL_REMOTE_CONTAINER:
+                message = (
+                    "Downloading and upgrading the Dangerzone container image.<br><br>"
+                    "This might take a few minutes..."
+                )
+            elif strategy == InstallationStrategy.INSTALL_LOCAL_CONTAINER:
+                message = (
+                    "Installing the Dangerzone container image.<br><br>"
+                    "This might take a few minutes..."
+                )
+            self.traceback.setVisible(True)
+            self.show_message(message)
+            self.button_cancel.show()
+            self.button_check.hide()
+
+            # TODO: Do not run the thread if we know there is nothing to install
+            self.install_container_t = InstallContainerThread(self.dangerzone, strategy)
             self.install_container_t.finished.connect(self.installation_finished)
+
+            self.install_container_t.process_stdout.connect(
+                self.traceback.process_output
+            )
             self.install_container_t.start()
 
 

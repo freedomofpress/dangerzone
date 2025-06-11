@@ -15,10 +15,24 @@ on:
       reproduce:
         required: true
         type: boolean
+      sign:
+        required: true
+        type: boolean
+      fill_cache:
+        required: false
+        default: false
+        type: boolean
+      key_name:
+        required: false
+        type: string
+        default: "dangerzone-tests"
     secrets:
       registry_token:
         required: true
-
+    outputs:
+      image_uri:
+        description: "The published container image location, with the tag and checksum"
+        value: ${{ jobs.merge.outputs.image_uri }}
 
 jobs:
   lint:
@@ -44,6 +58,7 @@ jobs:
       debian_archive_date: ${{ steps.params.outputs.debian_archive_date }}
       source_date_epoch: ${{ steps.params.outputs.source_date_epoch }}
       image: ${{ steps.params.outputs.full_image_name }}
+      tag: ${{ steps.params.outputs.tag }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -52,15 +67,13 @@ jobs:
       - name: Compute image parameters
         id: params
         run: |
-          source Dockerfile.env
           DEBIAN_ARCHIVE_DATE=$(date -u +'%Y%m%d')
           SOURCE_DATE_EPOCH=$(date -u -d ${DEBIAN_ARCHIVE_DATE} +"%s")
           TAG=${DEBIAN_ARCHIVE_DATE}-$(git describe --long --first-parent | tail -c +2)
           FULL_IMAGE_NAME=${{ inputs.registry }}/${{ inputs.image_name }}:${TAG}
-
           echo "debian_archive_date=${DEBIAN_ARCHIVE_DATE}" >> $GITHUB_OUTPUT
           echo "source_date_epoch=${SOURCE_DATE_EPOCH}" >> $GITHUB_OUTPUT
-          echo "tag=${DEBIAN_ARCHIVE_DATE}-${TAG}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "full_image_name=${FULL_IMAGE_NAME}" >> $GITHUB_OUTPUT
           echo "buildkit_image=${BUILDKIT_IMAGE}" >> $GITHUB_OUTPUT
 
@@ -73,6 +86,7 @@ jobs:
       debian_archive_date: ${{ needs.prepare.outputs.debian_archive_date }}
       source_date_epoch: ${{ needs.prepare.outputs.source_date_epoch }}
       image: ${{ needs.prepare.outputs.image }}
+      tag: ${{ needs.prepare.outputs.tag }}
     strategy:
       fail-fast: false
       matrix:
@@ -131,6 +145,7 @@ jobs:
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
+          overwrite: true
 
   merge:
     runs-on: ubuntu-latest
@@ -140,6 +155,8 @@ jobs:
       debian_archive_date: ${{ needs.build.outputs.debian_archive_date }}
       source_date_epoch: ${{ needs.build.outputs.source_date_epoch }}
       image: ${{ needs.build.outputs.image }}
+      image_uri: ${{ needs.build.outputs.image }}@${{ steps.image.outputs.digest_root }}
+      tag: ${{ needs.build.outputs.tag }}
       digest_root: ${{ steps.image.outputs.digest_root }}
       digest_amd64: ${{ steps.image.outputs.digest_amd64 }}
       digest_arm64: ${{ steps.image.outputs.digest_arm64 }}
@@ -246,3 +263,78 @@ jobs:
             --platform \
             linux/${{ matrix.platform.name }} \
             ${{ needs.merge.outputs[format('digest_{0}', matrix.platform.name)] }}
+
+  sign:
+    if: ${{ inputs.sign }}
+    runs-on: "ubuntu-latest"
+    env:
+      # The password of the testing key is "password"
+      COSIGN_PASSWORD: "password"
+      # Do not ask for validation when signing.
+      COSIGN_YES: true
+    needs:
+      - merge
+    outputs:
+      image_uri: ${{ needs.merge.outputs.image_uri }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare env
+        run: |-
+          echo "IMAGE_URI=${{ inputs.registry }}/${{ inputs.image_name }}:${{ needs.merge.outputs.tag }}@${{ needs.merge.outputs.digest_root }}" >> $GITHUB_ENV
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a
+        with:
+          cosign-release: "v2.5.0"
+      - name: Check install
+        run: cosign version
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ inputs.registry_user }}
+          password: ${{ secrets.registry_token }}
+
+      - name: Sign container
+        run: |-
+          cosign sign --recursive -d --key=${{ inputs.key_name }}.key "${{ env.IMAGE_URI }}"
+        shell: bash
+
+  fill-cache:
+    if: ${{ inputs.fill_cache }}
+    runs-on: "ubuntu-latest"
+    needs:
+      - sign
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install poetry
+      - run: poetry install
+      - name: Prepare cached assets
+        run: |-
+          # Only an amd64 image is prepared here.
+          # arm64 images would be useful for silicon macOS but the Github CI
+          # currently does not support nested virtualisation for this platform.
+          echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
+          poetry run mazette install cosign
+          mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
+          poetry run ./dev_scripts/dangerzone-image prepare-archive \
+            --image ${{ needs.sign.outputs.image_uri }} \
+            --arch amd64 --output="share/container.tar"
+
+      - name: Cache container image
+        id: cache-container-image
+        uses: actions/cache@v4
+        with:
+          key: v6-container-${{ needs.sign.outputs.image_uri }}
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt

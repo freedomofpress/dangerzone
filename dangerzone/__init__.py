@@ -24,7 +24,13 @@ if "DANGERZONE_MODE" in os.environ:
     mode = os.environ["DANGERZONE_MODE"]
 else:
     basename = os.path.basename(sys.argv[0])
-    if basename == "dangerzone-cli" or basename == "dangerzone-cli.exe":
+    cli_names = [
+        "dangerzone-cli",
+        "dangerzone-cli.exe",
+        "dangerzone-image",
+        "dangerzone-image.exe",
+    ]
+    if basename in cli_names:
         mode = "cli"
     else:
         mode = "gui"

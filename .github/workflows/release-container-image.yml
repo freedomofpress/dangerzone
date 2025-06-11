@@ -9,7 +9,6 @@ on:
   schedule:
     - cron: "0 0 * * *" # Run every day at 00:00 UTC.
 
-
 jobs:
   build-push-image:
     uses: ./.github/workflows/build-push-image.yml
@@ -18,5 +17,7 @@ jobs:
       registry_user: ${{ github.actor }}
       image_name: dangerzone/dangerzone
       reproduce: true
+      # Pass sign=false here as signing is a manual process for the nightly images.
+      sign: false
     secrets:
       registry_token: ${{ secrets.GITHUB_TOKEN }}

@@ -30,7 +30,7 @@ packaging = "*"
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
 dangerzone-cli = 'dangerzone:main'
-#assets = 'assets:main'
+dangerzone-image = "dangerzone.updater.cli:main"
 
 # Dependencies required for packaging the code on various platforms.
 [tool.poetry.group.package.dependencies]
@@ -219,3 +219,14 @@ extract.globs = [
     "*/yor.traineddata",
 ]
 extract.flatten = true
+
+[tool.mazette.asset.cosign]
+
+repo = "sigstore/cosign"
+version = ">=2.5.0"
+platform."darwin/amd64" = "cosign-darwin-amd64"
+platform."darwin/arm64" = "cosign-darwin-arm64"
+platform."linux/amd64" = "cosign-linux-amd64"
+platform."windows/amd64" = "cosign-windows-amd64.exe"
+executable = true
+destination = "share/vendor/cosign"

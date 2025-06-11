@@ -202,7 +202,12 @@ class TestCliConversion(TestCliBasic):
         result.assert_success()
 
     @for_each_doc
-    def test_formats(self, doc: Path, tmp_path_factory: pytest.TempPathFactory) -> None:
+    def test_formats(
+        self,
+        doc: Path,
+        tmp_path_factory: pytest.TempPathFactory,
+        skip_image_verification: pytest.FixtureRequest,
+    ) -> None:
         reference = (doc.parent / "reference" / doc.stem).with_suffix(".pdf")
         destination = tmp_path_factory.mktemp(doc.stem).with_suffix(".pdf")
 

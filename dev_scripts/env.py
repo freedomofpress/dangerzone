@@ -192,6 +192,7 @@ RUN echo user:2000:2000 > /etc/subuid
 RUN echo user:2000:2000 > /etc/subgid
 
 USER user
+RUN mkdir -p /home/user/.local/share/
 WORKDIR /home/user
 
 ########################################
@@ -470,6 +471,8 @@ class Env:
             f"{dist_state}/containers:/home/user/.local/share/containers",
             "-v",
             f"{dist_state}/.bash_history:/home/user/.bash_history",
+            "-v",
+            f"{dist_state}/.local/share/dangerzone:/home/user/.local/share/dangerzone",
         ]
 
         run_cmd += ["-u", user]
@@ -499,6 +502,10 @@ class Env:
 
         dist_state.mkdir(parents=True, exist_ok=True)
         (dist_state / "containers").mkdir(exist_ok=True)
+
+        (dist_state / ".local" / "share" / "dangerzone").mkdir(
+            parents=True, exist_ok=True
+        )
         (dist_state / ".bash_history").touch(exist_ok=True)
         self.runtime_run(*run_cmd)
 

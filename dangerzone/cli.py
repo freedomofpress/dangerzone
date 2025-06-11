@@ -12,6 +12,7 @@ from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
 from .settings import Settings
+from .updater import apply_installation_strategy, get_installation_strategy
 from .util import get_version, replace_control_chars
 
 
@@ -71,8 +72,8 @@ def cli_main(
 ) -> None:
     setup_logging()
     display_banner()
+    settings = Settings()
     if set_container_runtime:
-        settings = Settings()
         if set_container_runtime == "default":
             settings.unset_custom_runtime()
             click.echo(
@@ -117,7 +118,9 @@ def cli_main(
             sys.exit(1)
 
     # Ensure container is installed
-    dangerzone.isolation_provider.install()
+    if dangerzone.isolation_provider.requires_install():
+        strategy = get_installation_strategy()
+        apply_installation_strategy(strategy)
 
     # Convert the document
     print_header("Converting document to safe PDF")

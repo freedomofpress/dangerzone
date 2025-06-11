@@ -3,12 +3,20 @@ import os
 import platform
 import shlex
 import subprocess
-from typing import List, Tuple
+import sys
+from typing import Callable, List, Optional, Tuple
 
 from .. import container_utils, errors
-from ..container_utils import Runtime, make_seccomp_json_accessible
+from ..container_utils import Runtime, make_seccomp_json_accessible, subprocess_run
 from ..document import Document
-from ..util import get_subprocess_startupinfo
+from ..settings import Settings
+from ..updater import (
+    DEFAULT_PUBKEY_LOCATION,
+    UpdaterError,
+    upgrade_container_image,
+    verify_local_image,
+)
+from ..util import get_resource_path, get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
 
 TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
@@ -85,48 +93,7 @@ class Container(IsolationProvider):
         return security_args
 
     @staticmethod
-    def install() -> bool:
-        """Install the container image tarball, or verify that it's already installed.
-
-        Perform the following actions:
-        1. Get the tags of any locally available images that match Dangerzone's image
-           name.
-        2. Get the expected image tag from the image-id.txt file.
-           - If this tag is present in the local images, then we can return.
-           - Else, prune the older container images and continue.
-        3. Load the image tarball and make sure it matches the expected tag.
-        """
-        old_tags = container_utils.list_image_tags()
-        expected_tag = container_utils.get_expected_tag()
-
-        if expected_tag not in old_tags:
-            # Prune older container images.
-            log.info(
-                f"Could not find a Dangerzone container image with tag '{expected_tag}'"
-            )
-            for tag in old_tags:
-                tag = container_utils.CONTAINER_NAME + ":" + tag
-                container_utils.delete_image_tag(tag)
-        else:
-            return True
-
-        # Load the image tarball into the container runtime.
-        container_utils.load_image_tarball()
-
-        # Check that the container image has the expected image tag.
-        # See https://github.com/freedomofpress/dangerzone/issues/988 for an example
-        # where this was not the case.
-        new_tags = container_utils.list_image_tags()
-        if expected_tag not in new_tags:
-            raise errors.ImageNotPresentException(
-                f"Could not find expected tag '{expected_tag}' after loading the"
-                " container image tarball"
-            )
-
-        return True
-
-    @staticmethod
-    def should_wait_install() -> bool:
+    def requires_install() -> bool:
         return True
 
     @staticmethod
@@ -205,6 +172,11 @@ class Container(IsolationProvider):
         name: str,
     ) -> subprocess.Popen:
         runtime = Runtime()
+        container_name = container_utils.expected_image_name()
+
+        # FIXME: Image digest is also computed inside the verify_local_image
+        image_digest = container_utils.get_local_image_digest()
+        verify_local_image()
         security_args = self.get_runtime_security_args()
         debug_args = []
         if self.debug:
@@ -213,9 +185,7 @@ class Container(IsolationProvider):
         enable_stdin = ["-i"]
         set_name = ["--name", name]
         prevent_leakage_args = ["--rm"]
-        image_name = [
-            container_utils.CONTAINER_NAME + ":" + container_utils.get_expected_tag()
-        ]
+        image_name = [container_name + "@sha256:" + image_digest]
         args = (
             ["run"]
             + security_args
@@ -249,7 +219,7 @@ class Container(IsolationProvider):
             # NOTE: We specify a timeout for this command, since we've seen it hang
             # indefinitely for specific files. See:
             # https://github.com/freedomofpress/dangerzone/issues/854
-            subprocess.run(
+            subprocess_run(
                 cmd,
                 capture_output=True,
                 startupinfo=get_subprocess_startupinfo(),
@@ -297,12 +267,12 @@ class Container(IsolationProvider):
         # should report it.
         runtime = Runtime()
         name = self.doc_to_pixels_container_name(document)
-        all_containers = subprocess.run(
+        all_containers = subprocess_run(
             [str(runtime.path), "ps", "-a"],
             capture_output=True,
             startupinfo=get_subprocess_startupinfo(),
         )
-        if name in all_containers.stdout.decode():
+        if name in all_containers.stdout.decode():  # type:ignore[attr-defined]
             log.warning(f"Container '{name}' did not stop gracefully")
 
     def get_max_parallel_conversions(self) -> int:

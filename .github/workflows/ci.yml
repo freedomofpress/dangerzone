@@ -11,11 +11,10 @@ on:
 
 permissions:
   packages: write
+  actions: read # for detecting the Github Actions environment.
+  id-token: write # for creating OIDC tokens for signing.
 
 env:
-  REGISTRY_USER: ${{ github.actor }}
-  REGISTRY_PASSWORD: ${{ github.token }}
-  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
   QT_SELECT: "qt6"
 
 # Disable multiple concurrent runs on the same branch
@@ -36,7 +35,7 @@ jobs:
         run: |-
           apt-get update
           apt-get install -y git make python3 python3-poetry --no-install-recommends
-          poetry install --only lint,test
+          poetry install
       - name: Run linters to enforce code style
         run: poetry run make lint
       - name: Check that the QA script is up to date with the docs
@@ -45,35 +44,18 @@ jobs:
   # This is already built daily by the "build.yml" file
   # But we also want to include this in the checks that run on each push.
   build-container-image:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-      - name: Cache container image
-        id: cache-container-image
-        uses: actions/cache@v4
-        with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
-          path: |-
-            share/container.tar
-            share/image-id.txt
-
-      - name: Build Dangerzone container image
-        if: ${{ steps.cache-container-image.outputs.cache-hit != 'true' }}
-        run: |
-          python3 ./install/common/build-image.py
-
-      - name: Upload container image
-        uses: actions/upload-artifact@v4
-        with:
-          name: container.tar
-          path: share/container.tar
+    name: Build, push and sign container image
+    uses: ./.github/workflows/build-push-image.yml
+    with:
+      registry: "ghcr.io/${{ github.repository_owner }}"
+      registry_user: ${{ github.actor }}
+      image_name: "dangerzone/dangerzone-testing"
+      reproduce: false
+      sign: true
+      fill_cache: true
+      key_name: "tests/assets/dangerzone-testing"
+    secrets:
+      registry_token: ${{ secrets.GITHUB_TOKEN }}
 
   windows:
     runs-on: windows-latest
@@ -92,10 +74,13 @@ jobs:
         with:
           path: |
             share/tessdata/
+            share/vendor/
           key: v1-mazette-windows-${{ hashFiles('./mazette.lock') }}
       - name: Install mazette assets
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
+      - name: Check cosign is present
+        run: ls share/vendor
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment
@@ -142,6 +127,7 @@ jobs:
         with:
           path: |
             share/tessdata/
+            share/vendor/
           key: v1-mazette-darwin-${{ matrix.arch }}-${{ hashFiles('./mazette.lock') }}
       - name: Install mazette assets
         if: steps.cache-mazette.outputs.cache-hit != 'true'
@@ -184,6 +170,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install maette tool
+        run: |
+          sudo apt install pipx
+          pipx install poetry
+          poetry install
+      - name: Cache mazette assets
+        id: cache-mazette
+        uses: actions/cache@v4
+        with:
+          path: |
+            share/vendor/
+          key: v1-mazette-linux-x86_64-${{ hashFiles('./mazette.lock') }}
+      - name: Install mazette
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
       - name: Login to GHCR
         run: |
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
@@ -202,11 +203,13 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |-
             share/container.tar
-            share/image-id.txt
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
           fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
       - name: Build Dangerzone .deb
         run: |
@@ -305,6 +308,7 @@ jobs:
         with:
           path: |
             share/tessdata/
+            share/vendor/
           key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
 
       - name: Install mazette assets
@@ -325,11 +329,13 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |-
             share/container.tar
-            share/image-id.txt
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
           fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
       - name: Build Dangerzone .rpm
         run: |
@@ -411,6 +417,7 @@ jobs:
         with:
           path: |
             share/tessdata/
+            share/vendor/
           key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
 
       - name: Install mazette assets
@@ -435,11 +442,13 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |-
             share/container.tar
-            share/image-id.txt
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
           fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
       - name: Setup xvfb (Linux)
         run: |

@@ -6,9 +6,10 @@ from pytest_mock import MockerFixture
 from pytest_subprocess import FakeProcess
 
 from dangerzone import errors
-from dangerzone.container_utils import Runtime
+from dangerzone.container_utils import Runtime, expected_image_name
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
+from dangerzone.updater import SignatureError, UpdaterError
 from dangerzone.util import get_resource_path
 
 from .base import IsolationProviderTermination, IsolationProviderTest
@@ -21,7 +22,7 @@ elif os.environ.get("DUMMY_CONVERSION", False):
 
 
 @pytest.fixture
-def provider() -> Container:
+def provider(skip_image_verification: None) -> Container:
     return Container()
 
 
@@ -56,78 +57,6 @@ class TestContainer(IsolationProviderTest):
             [runtime_path, "image", "ls"],
         )
         provider.is_available()
-
-    def test_install_raise_if_image_cant_be_installed(
-        self, provider: Container, fp: FakeProcess, runtime_path: str
-    ) -> None:
-        """When an image installation fails, an exception should be raised"""
-
-        fp.register_subprocess(
-            [runtime_path, "image", "ls"],
-        )
-
-        # First check should return nothing.
-        fp.register_subprocess(
-            [
-                runtime_path,
-                "image",
-                "list",
-                "--format",
-                "{{ .Tag }}",
-                "dangerzone.rocks/dangerzone",
-            ],
-            occurrences=2,
-        )
-
-        fp.register_subprocess(
-            [
-                runtime_path,
-                "load",
-                "-i",
-                get_resource_path("container.tar").absolute(),
-            ],
-            returncode=-1,
-        )
-
-        with pytest.raises(errors.ImageInstallationException):
-            provider.install()
-
-    def test_install_raises_if_still_not_installed(
-        self, provider: Container, fp: FakeProcess, runtime_path: str
-    ) -> None:
-        """When an image keep being not installed, it should return False"""
-        fp.register_subprocess(
-            [runtime_path, "version", "-f", "{{.Client.Version}}"],
-            stdout="4.0.0",
-        )
-
-        fp.register_subprocess(
-            [runtime_path, "image", "ls"],
-        )
-
-        # First check should return nothing.
-        fp.register_subprocess(
-            [
-                runtime_path,
-                "image",
-                "list",
-                "--format",
-                "{{ .Tag }}",
-                "dangerzone.rocks/dangerzone",
-            ],
-            occurrences=2,
-        )
-
-        fp.register_subprocess(
-            [
-                runtime_path,
-                "load",
-                "-i",
-                get_resource_path("container.tar").absolute(),
-            ],
-        )
-        with pytest.raises(errors.ImageNotPresentException):
-            provider.install()
 
     @pytest.mark.skipif(
         platform.system() not in ("Windows", "Darwin"),

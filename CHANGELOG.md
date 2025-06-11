@@ -7,7 +7,13 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
 
-## Changed
+### Added
+
+- Add an option to automatically upgrade container images to their latest
+  version ([#1006](https://github.com/freedomofpress/dangerzone/issues/1006)).
+  This allows for more security. Read more about this feature [in our docs](https://github.com/freedomofpress/dangerzone/blob/main/docs/independent-container-updates.md).
+
+### Changed
 
 - (Docs) Update installation instructions for Fedora. `dnf config-manager` is not a plugin ([#1176](https://github.com/freedomofpress/dangerzone/pull/1176))
 - (Docs) Update installation instructions (and CI checks) for Debian derivatives ([#1141](https://github.com/freedomofpress/dangerzone/pull/1141),

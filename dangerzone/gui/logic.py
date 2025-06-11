@@ -12,6 +12,8 @@ from typing import Optional
 
 from colorama import Fore
 
+from ..container_utils import subprocess_run
+
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtWidgets
@@ -73,7 +75,7 @@ class DangerzoneGui(DangerzoneCore):
             # Run
             args_str = replace_control_chars(" ".join(shlex.quote(s) for s in args))
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
-            subprocess.run(args)
+            subprocess_run(args)
 
         elif platform.system() == "Windows":
             os.startfile(Path(filename))  # type: ignore [attr-defined]

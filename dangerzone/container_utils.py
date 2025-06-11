@@ -1,16 +1,18 @@
+import functools
+import json
 import logging
 import os
 import platform
 import shutil
 import subprocess
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import IO, Callable, Iterable, List, Optional, Tuple
 
 from . import errors
 from .settings import Settings
 from .util import get_resource_path, get_subprocess_startupinfo
 
-CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 
 log = logging.getLogger(__name__)
 
@@ -55,6 +57,13 @@ class Runtime(object):
         return "podman" if platform.system() == "Linux" else "docker"
 
 
+# subprocess.run with the correct startupinfo for Windows.
+# We use a partial here to better profit from type checking
+subprocess_run = functools.partial(
+    subprocess.run, startupinfo=get_subprocess_startupinfo()
+)
+
+
 def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
     """Get the major/minor parts of the Docker/Podman version.
 
@@ -74,12 +83,11 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
 
     cmd = [str(runtime.path), "version", "-f", query]
     try:
-        version = subprocess.run(
+        version = subprocess_run(
             cmd,
-            startupinfo=get_subprocess_startupinfo(),
             capture_output=True,
             check=True,
-        ).stdout.decode()
+        ).stdout.decode()  # type:ignore[attr-defined]
     except Exception as e:
         msg = f"Could not get the version of the {runtime.name.capitalize()} tool: {e}"
         raise RuntimeError(msg) from e
@@ -97,14 +105,10 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
         raise RuntimeError(msg)
 
 
-def list_image_tags() -> List[str]:
-    """Get the tags of all loaded Dangerzone images.
-
-    This method returns a mapping of image tags to image IDs, for all Dangerzone
-    images. This can be useful when we want to find which are the local image tags,
-    and which image ID does the "latest" tag point to.
-    """
+def list_image_digests() -> List[str]:
+    """Get the digests of all loaded Dangerzone images."""
     runtime = Runtime()
+    container_name = expected_image_name()
     return (
         subprocess.check_output(
             [
@@ -112,8 +116,8 @@ def list_image_tags() -> List[str]:
                 "image",
                 "list",
                 "--format",
-                "{{ .Tag }}",
-                CONTAINER_NAME,
+                "{{ .Digest }}",
+                container_name,
             ],
             text=True,
             startupinfo=get_subprocess_startupinfo(),
@@ -133,34 +137,44 @@ def add_image_tag(image_id: str, new_tag: str) -> None:
     )
 
 
-def delete_image_tag(tag: str) -> None:
-    """Delete a Dangerzone image tag."""
+def delete_image_digests(
+    digests: Iterable[str], container_name: Optional[str] = None
+) -> None:
+    """Delete a Dangerzone image by its id."""
+    container_name = container_name or expected_image_name()
+    full_digests = [f"{container_name}@{digest}" for digest in digests]
+    if not full_digests:
+        log.debug("Skipping image digest deletion: nothing to remove")
+        return
     runtime = Runtime()
-    log.warning(f"Deleting old container image: {tag}")
+    log.warning(f"Deleting old container images: {' '.join(full_digests)}")
     try:
         subprocess.check_output(
-            [str(runtime.name), "rmi", "--force", tag],
+            [str(runtime.path), "rmi", "--force", *full_digests],
             startupinfo=get_subprocess_startupinfo(),
         )
     except Exception as e:
         log.warning(
-            f"Couldn't delete old container image '{tag}', so leaving it there."
+            f"Couldn't delete old container images '{' '.join(full_digests)}', so leaving it there."
             f" Original error: {e}"
         )
 
 
-def get_expected_tag() -> str:
-    """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
-    with get_resource_path("image-id.txt").open() as f:
-        return f.read().strip()
+def clear_old_images(digest_to_keep: str) -> None:
+    log.debug(f"Digest to keep: {digest_to_keep}")
+    digests = list_image_digests()
+    log.debug(f"Digests installed: {digests}")
+    to_remove = filter(lambda x: x != f"sha256:{digest_to_keep}", digests)
+    delete_image_digests(to_remove)
 
 
-def load_image_tarball() -> None:
+def load_image_tarball(tarball_path: Optional[Path] = None) -> None:
     runtime = Runtime()
     log.info("Installing Dangerzone container image...")
-    tarball_path = get_resource_path("container.tar")
+    if not tarball_path:
+        tarball_path = get_resource_path("container.tar")
     try:
-        res = subprocess.run(
+        res = subprocess_run(
             [str(runtime.path), "load", "-i", str(tarball_path)],
             startupinfo=get_subprocess_startupinfo(),
             capture_output=True,
@@ -186,16 +200,123 @@ def load_image_tarball() -> None:
     # `share/image-id.txt` and delete the incorrect tag.
     #
     # [1] https://github.com/containers/podman/issues/16490
-    if runtime.name == "podman" and get_runtime_version(runtime) == (3, 4):
-        expected_tag = get_expected_tag()
-        bad_tag = f"localhost/{expected_tag}:latest"
-        good_tag = f"{CONTAINER_NAME}:{expected_tag}"
+    # if runtime.name == "podman" and get_runtime_version(runtime) == (3, 4):
+    # FIXME image-id.txt has been removed, this needs to be adapted.
+    # expected_tag = get_expected_tag()
+    # bad_tag = f"localhost/{expected_tag}:latest"
+    # good_tag = f"{CONTAINER_NAME}:{expected_tag}"
 
-        log.debug(
-            f"Dangerzone images loaded in Podman v3.4 usually have an invalid tag."
-            " Fixing it..."
+    # log.debug(
+    #     f"Dangerzone images loaded in Podman v3.4 usually have an invalid tag."
+    #     " Fixing it..."
+    # )
+    # add_image_tag(bad_tag, good_tag)
+    # delete_image_tag(bad_tag)
+
+
+def tag_image_by_digest(digest: str, tag: str) -> None:
+    """Tag a container image by digest.
+    The sha256: prefix should be omitted from the digest.
+    """
+    runtime = Runtime()
+    image_id = get_image_id_by_digest(digest)
+    cmd = [str(runtime.path), "tag", image_id, tag]
+    log.debug(" ".join(cmd))
+    subprocess_run(cmd, check=True)
+
+
+def get_image_id_by_digest(digest: str) -> str:
+    """Get an image ID from a digest.
+    The sha256: prefix should be omitted from the digest.
+    """
+    runtime = Runtime()
+    # There is a "digest" filter that you can use with
+    # "podman images -f digest:<digest>", but it's only available
+    # for podman >=4.4 (and bookworm ships 4.3)
+    # So, fallback on the json format instead
+    cmd = [
+        str(runtime.path),
+        "images",
+        "--format",
+        "json",
+    ]
+    log.debug(" ".join(cmd))
+    process = subprocess_run(cmd, check=True, capture_output=True)
+
+    images = json.loads(process.stdout.decode().strip())  # type:ignore[attr-defined]
+    filtered_images = [
+        image["Id"] for image in images if image["Digest"] == f"sha256:{digest}"
+    ]
+
+    if not filtered_images:
+        raise errors.ImageNotPresentException(
+            f"Unable to find an image with digest {digest}"
         )
-        add_image_tag(bad_tag, good_tag)
-        delete_image_tag(bad_tag)
+    return filtered_images[0]
 
-    log.info("Successfully installed container image")
+
+def expected_image_name() -> str:
+    image_name_path = get_resource_path("image-name.txt")
+    return image_name_path.read_text().strip("\n")
+
+
+def container_pull(
+    image: str, manifest_digest: str, callback: Optional[Callable] = None
+) -> None:
+    """Pull a container image from a registry."""
+    runtime = Runtime()
+    cmd = [str(runtime.path), "pull", f"{image}@sha256:{manifest_digest}"]
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+
+    if callback:
+        for line in process.stdout:  # type: ignore
+            callback(line)
+
+    process.wait()
+    if process.returncode != 0:
+        raise errors.ContainerPullException(
+            f"Could not pull the container image: {process.returncode}"
+        )
+
+
+def get_local_image_digest(image: Optional[str] = None) -> str:
+    """
+    Returns a image hash from a local image name
+    """
+    expected_image = image or expected_image_name()
+    # Get the image hash from the "podman images" command.
+    # It's not possible to use "podman inspect" here as it
+    # returns the digest of the architecture-bound image
+    runtime = Runtime()
+    cmd = [str(runtime.path), "images", expected_image, "--format", "{{.Digest}}"]
+    log.debug(" ".join(cmd))
+    try:
+        result = subprocess_run(
+            cmd,
+            capture_output=True,
+            check=True,
+        )
+        output = result.stdout.decode().strip().split("\n")  # type:ignore[attr-defined]
+        # In some cases, the output can be multiple lines with the same digest
+        # sets are used to reduce them.
+        lines = set(output)
+        if len(lines) != 1:
+            raise errors.MultipleImagesFoundException(
+                f"Expected a single line of output, got {len(lines)} lines: {lines}"
+            )
+        image_digest = lines.pop().replace("sha256:", "")
+        if not image_digest:
+            raise errors.ImageNotPresentException(
+                f"The image {expected_image} does not exist locally"
+            )
+        return image_digest
+    except subprocess.CalledProcessError as e:
+        raise errors.ImageNotPresentException(
+            f"The image {expected_image} does not exist locally"
+        )

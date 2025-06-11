@@ -24,6 +24,8 @@ from ..document import Document
 from ..isolation_provider.container import Container
 from ..isolation_provider.dummy import Dummy
 from ..isolation_provider.qubes import Qubes, is_qubes_native_conversion
+from ..updater import errors as updater_errors
+from ..updater import releases
 from ..util import get_resource_path, get_version
 from .logic import DangerzoneGui
 from .main_window import MainWindow
@@ -156,21 +158,19 @@ def gui_main(dummy_conversion: bool, filenames: Optional[List[str]]) -> bool:
     window = MainWindow(dangerzone)
 
     # Check for updates
-    log.debug("Setting up Dangerzone updater")
+    log.debug("Setting up Dangerzone updater in a separate thread")
     updater = UpdaterThread(dangerzone)
     window.register_update_handler(updater.finished)
 
-    log.debug("Consulting updater settings before checking for updates")
-    if updater.should_check_for_updates():
+    should_check = updater.should_check_for_updates()
+
+    if should_check:
         log.debug("Checking for updates")
         updater.start()
     else:
         log.debug("Will not check for updates, based on updater settings")
 
-    # Ensure the status of the toggle updates checkbox is updated, after the user is
-    # prompted to enable updates.
-    window.toggle_updates_action.setChecked(bool(updater.check))
-
+    window.toggle_updates_action.setChecked(should_check)
     if filenames:
         open_files(filenames)
 

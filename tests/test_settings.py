@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Any, Dict
 from unittest.mock import PropertyMock
 
 import pytest
@@ -8,7 +9,7 @@ from pytest_mock import MockerFixture
 from dangerzone.settings import SETTINGS_FILENAME, Settings
 
 
-def default_settings_0_4_1() -> dict:
+def default_settings_0_4_1() -> Dict[str, Any]:
     """Get the default settings for the 0.4.1 Dangerzone release."""
     return {
         "save": True,
@@ -21,11 +22,19 @@ def default_settings_0_4_1() -> dict:
     }
 
 
-def save_settings(tmp_path: Path, settings: dict) -> None:
+def save_settings(tmp_path: Path, settings: Dict[str, Any]) -> None:
     """Mimic the way Settings save a dictionary to a settings.json file."""
     settings_filename = tmp_path / "settings.json"
     with open(settings_filename, "w") as settings_file:
         json.dump(settings, settings_file, indent=4)
+
+
+def test_is_singleton(tmp_path: Path, mocker: MockerFixture) -> None:
+    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
+    s1 = Settings()
+    s2 = Settings()
+    s3 = Settings()
+    assert s1 == s2 == s3
 
 
 def test_no_settings_file_creates_new_one(
@@ -72,6 +81,8 @@ def test_new_default_setting(tmp_path: Path, mocker: MockerFixture) -> None:
         return_value={"mock_setting": 1},
     )
 
+    Settings._singleton = None
+
     settings2 = Settings()
     assert settings2.get("mock_setting") == 1
 
@@ -86,6 +97,7 @@ def test_new_settings_added(tmp_path: Path, mocker: MockerFixture) -> None:
     )  # XXX has to be afterwards; otherwise this will be saved
 
     # Simulate new app startup (settings recreation)
+    Settings._singleton = None
     settings2 = Settings()
 
     # Check if new setting persisted

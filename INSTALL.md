@@ -167,7 +167,7 @@ sudo apt install -y dangerzone
 Type the following commands in a terminal:
 
 ```
-sudo dnf config-manager add-repo --from-repofile=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
+sudo dnf-3 config-manager --add-repo --from-repofile=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 sudo dnf install dangerzone
 ```
 

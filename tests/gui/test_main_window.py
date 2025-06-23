@@ -28,7 +28,13 @@ from dangerzone.gui.main_window import (
 from dangerzone.gui.updater import UpdaterThread
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.dummy import Dummy
-from dangerzone.updater import BUNDLED_LOG_INDEX, InstallationStrategy, releases
+from dangerzone.updater import (
+    BUNDLED_LOG_INDEX,
+    EmptyReport,
+    InstallationStrategy,
+    ReleaseReport,
+    releases,
+)
 
 from .test_updater import assert_report_equal, default_updater_settings
 
@@ -159,7 +165,7 @@ def test_no_new_release(
 
     # Check that the callback function gets an empty report.
     handle_updates_spy.assert_called_once()
-    assert_report_equal(handle_updates_spy.call_args.args[0], releases.UpdaterReport())
+    assert_report_equal(handle_updates_spy.call_args.args[0], EmptyReport())
 
     # Check that the menu entries remain exactly the same.
     menu_actions_after = window.hamburger_button.menu().actions()
@@ -210,7 +216,7 @@ def test_new_release_is_detected(
     handle_updates_spy.assert_called_once()
     assert_report_equal(
         handle_updates_spy.call_args.args[0],
-        releases.UpdaterReport("99.9.9", "<p>changelog</p>", container_image_bump=True),
+        ReleaseReport("99.9.9", "<p>changelog</p>", container_image_bump=True),
     )
 
     # Check that the settings have been updated properly.

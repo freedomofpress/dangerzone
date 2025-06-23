@@ -8,6 +8,8 @@ from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import Callable, List, Optional
 
+from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
+
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
@@ -30,8 +32,10 @@ from .. import errors
 from ..document import SAFE_EXTENSION, Document
 from ..isolation_provider.qubes import is_qubes_native_conversion
 from ..updater import (
+    EmptyReport,
+    ErrorReport,
     InstallationStrategy,
-    UpdaterReport,
+    ReleaseReport,
     apply_installation_strategy,
     get_installation_strategy,
 )
@@ -332,20 +336,16 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         )
 
-    def handle_updates(self, report: UpdaterReport) -> None:
-        """Handle update reports from the update checker thread.
-
-        See UpdaterReport to find the different types of reports that it
-        may send back, depending on the outcome of an update check.
-        """
+    def handle_updates(self, report: EmptyReport | ErrorReport | ReleaseReport) -> None:
+        """Handle update reports from the update checker thread."""
         # If there are no new updates, reset the error counter (if any) and return.
-        if report.is_empty:
+        if isinstance(report, EmptyReport):
             self.dangerzone.settings.set("updater_errors", 0, autosave=True)
             return
 
         hamburger_menu = self.hamburger_button.menu()
 
-        if report.error:
+        if isinstance(report, ErrorReport):
             log.error(f"Encountered an error during an update check: {report.error}")
             errors = self.dangerzone.settings.get("updater_errors") + 1
             self.dangerzone.settings.set("updater_errors", errors)
@@ -379,7 +379,7 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             error_action.triggered.connect(self.show_update_error)
             hamburger_menu.insertAction(sep, error_action)
-        else:
+        if isinstance(report, ReleaseReport):
             log.debug(f"Handling new version: {report.version}")
             self.dangerzone.settings.set("updater_errors", 0)
             if report.new_github_release:

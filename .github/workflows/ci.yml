@@ -86,15 +86,16 @@ jobs:
           python-version: "3.12"
       - run: pip install poetry
       - run: poetry install
-      - name: Cache assets
-        id: cache-assets
+      - name: Cache mazette assets
+        id: cache-mazette
         uses: actions/cache@v4
         with:
-          path: share/tessdata/
-          key: v1-assets-windows-${{ hashFiles('./assets.lock') }}
-      - name: Install assets
-        if: steps.cache-assets.outputs.cache-hit != 'true'
-        run: poetry run assets install
+          path: |
+            share/tessdata/
+          key: v1-mazette-windows-${{ hashFiles('./mazette.lock') }}
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment
@@ -135,15 +136,16 @@ jobs:
           python-version: "3.12"
       - run: pip install poetry
       - run: poetry install
-      - name: Cache assets
-        id: cache-assets
+      - name: Cache mazette assets
+        id: cache-mazette
         uses: actions/cache@v4
         with:
-          path: share/tessdata/
-          key: v1-assets-darwin-${{ matrix.arch }}-${{ hashFiles('./assets.lock') }}
-      - name: Install assets
-        if: steps.cache-assets.outputs.cache-hit != 'true'
-        run: poetry run assets install
+          path: |
+            share/tessdata/
+          key: v1-mazette-darwin-${{ matrix.arch }}-${{ hashFiles('./mazette.lock') }}
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
       - name: Run CLI tests
         run: poetry run make test
       - name: Build macOS app
@@ -184,7 +186,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Login to GHCR
         run: |
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
@@ -200,7 +201,7 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Restore container cache
+      - name: Restore container image
         uses: actions/cache/restore@v4
         with:
           key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
@@ -296,6 +297,24 @@ jobs:
         run: |
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
+      - name: Install mazette tool
+        run: |
+          sudo apt install pipx
+          pipx install poetry
+          poetry install
+
+      - name: Cache mazette assets
+        id: cache-mazette
+        uses: actions/cache@v4
+        with:
+          path: |
+            share/tessdata/
+          key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
+
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
+
       - name: Get the dev environment
         run: |
           ./dev_scripts/env.py \
@@ -386,22 +405,23 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install assets tool
+      - name: Install mazette tool
         run: |
           sudo apt install pipx
           pipx install poetry
           poetry install
 
-      - name: Cache assets
-        id: cache-assets
+      - name: Cache mazette assets
+        id: cache-mazette
         uses: actions/cache@v4
         with:
-          path: share/tessdata/
-          key: v1-assets-linux-${{ hashFiles('./assets.lock') }}
+          path: |
+            share/tessdata/
+          key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
 
-      - name: Install assets
-        if: steps.cache-assets.outputs.cache-hit != 'true'
-        run: poetry run assets install
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
 
       - name: Login to GHCR
         run: |

@@ -149,7 +149,7 @@ Here is what you need to do:
 
   ```bash
   poetry run ./install/common/build-image.py
-  poetry run assets install
+  poetry run mazette install
 
   # Copy the container image to the assets folder
   cp share/container.tar ~dz/release-assets/$VERSION/dangerzone-$VERSION-arm64.tar
@@ -230,7 +230,7 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
 - [ ] Copy the container image into the VM
   > [!IMPORTANT]
   > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar` and `share/image-id.txt` from the host into the `share` folder in the VM.
-- [ ] Download the necessary assets with `poetry run assets install`
+- [ ] Download the necessary assets with `poetry run mazette install`
 - [ ] Run `poetry run .\install\windows\build-app.bat`
 - [ ] When you're done you will have `dist\Dangerzone.msi`
 

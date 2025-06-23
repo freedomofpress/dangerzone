@@ -46,7 +46,7 @@ def list_language_data():
     return targets
 
 
-ASSETS_DEPS = ["assets.lock"]
+ASSETS_DEPS = ["mazette.lock"]
 ASSETS_TARGETS = list_language_data()
 
 IMAGE_DEPS = [
@@ -175,9 +175,9 @@ def task_init_release_dir():
 
 
 def task_install_assets():
-    """Download the necessary assets using `poetry run assets install`"""
+    """Download the necessary assets using `poetry run mazette install`"""
     return {
-        "actions": ["poetry run assets install"],
+        "actions": ["poetry run mazette install"],
         "file_dep": ASSETS_DEPS,
         "targets": ASSETS_TARGETS,
         "clean": True,

@@ -80,7 +80,7 @@ Dangerzone depends on some assets that should be downloaded in order to run
 command:
 
 ```sh
-poetry run assets install
+poetry run mazette install
 ```
 
 Run from source tree:
@@ -144,7 +144,7 @@ Dangerzone depends on some assets that should be downloaded in order to run
 command:
 
 ```sh
-poetry run assets install
+poetry run mazette install
 ```
 
 Run from source tree:
@@ -351,7 +351,7 @@ Dangerzone depends on some assets that should be downloaded in order to run
 command:
 
 ```sh
-poetry run assets install
+poetry run mazette install
 ```
 
 Run from source tree:
@@ -420,7 +420,7 @@ Dangerzone depends on some assets that should be downloaded in order to run
 command:
 
 ```sh
-poetry run assets install
+poetry run mazette install
 ```
 
 After that you can launch dangerzone during development with:

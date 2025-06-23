@@ -26,11 +26,6 @@ on:
         required: false
         type: string
         default: "dangerzone-tests"
-      key_cache:
-        required: false
-        type: string
-        # cosign keys are unique for the ref
-        default: "v1-keypair-${{ github.ref_name }}"
     secrets:
       registry_token:
         required: true
@@ -326,8 +321,10 @@ jobs:
           # for which it's not possible to run the tests due to the lack of
           # nested virtualisation.
           echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
-          poetry run assets install cosign
-          poetry run ./dev_scripts/dangerzone-image prepare-archive --image ${{ needs.sign.outputs.image_uri }} --arch amd64 --output-template="share/container.tar"
+          poetry run mazette install cosign
+          poetry run ./dev_scripts/dangerzone-image prepare-archive \
+            --image ${{ needs.sign.outputs.image_uri }} \
+            --arch amd64 --output-template="share/container.tar"
           mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
 
       - name: Cache container image

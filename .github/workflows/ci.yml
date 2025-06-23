@@ -68,17 +68,17 @@ jobs:
           python-version: "3.12"
       - run: pip install poetry
       - run: poetry install
-      - name: Cache assets
-        id: cache-assets
+      - name: Cache mazette assets
+        id: cache-mazette
         uses: actions/cache@v4
         with:
           path: |
             share/tessdata/
             share/vendor/
-          key: v3-assets-windows-${{ hashFiles('./assets.lock') }}
-      - name: Install assets
-        if: steps.cache-assets.outputs.cache-hit != 'true'
-        run: poetry run assets install
+          key: v1-mazette-windows-${{ hashFiles('./mazette.lock') }}
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
       - name: Check cosign is present
         run: ls share/vendor
       - name: Run CLI tests
@@ -121,17 +121,17 @@ jobs:
           python-version: "3.12"
       - run: pip install poetry
       - run: poetry install
-      - name: Cache assets
-        id: cache-assets
+      - name: Cache mazette assets
+        id: cache-mazette
         uses: actions/cache@v4
         with:
           path: |
             share/tessdata/
             share/vendor/
-          key: v3-assets-darwin-${{ matrix.arch }}-${{ hashFiles('./assets.lock') }}
-      - name: Install assets
-        if: steps.cache-assets.outputs.cache-hit != 'true'
-        run: poetry run assets install
+          key: v1-mazette-darwin-${{ matrix.arch }}-${{ hashFiles('./mazette.lock') }}
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
       - name: Run CLI tests
         run: poetry run make test
       - name: Build macOS app
@@ -172,21 +172,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install assets tool
+      - name: Install mazette tool
         run: |
           sudo apt install pipx
           pipx install poetry
           poetry install
-      - name: Cache assets
-        id: cache-assets
+      - name: Cache mazette assets
+        id: cache-mazette
         uses: actions/cache@v4
         with:
           path: |
             share/vendor/
-          key: v3-assets-linux-x86_64-${{ hashFiles('./assets.lock') }}
-      - name: Install assets
-        if: steps.cache-assets.outputs.cache-hit != 'true'
-        run: poetry run assets install
+          key: v1-mazette-linux-x86_64-${{ hashFiles('./mazette.lock') }}
+      - name: Install mazette
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
       - name: Login to GHCR
         run: |
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
@@ -202,7 +202,6 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
@@ -301,24 +300,24 @@ jobs:
         run: |
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
-      - name: Install assets tool
+      - name: Install mazette tool
         run: |
           sudo apt install pipx
           pipx install poetry
           poetry install
 
-      - name: Cache assets
-        id: cache-assets
+      - name: Cache mazette assets
+        id: cache-mazette
         uses: actions/cache@v4
         with:
           path: |
             share/tessdata/
             share/vendor/
-          key: v3-assets-linux-${{ hashFiles('./assets.lock') }}
+          key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
 
-      - name: Install assets
-        if: steps.cache-assets.outputs.cache-hit != 'true'
-        run: poetry run assets install
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
 
       - name: Get the dev environment
         run: |
@@ -414,24 +413,24 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install assets tool
+      - name: Install mazette tool
         run: |
           sudo apt install pipx
           pipx install poetry
           poetry install
 
-      - name: Cache assets
-        id: cache-assets
+      - name: Cache mazette assets
+        id: cache-mazette
         uses: actions/cache@v4
         with:
           path: |
             share/tessdata/
             share/vendor/
-          key: v3-assets-linux-${{ hashFiles('./assets.lock') }}
+          key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
 
-      - name: Install assets
-        if: steps.cache-assets.outputs.cache-hit != 'true'
-        run: poetry run assets install
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
 
       - name: Login to GHCR
         run: |
@@ -496,7 +495,3 @@ jobs:
           path: tests/test_docs/diffs/*.jpeg
         # Always run this step to publish test results, even on failures
         if: ${{ always() }}
-
-
-    
-

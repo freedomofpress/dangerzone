@@ -1,9 +1,8 @@
 # Independent Container Updates
 
-Since version 0.10.0, Dangerzone is able to ship container images independently
-from releases of the software.
+Since version 0.10.0, Dangerzone is able to ship and update sandbox images independently from the software releases.
 
-One of the main benefits of doing so is to shorten the time neede to distribute the security fixes for the containers. Being the place where the actual conversion of documents happen, it's a way to keep dangerzone users secure.
+The main benefit is to shorten the time needed to distribute sandbox security fixes. Being the place where the actual document conversion happen, having security fixes in a timely manner increases the security.
 
 If you are a dangerzone user, this all happens behind the curtain, and you should not have to know anything about that to enjoy these "in-app" updates. If you are using dangerzone in an air-gapped environment, check the sections below.
 

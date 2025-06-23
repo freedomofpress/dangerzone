@@ -466,7 +466,7 @@ def store_signatures(
     # All the signatures should share the same digest.
     digests = list(map(_get_digest, signatures))
     if len(set(digests)) != 1:
-        raise errors.InvalidSignatures("Signatures do not share the same image digest")
+        raise errors.SignatureMismatch("Signatures do not share the same image digest")
 
     if f"sha256:{image_digest}" != digests[0]:
         raise errors.SignatureMismatch(

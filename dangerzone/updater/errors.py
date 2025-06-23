@@ -1,20 +1,38 @@
 class UpdaterError(Exception):
-    pass
+    """Base error class for all the updater errors"""
+
+    def __init__(self, message: Optional[str] = None, *args, **kwargs) -> None:  # type: ignore
+        # Use the class docstring as the error message if none is given
+        super().__init__(message or self.__doc__, *args, **kwargs)
 
 
 class ImageAlreadyUpToDate(UpdaterError):
+    """An upgrade was required but everything is already up to date"""
+
     pass
 
 
 class ImageNotFound(UpdaterError):
+    """
+    A verification of the local container image was requested,
+    but no image could be found
+    """
+
     pass
 
 
 class SignatureError(UpdaterError):
+    """
+    (Base class) An error was found while checking the signatures
+    of the container image
+    """
+
     pass
 
 
 class RegistryError(UpdaterError):
+    """(Base class) An error was found while interacting with the Container Registry"""
+
     pass
 
 
@@ -30,42 +48,56 @@ class ArchitectureNotFound(RegistryError):
 
 
 class AirgappedImageDownloadError(UpdaterError):
+    """Unable to download the container image using cosign download"""
+
     pass
 
 
 class NoRemoteSignatures(SignatureError):
+    """No remote signatures were found on the container registry"""
+
     pass
 
 
 class SignatureVerificationError(SignatureError):
+    """An error occured when checking the validity of the signatures"""
+
     pass
 
 
 class SignatureExtractionError(SignatureError):
+    """The signatures do not match the expected format"""
+
     pass
 
 
 class SignaturesFolderDoesNotExist(SignatureError):
-    pass
+    """The signatures folder for the specific public key doesn't exist"""
 
-
-class InvalidSignatures(SignatureError):
     pass
 
 
 class SignatureMismatch(SignatureError):
+    """The signatures do not share the expected image digest"""
+
     pass
 
 
 class LocalSignatureNotFound(SignatureError):
+    """Unable to verify the local signatures as they cannot be found"""
+
     pass
 
 
 class CosignNotInstalledError(SignatureError):
+    """Cosign is not installed"""
+
     pass
 
 
 class InvalidLogIndex(SignatureError):
+    """The incoming log index is not greater than the previous one"""
+
     pass
 
 

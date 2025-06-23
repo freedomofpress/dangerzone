@@ -35,13 +35,12 @@ def upgrade() -> None:
     It is not possible to upgrade to a different image than the one specific in share/image-name.txt using this CLI invocation.
     If you want to do so, please use "prepare-archive" and "load-archive" instead.
     """
-    image = expected_image_name()
-    manifest_digest = registry.get_manifest_digest(image)
+    manifest_digest = registry.get_manifest_digest(DEFAULT_IMAGE_NAME)
 
     try:
         callback = functools.partial(click.echo, nl=False)
-        signatures.upgrade_container_image(manifest_digest, image, callback=callback)
-        click.echo(f"✅ The local image {image} has been upgraded")
+        signatures.upgrade_container_image(manifest_digest, DEFAULT_IMAGE_NAME, callback=callback)
+        click.echo(f"✅ The local image {DEFAULT_IMAGE_NAME} has been upgraded")
         click.echo(f"✅ The image has been signed with {DEFAULT_PUBKEY_LOCATION}")
         click.echo(f"✅ Signatures has been verified and stored locally")
 
@@ -64,16 +63,16 @@ def store_signatures(image: str) -> None:
 
 
 @main.command()
-@click.argument("image_filename", type=click.Path(exists=True))
+@click.argument("archive_filename", type=click.Path(exists=True))
 @click.option("--force", is_flag=True)
-def load_archive(image_filename: Path, force: bool) -> None:
+def load_archive(archive_filename: Path, force: bool) -> None:
     """Upgrade the local image to the one in the archive."""
     try:
         loaded_image = signatures.upgrade_container_image_airgapped(
-            image_filename, bypass_logindex=force
+            archive_filename, bypass_logindex=force
         )
         click.echo(
-            f"✅ Installed image {image_filename} on the system as {loaded_image}"
+            f"✅ Installed image {archive_filename} on the system as {loaded_image}"
         )
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
@@ -83,7 +82,7 @@ def load_archive(image_filename: Path, force: bool) -> None:
 
 
 @main.command()
-@click.option("--image", default=expected_image_name())
+@click.option("--image", default=DEFAULT_IMAGE_NAME)
 @click.option("--output-template", default="dangerzone-{arch}.tar")
 @click.option(
     "--arch",
@@ -116,7 +115,7 @@ def verify_local(image: str, pubkey: Path) -> None:
 
 
 @main.command()
-@click.argument("image")
+@click.argument("image", default=DEFAULT_IMAGE_NAME)
 def list_remote_tags(image: str) -> None:
     """List the tags available for a given image."""
     click.echo(f"Existing tags for {image}")

@@ -17,6 +17,11 @@ SETTINGS_FILENAME: str = "settings.json"
 
 class Settings:
     settings: Dict[str, Any]
+
+    # This settings class is a singleton, meaning that all instances of it
+    # will point to the actual same object.
+    # In case there is a need to disable this behavious (e.g. in the tests)
+    # setting `Settings._singleton = None` will force a new instance
     _singleton = None
 
     def __new__(cls) -> "Settings":

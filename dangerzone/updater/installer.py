@@ -44,6 +44,17 @@ class Strategy(Enum):
     INSTALL_REMOTE_CONTAINER = 3
 
 
+def install(callback: Optional[Callable] = None) -> None:
+    """
+    Determine the installation strategy and apply it.
+
+    This wrapper is to be used in cases where there is no need
+    to act upon the to-be-applied installation strategy.
+    """
+    strategy = get_installation_strategy()
+    apply_installation_strategy(strategy, callback)
+
+
 def apply_installation_strategy(
     strategy: Strategy, callback: Optional[Callable] = None
 ) -> None:
@@ -77,10 +88,9 @@ def get_installation_strategy() -> Strategy:
     taking into account the user preference, the installed container images
     and the released container images if updates are enabled.
     """
-    # The logic to decide what to install is comparing the following
-    # indexes:
+    # This logic compares the following indexes to make a decision:
     #
-    # local_log_index:get_remote_digest_and_logindex
+    # local_log_index:
     #
     #   The largest log index of any installed container image.
     #
@@ -92,7 +102,7 @@ def get_installation_strategy() -> Strategy:
     #   the log index of the actual installed image, in case of downgrades.
     #
     # remote_log_index:
-    # BUNDLED_LOG_INDEX,
+    #
     #   The largest log index for remote updates.
     #
     #   This log index and the corresponding signatures have been verified

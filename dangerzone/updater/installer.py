@@ -44,6 +44,17 @@ class Strategy(Enum):
     INSTALL_REMOTE_CONTAINER = 3
 
 
+def install(callback: Optional[Callable] = None) -> None:
+    """
+    Determine the installation strategy and apply it.
+
+    This wrapper is to be used in cases where there is no need
+    to act upon the to-be-applied installation strategy.
+    """
+    strategy = get_installation_strategy()
+    apply_installation_strategy(strategy, callback)
+
+
 def apply_installation_strategy(
     strategy: Strategy, callback: Optional[Callable] = None
 ) -> None:

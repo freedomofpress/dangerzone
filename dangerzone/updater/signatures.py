@@ -38,34 +38,61 @@ SIGNATURES_PATH = appdata_dir() / "signatures"
 LAST_LOG_INDEX = SIGNATURES_PATH / "last_log_index"
 DANGERZONE_MANIFEST = "dangerzone.json"
 
-__all__ = [
-    "verify_signature",
-    "load_and_verify_signatures",
-    "store_signatures",
-    "verify_offline_image_signature",
-]
 
+@dataclass
+class Signature:
+    """Utility class to interact with signatures"""
 
-def signature_to_bundle(sig: Dict) -> Dict:
-    """Convert a cosign-download signature to the format expected by cosign bundle."""
-    bundle = sig["Bundle"]
-    payload = bundle["Payload"]
-    return {
-        "base64Signature": sig["Base64Signature"],
-        "Payload": sig["Payload"],
-        "cert": sig["Cert"],
-        "chain": sig["Chain"],
-        "rekorBundle": {
-            "SignedEntryTimestamp": bundle["SignedEntryTimestamp"],
-            "Payload": {
-                "body": payload["body"],
-                "integratedTime": payload["integratedTime"],
-                "logIndex": payload["logIndex"],
-                "logID": payload["logID"],
+    signature: Dict
+
+    @property
+    def payload(self) -> Dict:
+        return json.loads(self.payload_bytes)
+
+    @property
+    def payload_bytes(self) -> bytes:
+        return b64decode(self.signature["Payload"])
+
+    @property
+    def manifest_digest(self) -> str:
+        full_digest = self.payload["critical"]["image"]["docker-manifest-digest"]
+        return full_digest.replace("sha256:", "")
+
+    @property
+    def log_index(self) -> int:
+        return self.signature["Bundle"]["Payload"]["logIndex"]
+
+    @property
+    def bundle(self) -> Dict:
+        return self.signature["Bundle"]
+
+    @property
+    def bundle_payload(self) -> Dict:
+        return self.bundle["Payload"]
+
+    def to_bundle(self) -> Dict:
+        """Convert a cosign-download signature to the format expected by cosign bundle."""
+
+        bundle = self.bundle
+        payload = self.bundle_payload
+        sig = self.signature
+
+        return {
+            "base64Signature": sig["Base64Signature"],
+            "Payload": sig["Payload"],
+            "cert": sig["Cert"],
+            "chain": sig["Chain"],
+            "rekorBundle": {
+                "SignedEntryTimestamp": bundle["SignedEntryTimestamp"],
+                "Payload": {
+                    "body": payload["body"],
+                    "integratedTime": payload["integratedTime"],
+                    "logIndex": payload["logIndex"],
+                    "logID": payload["logID"],
+                },
             },
-        },
-        "RFC3161Timestamp": sig["RFC3161Timestamp"],
-    }
+            "RFC3161Timestamp": sig["RFC3161Timestamp"],
+        }
 
 
 def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
@@ -76,12 +103,9 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
     # `container_utils.expected_image_name()`
     # e.g. ghcr.io/freedomofpress/dangerzone/dangerzone
 
-    signature_bundle = signature_to_bundle(signature)
+    sig_obj = Signature(signature)
     try:
-        payload_bytes = b64decode(signature_bundle["Payload"])
-        payload_digest = json.loads(payload_bytes)["critical"]["image"][
-            "docker-manifest-digest"
-        ]
+        payload_digest = sig_obj.payload["critical"]["image"]["docker-manifest-digest"]
     except Exception as e:
         raise errors.SignatureVerificationError(
             f"Unable to extract the payload digest from the signature: {e}"
@@ -106,10 +130,10 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
         NamedTemporaryFile(mode="w", delete=False) as signature_file,
         NamedTemporaryFile(mode="bw", delete=False) as payload_file,
     ):
-        json.dump(signature_bundle, signature_file)
+        json.dump(sig_obj.to_bundle(), signature_file)
         signature_file.flush()
 
-        payload_file.write(payload_bytes)
+        payload_file.write(sig_obj.payload_bytes)
         payload_file.flush()
 
     cosign.verify_blob(pubkey, signature_file.name, payload_file.name)
@@ -117,26 +141,6 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
 
     os.remove(signature_file.name)
     os.remove(payload_file.name)
-
-
-@dataclass
-class Signature:
-    """Utility class to interact with signatures"""
-
-    signature: Dict
-
-    @property
-    def payload(self) -> Dict:
-        return json.loads(b64decode(self.signature["Payload"]))
-
-    @property
-    def manifest_digest(self) -> str:
-        full_digest = self.payload["critical"]["image"]["docker-manifest-digest"]
-        return full_digest.replace("sha256:", "")
-
-    @property
-    def log_index(self) -> int:
-        return self.signature["Bundle"]["Payload"]["logIndex"]
 
 
 def check_signatures_and_logindex(
@@ -454,7 +458,7 @@ def store_signatures(
     signature`, which differs from the "bundle" one used in the code.
 
     It can be converted to the one expected by cosign verify --bundle with
-    the `signature_to_bundle()` function.
+    the `Signature.as_bundle()` method.
 
     This function must be used only if the provided signatures have been verified.
     """

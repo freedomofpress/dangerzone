@@ -97,7 +97,10 @@ class Signature:
 
 def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
     """
-    Verifies that the signature matches the given public key and image digest.
+    Ensure that the given signature matches the public key and image digest
+    passed as argument.
+
+    Raises in case of errors.
     """
     # FIXME Also verify the identity/docker-reference field against
     # `container_utils.expected_image_name()`

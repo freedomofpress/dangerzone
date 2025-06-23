@@ -7,8 +7,6 @@ from typing import Callable, List, Optional, TextIO, Tuple
 DEFAULT_DPI = 150  # Pixels per inch
 INT_BYTES = 2
 
-# HEY..
-
 
 def running_on_qubes() -> bool:
     # https://www.qubes-os.org/faq/#what-is-the-canonical-way-to-detect-qubes-vm

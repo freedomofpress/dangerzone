@@ -6,6 +6,10 @@ from ..container_utils import subprocess_run
 from ..util import get_resource_path
 from . import errors, log
 
+"""
+This module exposes functions to interact with the embedded cosign binary.
+"""
+
 _COSIGN_BINARY = str(get_resource_path("vendor/cosign").absolute())
 
 

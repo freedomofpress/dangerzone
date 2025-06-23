@@ -72,7 +72,7 @@ class UpdaterThread(QtCore.QThread):
     When finished, this thread triggers a signal with the results.
     """
 
-    finished = QtCore.Signal(releases.UpdaterReport)
+    finished = QtCore.Signal(object)
 
     def __init__(self, dangerzone: DangerzoneGui):
         super().__init__()

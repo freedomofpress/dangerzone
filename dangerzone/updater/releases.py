@@ -2,8 +2,12 @@ import json
 import platform
 import sys
 import time
+from abc import ABC
 from dataclasses import dataclass
-from typing import Optional, Tuple
+
+# The "|" syntax for type unions was introduced with Python 3.10
+# So we use Union instead as we still require Python 3.9
+from typing import Optional, Tuple, Union
 
 import markdown
 import requests
@@ -27,13 +31,14 @@ REQ_TIMEOUT = 15
 
 
 @dataclass
-class UpdaterReport:
-    """A report for an update check."""
+class ReleaseReport:
+    """
+    A new Github Release, a new sandbox image (or both) have been detected
+    """
 
     version: Optional[str] = None
     changelog: Optional[str] = None
-    container_image_bump: Optional[bool] = None
-    error: Optional[str] = None
+    container_image_bump: bool = False
 
     @property
     def new_github_release(self) -> bool:
@@ -41,11 +46,24 @@ class UpdaterReport:
 
     @property
     def is_empty(self) -> bool:
-        return self.version is None and self.changelog is None and self.error is None
+        return (
+            self.version is None
+            and self.changelog is None
+            and not self.container_image_bump
+        )
 
-    @property
-    def is_error(self) -> bool:
-        return self.error is not None
+
+class EmptyReport:
+    """Empty report, when there is nothing to report"""
+
+    pass
+
+
+@dataclass
+class ErrorReport:
+    """An error has been encountered when fetching updates"""
+
+    error: str
 
 
 def _get_now_timestamp() -> int:
@@ -151,51 +169,43 @@ def should_check_for_updates(settings: Settings) -> bool:
     return True
 
 
-def check_for_updates(settings: Settings) -> UpdaterReport:
-    """Check for updates locally and remotely.
+def check_for_updates(
+    settings: Settings,
+) -> Union[ReleaseReport, EmptyReport, ErrorReport]:
+    """
+    Check for updates and return a report with the findings.
 
-    Check for updates (locally and remotely) and return a report with the findings:
-
-    There are three scenarios when we check for updates, and each scenario returns a
-    slightly different answer:
-
-    1. No new updates: Return an empty update report.
-    2. Updates are available:
-         Return an update report with the latest version and changelog, or with the
-         information the container image needs to be updated.
-    3. Update check failed: Return an update report that holds just the error
-        message.
+    Checks are spaced by a cooldown period, defined by the
+    UPDATE_CHECK_COOLDOWN_SECS constant.
     """
     try:
+        # If we already know from a previous run that there is a pending Github Release
+        # return the report.
         latest_version = settings.get("updater_latest_version")
         new_gh_version = version.parse(util.get_version()) < version.parse(
             latest_version
         )
-        report = UpdaterReport()
 
         if new_gh_version:
-            report.version = latest_version
-            report.changelog = settings.get("updater_latest_changelog")
-
-        if not report.is_empty:
-            return report
+            return ReleaseReport(
+                version=latest_version,
+                changelog=settings.get("updater_latest_changelog"),
+            )
 
         # If the previous check happened before the cooldown period expires, do not
         # check again. Else, bump the last check timestamp, before making the actual
         # check. This is to ensure that even failed update checks respect the cooldown
         # period.
         if _should_postpone_update_check(settings):
-            return UpdaterReport()
+            return EmptyReport()
         else:
             settings.set("updater_last_check", _get_now_timestamp(), autosave=True)
 
-        report = UpdaterReport()
         gh_version, gh_changelog = fetch_github_release_info()
+
+        report = ReleaseReport()
         if gh_version and ensure_sane_update(latest_version, gh_version):
-            log.debug(
-                f"Determined that there is an update due to a new GitHub version:"
-                f" {latest_version} < {gh_version}"
-            )
+            log.debug(f"New GitHub release detected: {latest_version} < {gh_version}")
             report.version = gh_version
             report.changelog = gh_changelog
 
@@ -203,12 +213,15 @@ def check_for_updates(settings: Settings) -> UpdaterReport:
         previous_remote_log_index = settings.get("updater_remote_log_index")
         _, remote_log_index, _ = get_remote_digest_and_logindex(container_name)
 
+        settings.set("updater_remote_log_index", remote_log_index, autosave=True)
+
         if previous_remote_log_index < remote_log_index:
             report.container_image_bump = True
 
-        settings.set("updater_remote_log_index", remote_log_index, autosave=True)
+        if report.is_empty:
+            return EmptyReport()
         return report
 
     except Exception as e:
         log.exception("Encountered an error while checking for upgrades")
-        return UpdaterReport(error=str(e))
+        return ErrorReport(error=str(e))

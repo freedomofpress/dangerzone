@@ -108,7 +108,6 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
 def list_image_digests() -> List[str]:
     """Get the digests of all loaded Dangerzone images."""
     runtime = Runtime()
-    container_name = expected_image_name()
     return (
         subprocess.check_output(
             [
@@ -117,7 +116,7 @@ def list_image_digests() -> List[str]:
                 "list",
                 "--format",
                 "{{ .Digest }}",
-                container_name,
+                expected_image_name(),
             ],
             text=True,
             startupinfo=get_subprocess_startupinfo(),
@@ -188,31 +187,6 @@ def load_image_tarball(tarball_path: Optional[Path] = None) -> None:
         raise errors.ImageInstallationException(
             f"Could not install container image: {error}"
         )
-
-    # Loading an image built with Buildkit in Podman 3.4 messes up its name. The tag
-    # somehow becomes the name of the loaded image [1].
-    #
-    # We know that older Podman versions are not generally affected, since Podman v3.0.1
-    # on Debian Bullseye works properly. Also, Podman v4.0 is not affected, so it makes
-    # sense to target only Podman v3.4 for a fix.
-    #
-    # The fix is simple, tag the image properly based on the expected tag from
-    # `share/image-id.txt` and delete the incorrect tag.
-    #
-    # [1] https://github.com/containers/podman/issues/16490
-    # if runtime.name == "podman" and get_runtime_version(runtime) == (3, 4):
-    # FIXME image-id.txt has been removed, this needs to be adapted.
-    # expected_tag = get_expected_tag()
-    # bad_tag = f"localhost/{expected_tag}:latest"
-    # good_tag = f"{CONTAINER_NAME}:{expected_tag}"
-
-    # log.debug(
-    #     f"Dangerzone images loaded in Podman v3.4 usually have an invalid tag."
-    #     " Fixing it..."
-    # )
-    # add_image_tag(bad_tag, good_tag)
-    # delete_image_tag(bad_tag)
-
 
 def tag_image_by_digest(digest: str, tag: str) -> None:
     """Tag a container image by digest.

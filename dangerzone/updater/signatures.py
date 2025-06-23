@@ -304,6 +304,8 @@ def upgrade_container_image_airgapped(
     image_digest = dz_manifest["manifests"][0].get("digest").replace("sha256:", "")
 
     runtime.load_image_tarball(container_tar)
+    # Apply the tag manually here, since images downloaded with `cosign download`
+    # do not come with the tags attached.
     runtime.tag_image_by_digest(image_digest, image_name)
 
     store_signatures(signatures, image_digest, pubkey)

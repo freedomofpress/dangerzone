@@ -9,9 +9,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Added
 
-- Add an option to automatically upgrade container images to their latest
-  version ([#1006](https://github.com/freedomofpress/dangerzone/issues/1006)).
-  This allows for more security. Read more about this feature [in our docs](https://github.com/freedomofpress/dangerzone/blob/main/docs/independent-container-updates.md).
+- Sign the sandbox/container images and automatically upgrade them to their latest version
+  ([#1006](https://github.com/freedomofpress/dangerzone/issues/1006)).
+  Read more about this feature [in our docs](https://github.com/freedomofpress/dangerzone/blob/main/docs/independent-container-updates.md).
 
 ### Changed
 

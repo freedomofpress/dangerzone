@@ -48,7 +48,7 @@ jobs:
     uses: ./.github/workflows/build-push-image.yml
     with:
       registry: "ghcr.io/${{ github.repository_owner }}"
-      registry_user: ${{ github.actor }}
+      registry_user: ${{ github.repository_owner }}
       image_name: "dangerzone/dangerzone-testing"
       reproduce: false
       sign: true

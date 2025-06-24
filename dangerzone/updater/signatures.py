@@ -278,10 +278,6 @@ def upgrade_container_image_airgapped(
         if expected_manifest != index_manifest:
             raise errors.InvalidDangerzoneManifest()
 
-        # FIXME: remove this once we check the signatures validity
-        # if not cosign.verify_local_image(tmpdir, pubkey):
-        # raise errors.SignatureVerificationError()
-
         signature_filename = _get_signature_filename(dz_manifest)
         archive.extract(f"./{signature_filename.as_posix()}", tmppath)
 
@@ -308,7 +304,14 @@ def upgrade_container_image_airgapped(
     # do not come with the tags attached.
     runtime.tag_image_by_digest(image_digest, image_name)
 
-    store_signatures(signatures, image_digest, pubkey)
+    try:
+        verify_signatures(signatures, image_digest)
+        store_signatures(signatures, image_digest, pubkey)
+    except errors.SignatureError as e:
+        log.info("Unable to verify the signatures, unload the image")
+        runtime.delete_image_digests([f"sha256:{image_digest}"], image_name)
+        raise e
+
     return image_name
 
 

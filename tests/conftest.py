@@ -24,8 +24,7 @@ TAMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tampered"
 
 @pytest.fixture(autouse=True)
 def setup_function() -> Generator[None, None, None]:
-    # Because the settings are a singleton
-    # We want to actually reset it between each test
+    # Reset the settings singleton between each test.
     Settings._singleton = None
     yield
 

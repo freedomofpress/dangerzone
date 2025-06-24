@@ -39,15 +39,16 @@ You can automate these steps from your macOS terminal app with:
    poetry sync
    ```
 
-2. Build the container image and download the necessary assets
+2. Retrieve the container image and download the necessary assets:
 
    ```bash
-   poetry run ./install/common/build-image.py
+   poetry run ./dev_scripts/dangerzone-image prepare-archive
+    --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+    --output share/container.tar
    poetry run mazette install
 
    # Copy the container image to the assets folder
    cp share/container.tar ~dz/release-assets/$VERSION/dangerzone-$VERSION-arm64.tar
-   cp share/image-id.txt ~dz/release-assets/$VERSION/.
    ```
 
 3. Build the app bundle
@@ -102,8 +103,6 @@ You can automate these steps from your macOS terminal app with:
   ```
 
 - [ ] Copy the container image into the VM
-  > [!IMPORTANT]
-  > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar` and `share/image-id.txt` from the host into the `share` folder in the VM.
 - [ ] Download the necessary assets with `poetry run mazette install`
 - [ ] Run `poetry run .\install\windows\build-app.bat`
 - [ ] When you're done you will have `dist\Dangerzone.msi`
@@ -138,7 +137,9 @@ or create your own locally with:
 ./dev_scripts/env.py --distro debian --version bookworm run --dev bash
 
 # Build the latest container
-./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py"
+poetry run ./dev_scripts/dangerzone-image prepare-archive
+    --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+    --output share/container.tar
 
 # Create a .deb
 ./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && ./install/linux/build-deb.py"
@@ -161,8 +162,9 @@ or create your own locally with:
 ```sh
 ./dev_scripts/env.py --distro fedora --version 41 build-dev
 
-# Build the latest container (skip if already built):
-./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py"
+poetry run ./dev_scripts/dangerzone-image prepare-archive
+    --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+    --output share/container.tar
 
 # Create a .rpm:
 ./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"

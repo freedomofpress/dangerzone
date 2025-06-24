@@ -1,11 +1,28 @@
 # Independent Container Updates
 
-Since version 0.10.0, Dangerzone is able to ship container images independently
-from releases of the software.
+Since version 0.10.0, Dangerzone has a mechanism to auto-update the secure sandbox that is used for document conversion.
 
-One of the main benefits of doing so is to shorten the time neede to distribute the security fixes for the containers. Being the place where the actual conversion of documents happen, it's a way to keep dangerzone users secure.
+This mechanism, known as Independent Container Updates (ICU) allows us to shorten the time to patch the secure sandbox, allowing us to fix security fixes without having to do a full-blown release.
 
-If you are a dangerzone user, this all happens behind the curtain, and you should not have to know anything about that to enjoy these "in-app" updates. If you are using dangerzone in an air-gapped environment, check the sections below.
+This increases the security of the conversion process dramatically, making it harder for an attacker to rely on known and patched exploits in our stack.
+
+In order to ensure the sandbox image is trusted, we sign it with [cosign](https://www.sigstore.dev/) signatures, and check them against a key distributed in the Dangerzone application.
+
+## Install updates
+
+To check if a new sandbox image has been released and update your local installation with it, you can use the following command:
+
+```bash
+dangerzone-image upgrade
+```
+
+## Verify locally
+
+You can verify that the image you have locally matches the stored signatures, and that these have been signed with a trusted public key. This is not a required step, and will be done automatically by the Dangerzone software on subsequent runs, so this command is mainly provided as a convenience.
+
+```bash
+dangerzone-image verify-local ghcr.io/freedomofpress/dangerzone/dangerzone
+```
 
 ## Checking attestations
 
@@ -14,11 +31,12 @@ with a provenance attestation, enabling anybody to ensure that the image has
 been originally built by Github CI runners, from a defined source repository (in our case `freedomofpress/dangerzone`).
 
 To verify the attestations against our expectations, use the following command:
+
 ```bash
 dangerzone-image attest-provenance ghcr.io/freedomofpress/dangerzone/dangerzone --repository freedomofpress/dangerzone
 ```
 
-In case of sucess, it will report back:
+In case of success, it will report back:
 
 ```
 🎉 Successfully verified image
@@ -31,35 +49,6 @@ and its associated claims:
 - ✅ Git commit: <commit>
 ```
 
-## Sign and publish the remote image
-
-Once the image has been reproduced locally, we can add a signature to the container registry,
-and update the `latest` tag to point to the proper hash.
-
-```bash
-cosign sign --recursive --sk ghcr.io/freedomofpress/dangerzone/dangerzone:${TAG}@sha256:${DIGEST}
-
-# And mark bump latest
-crane auth login ghcr.io -u USERNAME --password $(cat pat_token)
-crane tag ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST} latest
-```
-
-## Install updates
-
-To check if a new container image has been released, and update your local installation with it, you can use the following command:
-
-```bash
-dangerzone-image upgrade
-```
-
-## Verify locally
-
-You can verify that the image you have locally matches the stored signatures, and that these have been signed with a trusted public key:
-
-```bash
-dangerzone-image verify-local ghcr.io/freedomofpress/dangerzone/dangerzone
-```
-
 ## Installing image updates to air-gapped environments
 
 Three steps are required:
@@ -70,14 +59,14 @@ Three steps are required:
 
 This archive will contain all the needed material to validate that the new container image has been signed and is valid.
 
-On the machine on which you prepare the packages:
+On the machine on which you prepare the packages (of course, adapt to the architecture you want to target):
 
 ```bash
-dangerzone-image prepare-archive --arch amd64 --output "dz-{arch}".tar --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:<digest>
+dangerzone-image prepare-archive --arch amd64
 ```
 
 On the airgapped machine, copy the file and run the following command:
 
 ```bash
-dangerzone-image load-archive dz-fa94872.tar
+dangerzone-image load-archive dangerzone-amd64.tar
 ```

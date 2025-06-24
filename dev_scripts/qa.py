@@ -286,18 +286,18 @@ cd dangerzone
 poetry install
 ```
 
-Build the latest container:
-
-```sh
-python3 ./install/common/build-image.py
-```
-
 Dangerzone depends on some assets that should be downloaded in order to run
 (think binaries and others resources). This can be done with the following
 command:
 
 ```sh
 poetry run mazette install
+```
+
+Download the latest container image:
+
+```sh
+poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
 ```
 
 Run from source tree:
@@ -351,18 +351,18 @@ cd dangerzone
 poetry install
 ```
 
-Build the latest container:
-
-```sh
-python3 ./install/common/build-image.py
-```
-
 Dangerzone depends on some assets that should be downloaded in order to run
 (think binaries and others resources). This can be done with the following
 command:
 
 ```sh
 poetry run mazette install
+```
+
+Download the latest container image:
+
+```sh
+poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
 ```
 
 Run from source tree:
@@ -417,18 +417,18 @@ cd dangerzone
 poetry install
 ```
 
-Build the dangerzone container image:
-
-```sh
-python3 .\install\common\build-image.py
-```
-
 Dangerzone depends on some assets that should be downloaded in order to run
 (think binaries and others resources). This can be done with the following
 command:
 
 ```sh
 poetry run mazette install
+```
+
+Download the latest container image:
+
+```sh
+poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
 ```
 
 After that you can launch dangerzone during development with:
@@ -844,10 +844,6 @@ class QAWindows(QABase):
         self.run("python", "-m", "pip", "install", "poetry")
         self.run("poetry", "sync")
 
-    @QABase.task("Build Dangerzone container image", ref=REF_BUILD, auto=True)
-    def build_image(self):
-        self.run("python", r".\install\common\build-image.py")
-
     @QABase.task("Run tests", ref="REF_BUILD", auto=True)
     def run_tests(self):
         # NOTE: Windows does not have Makefile by default.
@@ -867,7 +863,6 @@ class QAWindows(QABase):
         self.install_python()
         self.install_docker()
         self.install_poetry()
-        self.build_image()
         self.install_assets()
         self.run_tests()
         self.build_dangerzone_exe()
@@ -918,13 +913,6 @@ class QALinux(QABase):
             "build-dev",
         )
 
-    @QABase.task("Build Dangerzone image", ref="REF_BUILD", auto=True)
-    def build_container_image(self):
-        self.shell_run("python3 ./install/common/build-image.py")
-        # FIXME: We need to automate this part, simply by checking that the created
-        # image is in `share/image-id.txt`.
-        self.prompt("Ensure that the environment uses the created image")
-
     @QABase.task("Run tests", ref="REF_BUILD", auto=True)
     def run_tests(self):
         self.poetry_run("make", "test")
@@ -959,7 +947,6 @@ class QALinux(QABase):
 
     def start(self):
         self.build_dev_image()
-        self.build_container_image()
         self.install_assets()
         self.run_tests()
         self.build_package()

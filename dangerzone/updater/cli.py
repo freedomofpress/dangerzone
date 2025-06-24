@@ -42,7 +42,9 @@ def upgrade() -> None:
 
     try:
         callback = functools.partial(click.echo, nl=False)
-        signatures.upgrade_container_image(manifest_digest, DEFAULT_IMAGE_NAME, callback=callback)
+        signatures.upgrade_container_image(
+            manifest_digest, DEFAULT_IMAGE_NAME, callback=callback
+        )
         click.echo(f"✅ The local image {DEFAULT_IMAGE_NAME} has been upgraded")
         click.echo(f"✅ The image has been signed with {DEFAULT_PUBKEY_LOCATION}")
         click.echo(f"✅ Signatures have been verified and stored locally")
@@ -80,7 +82,10 @@ def load_archive(archive_filename: Path, force: bool) -> None:
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
     except errors.InvalidLogIndex as e:
-        click.echo(f"❌ Trying to install image older that the currently installed one")
+        click.echo("❌ Trying to install image older that the currently installed one")
+        raise click.Abort()
+    except errors.SignatureError as e:
+        click.echo(f"❌ Failed to verify the signatures.")
         raise click.Abort()
 
 

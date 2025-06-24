@@ -215,7 +215,7 @@ def delete_image_digests(
         log.debug("Skipping image digest deletion: nothing to remove")
         return
     runtime = Runtime()
-    log.warning(f"Deleting old container images: {' '.join(full_digests)}")
+    log.warning(f"Deleting container images: {' '.join(full_digests)}")
     try:
         subprocess.check_output(
             [str(runtime.path), "rmi", "--force", *full_digests],
@@ -223,7 +223,7 @@ def delete_image_digests(
         )
     except Exception as e:
         log.warning(
-            f"Couldn't delete old container images '{' '.join(full_digests)}', so leaving it there."
+            f"Couldn't delete container images '{' '.join(full_digests)}', so leaving it there."
             f" Original error: {e}"
         )
 
@@ -256,6 +256,7 @@ def load_image_tarball(tarball_path: Optional[Path] = None) -> None:
         raise errors.ImageInstallationException(
             f"Could not install container image: {error}"
         )
+
 
 def tag_image_by_digest(digest: str, tag: str) -> None:
     """Tag a container image by digest.

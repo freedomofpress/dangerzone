@@ -12,6 +12,7 @@ from . import errors
 from .settings import Settings
 from .util import get_cache_dir, get_resource_path, get_subprocess_startupinfo
 
+# Keep the name of the old container here to be able to get rid of it later
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 
 log = logging.getLogger(__name__)

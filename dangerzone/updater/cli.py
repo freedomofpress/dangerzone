@@ -88,17 +88,17 @@ def load_archive(archive_filename: Path, force: bool) -> None:
 
 @main.command()
 @click.option("--image", default=DEFAULT_IMAGE_NAME)
-@click.option("--output-template", default="dangerzone-{arch}.tar")
+@click.option("--output", default="dangerzone-{arch}.tar")
 @click.option(
     "--arch",
     default=get_architecture(),
     help="The architecture you want to prepare the archive for. By default, it uses your platform.",
 )
-def prepare_archive(image: str, output_template: str, arch: str) -> None:
+def prepare_archive(image: str, output: str, arch: str) -> None:
     """Prepare an archive to upgrade the dangerzone image (useful for airgapped environment)"""
-    output = output_template.format(arch=arch)
-    signatures.prepare_airgapped_archive(image, output, arch)
-    click.echo(f"✅ Archive {output} created")
+    archive = output.format(arch=arch)
+    signatures.prepare_airgapped_archive(image, archive, arch)
+    click.echo(f"✅ Archive {archive} created")
 
 
 @main.command()

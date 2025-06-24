@@ -227,28 +227,27 @@ Install dependencies:
   <summary><i>:memo: Expand this section if you are on Ubuntu 22.04 (Jammy).</i></summary>
   </br>
 
-  The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug
-  that gets triggered by Dangerzone
-  (more details in https://github.com/freedomofpress/dangerzone/issues/685).
-  If you want to run Dangerzone from source, you are advised to install a
-  patched `conmon` version. A simple way to do so is to enable our
-  apt-tools-prod repo, just for the `conmon` package:
+The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug
+that gets triggered by Dangerzone
+(more details in https://github.com/freedomofpress/dangerzone/issues/685).
+If you want to run Dangerzone from source, you are advised to install a
+patched `conmon` version. A simple way to do so is to enable our
+apt-tools-prod repo, just for the `conmon` package:
 
-  ```bash
-  sudo cp ./dev_scripts/apt-tools-prod.sources /etc/apt/sources.list.d/
-  sudo cp ./dev_scripts/apt-tools-prod.pref /etc/apt/preferences.d/
-  ```
+```bash
+sudo cp ./dev_scripts/apt-tools-prod.sources /etc/apt/sources.list.d/
+sudo cp ./dev_scripts/apt-tools-prod.pref /etc/apt/preferences.d/
+```
 
-  The `conmon` package provided in the above repo was built with the
-  following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
-  Alternatively, you can install a `conmon` version higher than `v2.0.25` from
-  any repo you prefer.
+The `conmon` package provided in the above repo was built with the
+following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
+Alternatively, you can install a `conmon` version higher than `v2.0.25` from
+any repo you prefer.
 
 </details>
     </td>
   </tr>
 </table>
-
 
 ```sh
 sudo apt install -y podman dh-python build-essential make libqt6gui6 \
@@ -269,7 +268,6 @@ pipx inject poetry poetry-plugin-export
 After this, restart the terminal window, for the `poetry` command to be in your
 `$PATH`.
 
-
 Clone this repository:
 
 ```
@@ -285,18 +283,18 @@ cd dangerzone
 poetry install
 ```
 
-Build the latest container:
-
-```sh
-python3 ./install/common/build-image.py
-```
-
 Dangerzone depends on some assets that should be downloaded in order to run
 (think binaries and others resources). This can be done with the following
 command:
 
 ```sh
 poetry run mazette install
+```
+
+Download the latest container image:
+
+```sh
+poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
 ```
 
 Run from source tree:
@@ -350,18 +348,18 @@ cd dangerzone
 poetry install
 ```
 
-Build the latest container:
-
-```sh
-python3 ./install/common/build-image.py
-```
-
 Dangerzone depends on some assets that should be downloaded in order to run
 (think binaries and others resources). This can be done with the following
 command:
 
 ```sh
 poetry run mazette install
+```
+
+Download the latest container image:
+
+```sh
+poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
 ```
 
 Run from source tree:
@@ -394,7 +392,6 @@ Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
 Install the latest version of Python 3.13 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.13 to PATH" checkbox on the first page of the installer.
 
-
 Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build Tools"](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and make sure to select "Desktop development with C++" when installing.
 
 Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
@@ -416,18 +413,18 @@ cd dangerzone
 poetry install
 ```
 
-Build the dangerzone container image:
-
-```sh
-python .\install\common\build-image.py
-```
-
 Dangerzone depends on some assets that should be downloaded in order to run
 (think binaries and others resources). This can be done with the following
 command:
 
 ```sh
 poetry run mazette install
+```
+
+Download the latest container image:
+
+```sh
+poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
 ```
 
 After that you can launch dangerzone during development with:
@@ -845,10 +842,6 @@ class QAWindows(QABase):
         self.run("python", "-m", "pip", "install", "poetry")
         self.run("poetry", "sync")
 
-    @QABase.task("Build Dangerzone container image", ref=REF_BUILD, auto=True)
-    def build_image(self):
-        self.run("python", r".\install\common\build-image.py")
-
     @QABase.task("Run tests", ref="REF_BUILD", auto=True)
     def run_tests(self):
         # NOTE: Windows does not have Makefile by default.
@@ -868,7 +861,6 @@ class QAWindows(QABase):
         self.install_python()
         self.install_docker()
         self.install_poetry()
-        self.build_image()
         self.install_assets()
         self.run_tests()
         self.build_dangerzone_exe()
@@ -919,13 +911,6 @@ class QALinux(QABase):
             "build-dev",
         )
 
-    @QABase.task("Build Dangerzone image", ref="REF_BUILD", auto=True)
-    def build_container_image(self):
-        self.shell_run("python3 ./install/common/build-image.py")
-        # FIXME: We need to automate this part, simply by checking that the created
-        # image is in `share/image-id.txt`.
-        self.prompt("Ensure that the environment uses the created image")
-
     @QABase.task("Run tests", ref="REF_BUILD", auto=True)
     def run_tests(self):
         self.poetry_run("make", "test")
@@ -960,7 +945,6 @@ class QALinux(QABase):
 
     def start(self):
         self.build_dev_image()
-        self.build_container_image()
         self.install_assets()
         self.run_tests()
         self.build_package()

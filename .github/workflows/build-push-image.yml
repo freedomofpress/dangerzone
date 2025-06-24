@@ -145,6 +145,8 @@ jobs:
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
+          # Pass overwrite here as we've seen cases where the CI failed to get
+          # the previous uploaded digest back.
           overwrite: true
 
   merge:

@@ -135,8 +135,6 @@ def get_installation_strategy() -> Strategy:
         log.debug("No podman images or no last_log_index file")
         local_log_index = 0
     else:
-        # FIXME: pass container_name to get_last_log_index() to avoid
-        # situations where the image name changed.
         local_log_index = get_last_log_index()
 
     # Compute the remote log index

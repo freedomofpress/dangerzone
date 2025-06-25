@@ -5,7 +5,7 @@ log = logging.getLogger(__name__)
 from .errors import SignatureError, UpdaterError
 from .installer import Strategy as InstallationStrategy
 from .installer import apply_installation_strategy, get_installation_strategy, install
-from .releases import EmptyReport, ErrorReport, ReleaseReport, UpdaterReport
+from .releases import EmptyReport, ErrorReport, ReleaseReport
 from .signatures import (
     BUNDLED_LOG_INDEX,
     DEFAULT_PUBKEY_LOCATION,

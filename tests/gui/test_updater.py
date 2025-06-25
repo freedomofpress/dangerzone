@@ -19,7 +19,6 @@ from dangerzone.updater.releases import (
     EmptyReport,
     ErrorReport,
     ReleaseReport,
-    UpdaterReport,
 )
 from dangerzone.util import get_version
 
@@ -40,7 +39,10 @@ def default_updater_settings() -> Dict[str, Any]:
     }
 
 
-def assert_report_equal(report1: UpdaterReport, report2: UpdaterReport) -> None:
+def assert_report_equal(
+    report1: EmptyReport | ErrorReport | ReleaseReport,
+    report2: EmptyReport | ErrorReport | ReleaseReport,
+) -> None:
     assert type(report1) == type(report2)
     # Python dataclasses give us the __eq__ comparison for free
     assert report1.__eq__(report2)

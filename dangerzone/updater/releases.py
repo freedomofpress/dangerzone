@@ -63,9 +63,6 @@ class ErrorReport:
     error: str
 
 
-UpdaterReport = EmptyReport | ErrorReport | ReleaseReport
-
-
 def _get_now_timestamp() -> int:
     return int(time.time())
 

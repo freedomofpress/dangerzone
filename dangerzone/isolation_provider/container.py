@@ -173,10 +173,8 @@ class Container(IsolationProvider):
     ) -> subprocess.Popen:
         runtime = Runtime()
         container_name = container_utils.expected_image_name()
-
-        # FIXME: Image digest is also computed inside the verify_local_image
         image_digest = container_utils.get_local_image_digest()
-        verify_local_image()
+        verify_local_image(image_digest=image_digest)
         security_args = self.get_runtime_security_args()
         debug_args = []
         if self.debug:

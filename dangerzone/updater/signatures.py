@@ -499,18 +499,21 @@ def store_signatures(
 
 
 def verify_local_image(
-    image: Optional[str] = None, pubkey: Path = DEFAULT_PUBKEY_LOCATION
+    image: Optional[str] = None,
+    pubkey: Path = DEFAULT_PUBKEY_LOCATION,
+    image_digest: Optional[str] = None,
 ) -> bool:
     """
     Verifies that a local image has a valid signature
     """
-    if image is None:
-        image = runtime.expected_image_name()
-    log.info(f"Verifying local image {image} against pubkey {pubkey}")
-    try:
-        image_digest = runtime.get_local_image_digest(image)
-    except subprocess.CalledProcessError:
-        raise errors.ImageNotFound(f"The image {image} does not exist locally")
+    if not image_digest:
+        if image is None:
+            image = runtime.expected_image_name()
+        log.info(f"Verifying local image {image} against pubkey {pubkey}")
+        try:
+            image_digest = runtime.get_local_image_digest(image)
+        except subprocess.CalledProcessError:
+            raise errors.ImageNotFound(f"The image {image} does not exist locally")
 
     log.debug(f"Image digest: {image_digest}")
     load_and_verify_signatures(image_digest, pubkey)

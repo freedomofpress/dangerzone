@@ -326,7 +326,7 @@ jobs:
           poetry run mazette install cosign
           poetry run ./dev_scripts/dangerzone-image prepare-archive \
             --image ${{ needs.sign.outputs.image_uri }} \
-            --arch amd64 --output-template="share/container.tar"
+            --arch amd64 --output="share/container.tar"
           mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
 
       - name: Cache container image

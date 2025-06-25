@@ -63,11 +63,11 @@ class Signature:
         return self.signature["Bundle"]["Payload"]["logIndex"]
 
     @property
-    def bundle(self):
+    def bundle(self) -> Dict:
         return self.signature["Bundle"]
 
     @property
-    def bundle_payload(self):
+    def bundle_payload(self) -> Dict:
         return self.bundle["Payload"]
 
     def to_bundle(self) -> Dict:

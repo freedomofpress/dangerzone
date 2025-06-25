@@ -24,13 +24,13 @@ from ..document import Document
 from ..isolation_provider.container import Container
 from ..isolation_provider.dummy import Dummy
 from ..isolation_provider.qubes import Qubes, is_qubes_native_conversion
+from ..settings import Settings
 from ..updater import errors as updater_errors
 from ..updater import releases
 from ..util import get_resource_path, get_version
 from .logic import DangerzoneGui
 from .main_window import MainWindow
 from .updater import UpdaterThread
-from ..settings import Settings
 
 log = logging.getLogger(__name__)
 
@@ -172,7 +172,7 @@ def gui_main(dummy_conversion: bool, filenames: Optional[List[str]]) -> bool:
         log.debug("Will not check for updates, based on updater settings")
 
     settings = Settings()
-    updates_enabled = bool(settings.get('updater_check_all'))
+    updates_enabled = bool(settings.get("updater_check_all"))
     window.toggle_updates_action.setChecked(updates_enabled)
 
     if filenames:

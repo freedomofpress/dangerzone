@@ -110,7 +110,6 @@ def verify_local(image: str, pubkey: Path) -> None:
     """
     Verify the local image signature against a public key and the stored signatures.
     """
-    # XXX remove a potentiel :tag
     if signatures.verify_local_image(image):
         click.echo(
             (
@@ -140,7 +139,6 @@ def get_manifest(image: str) -> None:
 
 @main.command()
 @click.argument("image_name")
-# XXX: Do we really want to check against this?
 @click.option(
     "--branch",
     default=DEFAULT_BRANCH,

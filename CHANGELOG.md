@@ -7,7 +7,13 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
 
-## Changed
+### Added
+
+- Sign the sandbox/container images and automatically upgrade them to their latest version
+  ([#1006](https://github.com/freedomofpress/dangerzone/issues/1006)).
+  Read more about this feature [in our docs](https://github.com/freedomofpress/dangerzone/blob/main/docs/independent-container-updates.md).
+
+### Changed
 
 - (Docs) Update installation instructions for Fedora. `dnf config-manager` is not a plugin ([#1176](https://github.com/freedomofpress/dangerzone/pull/1176))
 - (Docs) Update installation instructions (and CI checks) for Debian derivatives ([#1141](https://github.com/freedomofpress/dangerzone/pull/1141),
@@ -16,7 +22,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Development changes
 
-- Vendor GitHub assets using the `assets` tool ([#1146](https://github.com/freedomofpress/dangerzone/issues/1146))
+- Vendor GitHub assets using the `mazette` tool (see [#1146](https://github.com/freedomofpress/dangerzone/issues/1146) for the original implementation, renamed later from `assets` to `mazette`)
 
 ## [0.9.0](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...0.8.1)
 

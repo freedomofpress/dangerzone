@@ -13,26 +13,6 @@ This module exposes functions to interact with the embedded cosign binary.
 _COSIGN_BINARY = str(get_resource_path("vendor/cosign").absolute())
 
 
-def verify_local_image(oci_image_folder: str, pubkey: Path) -> bool:
-    """Verify the given path against the given public key"""
-    cmd = [
-        _COSIGN_BINARY,
-        "verify",
-        "--key",
-        str(pubkey),
-        "--offline",
-        "--local-image",
-        oci_image_folder,
-    ]
-    log.debug(" ".join(cmd))
-    result = subprocess_run(cmd, capture_output=True)
-    if result.returncode == 0:
-        log.info("Signature verified")
-        return True
-    log.info("Failed to verify signature", result.stderr)
-    return False
-
-
 def verify_blob(pubkey: Path, bundle: str, payload: str) -> bool:
     cmd = [
         _COSIGN_BINARY,

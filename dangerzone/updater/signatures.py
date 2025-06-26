@@ -241,9 +241,8 @@ def upgrade_container_image_airgapped(
     Verify the given archive against its self-contained signatures, then
     upgrade the image and retag it to the expected tag.
 
-    The logic supports both "dangerzone archives" and "cosign archives".
-    The presence of a `dangerzone.json` file at the root of the tarball
-    meaning it's a "dangerzone archive".
+    The logic supports both "dangerzone archives" only, which have
+    `dangerzone.json` file at the root of the tarball.
 
     See `prepare_airgapped_archive` for more details.
 
@@ -251,7 +250,7 @@ def upgrade_container_image_airgapped(
     """
 
     with TemporaryDirectory() as _tempdir, tarfile.open(container_tar, "r") as archive:
-        # First, check that we have a "signatures.json" file
+        # First, check the archive type
         files = archive.getnames()
         tmppath = Path(_tempdir)
 

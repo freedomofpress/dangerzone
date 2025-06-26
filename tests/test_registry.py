@@ -11,7 +11,6 @@ from dangerzone.updater.registry import (
     _url,
     get_manifest,
     get_manifest_digest,
-    list_tags,
     parse_image_location,
     replace_image_digest,
 )
@@ -93,83 +92,6 @@ def test_replace_image_digest() -> None:
         )
         == "ghcr.io/freedomofpress/dangerzone/dangerzone-testing@sha256:777777"
     )
-
-
-def test_list_tags(mocker: MockerFixture) -> None:
-    """Test that list_tags correctly retrieves tags from the registry."""
-    # Mock the authentication response
-    image_str = "ghcr.io/freedomofpress/dangerzone"
-
-    # Mock requests.get to return appropriate values for both calls
-    mock_response_auth = mocker.Mock()
-    mock_response_auth.json.return_value = {"token": "dummy_token"}
-    mock_response_auth.raise_for_status.return_value = None
-
-    mock_response_tags = mocker.Mock()
-    mock_response_tags.json.return_value = {
-        "tags": ["v0.4.0", "v0.4.1", "v0.4.2", "latest"]
-    }
-    mock_response_tags.raise_for_status.return_value = None
-
-    # Setup the mock to return different responses for each URL
-    def mock_get(url: str, **kwargs: Any) -> Any:
-        if "token" in url:
-            return mock_response_auth
-        else:
-            return mock_response_tags
-
-    mocker.patch("requests.get", side_effect=mock_get)
-
-    # Call the function
-    tags = list_tags(image_str)
-
-    # Verify the result
-    assert tags == ["v0.4.0", "v0.4.1", "v0.4.2", "latest"]
-
-
-def test_list_tags_auth_error(mocker: MockerFixture) -> None:
-    """Test that list_tags handles authentication errors correctly."""
-    image_str = "ghcr.io/freedomofpress/dangerzone"
-
-    # Mock requests.get to raise an HTTPError
-    mock_response = mocker.Mock()
-    mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
-        "401 Client Error: Unauthorized"
-    )
-
-    mocker.patch("requests.get", return_value=mock_response)
-
-    # Call the function and expect an error
-    with pytest.raises(requests.exceptions.HTTPError):
-        list_tags(image_str)
-
-
-def test_list_tags_registry_error(mocker: MockerFixture) -> None:
-    """Test that list_tags handles registry errors correctly."""
-    image_str = "ghcr.io/freedomofpress/dangerzone"
-
-    # Mock requests.get to return success for auth but error for tags
-    mock_response_auth = mocker.Mock()
-    mock_response_auth.json.return_value = {"token": "dummy_token"}
-    mock_response_auth.raise_for_status.return_value = None
-
-    mock_response_tags = mocker.Mock()
-    mock_response_tags.raise_for_status.side_effect = requests.exceptions.HTTPError(
-        "404 Client Error: Not Found"
-    )
-
-    # Setup the mock to return different responses for each URL
-    def mock_get(url: str, **kwargs: Any) -> Any:
-        if "token" in url:
-            return mock_response_auth
-        else:
-            return mock_response_tags
-
-    mocker.patch("requests.get", side_effect=mock_get)
-
-    # Call the function and expect an error
-    with pytest.raises(requests.exceptions.HTTPError):
-        list_tags(image_str)
 
 
 def test_get_manifest(mocker: MockerFixture) -> None:

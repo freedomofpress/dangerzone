@@ -121,7 +121,7 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
 
     # Note: Pass delete=False here to avoid deleting the file before usage.
     # The file is read outside of the context manager otherwise it fails
-    # on Windows, where the file can't be opened concurrently.
+    # on Windows, where the files can't be opened concurrently.
     #
     # Using a O_TEMPORARY flag mentioned in [0] is not practical here as how
     # cosign opens the file is not configurable.
@@ -139,11 +139,12 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
         payload_file.write(sig_obj.payload_bytes)
         payload_file.flush()
 
-    cosign.verify_blob(pubkey, signature_file.name, payload_file.name)
-    log.debug("Signature verified")
-
-    os.remove(signature_file.name)
-    os.remove(payload_file.name)
+    try:
+        cosign.verify_blob(pubkey, signature_file.name, payload_file.name)
+        log.debug("Signature verified")
+    finally:
+        os.remove(signature_file.name)
+        os.remove(payload_file.name)
 
 
 def check_signatures_and_logindex(
@@ -171,15 +172,13 @@ def verify_signatures(
     signatures: List[Dict],
     image_digest: str,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
-) -> bool:
+) -> None:
     if len(signatures) < 1:
         raise errors.SignatureVerificationError("No signatures found")
 
     for signature in signatures:
         # Will raise on errors
         verify_signature(signature, image_digest, pubkey)
-
-    return True
 
 
 def get_last_log_index() -> int:
@@ -242,9 +241,8 @@ def upgrade_container_image_airgapped(
     Verify the given archive against its self-contained signatures, then
     upgrade the image and retag it to the expected tag.
 
-    The logic supports both "dangerzone archives" and "cosign archives".
-    The presence of a `dangerzone.json` file at the root of the tarball
-    meaning it's a "dangerzone archive".
+    The logic supports both "dangerzone archives" only, which have
+    `dangerzone.json` file at the root of the tarball.
 
     See `prepare_airgapped_archive` for more details.
 
@@ -252,7 +250,7 @@ def upgrade_container_image_airgapped(
     """
 
     with TemporaryDirectory() as _tempdir, tarfile.open(container_tar, "r") as archive:
-        # First, check that we have a "signatures.json" file
+        # First, check the archive type
         files = archive.getnames()
         tmppath = Path(_tempdir)
 
@@ -466,7 +464,7 @@ def store_signatures(
     signature`, which differs from the "bundle" one used in the code.
 
     It can be converted to the one expected by cosign verify --bundle with
-    the `Signature.as_bundle()` method.
+    the `Signature.to_bundle()` method.
 
     This function must be used only if the provided signatures have been verified.
     """
@@ -530,14 +528,17 @@ def get_remote_signatures(image: str, digest: str) -> List[Dict]:
 
 
 def prepare_airgapped_archive(
-    image_name: str, destination: str, architecture: str
+    image_name: str,
+    destination: str,
+    architecture: str,
+    pubkey: Path = DEFAULT_PUBKEY_LOCATION,
 ) -> None:
     """
     Prepare a container image tarball to be used in environments without doing
     a {podman,docker} pull.
 
     Podman and Docker are not able to load archives for which the index.json file
-    contains signatures and attestations, so they are removed from the resuling
+    contains signatures and attestations, so they are removed from the resulting
     index.json.
 
     The original index.json is copied to dangerzone.json to be able to refer to
@@ -555,8 +556,10 @@ def prepare_airgapped_archive(
         tmppath = Path(tmpdir)
         msg = f"Downloading image {arch_image}. \nIt might take a while."
         log.info(msg)
+        log.debug(f"Downloading to temporary directory {str(tmpdir)}")
 
         cosign.save(arch_image, tmppath)
+        cosign.verify_local_image(tmppath, pubkey)
 
         # Read from index.json, save it as DANGERZONE_MANIFEST
         # and then change the index.json contents to only contain

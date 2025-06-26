@@ -172,15 +172,13 @@ def verify_signatures(
     signatures: List[Dict],
     image_digest: str,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
-) -> bool:
+):
     if len(signatures) < 1:
         raise errors.SignatureVerificationError("No signatures found")
 
     for signature in signatures:
         # Will raise on errors
         verify_signature(signature, image_digest, pubkey)
-
-    return True
 
 
 def get_last_log_index() -> int:
@@ -467,7 +465,7 @@ def store_signatures(
     signature`, which differs from the "bundle" one used in the code.
 
     It can be converted to the one expected by cosign verify --bundle with
-    the `Signature.as_bundle()` method.
+    the `Signature.to_bundle()` method.
 
     This function must be used only if the provided signatures have been verified.
     """

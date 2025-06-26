@@ -538,7 +538,7 @@ def prepare_airgapped_archive(
     a {podman,docker} pull.
 
     Podman and Docker are not able to load archives for which the index.json file
-    contains signatures and attestations, so they are removed from the resuling
+    contains signatures and attestations, so they are removed from the resulting
     index.json.
 
     The original index.json is copied to dangerzone.json to be able to refer to

@@ -4,7 +4,10 @@ import sys
 import time
 from abc import ABC
 from dataclasses import dataclass
-from typing import Optional, Tuple
+
+# The "|" syntax for type unions was introduced with Python 3.10
+# So we use Union instead as we still require Python 3.9
+from typing import Optional, Tuple, Union
 
 import markdown
 import requests
@@ -166,7 +169,9 @@ def should_check_for_updates(settings: Settings) -> bool:
     return True
 
 
-def check_for_updates(settings: Settings) -> ReleaseReport | EmptyReport | ErrorReport:
+def check_for_updates(
+    settings: Settings,
+) -> Union[ReleaseReport, EmptyReport, ErrorReport]:
     """
     Check for updates and return a report with the findings.
 

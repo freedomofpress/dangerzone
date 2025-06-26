@@ -3,7 +3,7 @@ import platform
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 import pytest
 from PySide6 import QtCore
@@ -40,8 +40,8 @@ def default_updater_settings() -> Dict[str, Any]:
 
 
 def assert_report_equal(
-    report1: EmptyReport | ErrorReport | ReleaseReport,
-    report2: EmptyReport | ErrorReport | ReleaseReport,
+    report1: Union[ReleaseReport, EmptyReport, ErrorReport],
+    report2: Union[ReleaseReport, EmptyReport, ErrorReport],
 ) -> None:
     assert type(report1) == type(report2)
     # Python dataclasses give us the __eq__ comparison for free

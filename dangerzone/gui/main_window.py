@@ -6,7 +6,7 @@ import tempfile
 import typing
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
 
@@ -336,7 +336,9 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         )
 
-    def handle_updates(self, report: EmptyReport | ErrorReport | ReleaseReport) -> None:
+    def handle_updates(
+        self, report: Union[ReleaseReport, EmptyReport, ErrorReport]
+    ) -> None:
         """Handle update reports from the update checker thread."""
         # If there are no new updates, reset the error counter (if any) and return.
         if isinstance(report, EmptyReport):

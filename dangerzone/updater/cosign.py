@@ -31,7 +31,7 @@ def verify_local_image(oci_image_folder: Path, pubkey: Path):
         raise errors.SignatureVerificationError
 
 
-def verify_blob(pubkey: Path, bundle: str, payload: str) -> bool:
+def verify_blob(pubkey: Path, bundle: str, payload: str):
     cmd = [
         _COSIGN_BINARY,
         "verify-blob",
@@ -49,7 +49,6 @@ def verify_blob(pubkey: Path, bundle: str, payload: str) -> bool:
         log.debug("Failed to verify signature", result)
         raise errors.SignatureVerificationError("Failed to verify signature", result)
     log.debug("Verify blob: OK")
-    return True
 
 
 def download_signature(image: str, digest: str) -> list[str]:

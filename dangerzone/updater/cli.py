@@ -122,22 +122,6 @@ def verify_local(image: str, pubkey: Path) -> None:
 
 
 @main.command()
-@click.argument("image", default=DEFAULT_IMAGE_NAME)
-def list_remote_tags(image: str) -> None:
-    """List the tags available for a given image."""
-    click.echo(f"Existing tags for {image}")
-    for tag in registry.list_tags(image):
-        click.echo(tag)
-
-
-@main.command()
-@click.argument("image")
-def get_manifest(image: str) -> None:
-    """Retrieves a remote manifest for a given image and displays it."""
-    click.echo(registry.get_manifest(image).content)
-
-
-@main.command()
 @click.argument("image_name")
 @click.option(
     "--branch",

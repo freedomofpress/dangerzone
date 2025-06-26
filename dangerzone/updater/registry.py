@@ -99,15 +99,6 @@ def _url(image: Image) -> str:
     return f"https://{image.registry}/v2/{image.namespace}/{image.image_name}"
 
 
-def list_tags(image_str: str) -> list:
-    image = parse_image_location(image_str)
-    url = f"{_url(image)}/tags/list"
-    response = requests.get(url, headers=_get_auth_header(image))
-    response.raise_for_status()
-    tags = response.json().get("tags", [])
-    return tags
-
-
 def get_manifest(image_str: str) -> requests.Response:
     """Get manifest information for a specific tag"""
     image = parse_image_location(image_str)

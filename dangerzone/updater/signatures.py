@@ -121,7 +121,7 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
 
     # Note: Pass delete=False here to avoid deleting the file before usage.
     # The file is read outside of the context manager otherwise it fails
-    # on Windows, where the file can't be opened concurrently.
+    # on Windows, where the files can't be opened concurrently.
     #
     # Using a O_TEMPORARY flag mentioned in [0] is not practical here as how
     # cosign opens the file is not configurable.
@@ -139,11 +139,12 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
         payload_file.write(sig_obj.payload_bytes)
         payload_file.flush()
 
-    cosign.verify_blob(pubkey, signature_file.name, payload_file.name)
-    log.debug("Signature verified")
-
-    os.remove(signature_file.name)
-    os.remove(payload_file.name)
+    try:
+        cosign.verify_blob(pubkey, signature_file.name, payload_file.name)
+        log.debug("Signature verified")
+    finally:
+        os.remove(signature_file.name)
+        os.remove(payload_file.name)
 
 
 def check_signatures_and_logindex(

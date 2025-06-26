@@ -32,8 +32,11 @@ def main(debug: bool) -> None:
 def upgrade() -> None:
     """Upgrade the image to the latest version (only if it is signed).
 
-    It is not possible to upgrade to a different image than the one specific in share/image-name.txt using this CLI invocation.
-    If you want to do so, please use "prepare-archive" and "load-archive" instead.
+    It is not possible to upgrade to a different image than the one
+    specified in share/image-name.txt using this CLI invocation.
+
+    If you want to do so, please use "prepare-archive" and "load-archive"
+    instead.
     """
     manifest_digest = registry.get_manifest_digest(DEFAULT_IMAGE_NAME)
 
@@ -44,7 +47,7 @@ def upgrade() -> None:
         )
         click.echo(f"✅ The local image {DEFAULT_IMAGE_NAME} has been upgraded")
         click.echo(f"✅ The image has been signed with {DEFAULT_PUBKEY_LOCATION}")
-        click.echo(f"✅ Signatures has been verified and stored locally")
+        click.echo(f"✅ Signatures have been verified and stored locally")
 
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
@@ -61,7 +64,7 @@ def store_signatures(image: str) -> None:
     sigs = signatures.get_remote_signatures(image, manifest_digest)
     signatures.verify_signatures(sigs, manifest_digest)
     signatures.store_signatures(sigs, manifest_digest, update_logindex=False)
-    click.echo(f"✅ Signatures has been verified and stored locally")
+    click.echo(f"✅ Signatures have been verified and stored locally")
 
 
 @main.command()

@@ -530,7 +530,10 @@ def get_remote_signatures(image: str, digest: str) -> List[Dict]:
 
 
 def prepare_airgapped_archive(
-    image_name: str, destination: str, architecture: str
+    image_name: str,
+    destination: str,
+    architecture: str,
+    pubkey: Path = DEFAULT_PUBKEY_LOCATION,
 ) -> None:
     """
     Prepare a container image tarball to be used in environments without doing
@@ -555,8 +558,10 @@ def prepare_airgapped_archive(
         tmppath = Path(tmpdir)
         msg = f"Downloading image {arch_image}. \nIt might take a while."
         log.info(msg)
+        log.debug(f"Downloading to temporary directory {str(tmpdir)}")
 
         cosign.save(arch_image, tmppath)
+        cosign.verify_local_image(tmppath, pubkey)
 
         # Read from index.json, save it as DANGERZONE_MANIFEST
         # and then change the index.json contents to only contain

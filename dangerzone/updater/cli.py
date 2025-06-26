@@ -100,8 +100,12 @@ def load_archive(archive_filename: Path, force: bool) -> None:
 def prepare_archive(image: str, output: str, arch: str) -> None:
     """Prepare an archive to upgrade the dangerzone image (useful for airgapped environment)"""
     archive = output.format(arch=arch)
-    signatures.prepare_airgapped_archive(image, archive, arch)
-    click.echo(f"✅ Archive {archive} created")
+    try:
+        signatures.prepare_airgapped_archive(image, archive, arch)
+        click.echo(f"✅ Archive {archive} created")
+    except errors.SignatureError:
+        click.echo("❌ Failed to verify the signatures.")
+        raise click.Abort()
 
 
 @main.command()

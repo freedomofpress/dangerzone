@@ -97,7 +97,8 @@ def get_installation_strategy() -> Strategy:
     #   either locally or remotely.
     #
     #   Because it's read from the signatures, it can be greater than
-    #   the log index of the actual installed image, in case of downgrades.
+    #   the log index of the actual installed image, in case of application
+    #   downgrades (e.g. from 0.11.0 to 0.10.0).
     #
     # remote_log_index:
     #
@@ -149,20 +150,29 @@ def get_installation_strategy() -> Strategy:
     log.debug(f"bundled_log_index={BUNDLED_LOG_INDEX}")
     log.debug(f"max_log_index={max_log_index}")
 
+    # More information about the rationale and design for these installation
+    # and upgrade scenarios can be found here:
+    # https://github.com/freedomofpress/dangerzone/issues/1156
     if local_log_index == max_log_index:
-        # The application is either up-to-date, has disabled upgrades, or has downgraded.
-        # Matching scenarios: 6, 7, 8, 10 (already installed by CLI), 12 (already installed by CLI)
+        # Sandbox is either up-to-date, user has disabled upgrades
+        # or has downgraded to a previous application version.
+        #
+        # Scenarios: 6, 7, 8, + 10 & 12 (already installed by CLI)
         log.debug("Installation strategy: Do nothing")
         return Strategy.DO_NOTHING
     elif BUNDLED_LOG_INDEX == max_log_index:
-        # The bundled container image is fresher than the installed version,
+        # The bundled sandbox image is fresher than the installed version
         # or just as fresh as the remote one.
-        # Matching scenarios: 1, 2, 3, 9a (if log indexes are the same), 9b, 11 (if no remote updates)
+        #
+        # Scenarios: 1, 2, 3, 9b
+        # 9a (if log indexes are the same)
+        # 11 (if no remote updates)
         log.debug("Installation strategy: Install the local container")
         return Strategy.INSTALL_LOCAL_CONTAINER
     else:
-        # There is a remote update that is fresher than the currently installed/available tarball
+        # There is a remote update that is fresher than the currently
+        # installed/available tarball.
         #
-        # Matching scenarios: 5, 9a, 11 (if more recent remote updates)
+        # Scenarios: 5, 9a, 11 (if more recent remote updates)
         log.debug("Installation strategy: Remote container update")
         return Strategy.INSTALL_REMOTE_CONTAINER

@@ -16,7 +16,11 @@ from ..updater import (
     upgrade_container_image,
     verify_local_image,
 )
-from ..util import get_resource_path, get_subprocess_startupinfo
+from ..util import (
+    bypass_signature_checks,
+    get_resource_path,
+    get_subprocess_startupinfo,
+)
 from .base import IsolationProvider, terminate_process_group
 
 TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
@@ -183,7 +187,8 @@ class Container(IsolationProvider):
         runtime = Runtime()
         container_name = container_utils.expected_image_name()
         image_digest = container_utils.get_local_image_digest()
-        verify_local_image(image_digest=image_digest)
+        if not bypass_signature_checks():
+            verify_local_image(image_digest=image_digest)
         security_args = self.get_runtime_security_args()
         debug_args = []
         if self.debug:

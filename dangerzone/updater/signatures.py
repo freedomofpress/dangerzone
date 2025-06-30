@@ -3,6 +3,7 @@ import os
 import platform
 import re
 import subprocess
+import sys
 import tarfile
 from base64 import b64decode, b64encode
 from dataclasses import dataclass
@@ -16,7 +17,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 from .. import container_utils as runtime
 from .. import errors as dzerrors
 from ..container_utils import subprocess_run
-from ..util import get_resource_path
+from ..util import bypass_signature_checks, get_resource_path
 from . import cosign, errors, log, registry
 
 try:
@@ -639,4 +640,7 @@ def install_local_container_tar(
 ) -> None:
     tarball_path = get_resource_path("container.tar")
     log.debug("Installing container image %s", tarball_path)
-    upgrade_container_image_airgapped(tarball_path, pubkey)
+    if bypass_signature_checks():
+        runtime.load_image_tarball(tarball_path)
+    else:
+        upgrade_container_image_airgapped(tarball_path, pubkey)

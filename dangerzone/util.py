@@ -1,3 +1,5 @@
+import logging
+import os
 import platform
 import subprocess
 import sys
@@ -9,6 +11,9 @@ try:
     import platformdirs
 except ImportError:
     import appdirs as platformdirs  # type: ignore[no-redef]
+
+
+log = logging.getLogger(__name__)
 
 
 def get_architecture() -> str:
@@ -138,3 +143,15 @@ def format_exception(e: Exception) -> str:
         output = traceback.format_exception(e)
 
     return "".join(output)
+
+
+def bypass_signature_checks() -> bool:
+    if getattr(sys, "dangerzone_dev", False) and os.environ.get(
+        "DANGERZONE_LOCAL_IMAGE", False
+    ) in ("1", "true"):
+        log.warning(
+            "Bypassing signature checks because we are in dev mode and the"
+            " DANGERZONE_LOCAL_IMAGE environment variable is set"
+        )
+        return True
+    return False

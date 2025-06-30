@@ -102,7 +102,16 @@ class InvalidLogIndex(SignatureError):
 
 
 class InvalidImageArchive(UpdaterError):
-    """An invalid archive format was passed"""
+    """
+    An invalid archive format was passed.
+
+    Archives should contain a `dangerzone.json` file.
+    The proper way to gather these archives is to use:
+
+        dangerzone-image prepare-archive
+
+    In your terminal.
+    """
 
     pass
 

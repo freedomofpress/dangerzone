@@ -172,7 +172,7 @@ def verify_signatures(
     signatures: List[Dict],
     image_digest: str,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
-):
+) -> None:
     if len(signatures) < 1:
         raise errors.SignatureVerificationError("No signatures found")
 

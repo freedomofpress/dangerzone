@@ -150,7 +150,7 @@ def should_check_for_updates(settings: Settings) -> bool:
     # TODO: Disable updates for Homebrew installations.
     if platform.system() == "Linux" and not getattr(sys, "dangerzone_dev", False):
         log.debug("Running on Linux, disabling updates")
-        if not check:  # if not overidden by user
+        if not check:  # if not overridden by user
             settings.set("updater_check_all", False, autosave=True)
             return False
 

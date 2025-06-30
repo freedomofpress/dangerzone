@@ -20,7 +20,7 @@ class Settings:
 
     # This settings class is a singleton, meaning that all instances of it
     # will point to the actual same object.
-    # In case there is a need to disable this behavious (e.g. in the tests)
+    # In case there is a need to disable this behavior (e.g. in the tests)
     # setting `Settings._singleton = None` will force a new instance
     _singleton = None
 

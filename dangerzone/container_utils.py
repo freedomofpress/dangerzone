@@ -272,27 +272,22 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
     runtime = Runtime()
     cmd = [str(runtime.path), "images", expected_image, "--format", "{{.Digest}}"]
     log.debug(" ".join(cmd))
-    try:
-        result = subprocess_run(
-            cmd,
-            capture_output=True,
-            check=True,
-        )
-        output = result.stdout.decode().strip().split("\n")  # type:ignore[attr-defined]
-        # In some cases, the output can be multiple lines with the same digest
-        # sets are used to reduce them.
-        lines = set(output)
-        if len(lines) != 1:
-            raise errors.MultipleImagesFoundException(
-                f"Expected a single line of output, got {len(lines)} lines: {lines}"
-            )
-        image_digest = lines.pop().replace("sha256:", "")
-        if not image_digest:
-            raise errors.ImageNotPresentException(
-                f"The image {expected_image} does not exist locally"
-            )
-        return image_digest
-    except subprocess.CalledProcessError as e:
+    result = subprocess_run(
+        cmd,
+        capture_output=True,
+        check=True,
+    )
+    output = result.stdout.decode().strip().split("\n")  # type:ignore[attr-defined]
+    # In some cases, the output can be multiple lines with the same digest
+    # sets are used to reduce them.
+    lines = set(output)
+    if len(lines) < 1:
         raise errors.ImageNotPresentException(
             f"The image {expected_image} does not exist locally"
         )
+    elif len(lines) > 1:
+        raise errors.MultipleImagesFoundException(
+            f"Expected a single line of output, got {len(lines)} lines: {lines}"
+        )
+    image_digest = lines.pop().replace("sha256:", "")
+    return image_digest

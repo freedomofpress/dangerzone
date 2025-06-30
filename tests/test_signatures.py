@@ -1,7 +1,8 @@
 import json
 import unittest
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Callable, Dict
+from unittest.mock import patch
 
 import pytest
 from pytest_subprocess import FakeProcess
@@ -57,36 +58,41 @@ def signature_other_digest(valid_signature: Dict[str, Any]) -> Dict[str, Any]:
     return signature
 
 
-def test_load_valid_signatures(mocker: Any) -> None:
-    mocker.patch("dangerzone.updater.signatures.SIGNATURES_PATH", VALID_SIGNATURES_PATH)
-    valid_signatures = list(VALID_SIGNATURES_PATH.glob("**/*.json"))
-    assert len(valid_signatures) > 0
-    for file in valid_signatures:
-        signatures = load_and_verify_signatures(file.stem, TEST_PUBKEY_PATH)
-        assert isinstance(signatures, list)
-        assert len(signatures) > 0
+def for_each_signature(path: Path):
+    """
+    Decorator that patches the signature path
+    and parametrize pytest to run for each of the files within the given path
+    """
+
+    def wrapped(func: Callable):
+        patched_func = patch("dangerzone.updater.signatures.SIGNATURES_PATH", path)(
+            func
+        )
+
+        return pytest.mark.parametrize("file", list(path.glob("**/*.json")))(
+            patched_func
+        )
+
+    return wrapped
 
 
-def test_load_invalid_signatures(mocker: Any) -> None:
-    mocker.patch(
-        "dangerzone.updater.signatures.SIGNATURES_PATH", INVALID_SIGNATURES_PATH
-    )
-    invalid_signatures = list(INVALID_SIGNATURES_PATH.glob("**/*.json"))
-    assert len(invalid_signatures) > 0
-    for file in invalid_signatures:
-        with pytest.raises(errors.SignatureError):
-            load_and_verify_signatures(file.stem, TEST_PUBKEY_PATH)
+@for_each_signature(VALID_SIGNATURES_PATH)
+def test_load_valid_signatures(file: Path) -> None:
+    signatures = load_and_verify_signatures(file.stem, TEST_PUBKEY_PATH)
+    assert isinstance(signatures, list)
+    assert len(signatures) > 0
 
 
-def test_load_tampered_signatures(mocker: Any) -> None:
-    mocker.patch(
-        "dangerzone.updater.signatures.SIGNATURES_PATH", TAMPERED_SIGNATURES_PATH
-    )
-    tampered_signatures = list(TAMPERED_SIGNATURES_PATH.glob("**/*.json"))
-    assert len(tampered_signatures) > 0
-    for file in tampered_signatures:
-        with pytest.raises(errors.SignatureError):
-            load_and_verify_signatures(file.stem, TEST_PUBKEY_PATH)
+@for_each_signature(INVALID_SIGNATURES_PATH)
+def test_load_invalid_signatures(file: Path) -> None:
+    with pytest.raises(errors.SignatureError):
+        load_and_verify_signatures(file.stem, TEST_PUBKEY_PATH)
+
+
+@for_each_signature(TAMPERED_SIGNATURES_PATH)
+def test_load_tampered_signatures(file: Path) -> None:
+    with pytest.raises(errors.SignatureError):
+        load_and_verify_signatures(file.stem, TEST_PUBKEY_PATH)
 
 
 def test_get_log_index_from_signatures() -> None:

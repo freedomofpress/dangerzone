@@ -319,15 +319,15 @@ jobs:
       - run: poetry install
       - name: Prepare cached assets
         run: |-
-          # Only prepare an amd64 image as arm64 images are only used for macOS,
-          # for which it's not possible to run the tests due to the lack of
-          # nested virtualisation.
+          # Only an amd64 image is prepared here.
+          # arm64 images would be useful for silicon macOS but the Github CI
+          # currently does not support nested virtualisation for this platform.
           echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
           poetry run mazette install cosign
+          mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
           poetry run ./dev_scripts/dangerzone-image prepare-archive \
             --image ${{ needs.sign.outputs.image_uri }} \
             --arch amd64 --output="share/container.tar"
-          mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
 
       - name: Cache container image
         id: cache-container-image

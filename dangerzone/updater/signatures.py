@@ -33,7 +33,7 @@ def appdata_dir() -> Path:
 # to ensure the software can't upgrade to container images that predates it.
 BUNDLED_LOG_INDEX = 207673688
 
-DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone.pub")
+DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone-pub.key")
 SIGNATURES_PATH = appdata_dir() / "signatures"
 LAST_LOG_INDEX = SIGNATURES_PATH / "last_log_index"
 DANGERZONE_MANIFEST = "dangerzone.json"
@@ -241,7 +241,7 @@ def upgrade_container_image_airgapped(
     Verify the given archive against its self-contained signatures, then
     upgrade the image and retag it to the expected tag.
 
-    The logic supports both "dangerzone archives" only, which have
+    The logic supports "dangerzone archives" only, which have
     `dangerzone.json` file at the root of the tarball.
 
     See `prepare_airgapped_archive` for more details.

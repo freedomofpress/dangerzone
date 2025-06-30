@@ -335,33 +335,31 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
     Returns a image hash from a local image name
     """
     expected_image = image or expected_image_name()
-    # Get the image hash from the "podman images" command.
-    # It's not possible to use "podman inspect" here as it
-    # returns the digest of the architecture-bound image
+    # `podman images` returns the digest of the multi-architecture image,
+    # which should match the downloaded signatures on a typical over-the-air
+    # update scenario.
+    # `podman inspect` is avoided here as it returns the digest of the
+    # architecture-bound image.
+
     runtime = Runtime()
     cmd = [str(runtime.path), "images", expected_image, "--format", "{{.Digest}}"]
     log.debug(" ".join(cmd))
-    try:
-        result = subprocess_run(
-            cmd,
-            capture_output=True,
-            check=True,
-        )
-        output = result.stdout.decode().strip().split("\n")  # type:ignore[attr-defined]
-        # In some cases, the output can be multiple lines with the same digest
-        # sets are used to reduce them.
-        lines = set(output)
-        if len(lines) != 1:
-            raise errors.MultipleImagesFoundException(
-                f"Expected a single line of output, got {len(lines)} lines: {lines}"
-            )
-        image_digest = lines.pop().replace("sha256:", "")
-        if not image_digest:
-            raise errors.ImageNotPresentException(
-                f"The image {expected_image} does not exist locally"
-            )
-        return image_digest
-    except subprocess.CalledProcessError as e:
+    result = subprocess_run(
+        cmd,
+        capture_output=True,
+        check=True,
+    )
+    output = result.stdout.decode().strip().split("\n")  # type:ignore[attr-defined]
+    # In some cases, the output can be multiple lines with the same digest
+    # sets are used to reduce them.
+    lines = set(output)
+    if len(lines) < 1:
         raise errors.ImageNotPresentException(
             f"The image {expected_image} does not exist locally"
         )
+    elif len(lines) > 1:
+        raise errors.MultipleImagesFoundException(
+            f"Expected a single line of output, got {len(lines)} lines: {lines}"
+        )
+    image_digest = lines.pop().replace("sha256:", "")
+    return image_digest

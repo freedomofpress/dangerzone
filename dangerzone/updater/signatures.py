@@ -252,7 +252,7 @@ def upgrade_container_image_airgapped(
     with TemporaryDirectory() as _tempdir, tarfile.open(container_tar, "r") as archive:
         # First, check the archive type
         files = archive.getnames()
-        tmppath = Path(_tempdir)
+        tmp_path = Path(_tempdir)
 
         has_dangerzone_manifest = f"./{DANGERZONE_MANIFEST}" in files
         if not has_dangerzone_manifest:
@@ -262,26 +262,26 @@ def upgrade_container_image_airgapped(
         # with only the images remaining, to avoid situations where we
         # check the signatures but the index.json differs, making us
         # think that we're with valid signatures where we indeed aren't.
-        archive.extract(f"./{DANGERZONE_MANIFEST}", tmppath)
-        archive.extract("./index.json", tmppath)
+        archive.extract(f"./{DANGERZONE_MANIFEST}", tmp_path)
+        archive.extract("./index.json", tmp_path)
 
         with (
-            (tmppath / DANGERZONE_MANIFEST).open() as dzf,
-            (tmppath / "index.json").open() as indexf,
+            (tmp_path / DANGERZONE_MANIFEST).open() as manifest_file,
+            (tmp_path / "index.json").open() as index_file,
         ):
-            dz_manifest = json.load(dzf)
-            index_manifest = json.load(indexf)
+            dz_manifest = json.load(manifest_file)
+            index_manifest = json.load(index_file)
 
         expected_manifest = _get_images_only_manifest(dz_manifest)
         if expected_manifest != index_manifest:
             raise errors.InvalidDangerzoneManifest()
 
         signature_filename = _get_signature_filename(dz_manifest)
-        archive.extract(f"./{signature_filename.as_posix()}", tmppath)
+        archive.extract(f"./{signature_filename.as_posix()}", tmp_path)
 
-        with (tmppath / signature_filename).open() as f:
+        with (tmp_path / signature_filename).open() as f:
             image_name, signatures = convert_oci_images_signatures(
-                json.load(f), archive, tmppath
+                json.load(f), archive, tmp_path
             )
         log.info(f"Found image name: {image_name}")
 
@@ -313,18 +313,20 @@ def upgrade_container_image_airgapped(
     return image_name
 
 
-def get_blob_from_archive(digest: str, tmppath: Path, archive: tarfile.TarFile) -> Path:
+def get_blob_from_archive(
+    digest: str, tmp_path: Path, archive: tarfile.TarFile
+) -> Path:
     """
     Extracts the blob from the given archive, place it in the given path and
     return its Path.
     """
     relpath = _get_blob(digest)
-    archive.extract(f"./{relpath.as_posix()}", tmppath)
-    return tmppath / relpath
+    archive.extract(f"./{relpath.as_posix()}", tmp_path)
+    return tmp_path / relpath
 
 
 def convert_oci_images_signatures(
-    signatures_manifest: Dict, archive: tarfile.TarFile, tmppath: Path
+    signatures_manifest: Dict, archive: tarfile.TarFile, tmp_path: Path
 ) -> Tuple[str, List[Dict]]:
     """
     Convert OCI images signatures (from the registry) to
@@ -336,7 +338,7 @@ def convert_oci_images_signatures(
         bundle = json.loads(layer["annotations"]["dev.sigstore.cosign/bundle"])
         payload_body = json.loads(b64decode(bundle["Payload"]["body"]))
 
-        payload_path = get_blob_from_archive(layer["digest"], tmppath, archive)
+        payload_path = get_blob_from_archive(layer["digest"], tmp_path, archive)
 
         with (payload_path).open("rb") as f:
             payload_b64 = b64encode(f.read()).decode()
@@ -356,7 +358,7 @@ def convert_oci_images_signatures(
     if not signatures:
         raise errors.SignatureExtractionError()
 
-    payload_location = get_blob_from_archive(layers[0]["digest"], tmppath, archive)
+    payload_location = get_blob_from_archive(layers[0]["digest"], tmp_path, archive)
     with open(payload_location, "r") as f:
         payload = json.load(f)
         image_name = payload["critical"]["identity"]["docker-reference"]
@@ -545,7 +547,7 @@ def prepare_airgapped_archive(
     it when verifying the signatures.
     """
 
-    # Find out if this is a multi-archi image or not
+    # Find out if this is a multi-arch image or not
     arch_digest = registry.get_digest_for_arch(image_name, architecture)
     arch_image = registry.replace_image_digest(image_name, arch_digest)
 
@@ -553,36 +555,32 @@ def prepare_airgapped_archive(
 
     # Get the image from the registry
     with TemporaryDirectory() as tmpdir:
-        tmppath = Path(tmpdir)
+        tmp_path = Path(tmpdir)
         msg = f"Downloading image {arch_image}. \nIt might take a while."
         log.info(msg)
         log.debug(f"Downloading to temporary directory {str(tmpdir)}")
 
-        cosign.save(arch_image, tmppath)
-        cosign.verify_local_image(tmppath, pubkey)
+        cosign.save(arch_image, tmp_path)
+        cosign.verify_local_image(tmp_path, pubkey)
 
         # Read from index.json, save it as DANGERZONE_MANIFEST
         # and then change the index.json contents to only contain
         # images (noting this as the naming might sound awkward)
         with (
-            (tmppath / "index.json").open() as indexf,
-            (tmppath / DANGERZONE_MANIFEST).open("w+") as dzf,
+            (tmp_path / "index.json").open() as index_file,
+            (tmp_path / DANGERZONE_MANIFEST).open("w+") as dzf,
         ):
-            original_index_json = json.load(indexf)
+            original_index_json = json.load(index_file)
             json.dump(original_index_json, dzf)
 
         new_index_json = _get_images_only_manifest(original_index_json)
 
         # Write the new index.json to the temp folder
-        with open(tmppath / "index.json", "w") as f:
+        with open(tmp_path / "index.json", "w") as f:
             json.dump(new_index_json, f)
 
         with tarfile.open(destination, "w") as archive:
-            # The root is the tmpdir
-            # archive.add(tmppath / "index.json", arcname="index.json")
-            # archive.add(tmppath / "oci-layout", arcname="oci-layout")
-            # archive.add(tmppath / "blobs", arcname="blobs")
-            archive.add(str(tmppath), arcname=".")
+            archive.add(str(tmp_path), arcname=".")
 
 
 def get_remote_digest_and_logindex(

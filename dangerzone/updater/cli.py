@@ -135,7 +135,7 @@ def verify_local(image: str, pubkey: Path) -> None:
 @click.option(
     "--commit",
     required=True,
-    help="The Git commit the image was built from",
+    help="The full Git commit the image was built from",
 )
 @click.option(
     "--repository",

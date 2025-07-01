@@ -1,8 +1,10 @@
 import json
+import logging
 import os
 import platform
 import re
 import subprocess
+import sys
 import tarfile
 from base64 import b64decode, b64encode
 from dataclasses import dataclass
@@ -23,6 +25,9 @@ try:
     import platformdirs
 except ImportError:
     import appdirs as platformdirs  # type: ignore[no-redef]
+
+
+log = logging.getLogger(__name__)
 
 
 def appdata_dir() -> Path:
@@ -639,4 +644,19 @@ def install_local_container_tar(
 ) -> None:
     tarball_path = get_resource_path("container.tar")
     log.debug("Installing container image %s", tarball_path)
-    upgrade_container_image_airgapped(tarball_path, pubkey)
+    if bypass_signature_checks():
+        runtime.load_image_tarball(tarball_path)
+    else:
+        upgrade_container_image_airgapped(tarball_path, pubkey)
+
+
+def bypass_signature_checks() -> bool:
+    if getattr(sys, "dangerzone_dev", False) and os.environ.get(
+        "DANGERZONE_BYPASS_SIG_CHECKS", False
+    ) in ("1", "true"):
+        log.warning(
+            "Bypassing signature checks because we are in dev mode and the"
+            " DANGERZONE_BYPASS_SIG_CHECKS environment variable is set"
+        )
+        return True
+    return False

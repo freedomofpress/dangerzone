@@ -270,7 +270,9 @@ jobs:
     if: ${{ inputs.sign }}
     runs-on: "ubuntu-latest"
     env:
+      # The password of the testing key is "password"
       COSIGN_PASSWORD: "password"
+      # Do not ask for validation when signing.
       COSIGN_YES: true
     needs:
       - merge
@@ -300,7 +302,7 @@ jobs:
 
       - name: Sign container
         run: |-
-          cosign sign --recursive -d --yes --key=${{ inputs.key_name }}.key "${{ env.IMAGE_URI }}"
+          cosign sign --recursive -d --key=${{ inputs.key_name }}.key "${{ env.IMAGE_URI }}"
         shell: bash
 
   fill-cache:

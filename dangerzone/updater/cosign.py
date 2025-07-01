@@ -27,7 +27,7 @@ def verify_local_image(oci_image_folder: Path, pubkey: Path) -> None:
     log.debug(" ".join(cmd))
     result = subprocess_run(cmd, capture_output=True)
     if result.returncode != 0:
-        log.info("Failed to verify signature", result.stderr)
+        log.info(f"Failed to verify signature: {result.stderr.decode()}")  # type: ignore
         raise errors.SignatureVerificationError
 
 

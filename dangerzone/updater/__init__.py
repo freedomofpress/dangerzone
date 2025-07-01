@@ -9,6 +9,7 @@ from .releases import EmptyReport, ErrorReport, ReleaseReport
 from .signatures import (
     BUNDLED_LOG_INDEX,
     DEFAULT_PUBKEY_LOCATION,
+    bypass_signature_checks,
     install_local_container_tar,
     upgrade_container_image,
     verify_local_image,

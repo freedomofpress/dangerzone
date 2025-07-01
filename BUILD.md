@@ -480,3 +480,22 @@ When you're done you will have `dist\Dangerzone.msi`.
 The Dangezone container image is reproducible. This means that every time we
 build it, the result will be bit-for-bit the same, with some minor exceptions.
 Read more on how you can update it in `docs/developer/reproducibility.md`.
+
+## Building a local container image
+
+You can optionally build the image locally for testing, without verifying its
+signatures against Sigstore:
+
+```
+python3 ./install/common/build-image.py
+export DANGERZONE_BYPASS_SIG_CHECKS=1  # On Linux and macOS
+set DANGERZONE_BYPASS_SIG_CHECKS 1  # On Windows
+```
+
+If you want to switch back to the original behavior, make sure to remove the
+environment variable:
+
+```
+unset DANGERZONE_BYPASS_SIG_CHECKS  # On Linux and macOS
+set DANGERZONE_BYPASS_SIG_CHECKS=  # On Windows
+```

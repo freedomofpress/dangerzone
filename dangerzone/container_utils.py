@@ -266,9 +266,12 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
     Returns a image hash from a local image name
     """
     expected_image = image or expected_image_name()
-    # Get the image hash from the "podman images" command.
-    # It's not possible to use "podman inspect" here as it
-    # returns the digest of the architecture-bound image
+    # `podman images` returns the digest of the multi-architecture image,
+    # which should match the downloaded signatures on a typical over-the-air
+    # update scenario.
+    # `podman inspect` is avoided here as it returns the digest of the
+    # architecture-bound image.
+
     runtime = Runtime()
     cmd = [str(runtime.path), "images", expected_image, "--format", "{{.Digest}}"]
     log.debug(" ".join(cmd))

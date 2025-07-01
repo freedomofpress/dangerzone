@@ -1,5 +1,6 @@
 import json
 import unittest
+from operator import attrgetter
 from pathlib import Path
 from typing import Any, Callable, Dict
 from unittest.mock import patch
@@ -68,10 +69,10 @@ def for_each_signature(path: Path):
         patched_func = patch("dangerzone.updater.signatures.SIGNATURES_PATH", path)(
             func
         )
-
-        return pytest.mark.parametrize("file", list(path.glob("**/*.json")))(
-            patched_func
-        )
+        files = list(path.glob("**/*.json"))
+        return pytest.mark.parametrize(
+            "file", files, ids=map(attrgetter("name"), files)
+        )(patched_func)
 
     return wrapped
 

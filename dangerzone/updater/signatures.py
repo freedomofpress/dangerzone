@@ -241,7 +241,7 @@ def upgrade_container_image_airgapped(
     Verify the given archive against its self-contained signatures, then
     upgrade the image and retag it to the expected tag.
 
-    The logic supports both "dangerzone archives" only, which have
+    The logic supports "dangerzone archives" only, which have
     `dangerzone.json` file at the root of the tarball.
 
     See `prepare_airgapped_archive` for more details.

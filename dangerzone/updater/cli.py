@@ -50,8 +50,9 @@ def upgrade() -> None:
         click.echo(f"✅ Signatures have been verified and stored locally")
 
     except errors.ImageAlreadyUpToDate as e:
-        click.echo(f"✅ {e}")
-        raise click.Abort()
+        click.echo(
+            f"✅ The local image {DEFAULT_IMAGE_NAME}@{manifest_digest} is already up to date"
+        )
     except Exception as e:
         click.echo(f"❌ {e}")
         raise click.Abort()

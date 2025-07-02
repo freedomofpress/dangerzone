@@ -1,7 +1,9 @@
 class UpdaterError(Exception):
     """Base error class for all the updater errors"""
 
-    pass
+    def __init__(self, message: Optional[str] = None):
+        # Use the class docstring as the error message if none is given
+        super().__init__(message or self.__doc__)
 
 
 class ImageAlreadyUpToDate(UpdaterError):
@@ -13,7 +15,7 @@ class ImageAlreadyUpToDate(UpdaterError):
 class ImageNotFound(UpdaterError):
     """
     A verification of the local container image was requested,
-    but no image could be found.
+    but no image could be found
     """
 
     pass

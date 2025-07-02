@@ -14,6 +14,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   [#1163](https://github.com/freedomofpress/dangerzone/pull/1163))
 - (Docs) Point to relevant install sections in the OS-support table ([#1160](https://github.com/freedomofpress/dangerzone/pull/1160))
 
+### Removed
+
+- Platform support: Drop support for Fedora 41 as security support has ended ([#1178](https://github.com/freedomofpress/dangerzone/issues/1178))
+
 ### Development changes
 
 - Vendor GitHub assets using the `assets` tool ([#1146](https://github.com/freedomofpress/dangerzone/issues/1146))

@@ -203,7 +203,7 @@ The following instructions require typing commands in a terminal in dom0.
    qvm-clone fedora-41 fedora-41-dz
    ```
 
-   > :bulb: Alternatively, you can use your base Fedora 40 template in the
+   > :bulb: Alternatively, you can use your base Fedora 41 template in the
    > following instructions. In that case, skip this step and replace
    > `fedora-41-dz` with `fedora-41` in the steps below.
 

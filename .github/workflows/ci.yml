@@ -287,7 +287,7 @@ jobs:
     strategy:
       matrix:
         distro: ["fedora"]
-        version: ["40", "41", "42"]
+        version: ["41", "42"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -373,8 +373,6 @@ jobs:
             version: bookworm
           - distro: debian
             version: trixie
-          - distro: fedora
-            version: "40"
           - distro: fedora
             version: "41"
           - distro: fedora

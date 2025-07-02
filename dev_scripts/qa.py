@@ -85,7 +85,7 @@ poetry run ./dev_scripts/qa.py {distro}-{version}
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 40 as
+- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 41 as
   of writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
   - [ ] Run the Dangerzone tests.
@@ -1039,10 +1039,6 @@ class QAFedora42(QAFedora):
 
 class QAFedora41(QAFedora):
     VERSION = "41"
-
-
-class QAFedora40(QAFedora):
-    VERSION = "40"
 
 
 def parse_args():

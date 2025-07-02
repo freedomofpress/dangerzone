@@ -84,7 +84,6 @@ Dangerzone is available for:
 - Debian 11 (bullseye)
 - Fedora 42
 - Fedora 41
-- Fedora 40
 - Tails
 - Qubes OS (beta support)
 

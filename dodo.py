@@ -8,7 +8,7 @@ from doit.action import CmdAction
 
 ARCH = "arm64" if platform.machine() == "arm64" else "i686"
 VERSION = open("share/version.txt").read().strip()
-FEDORA_VERSIONS = ["40", "41", "42"]
+FEDORA_VERSIONS = ["41", "42"]
 
 ### Global parameters
 

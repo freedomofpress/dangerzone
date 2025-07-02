@@ -16,6 +16,7 @@ Here is a list of tasks that should be done before issuing the release:
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
 - [ ] [Bump the minimum Docker Desktop versions](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#bump-the-minimum-docker-desktop-version) in `isolation_provider/container.py`
+- [ ] Bump the bundled log index in `dangerzone/updater/signatures.py` with the log index of the bundled sandbox.
 - [ ] Bump the dates and versions in the `Dockerfile`
 - [ ] Update the download links in our `INSTALL.md` page to point to the new version (the download links will be populated after the release)
 - [ ] Update screenshot in `README.md`, if necessary
@@ -145,15 +146,14 @@ Here is what you need to do:
   poetry sync
   ```
 
-- [ ] Build the container image and download the necessary assets
+- [ ] Retrieve the sandbox image and download the necessary assets
 
   ```bash
-  poetry run ./install/common/build-image.py
-  poetry run assets install
-
-  # Copy the container image to the assets folder
-  cp share/container.tar ~dz/release-assets/$VERSION/dangerzone-$VERSION-arm64.tar
-  cp share/image-id.txt ~dz/release-assets/$VERSION/.
+  # Retrieve the sandbox image
+  poetry run ./dev_scripts/dangerzone-image prepare-archive
+      --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+      --output share/container.tar
+  poetry run mazette install
   ```
 
 - [ ] Build the app bundle
@@ -225,12 +225,15 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
 
   # Install the dependencies
   poetry sync
+
+  # Retrieve the sandbox image
+  poetry run ./dev_scripts/dangerzone-image prepare-archive
+      --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+      --output share/container.tar
   ```
 
-- [ ] Copy the container image into the VM
-  > [!IMPORTANT]
-  > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar` and `share/image-id.txt` from the host into the `share` folder in the VM.
-- [ ] Download the necessary assets with `poetry run assets install`
+- [ ] Copy `share/container.tar` from the host into the `share` folder in the VM.
+- [ ] Download the necessary assets with `poetry run mazette install`
 - [ ] Run `poetry run .\install\windows\build-app.bat`
 - [ ] When you're done you will have `dist\Dangerzone.msi`
 
@@ -264,8 +267,10 @@ or create your own locally with:
 ./dev_scripts/env.py --distro debian --version bookworm build-dev
 ./dev_scripts/env.py --distro debian --version bookworm run --dev bash
 
-# Build the latest container
-./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py"
+# Retrieve the container image to include in the release
+poerty run ./dev_scripts/dangerzone-image prepare-archive
+    --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+    --output share/container.tar
 
 # Create a .deb
 ./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && ./install/linux/build-deb.py"
@@ -288,8 +293,10 @@ or create your own locally with:
 ```sh
 ./dev_scripts/env.py --distro fedora --version 41 build-dev
 
-# Build the latest container (skip if already built):
-./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py"
+# Retrieve the sandbox (skip if it's already there):
+poerty run ./dev_scripts/dangerzone-image prepare-archive
+    --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+    --output share/container.tar
 
 # Create a .rpm:
 ./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"

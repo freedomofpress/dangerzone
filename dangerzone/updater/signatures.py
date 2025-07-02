@@ -158,7 +158,7 @@ def check_signatures_and_logindex(
     pubkey: Path,
     signatures: List[Dict],
     bypass_logindex_check: bool = False,
-) -> list[Dict]:
+) -> tuple[int, int]:
     verify_signatures(signatures, remote_digest, pubkey)
 
     incoming_log_index = get_log_index_from_signatures(signatures)
@@ -170,7 +170,7 @@ def check_signatures_and_logindex(
                 f"The incoming log index ({incoming_log_index}) is "
                 f"lower than the last known log index ({last_log_index})"
             )
-    return signatures
+    return last_log_index, incoming_log_index
 
 
 def verify_signatures(
@@ -626,13 +626,19 @@ def upgrade_container_image(
     if not signatures:
         signatures = get_remote_signatures(image_str, remote_digest)
 
-    check_signatures_and_logindex(
+    remote_log_index, local_log_index = check_signatures_and_logindex(
         image_str,
         remote_digest,
         pubkey,
         signatures,
         bypass_logindex_check,
     )
+
+    # If the local log index is the same as the remote one, and a sandbox image has
+    # been installed, there is no need to update.
+    if remote_log_index == local_log_index and runtime.list_image_digests():
+        raise errors.ImageAlreadyUpToDate()
+
     runtime.container_pull(image_str, remote_digest, callback=callback)
 
     # Now that they are verified, store the signatures
@@ -655,7 +661,7 @@ def bypass_signature_checks() -> bool:
         "DANGERZONE_BYPASS_SIG_CHECKS", False
     ) in ("1", "true"):
         log.warning(
-            "Bypassing signature checks because we are in dev mode and the"
+            "Bypassing signature checks because dev mode is detected and the"
             " DANGERZONE_BYPASS_SIG_CHECKS environment variable is set"
         )
         return True

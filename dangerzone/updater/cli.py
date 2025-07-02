@@ -17,7 +17,7 @@ DEFAULT_BRANCH = "main"
 DEFAULT_IMAGE_NAME = expected_image_name()
 
 
-@click.group()
+@click.group(context_settings={"show_default": True})
 @click.option("--debug", is_flag=True)
 def main(debug: bool) -> None:
     if debug:
@@ -30,12 +30,9 @@ def main(debug: bool) -> None:
 
 @main.command()
 def upgrade() -> None:
-    """Upgrade the image to the latest version (only if it is signed).
+    """Upgrade the sandbox to the latest version available.
 
-    It is not possible to upgrade to a different image than the one
-    specified in share/image-name.txt using this CLI invocation.
-
-    If you want to do so, please use "prepare-archive" and "load-archive"
+    To upgrade to a custom sandbox image, use "prepare-archive" and "load-archive"
     instead.
     """
     manifest_digest = registry.get_manifest_digest(DEFAULT_IMAGE_NAME)
@@ -59,8 +56,12 @@ def upgrade() -> None:
 
 
 @main.command()
-@click.argument("image", default=DEFAULT_IMAGE_NAME)
+@click.option(
+    "--image",
+    default=DEFAULT_IMAGE_NAME,
+)
 def store_signatures(image: str) -> None:
+    """Retrieves and stores the signatures of the remote sandbox"""
     manifest_digest = registry.get_manifest_digest(image)
     sigs = signatures.get_remote_signatures(image, manifest_digest)
     signatures.verify_signatures(sigs, manifest_digest)
@@ -70,9 +71,13 @@ def store_signatures(image: str) -> None:
 
 @main.command()
 @click.argument("archive_filename", type=click.Path(exists=True))
-@click.option("--force", is_flag=True)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Force the installation, bypassing logindex verification checks",
+)
 def load_archive(archive_filename: Path, force: bool) -> None:
-    """Upgrade the local image to the one in the archive."""
+    """Use ARCHIVE_FILENAME as the dangerzone sandbox image"""
     try:
         loaded_image = signatures.upgrade_container_image_airgapped(
             archive_filename, bypass_logindex=force
@@ -91,12 +96,23 @@ def load_archive(archive_filename: Path, force: bool) -> None:
 
 
 @main.command()
-@click.option("--image", default=DEFAULT_IMAGE_NAME)
-@click.option("--output", default="dangerzone-{arch}.tar")
+@click.option(
+    "--image",
+    default=DEFAULT_IMAGE_NAME,
+    help="The sandbox container registry location",
+)
+@click.option(
+    "--output",
+    default="dangerzone-{arch}.tar",
+    help=(
+        "The location of the generated archive. '{arch}' will be replaced by "
+        "the specified or detected architecture (see --arch)"
+    ),
+)
 @click.option(
     "--arch",
     default=get_architecture(),
-    help="The architecture you want to prepare the archive for. By default, it uses your platform.",
+    help="The architecture to prepare the archive for.",
 )
 def prepare_archive(image: str, output: str, arch: str) -> None:
     """Prepare an archive to upgrade the dangerzone image (useful for airgapped environment)"""
@@ -110,10 +126,14 @@ def prepare_archive(image: str, output: str, arch: str) -> None:
 
 
 @main.command()
-@click.argument("image", default=DEFAULT_IMAGE_NAME)
+@click.option(
+    "--image",
+    default=DEFAULT_IMAGE_NAME,
+    help="The name of the image to check signatures for",
+)
 def verify_local(image: str) -> None:
     """
-    Verify the local image signature against a public key and the stored signatures.
+    Ensures local image signature(s) match the embedded public key.
     """
     if signatures.verify_local_image(image):
         click.echo(

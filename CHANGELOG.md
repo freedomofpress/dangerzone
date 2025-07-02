@@ -7,6 +7,15 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
 
+## Fixed
+
+- Enforce passing our own seccomp profile when running the sandbox, to avoid a
+  regression that has manifested since Docker Desktop 4.42.0
+  ([#1191](https://github.com/freedomofpress/dangerzone/issues/1191))
+- Fix a conversion failure when a user has enabled Podman Desktop, whereby the
+  Podman VM cannot find the necessary seccomp profile
+  ([#1187](https://github.com/freedomofpress/dangerzone/issues/1187))
+
 ## Changed
 
 - (Docs) Update installation instructions for Fedora. `dnf config-manager` is not a plugin ([#1176](https://github.com/freedomofpress/dangerzone/pull/1176))

@@ -6,9 +6,9 @@ import subprocess
 from typing import List, Tuple
 
 from .. import container_utils, errors
-from ..container_utils import Runtime
+from ..container_utils import Runtime, make_seccomp_json_accessible
 from ..document import Document
-from ..util import get_resource_path, get_subprocess_startupinfo
+from ..util import get_subprocess_startupinfo
 from .base import IsolationProvider, terminate_process_group
 
 TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
@@ -29,7 +29,6 @@ log = logging.getLogger(__name__)
 
 
 class Container(IsolationProvider):
-    # Name of the dangerzone container
     @staticmethod
     def get_runtime_security_args() -> List[str]:
         """Security options applicable to the outer Dangerzone container.
@@ -73,16 +72,8 @@ class Container(IsolationProvider):
         #
         # [1] https://github.com/freedomofpress/dangerzone/issues/846
         # [2] https://github.com/containers/common/blob/d3283f8401eeeb21f3c59a425b5461f069e199a7/pkg/seccomp/seccomp.json
-        seccomp_json_path = str(get_resource_path("seccomp.gvisor.json"))
-        # We perform a platform check to avoid the following Podman Desktop
-        # error on Windows:
-        #
-        #   Error: opening seccomp profile failed: open
-        #   C:\[...]\dangerzone\share\seccomp.gvisor.json: no such file or directory
-        #
-        # See also: https://github.com/freedomofpress/dangerzone/issues/1127
-        if runtime.name == "podman" and platform.system() != "Windows":
-            security_args += ["--security-opt", f"seccomp={seccomp_json_path}"]
+        seccomp_json_path = make_seccomp_json_accessible(runtime)
+        security_args += ["--security-opt", f"seccomp={seccomp_json_path}"]
 
         security_args += ["--cap-drop", "all"]
         security_args += ["--cap-add", "SYS_CHROOT"]

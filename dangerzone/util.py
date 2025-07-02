@@ -11,6 +11,10 @@ except ImportError:
     import appdirs as platformdirs
 
 
+def get_cache_dir() -> Path:
+    return Path(platformdirs.user_cache_dir("dangerzone"))
+
+
 def get_config_dir() -> Path:
     return Path(platformdirs.user_config_dir("dangerzone"))
 

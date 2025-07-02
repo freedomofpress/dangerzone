@@ -3,12 +3,12 @@ import os
 import platform
 import shutil
 import subprocess
-from pathlib import Path
-from typing import List, Optional, Tuple
+from pathlib import Path, PurePosixPath
+from typing import List, Optional, Tuple, Union
 
 from . import errors
 from .settings import Settings
-from .util import get_resource_path, get_subprocess_startupinfo
+from .util import get_cache_dir, get_resource_path, get_subprocess_startupinfo
 
 CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 
@@ -95,6 +95,49 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
             f" (found: '{version}') due to the following error: {e}"
         )
         raise RuntimeError(msg)
+
+
+def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]:
+    """Ensure that the bundled seccomp profile is accessible by the runtime.
+
+    On Linux platforms, this method is basically a no-op since there's no VM
+    involved.
+
+    If the container runtime is Docker Desktop, then this method is a no-op as well,
+    because it knows how to pass this file to the VM.
+
+    If the container runtime is Podman on Windows/macOS, then we need to copy the
+    file to a place where it will be mounted in the Podman machine. Typically, the
+    user directory is mounted in the VM [1], so we opt to copy the seccomp profile to
+    the cache dir for Dangerzone, which is within the user directory.
+
+    For Windows, we have to be extra careful and translate the file path to the
+    equivalent in the WSL2 VM [2].
+
+    [1] https://github.com/containers/podman/issues/26558
+    [2] Read about the 'volumes=' config in
+        https://github.com/containers/common/blob/main/docs/containers.conf.5.md#machine-table
+    """
+
+    src = get_resource_path("seccomp.gvisor.json")
+    if platform.system() == "Linux" or runtime.name == "docker":
+        return src
+    elif runtime.name == "podman":
+        dst = get_cache_dir() / "seccomp.gvisor.json"
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        # This file will be overwritten on every conversion, which is unnecessary, but
+        # the copy operation should be quick.
+        shutil.copy(src, dst)
+        if platform.system() == "Windows":
+            # Translate the Windows path on the host to the WSL2 path on the VM. That
+            # is, change backslashes to forward slashes, and replace 'C:/' with
+            # '/mnt/c'.
+            subpath = dst.relative_to("C:\\").as_posix()
+            return PurePosixPath("/mnt/c") / subpath
+        return dst
+    else:
+        # Amusingly, that's an actual runtime error...
+        raise RuntimeError(f"Unexpected runtime: '{runtime.name}'")
 
 
 def list_image_tags() -> List[str]:

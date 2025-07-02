@@ -22,6 +22,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - (Docs) Update installation instructions (and CI checks) for Debian derivatives ([#1141](https://github.com/freedomofpress/dangerzone/pull/1141),
   [#1163](https://github.com/freedomofpress/dangerzone/pull/1163))
 - (Docs) Point to relevant install sections in the OS-support table ([#1160](https://github.com/freedomofpress/dangerzone/pull/1160))
+- (Docs) Remove the need to create a `containers.conf` file, when integrating
+  Dangerzone with Podman Desktop
+  ([#1127](https://github.com/freedomofpress/dangerzone/issues/1127))
 
 ### Removed
 

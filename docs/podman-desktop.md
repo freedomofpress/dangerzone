@@ -8,31 +8,27 @@ be glad to help.
 With [Podman Desktop](https://podman-desktop.io/) installed on your machine,
 here are the required steps to change the dangerzone container runtime.
 
-You will be required to open a terminal and follow these steps:
+First, you need to start Podman, and make sure that it's running. Then, you will
+be required to open a terminal and follow these steps:
+
+Ensure that Podman runs in
+[rootless](https://github.com/containers/podman/blob/main/docs/tutorials/podman-for-windows.md#rootful--rootless)
+mode.
+
+```bash
+podman machine inspect --format '{{.Rootful}}'
+false
+```
 
 ## On macOS
 
-You will need to configure podman to access the shared Dangerzone resources:
-
-```bash
-podman machine stop
-podman machine rm
-cat > ~/.config/containers/containers.conf <<EOF
-[machine]
-volumes = ["/Users:/Users", "/private:/private", "/var/folders:/var/folders", "/Applications/Dangerzone.app:/Applications/Dangerzone.app"]
-EOF
-podman machine init
-podman machine set --rootful=false  
-podman machine start
-```
-Then, set the container runtime to podman using this command:
+To set the container runtime to podman, use this command:
 
 ```bash
 /Applications/Dangerzone.app/Contents/MacOS/dangerzone-cli --set-container-runtime podman
 ```
 
-In order to get back to the default behaviour (Docker Desktop on macOS), pass
-the `default` value instead:
+To revert back to the default behavior, pass the `default` value:
 
 ```bash
 /Applications/Dangerzone.app/Contents/MacOS/dangerzone-cli --set-container-runtime default
@@ -50,4 +46,17 @@ To revert back to the default behavior, pass the `default` value:
 
 ```bash
 'C:\Program Files\Dangerzone\dangerzone-cli.exe' --set-container-runtime podman
+```
+
+## FAQ
+
+### I've encountered the following error: `Error: nomap is only supported in rootless mode`
+
+This means that Podman does not run in rootless mode. You can switch to rootless
+mode with these steps:
+
+```
+podman machine stop
+podman machine set --rootful=false
+podman machine start
 ```

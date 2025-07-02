@@ -95,3 +95,20 @@ ignore:
   # 2. Our container image is based on Debian Bookworm, which is not affected by
   #    this bug.
   - vulnerability: CVE-2025-4517
+  # CVE-2025-49794, CVE-2025-49796
+  # ==============================
+  #
+  # Debian tracker:
+  # * https://security-tracker.debian.org/tracker/CVE-2025-49794
+  # * https://security-tracker.debian.org/tracker/CVE-2025-49796
+  #
+  # Verdict: Dangerzone is not affected, mainly because the worst-case scenario
+  # is Denial of Service (DoS). There is a bit of a background though for these
+  # two CVEs that it's worth noting here:
+  # 1. The maintainer has expressed that the issue is not critical, but it's
+  #    still a lot of work to fix (among other notable concerns):
+  #    https://gitlab.gnome.org/GNOME/libxml2/-/issues/913
+  # 2. The Debian security team considers this issue minor, and they don't have
+  #    a fix.
+  - vulnerability: CVE-2025-49794
+  - vulnerability: CVE-2025-49796

@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class UpdaterError(Exception):
     """Base error class for all the updater errors"""
 

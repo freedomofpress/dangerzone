@@ -111,7 +111,7 @@ def prepare_archive(image: str, output: str, arch: str) -> None:
 
 @main.command()
 @click.argument("image", default=DEFAULT_IMAGE_NAME)
-def verify_local(image: str, pubkey: Path) -> None:
+def verify_local(image: str) -> None:
     """
     Verify the local image signature against a public key and the stored signatures.
     """

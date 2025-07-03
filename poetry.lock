@@ -20,7 +20,6 @@ description = "High level compatibility layer for multiple asynchronous event lo
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "anyio-4.9.0-py3-none-any.whl", hash = "sha256:9f76d541cad6e36af7beb62e978876f3b41e3e04f2c1fbf0884604c0a9c4d93c"},
     {file = "anyio-4.9.0.tar.gz", hash = "sha256:673c0c244e15788651a4ff38710fea9675823028a6f08a5eda409e0c9840a028"},
@@ -38,37 +37,12 @@ test = ["anyio[trio]", "blockbuster (>=1.5.23)", "coverage[toml] (>=7)", "except
 trio = ["trio (>=0.26.1)"]
 
 [[package]]
-name = "assets"
-version = "0.1.0"
-description = "GitHub asset management with lock files and extensive configuration"
-optional = false
-python-versions = ">=3.9"
-groups = ["package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
-files = []
-develop = false
-
-[package.dependencies]
-colorama = ">=0.4.6"
-platformdirs = ">=4.3.8"
-requests = ">=2.32.3"
-semver = ">=3.0.4"
-toml = ">=0.10.2"
-
-[package.source]
-type = "git"
-url = "https://github.com/freedomofpress/assets"
-reference = "0.1.0"
-resolved_reference = "bf6c1155934a4f1289f315b8010181a6155e06a0"
-
-[[package]]
 name = "certifi"
 version = "2025.1.31"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 groups = ["main", "dev", "package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "certifi-2025.1.31-py3-none-any.whl", hash = "sha256:ca78db4565a652026a4db2bcdf68f2fb589ea80d0be70e03929ed730746b84fe"},
     {file = "certifi-2025.1.31.tar.gz", hash = "sha256:3d5da6925056f6f18f119200434a4780a94263f10d1c21d032a6f6b2baa20651"},
@@ -81,7 +55,6 @@ description = "The Real First Universal Charset Detector. Open, modern and activ
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "charset_normalizer-3.4.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:91b36a978b5ae0ee86c394f5a54d6ef44db1de0815eb43de826d41d21e4af3de"},
     {file = "charset_normalizer-3.4.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7461baadb4dc00fd9e0acbe254e3d7d2112e7f92ced2adc96e54ef6501c5f176"},
@@ -184,7 +157,6 @@ description = "Composable command line interface toolkit"
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "lint"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "click-8.1.8-py3-none-any.whl", hash = "sha256:63c132bbbed01578a06712a2d1f497bb62d9c1c0d329b7903a866228027263b2"},
     {file = "click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a"},
@@ -200,7 +172,6 @@ description = "Pickler class to extend the standard pickle.Pickler functionality
 optional = false
 python-versions = ">=3.8"
 groups = ["package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "cloudpickle-3.1.1-py3-none-any.whl", hash = "sha256:c8c5a44295039331ee9dad40ba100a9c7297b6f988e50e87ccdf3765a668350e"},
     {file = "cloudpickle-3.1.1.tar.gz", hash = "sha256:b216fa8ae4019d5482a8ac3c95d8f6346115d8835911fd4aefd1a445e4242c64"},
@@ -213,7 +184,6 @@ description = "Cross-platform colored terminal text."
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 groups = ["main", "lint", "package", "test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -226,7 +196,6 @@ description = "Code coverage measurement for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "coverage-7.8.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:2931f66991175369859b5fd58529cd4b73582461877ecfd859b6549869287ffe"},
     {file = "coverage-7.8.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:52a523153c568d2c0ef8826f6cc23031dc86cffb8c6aeab92c4ff776e7951b28"},
@@ -398,7 +367,6 @@ description = "doit - Automation Tool"
 optional = false
 python-versions = ">=3.8"
 groups = ["package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "doit-0.36.0-py3-none-any.whl", hash = "sha256:ebc285f6666871b5300091c26eafdff3de968a6bd60ea35dd1e3fc6f2e32479a"},
     {file = "doit-0.36.0.tar.gz", hash = "sha256:71d07ccc9514cb22fe59d98999577665eaab57e16f644d04336ae0b4bae234bc"},
@@ -418,7 +386,7 @@ description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 groups = ["dev", "test"]
-markers = "(platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\") and python_version < \"3.11\""
+markers = "python_version < \"3.11\""
 files = [
     {file = "exceptiongroup-1.2.2-py3-none-any.whl", hash = "sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b"},
     {file = "exceptiongroup-1.2.2.tar.gz", hash = "sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc"},
@@ -434,7 +402,6 @@ description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "h11-0.16.0-py3-none-any.whl", hash = "sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"},
     {file = "h11-0.16.0.tar.gz", hash = "sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1"},
@@ -447,7 +414,6 @@ description = "A minimal low-level HTTP client."
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "httpcore-1.0.9-py3-none-any.whl", hash = "sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55"},
     {file = "httpcore-1.0.9.tar.gz", hash = "sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8"},
@@ -470,7 +436,6 @@ description = "The next generation HTTP client."
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "httpx-0.27.2-py3-none-any.whl", hash = "sha256:7bb2708e112d8fdd7829cd4243970f0c223274051cb35ee80c03301ee29a3df0"},
     {file = "httpx-0.27.2.tar.gz", hash = "sha256:f7c2be1d2f3c3c3160d441802406b206c2b76f5947b11115e6df10c6c65e66c2"},
@@ -497,7 +462,6 @@ description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
 python-versions = ">=3.6"
 groups = ["main", "dev", "package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "idna-3.10-py3-none-any.whl", hash = "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3"},
     {file = "idna-3.10.tar.gz", hash = "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9"},
@@ -517,7 +481,7 @@ files = [
     {file = "importlib_metadata-8.6.1-py3-none-any.whl", hash = "sha256:02a89390c1e15fdfdc0d7c6b25cb3e62650d0494005c97d6f148bf5b9787525e"},
     {file = "importlib_metadata-8.6.1.tar.gz", hash = "sha256:310b41d755445d74569f993ccfc22838295d9fe005425094fad953d7f15c8580"},
 ]
-markers = {main = "(platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\") and python_version == \"3.9\"", package = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""}
+markers = {main = "python_version == \"3.9\""}
 
 [package.dependencies]
 zipp = ">=3.20"
@@ -538,7 +502,6 @@ description = "brain-dead simple config-ini parsing"
 optional = false
 python-versions = ">=3.8"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "iniconfig-2.1.0-py3-none-any.whl", hash = "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760"},
     {file = "iniconfig-2.1.0.tar.gz", hash = "sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7"},
@@ -551,7 +514,6 @@ description = "A very fast and expressive template engine."
 optional = false
 python-versions = ">=3.7"
 groups = ["package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"},
     {file = "jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d"},
@@ -570,7 +532,6 @@ description = "A CLI interface to Jinja2"
 optional = false
 python-versions = "*"
 groups = ["package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "jinja2-cli-0.8.2.tar.gz", hash = "sha256:a16bb1454111128e206f568c95938cdef5b5a139929378f72bb8cf6179e18e50"},
     {file = "jinja2_cli-0.8.2-py2.py3-none-any.whl", hash = "sha256:b91715c79496beaddad790171e7258a87db21c1a0b6d2b15bca3ba44b74aac5d"},
@@ -661,7 +622,6 @@ description = "Python implementation of John Gruber's Markdown."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "Markdown-3.7-py3-none-any.whl", hash = "sha256:7eb6df5690b81a1d7942992c97fad2938e956e79df20cbc6186e9c3a77b1c803"},
     {file = "markdown-3.7.tar.gz", hash = "sha256:2ae2471477cfd02dbbf038d5d9bc226d40def84b4fe2986e49b59b6b472bbed2"},
@@ -681,7 +641,6 @@ description = "Safely add untrusted strings to HTML/XML markup."
 optional = false
 python-versions = ">=3.9"
 groups = ["package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "MarkupSafe-3.0.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:7e94c425039cde14257288fd61dcfb01963e658efbc0ff54f5306b06054700f8"},
     {file = "MarkupSafe-3.0.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:9e2d922824181480953426608b81967de705c3cef4d1af983af849d7bd619158"},
@@ -747,13 +706,31 @@ files = [
 ]
 
 [[package]]
+name = "mazette"
+version = "0.2.0"
+description = "GitHub asset management with lock files and extensive configuration"
+optional = false
+python-versions = ">=3.9"
+groups = ["package"]
+files = [
+    {file = "mazette-0.2.0-py3-none-any.whl", hash = "sha256:5b79d250dd48710f4791009fe4e032c1b39fc3d12e5cdb4e63380b520d9a9aad"},
+    {file = "mazette-0.2.0.tar.gz", hash = "sha256:8113f0f06f7939ebecfcd4970b33bc2ab0902fcbe7faa8215c188600c7e6314c"},
+]
+
+[package.dependencies]
+colorama = ">=0.4.6"
+platformdirs = ">=4.3.8"
+requests = ">=2.32.3"
+semver = ">=3.0.4"
+toml = ">=0.10.2"
+
+[[package]]
 name = "mypy"
 version = "1.15.0"
 description = "Optional static typing for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["lint"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "mypy-1.15.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:979e4e1a006511dacf628e36fadfecbcc0160a8af6ca7dad2f5025529e082c13"},
     {file = "mypy-1.15.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c4bb0e1bd29f7d34efcccd71cf733580191e9a264a2202b0239da95984c5b559"},
@@ -808,7 +785,6 @@ description = "Type system extensions for programs checked with the mypy type ch
 optional = false
 python-versions = ">=3.5"
 groups = ["lint"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "mypy_extensions-1.0.0-py3-none-any.whl", hash = "sha256:4392f6c0eb8a5668a69e23d168ffa70f0be9ccfd32b5cc2d26a34ae5b844552d"},
     {file = "mypy_extensions-1.0.0.tar.gz", hash = "sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782"},
@@ -821,7 +797,6 @@ description = "Fundamental package for array computing in Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "numpy-2.0.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:04494f6ec467ccb5369d1808570ae55f6ed9b5809d7f035059000a37b8d7e86f"},
     {file = "numpy-2.0.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:2635dbd200c2d6faf2ef9a0d04f0ecc6b13b3cad54f7c67c61155138835515d2"},
@@ -877,7 +852,6 @@ description = "Core utilities for Python packages"
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "package", "test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "packaging-24.2-py3-none-any.whl", hash = "sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759"},
     {file = "packaging-24.2.tar.gz", hash = "sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f"},
@@ -890,7 +864,6 @@ description = "A small Python package for determining appropriate platform-speci
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "platformdirs-4.3.8-py3-none-any.whl", hash = "sha256:ff7059bb7eb1179e2685604f4aaf157cfd9535242bd23742eadc3c13542139b4"},
     {file = "platformdirs-4.3.8.tar.gz", hash = "sha256:3d512d96e16bcb959a814c9f348431070822a6496326a4be0911c40b5a74c2bc"},
@@ -908,7 +881,6 @@ description = "plugin and hook calling mechanisms for python"
 optional = false
 python-versions = ">=3.8"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "pluggy-1.5.0-py3-none-any.whl", hash = "sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669"},
     {file = "pluggy-1.5.0.tar.gz", hash = "sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1"},
@@ -978,7 +950,6 @@ description = "A high performance Python library for data extraction, analysis, 
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "debian"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "pymupdf-1.25.4-cp39-abi3-macosx_10_9_x86_64.whl", hash = "sha256:b39ab5fc0cc793f2a93908cb4dc13182e61e9ace3476850ebf0e505f65355475"},
     {file = "pymupdf-1.25.4-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:72ac2a460e15a4b75fb22d0bdeb9eb9b3bd6ab44d5288e56f85ff9e4241d0830"},
@@ -997,7 +968,6 @@ description = "Python bindings for the Qt cross-platform application and UI fram
 optional = false
 python-versions = "<3.14,>=3.9"
 groups = ["main"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "PySide6-6.8.3-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:31f390c961b54067ae41360e5ea3b340ce0e0e5feadea2236c28226d3b37edcc"},
     {file = "PySide6-6.8.3-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:8e53e2357bfbdee1fa86c48312bf637460a2c26d49e7af0b3fae2e179ccc7052"},
@@ -1017,7 +987,6 @@ description = "Python bindings for the Qt cross-platform application and UI fram
 optional = false
 python-versions = "<3.14,>=3.9"
 groups = ["main"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "PySide6_Addons-6.8.3-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:ea46649e40b9e6ab11a0da2da054d3914bff5607a5882885e9c3bc2eef200036"},
     {file = "PySide6_Addons-6.8.3-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:6983d3b01fad53637bad5360930d5923509c744cc39704f9c1190eb9934e33da"},
@@ -1036,7 +1005,6 @@ description = "Python bindings for the Qt cross-platform application and UI fram
 optional = false
 python-versions = "<3.14,>=3.9"
 groups = ["main"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "PySide6_Essentials-6.8.3-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:aa56c135db924ecfaf50088baf32f737d28027419ca5fee67c0c7141b29184e3"},
     {file = "PySide6_Essentials-6.8.3-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:fd57fa0c886ef99b3844173322c0023ec77cc946a0c9a0cdfbc2ac5c511053c1"},
@@ -1054,7 +1022,6 @@ description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.7"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "pytest-7.4.4-py3-none-any.whl", hash = "sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8"},
     {file = "pytest-7.4.4.tar.gz", hash = "sha256:2cf0005922c6ace4a3e2ec8b4080eb0d9753fdc93107415332f50ce9e7994280"},
@@ -1078,7 +1045,6 @@ description = "Pytest plugin for measuring coverage."
 optional = false
 python-versions = ">=3.8"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "pytest-cov-5.0.0.tar.gz", hash = "sha256:5837b58e9f6ebd335b0f8060eecce69b662415b16dc503883a02f45dfeb14857"},
     {file = "pytest_cov-5.0.0-py3-none-any.whl", hash = "sha256:4f0764a1219df53214206bf1feea4633c3b558a2925c8b59f144f682861ce652"},
@@ -1098,7 +1064,6 @@ description = "Thin-wrapper around the mock package for easier use with pytest"
 optional = false
 python-versions = ">=3.8"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "pytest-mock-3.14.0.tar.gz", hash = "sha256:2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0"},
     {file = "pytest_mock-3.14.0-py3-none-any.whl", hash = "sha256:0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f"},
@@ -1117,7 +1082,6 @@ description = "pytest support for PyQt and PySide applications"
 optional = false
 python-versions = ">=3.8"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "pytest-qt-4.4.0.tar.gz", hash = "sha256:76896142a940a4285339008d6928a36d4be74afec7e634577e842c9cc5c56844"},
     {file = "pytest_qt-4.4.0-py3-none-any.whl", hash = "sha256:001ed2f8641764b394cf286dc8a4203e40eaf9fff75bf0bfe5103f7f8d0c591d"},
@@ -1138,7 +1102,6 @@ description = "pytest plugin to re-run tests to eliminate flaky failures"
 optional = false
 python-versions = ">=3.8"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "pytest-rerunfailures-14.0.tar.gz", hash = "sha256:4a400bcbcd3c7a4ad151ab8afac123d90eca3abe27f98725dc4d9702887d2e92"},
     {file = "pytest_rerunfailures-14.0-py3-none-any.whl", hash = "sha256:4197bdd2eaeffdbf50b5ea6e7236f47ff0e44d1def8dae08e409f536d84e7b32"},
@@ -1155,7 +1118,6 @@ description = "A plugin to fake subprocess for pytest"
 optional = false
 python-versions = ">=3.6"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "pytest_subprocess-1.5.3-py3-none-any.whl", hash = "sha256:b62580f5a84335fb9f2ec65d49e56a3c93f4722c148fe1771a002835d310a75b"},
     {file = "pytest_subprocess-1.5.3.tar.gz", hash = "sha256:c00b1140fb0211b3153e09500d770db10770baccbe6e05ee9c140036d1d811d5"},
@@ -1203,7 +1165,7 @@ description = "PyXDG contains implementations of freedesktop.org standards in py
 optional = false
 python-versions = "*"
 groups = ["main"]
-markers = "(platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\") and sys_platform == \"linux\""
+markers = "sys_platform == \"linux\""
 files = [
     {file = "pyxdg-0.28-py2.py3-none-any.whl", hash = "sha256:bdaf595999a0178ecea4052b7f4195569c1ff4d344567bccdc12dfdf02d545ab"},
     {file = "pyxdg-0.28.tar.gz", hash = "sha256:3267bb3074e934df202af2ee0868575484108581e6f3cb006af1da35395e88b4"},
@@ -1216,7 +1178,6 @@ description = "Python HTTP for Humans."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6"},
     {file = "requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760"},
@@ -1239,7 +1200,6 @@ description = "An extremely fast Python linter and code formatter, written in Ru
 optional = false
 python-versions = ">=3.7"
 groups = ["lint"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "ruff-0.11.2-py3-none-linux_armv6l.whl", hash = "sha256:c69e20ea49e973f3afec2c06376eb56045709f0212615c1adb0eda35e8a4e477"},
     {file = "ruff-0.11.2-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:2c5424cc1c4eb1d8ecabe6d4f1b70470b4f24a0c0171356290b1953ad8f0e272"},
@@ -1268,7 +1228,6 @@ description = "Python helper for Semantic Versioning (https://semver.org)"
 optional = false
 python-versions = ">=3.7"
 groups = ["package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "semver-3.0.4-py3-none-any.whl", hash = "sha256:9c824d87ba7f7ab4a1890799cec8596f15c1241cb473404ea1cb0c55e4b04746"},
     {file = "semver-3.0.4.tar.gz", hash = "sha256:afc7d8c584a5ed0a11033af086e8af226a9c0b206f313e0301f8dd7b6b589602"},
@@ -1281,7 +1240,6 @@ description = "Easily download, build, install, upgrade, and uninstall Python pa
 optional = false
 python-versions = ">=3.9"
 groups = ["package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "setuptools-75.9.1-py3-none-any.whl", hash = "sha256:0a6f876d62f4d978ca1a11ab4daf728d1357731f978543ff18ecdbf9fd071f73"},
     {file = "setuptools-75.9.1.tar.gz", hash = "sha256:b6eca2c3070cdc82f71b4cb4bb2946bc0760a210d11362278cf1ff394e6ea32c"},
@@ -1303,7 +1261,6 @@ description = "Python/C++ bindings helper module"
 optional = false
 python-versions = "<3.14,>=3.9"
 groups = ["main"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "shiboken6-6.8.3-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:483efc7dd53c69147b8a8ade71f7619c79ffc683efcb1dc4f4cb6c40bb23d29b"},
     {file = "shiboken6-6.8.3-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:295a003466ca2cccf6660e2f2ceb5e6cef4af192a48a196a32d46b6f0c9ec5cb"},
@@ -1318,7 +1275,6 @@ description = "Sniff out which async library your code is running under"
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "sniffio-1.3.1-py3-none-any.whl", hash = "sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2"},
     {file = "sniffio-1.3.1.tar.gz", hash = "sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc"},
@@ -1331,7 +1287,6 @@ description = "Strip ANSI escape sequences from a string"
 optional = false
 python-versions = ">=3.6,<4.0"
 groups = ["test"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "strip-ansi-0.1.1.tar.gz", hash = "sha256:5d60f239cc8a37fdd52b43c3e66e893d45ba0423115db59eca0d2eef83b07729"},
     {file = "strip_ansi-0.1.1-py3-none-any.whl", hash = "sha256:9f55280e1b0ba84dac49d4f18aa6b51b90ff766b22e4918ffc01cc87b394ecd1"},
@@ -1344,7 +1299,6 @@ description = "Python Library for Tom's Obvious, Minimal Language"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 groups = ["package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
     {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
@@ -1391,7 +1345,7 @@ files = [
     {file = "tomli-2.2.1-py3-none-any.whl", hash = "sha256:cb55c73c5f4408779d0cf3eef9f762b9c9f147a77de7b258bef0a5628adc85cc"},
     {file = "tomli-2.2.1.tar.gz", hash = "sha256:cd45e1dc79c835ce60f7404ec8119f2eb06d38b1deba146f07ced3bbc44505ff"},
 ]
-markers = {lint = "(platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\") and python_version < \"3.11\"", package = "sys_platform == \"win32\" and python_version < \"3.11\"", test = "(platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\") and python_full_version <= \"3.11.0a6\""}
+markers = {lint = "python_version < \"3.11\"", package = "sys_platform == \"win32\" and python_version < \"3.11\"", test = "python_full_version <= \"3.11.0a6\""}
 
 [[package]]
 name = "types-colorama"
@@ -1400,7 +1354,6 @@ description = "Typing stubs for colorama"
 optional = false
 python-versions = ">=3.8"
 groups = ["lint"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "types-colorama-0.4.15.20240311.tar.gz", hash = "sha256:a28e7f98d17d2b14fb9565d32388e419f4108f557a7d939a66319969b2b99c7a"},
     {file = "types_colorama-0.4.15.20240311-py3-none-any.whl", hash = "sha256:6391de60ddc0db3f147e31ecb230006a6823e81e380862ffca1e4695c13a0b8e"},
@@ -1413,7 +1366,6 @@ description = "Typing stubs for docutils"
 optional = false
 python-versions = ">=3.8"
 groups = ["lint"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "types_docutils-0.21.0.20241128-py3-none-any.whl", hash = "sha256:e0409204009639e9b0bf4521eeabe58b5e574ce9c0db08421c2ac26c32be0039"},
     {file = "types_docutils-0.21.0.20241128.tar.gz", hash = "sha256:4dd059805b83ac6ec5a223699195c4e9eeb0446a4f7f2aeff1759a4a7cc17473"},
@@ -1426,7 +1378,6 @@ description = "Typing stubs for Markdown"
 optional = false
 python-versions = ">=3.9"
 groups = ["lint"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "types_markdown-3.7.0.20250322-py3-none-any.whl", hash = "sha256:7e855503027b4290355a310fb834871940d9713da7c111f3e98a5e1cbc77acfb"},
     {file = "types_markdown-3.7.0.20250322.tar.gz", hash = "sha256:a48ed82dfcb6954592a10f104689d2d44df9125ce51b3cee20e0198a5216d55c"},
@@ -1439,7 +1390,6 @@ description = "Typing stubs for Pygments"
 optional = false
 python-versions = ">=3.9"
 groups = ["lint"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "types_pygments-2.19.0.20250305-py3-none-any.whl", hash = "sha256:ca88aae5ec426f9b107c0f7adc36dc096d2882d930a49f679eaf4b8b643db35d"},
     {file = "types_pygments-2.19.0.20250305.tar.gz", hash = "sha256:044c50e80ecd4128c00a7268f20355e16f5c55466d3d49dfda09be920af40b4b"},
@@ -1455,7 +1405,6 @@ description = "The most accurate stubs for PySide2"
 optional = false
 python-versions = "*"
 groups = ["lint"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "types_pyside2-5.15.2.1.7-py2.py3-none-any.whl", hash = "sha256:a7bec4cb4657179415ca7ec7c70a45f9f9938664e22f385c85fd7cd724b07d4d"},
     {file = "types_pyside2-5.15.2.1.7.tar.gz", hash = "sha256:1d65072deb97481ad481b3414f94d02fd5da07f5e709c2d439ced14f79b2537c"},
@@ -1468,7 +1417,6 @@ description = "Typing stubs for requests"
 optional = false
 python-versions = ">=3.9"
 groups = ["lint"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "types_requests-2.32.0.20250328-py3-none-any.whl", hash = "sha256:72ff80f84b15eb3aa7a8e2625fffb6a93f2ad5a0c20215fc1dcfa61117bcb2a2"},
     {file = "types_requests-2.32.0.20250328.tar.gz", hash = "sha256:c9e67228ea103bd811c96984fac36ed2ae8da87a36a633964a21f199d60baf32"},
@@ -1488,7 +1436,7 @@ files = [
     {file = "typing_extensions-4.13.0-py3-none-any.whl", hash = "sha256:c8dd92cc0d6425a97c18fbb9d1954e5ff92c1ca881a309c45f06ebc0b79058e5"},
     {file = "typing_extensions-4.13.0.tar.gz", hash = "sha256:0a4ac55a5820789d87e297727d229866c9650f6521b64206413c4fbada24d95b"},
 ]
-markers = {dev = "(platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\") and python_version < \"3.13\"", lint = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\"", package = "sys_platform == \"win32\" and python_version == \"3.9\""}
+markers = {dev = "python_version < \"3.13\"", package = "sys_platform == \"win32\" and python_version == \"3.9\""}
 
 [[package]]
 name = "urllib3"
@@ -1497,7 +1445,6 @@ description = "HTTP library with thread-safe connection pooling, file post, and 
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "lint", "package"]
-markers = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""
 files = [
     {file = "urllib3-2.3.0-py3-none-any.whl", hash = "sha256:1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df"},
     {file = "urllib3-2.3.0.tar.gz", hash = "sha256:f8c5449b3cf0861679ce7e0503c7b44b5ec981bec0d1d3795a07f1ba96f0204d"},
@@ -1520,7 +1467,7 @@ files = [
     {file = "zipp-3.21.0-py3-none-any.whl", hash = "sha256:ac1bbe05fd2991f160ebce24ffbac5f6d11d83dc90891255885223d42b3cd931"},
     {file = "zipp-3.21.0.tar.gz", hash = "sha256:2c9958f6430a2040341a52eb608ed6dd93ef4392e02ffe219417c1b28b5dd1f4"},
 ]
-markers = {main = "(platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\") and python_version == \"3.9\"", package = "platform_machine == \"x86_64\" or platform_machine == \"i686\" or platform_machine == \"aarch64\" or platform_machine == \"armv7l\" or platform_machine == \"ppc64le\" or platform_machine == \"s390x\" or sys_platform != \"linux\" or platform_machine != \"x86_64\" and platform_machine != \"i686\" and platform_machine != \"aarch64\" and platform_machine != \"armv7l\" and platform_machine != \"ppc64le\" and platform_machine != \"s390x\""}
+markers = {main = "python_version == \"3.9\""}
 
 [package.extras]
 check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1) ; sys_platform != \"cygwin\""]
@@ -1533,4 +1480,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.14"
-content-hash = "dd0b89d79c5e9dd4847e536d6212e8110a14cbd54309633a7fe495d263ff11e3"
+content-hash = "bae162300cb0463486c87380258cab34b429f0ac52d37f4b4f21823b666de2ed"

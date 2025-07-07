@@ -16,7 +16,7 @@ Here is a list of tasks that should be done before issuing the release:
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
 - [ ] [Bump the minimum Docker Desktop versions](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#bump-the-minimum-docker-desktop-version) in `isolation_provider/container.py`
-- [ ] Bump the dates and versions in the `Dockerfile`
+- [ ] Bump the dates and versions in the `Dockerfile.env`
 - [ ] Update the download links in our `INSTALL.md` page to point to the new version (the download links will be populated after the release)
 - [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release

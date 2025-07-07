@@ -7,6 +7,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
 
+## [0.9.1](https://github.com/freedomofpress/dangerzone/compare/v0.9.1...0.9.0)
+
 ## Fixed
 
 - Enforce passing our own seccomp profile when running the sandbox, to avoid a
@@ -31,7 +33,6 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 ### Removed
 
 - Platform support: Drop support for Fedora 41 as security support has ended ([#1178](https://github.com/freedomofpress/dangerzone/issues/1178))
-
 ### Development changes
 
 - Vendor GitHub assets using the `mazette` tool (see [#1146](https://github.com/freedomofpress/dangerzone/issues/1146) for the original implementation, renamed later from `assets` to `mazette`)

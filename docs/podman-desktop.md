@@ -39,13 +39,13 @@ To revert back to the default behavior, pass the `default` value:
 To set the container runtime to podman, use this command:
 
 ```bash
-'C:\Program Files\Dangerzone\dangerzone-cli.exe' --set-container-runtime podman
+C:\"Program Files"\Dangerzone\dangerzone-cli.exe --set-container-runtime podman
 ```
 
 To revert back to the default behavior, pass the `default` value:
 
 ```bash
-'C:\Program Files\Dangerzone\dangerzone-cli.exe' --set-container-runtime podman
+C:\"Program Files"\Dangerzone\dangerzone-cli.exe --set-container-runtime podman
 ```
 
 ## FAQ

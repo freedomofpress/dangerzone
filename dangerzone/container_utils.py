@@ -118,8 +118,21 @@ def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]
     [2] Read about the 'volumes=' config in
         https://github.com/containers/common/blob/main/docs/containers.conf.5.md#machine-table
     """
+    if runtime.name == "podman" and get_runtime_version(runtime) < (3, 3):
+        # On OSes that use container-common [0] < 0.40.0 (like Debian Bullseye)
+        # the "mseal" system call is being denied with ENOPERM rather than the
+        # expected ENOSYS, making the conversions fail [1]
+        #
+        # In order to make it work on this platform, the seccomp policy is
+        # updated to allow unknown syscalls.
+        #
+        # [0] https://github.com/containers/common/
+        # [1] For more information, have a look at
+        #     https://github.com/freedomofpress/dangerzone/issues/1201
+        src = get_resource_path("seccomp.gvisor.bullseye.json")
+    else:
+        src = get_resource_path("seccomp.gvisor.json")
 
-    src = get_resource_path("seccomp.gvisor.json")
     if platform.system() == "Linux" or runtime.name == "docker":
         return src
     elif runtime.name == "podman":

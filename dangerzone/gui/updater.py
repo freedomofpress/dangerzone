@@ -129,7 +129,7 @@ class UpdaterThread(QtCore.QThread):
         return self.dangerzone.settings.get("updater_check")
 
     @check.setter
-    def check(self, val: bool) -> None:
+    def check(self, val: Optional[bool]) -> None:
         self.dangerzone.settings.set("updater_check", val, autosave=True)
 
     def prompt_for_checks(self) -> Optional[bool]:

@@ -118,18 +118,31 @@ def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]
     [2] Read about the 'volumes=' config in
         https://github.com/containers/common/blob/main/docs/containers.conf.5.md#machine-table
     """
-    if runtime.name == "podman" and get_runtime_version(runtime) < (3, 3):
-        # On OSes that use container-common [0] < 0.40.0 (like Debian Bullseye)
-        # the "mseal" system call is being denied with ENOPERM rather than the
-        # expected ENOSYS, making the conversions fail [1]
+    if runtime.name == "podman" and get_runtime_version(runtime) < (4, 0):
+        # On OSes that use:
         #
-        # In order to make it work on this platform, the seccomp policy is
-        # updated to allow unknown syscalls.
+        # * crun < 0.19
+        # * runc < 1.0.0-rc95
+        # * golang-github-containers-common [0] < v0.40.0
+        #
+        # the "mseal" system call _may_ be denied with ENOPERM, rather than the
+        # expected ENOSYS, making the conversions fail [1].
+        #
+        # Currently, we are aware that the affected OSes are Debian Bullseye and Ubuntu
+        # Jammy. Since it's not easy to test for every version of the above packages, we
+        # choose a simpler heuristic to check if Podman is _potentially_ affected. If
+        # the Podman version is >= 4.0, which was released 6 months after these
+        # versions, in all likelihood it's not affected. Podman versions prior to 4.0
+        # _may_ be affected, and currently include only Debian Bullseye and Ubuntu
+        # Jammy.
+        #
+        # For affected Podman versions, we use a separate seccomp policy to allow
+        # unknown syscalls, so that the kernel can fail them with ENOSYS.
         #
         # [0] https://github.com/containers/common/
         # [1] For more information, have a look at
         #     https://github.com/freedomofpress/dangerzone/issues/1201
-        src = get_resource_path("seccomp.gvisor.bullseye.json")
+        src = get_resource_path("seccomp.gvisor.permissive.json")
     else:
         src = get_resource_path("seccomp.gvisor.json")
 

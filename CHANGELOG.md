@@ -17,7 +17,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Fix a conversion failure when a user has enabled Podman Desktop, whereby the
   Podman VM cannot find the necessary seccomp profile
   ([#1187](https://github.com/freedomofpress/dangerzone/issues/1187))
-- Make seccomp policy allow unknown syscalls for podman versions < 3.3
+- Make our seccomp policy allow unknown syscalls for podman versions < 4.0
   ([#1201](https://github.com/freedomofpress/dangerzone/issues/1201))
 
 ## Changed

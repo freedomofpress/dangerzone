@@ -29,12 +29,12 @@ def build_data(base_path, path_prefix, dir_id, dir_name):
                 next_dir_prefix = dir_id
 
             # Skip lib/PySide6/examples folder due to ilegal file names
-            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\examples" in base_path:
+            if "\\build\\exe.win-amd64-3.13\\lib\\PySide6\\examples" in base_path:
                 continue
 
             # Skip lib/PySide6/qml/QtQuick folder due to ilegal file names
             # XXX Since we're not using Qml it should be no problem
-            if "\\build\\exe.win-amd64-3.12\\lib\\PySide6\\qml\\QtQuick" in base_path:
+            if "\\build\\exe.win-amd64-3.13\\lib\\PySide6\\qml\\QtQuick" in base_path:
                 continue
 
             next_dir_id = next_dir_prefix + entry.capitalize().replace("-", "_")
@@ -91,7 +91,7 @@ def main():
         "build",
     )
 
-    cx_freeze_dir = "exe.win-amd64-3.12"
+    cx_freeze_dir = "exe.win-amd64-3.13"
 
     dist_dir = os.path.join(build_dir, cx_freeze_dir)
 

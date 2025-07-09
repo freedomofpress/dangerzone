@@ -14,7 +14,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-PYTHON_VERSION = "3.12"
+PYTHON_VERSION = "3.13"
 EOL_PYTHON_URL = "https://endoflife.date/api/python.json"
 
 CONTENT_QA = r"""## QA
@@ -393,7 +393,7 @@ CONTENT_BUILD_WINDOWS = r"""## Windows
 
 Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
-Install the latest version of Python 3.12 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.12 to PATH" checkbox on the first page of the installer.
+Install the latest version of Python 3.13 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.13 to PATH" checkbox on the first page of the installer.
 
 
 Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build Tools"](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and make sure to select "Desktop development with C++" when installing.

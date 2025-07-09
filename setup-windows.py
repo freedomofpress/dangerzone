@@ -13,7 +13,7 @@ setup(
     description="Dangerzone",
     options={
         "build_exe": {
-            "packages": ["dangerzone", "dangerzone.gui", "pymupdf._wxcolors"],
+            "packages": ["dangerzone", "dangerzone.gui"],
             "excludes": ["test", "tkinter"],
             "include_files": [("share", "share"), ("LICENSE", "LICENSE")],
             "include_msvcr": True,

@@ -420,7 +420,7 @@ poetry install
 Build the dangerzone container image:
 
 ```sh
-python3 .\install\common\build-image.py
+python .\install\common\build-image.py
 ```
 
 Dangerzone depends on some assets that should be downloaded in order to run

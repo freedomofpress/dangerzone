@@ -335,7 +335,7 @@ def task_git_archive():
     target = f"{RELEASE_DIR}/dangerzone-{VERSION}.tar.gz"
     return {
         "actions": [
-            f"git archive --format=tar.gz -o {target} --prefix=dangerzone/ v{VERSION}"
+            f"git archive --format=tar.gz -o {target} --prefix=dangerzone/ HEAD"
         ],
         "targets": [target],
         "task_dep": ["init_release_dir"],

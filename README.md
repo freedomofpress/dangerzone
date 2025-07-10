@@ -14,15 +14,15 @@ _Read more about Dangerzone in the [official site](https://dangerzone.rocks/abou
 
 Follow the instructions for each platform:
 
-* [macOS](https://github.com/freedomofpress/dangerzone/blob/v0.9.0/INSTALL.md#macos)
-* [Windows](https://github.com/freedomofpress/dangerzone/blob/v0.9.0//INSTALL.md#windows)
-* [Ubuntu Linux](https://github.com/freedomofpress/dangerzone/blob/v0.9.0/INSTALL.md#ubuntu-debian)
-* [Debian Linux](https://github.com/freedomofpress/dangerzone/blob/v0.9.0/INSTALL.md#ubuntu-debian)
-* [Fedora Linux](https://github.com/freedomofpress/dangerzone/blob/v0.9.0/INSTALL.md#fedora)
-* [Qubes OS (beta)](https://github.com/freedomofpress/dangerzone/blob/v0.9.0/INSTALL.md#qubes-os)
-* [Tails](https://github.com/freedomofpress/dangerzone/blob/v0.9.0/INSTALL.md#tails)
+* [macOS](https://github.com/freedomofpress/dangerzone/blob/v0.9.1/INSTALL.md#macos)
+* [Windows](https://github.com/freedomofpress/dangerzone/blob/v0.9.1//INSTALL.md#windows)
+* [Ubuntu Linux](https://github.com/freedomofpress/dangerzone/blob/v0.9.1/INSTALL.md#ubuntu-debian)
+* [Debian Linux](https://github.com/freedomofpress/dangerzone/blob/v0.9.1/INSTALL.md#ubuntu-debian)
+* [Fedora Linux](https://github.com/freedomofpress/dangerzone/blob/v0.9.1/INSTALL.md#fedora)
+* [Qubes OS (beta)](https://github.com/freedomofpress/dangerzone/blob/v0.9.1/INSTALL.md#qubes-os)
+* [Tails](https://github.com/freedomofpress/dangerzone/blob/v0.9.1/INSTALL.md#tails)
 
-You can read more about our operating system support [here](https://github.com/freedomofpress/dangerzone/blob/v0.9.0/INSTALL.md#operating-system-support).
+You can read more about our operating system support [here](https://github.com/freedomofpress/dangerzone/blob/v0.9.1/INSTALL.md#operating-system-support).
 
 ## Some features
 

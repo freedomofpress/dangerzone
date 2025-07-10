@@ -170,7 +170,7 @@ description = "Composable command line interface toolkit"
 optional = false
 python-versions = ">=3.7"
 groups = ["main", "lint"]
-markers = "python_version == \"3.9\" or sys_platform != \"win32\" and sys_platform != \"darwin\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "click-8.1.8-py3-none-any.whl", hash = "sha256:63c132bbbed01578a06712a2d1f497bb62d9c1c0d329b7903a866228027263b2"},
     {file = "click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a"},
@@ -186,7 +186,7 @@ description = "Composable command line interface toolkit"
 optional = false
 python-versions = ">=3.10"
 groups = ["main", "lint"]
-markers = "python_version >= \"3.10\" and (sys_platform == \"win32\" or sys_platform == \"darwin\")"
+markers = "python_version >= \"3.10\""
 files = [
     {file = "click-8.2.1-py3-none-any.whl", hash = "sha256:61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b"},
     {file = "click-8.2.1.tar.gz", hash = "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202"},
@@ -873,7 +873,7 @@ description = "Fundamental package for array computing in Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["test"]
-markers = "sys_platform == \"linux\""
+markers = "python_version == \"3.9\""
 files = [
     {file = "numpy-2.0.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:04494f6ec467ccb5369d1808570ae55f6ed9b5809d7f035059000a37b8d7e86f"},
     {file = "numpy-2.0.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:2635dbd200c2d6faf2ef9a0d04f0ecc6b13b3cad54f7c67c61155138835515d2"},
@@ -929,7 +929,7 @@ description = "Fundamental package for array computing in Python"
 optional = false
 python-versions = ">=3.10"
 groups = ["test"]
-markers = "python_version >= \"3.10\" and (sys_platform == \"win32\" or sys_platform == \"darwin\")"
+markers = "python_version >= \"3.10\""
 files = [
     {file = "numpy-2.2.6-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:b412caa66f72040e6d268491a59f2c43bf03eb6c96dd8f0307829feb7fa2b6fb"},
     {file = "numpy-2.2.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:8e41fd67c52b86603a91c1a505ebaef50b3314de0213461c7a6e99c9a3beff90"},
@@ -1521,7 +1521,7 @@ files = [
     {file = "tomli-2.2.1-py3-none-any.whl", hash = "sha256:cb55c73c5f4408779d0cf3eef9f762b9c9f147a77de7b258bef0a5628adc85cc"},
     {file = "tomli-2.2.1.tar.gz", hash = "sha256:cd45e1dc79c835ce60f7404ec8119f2eb06d38b1deba146f07ced3bbc44505ff"},
 ]
-markers = {lint = "python_version < \"3.11\"", package = "python_version < \"3.11\" and sys_platform == \"win32\"", test = "python_full_version <= \"3.11.0a6\""}
+markers = {lint = "python_version < \"3.11\"", package = "sys_platform == \"win32\" and python_version < \"3.11\"", test = "python_full_version <= \"3.11.0a6\""}
 
 [[package]]
 name = "types-colorama"
@@ -1537,14 +1537,14 @@ files = [
 
 [[package]]
 name = "types-docutils"
-version = "0.21.0.20250708"
+version = "0.21.0.20250710"
 description = "Typing stubs for docutils"
 optional = false
 python-versions = ">=3.9"
 groups = ["lint"]
 files = [
-    {file = "types_docutils-0.21.0.20250708-py3-none-any.whl", hash = "sha256:166630d1aec18b9ca02547873210e04bf7674ba8f8da9cd9e6a5e77dc99372c2"},
-    {file = "types_docutils-0.21.0.20250708.tar.gz", hash = "sha256:5625a82a9a2f26d8384545607c157e023a48ed60d940dfc738db125282864172"},
+    {file = "types_docutils-0.21.0.20250710-py3-none-any.whl", hash = "sha256:922d96912c1ca51285e294ce77a2f03db48405c9fcc92d594c5746268905d84a"},
+    {file = "types_docutils-0.21.0.20250710.tar.gz", hash = "sha256:9561d834b3a6b0c99ebd62f956eb5a2ea7d9b7401ba0d97df3194865126431c4"},
 ]
 
 [[package]]
@@ -1656,4 +1656,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.14"
-content-hash = "79822efbf1ff6d9630265a2a5f9862206a129848dbcc7b68213f56ce2871686d"
+content-hash = "cccae5292f746e904a403beef4ec13cacb16c910d157974cbe82e937e7a87bbc"

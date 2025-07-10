@@ -63,9 +63,8 @@ strip-ansi = "*"
 pytest-subprocess = "^1.5.2"
 pytest-rerunfailures = "^14.0"
 numpy = [
-   { version = "2.0", platform = "linux" }, # remove when we drop python 3.9 support
-   { version = "^2.1", python = "^3.10", platform = "win32" },
-   { version = "^2.1", python = "^3.10", platform = "darwin" },
+   { version = "2.0", python = "3.9" }, # remove when we drop python 3.9 support
+   { version = "^2.1", python = "^3.10" },
 ]
 
 [tool.poetry.group.debian.dependencies]

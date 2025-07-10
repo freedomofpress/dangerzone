@@ -7,9 +7,10 @@ This section documents how we currently release Dangerzone for the different dis
 Here is a list of tasks that should be done before issuing the release:
 
 - [ ] Create a new issue named **QA and Release for version \<VERSION\>**, to track the general progress.
-      You can generate its content with the the `poetry run ./dev_scripts/generate-release-tasks.py` command.
+      You can generate its content with the `poetry run ./dev_scripts/generate-release-tasks.py` command.
 - [ ] [Add new Linux platforms and remove obsolete ones](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#add-new-linux-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock`
+- [ ] Bump the GitHub asset dependencies using `poetry run mazette lock`
 - [ ] Check for new [WiX releases](https://github.com/wixtoolset/wix/releases) and update it if needed
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`

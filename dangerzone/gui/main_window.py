@@ -8,25 +8,27 @@ from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import Callable, List, Optional, Union
 
+from dangerzone.gui import startup
+from dangerzone.gui.updater import prompt_for_checks
 from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
+
+from ..podman.machine import PodmanMachineManager
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
     from PySide2.QtCore import Qt
     from PySide2.QtGui import QTextCursor
-    from PySide2.QtWidgets import QAction, QTextEdit
+    from PySide2.QtWidgets import QAction
 else:
     try:
         from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide6.QtCore import Qt
         from PySide6.QtGui import QAction, QTextCursor
-        from PySide6.QtWidgets import QTextEdit
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide2.QtCore import Qt
         from PySide2.QtGui import QTextCursor
-        from PySide2.QtWidgets import QAction, QTextEdit
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
@@ -40,7 +42,9 @@ from ..updater import (
     get_installation_strategy,
 )
 from ..util import format_exception, get_resource_path, get_version
+from .log_window import LogHandler, LogWindow
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
+from .widgets import TracebackWidget
 
 log = logging.getLogger(__name__)
 
@@ -121,6 +125,77 @@ def get_supported_extensions() -> List[str]:
     return supported_ext
 
 
+class StatusBar(QtWidgets.QWidget):
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
+        super(StatusBar, self).__init__()
+        self.dangerzone = dangerzone
+
+        # self.spinner = QtWidgets.QLabel()
+        # self.spinner.setPixmap(load_svg_image("spinner.svg", width=15, height=15))
+        from PySide6 import QtSvgWidgets
+
+        # XXX: This trick works only for SVGs that use `animateTransform`. The rest of
+        # the SVGs that use a different `animate*` property will NOT be animated.
+        self.spinner = QtSvgWidgets.QSvgWidget()
+        self.spinner.renderer().setFramesPerSecond(60)
+        path = get_resource_path("spinner.svg")
+        self.spinner.load(str(path))
+        self.spinner.setFixedSize(15, 15)
+        self.message = QtWidgets.QLabel("")
+        self.info_icon = QtWidgets.QToolButton()
+        self.info_icon.setIcon(
+            QtGui.QIcon(load_svg_image("info-circle.svg", width=15, height=15))
+        )
+        self.info_icon.setIconSize(QtCore.QSize(15, 15))
+        self.info_icon.setStyleSheet("QToolButton { border: none; }")
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.addStretch()
+        layout.addWidget(self.spinner)
+        layout.addWidget(self.message)
+        layout.addWidget(self.info_icon)
+        self.setLayout(layout)
+
+    def set_status_ok(self, message: str) -> None:
+        self.spinner.hide()
+        self.info_icon.hide()
+        self.message.setText(message)
+        self.setStyleSheet("color: green; font-weight: bold")
+
+    def set_status_working(self, message: str) -> None:
+        self.spinner.show()
+        self.info_icon.show()
+        self.message.setText(message)
+        self.setStyleSheet("color: orange; font-weight: bold")
+
+    def set_status_error(self, message: str) -> None:
+        self.spinner.hide()
+        self.info_icon.show()
+        self.message.setText(message)
+        self.setStyleSheet("color: red; font-weight: bold")
+
+    def handle_startup_begin(self):
+        self.set_status_working("Starting")
+
+    def handle_task_machine_init(self):
+        self.set_status_working("Initializing Dangerzone VM")
+
+    def handle_task_machine_start(self):
+        self.set_status_working("Starting Dangerzone VM")
+
+    def handle_task_update_check(self):
+        self.set_status_working("Checking for updates")
+
+    def handle_task_container_install(self):
+        self.set_status_working("Installing container sandbox")
+
+    def handle_startup_error(self):
+        self.set_status_error("Startup failed")
+
+    def handle_startup_success(self):
+        self.set_status_ok("")
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(MainWindow, self).__init__()
@@ -196,31 +271,20 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(self.hamburger_button)
         header_layout.addSpacing(15)
 
-        # Content widget, contains all the window content except waiting widget
+        # Content and waiting widget
         self.content_widget = ContentWidget(self.dangerzone)
-
-        if self.dangerzone.isolation_provider.requires_install():
-            # Waiting widget replaces content widget while container runtime isn't available
-            self.waiting_widget: WaitingWidget = WaitingWidgetContainer(self.dangerzone)
-            self.waiting_widget.finished.connect(self.waiting_finished)
-        else:
-            # Don't wait with dummy converter and on Qubes.
-            self.waiting_widget = WaitingWidget()
-            self.dangerzone.is_waiting_finished = True
-
-        # Only use the waiting widget if container runtime isn't available
-        if self.dangerzone.is_waiting_finished:
-            self.waiting_widget.hide()
-            self.content_widget.show()
-        else:
-            self.waiting_widget.show()
-            self.content_widget.hide()
+        self.waiting_widget = WaitingWidget()
+        self.content_widget.hide()
+        self.waiting_widget.show()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
         layout.addWidget(self.waiting_widget, stretch=1)
         layout.addWidget(self.content_widget, stretch=1)
+
+        self.status_bar = StatusBar(self.dangerzone)
+        layout.addWidget(self.status_bar)
 
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(layout)
@@ -231,17 +295,67 @@ class MainWindow(QtWidgets.QMainWindow):
         # This allows us to make QSS rules conditional on the OS color mode.
         self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
 
-        if hasattr(self.dangerzone.isolation_provider, "check_docker_desktop_version"):
-            try:
-                is_version_valid, version = (
-                    self.dangerzone.isolation_provider.check_docker_desktop_version()
-                )
-                if not is_version_valid:
-                    self.handle_docker_desktop_version_check(is_version_valid, version)
-            except errors.UnsupportedContainerRuntime as e:
-                pass  # It's caught later in the flow.
-            except errors.NoContainerTechException as e:
-                pass  # It's caught later in the flow.
+        # Log window
+        self.log_window = LogWindow(self)
+        self.status_bar.info_icon.clicked.connect(self.log_window.show)
+
+        # Configure logging to the log window
+        log_handler = LogHandler()
+        log_handler.new_record.connect(self.log_window.append_log)
+        logging.getLogger().addHandler(log_handler)
+        logging.getLogger().setLevel(logging.DEBUG)  # Set a default logging level
+
+        # Start startup thread
+        log.debug("Starting Dangerzone background tasks")
+        task_machine_init = startup.MachineInitTask()
+        task_machine_start = startup.MachineStartTask()
+        task_update_check = startup.UpdateCheckTask()
+        task_container_install = startup.ContainerInstallTask()
+        if dangerzone.isolation_provider.requires_install():
+            tasks = [task_machine_init, task_machine_start]
+        tasks += [task_update_check, task_container_install]
+        self.startup_thread = startup.StartupThread(tasks)
+        self.startup_thread.succeeded.connect(self.waiting_finished)
+        self.startup_thread.starting.connect(self.status_bar.handle_startup_begin)
+        self.startup_thread.starting.connect(self.waiting_widget.handle_start)
+        self.startup_thread.succeeded.connect(self.status_bar.handle_startup_success)
+        self.startup_thread.failed.connect(self.status_bar.handle_startup_error)
+
+        task_machine_init.starting.connect(self.status_bar.handle_task_machine_init)
+        task_machine_init.starting.connect(self.log_window.handle_task_machine_init)
+        task_machine_init.failed.connect(
+            self.log_window.handle_task_machine_init_failed
+        )
+
+        task_machine_start.starting.connect(self.status_bar.handle_task_machine_start)
+        task_machine_start.starting.connect(self.log_window.handle_task_machine_start)
+        task_machine_start.failed.connect(
+            self.log_window.handle_task_machine_start_failed
+        )
+        task_machine_start.completed.connect(self.show_content_widget)
+
+        task_update_check.starting.connect(self.status_bar.handle_task_update_check)
+        task_update_check.starting.connect(self.log_window.handle_task_update_check)
+        task_update_check.failed.connect(
+            self.log_window.handle_task_update_check_failed
+        )
+        task_update_check.failed.connect(self.handle_update_check_failed)
+        task_update_check.app_update_available.connect(self.handle_app_update_available)
+        task_update_check.container_update_available.connect(
+            self.handle_container_update_available
+        )
+        task_update_check.completed.connect(self.handle_update_check_completed)
+        task_update_check.needs_user_input.connect(self.handle_needs_user_input)
+
+        task_container_install.starting.connect(
+            self.status_bar.handle_task_container_install
+        )
+        task_container_install.starting.connect(
+            self.log_window.handle_task_container_install
+        )
+        task_container_install.failed.connect(
+            self.log_window.handle_task_container_install_failed
+        )
 
         self.show()
 
@@ -296,143 +410,96 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dangerzone.settings.set("updater_check_all", check)
         self.dangerzone.settings.save()
 
-    def handle_docker_desktop_version_check(
-        self, is_version_valid: bool, version: str
-    ) -> None:
+    def handle_update_check_failed(self, error):
+        log.error(f"Encountered an error during an update check: {error}")
+        errors = self.dangerzone.settings.get("updater_errors") + 1
+        self.dangerzone.settings.set("updater_errors", errors)
+        self.dangerzone.settings.save()
+        self.updater_error = error
+
+        # If we encounter more than three errors in a row, show a red notification
+        # bubble. This way, we don't inform the user about intermittent errors.
+        if errors < 3:
+            log.debug(
+                f"Will not show an error yet since number of errors is low ({errors})"
+            )
+            return
+
         hamburger_menu = self.hamburger_button.menu()
+        self.hamburger_button.setIcon(
+            QtGui.QIcon(
+                load_svg_image("hamburger_menu_update_error.svg", width=64, height=64)
+            )
+        )
         sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
-        upgrade_action = QAction("Docker Desktop should be upgraded", hamburger_menu)
-        upgrade_action.setIcon(
+        # FIXME: Add red bubble next to the text.
+        error_action = QAction("Update error", hamburger_menu)
+        error_action.setIcon(
             QtGui.QIcon(
                 load_svg_image(
                     "hamburger_menu_update_dot_error.svg", width=64, height=64
                 )
             )
         )
+        error_action.triggered.connect(self.show_update_error)
+        hamburger_menu.insertAction(sep, error_action)
 
-        message = """
-        <p>A new version of Docker Desktop is available. Please upgrade your system.</p>
-        <p>Visit the <a href="https://www.docker.com/products/docker-desktop">Docker Desktop website</a> to download the latest version.</p>
-        <em>Keeping Docker Desktop up to date allows you to have more confidence that your documents are processed safely.</em>
-        """
-        self.alert = Alert(
-            self.dangerzone,
-            title="Upgrade Docker Desktop",
-            message=message,
-            ok_text="Ok",
-            has_cancel=False,
-        )
-
-        def _launch_alert() -> None:
-            if self.alert:
-                self.alert.launch()
-
-        upgrade_action.triggered.connect(_launch_alert)
-        hamburger_menu.insertAction(sep, upgrade_action)
-
+    def handle_app_update_available(self, report: ReleaseReport) -> None:
+        log.debug(f"New Dangerzone release: {report.version}")
+        self.dangerzone.settings.set("updater_latest_version", report.version)
+        self.dangerzone.settings.set("updater_latest_changelog", report.changelog)
+        self.dangerzone.settings.save()
         self.hamburger_button.setIcon(
             QtGui.QIcon(
-                load_svg_image("hamburger_menu_update_error.svg", width=64, height=64)
+                load_svg_image("hamburger_menu_update_success.svg", width=64, height=64)
             )
         )
 
-    def handle_updates(
-        self, report: Union[ReleaseReport, EmptyReport, ErrorReport]
-    ) -> None:
-        """Handle update reports from the update checker thread."""
-        # If there are no new updates, reset the error counter (if any) and return.
-        if isinstance(report, EmptyReport):
-            self.dangerzone.settings.set("updater_errors", 0, autosave=True)
-            return
-
         hamburger_menu = self.hamburger_button.menu()
-
-        if isinstance(report, ErrorReport):
-            log.error(f"Encountered an error during an update check: {report.error}")
-            errors = self.dangerzone.settings.get("updater_errors") + 1
-            self.dangerzone.settings.set("updater_errors", errors)
-            self.dangerzone.settings.save()
-            self.updater_error = report.error
-
-            # If we encounter more than three errors in a row, show a red notification
-            # bubble. This way, we don't inform the user about intermittent errors.
-            if errors < 3:
-                log.debug(
-                    f"Will not show an error yet since number of errors is low ({errors})"
-                )
-                return
-
-            self.hamburger_button.setIcon(
-                QtGui.QIcon(
-                    load_svg_image(
-                        "hamburger_menu_update_error.svg", width=64, height=64
-                    )
+        sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
+        success_action = QAction("New version available", hamburger_menu)
+        success_action.setIcon(
+            QtGui.QIcon(
+                load_svg_image(
+                    "hamburger_menu_update_dot_available.svg",
+                    width=64,
+                    height=64,
                 )
             )
-            sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
-            # FIXME: Add red bubble next to the text.
-            error_action = QAction("Update error", hamburger_menu)
-            error_action.setIcon(
-                QtGui.QIcon(
-                    load_svg_image(
-                        "hamburger_menu_update_dot_error.svg", width=64, height=64
-                    )
-                )
-            )
-            error_action.triggered.connect(self.show_update_error)
-            hamburger_menu.insertAction(sep, error_action)
-        if isinstance(report, ReleaseReport):
-            log.debug(f"Handling new version: {report.version}")
-            self.dangerzone.settings.set("updater_errors", 0)
-            if report.new_github_release:
-                log.debug(f"New Dangerzone release: {report.version}")
-                self.dangerzone.settings.set("updater_latest_version", report.version)
-                self.dangerzone.settings.set(
-                    "updater_latest_changelog", report.changelog
-                )
-                self.hamburger_button.setIcon(
-                    QtGui.QIcon(
-                        load_svg_image(
-                            "hamburger_menu_update_success.svg", width=64, height=64
-                        )
-                    )
-                )
+        )
+        success_action.triggered.connect(self.show_update_success)
+        hamburger_menu.insertAction(sep, success_action)
 
-                sep = hamburger_menu.insertSeparator(hamburger_menu.actions()[0])
-                success_action = QAction("New version available", hamburger_menu)
-                success_action.setIcon(
-                    QtGui.QIcon(
-                        load_svg_image(
-                            "hamburger_menu_update_dot_available.svg",
-                            width=64,
-                            height=64,
-                        )
-                    )
-                )
-                success_action.triggered.connect(self.show_update_success)
-                hamburger_menu.insertAction(sep, success_action)
-            if report.container_image_bump:
-                # XXX Check what's the installation strategy, and apply it.
-                # For now, don't do anything, it will be done on the next run.
-                # To apply this, we will need to:
-                # - Ensure if an update is already ongoing, in case just let it happen.
-                # - Show the install dialog again here, with a specific message saying
-                #   that a sandbox update has been detected.
-                pass
+    def handle_container_update_available(self, report: ReleaseReport) -> None:
+        log.debug(f"New container image is available")
 
-            # FIXME: Save the settings to the filesystem only when they have really changed,
-            # maybe with a dirty bit.
-            self.dangerzone.settings.save()
+    def handle_update_check_completed(self) -> None:
+        self.dangerzone.settings.set("updater_errors", 0)
+        self.dangerzone.settings.save()
 
-    def register_update_handler(self, signal: QtCore.SignalInstance) -> None:
-        signal.connect(self.handle_updates)
+    def handle_needs_user_input(self) -> None:
+        check = prompt_for_checks(self.dangerzone)
+        if check is not None:
+            self.dangerzone.settings.set("updater_check_all", check, autosave=True)
 
-    def waiting_finished(self) -> None:
-        self.dangerzone.is_waiting_finished = True
+    def show_content_widget(self):
         self.waiting_widget.hide()
         self.content_widget.show()
 
+    def waiting_finished(self) -> None:
+        log.debug("Waiting for the background task has finished")
+        self.dangerzone.is_waiting_finished = True
+
+        if self.content_widget.documents_list.conversion_pending:
+            log.debug("Starting pending conversion")
+            self.content_widget.documents_list.start_conversion()
+
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
+        # Stop the podman machine if it's running
+        if platform.system() in ["Windows", "Darwin"]:
+            log.debug("Stopping podman machine")
+            PodmanMachineManager().stop()
+
         self.alert = Alert(
             self.dangerzone,
             message="Some documents are still being converted.\n Are you sure you want to quit?",
@@ -457,258 +524,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dangerzone.app.exit(2)
 
 
-class InstallContainerThread(QtCore.QThread):
-    finished = QtCore.Signal(str)
-    process_stdout = QtCore.Signal(str)
-
-    def __init__(
-        self,
-        dangerzone: DangerzoneGui,
-        installation_strategy: InstallationStrategy,
-    ) -> None:
-        super(InstallContainerThread, self).__init__()
-        self.dangerzone = dangerzone
-        self.installation_strategy = installation_strategy
-
-    def run(self) -> None:
-        error = None
-        try:
-            if self.dangerzone.isolation_provider.requires_install():
-                apply_installation_strategy(
-                    self.installation_strategy, callback=self.process_stdout.emit
-                )
-        except Exception as e:
-            log.error("Container installation problem")
-            error = format_exception(e)
-        finally:
-            self.finished.emit(error)
-
-
 class WaitingWidget(QtWidgets.QWidget):
-    finished = QtCore.Signal()
-
     def __init__(self) -> None:
-        super(WaitingWidget, self).__init__()
-
-
-class TracebackWidget(QTextEdit):
-    """Reusable component to present tracebacks to the user.
-
-    By default, the widget is initialized but does not appear.
-    You need to call `.set_content("traceback")` on it so the
-    traceback is displayed.
-    """
-
-    def __init__(self) -> None:
-        super(TracebackWidget, self).__init__()
-        # Error
-        self.setReadOnly(True)
-        self.setVisible(False)
-        self.setProperty("style", "traceback")
-        # Enable copying
-        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
-
-        self.current_output = ""
-
-    def set_content(self, error: Optional[str] = None) -> None:
-        if error:
-            self.setPlainText(error)
-            self.setVisible(True)
-
-    def process_output(self, line: str) -> None:
-        self.setVisible(True)
-        self.current_output += line
-        self.setText(self.current_output)
-        cursor = self.textCursor()
-        cursor.movePosition(QTextCursor.MoveOperation.End)
-        self.setTextCursor(cursor)
-
-
-class WaitingWidgetContainer(WaitingWidget):
-    # These are the possible states that the WaitingWidget can show.
-    #
-    # Windows and macOS states:
-    # - "not_installed"
-    # - "not_running"
-    # - "install_container"
-    #
-    # Linux states
-    # - "install_container"
-
-    def _create_button(
-        self, label: str, event: Callable, hide: bool = False
-    ) -> QtWidgets.QWidget:
-        button = QtWidgets.QPushButton(label)
-        button.clicked.connect(event)
-        buttons_layout = QtWidgets.QHBoxLayout()
-        buttons_layout.addStretch()
-        buttons_layout.addWidget(button)
-        buttons_layout.addStretch()
-
-        widget = QtWidgets.QWidget()
-        widget.setLayout(buttons_layout)
-        if hide:
-            widget.hide()
-        return widget
-
-    def _hide_buttons(self) -> None:
-        self.button_check.hide()
-        self.button_cancel.hide()
-
-    def __init__(self, dangerzone: DangerzoneGui) -> None:
-        super(WaitingWidgetContainer, self).__init__()
-        self.dangerzone = dangerzone
-
+        super().__init__()
         self.label = QtWidgets.QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setTextFormat(QtCore.Qt.RichText)
         self.label.setOpenExternalLinks(True)
-        self.label.setStyleSheet("QLabel { font-size: 20px; }")
-
-        # Buttons
-        self.button_check = self._create_button("Check Again", self.check_state)
-        self.button_cancel = self._create_button(
-            "Cancel", self.cancel_install, hide=True
-        )
-
-        self.traceback = TracebackWidget()
-
-        # Layout
+        self.label.setWordWrap(True)
         layout = QtWidgets.QVBoxLayout()
-        layout.addStretch()
         layout.addWidget(self.label)
-        layout.addWidget(self.traceback)
-        layout.addStretch()
-        layout.addWidget(self.button_check)
-        layout.addWidget(self.button_cancel)
-        layout.addStretch()
         self.setLayout(layout)
 
-        # Check the state
-        self.check_state()
-
-    def check_state(self) -> None:
-        state: Optional[str] = None
-        error: Optional[str] = None
-
-        try:
-            self.dangerzone.isolation_provider.is_available()
-        except errors.NoContainerTechException as e:
-            log.error(str(e))
-            state = "not_installed"
-        except errors.NotAvailableContainerTechException as e:
-            log.error(str(e))
-            state = "not_running"
-            error = e.error
-        except Exception as e:
-            log.error(str(e))
-            state = "not_running"
-            error = format_exception(e)
-        else:
-            state = "install_container"
-
-        # Update the state
-        self.state_change(state, error)
-
-    def cancel_install(self) -> None:
-        self.install_container_t.terminate()
-        self.finished.emit()
-
-    def show_error(self, msg: str, details: Optional[str] = None) -> None:
-        self.label.setText(msg)
-        show_traceback = details is not None
-        if show_traceback:
-            self.traceback.set_content(details)
-        self.traceback.setVisible(show_traceback)
-        self.button_check.show()
-
-    def show_message(self, msg: str) -> None:
-        self.label.setText(msg)
-        self.traceback.setVisible(False)
-        self._hide_buttons()
-
-    def installation_finished(self, error: Optional[str] = None) -> None:
-        if error:
-            msg = (
-                "During installation of the dangerzone image, <br>"
-                "the following error occured:"
-            )
-            self.show_error(msg, error)
-        else:
-            self.finished.emit()
-
-    def state_change(self, state: str, error: Optional[str] = None) -> None:
-        custom_runtime = self.dangerzone.settings.custom_runtime_specified()
-
-        if state == "not_installed":
-            if custom_runtime:
-                self.show_error(
-                    "<strong>We could not find the container runtime defined in your settings</strong><br><br>"
-                    "Please check your settings, install it if needed, and retry."
-                )
-            elif platform.system() == "Linux":
-                self.show_error(
-                    "<strong>Dangerzone requires Podman</strong><br><br>"
-                    "Install it and retry."
-                )
-            else:
-                self.show_error(
-                    "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
-                    "<a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>"
-                    ", install it, and open it."
-                )
-
-        elif state == "not_running":
-            if custom_runtime:
-                self.show_error(
-                    "<strong>We were unable to start the container runtime defined in your settings</strong><br><br>"
-                    "Please check your settings, install it if needed, and retry."
-                )
-            elif platform.system() == "Linux":
-                # "not_running" here means that the `podman image ls` command failed.
-                self.show_error(
-                    "<strong>Dangerzone requires Podman</strong><br><br>"
-                    "Podman is installed but cannot run properly. See errors below",
-                    error,
-                )
-            else:
-                self.show_error(
-                    "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
-                    "Docker is installed but isn't running.<br><br>"
-                    "Open Docker and make sure it's running in the background.",
-                    error,
-                )
-        else:
-            strategy = get_installation_strategy()
-            if strategy == InstallationStrategy.DO_NOTHING:
-                message = "Nothing to do"
-                self.installation_finished()
-                # FIXME we should be able to return directly here
-                # but for some reason it's not working when I just
-                # do self.finished.emit()
-            if strategy == InstallationStrategy.INSTALL_REMOTE_CONTAINER:
-                message = (
-                    "Downloading and upgrading the Dangerzone container image.<br><br>"
-                    "This might take a few minutes..."
-                )
-            elif strategy == InstallationStrategy.INSTALL_LOCAL_CONTAINER:
-                message = (
-                    "Installing the Dangerzone container image.<br><br>"
-                    "This might take a few minutes..."
-                )
-            self.traceback.setVisible(True)
-            self.show_message(message)
-            self.button_cancel.show()
-            self.button_check.hide()
-
-            # TODO: Do not run the thread if we know there is nothing to install
-            self.install_container_t = InstallContainerThread(self.dangerzone, strategy)
-            self.install_container_t.finished.connect(self.installation_finished)
-
-            self.install_container_t.process_stdout.connect(
-                self.traceback.process_output
-            )
-            self.install_container_t.start()
+    def handle_start(self):
+        self.label.setText(
+            "Oh hi there!<br><br>"
+            "First time, huh?<br><br>"
+            "Welcome! I'm afraid you gonna have to wait a bit.<br>"
+            "Check the bottom-right corner for a progress report"
+        )
 
 
 class ContentWidget(QtWidgets.QWidget):
@@ -1295,6 +1129,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         self.dangerzone = dangerzone
         self.docs_list: List[Document] = []
         self.docs_list_widget_map: dict[Document, DocumentWidget] = {}
+        self.conversion_pending = False
 
         # Initialize thread_pool only on the first conversion
         # to ensure docker-daemon detection logic runs first
@@ -1318,9 +1153,17 @@ class DocumentsListWidget(QtWidgets.QListWidget):
             self.docs_list_widget_map[document] = widget
 
     def start_conversion(self) -> None:
+        if not self.dangerzone.is_waiting_finished:
+            log.debug("Background task not finished, pending conversion")
+            self.conversion_pending = True
+            return
+
+        self.conversion_pending = False
+        log.debug("Starting conversion")
         if not self.thread_pool_initized:
             max_jobs = self.dangerzone.isolation_provider.get_max_parallel_conversions()
             self.thread_pool = ThreadPool(max_jobs)
+            self.thread_pool_initized = True
 
         for doc in self.docs_list:
             task = ConvertTask(self.dangerzone, doc, self.get_ocr_lang())

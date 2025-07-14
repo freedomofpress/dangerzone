@@ -60,59 +60,22 @@ class UpdateCheckPrompt(Alert):
         return buttons_layout
 
 
-class UpdaterThread(QtCore.QThread):
-    """Check asynchronously for Dangerzone updates.
+def prompt_for_checks(dangerzone: DangerzoneGui):
+    """Check for Dangerzone updates.
 
-    The Updater class is mainly responsible for
-    asking the user if they want to enable update checks or not.
-
-    Since checking for updates is a task that may take some time, we perform it
-    asynchronously, in a Qt thread.
-
-    When finished, this thread triggers a signal with the results.
+    This function is responsible for asking the user if they want to enable
+    update checks or not, and then performing the update check.
     """
 
-    finished = QtCore.Signal(object)
-
-    def __init__(self, dangerzone: DangerzoneGui):
-        super().__init__()
-        self.dangerzone = dangerzone
-
-    @property
-    def check(self) -> Optional[bool]:
-        return self.dangerzone.settings.get("updater_check")
-
-    @check.setter
-    def check(self, val: Optional[bool]) -> None:
-        self.dangerzone.settings.set("updater_check", val, autosave=True)
-
-    def prompt_for_checks(self) -> Optional[bool]:
-        """Ask the user if they want to be informed about Dangerzone updates."""
-        log.debug("Prompting the user for update checks")
-        prompt = UpdateCheckPrompt(
-            self.dangerzone,
-            message=MSG_CONFIRM_UPDATE_CHECKS,
-            ok_text=OK_TEXT,
-            cancel_text=CANCEL_TEXT,
-        )
-        check = prompt.launch()
-        if not check and prompt.x_pressed:
-            return None
+    log.debug("Prompting the user for update checks")
+    prompt = UpdateCheckPrompt(
+        dangerzone,
+        message=MSG_CONFIRM_UPDATE_CHECKS,
+        ok_text=OK_TEXT,
+        cancel_text=CANCEL_TEXT,
+    )
+    check = prompt.launch()
+    if check is not None and not prompt.x_pressed:
         return bool(check)
-
-    def should_check_for_updates(self) -> bool:
-        try:
-            should_check: Optional[bool] = releases.should_check_for_updates(
-                self.dangerzone.settings
-            )
-        except errors.NeedUserInput:
-            should_check = self.prompt_for_checks()
-            if should_check is not None:
-                self.dangerzone.settings.set(
-                    "updater_check_all", should_check, autosave=True
-                )
-        return bool(should_check)
-
-    def run(self) -> None:
-        has_updates = releases.check_for_updates(self.dangerzone.settings)
-        self.finished.emit(has_updates)
+    else:
+        return None

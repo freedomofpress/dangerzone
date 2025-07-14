@@ -5,12 +5,13 @@ from typing import List, Optional
 import click
 from colorama import Back, Fore, Style
 
-from . import args, errors
+from . import args, errors, startup
 from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
+from .podman.machine import PodmanMachineManager
 from .settings import Settings
 from .updater import install
 from .util import get_version, replace_control_chars
@@ -71,7 +72,7 @@ def cli_main(
     set_container_runtime: Optional[str] = None,
 ) -> None:
     setup_logging()
-    display_banner()
+    # display_banner()
     settings = Settings()
     if set_container_runtime:
         if set_container_runtime == "default":
@@ -117,9 +118,11 @@ def cli_main(
                 click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}")
             sys.exit(1)
 
-    # Ensure container is installed
+    tasks = []
     if dangerzone.isolation_provider.requires_install():
-        install()
+        tasks = [startup.MachineInitTask(), startup.MachineStartTask()]
+    tasks += [startup.UpdateCheckTask(), startup.ContainerInstallTask()]
+    startup.StartupLogic(tasks=tasks).run()
 
     # Convert the document
     print_header("Converting document to safe PDF")
@@ -137,6 +140,10 @@ def cli_main(
             print_header(
                 f"Unsafe (original) documents moved to '{ARCHIVE_SUBDIR}' subdirectory"
             )
+
+    if dangerzone.isolation_provider.requires_install():
+        click.echo("Stopping Podman machine...")
+        PodmanMachineManager().stop()
 
     if documents_failed != []:
         print_header("Failed to convert document(s)")

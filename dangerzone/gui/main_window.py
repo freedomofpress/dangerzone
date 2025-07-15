@@ -121,6 +121,43 @@ def get_supported_extensions() -> List[str]:
     return supported_ext
 
 
+class StatusBar(QtWidgets.QWidget):
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
+        super(StatusBar, self).__init__()
+        self.dangerzone = dangerzone
+
+        self.spinner = QtWidgets.QLabel("...")  # Placeholder for spinner
+        self.message = QtWidgets.QLabel("")
+        self.info_icon = QtWidgets.QLabel("?")  # Placeholder for info icon
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.addStretch()
+        layout.addWidget(self.spinner)
+        layout.addWidget(self.message)
+        layout.addWidget(self.info_icon)
+        self.setLayout(layout)
+
+        self.set_status_warning("Starting")
+
+    def set_status_ok(self, message: str) -> None:
+        self.spinner.hide()
+        self.info_icon.hide()
+        self.message.setText(message)
+        self.setStyleSheet("color: green;")
+
+    def set_status_warning(self, message: str) -> None:
+        self.spinner.show()
+        self.info_icon.show()
+        self.message.setText(message)
+        self.setStyleSheet("color: orange;")
+
+    def set_status_error(self, message: str) -> None:
+        self.spinner.hide()
+        self.info_icon.show()
+        self.message.setText(message)
+        self.setStyleSheet("color: red;")
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(MainWindow, self).__init__()
@@ -221,6 +258,9 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addLayout(header_layout)
         layout.addWidget(self.waiting_widget, stretch=1)
         layout.addWidget(self.content_widget, stretch=1)
+
+        self.status_bar = StatusBar(self.dangerzone)
+        layout.addWidget(self.status_bar)
 
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(layout)

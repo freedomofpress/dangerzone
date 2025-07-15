@@ -33,6 +33,7 @@ This plan breaks down the implementation into manageable phases:
 * The produced Python code must be able to run on Windows, Linux, and macOS
   systems. This means that paths must be defined as `Path("dir") / "name"` and
   not `Path("dir/name")`.
+* Use click instead of argparse for building CLIs.
 
 ## Phase 1: Core Podman Machine Management
 
@@ -109,12 +110,14 @@ This plan breaks down the implementation into manageable phases:
    * A message that shows 30 characters max. If longer, it should be truncated
      with ellipses, and hovering on it should show the full message.
    * A spinner icon that shows that work is underway.
-3. The message should change colors depending on the status of the background
-   task:
+3. The **text color** of the message should change colors depending on the status of
+   the background task:
    * Orange: The background task is still running (show spinner and info icon)
    * Green: The background task has completed successfully (do not show spinner
      or info icon)
    * Red: The background task has failed (show only info icon)
+4. The widgets should always be pushed to the right. For instance, if the info
+   icon or the spinner does not exist, the text should go to the right.
 
 ## Phase 4: Create background task and move existing logic in there
 

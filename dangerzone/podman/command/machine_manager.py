@@ -92,7 +92,6 @@ class MachineManager:
             rootful=rootful,
             timezone=timezone,
             usb=usb,
-            vendor=vendor,
             user_mode_networking=user_mode_networking,
             username=username,
             volume=volume,

@@ -195,12 +195,15 @@ This plan breaks down the implementation into manageable phases:
 1. Create a popup window that contains a `TracebackWidget`, that should be
    closed by default.
 2. Whenever a user clicks on the info icon in the bottom bar, it should open
-   once.
+   this popup window.
 3. In the background task, find any `PodmanCommand.machine` command, or
    `subprocess` invocation, and pass them a pipe for stdout and stderr.
 4. Spawn a thread that reads from stdout/stderr and updates the text field with
    every new line. See how the existing `TracebackWidget.process_output` is
    called.
+5. Do not make any changes to dangerzone/podman/command/. You can make changes to
+   dangerzone/podman/machine.py
+5. The user should be able to close the pop-up window and open it later on.
 
 ## Phase 9: Robustness and User Experience
 

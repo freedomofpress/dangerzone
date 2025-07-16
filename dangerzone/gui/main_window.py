@@ -15,18 +15,16 @@ if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
     from PySide2.QtCore import Qt
     from PySide2.QtGui import QTextCursor
-    from PySide2.QtWidgets import QAction, QTextEdit
+    from PySide2.QtWidgets import QAction
 else:
     try:
         from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide6.QtCore import Qt
         from PySide6.QtGui import QAction, QTextCursor
-        from PySide6.QtWidgets import QTextEdit
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide2.QtCore import Qt
         from PySide2.QtGui import QTextCursor
-        from PySide2.QtWidgets import QAction, QTextEdit
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
@@ -41,7 +39,9 @@ from ..updater import (
 )
 from ..util import format_exception, get_resource_path, get_version
 from .background_task import BackgroundTask, CompletionReport, ProgressReport
+from .log_window import LogHandler, LogWindow
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
+from .widgets import TracebackWidget
 
 log = logging.getLogger(__name__)
 
@@ -131,14 +131,20 @@ class StatusBar(QtWidgets.QWidget):
         # self.spinner.setPixmap(load_svg_image("spinner.svg", width=15, height=15))
         from PySide6 import QtSvgWidgets
 
+        # XXX: This trick works only for SVGs that use `animateTransform`. The rest of
+        # the SVGs that use a different `animate*` property will NOT be animated.
         self.spinner = QtSvgWidgets.QSvgWidget()
         self.spinner.renderer().setFramesPerSecond(60)
-        path = get_resource_path("rolling.svg")
+        path = get_resource_path("spinner.svg")
         self.spinner.load(str(path))
         self.spinner.setFixedSize(15, 15)
         self.message = QtWidgets.QLabel("")
-        self.info_icon = QtWidgets.QLabel()
-        self.info_icon.setPixmap(load_svg_image("info-circle.svg", width=15, height=15))
+        self.info_icon = QtWidgets.QToolButton()
+        self.info_icon.setIcon(
+            QtGui.QIcon(load_svg_image("info-circle.svg", width=15, height=15))
+        )
+        self.info_icon.setIconSize(QtCore.QSize(15, 15))
+        self.info_icon.setStyleSheet("QToolButton { border: none; }")
 
         layout = QtWidgets.QHBoxLayout()
         layout.addStretch()
@@ -276,6 +282,16 @@ class MainWindow(QtWidgets.QMainWindow):
         # thing we have to a top-level container element akin to an HTML `<body>`.
         # This allows us to make QSS rules conditional on the OS color mode.
         self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
+
+        # Log window
+        self.log_window = LogWindow(self)
+        self.status_bar.info_icon.clicked.connect(self.log_window.show)
+
+        # Configure logging to the log window
+        log_handler = LogHandler()
+        log_handler.new_record.connect(self.log_window.append_log)
+        logging.getLogger().addHandler(log_handler)
+        logging.getLogger().setLevel(logging.DEBUG)  # Set a default logging level
 
         if hasattr(self.dangerzone.isolation_provider, "check_docker_desktop_version"):
             try:
@@ -527,39 +543,6 @@ class WaitingWidget(QtWidgets.QWidget):
 
     def __init__(self) -> None:
         super(WaitingWidget, self).__init__()
-
-
-class TracebackWidget(QTextEdit):
-    """Reusable component to present tracebacks to the user.
-
-    By default, the widget is initialized but does not appear.
-    You need to call `.set_content("traceback")` on it so the
-    traceback is displayed.
-    """
-
-    def __init__(self) -> None:
-        super(TracebackWidget, self).__init__()
-        # Error
-        self.setReadOnly(True)
-        self.setVisible(False)
-        self.setProperty("style", "traceback")
-        # Enable copying
-        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
-
-        self.current_output = ""
-
-    def set_content(self, error: Optional[str] = None) -> None:
-        if error:
-            self.setPlainText(error)
-            self.setVisible(True)
-
-    def process_output(self, line: str) -> None:
-        self.setVisible(True)
-        self.current_output += line
-        self.setText(self.current_output)
-        cursor = self.textCursor()
-        cursor.movePosition(QTextCursor.MoveOperation.End)
-        self.setTextCursor(cursor)
 
 
 class WaitingWidgetContainer(WaitingWidget):

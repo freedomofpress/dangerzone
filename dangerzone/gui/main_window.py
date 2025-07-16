@@ -127,9 +127,18 @@ class StatusBar(QtWidgets.QWidget):
         super(StatusBar, self).__init__()
         self.dangerzone = dangerzone
 
-        self.spinner = QtWidgets.QLabel("...")  # Placeholder for spinner
+        # self.spinner = QtWidgets.QLabel()
+        # self.spinner.setPixmap(load_svg_image("spinner.svg", width=15, height=15))
+        from PySide6 import QtSvgWidgets
+
+        self.spinner = QtSvgWidgets.QSvgWidget()
+        self.spinner.renderer().setFramesPerSecond(60)
+        path = get_resource_path("rolling.svg")
+        self.spinner.load(str(path))
+        self.spinner.setFixedSize(15, 15)
         self.message = QtWidgets.QLabel("")
-        self.info_icon = QtWidgets.QLabel("?")  # Placeholder for info icon
+        self.info_icon = QtWidgets.QLabel()
+        self.info_icon.setPixmap(load_svg_image("info-circle.svg", width=15, height=15))
 
         layout = QtWidgets.QHBoxLayout()
         layout.addStretch()
@@ -144,19 +153,19 @@ class StatusBar(QtWidgets.QWidget):
         self.spinner.hide()
         self.info_icon.hide()
         self.message.setText(message)
-        self.setStyleSheet("color: green;")
+        self.setStyleSheet("color: green; font-weight: bold")
 
     def set_status_warning(self, message: str) -> None:
         self.spinner.show()
         self.info_icon.show()
         self.message.setText(message)
-        self.setStyleSheet("color: orange;")
+        self.setStyleSheet("color: orange; font-weight: bold")
 
     def set_status_error(self, message: str) -> None:
         self.spinner.hide()
         self.info_icon.show()
         self.message.setText(message)
-        self.setStyleSheet("color: red;")
+        self.setStyleSheet("color: red; font-weight: bold")
 
 
 class MainWindow(QtWidgets.QMainWindow):

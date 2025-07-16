@@ -170,7 +170,9 @@ This plan breaks down the implementation into manageable phases:
 2. Allow the users to select documents while background task is running, and
    click on "Convert to Safe Document" normally.
 3. Show the conversions as blocked in the GUI, while the background task is
-   running, by keeping the progress bar at 0% and not moving.
+   running, by keeping the progress bar at 0% and not moving. In practice, the
+   `DocumentsListWidget.start_conversion` method must be blocked until the
+   background task finishes.
 4. Start the conversions once the background task has finished successfully.
 
 ## Phase 7: Control the lifecyle of Podman machines

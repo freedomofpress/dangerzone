@@ -479,6 +479,10 @@ class MainWindow(QtWidgets.QMainWindow):
         log.debug("Waiting for the background task has finished")
         self.dangerzone.is_waiting_finished = True
 
+        if self.content_widget.documents_list.conversion_pending:
+            log.debug("Starting pending conversion")
+            self.content_widget.documents_list.start_conversion()
+
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
         self.alert = Alert(
             self.dangerzone,
@@ -1306,6 +1310,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         self.dangerzone = dangerzone
         self.docs_list: List[Document] = []
         self.docs_list_widget_map: dict[Document, DocumentWidget] = {}
+        self.conversion_pending = False
 
         # Initialize thread_pool only on the first conversion
         # to ensure docker-daemon detection logic runs first
@@ -1329,9 +1334,17 @@ class DocumentsListWidget(QtWidgets.QListWidget):
             self.docs_list_widget_map[document] = widget
 
     def start_conversion(self) -> None:
+        if not self.dangerzone.is_waiting_finished:
+            log.debug("Background task not finished, pending conversion")
+            self.conversion_pending = True
+            return
+
+        self.conversion_pending = False
+        log.debug("Starting conversion")
         if not self.thread_pool_initized:
             max_jobs = self.dangerzone.isolation_provider.get_max_parallel_conversions()
             self.thread_pool = ThreadPool(max_jobs)
+            self.thread_pool_initized = True
 
         for doc in self.docs_list:
             task = ConvertTask(self.dangerzone, doc, self.get_ocr_lang())

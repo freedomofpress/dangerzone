@@ -40,6 +40,7 @@ from ..updater import (
     get_installation_strategy,
 )
 from ..util import format_exception, get_resource_path, get_version
+from .background_task import BackgroundTask
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 
 log = logging.getLogger(__name__)
@@ -236,27 +237,22 @@ class MainWindow(QtWidgets.QMainWindow):
         # Content widget, contains all the window content except waiting widget
         self.content_widget = ContentWidget(self.dangerzone)
 
+        # Start background tasks
+        log.debug("Starting Dangerzone background tasks")
+        self.background_task = BackgroundTask(dangerzone)
+
         if self.dangerzone.isolation_provider.requires_install():
-            # Waiting widget replaces content widget while container runtime isn't available
-            self.waiting_widget: WaitingWidget = WaitingWidgetContainer(self.dangerzone)
-            self.waiting_widget.finished.connect(self.waiting_finished)
+            self.background_task.start()
+            self.background_task.finished.connect(self.waiting_finished)
         else:
             # Don't wait with dummy converter and on Qubes.
-            self.waiting_widget = WaitingWidget()
             self.dangerzone.is_waiting_finished = True
 
-        # Only use the waiting widget if container runtime isn't available
-        if self.dangerzone.is_waiting_finished:
-            self.waiting_widget.hide()
-            self.content_widget.show()
-        else:
-            self.waiting_widget.show()
-            self.content_widget.hide()
+        self.content_widget.show()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
-        layout.addWidget(self.waiting_widget, stretch=1)
         layout.addWidget(self.content_widget, stretch=1)
 
         self.status_bar = StatusBar(self.dangerzone)
@@ -468,9 +464,8 @@ class MainWindow(QtWidgets.QMainWindow):
         signal.connect(self.handle_updates)
 
     def waiting_finished(self) -> None:
+        log.debug("Waiting for the background task has finished")
         self.dangerzone.is_waiting_finished = True
-        self.waiting_widget.hide()
-        self.content_widget.show()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
         self.alert = Alert(
@@ -495,33 +490,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 e.accept()
 
         self.dangerzone.app.exit(2)
-
-
-class InstallContainerThread(QtCore.QThread):
-    finished = QtCore.Signal(str)
-    process_stdout = QtCore.Signal(str)
-
-    def __init__(
-        self,
-        dangerzone: DangerzoneGui,
-        installation_strategy: InstallationStrategy,
-    ) -> None:
-        super(InstallContainerThread, self).__init__()
-        self.dangerzone = dangerzone
-        self.installation_strategy = installation_strategy
-
-    def run(self) -> None:
-        error = None
-        try:
-            if self.dangerzone.isolation_provider.requires_install():
-                apply_installation_strategy(
-                    self.installation_strategy, callback=self.process_stdout.emit
-                )
-        except Exception as e:
-            log.error("Container installation problem")
-            error = format_exception(e)
-        finally:
-            self.finished.emit(error)
 
 
 class WaitingWidget(QtWidgets.QWidget):
@@ -740,15 +708,6 @@ class WaitingWidgetContainer(WaitingWidget):
             self.show_message(message)
             self.button_cancel.show()
             self.button_check.hide()
-
-            # TODO: Do not run the thread if we know there is nothing to install
-            self.install_container_t = InstallContainerThread(self.dangerzone, strategy)
-            self.install_container_t.finished.connect(self.installation_finished)
-
-            self.install_container_t.process_stdout.connect(
-                self.traceback.process_output
-            )
-            self.install_container_t.start()
 
 
 class ContentWidget(QtWidgets.QWidget):

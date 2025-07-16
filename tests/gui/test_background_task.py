@@ -1,100 +1,157 @@
 import logging
-import platform
-import time
-import typing
-from typing import List
-from unittest.mock import MagicMock
 
-from pytest import fixture
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
 
-from dangerzone.gui.background_task import BackgroundTask
-from dangerzone.gui.logic import DangerzoneGui
-from dangerzone.settings import Settings
-from dangerzone.updater.installer import Strategy
-from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
+from dangerzone.gui.background_task import (
+    BackgroundTask,
+    CompletionReport,
+    ProgressReport,
+)
+from dangerzone.updater import InstallationStrategy
+from dangerzone.updater.releases import ReleaseReport
 
 logger = logging.getLogger(__name__)
 
 
-def test_background_task_app_update_check(
+def test_background_task_app_update_check_success(
     qtbot: QtBot, background_task: BackgroundTask, mocker: MockerFixture
 ) -> None:
+    """Test that the app update signal is emitted when an update is available."""
     # Enable app updates in settings
     background_task.settings.set("updater_check_all", True)
 
-    # Mock check_for_updates_logic to simulate an app update available
+    # Mock update check to return a new version
     mocker.patch(
         "dangerzone.gui.background_task.check_for_updates_logic",
         return_value=ReleaseReport("1.2.3", "changelog", container_image_bump=False),
     )
-
-    # Mock get_version to be different from the new version
-    mocker.patch("dangerzone.util.get_version", return_value="1.2.2")
-
-    # def test(app_update_available):
-    #     return app_update_available == "1.2.3"
-
-    # signals = [
-    #     (background_task.app_update_available, "app_update_available"),
-    #     # (background_task.finished, "finished"),
-    # ]
-    # # callbacks = [test, None]
-    # callbacks = [test]
-
-    # with qtbot.waitSignals(signals, check_params_cbs=callbacks) as blocker:
-    #     background_task.start()
-    # background_task.wait()
-    with qtbot.waitSignal(background_task.app_update_available) as app_blocker:
-        with qtbot.waitSignal(background_task.finished) as fin_blocker:
-            background_task.start()
-        assert app_blocker.args[0] == "1.2.3"
-    background_task.wait()
-
-
-def test_background_task_install_container_success(
-    qtbot: QtBot, background_task: BackgroundTask, mocker: MockerFixture
-) -> None:
-    # Mock install_container_logic to simulate success
-    mock_install = mocker.patch(
-        "dangerzone.gui.background_task.install", return_value=None
+    # Mock installation strategy to do nothing
+    mocker.patch(
+        "dangerzone.gui.background_task.get_installation_strategy",
+        return_value=InstallationStrategy.DO_NOTHING,
     )
 
-    # Mock check_for_updates_logic to simulate an app update available
+    reports = []
+    background_task.status_report.connect(reports.append)
+
+    with qtbot.waitSignal(background_task.app_update_available) as app_blocker:
+        background_task.start()
+        background_task.wait()
+
+    assert app_blocker.args == ["1.2.3"]
+
+    qtbot.waitUntil(lambda: len(reports) == 3)
+    assert isinstance(reports[0], ProgressReport)
+    assert reports[0].message == "Starting"
+    assert isinstance(reports[1], ProgressReport)
+    assert reports[1].message == "Checking for updates"
+    assert isinstance(reports[2], CompletionReport)
+    assert reports[2].message == "Ready"
+    assert reports[2].success is True
+
+
+def test_background_task_app_update_check_failure(
+    qtbot: QtBot, background_task: BackgroundTask, mocker: MockerFixture
+) -> None:
+    """Test the status report on update check failure."""
+    # Enable app updates
+    background_task.settings.set("updater_check_all", True)
+
+    # Mock update check to fail
     mocker.patch(
         "dangerzone.gui.background_task.check_for_updates_logic",
-        return_value=ReleaseReport(None, None, container_image_bump=True),
+        side_effect=Exception("Update check failed"),
     )
 
-    with qtbot.waitSignal(background_task.install_container_finished) as con_blocker:
-        with qtbot.waitSignal(background_task.finished) as fin_blocker:
-            background_task.start()
-        assert con_blocker.args[0] is True
+    reports = []
+    background_task.status_report.connect(reports.append)
+
+    background_task.start()
     background_task.wait()
 
-    mock_install.assert_called_once()
+    # FIXME: Check that app_update signal somehow returns an error.
+
+    qtbot.waitUntil(lambda: len(reports) == 3)
+    assert isinstance(reports[0], ProgressReport)
+    assert reports[0].message == "Starting"
+    assert isinstance(reports[1], ProgressReport)
+    assert reports[1].message == "Checking for updates"
+    assert isinstance(reports[2], CompletionReport)
+    assert reports[2].message == "Failed to check for updates"
+    assert reports[2].success is False
 
 
-def test_background_task_install_container_failure(
+def test_background_task_container_install_success(
     qtbot: QtBot, background_task: BackgroundTask, mocker: MockerFixture
 ) -> None:
-    # Mock install_container_logic to simulate success
-    mock_install = mocker.patch(
-        "dangerzone.gui.background_task.install",
+    """Test that the install finished signal is emitted on success."""
+    # Disable app updates to focus on installation
+    background_task.settings.set("updater_check_all", False)
+
+    # Mock installation strategy to require an install
+    mocker.patch(
+        "dangerzone.gui.background_task.get_installation_strategy",
+        return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
+    )
+    # Mock the actual installation to be successful
+    mock_apply_strategy = mocker.patch(
+        "dangerzone.gui.background_task.apply_installation_strategy"
+    )
+
+    reports = []
+    background_task.status_report.connect(reports.append)
+
+    with qtbot.waitSignal(background_task.install_container_finished) as blocker:
+        background_task.start()
+        background_task.wait()
+
+    assert blocker.args == [True]
+    mock_apply_strategy.assert_called_once()
+
+    qtbot.waitUntil(lambda: len(reports) == 3)
+    assert isinstance(reports[0], ProgressReport)
+    assert reports[0].message == "Starting"
+    assert isinstance(reports[1], ProgressReport)
+    assert reports[1].message == "Installing container image"
+    assert isinstance(reports[2], CompletionReport)
+    assert reports[2].message == "Ready"
+    assert reports[2].success is True
+
+
+def test_background_task_container_install_failure(
+    qtbot: QtBot, background_task: BackgroundTask, mocker: MockerFixture
+) -> None:
+    """Test that the install finished signal is emitted on failure."""
+    # Disable app updates to focus on installation
+    background_task.settings.set("updater_check_all", False)
+
+    # Mock installation strategy to require an install
+    mocker.patch(
+        "dangerzone.gui.background_task.get_installation_strategy",
+        return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
+    )
+    # Mock the actual installation to fail
+    mock_apply_strategy = mocker.patch(
+        "dangerzone.gui.background_task.apply_installation_strategy",
         side_effect=Exception("Installation failed"),
     )
 
-    # Mock check_for_updates_logic to simulate an app update available
-    mocker.patch(
-        "dangerzone.gui.background_task.check_for_updates_logic",
-        return_value=ReleaseReport(None, None, container_image_bump=True),
-    )
+    reports = []
+    background_task.status_report.connect(reports.append)
 
-    with qtbot.waitSignal(background_task.install_container_finished) as con_blocker:
-        with qtbot.waitSignal(background_task.finished) as fin_blocker:
-            background_task.start()
-        assert con_blocker.args[0] is False
-    background_task.wait()
+    with qtbot.waitSignal(background_task.install_container_finished) as blocker:
+        background_task.start()
+        background_task.wait()
 
-    mock_install.assert_called_once()
+    assert blocker.args == [False]
+    mock_apply_strategy.assert_called_once()
+
+    qtbot.waitUntil(lambda: len(reports) == 3)
+    assert isinstance(reports[0], ProgressReport)
+    assert reports[0].message == "Starting"
+    assert isinstance(reports[1], ProgressReport)
+    assert reports[1].message == "Installing container image"
+    assert isinstance(reports[2], CompletionReport)
+    assert reports[2].message == "Failed to install container"
+    assert reports[2].success is False

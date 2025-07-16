@@ -19,12 +19,23 @@ else:
 from dangerzone.gui.logic import DangerzoneGui
 from dangerzone.gui.updater import check_for_updates_logic
 from dangerzone.settings import Settings
-from dangerzone.updater import InstallationStrategy, install
+from dangerzone.updater import InstallationStrategy, get_installation_strategy
 from dangerzone.updater.installer import Strategy, apply_installation_strategy
 from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
 from dangerzone.util import format_exception, get_resource_path, get_version
 
 logger = logging.getLogger(__name__)
+
+
+class ProgressReport:
+    def __init__(self, message: str):
+        self.message = message
+
+
+class CompletionReport:
+    def __init__(self, message: str, success: bool):
+        self.message = message
+        self.success = success
 
 
 def install_container_logic(
@@ -40,7 +51,7 @@ class BackgroundTask(QtCore.QThread):
     app_update_available = QtCore.Signal(str)
     container_update_available = QtCore.Signal()
     install_container_finished = QtCore.Signal(bool)
-    finished = QtCore.Signal()
+    status_report = QtCore.Signal(object)
 
     def __init__(self, dangerzone_gui):
         super().__init__()
@@ -48,10 +59,12 @@ class BackgroundTask(QtCore.QThread):
         self.settings = Settings()
 
     def run(self):
+        self.status_report.emit(ProgressReport("Starting"))
         # Invoke logic for app and container updates
         updates_enabled = bool(self.settings.get("updater_check_all"))
         if updates_enabled:
             try:
+                self.status_report.emit(ProgressReport("Checking for updates"))
                 logger.info("Checking for application and container updates...")
                 report = check_for_updates_logic(self.dangerzone_gui)
                 if isinstance(report, ReleaseReport):
@@ -63,15 +76,28 @@ class BackgroundTask(QtCore.QThread):
                 logger.warning(
                     f"Failed to check for application and container updates: {e}"
                 )
+                self.status_report.emit(
+                    CompletionReport(
+                        "Failed to check for updates",
+                        success=False,
+                    )
+                )
+                return
 
         # Invoke logic for container image installation
         try:
-            # FIXME: Add callback
-            install(callback=None)
+            strategy = get_installation_strategy()
+            if strategy != InstallationStrategy.DO_NOTHING:
+                self.status_report.emit(ProgressReport("Installing container image"))
+            apply_installation_strategy(strategy, callback=None)
             self.install_container_finished.emit(True)
         except Exception as e:
             logger.exception("Failed to install container")
             self.install_container_finished.emit(False)
+            self.status_report.emit(
+                CompletionReport("Failed to install container", success=False)
+            )
+            return
 
         logger.debug("Background task has finished")
-        self.finished.emit()
+        self.status_report.emit(CompletionReport("Ready", success=True))

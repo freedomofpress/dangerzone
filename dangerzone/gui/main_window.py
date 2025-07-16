@@ -40,7 +40,7 @@ from ..updater import (
     get_installation_strategy,
 )
 from ..util import format_exception, get_resource_path, get_version
-from .background_task import BackgroundTask
+from .background_task import BackgroundTask, CompletionReport, ProgressReport
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 
 log = logging.getLogger(__name__)
@@ -244,6 +244,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.dangerzone.isolation_provider.requires_install():
             self.background_task.start()
             self.background_task.finished.connect(self.waiting_finished)
+            self.background_task.status_report.connect(self.handle_status_report)
         else:
             # Don't wait with dummy converter and on Qubes.
             self.dangerzone.is_waiting_finished = True
@@ -280,6 +281,17 @@ class MainWindow(QtWidgets.QMainWindow):
                 pass  # It's caught later in the flow.
 
         self.show()
+
+    def handle_status_report(
+        self, report: Union[ProgressReport, CompletionReport]
+    ) -> None:
+        if isinstance(report, ProgressReport):
+            self.status_bar.set_status_warning(report.message)
+        elif isinstance(report, CompletionReport):
+            if report.success:
+                self.status_bar.set_status_ok(report.message)
+            else:
+                self.status_bar.set_status_error(report.message)
 
     def show_update_success(self) -> None:
         """Inform the user about a new Dangerzone release."""

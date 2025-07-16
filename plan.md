@@ -121,33 +121,46 @@ This plan breaks down the implementation into manageable phases:
 
 ## Phase 4: Create background task and move existing logic in there
 
-1. Create a background task using `QThread` that spawns when the GUI application
-   starts.
-2. Invoke the logic that checks for container and application updates in this
-   background task. It is currently spawned by `dangerzone/gui/updater.py`,
-   class `UpdaterThread(QtCore.QThread)`.
+1. Create a `BackgroundTask` class using `QThread` that spawns when the GUI
+   application starts.
+2. The `BackgroundTask` will *invoke* the logic that checks for container and
+   application updates. This logic is currently spawned by
+   `dangerzone/gui/updater.py`, class `UpdaterThread(QtCore.QThread)`.
    * Separate the job that checks for application updates from the job that
      checks for container updates.
-3. Invoke the logic that installs the container image in this background task,
-   after the update checks. It is currently spawned by
+3. The `BackgroundTask` will *invoke* the logic that installs the container
+   image, after the update checks. This logic is currently spawned by
    `dangerzone/gui/main_window.py`, class
    `InstallContainerThread(QtCore.QThread)`.
 4. Do not spawn the `UpdaterThread` / `InstallContainerThread` anymore, since
-   the background task is now responsible for these actions.
+   the `BackgroundTask` is now responsible for orchestrating these actions.
+5. Convert `UpdaterThread` and `InstallContainerThread` to regular classes (or
+   refactor their relevant logic into standalone functions/utility classes)
+   that can be called by the `BackgroundTask`.
+6. Move the signals (`app_update_available`, `container_update_available`,
+   `install_container_progress`, `install_container_finished`) to the
+   `BackgroundTask` class.
 
 ## Phase 5: Make background task update the bottom bar
 
 1. When the background task performs a specific job, show a message in the
-   bottom bar for it:
-   * Checking for container updates
-   * Checking for application updates
-   * Installing container image
+   bottom bar we created in phase 3 for it:
+   * Starting (when there's no action yet)
+   * Checking for updates (before we start checking for updates)
+   * Installing container image (if the installation strategy is not
+     `DO_NOTHING`)
 2. If the background task is running, add a spinner, an info icon, and make the
    text color orange.
 3. If the background task has completed successfully, show a green message that
    reads "Ready".
 4. If the background task has failed, show the last message in red color, and an
    info icon.
+5. Communicate these status changes via signals (`status_report`). The object passed via these
+   signals should be similar to ReleaseReport, and should have two message
+   types:
+   * ProgressReport(message: str) -> the background task is still working
+   * CompletionReport(message: str, success: bool) -> the background task has
+     completed, either successfully, or with a failure.
 
 ## Phase 6: Make conversions block until background task has completed successfully
 

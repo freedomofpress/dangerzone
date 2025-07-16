@@ -31,16 +31,19 @@ class PodmanMachineManager:
     def podman_path(self) -> Path:
         """Get the path to the Podman binary."""
         if self._podman_path is None:
+            podman_bin = "podman"
+            if platform.system() == "Windows":
+                podman_bin += ".exe"
             self._podman_path = (
-                util.get_resource_path("share") / "vendor" / "podman" / "podman"
-            )
+                util.get_resource_path("vendor") / "podman" / podman_bin)
         return self._podman_path
 
     @property
     def containers_conf_path(self) -> Path:
         """Create a temporary containers.conf file and return its path."""
         if self._containers_conf_path is None:
-            helper_binaries_dir = self.podman_path.parent
+            helper_binaries_dir = str(self.podman_path.parent)
+            helper_binaries_dir = helper_binaries_dir.replace("\\", "\\\\")
             content = f"""
 [containers]
 helper_binaries_dir=["{helper_binaries_dir}"]
@@ -53,7 +56,7 @@ helper_binaries_dir=["{helper_binaries_dir}"]
 
     def _get_machine_image_path(self) -> Path:
         """Get the path to the machine image."""
-        return util.get_resource_path("share") / "machine.tar"
+        return util.get_resource_path("machine.tar")
 
     def _get_podman_command(self) -> PodmanCommand:
         """Get a PodmanCommand instance."""

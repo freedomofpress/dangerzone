@@ -653,3 +653,28 @@ def test_outdated_docker_desktop_displays_warning(
 
     QtCore.QTimer.singleShot(0, _check_alert_displayed)
     menu_actions[0].trigger()
+
+
+def test_close_event_stops_podman_machine(
+    qtbot: QtBot, mocker: MockerFixture, dummy: MagicMock
+) -> None:
+    """Test that the Podman machine is stopped on closeEvent."""
+    # Mock the platform to be Windows or Darwin
+    mocker.patch("platform.system", return_value="Windows")
+
+    mock_app = mocker.MagicMock()
+    dz = DangerzoneGui(mock_app, dummy)
+
+    window = MainWindow(dz)
+    qtbot.addWidget(window)
+
+    # Mock the PodmanMachineManager
+    mock_podman_machine_manager = mocker.MagicMock()
+    window.background_task.podman_machine_manager = mock_podman_machine_manager
+
+    # Mock the alert so that we can close the window
+    mocker.patch.object(window, "alert")
+
+    window.close()
+
+    mock_podman_machine_manager.stop_machine.assert_called_once()

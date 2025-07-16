@@ -18,6 +18,7 @@ else:
 
 from dangerzone.gui.logic import DangerzoneGui
 from dangerzone.gui.updater import check_for_updates_logic
+from dangerzone.podman.machine import PodmanMachineManager
 from dangerzone.settings import Settings
 from dangerzone.updater import InstallationStrategy, get_installation_strategy
 from dangerzone.updater.installer import Strategy, apply_installation_strategy
@@ -57,9 +58,26 @@ class BackgroundTask(QtCore.QThread):
         super().__init__()
         self.dangerzone_gui = dangerzone_gui
         self.settings = Settings()
+        self.podman_machine_manager = PodmanMachineManager()
 
     def run(self):
         self.status_report.emit(ProgressReport("Starting"))
+
+        if platform.system() in ["Windows", "Darwin"]:
+            try:
+                self.status_report.emit(ProgressReport("Initializing Podman machine"))
+                self.podman_machine_manager.initialize_machine()
+                self.status_report.emit(ProgressReport("Starting Podman machine"))
+                self.podman_machine_manager.start_machine()
+            except Exception as e:
+                logger.exception("Failed to initialize Podman machine")
+                self.status_report.emit(
+                    CompletionReport(
+                        "Failed to initialize Podman machine", success=False
+                    )
+                )
+                return
+
         # Invoke logic for app and container updates
         updates_enabled = bool(self.settings.get("updater_check_all"))
         if updates_enabled:

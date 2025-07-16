@@ -484,6 +484,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.content_widget.documents_list.start_conversion()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
+        # Stop the podman machine if it's running
+        if platform.system() in ["Windows", "Darwin"]:
+            log.debug("Stopping podman machine")
+            self.background_task.podman_machine_manager.stop_machine()
+
         self.alert = Alert(
             self.dangerzone,
             message="Some documents are still being converted.\n Are you sure you want to quit?",

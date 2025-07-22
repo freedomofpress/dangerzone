@@ -15,6 +15,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   Python environments >= 3.10, to avoid some compatibility issues with Python
   3.13
   ([#1206](https://github.com/freedomofpress/dangerzone/issues/1206))
+- Improve our release instructions by splitting the large `RELEASE.md` file
+  into distinct docs, whose instructions can be executed sequentially
+  ([#1212](https://github.com/freedomofpress/dangerzone/pull/1212))
 
 ## [0.9.1](https://github.com/freedomofpress/dangerzone/compare/v0.9.1...0.9.0)
 

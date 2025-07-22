@@ -2,8 +2,14 @@
 import pathlib
 import subprocess
 
-RELEASE_FILE = "RELEASE.md"
-QA_FILE = "QA.md"
+RELEASE_DOCS_DIR = pathlib.Path("docs") / "developer" / "release"
+DOCS = [
+    "pre-release.md",
+    "prepare-build-envs.md",
+    "build.md",
+    "qa.md",
+    "release.md",
+]
 
 
 def git_root():
@@ -23,45 +29,29 @@ def git_root():
 
 
 def extract_checkboxes(filename):
-    headers = []
-    result = []
+    first_pass = []
+    second_pass = []
 
     with open(filename, "r") as f:
         lines = f.readlines()
 
-    current_level = 0
     for line in lines:
         line = line.rstrip()
+        if line.startswith("#") or line.lstrip().startswith("- [ ]"):
+            first_pass.append(line)
 
-        # If it's a header, store it
-        if line.startswith("#"):
-            # Count number of # to determine header level
-            level = len(line) - len(line.lstrip("#"))
-            if level < current_level or not current_level:
-                headers.extend(["", line, ""])
-                current_level = level
-            elif level > current_level:
-                continue
-            else:
-                headers = ["", line, ""]
+    current_level = 0
+    for line in reversed(first_pass):
+        level = len(line) - len(line.lstrip("#"))
+        if (level >= current_level > 0) or (level > 0 and not second_pass):
+            continue
+        current_level = level
+        second_pass.append(line)
 
-        # If it's a checkbox
-        elif "- [ ]" in line or "- [x]" in line or "- [X]" in line:
-            # Print the last header if we haven't already
-            if headers:
-                result.extend(headers)
-                headers = []
-                current_level = 0
-
-            # If this is the "Do the QA tasks" line, recursively get QA tasks
-            if "Do the QA tasks" in line:
-                result.append(line)
-                qa_tasks = extract_checkboxes(git_root() / QA_FILE)
-                result.append(qa_tasks)
-            else:
-                result.append(line)
-    return "\n".join(result)
+    return "\n".join(reversed(second_pass))
 
 
 if __name__ == "__main__":
-    print(extract_checkboxes(git_root() / RELEASE_FILE))
+    for name in DOCS:
+        path = git_root() / RELEASE_DOCS_DIR / name
+        print(extract_checkboxes(path))

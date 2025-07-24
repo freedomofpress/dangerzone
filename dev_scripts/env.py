@@ -78,6 +78,16 @@ COPY apt-tools-prod.sources /etc/apt/sources.list.d/
 COPY apt-tools-prod.pref /etc/apt/preferences.d/
 """
 
+# We are relying on Debian bullseye archived backports for testing only.
+# They are not required to build or run Dangerzone but are useful to run
+# the tests because they provide Qt6.
+# See https://github.com/freedomofpress/dangerzone/issues/1213
+DOCKERFILE_USE_BULLSEYE_BACKPORTS = r"""
+RUN apt-get update && apt-get install -y ca-certificates
+RUN echo "deb https://archive.debian.org/debian/ bullseye-backports main" \
+    >> /etc/apt/sources.list
+"""
+
 # FIXME: Do we really need the python3-venv packages?
 DOCKERFILE_BUILD_DEV_DEBIAN_DEPS = r"""
 ARG DEBIAN_FRONTEND=noninteractive
@@ -324,10 +334,6 @@ class Env:
         """Initialize an Env class based on some common parameters."""
         self.distro = distro
         self.version = version
-        # NOTE: We change "bullseye" to "bullseye-backports", since it contains `pipx`,
-        # which is not available through the original repos.
-        if self.distro == "debian" and self.version in ("bullseye", "11"):
-            self.version = "bullseye-backports"
 
         # Try to autodetect the runtime, if the user has not provided it.
         podman_cmd = ["podman"]
@@ -558,9 +564,13 @@ class Env:
                 install_deps = (
                     DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
                 )
-            elif self.distro == "debian" and self.version in ("bullseye-backports",):
+            elif self.distro == "debian" and self.version in ("bullseye",):
                 # Debian Bullseye misses a dependency to libgl1.
                 qt_deps += " libgl1"
+
+                install_deps = (
+                    DOCKERFILE_USE_BULLSEYE_BACKPORTS + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
+                )
 
             install_deps = install_deps.format(qt_deps=qt_deps)
 

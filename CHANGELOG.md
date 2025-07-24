@@ -7,9 +7,14 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
 
+### Development changes
+
+- Use the archived backports for Debian bullseye
+  ([#1213](https://github.com/freedomofpress/dangerzone/issues/1213))
+
 ## [0.9.1](https://github.com/freedomofpress/dangerzone/compare/v0.9.1...0.9.0)
 
-## Fixed
+### Fixed
 
 - Enforce passing our own seccomp profile when running the sandbox, to avoid a
   regression that has manifested since Docker Desktop 4.42.0
@@ -20,7 +25,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Make our seccomp policy allow unknown syscalls for podman versions < 4.0
   ([#1201](https://github.com/freedomofpress/dangerzone/issues/1201))
 
-## Changed
+### Changed
 
 - Upgrade the Python version we ship in Windows / macOS to 3.13
   ([#1120](https://github.com/freedomofpress/dangerzone/issues/1120))
@@ -88,10 +93,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   including the registry hostname ([#1118](https://github.com/freedomofpress/dangerzone/pull/1118)).
   Thanks [@sudoforge](https://github.com/sudoforge) for the contribution.
 - Update the Dangerzone container image and its dependencies (gVisor, Debian base image, H2Orestart) to the latest versions:
-  * Debian image release: `bookworm-20250317-slim@sha256:1209d8fd77def86ceb6663deef7956481cc6c14a25e1e64daec12c0ceffcc19d`
-  * Debian snapshots date: `2025-03-31`
-  * gVisor release date: `2025-03-26`
-  * H2Orestart plugin: `v0.7.2` (`d09bc5c93fe2483a7e4a57985d2a8d0e4efae2efb04375fe4b59a68afd7241e2`)
+  - Debian image release: `bookworm-20250317-slim@sha256:1209d8fd77def86ceb6663deef7956481cc6c14a25e1e64daec12c0ceffcc19d`
+  - Debian snapshots date: `2025-03-31`
+  - gVisor release date: `2025-03-26`
+  - H2Orestart plugin: `v0.7.2` (`d09bc5c93fe2483a7e4a57985d2a8d0e4efae2efb04375fe4b59a68afd7241e2`)
 
 ### Development changes
 
@@ -124,7 +129,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Development changes
 
-  Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
+Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
+
 - Automate a large portion of our release tasks with `doit` ([#1016](https://github.com/freedomofpress/dangerzone/issues/1016))
 
 ## [0.8.0](https://github.com/freedomofpress/dangerzone/compare/v0.8.0...0.7.1)
@@ -179,9 +185,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Integrate Dangerzone with gVisor, a memory-safe application kernel, thanks to [@EtiennePerot](https://github.com/EtiennePerot) ([#126](https://github.com/freedomofpress/dangerzone/issues/126)).
   As a result of this integration, we have also improved Dangerzone's security in the following ways:
-  * Prevent attacker from becoming root within the container ([#224](https://github.com/freedomofpress/dangerzone/issues/224))
-  * Use a restricted seccomp profile ([#225](https://github.com/freedomofpress/dangerzone/issues/225))
-  * Make use of user namespaces ([#228](https://github.com/freedomofpress/dangerzone/issues/228))
+  - Prevent attacker from becoming root within the container ([#224](https://github.com/freedomofpress/dangerzone/issues/224))
+  - Use a restricted seccomp profile ([#225](https://github.com/freedomofpress/dangerzone/issues/225))
+  - Make use of user namespaces ([#228](https://github.com/freedomofpress/dangerzone/issues/228))
 - Files can now be drag-n-dropped to Dangerzone ([issue #409](https://github.com/freedomofpress/dangerzone/issues/409))
 
 ### Fixed
@@ -206,7 +212,6 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Added a design doc for the update notifications
 - Added a design doc for the gVisor integration ([#815](https://github.com/freedomofpress/dangerzone/pull/815))
 - Removed the python shebang from some files
-
 
 ## Dangerzone 0.6.1
 
@@ -340,9 +345,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Inform about new updates on MacOS/Windows platforms, by periodically checking
   our GitHub releases page ([issue #189](https://github.com/freedomofpress/dangerzone/issues/189))
 - Feature: Add support for HWP/HWPX files (Hancom Office) ([issue #243](https://github.com/freedomofpress/dangerzone/issues/243), thanks to [@OctopusET](https://github.com/OctopusET))
-  * **NOTE:** This feature is not yet supported on MacOS with Apple Silicon CPU
+  - **NOTE:** This feature is not yet supported on MacOS with Apple Silicon CPU
     or Qubes OS ([issue #494](https://github.com/freedomofpress/dangerzone/issues/494),
-     [issue #498](https://github.com/freedomofpress/dangerzone/issues/498))
+    [issue #498](https://github.com/freedomofpress/dangerzone/issues/498))
 - Allow users to change their document selection from the UI ([issue #428](https://github.com/freedomofpress/dangerzone/issues/428))
 - Add a note in our README for MacOS 11+ users blocked by SIP ([PR #401](https://github.com/freedomofpress/dangerzone/pull/401), thanks to [@keywordnew](https://github.com/keywordnew))
 - Platform support: Alpha integration with Qubes OS ([issue #411](https://github.com/freedomofpress/dangerzone/issues/411))
@@ -361,7 +366,6 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Replace deprecated `pipes` module with `shlex` ([issue #373](https://github.com/freedomofpress/dangerzone/issues/373), thanks to [@OctopusET](https://github.com/OctopusET))
 - Shrink container image with `--no-cache` option on `apk` ([issue #459](https://github.com/freedomofpress/dangerzone/issues/459), thanks to [@OctopusET](https://github.com/OctopusET))
 
-
 ### Security
 
 - Continuously scan our Python dependencies and container image for
@@ -376,12 +380,12 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Feature: Add version info in the CLI and GUI ([issue #219](https://github.com/freedomofpress/dangerzone/issues/219))
 - Development: Improve CI stability and coverage
   ([issue #292](https://github.com/freedomofpress/dangerzone/issues/292),
-   [issue #217](https://github.com/freedomofpress/dangerzone/issues/217),
-   [issue #229](https://github.com/freedomofpress/dangerzone/issues/229))
+  [issue #217](https://github.com/freedomofpress/dangerzone/issues/217),
+  [issue #229](https://github.com/freedomofpress/dangerzone/issues/229))
 - Development: Provide dev scripts for testing Dangerzone in a container and
   running our QA pipeline
   ([issue #286](https://github.com/freedomofpress/dangerzone/issues/286),
-   [issue #287](https://github.com/freedomofpress/dangerzone/issues/287))
+  [issue #287](https://github.com/freedomofpress/dangerzone/issues/287))
 - Development: Support Dangerzone development on Fedora 37
   ([issue #294](https://github.com/freedomofpress/dangerzone/issues/294))
 - Development: Allow running Mypy on MacOS M1 machines ([issue #177](https://github.com/freedomofpress/dangerzone/issues/177))
@@ -439,13 +443,12 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Bug fix: re-adds support for 'open with Dangerzone' from finder on macOS ([issue #268](https://github.com/freedomofpress/dangerzone/issues/268))
 - Bug fix: (macOS) quit Dangerzone when main window is closed ([issue #271](https://github.com/freedomofpress/dangerzone/issues/271))
 
-
 ## Dangerzone 0.3.2
-- Bug fix: some non-ascii characters like “ would prevent Dangerzone from working  ([issue #144](https://github.com/freedomofpress/dangerzone/issues/144))
+
+- Bug fix: some non-ascii characters like “ would prevent Dangerzone from working ([issue #144](https://github.com/freedomofpress/dangerzone/issues/144))
 - Bug fix: error where Dangerzone would show "permission denied: '/tmp/input_file'" ([issue #157](https://github.com/freedomofpress/dangerzone/issues/157))
 - Bug fix: remove containers after use, enabling Dangerzone to run after 1000+ converted docs ([issue #197](https://github.com/freedomofpress/dangerzone/pull/197))
 - Security: limit container capabilities, run in container as non-root and limit privilege escalation ([issue #169](https://github.com/freedomofpress/dangerzone/issues/169))
-
 
 ## Dangerzone 0.3.1
 

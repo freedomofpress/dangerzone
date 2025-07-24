@@ -8,7 +8,14 @@ from pathlib import Path
 try:
     import platformdirs
 except ImportError:
-    import appdirs as platformdirs
+    import appdirs as platformdirs  # type: ignore[no-redef]
+
+
+def get_architecture() -> str:
+    """Return the currently detected architecture (amd64 or arm64)"""
+    machine = platform.machine().lower()
+    # Normalize architecture names
+    return {"x86_64": "amd64", "amd64": "amd64", "arm64": "arm64"}.get(machine, machine)
 
 
 def get_cache_dir() -> Path:
@@ -73,6 +80,7 @@ def get_tessdata_dir() -> Path:
 
 
 def get_version() -> str:
+    """Returns the Dangerzone version string."""
     try:
         with get_resource_path("version.txt").open() as f:
             version = f.read().strip()

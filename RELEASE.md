@@ -17,6 +17,8 @@ Here is a list of tasks that should be done before issuing the release:
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
 - [ ] [Bump the minimum Docker Desktop versions](https://github.com/freedomofpress/dangerzone/blob/main/RELEASE.md#bump-the-minimum-docker-desktop-version) in `isolation_provider/container.py`
 - [ ] Bump the dates and versions in the `Dockerfile.env`
+- [ ] Bump the bundled log index in `dangerzone/updater/signatures.py` with the log index of the bundled sandbox.
+- [ ] Bump the dates and versions in the `Dockerfile`
 - [ ] Update the download links in our `INSTALL.md` page to point to the new version (the download links will be populated after the release)
 - [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
@@ -34,7 +36,7 @@ to check if a new version has been added, or if an existing one is now EOL
 In case of a new version (beta, RC, or official release):
 
 1. Add it in our CI workflows, to test if that version works.
-   * See `.circleci/config.yml` and `.github/workflows/ci.yml`, as well as
+   - See `.circleci/config.yml` and `.github/workflows/ci.yml`, as well as
      `dev_scripts/env.py` and `dev_scripts/qa.py`.
 2. Do a test of this version locally with `dev_scripts/qa.py`. Focus on the
    GUI part, since the basic functionality is already tested by our CI
@@ -43,12 +45,12 @@ In case of a new version (beta, RC, or official release):
    `CHANGELOG.md`.
 4. If that version is a new stable release, update the `RELEASE.md` and
    `BUILD.md` files where necessary.
-4. Send a PR with the above changes.
+5. Send a PR with the above changes.
 
 In case of the removal of a version:
 
 1. Remove any mention to this version from our repo.
-   * Consult the previous paragraph, but also `grep` your way around.
+   - Consult the previous paragraph, but also `grep` your way around.
 2. Add a notice in our `CHANGELOG.md` about the version removal.
 
 ## Bump the minimum Docker Desktop version
@@ -75,6 +77,7 @@ Once we are confident that the release will be out shortly, and doesn't need any
   git tag -s v0.1.0
   git push origin v0.1.0
   ```
+
   **Note**: release candidates are suffixed by `-rcX`.
 
 > [!IMPORTANT]
@@ -115,8 +118,8 @@ The following needs to happen for both Silicon and Intel chipsets.
 Here is what you need to do:
 
 - [ ] Verify and install the latest supported Python version from
-  [python.org](https://www.python.org/downloads/macos/) (do not use the one from
-  brew as it is known to [cause issues](https://github.com/freedomofpress/dangerzone/issues/471))
+      [python.org](https://www.python.org/downloads/macos/) (do not use the one from
+      brew as it is known to [cause issues](https://github.com/freedomofpress/dangerzone/issues/471))
 
 - [ ] Checkout the dependencies, and clean your local copy:
 
@@ -145,15 +148,14 @@ Here is what you need to do:
   poetry sync
   ```
 
-- [ ] Build the container image and download the necessary assets
+- [ ] Retrieve the sandbox image and download the necessary assets
 
   ```bash
-  poetry run ./install/common/build-image.py
+  # Retrieve the sandbox image
+  poetry run ./dev_scripts/dangerzone-image prepare-archive
+      --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+      --output share/container.tar
   poetry run mazette install
-
-  # Copy the container image to the assets folder
-  cp share/container.tar ~dz/release-assets/$VERSION/dangerzone-$VERSION-arm64.tar
-  cp share/image-id.txt ~dz/release-assets/$VERSION/.
   ```
 
 - [ ] Build the app bundle
@@ -203,6 +205,7 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
 #### Releasing and Signing
 
 - [ ] Checkout the dependencies, and clean your local copy:
+
   ```bash
   # In case of a new Python installation or minor version upgrade, e.g., from
   # 3.11 to 3.12, reinstall Poetry
@@ -225,11 +228,14 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
 
   # Install the dependencies
   poetry sync
+
+  # Retrieve the sandbox image
+  poetry run ./dev_scripts/dangerzone-image prepare-archive
+      --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+      --output share/container.tar
   ```
 
-- [ ] Copy the container image into the VM
-  > [!IMPORTANT]
-  > Instead of running `python .\install\windows\build-image.py` in the VM, run the build image script on the host (making sure to build for `linux/amd64`). Copy `share/container.tar` and `share/image-id.txt` from the host into the `share` folder in the VM.
+- [ ] Copy `share/container.tar` from the host into the `share` folder in the VM.
 - [ ] Download the necessary assets with `poetry run mazette install`
 - [ ] Run `poetry run .\install\windows\build-app.bat`
 - [ ] When you're done you will have `dist\Dangerzone.msi`
@@ -264,8 +270,10 @@ or create your own locally with:
 ./dev_scripts/env.py --distro debian --version bookworm build-dev
 ./dev_scripts/env.py --distro debian --version bookworm run --dev bash
 
-# Build the latest container
-./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py"
+# Retrieve the container image to include in the release
+poerty run ./dev_scripts/dangerzone-image prepare-archive
+    --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+    --output share/container.tar
 
 # Create a .deb
 ./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && ./install/linux/build-deb.py"
@@ -288,8 +296,10 @@ or create your own locally with:
 ```sh
 ./dev_scripts/env.py --distro fedora --version 41 build-dev
 
-# Build the latest container (skip if already built):
-./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && poetry run ./install/common/build-image.py"
+# Retrieve the sandbox (skip if it's already there):
+poerty run ./dev_scripts/dangerzone-image prepare-archive
+    --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+    --output share/container.tar
 
 # Create a .rpm:
 ./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"
@@ -314,19 +324,21 @@ repo.
 To publish the release, you can follow these steps:
 
 - [ ] Create an archive of the Dangerzone source in `tar.gz` format:
+
   ```bash
   export VERSION=$(cat share/version.txt)
   git archive --format=tar.gz -o dangerzone-${VERSION:?}.tar.gz --prefix=dangerzone/ v${VERSION:?}
   ```
 
 - [ ] Run container scan on the produced container images (some time may have passed since the artifacts were built)
+
   ```bash
   docker pull anchore/grype:latest
   docker run --rm -v ./share/container.tar:/container.tar anchore/grype:latest /container.tar
   ```
 
 - [ ] Collect the assets in a single directory, calculate their SHA-256 hashes, and sign them.
-  There is an `./dev_scripts/sign-assets.py` script to automate this task.
+      There is an `./dev_scripts/sign-assets.py` script to automate this task.
 
   **Important:** Before running the script, make sure that it's the same container images as
   the ones that are shipped in other platforms (see our [Pre-release](#Pre-release) section)
@@ -337,6 +349,7 @@ To publish the release, you can follow these steps:
   ```
 
 - [ ] Upload all the assets to the draft release on GitHub.
+
   ```bash
   find ~/release-assets/$VERSION/github | xargs -n1 ./dev_scripts/upload-asset.py --token ~/token --draft
   ```

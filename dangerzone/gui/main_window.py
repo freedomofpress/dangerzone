@@ -8,7 +8,10 @@ from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import Callable, List, Optional, Union
 
+from dangerzone.gui import startup
 from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
+
+from ..podman.machine import PodmanMachineManager
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
@@ -38,7 +41,6 @@ from ..updater import (
     get_installation_strategy,
 )
 from ..util import format_exception, get_resource_path, get_version
-from .background_task import BackgroundTask, CompletionReport, ProgressReport
 from .log_window import LogHandler, LogWindow
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 from .widgets import TracebackWidget
@@ -153,15 +155,13 @@ class StatusBar(QtWidgets.QWidget):
         layout.addWidget(self.info_icon)
         self.setLayout(layout)
 
-        self.set_status_warning("Starting")
-
     def set_status_ok(self, message: str) -> None:
         self.spinner.hide()
         self.info_icon.hide()
         self.message.setText(message)
         self.setStyleSheet("color: green; font-weight: bold")
 
-    def set_status_warning(self, message: str) -> None:
+    def set_status_working(self, message: str) -> None:
         self.spinner.show()
         self.info_icon.show()
         self.message.setText(message)
@@ -172,6 +172,27 @@ class StatusBar(QtWidgets.QWidget):
         self.info_icon.show()
         self.message.setText(message)
         self.setStyleSheet("color: red; font-weight: bold")
+
+    def handle_startup_begin(self):
+        self.set_status_working("Starting")
+
+    def handle_task_machine_init(self):
+        self.set_status_working("Initializing Dangerzone VM")
+
+    def handle_task_machine_start(self):
+        self.set_status_working("Starting Dangerzone VM")
+
+    def handle_task_update_check(self):
+        self.set_status_working("Checking for updates")
+
+    def handle_task_container_install(self):
+        self.set_status_working("Installing container sandbox")
+
+    def handle_startup_error(self):
+        self.set_status_error("Startup failed")
+
+    def handle_startup_success(self):
+        self.set_status_ok("")
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -252,20 +273,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # Content widget, contains all the window content except waiting widget
         self.content_widget = ContentWidget(self.dangerzone)
 
-        # Start background tasks
-        log.debug("Starting Dangerzone background tasks")
-        self.background_task = BackgroundTask(dangerzone)
-
-        if self.dangerzone.isolation_provider.requires_install():
-            self.background_task.start()
-            self.background_task.finished.connect(self.waiting_finished)
-            self.background_task.status_report.connect(self.handle_status_report)
-        else:
-            # Don't wait with dummy converter and on Qubes.
-            self.dangerzone.is_waiting_finished = True
-
-        self.content_widget.show()
-
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
@@ -293,6 +300,34 @@ class MainWindow(QtWidgets.QMainWindow):
         logging.getLogger().addHandler(log_handler)
         logging.getLogger().setLevel(logging.DEBUG)  # Set a default logging level
 
+        # Start startup thread
+        log.debug("Starting Dangerzone background tasks")
+        task_machine_init = startup.MachineInitTask()
+        task_machine_init.use_provider(dangerzone.isolation_provider)
+        task_machine_start = startup.MachineStartTask()
+        task_machine_start.use_provider(dangerzone.isolation_provider)
+        task_update_check = startup.UpdateCheckTask()
+        task_container_install = startup.ContainerInstallTask()
+        tasks = [
+            task_machine_init,
+            task_machine_start,
+            task_update_check,
+            task_container_install,
+        ]
+        self.startup_thread = startup.StartupThread(tasks)
+        self.startup_thread.succeeded.connect(self.waiting_finished)
+        self.startup_thread.starting.connect(self.status_bar.handle_startup_begin)
+        self.startup_thread.succeeded.connect(self.status_bar.handle_startup_success)
+        self.startup_thread.failed.connect(self.status_bar.handle_startup_error)
+        task_machine_init.starting.connect(self.status_bar.handle_task_machine_init)
+        task_machine_start.starting.connect(self.status_bar.handle_task_machine_start)
+        task_update_check.starting.connect(self.status_bar.handle_task_update_check)
+        task_container_install.starting.connect(
+            self.status_bar.handle_task_container_install
+        )
+        self.content_widget.show()
+        self.startup_thread.start()
+
         if hasattr(self.dangerzone.isolation_provider, "check_docker_desktop_version"):
             try:
                 is_version_valid, version = (
@@ -306,17 +341,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 pass  # It's caught later in the flow.
 
         self.show()
-
-    def handle_status_report(
-        self, report: Union[ProgressReport, CompletionReport]
-    ) -> None:
-        if isinstance(report, ProgressReport):
-            self.status_bar.set_status_warning(report.message)
-        elif isinstance(report, CompletionReport):
-            if report.success:
-                self.status_bar.set_status_ok(report.message)
-            else:
-                self.status_bar.set_status_error(report.message)
 
     def show_update_success(self) -> None:
         """Inform the user about a new Dangerzone release."""
@@ -512,7 +536,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Stop the podman machine if it's running
         if platform.system() in ["Windows", "Darwin"]:
             log.debug("Stopping podman machine")
-            self.background_task.podman_machine_manager.stop_machine()
+            PodmanMachineManager().stop()
 
         self.alert = Alert(
             self.dangerzone,

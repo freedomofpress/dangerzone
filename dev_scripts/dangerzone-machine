@@ -54,7 +54,7 @@ def init(cpus, memory, timezone):
     """Initialize a Dangerzone Podman machine."""
     try:
         manager = PodmanMachineManager()
-        manager.initialize_machine(cpus=cpus, memory=memory, timezone=timezone)
+        manager.init(cpus=cpus, memory=memory, timezone=timezone)
         click.echo(f"Machine initialized: {manager.machine_prefix}")
     except PodmanError as e:
         click.echo(click.style(f"Error: {e}", fg="red"), err=True)
@@ -66,7 +66,7 @@ def start():
     """Start the Dangerzone Podman machine."""
     try:
         manager = PodmanMachineManager()
-        manager.start_machine()
+        manager.start()
         click.echo(f"Machine started: {manager.machine_prefix}")
     except PodmanError as e:
         click.echo(click.style(f"Error: {e}", fg="red"), err=True)
@@ -78,7 +78,7 @@ def stop():
     """Stop the Dangerzone Podman machine."""
     try:
         manager = PodmanMachineManager()
-        manager.stop_machine()
+        manager.stop()
         click.echo(f"Machine stopped: {manager.machine_prefix}")
     except PodmanError as e:
         click.echo(click.style(f"Error: {e}", fg="red"), err=True)
@@ -96,7 +96,7 @@ def remove(force):
                 f"Are you sure you want to remove machine '{manager.machine_prefix}'?",
                 abort=True,
             )
-        manager.remove_machine()
+        manager.remove()
         click.echo(f"Machine removed: {manager.machine_prefix}")
     except PodmanError as e:
         click.echo(click.style(f"Error: {e}", fg="red"), err=True)
@@ -116,7 +116,7 @@ def reset(force):
                 abort=True,
             )
         manager = PodmanMachineManager()
-        manager.reset_machines()
+        manager.reset()
         click.echo("Podman machines reset.")
     except PodmanError as e:
         click.echo(click.style(f"Error: {e}", fg="red"), err=True)

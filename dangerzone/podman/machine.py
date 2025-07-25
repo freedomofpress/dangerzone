@@ -34,8 +34,7 @@ class PodmanMachineManager:
             podman_bin = "podman"
             if platform.system() == "Windows":
                 podman_bin += ".exe"
-            self._podman_path = (
-                util.get_resource_path("vendor") / "podman" / podman_bin)
+            self._podman_path = util.get_resource_path("vendor") / "podman" / podman_bin
         return self._podman_path
 
     @property
@@ -101,9 +100,7 @@ helper_binaries_dir=["{helper_binaries_dir}"]
                 except PodmanError as e:
                     logger.warning(f"Failed to remove stale machine {name}: {e}")
 
-    def initialize_machine(
-        self, cpus: int = None, memory: int = None, timezone: str = None
-    ) -> None:
+    def init(self, cpus: int = None, memory: int = None, timezone: str = None) -> None:
         """Initialize a new Podman machine."""
         if platform.system() == "Windows":
             self._install_wsl2()
@@ -130,7 +127,7 @@ helper_binaries_dir=["{helper_binaries_dir}"]
         except CommandError as e:
             raise PodmanError(f"Failed to initialize Podman machine: {e}")
 
-    def start_machine(self, name: str = None) -> None:
+    def start(self, name: str = None) -> None:
         """Start a Podman machine."""
         if name is None:
             name = self.machine_prefix
@@ -141,7 +138,7 @@ helper_binaries_dir=["{helper_binaries_dir}"]
         except CommandError as e:
             raise PodmanError(f"Failed to start Podman machine: {e}")
 
-    def stop_machine(self, name: str = None) -> None:
+    def stop(self, name: str = None) -> None:
         """Stop a Podman machine."""
         if name is None:
             name = self.machine_prefix
@@ -152,7 +149,7 @@ helper_binaries_dir=["{helper_binaries_dir}"]
         except CommandError as e:
             logger.warning(f"Failed to stop Podman machine: {e}")
 
-    def remove_machine(self, name: str = None, force: bool = False) -> None:
+    def remove(self, name: str = None, force: bool = False) -> None:
         """Remove a Podman machine."""
         if name is None:
             name = self.machine_prefix
@@ -163,7 +160,7 @@ helper_binaries_dir=["{helper_binaries_dir}"]
         except CommandError as e:
             logger.warning(f"Failed to remove Podman machine: {e}")
 
-    def reset_machines(self) -> None:
+    def reset(self) -> None:
         """Reset all Podman machines."""
         logger.info("Resetting all Podman machines.")
         try:
@@ -172,7 +169,7 @@ helper_binaries_dir=["{helper_binaries_dir}"]
         except CommandError as e:
             logger.warning(f"Failed to reset Podman machines: {e}")
 
-    def list_dangerzone_machines(self) -> List[Dict]:
+    def list(self) -> List[Dict]:
         """List all Dangerzone machines."""
         return self._get_existing_dangerzone_machines()
 

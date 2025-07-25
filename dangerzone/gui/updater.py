@@ -66,6 +66,8 @@ def check_for_updates_logic(dangerzone: DangerzoneGui) -> bool:
     This function is responsible for asking the user if they want to enable
     update checks or not, and then performing the update check.
     """
+
+    def prompt_for_checks():
         log.debug("Prompting the user for update checks")
         prompt = UpdateCheckPrompt(
             dangerzone,
@@ -85,9 +87,7 @@ def check_for_updates_logic(dangerzone: DangerzoneGui) -> bool:
     except errors.NeedUserInput:
         should_check = prompt_for_checks()
         if should_check is not None:
-            dangerzone.settings.set(
-                "updater_check_all", should_check, autosave=True
-            )
+            dangerzone.settings.set("updater_check_all", should_check, autosave=True)
     if bool(should_check):
         return releases.check_for_updates(dangerzone.settings)
     return False

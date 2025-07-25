@@ -246,22 +246,22 @@ class Runner:
             errors.CommandError: If the command fails.
         """
         logger.debug(f"Running: {self.display(cmd)}")
+        skwargs.setdefault("startupinfo", get_subprocess_startupinfo())
         if not wait:
+            skwargs.setdefault("stdin", stdin)
             return subprocess.Popen(
                 cmd,
                 env=self.env,
-                startupinfo=get_subprocess_startupinfo(),
                 **skwargs,
             )
 
         try:
+            skwargs.setdefault("check", check)
+            skwargs.setdefault("capture_output", capture_output)
+            skwargs.setdefault("stdin", stdin)
             ret = subprocess.run(
                 cmd,
                 env=self.env,
-                check=check,
-                capture_output=capture_output,
-                stdin=stdin,
-                startupinfo=get_subprocess_startupinfo(),
                 **skwargs,
             )
         except subprocess.CalledProcessError as e:

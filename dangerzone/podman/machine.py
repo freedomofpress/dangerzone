@@ -77,7 +77,14 @@ class PodmanMachineManager:
         if name is None:
             name = self.name
         logger.info(f"Starting Podman machine: {name}")
-        self.podman.machine.start(name=name)
+        try:
+            self.podman.machine.start(name=name)
+        except CommandError as e:
+            if "already running" in e.error.stderr.decode():
+                logger.info(f"Podman machine '{name}' is already running")
+                return
+            else:
+                raise
         logger.info(f"Podman machine '{name}' started successfully.")
 
     def stop(self, name: str = None) -> None:

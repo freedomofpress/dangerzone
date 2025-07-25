@@ -24,12 +24,14 @@ class GUIMixin(QtCore.QObject):
     starting = QtCore.Signal()
     failed = QtCore.Signal(str)
     succeeded = QtCore.Signal()
+    completed = QtCore.Signal()
 
     def __init__(self):
         QtCore.QObject.__init__(self)
 
     def handle_skip(self):
         self.skipped.emit()
+        self.completed.emit()
         super().handle_skip()
 
     def handle_start(self):
@@ -42,6 +44,7 @@ class GUIMixin(QtCore.QObject):
 
     def handle_success(self):
         self.succeeded.emit()
+        self.completed.emit()
         super().handle_success()
 
 
@@ -96,7 +99,7 @@ class StartupThread(startup.StartupLogic, QtCore.QThread):
         super().handle_start()
 
     def handle_error(self, task, e):
-        self.error.emit()
+        self.failed.emit()
         super().handle_error(task, e)
 
     def handle_success(self):

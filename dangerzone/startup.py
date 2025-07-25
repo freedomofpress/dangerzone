@@ -18,7 +18,7 @@ from .updater import (
     InstallationStrategy,
     ReleaseReport,
     errors,
-    get_installation_strategy,
+    installer,
     releases,
 )
 
@@ -91,14 +91,13 @@ class MachineStartTask(MachineMixin, Task):
 
 
 class ContainerInstallTask(Task):
-    can_fail = True
     name = "Configuring Dangerzone sandbox"
 
     def should_skip(self):
-        return get_installation_strategy() == InstallationStrategy.DO_NOTHING
+        return installer.get_installation_strategy() == InstallationStrategy.DO_NOTHING
 
     def run(self):
-        apply_installation_strategy(strategy)
+        installer.install()
 
 
 class UpdateCheckTask(Task):

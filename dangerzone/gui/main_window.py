@@ -270,12 +270,16 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(self.hamburger_button)
         header_layout.addSpacing(15)
 
-        # Content widget, contains all the window content except waiting widget
+        # Content and waiting widget
         self.content_widget = ContentWidget(self.dangerzone)
+        self.waiting_widget = WaitingWidget()
+        self.content_widget.hide()
+        self.waiting_widget.show()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
+        layout.addWidget(self.waiting_widget, stretch=1)
         layout.addWidget(self.content_widget, stretch=1)
 
         self.status_bar = StatusBar(self.dangerzone)
@@ -317,15 +321,38 @@ class MainWindow(QtWidgets.QMainWindow):
         self.startup_thread = startup.StartupThread(tasks)
         self.startup_thread.succeeded.connect(self.waiting_finished)
         self.startup_thread.starting.connect(self.status_bar.handle_startup_begin)
+        self.startup_thread.starting.connect(self.waiting_widget.handle_start)
         self.startup_thread.succeeded.connect(self.status_bar.handle_startup_success)
         self.startup_thread.failed.connect(self.status_bar.handle_startup_error)
+
         task_machine_init.starting.connect(self.status_bar.handle_task_machine_init)
+        task_machine_init.starting.connect(self.log_window.handle_task_machine_init)
+        task_machine_init.failed.connect(
+            self.log_window.handle_task_machine_init_failed
+        )
+
         task_machine_start.starting.connect(self.status_bar.handle_task_machine_start)
+        task_machine_start.starting.connect(self.log_window.handle_task_machine_start)
+        task_machine_start.failed.connect(
+            self.log_window.handle_task_machine_start_failed
+        )
+        task_machine_start.completed.connect(self.show_content_widget)
+
         task_update_check.starting.connect(self.status_bar.handle_task_update_check)
+        task_update_check.starting.connect(self.log_window.handle_task_update_check)
+        task_update_check.failed.connect(
+            self.log_window.handle_task_update_check_failed
+        )
+
         task_container_install.starting.connect(
             self.status_bar.handle_task_container_install
         )
-        self.content_widget.show()
+        task_container_install.starting.connect(
+            self.log_window.handle_task_container_install
+        )
+        task_container_install.failed.connect(
+            self.log_window.handle_task_container_install_failed
+        )
         self.startup_thread.start()
 
         if hasattr(self.dangerzone.isolation_provider, "check_docker_desktop_version"):
@@ -524,6 +551,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def register_update_handler(self, signal: QtCore.SignalInstance) -> None:
         signal.connect(self.handle_updates)
 
+    def show_content_widget(self):
+        self.waiting_widget.hide()
+        self.content_widget.show()
+
     def waiting_finished(self) -> None:
         log.debug("Waiting for the background task has finished")
         self.dangerzone.is_waiting_finished = True
@@ -563,188 +594,209 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 class WaitingWidget(QtWidgets.QWidget):
-    finished = QtCore.Signal()
-
     def __init__(self) -> None:
-        super(WaitingWidget, self).__init__()
-
-
-class WaitingWidgetContainer(WaitingWidget):
-    # These are the possible states that the WaitingWidget can show.
-    #
-    # Windows and macOS states:
-    # - "not_installed"
-    # - "not_running"
-    # - "install_container"
-    #
-    # Linux states
-    # - "install_container"
-
-    def _create_button(
-        self, label: str, event: Callable, hide: bool = False
-    ) -> QtWidgets.QWidget:
-        button = QtWidgets.QPushButton(label)
-        button.clicked.connect(event)
-        buttons_layout = QtWidgets.QHBoxLayout()
-        buttons_layout.addStretch()
-        buttons_layout.addWidget(button)
-        buttons_layout.addStretch()
-
-        widget = QtWidgets.QWidget()
-        widget.setLayout(buttons_layout)
-        if hide:
-            widget.hide()
-        return widget
-
-    def _hide_buttons(self) -> None:
-        self.button_check.hide()
-        self.button_cancel.hide()
-
-    def __init__(self, dangerzone: DangerzoneGui) -> None:
-        super(WaitingWidgetContainer, self).__init__()
-        self.dangerzone = dangerzone
-
+        super().__init__()
         self.label = QtWidgets.QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setTextFormat(QtCore.Qt.RichText)
         self.label.setOpenExternalLinks(True)
-        self.label.setStyleSheet("QLabel { font-size: 20px; }")
-
-        # Buttons
-        self.button_check = self._create_button("Check Again", self.check_state)
-        self.button_cancel = self._create_button(
-            "Cancel", self.cancel_install, hide=True
-        )
-
-        self.traceback = TracebackWidget()
-
-        # Layout
+        self.label.setWordWrap(True)
         layout = QtWidgets.QVBoxLayout()
-        layout.addStretch()
         layout.addWidget(self.label)
-        layout.addWidget(self.traceback)
-        layout.addStretch()
-        layout.addWidget(self.button_check)
-        layout.addWidget(self.button_cancel)
-        layout.addStretch()
         self.setLayout(layout)
 
-        # Check the state
-        self.check_state()
+    def handle_start(self):
+        self.label.setText(
+            "Oh hi there!<br><br>"
+            "First time, huh?<br><br>"
+            "Welcome! I'm afraid you gonna have to wait a bit.<br>"
+            "Check the bottom-right corner for a progress report"
+        )
 
-    def check_state(self) -> None:
-        state: Optional[str] = None
-        error: Optional[str] = None
 
-        try:
-            self.dangerzone.isolation_provider.is_available()
-        except errors.NoContainerTechException as e:
-            log.error(str(e))
-            state = "not_installed"
-        except errors.NotAvailableContainerTechException as e:
-            log.error(str(e))
-            state = "not_running"
-            error = e.error
-        except Exception as e:
-            log.error(str(e))
-            state = "not_running"
-            error = format_exception(e)
-        else:
-            state = "install_container"
+# class WaitingWidget(QtWidgets.QWidget):
+#     finished = QtCore.Signal()
 
-        # Update the state
-        self.state_change(state, error)
+#     def __init__(self) -> None:
+#         super(WaitingWidget, self).__init__()
 
-    def cancel_install(self) -> None:
-        self.install_container_t.terminate()
-        self.finished.emit()
 
-    def show_error(self, msg: str, details: Optional[str] = None) -> None:
-        self.label.setText(msg)
-        show_traceback = details is not None
-        if show_traceback:
-            self.traceback.set_content(details)
-        self.traceback.setVisible(show_traceback)
-        self.button_check.show()
+# class WaitingWidgetContainer(WaitingWidget):
+#     # These are the possible states that the WaitingWidget can show.
+#     #
+#     # Windows and macOS states:
+#     # - "not_installed"
+#     # - "not_running"
+#     # - "install_container"
+#     #
+#     # Linux states
+#     # - "install_container"
 
-    def show_message(self, msg: str) -> None:
-        self.label.setText(msg)
-        self.traceback.setVisible(False)
-        self._hide_buttons()
+#     def _create_button(
+#         self, label: str, event: Callable, hide: bool = False
+#     ) -> QtWidgets.QWidget:
+#         button = QtWidgets.QPushButton(label)
+#         button.clicked.connect(event)
+#         buttons_layout = QtWidgets.QHBoxLayout()
+#         buttons_layout.addStretch()
+#         buttons_layout.addWidget(button)
+#         buttons_layout.addStretch()
 
-    def installation_finished(self, error: Optional[str] = None) -> None:
-        if error:
-            msg = (
-                "During installation of the dangerzone image, <br>"
-                "the following error occured:"
-            )
-            self.show_error(msg, error)
-        else:
-            self.finished.emit()
+#         widget = QtWidgets.QWidget()
+#         widget.setLayout(buttons_layout)
+#         if hide:
+#             widget.hide()
+#         return widget
 
-    def state_change(self, state: str, error: Optional[str] = None) -> None:
-        custom_runtime = self.dangerzone.settings.custom_runtime_specified()
+#     def _hide_buttons(self) -> None:
+#         self.button_check.hide()
+#         self.button_cancel.hide()
 
-        if state == "not_installed":
-            if custom_runtime:
-                self.show_error(
-                    "<strong>We could not find the container runtime defined in your settings</strong><br><br>"
-                    "Please check your settings, install it if needed, and retry."
-                )
-            elif platform.system() == "Linux":
-                self.show_error(
-                    "<strong>Dangerzone requires Podman</strong><br><br>"
-                    "Install it and retry."
-                )
-            else:
-                self.show_error(
-                    "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
-                    "<a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>"
-                    ", install it, and open it."
-                )
+#     def __init__(self, dangerzone: DangerzoneGui) -> None:
+#         super(WaitingWidgetContainer, self).__init__()
+#         self.dangerzone = dangerzone
 
-        elif state == "not_running":
-            if custom_runtime:
-                self.show_error(
-                    "<strong>We were unable to start the container runtime defined in your settings</strong><br><br>"
-                    "Please check your settings, install it if needed, and retry."
-                )
-            elif platform.system() == "Linux":
-                # "not_running" here means that the `podman image ls` command failed.
-                self.show_error(
-                    "<strong>Dangerzone requires Podman</strong><br><br>"
-                    "Podman is installed but cannot run properly. See errors below",
-                    error,
-                )
-            else:
-                self.show_error(
-                    "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
-                    "Docker is installed but isn't running.<br><br>"
-                    "Open Docker and make sure it's running in the background.",
-                    error,
-                )
-        else:
-            strategy = get_installation_strategy()
-            if strategy == InstallationStrategy.DO_NOTHING:
-                message = "Nothing to do"
-                self.installation_finished()
-                # FIXME we should be able to return directly here
-                # but for some reason it's not working when I just
-                # do self.finished.emit()
-            if strategy == InstallationStrategy.INSTALL_REMOTE_CONTAINER:
-                message = (
-                    "Downloading and upgrading the Dangerzone container image.<br><br>"
-                    "This might take a few minutes..."
-                )
-            elif strategy == InstallationStrategy.INSTALL_LOCAL_CONTAINER:
-                message = (
-                    "Installing the Dangerzone container image.<br><br>"
-                    "This might take a few minutes..."
-                )
-            self.traceback.setVisible(True)
-            self.show_message(message)
-            self.button_cancel.show()
-            self.button_check.hide()
+#         self.label = QtWidgets.QLabel()
+#         self.label.setAlignment(QtCore.Qt.AlignCenter)
+#         self.label.setTextFormat(QtCore.Qt.RichText)
+#         self.label.setOpenExternalLinks(True)
+#         self.label.setStyleSheet("QLabel { font-size: 20px; }")
+
+#         # Buttons
+#         self.button_check = self._create_button("Check Again", self.check_state)
+#         self.button_cancel = self._create_button(
+#             "Cancel", self.cancel_install, hide=True
+#         )
+
+#         self.traceback = TracebackWidget()
+
+#         # Layout
+#         layout = QtWidgets.QVBoxLayout()
+#         layout.addStretch()
+#         layout.addWidget(self.label)
+#         layout.addWidget(self.traceback)
+#         layout.addStretch()
+#         layout.addWidget(self.button_check)
+#         layout.addWidget(self.button_cancel)
+#         layout.addStretch()
+#         self.setLayout(layout)
+
+#         # Check the state
+#         self.check_state()
+
+#     def check_state(self) -> None:
+#         state: Optional[str] = None
+#         error: Optional[str] = None
+
+#         try:
+#             self.dangerzone.isolation_provider.is_available()
+#         except errors.NoContainerTechException as e:
+#             log.error(str(e))
+#             state = "not_installed"
+#         except errors.NotAvailableContainerTechException as e:
+#             log.error(str(e))
+#             state = "not_running"
+#             error = e.error
+#         except Exception as e:
+#             log.error(str(e))
+#             state = "not_running"
+#             error = format_exception(e)
+#         else:
+#             state = "install_container"
+
+#         # Update the state
+#         self.state_change(state, error)
+
+#     def cancel_install(self) -> None:
+#         self.install_container_t.terminate()
+#         self.finished.emit()
+
+#     def show_error(self, msg: str, details: Optional[str] = None) -> None:
+#         self.label.setText(msg)
+#         show_traceback = details is not None
+#         if show_traceback:
+#             self.traceback.set_content(details)
+#         self.traceback.setVisible(show_traceback)
+#         self.button_check.show()
+
+#     def show_message(self, msg: str) -> None:
+#         self.label.setText(msg)
+#         self.traceback.setVisible(False)
+#         self._hide_buttons()
+
+#     def installation_finished(self, error: Optional[str] = None) -> None:
+#         if error:
+#             msg = (
+#                 "During installation of the dangerzone image, <br>"
+#                 "the following error occured:"
+#             )
+#             self.show_error(msg, error)
+#         else:
+#             self.finished.emit()
+
+#     def state_change(self, state: str, error: Optional[str] = None) -> None:
+#         custom_runtime = self.dangerzone.settings.custom_runtime_specified()
+
+#         if state == "not_installed":
+#             if custom_runtime:
+#                 self.show_error(
+#                     "<strong>We could not find the container runtime defined in your settings</strong><br><br>"
+#                     "Please check your settings, install it if needed, and retry."
+#                 )
+#             elif platform.system() == "Linux":
+#                 self.show_error(
+#                     "<strong>Dangerzone requires Podman</strong><br><br>"
+#                     "Install it and retry."
+#                 )
+#             else:
+#                 self.show_error(
+#                     "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
+#                     "<a href='https://www.docker.com/products/docker-desktop'>Download Docker Desktop</a>"
+#                     ", install it, and open it."
+#                 )
+
+#         elif state == "not_running":
+#             if custom_runtime:
+#                 self.show_error(
+#                     "<strong>We were unable to start the container runtime defined in your settings</strong><br><br>"
+#                     "Please check your settings, install it if needed, and retry."
+#                 )
+#             elif platform.system() == "Linux":
+#                 # "not_running" here means that the `podman image ls` command failed.
+#                 self.show_error(
+#                     "<strong>Dangerzone requires Podman</strong><br><br>"
+#                     "Podman is installed but cannot run properly. See errors below",
+#                     error,
+#                 )
+#             else:
+#                 self.show_error(
+#                     "<strong>Dangerzone requires Docker Desktop</strong><br><br>"
+#                     "Docker is installed but isn't running.<br><br>"
+#                     "Open Docker and make sure it's running in the background.",
+#                     error,
+#                 )
+#         else:
+#             strategy = get_installation_strategy()
+#             if strategy == InstallationStrategy.DO_NOTHING:
+#                 message = "Nothing to do"
+#                 self.installation_finished()
+#                 # FIXME we should be able to return directly here
+#                 # but for some reason it's not working when I just
+#                 # do self.finished.emit()
+#             if strategy == InstallationStrategy.INSTALL_REMOTE_CONTAINER:
+#                 message = (
+#                     "Downloading and upgrading the Dangerzone container image.<br><br>"
+#                     "This might take a few minutes..."
+#                 )
+#             elif strategy == InstallationStrategy.INSTALL_LOCAL_CONTAINER:
+#                 message = (
+#                     "Installing the Dangerzone container image.<br><br>"
+#                     "This might take a few minutes..."
+#                 )
+#             self.traceback.setVisible(True)
+#             self.show_message(message)
+#             self.button_cancel.show()
+#             self.button_check.hide()
 
 
 class ContentWidget(QtWidgets.QWidget):

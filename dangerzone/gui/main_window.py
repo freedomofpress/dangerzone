@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Callable, List, Optional, Union
 
 from dangerzone.gui import startup
+from dangerzone.gui.updater import prompt_for_checks
 from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
 
 from ..podman.machine import PodmanMachineManager
@@ -348,6 +349,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_update_check.container_update_available.connect(
             self.handle_container_update_available
         )
+        task_update_check.needs_user_input.connect(self.handle_needs_user_input)
 
         task_container_install.starting.connect(
             self.status_bar.handle_task_container_install
@@ -478,6 +480,11 @@ class MainWindow(QtWidgets.QMainWindow):
         log.debug(f"New container image is available")
         self.dangerzone.settings.set("updater_errors", 0)
         self.dangerzone.settings.save()
+
+    def handle_needs_user_input(self) -> None:
+        check = prompt_for_checks(self.dangerzone)
+        if check is not None:
+            self.dangerzone.settings.set("updater_check_all", check, autosave=True)
 
     def show_content_widget(self):
         self.waiting_widget.hide()

@@ -10,7 +10,6 @@ else:
 
 from .. import startup
 from ..updater.releases import EmptyReport, ErrorReport, ReleaseReport
-from .updater import check_for_updates_logic
 
 
 class _MetaConflictResolver(type(QtCore.QObject), type(startup.Task)):

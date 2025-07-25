@@ -15,6 +15,7 @@ else:
 from . import errors, settings
 from .podman.machine import PodmanMachineManager
 from .updater import (
+    ErrorReport,
     InstallationStrategy,
     ReleaseReport,
     errors,
@@ -119,6 +120,8 @@ class UpdateCheckTask(Task):
             if report.container_image_bump:
                 return self.handle_container_update(report)
                 self.container_update_available.emit()
+        elif isinstance(report, ErrorReport):
+            raise RuntimeError(report.error)
 
     def prompt_user(self):
         pass

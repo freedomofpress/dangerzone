@@ -91,7 +91,7 @@ class UpdateCheckTask(
 
 class StartupThread(startup.StartupLogic, QtCore.QThread):
     starting = QtCore.Signal()
-    failed = QtCore.Signal()
+    failed = QtCore.Signal(str)
     succeeded = QtCore.Signal()
 
     def handle_start(self):
@@ -99,7 +99,7 @@ class StartupThread(startup.StartupLogic, QtCore.QThread):
         super().handle_start()
 
     def handle_error(self, task, e):
-        self.failed.emit()
+        self.failed.emit(str(e))
         super().handle_error(task, e)
 
     def handle_success(self):

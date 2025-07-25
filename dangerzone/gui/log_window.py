@@ -57,16 +57,16 @@ class LogWindow(QtWidgets.QDialog):
             "This might take a few minutes..."
         )
 
-    def handle_task_machine_init_failed(self):
+    def handle_task_machine_init_failed(self, error):
         self.label.setText("Initializing the Dangerzone VM... failed")
 
-    def handle_task_machine_start_failed(self):
+    def handle_task_machine_start_failed(self, error):
         self.label.setText("Starting the Dangerzone VM... failed")
 
-    def handle_task_update_check_failed(self):
+    def handle_task_update_check_failed(self, error):
         self.label.setText("Checking for updates... failed")
 
-    def handle_task_container_install_failed(self):
+    def handle_task_container_install_failed(self, error):
         self.label.setText("Installing container sandbox... failed")
 
     def append_log(self, line: str):

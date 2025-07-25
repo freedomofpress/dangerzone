@@ -18,12 +18,12 @@ else:
         from PySide2.QtGui import QTextCursor
         from PySide2.QtWidgets import QTextEdit
 
+
 class TracebackWidget(QTextEdit):
     """Reusable component to present tracebacks to the user.
 
-    By default, the widget is initialized but does not appear.
-    You need to call `.set_content("traceback")` on it so the
-    traceback is displayed.
+    By default, the widget is initialized but does not appear. You need to call
+    `.process_output(msg)` on it so the traceback is displayed.
     """
 
     def __init__(self) -> None:
@@ -36,11 +36,6 @@ class TracebackWidget(QTextEdit):
         self.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         self.current_output = ""
-
-    def set_content(self, error: Optional[str] = None) -> None:
-        if error:
-            self.setPlainText(error)
-            self.setVisible(True)
 
     def process_output(self, line: str) -> None:
         self.setVisible(True)

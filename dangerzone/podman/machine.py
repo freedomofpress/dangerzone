@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from .. import container_utils
+from .. import util, container_utils
 from .command import PodmanCommand
 from .errors import CommandError, PodmanError, PodmanNotInstalled
 
@@ -64,7 +64,7 @@ class PodmanMachineManager:
 
         logger.info(f"Initializing Podman machine: {self.name}")
         self.podman.machine.init(
-            name=self._name,
+            name=self.name,
             cpus=cpus,
             memory=memory,
             timezone=timezone,

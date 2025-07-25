@@ -203,6 +203,7 @@ helper_binaries_dir=["{helper_binaries_dir}"]
     dst = CONTAINERS_CONF_PATH
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst.write_text(content)
+    return dst
 
 
 def init_podman_command() -> PodmanCommand:

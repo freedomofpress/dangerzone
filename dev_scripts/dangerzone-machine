@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import os
 import sys
 
-import click
+# Load dangerzone module and resources from the source code tree
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.dangerzone_dev = True
 
-# This is a development script, so we need to add the project root to the path
-# to import dangerzone
-if __name__ == "__main__":
-    sys.path.insert(0, ".")
+import click
 
 from dangerzone.podman.errors import PodmanError
 from dangerzone.podman.machine import PodmanMachineManager
@@ -34,7 +34,7 @@ def list():
     """List Dangerzone Podman machines."""
     try:
         manager = PodmanMachineManager()
-        machines = manager.list_dangerzone_machines()
+        machines = manager.list()
         if machines:
             for machine in machines:
                 running_status = "Running" if machine.get("Running") else "Stopped"
@@ -55,7 +55,7 @@ def init(cpus, memory, timezone):
     try:
         manager = PodmanMachineManager()
         manager.init(cpus=cpus, memory=memory, timezone=timezone)
-        click.echo(f"Machine initialized: {manager.machine_prefix}")
+        click.echo(f"Machine initialized: {manager.name}")
     except PodmanError as e:
         click.echo(click.style(f"Error: {e}", fg="red"), err=True)
         sys.exit(1)
@@ -67,7 +67,7 @@ def start():
     try:
         manager = PodmanMachineManager()
         manager.start()
-        click.echo(f"Machine started: {manager.machine_prefix}")
+        click.echo(f"Machine started: {manager.name}")
     except PodmanError as e:
         click.echo(click.style(f"Error: {e}", fg="red"), err=True)
         sys.exit(1)
@@ -79,7 +79,7 @@ def stop():
     try:
         manager = PodmanMachineManager()
         manager.stop()
-        click.echo(f"Machine stopped: {manager.machine_prefix}")
+        click.echo(f"Machine stopped: {manager.name}")
     except PodmanError as e:
         click.echo(click.style(f"Error: {e}", fg="red"), err=True)
         sys.exit(1)
@@ -93,11 +93,11 @@ def remove(force):
         manager = PodmanMachineManager()
         if not force:
             click.confirm(
-                f"Are you sure you want to remove machine '{manager.machine_prefix}'?",
+                f"Are you sure you want to remove machine '{manager.name}'?",
                 abort=True,
             )
         manager.remove()
-        click.echo(f"Machine removed: {manager.machine_prefix}")
+        click.echo(f"Machine removed: {manager.name}")
     except PodmanError as e:
         click.echo(click.style(f"Error: {e}", fg="red"), err=True)
         sys.exit(1)

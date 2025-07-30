@@ -570,53 +570,46 @@ def test_installation_failure_exception(
     """Ensures that if an exception is raised during image installation,
     it is shown in the GUI.
     """
-    mocker.patch("dangerzone.startup.MachineMixin.should_skip", return_value=True)
-    mocker.patch("dangerzone.startup.UpdateCheckTask.should_skip", return_value=True)
-    mocker.patch(
-        "dangerzone.startup.ContainerInstallTask.should_skip",
-        return_value=False,
-    )
     installer = mocker.patch(
-        "dangerzone.startup.ContainerInstallTask.run",
+        "dangerzone.updater.installer.install",
         side_effect=RuntimeError("Error during install"),
     )
+    for task in window.startup_thread.tasks:
+        should_skip = not isinstance(task, startup.ContainerInstallTask)
+        mocker.patch.object(task, "should_skip", return_value=should_skip)
 
+    handle_container_install_failed_spy = mocker.spy(
+        window.log_window, "handle_task_container_install_failed"
+    )
+    window.startup_thread.start()
     window.startup_thread.wait()
+    qtbot.waitUntil(handle_container_install_failed_spy.assert_called_once)
 
-    def assertions():
-        assert installer.call_count == 1
-        assert window.status_bar.styleSheet() == "color: red; font-weight: bold"
-        assert window.status_bar.message.text() == "Startup failed"
-        assert (
-            window.log_window.label.text() == "Installing container sandbox... failed"
-        )
-        assert (
-            "Error during install" in window.log_window.traceback_widget.toPlainText()
-        )
-
-    qtbot.waitUntil(assertions)
+    assert installer.call_count == 1
+    assert window.status_bar.styleSheet() == "color: red; font-weight: bold"
+    assert window.status_bar.message.text() == "Startup failed"
+    assert window.log_window.label.text() == "Installing container sandbox... failed"
+    assert "Error during install" in window.log_window.traceback_widget.toPlainText()
 
 
 def test_close_event_stops_podman_machine(
-    qtbot: QtBot, mocker: MockerFixture, dummy: MagicMock
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    dummy: MagicMock,
+    window: MainWindow,
 ) -> None:
     """Test that the Podman machine is stopped on closeEvent."""
     # Mock the platform to be Windows or Darwin
     mocker.patch("platform.system", return_value="Windows")
-
-    mock_app = mocker.MagicMock()
-    dz = DangerzoneGui(mock_app, dummy)
-
-    window = MainWindow(dz)
-    qtbot.addWidget(window)
-
+    mock_podman_machine_manager = mocker.patch(
+        "dangerzone.gui.main_window.PodmanMachineManager"
+    )
     # Mock the PodmanMachineManager
-    mock_podman_machine_manager = mocker.MagicMock()
-    window.background_task.podman_machine_manager = mock_podman_machine_manager
-
+    mocker.patch("platform.system", return_value="Windows")
     # Mock the alert so that we can close the window
-    mocker.patch.object(window, "alert")
+    mock_alert = mocker.patch("dangerzone.gui.main_window.Alert")
 
     window.close()
 
-    mock_podman_machine_manager.stop_machine.assert_called_once()
+    mock_podman_machine_manager().stop.assert_called_once()
+    mock_alert.assert_called_once()

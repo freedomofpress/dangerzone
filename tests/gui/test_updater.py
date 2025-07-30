@@ -7,12 +7,11 @@ from typing import Any, Dict, Union
 
 import pytest
 from PySide6 import QtCore
-from pytest import MonkeyPatch
+from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
 
 from dangerzone import settings
-from dangerzone.gui import updater as updater_module
 from dangerzone.updater import releases
 from dangerzone.updater.releases import (
     EmptyReport,
@@ -22,8 +21,6 @@ from dangerzone.updater.releases import (
 from dangerzone.util import get_version
 
 from ..test_settings import default_settings_0_4_1, save_settings
-
-# from .conftest import generate_isolated_updater
 
 
 def default_updater_settings() -> Dict[str, Any]:
@@ -50,32 +47,35 @@ def assert_report_equal(
     assert report1.__eq__(report2)
 
 
-def _test_default_updater_settings(updater) -> None:
+@pytest.fixture
+def isolated_settings(mocker: MockerFixture, tmp_path: Path) -> settings.Settings:
+    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
+    return settings.Settings()
+
+
+def test_default_updater_settings(isolated_settings: settings.Settings) -> None:
     """Check that new 0.4.2 installations have the expected updater settings.
 
     This test is mostly a sanity check.
     """
-    assert (
-        updater.dangerzone.settings.get_updater_settings() == default_updater_settings()
-    )
+    assert isolated_settings.get_updater_settings() == default_updater_settings()
 
 
-def test_pre_0_4_2_settings(tmp_path: Path, mocker: MockerFixture) -> None:
+def test_pre_0_4_2_settings(isolated_settings: settings.Settings) -> None:
     """Check settings of installations prior to 0.4.2.
 
     Check that installations that have been upgraded from a version < 0.4.2 to >= 0.4.2
     will automatically get the default updater settings, even though they never existed
     in their settings.json file.
     """
+    tmp_path = isolated_settings.settings_filename.parent
     save_settings(tmp_path, default_settings_0_4_1())
-    updater = generate_isolated_updater(tmp_path, mocker, mock_app=True)
-    assert (
-        updater.dangerzone.settings.get_updater_settings() == default_updater_settings()
-    )
+    assert isolated_settings.get_updater_settings() == default_updater_settings()
 
 
 def test_post_0_4_2_settings(
-    tmp_path: Path, monkeypatch: MonkeyPatch, mocker: MockerFixture
+    isolated_settings: settings.Settings,
+    monkeypatch: MonkeyPatch,
 ) -> None:
     """Check settings of installations post-0.4.2.
 
@@ -85,8 +85,10 @@ def test_post_0_4_2_settings(
     erroneously prompted to a version they already have.
     """
     # Store the settings of Dangerzone 0.4.2 to the filesystem.
+    tmp_path = isolated_settings.settings_filename.parent
     old_settings = settings.Settings.generate_default_settings()
     old_settings["updater_latest_version"] = "0.4.2"
+    # isolated_settings.set("updater_last_check", 0)
     save_settings(tmp_path, old_settings)
 
     # Mimic an upgrade to version 0.4.3, by making Dangerzone report that the current
@@ -94,26 +96,26 @@ def test_post_0_4_2_settings(
     expected_settings = default_updater_settings()
     expected_settings["updater_latest_version"] = "0.4.3"
     monkeypatch.setattr(settings, "get_version", lambda: "0.4.3")
+    releases.check_for_updates(isolated_settings)
 
     # Ensure that the Settings class will correct the latest version field to 0.4.3.
-    updater = generate_isolated_updater(tmp_path, mocker, mock_app=True)
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    assert isolated_settings.get_updater_settings() == expected_settings
 
     # Simulate an updater check that found a newer Dangerzone version (e.g., 0.4.4).
     expected_settings["updater_latest_version"] = "0.4.4"
-    updater.dangerzone.settings.set(
+    isolated_settings.set(
         "updater_latest_version", expected_settings["updater_latest_version"]
     )
-    updater.dangerzone.settings.save()
+    isolated_settings.save()
 
     # Ensure that the Settings class will leave the "updater_latest_version" field
     # intact the next time we reload the settings.
-    updater.dangerzone.settings.load()
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    isolated_settings.load()
+    assert isolated_settings.get_updater_settings() == expected_settings
 
 
 @pytest.mark.skipif(platform.system() != "Linux", reason="Linux-only test")
-def _test_linux_no_check(updater, monkeypatch: MonkeyPatch) -> None:
+def test_linux_no_check(updater, monkeypatch: MonkeyPatch) -> None:
     """Ensure that Dangerzone on Linux does not make any update check."""
     expected_settings = default_updater_settings()
     expected_settings["updater_check_all"] = False
@@ -126,7 +128,7 @@ def _test_linux_no_check(updater, monkeypatch: MonkeyPatch) -> None:
     assert updater.dangerzone.settings.get_updater_settings() == expected_settings
 
 
-def _test_user_prompts(updater, mocker: MockerFixture) -> None:
+def test_user_prompts(updater, mocker: MockerFixture) -> None:
     """Test prompting users to ask them if they want to enable update checks."""
     settings = updater.dangerzone.settings
     # First run
@@ -170,7 +172,7 @@ def _test_user_prompts(updater, mocker: MockerFixture) -> None:
         assert updater.should_check_for_updates() == check
 
 
-def _test_update_checks(
+def test_update_checks(
     updater, monkeypatch: MonkeyPatch, mocker: MockerFixture
 ) -> None:
     """Test version update checks."""
@@ -222,7 +224,7 @@ def _test_update_checks(
     )
 
 
-def _test_update_checks_cooldown(updater, mocker: MockerFixture) -> None:
+def test_update_checks_cooldown(updater, mocker: MockerFixture) -> None:
     """Make sure Dangerzone only checks for updates every X hours"""
     settings = updater.dangerzone.settings
 
@@ -299,7 +301,7 @@ def _test_update_checks_cooldown(updater, mocker: MockerFixture) -> None:
     assert_report_equal(report, ErrorReport(error=error_msg))
 
 
-def _test_update_errors(
+def test_update_errors(
     updater, monkeypatch: MonkeyPatch, mocker: MockerFixture
 ) -> None:
     """Test update check errors."""
@@ -397,7 +399,7 @@ def _test_update_errors(
     assert_report_equal(report, ReleaseReport("99.9.9", "<p>changelog</p>"))
 
 
-def _test_update_check_prompt(qtbot: QtBot, qt_updater, mocker: MockerFixture) -> None:
+def test_update_check_prompt(qtbot: QtBot, qt_updater, mocker: MockerFixture) -> None:
     """Test that the prompt to enable update checks works properly."""
     # Force Dangerzone to check immediately for updates
     settings = qt_updater.dangerzone.settings

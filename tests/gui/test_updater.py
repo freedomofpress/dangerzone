@@ -96,9 +96,9 @@ def test_post_0_4_2_settings(
     expected_settings = default_updater_settings()
     expected_settings["updater_latest_version"] = "0.4.3"
     monkeypatch.setattr(settings, "get_version", lambda: "0.4.3")
-    releases.check_for_updates(isolated_settings)
 
     # Ensure that the Settings class will correct the latest version field to 0.4.3.
+    isolated_settings.load()
     assert isolated_settings.get_updater_settings() == expected_settings
 
     # Simulate an updater check that found a newer Dangerzone version (e.g., 0.4.4).
@@ -115,7 +115,9 @@ def test_post_0_4_2_settings(
 
 
 @pytest.mark.skipif(platform.system() != "Linux", reason="Linux-only test")
-def test_linux_no_check(updater, monkeypatch: MonkeyPatch) -> None:
+def test_linux_no_check(
+    isolated_settings: settings.Settings, monkeypatch: MonkeyPatch
+) -> None:
     """Ensure that Dangerzone on Linux does not make any update check."""
     expected_settings = default_updater_settings()
     expected_settings["updater_check_all"] = False
@@ -124,52 +126,8 @@ def test_linux_no_check(updater, monkeypatch: MonkeyPatch) -> None:
     # XXX: Simulate Dangerzone installed via package manager.
     monkeypatch.delattr(sys, "dangerzone_dev")
 
-    assert updater.should_check_for_updates() is False
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
-
-
-def test_user_prompts(updater, mocker: MockerFixture) -> None:
-    """Test prompting users to ask them if they want to enable update checks."""
-    settings = updater.dangerzone.settings
-    # First run
-    #
-    # When Dangerzone runs for the first time, users should not be asked to enable
-    # updates.
-    expected_settings = default_updater_settings()
-    expected_settings["updater_check_all"] = None
-    expected_settings["updater_last_check"] = 0
-    assert updater.should_check_for_updates() is False
-    assert settings.get_updater_settings() == expected_settings
-
-    # Second run
-    #
-    # When Dangerzone runs for a second time, users can be prompted to enable update
-    # checks. Depending on their answer, we should either enable or disable them.
-    mocker.patch("dangerzone.gui.updater.UpdateCheckPrompt")
-    prompt_mock = updater_module.UpdateCheckPrompt
-    prompt_mock().x_pressed = False
-
-    # Check disabling update checks.
-    prompt_mock().launch.return_value = False  # type: ignore [attr-defined]
-    expected_settings["updater_check_all"] = False
-    assert updater.should_check_for_updates() is False
-    assert settings.get_updater_settings() == expected_settings
-
-    # Reset the "updater_check_all" field and check enabling update checks.
-    settings.set("updater_check_all", None)
-    prompt_mock().launch.return_value = True  # type: ignore [attr-defined]
-    expected_settings["updater_check_all"] = True
-    assert updater.should_check_for_updates() is True
-    assert settings.get_updater_settings() == expected_settings
-
-    # Third run
-    #
-    # From the third run onwards, users should never be prompted for enabling update
-    # checks.
-    prompt_mock().side_effect = RuntimeError("Should not be called")  # type: ignore [attr-defined]
-    for check in [True, False]:
-        settings.set("updater_check_all", check)
-        assert updater.should_check_for_updates() == check
+    assert releases.should_check_for_updates(isolated_settings) is False
+    assert isolated_settings.get_updater_settings() == expected_settings
 
 
 def test_update_checks(

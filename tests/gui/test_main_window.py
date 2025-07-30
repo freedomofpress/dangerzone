@@ -613,3 +613,62 @@ def test_close_event_stops_podman_machine(
 
     mock_podman_machine_manager().stop.assert_called_once()
     mock_alert.assert_called_once()
+
+
+def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -> None:
+    """Test prompting users to ask them if they want to enable update checks."""
+    # First run
+    #
+    # When Dangerzone runs for the first time, users should not be asked to enable
+    # updates.
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.UpdateCheckTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    expected_settings = default_updater_settings()
+    expected_settings["updater_check_all"] = None
+    expected_settings["updater_last_check"] = 0
+
+    window.startup_thread.start()
+    window.startup_thread.wait()
+
+    assert window.dangerzone.settings.get_updater_settings() == expected_settings
+
+    # Second run
+    #
+    # When Dangerzone runs for a second time, users can be prompted to enable update
+    # checks. Depending on their answer, we should either enable or disable them.
+    prompt_mock = mocker.patch("dangerzone.gui.updater.UpdateCheckPrompt")
+    prompt_mock().x_pressed = False
+
+    # Check disabling update checks.
+    prompt_mock().launch.return_value = False  # type: ignore [attr-defined]
+    expected_settings["updater_check_all"] = False
+    handle_needs_user_input_spy = mocker.spy(window, "handle_needs_user_input")
+
+    window.startup_thread.start()
+    window.startup_thread.wait()
+
+    qtbot.waitUntil(handle_needs_user_input_spy.assert_called_once)
+    assert window.dangerzone.settings.get_updater_settings() == expected_settings
+
+    # Reset the "updater_check_all" field and check enabling update checks.
+    window.dangerzone.settings.set("updater_check_all", None)
+    prompt_mock().launch.return_value = True  # type: ignore [attr-defined]
+    expected_settings["updater_check_all"] = True
+
+    handle_needs_user_input_spy.reset_mock()
+    window.startup_thread.start()
+    window.startup_thread.wait()
+
+    qtbot.waitUntil(handle_needs_user_input_spy.assert_called_once)
+    assert window.dangerzone.settings.get_updater_settings() == expected_settings
+
+    # Third run
+    #
+    # From the third run onwards, users should never be prompted for enabling update
+    # checks.
+    prompt_mock().side_effect = RuntimeError("Should not be called")  # type: ignore [attr-defined]
+    for check in [True, False]:
+        window.dangerzone.settings.set("updater_check_all", check)
+        assert releases.should_check_for_updates(window.dangerzone.settings) == check

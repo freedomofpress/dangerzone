@@ -5,7 +5,7 @@ on:
       - main
   pull_request:
   schedule:
-    - cron: '0 0 * * *' # Run every day at 00:00 UTC.
+    - cron: "0 0 * * *" # Run every day at 00:00 UTC.
   workflow_dispatch:
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
         uses: anchore/scan-action@v6
         id: scan_container
         with:
-          image: "dangerzone.rocks/dangerzone:${{ steps.tag.outputs.tag }}"
+          image: "ghcr.io/freedomofpress/dangerzone/dangerzone:${{ steps.tag.outputs.tag }}"
           fail-build: false
           only-fixed: false
           severity-cutoff: critical
@@ -50,7 +50,7 @@ jobs:
       - name: Scan container image
         uses: anchore/scan-action@v6
         with:
-          image: "dangerzone.rocks/dangerzone:${{ steps.tag.outputs.tag }}"
+          image: "ghcr.io/freedomofpress/dangerzone/dangerzone:${{ steps.tag.outputs.tag }}"
           fail-build: true
           only-fixed: false
           severity-cutoff: critical

@@ -27,6 +27,7 @@ def mock_startup_spy(mocker: MockerFixture) -> StartupSpy:
 
 
 def test_startup_success(mock_startup_spy: StartupSpy):
+    """A task runs to completion"""
     mock_startup_spy.runner.run()
 
     mock_startup_spy.handle_start.assert_called_once()
@@ -40,6 +41,7 @@ def test_startup_success(mock_startup_spy: StartupSpy):
 
 
 def test_startup_skip(mock_startup_spy: StartupSpy):
+    """A task is skipped"""
     mock_startup_spy.mock_task.should_skip.return_value = True
     mock_startup_spy.runner.run()
 
@@ -54,6 +56,7 @@ def test_startup_skip(mock_startup_spy: StartupSpy):
 
 
 def test_startup_fail_allowed(mock_startup_spy: StartupSpy):
+    """A task fails, and this is fine."""
     exc = Exception("failed")
     mock_startup_spy.mock_task.run.side_effect = exc
     mock_startup_spy.runner.run()
@@ -69,6 +72,7 @@ def test_startup_fail_allowed(mock_startup_spy: StartupSpy):
 
 
 def test_startup_fail_not_allowed(mock_startup_spy: StartupSpy):
+    """A task fails, and this is fatal."""
     exc = Exception("failed")
     mock_startup_spy.mock_task.run.side_effect = exc
     mock_startup_spy.mock_task.can_fail = False

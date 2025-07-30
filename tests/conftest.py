@@ -7,6 +7,7 @@ from typing import Any, Callable, Generator, List
 
 import pytest
 
+from dangerzone import startup
 from dangerzone.document import SAFE_EXTENSION
 from dangerzone.gui import Application
 from dangerzone.isolation_provider import container

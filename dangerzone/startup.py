@@ -60,16 +60,9 @@ class Task(abc.ABC):
 
 
 class MachineMixin:
-    def use_provider(self, provider):
-        self.machine = PodmanMachineManager()
-        self.provider = provider
-
     def should_skip(self):
         if platform.system() == "Linux":
             return True
-        if not self.provider.requires_install():
-            return True
-        return False
 
 
 #############
@@ -80,14 +73,22 @@ class MachineMixin:
 class MachineInitTask(MachineMixin, Task):
     name = "Initializing Dangerzone VM"
 
+    def should_skip(self):
+        return platform.system() == "Linux"
+
     def run(self):
+        self.machine = PodmanMachineManager()
         self.machine.init()
 
 
 class MachineStartTask(MachineMixin, Task):
     name = "Starting Dangerzone VM"
 
+    def should_skip(self):
+        return platform.system() == "Linux"
+
     def run(self):
+        self.machine = PodmanMachineManager()
         self.machine.start()
 
 
@@ -110,6 +111,7 @@ class UpdateCheckTask(Task):
             return not releases.should_check_for_updates(settings.Settings())
         except errors.NeedUserInput:
             self.prompt_user()
+            return True
 
     def run(self):
         report = releases.check_for_updates(settings.Settings())

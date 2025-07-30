@@ -8,7 +8,6 @@ from pytestqt.qtbot import QtBot
 
 from dangerzone import util
 from dangerzone.gui import Application
-from dangerzone.gui.background_task import BackgroundTask
 from dangerzone.gui.logic import DangerzoneGui
 
 # from dangerzone.gui.updater import UpdaterThread
@@ -46,20 +45,3 @@ def get_qt_app() -> Application:
 # @pytest.fixture
 # def qt_updater(tmp_path: Path, mocker: MockerFixture) -> UpdaterThread:
 #     return generate_isolated_updater(tmp_path, mocker, mock_app=False)
-
-
-@pytest.fixture
-def dangerzone_gui(tmp_path: Path, mocker: MockerFixture) -> DangerzoneGui:
-    dummy = Dummy()
-    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
-    # app = get_qt_app()
-    app = mocker.MagicMock()
-    dz_gui = DangerzoneGui(app, isolation_provider=dummy)
-    return dz_gui
-
-
-@pytest.fixture
-def background_task(qtbot: QtBot, dangerzone_gui: DangerzoneGui) -> BackgroundTask:
-    task = BackgroundTask(dangerzone_gui)
-    # qtbot.addWidget(task)
-    return task

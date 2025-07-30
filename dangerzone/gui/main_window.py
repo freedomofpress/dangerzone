@@ -308,17 +308,12 @@ class MainWindow(QtWidgets.QMainWindow):
         # Start startup thread
         log.debug("Starting Dangerzone background tasks")
         task_machine_init = startup.MachineInitTask()
-        task_machine_init.use_provider(dangerzone.isolation_provider)
         task_machine_start = startup.MachineStartTask()
-        task_machine_start.use_provider(dangerzone.isolation_provider)
         task_update_check = startup.UpdateCheckTask()
         task_container_install = startup.ContainerInstallTask()
-        tasks = [
-            task_machine_init,
-            task_machine_start,
-            task_update_check,
-            task_container_install,
-        ]
+        if dangerzone.isolation_provider.requires_install():
+            tasks = [task_machine_init, task_machine_start]
+        tasks += [task_update_check, task_container_install]
         self.startup_thread = startup.StartupThread(tasks)
         self.startup_thread.succeeded.connect(self.waiting_finished)
         self.startup_thread.starting.connect(self.status_bar.handle_startup_begin)

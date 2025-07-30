@@ -117,18 +117,10 @@ def cli_main(
                 click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}")
             sys.exit(1)
 
-    task_machine_init = startup.MachineInitTask()
-    task_machine_init.use_provider(dangerzone.isolation_provider)
-    task_machine_start = startup.MachineStartTask()
-    task_machine_start.use_provider(dangerzone.isolation_provider)
-    task_update_check = startup.UpdateCheckTask()
-    task_container_install = startup.ContainerInstallTask()
-    tasks = [
-        task_machine_init,
-        task_machine_start,
-        task_update_check,
-        task_container_install,
-    ]
+    tasks = []
+    if dangerzone.isolation_provider.requires_install():
+        tasks = [startup.MachineInitTask(), startup.MachineStartTask()]
+    tasks += [startup.UpdateCheckTask(), startup.ContainerInstallTask()]
     startup.StartupLogic(tasks=tasks).run()
 
     # Convert the document

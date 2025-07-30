@@ -310,7 +310,7 @@ jobs:
         id: cache-mazette
         uses: actions/cache@v4
         with:
-          path: |
+          path: |-
             share/tessdata/
             share/vendor/
           key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}

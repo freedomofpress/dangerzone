@@ -10,6 +10,7 @@ license = "AGPL-3.0"
 # NOTE: See also https://github.com/freedomofpress/dangerzone/issues/677
 include = [
     { path = "share/*", format = "sdist" },
+    { path = "share/vendor/*", format = "sdist" },
     { path = "qubes/*", format = "sdist" },
     { path = "install/linux/press.freedom.dangerzone.*", format = "sdist" },
     { path = "README.md", format = "sdist" },

@@ -229,6 +229,7 @@ def test_startup_update_check_needs_user_input(qtbot: QtBot, mocker: MockerFixtu
         ]
     )
     startup_thread.expect_startup_succeed()
+
     mocker.patch(
         "dangerzone.updater.releases.should_check_for_updates",
         side_effect=update_errors.NeedUserInput(),
@@ -252,9 +253,8 @@ def test_startup_update_check_app_update(qtbot: QtBot, mocker: MockerFixture):
         ]
     )
     startup_thread.expect_tasks_skip([startup_thread.task_container_install])
-    # NOTE: The update check task is a special case, where a failure does not mean that
-    # startup will fail as a whole.
     startup_thread.expect_startup_succeed()
+
     mocker.patch(
         "dangerzone.updater.releases.check_for_updates",
         return_value=ReleaseReport(version="0.9.9"),
@@ -278,9 +278,8 @@ def test_startup_update_check_container_update(qtbot: QtBot, mocker: MockerFixtu
         ]
     )
     startup_thread.expect_tasks_skip([startup_thread.task_container_install])
-    # NOTE: The update check task is a special case, where a failure does not mean that
-    # startup will fail as a whole.
     startup_thread.expect_startup_succeed()
+
     mocker.patch(
         "dangerzone.updater.releases.check_for_updates",
         return_value=ReleaseReport(container_image_bump=True),

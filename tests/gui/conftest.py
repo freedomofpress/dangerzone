@@ -9,8 +9,7 @@ from pytestqt.qtbot import QtBot
 from dangerzone import util
 from dangerzone.gui import Application
 from dangerzone.gui.logic import DangerzoneGui
-
-# from dangerzone.gui.updater import UpdaterThread
+from dangerzone.gui.main_window import MainWindow
 from dangerzone.isolation_provider.dummy import Dummy
 
 

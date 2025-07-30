@@ -104,3 +104,7 @@ class StartupThread(startup.StartupLogic, QtCore.QThread):
     def handle_success(self):
         self.succeeded.emit()
         super().handle_success()
+
+    # def start(self):
+    #     breakpoint()
+    #     super().start()

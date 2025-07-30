@@ -43,6 +43,8 @@ def assert_report_equal(
     report1: Union[ReleaseReport, EmptyReport, ErrorReport],
     report2: Union[ReleaseReport, EmptyReport, ErrorReport],
 ) -> None:
+    assert isinstance(report1, (ReleaseReport, EmptyReport, ErrorReport))
+    assert isinstance(report2, (ReleaseReport, EmptyReport, ErrorReport))
     assert type(report1) == type(report2)
     # Python dataclasses give us the __eq__ comparison for free
     assert report1.__eq__(report2)

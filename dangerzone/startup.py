@@ -117,11 +117,9 @@ class UpdateCheckTask(Task):
         report = releases.check_for_updates(settings.Settings())
         if isinstance(report, ReleaseReport):
             if report.new_github_release:
-                return self.handle_app_update(report)
-                self.app_update_available.emit(report.version)
+                self.handle_app_update(report)
             if report.container_image_bump:
-                return self.handle_container_update(report)
-                self.container_update_available.emit()
+                self.handle_container_update(report)
         elif isinstance(report, ErrorReport):
             raise RuntimeError(report.error)
 

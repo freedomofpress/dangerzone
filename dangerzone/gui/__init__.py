@@ -159,6 +159,7 @@ def gui_main(dummy_conversion: bool, filenames: Optional[List[str]]) -> bool:
     settings = Settings()
     updates_enabled = bool(settings.get("updater_check_all"))
     window.toggle_updates_action.setChecked(updates_enabled)
+    window.startup_thread.start()
 
     if filenames:
         open_files(filenames)

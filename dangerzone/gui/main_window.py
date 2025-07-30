@@ -344,6 +344,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_update_check.container_update_available.connect(
             self.handle_container_update_available
         )
+        task_update_check.completed.connect(self.handle_update_check_completed)
         task_update_check.needs_user_input.connect(self.handle_needs_user_input)
 
         task_container_install.starting.connect(
@@ -355,7 +356,6 @@ class MainWindow(QtWidgets.QMainWindow):
         task_container_install.failed.connect(
             self.log_window.handle_task_container_install_failed
         )
-        self.startup_thread.start()
 
         self.show()
 
@@ -446,7 +446,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def handle_app_update_available(self, report: ReleaseReport) -> None:
         log.debug(f"New Dangerzone release: {report.version}")
-        self.dangerzone.settings.set("updater_errors", 0)
         self.dangerzone.settings.set("updater_latest_version", report.version)
         self.dangerzone.settings.set("updater_latest_changelog", report.changelog)
         self.dangerzone.settings.save()
@@ -473,6 +472,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def handle_container_update_available(self, report: ReleaseReport) -> None:
         log.debug(f"New container image is available")
+
+    def handle_update_check_completed(self) -> None:
         self.dangerzone.settings.set("updater_errors", 0)
         self.dangerzone.settings.save()
 

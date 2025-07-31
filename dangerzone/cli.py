@@ -71,7 +71,7 @@ def cli_main(
     set_container_runtime: Optional[str] = None,
 ) -> None:
     setup_logging()
-    display_banner()
+    # display_banner()
     settings = Settings()
     if set_container_runtime:
         if set_container_runtime == "default":

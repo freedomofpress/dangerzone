@@ -58,9 +58,14 @@ jobs:
       registry_token: ${{ secrets.GITHUB_TOKEN }}
 
   windows:
-    runs-on: windows-latest
-    env:
-      DUMMY_CONVERSION: 1
+    needs:
+      - build-container-image
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: windows-2022
+          - runner: windows-2025
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -81,6 +86,21 @@ jobs:
         run: poetry run mazette install
       - name: Check cosign is present
         run: ls share/vendor
+      - name: Restore container image
+        uses: actions/cache/restore@v4
+        with:
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+      - name: Smoke test
+        run: |
+          poetry run .\dev_scripts\dangerzone-cli.bat \
+              dangerzone\tests\test_docs\sample-pdf.pdf \
+              --ocr-lang eng
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment

@@ -2,6 +2,7 @@ import json
 import platform
 import sys
 import time
+import typing
 from pathlib import Path
 from typing import Any, Dict, Union
 
@@ -11,7 +12,16 @@ from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
 
+if typing.TYPE_CHECKING:
+    from PySide2 import QtCore, QtGui, QtWidgets
+else:
+    try:
+        from PySide6 import QtCore, QtGui, QtWidgets
+    except ImportError:
+        from PySide2 import QtCore, QtGui, QtWidgets
+
 from dangerzone import settings
+from dangerzone.gui.updater import CANCEL_TEXT, OK_TEXT
 from dangerzone.updater import releases
 from dangerzone.updater.releases import (
     EmptyReport,
@@ -131,16 +141,17 @@ def test_linux_no_check(
 
 
 def test_update_checks(
-    updater, monkeypatch: MonkeyPatch, mocker: MockerFixture
+    isolated_settings: settings.Settings,
+    monkeypatch: MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
     """Test version update checks."""
-    settings = updater.dangerzone.settings
+    settings = isolated_settings
     # This dictionary will simulate GitHub's response.
     mock_upstream_info = {"tag_name": f"v{get_version()}", "body": "changelog"}
 
     # Make requests.get().json() return the above dictionary.
-    mocker.patch("dangerzone.updater.releases.requests.get")
-    requests_mock = updater_module.releases.requests.get
+    requests_mock = mocker.patch("dangerzone.updater.releases.requests.get")
     requests_mock().status_code = 200  # type: ignore [call-arg]
     requests_mock().json.return_value = mock_upstream_info  # type: ignore [attr-defined, call-arg]
 
@@ -169,7 +180,9 @@ def test_update_checks(
     # Test 3 - Check that HTTP errors are converted to error reports.
     requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
     report = releases.check_for_updates(settings)
-    error_msg = f"Encountered an exception while checking {updater_module.releases.GH_RELEASE_URL}: failed"
+    error_msg = (
+        f"Encountered an exception while checking {releases.GH_RELEASE_URL}: failed"
+    )
     assert_report_equal(report, ErrorReport(error=error_msg))
 
     # Test 4 - Check that cached version/changelog info do not trigger an update check.
@@ -182,18 +195,21 @@ def test_update_checks(
     )
 
 
-def test_update_checks_cooldown(updater, mocker: MockerFixture) -> None:
+def test_update_checks_cooldown(
+    isolated_settings: settings.Settings,
+    monkeypatch: MonkeyPatch,
+    mocker: MockerFixture,
+) -> None:
     """Make sure Dangerzone only checks for updates every X hours"""
-    settings = updater.dangerzone.settings
+    settings = isolated_settings
 
     settings.set("updater_check_all", True)
     settings.set("updater_last_check", 0)
 
     # Mock some functions before the tests start
-    cooldown_spy = mocker.spy(updater_module.releases, "_should_postpone_update_check")
-    timestamp_mock = mocker.patch.object(updater_module.releases, "_get_now_timestamp")
-    mocker.patch("dangerzone.updater.releases.requests.get")
-    requests_mock = updater_module.releases.requests.get
+    cooldown_spy = mocker.spy(releases, "_should_postpone_update_check")
+    timestamp_mock = mocker.patch.object(releases, "_get_now_timestamp")
+    requests_mock = mocker.patch("dangerzone.updater.releases.requests.get")
 
     # Mock the response of the container updater check
     mocker.patch(
@@ -233,7 +249,7 @@ def test_update_checks_cooldown(updater, mocker: MockerFixture) -> None:
 
     # Test 3: Advance the current time by <cooldown period> seconds. Ensure that
     # Dangerzone checks for updates again, and the last check timestamp gets bumped.
-    curtime += updater_module.releases.UPDATE_CHECK_COOLDOWN_SECS
+    curtime += releases.UPDATE_CHECK_COOLDOWN_SECS
     timestamp_mock.return_value = curtime
     requests_mock.side_effect = None
 
@@ -248,22 +264,26 @@ def test_update_checks_cooldown(updater, mocker: MockerFixture) -> None:
     settings.set("updater_latest_version", get_version())
     settings.set("updater_latest_changelog", None)
 
-    curtime += updater_module.releases.UPDATE_CHECK_COOLDOWN_SECS
+    curtime += releases.UPDATE_CHECK_COOLDOWN_SECS
     timestamp_mock.return_value = curtime
     requests_mock.side_effect = Exception("failed")
 
     report = releases.check_for_updates(settings)
     assert cooldown_spy.spy_return is False
     assert settings.get("updater_last_check") == curtime
-    error_msg = f"Encountered an exception while checking {updater_module.releases.GH_RELEASE_URL}: failed"
+    error_msg = (
+        f"Encountered an exception while checking {releases.GH_RELEASE_URL}: failed"
+    )
     assert_report_equal(report, ErrorReport(error=error_msg))
 
 
 def test_update_errors(
-    updater, monkeypatch: MonkeyPatch, mocker: MockerFixture
+    isolated_settings: settings.Settings,
+    monkeypatch: MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
     """Test update check errors."""
-    settings = updater.dangerzone.settings
+    settings = isolated_settings
     # Always assume that we can perform multiple update checks in a row.
     monkeypatch.setattr(releases, "_should_postpone_update_check", lambda _: False)
     mocker.patch(
@@ -272,8 +292,7 @@ def test_update_errors(
     )
 
     # Mock requests.get().
-    mocker.patch("dangerzone.updater.releases.requests.get")
-    requests_mock = releases.requests.get
+    requests_mock = mocker.patch("dangerzone.updater.releases.requests.get")
 
     # Test 1 - Check that request exceptions are being detected as errors.
     requests_mock.side_effect = Exception("bad url")  # type: ignore [attr-defined]
@@ -357,18 +376,22 @@ def test_update_errors(
     assert_report_equal(report, ReleaseReport("99.9.9", "<p>changelog</p>"))
 
 
-def test_update_check_prompt(qtbot: QtBot, qt_updater, mocker: MockerFixture) -> None:
+def test_update_check_prompt(
+    isolated_settings: settings.Settings,
+    monkeypatch: MonkeyPatch,
+    mocker: MockerFixture,
+) -> None:
     """Test that the prompt to enable update checks works properly."""
     # Force Dangerzone to check immediately for updates
-    settings = qt_updater.dangerzone.settings
+    settings = isolated_settings
     settings.set("updater_last_check", 0)
 
     # Test 1 - Check that on the second run of Dangerzone, the user is prompted to
     # choose if they want to enable update checks.
     def check_button_labels() -> None:
-        dialog = qt_updater.dangerzone.app.activeWindow()
-        assert dialog.ok_button.text() == updater_module.OK_TEXT  # type: ignore [attr-defined]
-        assert dialog.cancel_button.text() == updater_module.CANCEL_TEXT  # type: ignore [attr-defined]
+        dialog = QtWidgets.QApplication.activeWindow()
+        assert dialog.ok_button.text() == OK_TEXT  # type: ignore [attr-defined]
+        assert dialog.cancel_button.text() == CANCEL_TEXT  # type: ignore [attr-defined]
         dialog.ok_button.click()  # type: ignore [attr-defined]
 
     QtCore.QTimer.singleShot(500, check_button_labels)
@@ -382,7 +405,7 @@ def test_update_check_prompt(qtbot: QtBot, qt_updater, mocker: MockerFixture) ->
     settings.set("updater_check_all", None, autosave=True)
 
     def click_ok() -> None:
-        dialog = qt_updater.dangerzone.app.activeWindow()
+        dialog = QtWidgets.QApplication.activeWindow()
         dialog.ok_button.click()  # type: ignore [attr-defined]
 
     QtCore.QTimer.singleShot(500, click_ok)
@@ -394,7 +417,7 @@ def test_update_check_prompt(qtbot: QtBot, qt_updater, mocker: MockerFixture) ->
     settings.set("updater_check_all", None)
 
     def click_cancel() -> None:
-        dialog = qt_updater.dangerzone.app.activeWindow()
+        dialog = QtWidgets.QApplication.activeWindow()
         dialog.cancel_button.click()  # type: ignore
 
     QtCore.QTimer.singleShot(500, click_cancel)
@@ -406,9 +429,9 @@ def test_update_check_prompt(qtbot: QtBot, qt_updater, mocker: MockerFixture) ->
     settings.set("updater_check_all", None, autosave=True)
 
     def click_x() -> None:
-        dialog = qt_updater.dangerzone.app.activeWindow()
+        dialog = QtWidgets.QApplication.activeWindow()
         dialog.close()
 
     QtCore.QTimer.singleShot(500, click_x)
-    assert not qt_updater.should_check_for_updates()
+    assert not releases.should_check_for_updates()
     assert settings.get("updater_check_all") is None

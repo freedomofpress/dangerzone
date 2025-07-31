@@ -21,7 +21,8 @@ else:
         from PySide2 import QtCore, QtGui, QtWidgets
 
 from dangerzone import settings
-from dangerzone.gui.updater import CANCEL_TEXT, OK_TEXT
+from dangerzone.gui.logic import Alert, DangerzoneGui
+from dangerzone.gui.updater import CANCEL_TEXT, OK_TEXT, prompt_for_checks
 from dangerzone.updater import releases
 from dangerzone.updater.releases import (
     EmptyReport,
@@ -371,17 +372,13 @@ def test_update_errors(
 
 
 def test_update_check_prompt(
-    isolated_settings: settings.Settings,
-    monkeypatch: MonkeyPatch,
-    mocker: MockerFixture,
+    dangerzone_gui: DangerzoneGui,
 ) -> None:
     """Test that the prompt to enable update checks works properly."""
-    # Force Dangerzone to check immediately for updates
-    settings = isolated_settings
-    settings.set("updater_last_check", 0)
 
-    # Test 1 - Check that on the second run of Dangerzone, the user is prompted to
-    # choose if they want to enable update checks.
+    # Force Dangerzone to check immediately for updates
+    # Test 1 - The user is prompted to choose if they want to enable update checks, and
+    # they agree.
     def check_button_labels() -> None:
         dialog = QtWidgets.QApplication.activeWindow()
         assert dialog.ok_button.text() == OK_TEXT  # type: ignore [attr-defined]
@@ -389,43 +386,21 @@ def test_update_check_prompt(
         dialog.ok_button.click()  # type: ignore [attr-defined]
 
     QtCore.QTimer.singleShot(500, check_button_labels)
-    mocker.patch(
-        "dangerzone.updater.releases._should_postpone_update_check", return_value=False
-    )
-    assert qt_updater.should_check_for_updates()
+    assert prompt_for_checks(dangerzone_gui)
 
-    # Test 2 - Check that when the user chooses to enable update checks, we
-    # store that decision in the settings.
-    settings.set("updater_check_all", None, autosave=True)
-
-    def click_ok() -> None:
-        dialog = QtWidgets.QApplication.activeWindow()
-        dialog.ok_button.click()  # type: ignore [attr-defined]
-
-    QtCore.QTimer.singleShot(500, click_ok)
-    assert qt_updater.should_check_for_updates()
-    assert settings.get("updater_check_all") is True
-
-    # Test 3 - Same as the previous test, but check that clicking on cancel stores the
-    # opposite decision.
-    settings.set("updater_check_all", None)
-
+    # Test 2 - Same as the previous test, but the user disagrees.
     def click_cancel() -> None:
         dialog = QtWidgets.QApplication.activeWindow()
         dialog.cancel_button.click()  # type: ignore
 
     QtCore.QTimer.singleShot(500, click_cancel)
-    assert not qt_updater.should_check_for_updates()
-    assert settings.get("updater_check_all") is False
+    assert not prompt_for_checks(dangerzone_gui)
 
-    # Test 4 - Same as the previous test, but check that clicking on "X" does not store
+    # Test 3 - Same as the previous test, but check that clicking on "X" does not store
     # any decision.
-    settings.set("updater_check_all", None, autosave=True)
-
     def click_x() -> None:
         dialog = QtWidgets.QApplication.activeWindow()
         dialog.close()
 
     QtCore.QTimer.singleShot(500, click_x)
-    assert not releases.should_check_for_updates()
-    assert settings.get("updater_check_all") is None
+    assert prompt_for_checks(dangerzone_gui) is None

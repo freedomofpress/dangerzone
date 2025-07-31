@@ -20,6 +20,14 @@ def get_qt_app() -> Application:
         return Application.instance()  # type: ignore [call-arg]
 
 
+@pytest.fixture
+def dangerzone_gui(qtbot: QtBot, mocker: MockerFixture, tmp_path: Path) -> MainWindow:
+    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
+    mock_app = mocker.MagicMock()
+    dummy = mocker.MagicMock(spec=Dummy)
+    return DangerzoneGui(mock_app, dummy)
+
+
 # def generate_isolated_updater(
 #     tmp_path: Path,
 #     mocker: MockerFixture,

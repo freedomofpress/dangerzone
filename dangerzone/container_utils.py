@@ -168,7 +168,7 @@ def init_podman_command() -> PodmanCommand:
         podman_path = get_podman_path()
 
     options = env = None
-    if platform.system() != "Linux":
+    if platform.system() != "Linux" and not settings.custom_runtime_specified():
         env = os.environ.copy()
         env["CONTAINERS_CONF"] = str(create_containers_conf())
         options = PodmanCommand.GlobalOptions(connection=PODMAN_MACHINE_NAME)

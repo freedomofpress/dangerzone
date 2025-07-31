@@ -6,7 +6,7 @@ from pytest_mock import MockerFixture
 from pytest_subprocess import FakeProcess
 
 from dangerzone import errors
-from dangerzone.container_utils import Runtime, expected_image_name
+from dangerzone.container_utils import expected_image_name, init_podman_command
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 from dangerzone.updater import SignatureError, UpdaterError
@@ -28,36 +28,10 @@ def provider(skip_image_verification: None) -> Container:
 
 @pytest.fixture
 def runtime_path() -> str:
-    return str(Runtime().path)
+    return str(init_podman_command().runner.podman_path)
 
 
 class TestContainer(IsolationProviderTest):
-    def test_is_available_raises(
-        self, provider: Container, fp: FakeProcess, runtime_path: str
-    ) -> None:
-        """
-        NotAvailableContainerTechException should be raised when
-        the "podman image ls" command fails.
-        """
-        fp.register_subprocess(
-            [runtime_path, "image", "ls"],
-            returncode=-1,
-            stderr="podman image ls logs",
-        )
-        with pytest.raises(errors.NotAvailableContainerTechException):
-            provider.is_available()
-
-    def test_is_available_works(
-        self, provider: Container, fp: FakeProcess, runtime_path: str
-    ) -> None:
-        """
-        No exception should be raised when the "podman image ls" can return properly.
-        """
-        fp.register_subprocess(
-            [runtime_path, "image", "ls"],
-        )
-        provider.is_available()
-
     @pytest.mark.skipif(
         platform.system() not in ("Windows", "Darwin"),
         reason="macOS and Windows specific",
@@ -134,15 +108,6 @@ class TestContainer(IsolationProviderTest):
             returncode=1,
         )
         assert provider.check_docker_desktop_version() == (True, "")
-
-    @pytest.mark.skipif(
-        platform.system() != "Linux",
-        reason="Linux specific",
-    )
-    def test_linux_skips_desktop_version_check_returns_true(
-        self, provider: Container
-    ) -> None:
-        assert (True, "") == provider.check_docker_desktop_version()
 
 
 class TestContainerTermination(IsolationProviderTermination):

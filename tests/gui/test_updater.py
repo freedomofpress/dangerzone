@@ -57,12 +57,6 @@ def assert_report_equal(
     assert report1.__eq__(report2)
 
 
-@pytest.fixture
-def isolated_settings(mocker: MockerFixture, tmp_path: Path) -> settings.Settings:
-    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
-    return settings.Settings()
-
-
 def test_default_updater_settings(isolated_settings: settings.Settings) -> None:
     """Check that new 0.4.2 installations have the expected updater settings.
 

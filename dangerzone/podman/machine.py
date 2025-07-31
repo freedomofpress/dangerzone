@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from .. import util, container_utils
+from .. import container_utils, util
 from .command import PodmanCommand
 from .errors import CommandError, PodmanError, PodmanNotInstalled
 

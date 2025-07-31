@@ -64,7 +64,7 @@ jobs:
     strategy:
       matrix:
         include:
-          #- runner: windows-2022
+          - runner: windows-2022
           - runner: windows-2025
     steps:
       - uses: actions/checkout@v4

@@ -257,6 +257,19 @@ platform."darwin/arm64" = "vfkit"
 executable = true
 destination = "share/vendor/podman/vfkit"
 
+[tool.mazette.asset.machine-os]
+repo = "containers/podman-machine-os"
+version = ">=5.5.0"
+platform."darwin/amd64" = "podman-machine.x86_64.applehv.raw.zst"
+platform."darwin/arm64" = "podman-machine.aarch64.applehv.raw.zst"
+destination = "share/machine.tar"
+
+[tool.mazette.asset.machine-os-wsl]
+repo = "apyrgio/podman-machine-os"
+version = ">=5.5.0"
+platform."windows/amd64" = "podman-machine.x86_64.wsl.tar.zst"
+destination = "share/machine.tar"
+
 [tool.mazette.asset.cosign]
 repo = "sigstore/cosign"
 version = ">=2.5.0"

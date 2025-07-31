@@ -226,6 +226,37 @@
         "extract": false
       }
     },
+    "machine-os": {
+      "darwin/amd64": {
+        "repo": "containers/podman-machine-os",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.5.2/podman-machine.x86_64.applehv.raw.zst",
+        "version": "5.5.2",
+        "checksum": "c44e1add150ffa8aa2a4f6de7c346cde33e39d355dd74e4093aac0fdc4e295bd",
+        "executable": false,
+        "destination": "share/machine.tar",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "containers/podman-machine-os",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.5.2/podman-machine.aarch64.applehv.raw.zst",
+        "version": "5.5.2",
+        "checksum": "1f5c0ec861031a3e51ae30af3a34009ca344437609915ecf7833897e2292b448",
+        "executable": false,
+        "destination": "share/machine.tar",
+        "extract": false
+      }
+    },
+    "machine-os-wsl": {
+      "windows/amd64": {
+        "repo": "apyrgio/podman-machine-os",
+        "download_url": "https://github.com/apyrgio/podman-machine-os/releases/download/5.5.0/podman-machine.x86_64.wsl.tar.zst",
+        "version": "5.5.0",
+        "checksum": "ffada992b8a1efea5204e51b89c6bb011253735c6ddb98fd83a806668c377f9e",
+        "executable": false,
+        "destination": "share/machine.tar",
+        "extract": false
+      }
+    },
     "cosign": {
       "darwin/amd64": {
         "repo": "sigstore/cosign",
@@ -265,5 +296,5 @@
       }
     }
   },
-  "config_checksum": "a7d1727000b3fb8fda4693290036026c3e39e1edf79f4ca0077923ae86ea2055"
+  "config_checksum": "305236a69bcb44719c3b6ab10caa8a2fbcbfdec0e0c70dbe00a82ea1a060abce"
 }

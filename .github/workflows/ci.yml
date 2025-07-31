@@ -80,6 +80,7 @@ jobs:
           path: |
             share/tessdata/
             share/vendor/
+            share/machine.tar
           key: v1-mazette-windows-${{ hashFiles('./mazette.lock') }}
       - name: Install mazette assets
         if: steps.cache-mazette.outputs.cache-hit != 'true'

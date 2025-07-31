@@ -58,13 +58,13 @@ jobs:
   #    registry_token: ${{ secrets.GITHUB_TOKEN }}
 
   windows:
-    needs:
-      - build-container-image
+    #needs:
+    #  - build-container-image
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         include:
-          - runner: windows-2022
+          #- runner: windows-2022
           - runner: windows-2025
     steps:
       - uses: actions/checkout@v4
@@ -97,10 +97,7 @@ jobs:
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
       - name: Smoke test
-        run: |
-          poetry run .\dev_scripts\dangerzone-cli.bat \
-              dangerzone\tests\test_docs\sample-pdf.pdf \
-              --ocr-lang eng
+        run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment

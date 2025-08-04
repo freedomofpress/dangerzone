@@ -51,6 +51,8 @@ convert the documents within a secure sandbox.
         "dangerzone.gui",
         "dangerzone.isolation_provider",
         "dangerzone.podman",
+        "dangerzone.podman.command",
+        "dangerzone.podman.errors",
         "dangerzone.updater",
     ],
     data_files=data_files_list(),

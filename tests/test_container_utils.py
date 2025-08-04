@@ -18,7 +18,7 @@ def test_get_podman_path(mocker: MockerFixture):
 
     mocker.patch("platform.system", return_value="Windows")
     path = container_utils.get_podman_path()
-    assert str(path).endswith("/podman.exe")
+    assert str(path).endswith("podman.exe")
     assert "vendor" in str(path)
 
     mocker.patch("platform.system", return_value="Darwin")

@@ -808,10 +808,8 @@ description = "GitHub asset management with lock files and extensive configurati
 optional = false
 python-versions = ">=3.9"
 groups = ["package"]
-files = [
-    {file = "mazette-0.2.0-py3-none-any.whl", hash = "sha256:5b79d250dd48710f4791009fe4e032c1b39fc3d12e5cdb4e63380b520d9a9aad"},
-    {file = "mazette-0.2.0.tar.gz", hash = "sha256:8113f0f06f7939ebecfcd4970b33bc2ab0902fcbe7faa8215c188600c7e6314c"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 colorama = ">=0.4.6"
@@ -819,6 +817,12 @@ platformdirs = ">=4.3.8"
 requests = ">=2.32.3"
 semver = ">=3.0.4"
 toml = ">=0.10.2"
+
+[package.source]
+type = "git"
+url = "https://github.com/freedomofpress/mazette"
+reference = "6-exec"
+resolved_reference = "27d8bf1d39e08210f5ba0b966b32a739cc1dc6a5"
 
 [[package]]
 name = "mypy"
@@ -1681,4 +1685,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<3.14"
-content-hash = "cccae5292f746e904a403beef4ec13cacb16c910d157974cbe82e937e7a87bbc"
+content-hash = "66c51f9ec9a86ac1719094b86c2118ebf455fe1519df0174185331f844e8b3db"

@@ -121,8 +121,12 @@ def cli_main(
 
     tasks = []
     if dangerzone.isolation_provider.requires_install():
-        tasks = [startup.MachineInitTask(), startup.MachineStartTask()]
-    tasks += [startup.UpdateCheckTask(), startup.ContainerInstallTask()]
+        tasks = [
+            startup.MachineInitTask(),
+            startup.MachineStartTask(),
+            startup.UpdateCheckTask(),
+            startup.ContainerInstallTask(),
+        ]
     startup.StartupLogic(tasks=tasks).run()
 
     # Convert the document

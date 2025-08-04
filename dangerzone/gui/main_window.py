@@ -312,8 +312,14 @@ class MainWindow(QtWidgets.QMainWindow):
         task_update_check = startup.UpdateCheckTask()
         task_container_install = startup.ContainerInstallTask()
         if dangerzone.isolation_provider.requires_install():
-            tasks = [task_machine_init, task_machine_start]
-        tasks += [task_update_check, task_container_install]
+            tasks = [
+                task_machine_init,
+                task_machine_start,
+                task_update_check,
+                task_container_install,
+            ]
+        else:
+            tasks = [task_update_check]
         self.startup_thread = startup.StartupThread(tasks, raise_on_error=False)
         self.startup_thread.succeeded.connect(self.waiting_finished)
         self.startup_thread.starting.connect(self.status_bar.handle_startup_begin)

@@ -24,7 +24,7 @@ VALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "valid"
 TAMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tampered"
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def isolated_settings(mocker: MockerFixture, tmp_path: Path) -> Settings:
     mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
     return Settings()

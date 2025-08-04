@@ -44,9 +44,7 @@ def test_create_containers_conf(mocker: MockerFixture, tmp_path: pathlib.Path):
     assert conf == path.read_text()
 
 
-def test_init_podman_command(
-    isolated_settings: settings.Settings, mocker: MockerFixture
-):
+def test_init_podman_command(mocker: MockerFixture):
     cmd = mocker.patch("dangerzone.container_utils.PodmanCommand")
 
     mocker.patch("platform.system", return_value="Linux")
@@ -65,16 +63,14 @@ def test_init_podman_command(
         assert kwargs["options"] is not None
 
 
-def test_init_podman_command_custom_runtime(
-    isolated_settings: settings.Settings, mocker: MockerFixture
-):
+def test_init_podman_command_custom_runtime(mocker: MockerFixture):
     # Test custom runtime
     # Test Windows/macOS Podman command (env, connection)
     # Test Linux Podman
     mocker.patch("pathlib.Path.is_file", return_value=True)
     mocker.patch("pathlib.Path.exists", return_value=True)
     runtime = "/some/path/to/podman"
-    isolated_settings.set_custom_runtime(runtime)
+    settings.Settings().set_custom_runtime(runtime)
     cmd = mocker.patch("dangerzone.container_utils.PodmanCommand")
 
     for distro in ["Linux", "Windows", "Darwin"]:

@@ -1,10 +1,12 @@
 import json
 import platform
 from pathlib import Path
+from typing import Callable
 
 import pytest
 from pytest_subprocess import FakeProcess
 
+from dangerzone import container_utils
 from dangerzone.podman.machine import PodmanMachineManager
 from dangerzone.util import get_version
 
@@ -14,82 +16,107 @@ def machine_manager(mocker) -> PodmanMachineManager:
     return PodmanMachineManager()
 
 
+@pytest.fixture
+def podman_register(fp: FakeProcess, machine_manager: PodmanMachineManager) -> Callable:
+    version = get_version()
+    machine_name = f"dz-internal-{version}"
+    podman_path = str(machine_manager.podman.runner.podman_path)
+
+    base_cmd = [podman_path]
+    if platform.system() != "Linux":
+        base_cmd += ["--connection", machine_name]
+
+    def fp_register(cmd: list[str], **kwargs):
+        return fp.register(base_cmd + cmd, **kwargs)
+
+    return fp_register
+
+
 def test_initialize_machine_no_existing(
-    machine_manager: PodmanMachineManager, fp: FakeProcess
+    machine_manager: PodmanMachineManager, podman_register: Callable
 ) -> None:
     """Test that the initialize_machine method runs the correct commands when no machine exists."""
     version = get_version()
     machine_name = f"dz-internal-{version}"
-    podman_path = str(machine_manager.podman.runner.podman_path)
     image_path = str(machine_manager._get_machine_image_path())
-    fp.register(
-        [podman_path, "machine", "list", "--format", "json"],
-        stdout=json.dumps([]),
+    rec_list = podman_register(
+        ["machine", "list", "--format", "json"], stdout=json.dumps([])
     )
-    fp.register([podman_path, "machine", "init", machine_name, "--image", image_path])
+    rec_init = podman_register(["machine", "init", machine_name, "--image", image_path])
     machine_manager.init()
+    assert rec_list.call_count() == 1
+    assert rec_init.call_count() == 1
 
 
 def test_initialize_machine_stale_exists(
-    machine_manager: PodmanMachineManager, fp: FakeProcess
+    machine_manager: PodmanMachineManager, podman_register: Callable
 ) -> None:
     """Test that stale machines are removed during initialization."""
     version = get_version()
     machine_name = f"dz-internal-{version}"
     stale_machine_name = "dz-internal-stale"
-    podman_path = str(machine_manager.podman.runner.podman_path)
     image_path = str(machine_manager._get_machine_image_path())
 
-    fp.register(
-        [podman_path, "machine", "list", "--format", "json"],
+    rec_list = podman_register(
+        ["machine", "list", "--format", "json"],
         stdout=json.dumps([{"Name": stale_machine_name}]),
     )
-    fp.register([podman_path, "machine", "rm", stale_machine_name, "--force"])
-    fp.register([podman_path, "machine", "init", machine_name, "--image", image_path])
+    rec_rm = podman_register(["machine", "rm", stale_machine_name, "--force"])
+    rec_init = podman_register(["machine", "init", machine_name, "--image", image_path])
     machine_manager.init()
+    assert rec_list.call_count() == 1
+    assert rec_rm.call_count() == 1
+    assert rec_init.call_count() == 1
 
 
-def test_start_machine(machine_manager: PodmanMachineManager, fp: FakeProcess) -> None:
+def test_start_machine(
+    machine_manager: PodmanMachineManager, podman_register: Callable
+) -> None:
     """Test that the start_machine method runs the correct commands."""
     version = get_version()
     machine_name = f"dz-internal-{version}"
-    podman_path = str(machine_manager.podman.runner.podman_path)
-    fp.register([podman_path, "machine", "start", machine_name])
+    rec_start = podman_register(["machine", "start", machine_name])
     machine_manager.start()
+    assert rec_start.call_count() == 1
 
 
-def test_stop_machine(machine_manager: PodmanMachineManager, fp: FakeProcess) -> None:
+def test_stop_machine(
+    machine_manager: PodmanMachineManager, podman_register: Callable
+) -> None:
     """Test that the stop_machine method runs the correct commands."""
     version = get_version()
     machine_name = f"dz-internal-{version}"
-    podman_path = str(machine_manager.podman.runner.podman_path)
-    fp.register([podman_path, "machine", "stop", machine_name])
+    rec_stop = podman_register(["machine", "stop", machine_name])
     machine_manager.stop()
+    assert rec_stop.call_count() == 1
 
 
-def test_remove_machine(machine_manager: PodmanMachineManager, fp: FakeProcess) -> None:
+def test_remove_machine(
+    machine_manager: PodmanMachineManager, podman_register: Callable
+) -> None:
     """Test that the remove_machine method runs the correct commands."""
     version = get_version()
     machine_name = f"dz-internal-{version}"
-    podman_path = str(machine_manager.podman.runner.podman_path)
-    fp.register([podman_path, "machine", "rm", machine_name, "--force"])
+    rec_rm = podman_register(["machine", "rm", machine_name, "--force"])
     machine_manager.remove(force=True)
+    assert rec_rm.call_count() == 1
 
 
-def test_reset_machines(machine_manager: PodmanMachineManager, fp: FakeProcess) -> None:
+def test_reset_machines(
+    machine_manager: PodmanMachineManager, podman_register: Callable
+) -> None:
     """Test that the reset_machines method runs the correct commands."""
-    podman_path = str(machine_manager.podman.runner.podman_path)
-    fp.register([podman_path, "machine", "reset", "--force"])
+    rec_reset = podman_register(["machine", "reset", "--force"])
     machine_manager.reset()
+    assert rec_reset.call_count() == 1
 
 
 def test_list_dangerzone_machines(
-    machine_manager: PodmanMachineManager, fp: FakeProcess
+    machine_manager: PodmanMachineManager, podman_register: Callable
 ) -> None:
     """Test that list_dangerzone_machines filters correctly."""
-    podman_path = str(machine_manager.podman.runner.podman_path)
-    fp.register(
-        [podman_path, "machine", "list", "--format", "json"],
+    rec_list = podman_register(
+        ["machine", "list", "--format", "json"],
         stdout=json.dumps(
             [{"Name": "dz-internal-1"}, {"Name": "other"}, {"Name": "dz-internal-2"}]
         ),
@@ -98,14 +125,14 @@ def test_list_dangerzone_machines(
     assert len(machines) == 2
     assert machines[0]["Name"] == "dz-internal-1"
     assert machines[1]["Name"] == "dz-internal-2"
+    assert rec_list.call_count() == 1
 
 
 def test_run_raw_podman_command(
-    machine_manager: PodmanMachineManager, fp: FakeProcess
+    machine_manager: PodmanMachineManager, podman_register: Callable
 ) -> None:
     """Test that run_raw_podman_command executes the command."""
-    podman_path = str(machine_manager.podman.runner.podman_path)
     raw_command = ["info"]
-    fp.register([podman_path] + raw_command)
+    recorder = podman_register(raw_command)
     machine_manager.run_raw_podman_command(raw_command)
-    assert fp.call_count([podman_path] + raw_command) == 1
+    assert recorder.call_count() == 1

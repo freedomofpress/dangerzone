@@ -1,0 +1,99 @@
+name: Scan released app and container
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run every day at 00:00 UTC.
+  workflow_dispatch:
+
+jobs:
+  security-scan-container:
+    strategy:
+      matrix:
+        include:
+          - runs-on: ubuntu-24.04
+            arch: i686
+          - runs-on: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download container image for the latest release and load it
+        run: |
+          VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | grep "tag_name" | cut -d '"' -f 4)
+          CONTAINER_FILENAME=container-${VERSION:1}-${{ matrix.arch }}.tar
+          wget https://github.com/freedomofpress/dangerzone/releases/download/${VERSION}/${CONTAINER_FILENAME} -O ${CONTAINER_FILENAME}
+          docker load -i ${CONTAINER_FILENAME}
+      - name: Get image tag
+        id: tag
+        run: |
+          tag=$(docker images dangerzone.rocks/dangerzone --format '{{ .Tag }}')
+          echo "tag=$tag" >> $GITHUB_OUTPUT
+      # NOTE: Scan first without failing, else we won't be able to read the scan
+      # report.
+      - name: Scan container image (no fail)
+        uses: anchore/scan-action@v6
+        id: scan_container
+        with:
+          image: "dangerzone.rocks/dangerzone:${{ steps.tag.outputs.tag }}"
+          fail-build: false
+          only-fixed: false
+          severity-cutoff: critical
+      - name: Upload container scan report
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.scan_container.outputs.sarif }}
+          category: container-${{ matrix.arch }}
+      - name: Inspect container scan report
+        run: cat ${{ steps.scan_container.outputs.sarif }}
+      - name: Scan container image
+        uses: anchore/scan-action@v6
+        with:
+          image: "dangerzone.rocks/dangerzone:${{ steps.tag.outputs.tag }}"
+          fail-build: true
+          only-fixed: false
+          severity-cutoff: critical
+
+  security-scan-app:
+    strategy:
+      matrix:
+        runs-on:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Checkout the latest released tag
+        run: |
+          # Grab the latest Grype ignore list before git checkout overwrites it.
+          cp .grype.yaml .grype.yaml.new
+          VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | jq -r '.tag_name')
+          git checkout $VERSION
+          # Restore the newest Grype ignore list.
+          mv .grype.yaml.new .grype.yaml
+      # NOTE: Scan first without failing, else we won't be able to read the scan
+      # report.
+      - name: Scan application (no fail)
+        uses: anchore/scan-action@v6
+        id: scan_app
+        with:
+          path: "."
+          fail-build: false
+          only-fixed: false
+          severity-cutoff: critical
+      - name: Upload application scan report
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.scan_app.outputs.sarif }}
+          category: app
+      - name: Inspect application scan report
+        run: cat ${{ steps.scan_app.outputs.sarif }}
+      - name: Scan application
+        uses: anchore/scan-action@v6
+        with:
+          path: "."
+          fail-build: true
+          only-fixed: false
+          severity-cutoff: critical

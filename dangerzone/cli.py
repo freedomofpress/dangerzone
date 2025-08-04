@@ -11,6 +11,7 @@ from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
+from .podman.machine import PodmanMachineManager
 from .settings import Settings
 from .updater import install
 from .util import get_version, replace_control_chars
@@ -139,6 +140,10 @@ def cli_main(
             print_header(
                 f"Unsafe (original) documents moved to '{ARCHIVE_SUBDIR}' subdirectory"
             )
+
+    if dangerzone.isolation_provider.requires_install():
+        click.echo("Stopping Podman machine...")
+        PodmanMachineManager().stop()
 
     if documents_failed != []:
         print_header("Failed to convert document(s)")

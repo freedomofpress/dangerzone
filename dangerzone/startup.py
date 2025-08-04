@@ -134,18 +134,21 @@ class UpdateCheckTask(Task):
 
 
 class StartupLogic:
-    def __init__(self, tasks):
+    def __init__(self, tasks, raise_on_error=True):
         self.tasks = tasks
+        self.raise_on_error = raise_on_error
         super().__init__()
 
     def handle_start(self):
         logger.info("Performing some Dangerzone startup tasks")
 
     def handle_error(self, task, e):
-        logger.info(
+        logger.error(
             f"Stopping startup tasks because task '{task.name}' failed with error:"
             f" {str(e)}"
         )
+        if self.raise_on_error:
+            raise e
 
     def handle_success(self):
         logger.info("Successfully finished all Dangerzone startup tasks")

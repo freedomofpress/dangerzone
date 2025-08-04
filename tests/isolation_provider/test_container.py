@@ -35,22 +35,26 @@ def runtime_path() -> str:
 class TestContainer(IsolationProviderTest):
     @classmethod
     def setup_class(cls):
-        cls.machine = machine.PodmanMachineManager()
-        cls.machine.init()
-        cls.machine.start()
+        if platform.system() != "Linux":
+            cls.machine = machine.PodmanMachineManager()
+            cls.machine.init()
+            cls.machine.start()
 
     @classmethod
     def teardownn_class(cls):
-        cls.stop()
+        if platform.system() != "Linux":
+            cls.stop()
 
 
 class TestContainerTermination(IsolationProviderTermination):
     @classmethod
     def setup_class(cls):
-        cls.machine = machine.PodmanMachineManager()
-        cls.machine.init()
-        cls.machine.start()
+        if platform.system() != "Linux":
+            cls.machine = machine.PodmanMachineManager()
+            cls.machine.init()
+            cls.machine.start()
 
     @classmethod
     def teardownn_class(cls):
-        cls.stop()
+        if platform.system() != "Linux":
+            cls.stop()

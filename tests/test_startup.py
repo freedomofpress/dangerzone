@@ -76,7 +76,8 @@ def test_startup_fail_not_allowed(mock_startup_spy: StartupSpy):
     exc = Exception("failed")
     mock_startup_spy.mock_task.run.side_effect = exc
     mock_startup_spy.mock_task.can_fail = False
-    mock_startup_spy.runner.run()
+    with pytest.raises(Exception):
+        mock_startup_spy.runner.run()
 
     mock_startup_spy.handle_start.assert_called_once()
     mock_startup_spy.handle_success.assert_not_called()

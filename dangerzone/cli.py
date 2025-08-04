@@ -1,4 +1,5 @@
 import logging
+import platform
 import sys
 from typing import List, Optional
 
@@ -141,7 +142,10 @@ def cli_main(
                 f"Unsafe (original) documents moved to '{ARCHIVE_SUBDIR}' subdirectory"
             )
 
-    if dangerzone.isolation_provider.requires_install():
+    if (
+        dangerzone.isolation_provider.requires_install()
+        and platform.system() != "Linux"
+    ):
         click.echo("Stopping Podman machine...")
         PodmanMachineManager().stop()
 

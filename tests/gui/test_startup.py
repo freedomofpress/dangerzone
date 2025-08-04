@@ -21,7 +21,7 @@ class StartupThreadMocker(startup.StartupThread):
             self.task_update_check,
             self.task_container_install,
         ]
-        self.startup_thread = startup.StartupThread(self.tasks)
+        self.startup_thread = startup.StartupThread(self.tasks, raise_on_error=False)
         self.expected_signals = []
         self.not_expected_funcs = []
 

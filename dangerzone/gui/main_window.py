@@ -314,7 +314,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if dangerzone.isolation_provider.requires_install():
             tasks = [task_machine_init, task_machine_start]
         tasks += [task_update_check, task_container_install]
-        self.startup_thread = startup.StartupThread(tasks)
+        self.startup_thread = startup.StartupThread(tasks, raise_on_error=False)
         self.startup_thread.succeeded.connect(self.waiting_finished)
         self.startup_thread.starting.connect(self.status_bar.handle_startup_begin)
         self.startup_thread.starting.connect(self.waiting_widget.handle_start)

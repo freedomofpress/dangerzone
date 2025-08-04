@@ -5,8 +5,6 @@ import time
 from pathlib import Path
 from typing import Optional, Union
 
-from podman import client
-
 from .. import errors
 from . import cli_runner, machine_manager
 
@@ -134,43 +132,8 @@ class PodmanCommand:
             ret = proc.wait()
         return ret
 
-    def wait_for_service(
-        self,
-        uri: str,
-        proc: subprocess.Popen,
-        timeout: int = None,
-        check_interval: float = 0.1,
-    ):
-        """Wait for the Podman system service to be operational.
-
-        This method checks two things; if the system service is still running,
-        and if we can ping it successfully.
-
-        Args:
-            uri (str): The URI for the service.
-            proc (subprocess.Popen): The process handle for Podman's system service.
-            timeout (int, optional): How long to wait until the service is operational
-            check_interval (float): The interval between health checks
-
-        Returns:
-            int: The exit code of the service process.
-        """
-        start = time.monotonic()
-        with client.PodmanClient(base_url=uri) as c:
-            while True:
-                if timeout and time.monotonic() - start > timeout:
-                    raise errors.ServiceTimeout(timeout)
-
-                ret = proc.poll()
-                if ret is not None:
-                    raise errors.ServiceTerminated(ret)
-
-                try:
-                    if c.ping():
-                        break
-                except errors.APIError:
-                    pass
-                time.sleep(check_interval)
+    # NOTE: We have temporarily removed the `wait_service` method, because it required
+    # the Podman package.
 
     @contextlib.contextmanager
     def service(
@@ -198,11 +161,5 @@ class PodmanCommand:
             subprocess.Popen: The process handle of the `podman system service` command.
         """
         proc = self.start_service(uri=uri, time=0, cors=cors, **skwargs)
-        try:
-            self.wait_for_service(uri, proc, timeout=ping_timeout)
-        except (errors.ServiceTimeout, errors.ServiceTerminated):
-            self.stop_service(proc, timeout=stop_timeout)
-            raise
-
         yield proc
         self.stop_service(proc, timeout=stop_timeout)

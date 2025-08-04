@@ -26,7 +26,6 @@ pyxdg = { version = "*", platform = "linux" }
 requests = "*"
 markdown = "*"
 packaging = "*"
-podman = "^5.5.0"
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

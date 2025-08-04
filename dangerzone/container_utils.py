@@ -146,7 +146,7 @@ def create_containers_conf() -> Path:
     helper_binaries_dir = str(podman_path.parent)
     helper_binaries_dir = helper_binaries_dir.replace("\\", "\\\\")
     content = f"""\
-[containers]
+[engine]
 helper_binaries_dir=["{helper_binaries_dir}"]
 """
     # FIXME: Do not unconditionally write to this file.

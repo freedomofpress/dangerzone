@@ -231,7 +231,7 @@
         "repo": "containers/podman-machine-os",
         "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.5.2/podman-machine.x86_64.applehv.raw.zst",
         "version": "5.5.2",
-        "checksum": "c44e1add150ffa8aa2a4f6de7c346cde33e39d355dd74e4093aac0fdc4e295bd",
+        "checksum": "9710cb739ec8b6473863607ecdd7ee27cdc8802b1133ad2e121f98206399a7cc",
         "executable": false,
         "destination": "share/machine.tar",
         "extract": false

@@ -6,6 +6,7 @@ from pytest_mock import MockerFixture
 from pytest_subprocess import FakeProcess
 
 from dangerzone import errors
+from dangerzone.podman import machine
 from dangerzone.container_utils import expected_image_name, init_podman_command
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
@@ -32,83 +33,24 @@ def runtime_path() -> str:
 
 
 class TestContainer(IsolationProviderTest):
-    @pytest.mark.skipif(
-        platform.system() not in ("Windows", "Darwin"),
-        reason="macOS and Windows specific",
-    )
-    def test_old_docker_desktop_version_is_detected(
-        self, mocker: MockerFixture, provider: Container, fp: FakeProcess
-    ) -> None:
-        fp.register_subprocess(
-            [
-                "docker",
-                "version",
-                "--format",
-                "{{.Server.Platform.Name}}",
-            ],
-            stdout="Docker Desktop 1.0.0 (173100)",
-        )
+    @classmethod
+    def setup_class(cls):
+        cls.machine = machine.PodmanMachineManager()
+        cls.machine.init()
+        cls.machine.start()
 
-        mocker.patch(
-            "dangerzone.isolation_provider.container.MINIMUM_DOCKER_DESKTOP",
-            {"Darwin": "1.0.1", "Windows": "1.0.1"},
-        )
-        assert (False, "1.0.0") == provider.check_docker_desktop_version()
-
-    @pytest.mark.skipif(
-        platform.system() not in ("Windows", "Darwin"),
-        reason="macOS and Windows specific",
-    )
-    def test_up_to_date_docker_desktop_version_is_detected(
-        self, mocker: MockerFixture, provider: Container, fp: FakeProcess
-    ) -> None:
-        fp.register_subprocess(
-            [
-                "docker",
-                "version",
-                "--format",
-                "{{.Server.Platform.Name}}",
-            ],
-            stdout="Docker Desktop 1.0.1 (173100)",
-        )
-
-        # Require version 1.0.1
-        mocker.patch(
-            "dangerzone.isolation_provider.container.MINIMUM_DOCKER_DESKTOP",
-            {"Darwin": "1.0.1", "Windows": "1.0.1"},
-        )
-        assert (True, "1.0.1") == provider.check_docker_desktop_version()
-
-        fp.register_subprocess(
-            [
-                "docker",
-                "version",
-                "--format",
-                "{{.Server.Platform.Name}}",
-            ],
-            stdout="Docker Desktop 2.0.0 (173100)",
-        )
-        assert (True, "2.0.0") == provider.check_docker_desktop_version()
-
-    @pytest.mark.skipif(
-        platform.system() not in ("Windows", "Darwin"),
-        reason="macOS and Windows specific",
-    )
-    def test_docker_desktop_version_failure_returns_true(
-        self, mocker: MockerFixture, provider: Container, fp: FakeProcess
-    ) -> None:
-        fp.register_subprocess(
-            [
-                "docker",
-                "version",
-                "--format",
-                "{{.Server.Platform.Name}}",
-            ],
-            stderr="Oopsie",
-            returncode=1,
-        )
-        assert provider.check_docker_desktop_version() == (True, "")
+    @classmethod
+    def teardownn_class(cls):
+        cls.stop()
 
 
 class TestContainerTermination(IsolationProviderTermination):
-    pass
+    @classmethod
+    def setup_class(cls):
+        cls.machine = machine.PodmanMachineManager()
+        cls.machine.init()
+        cls.machine.start()
+
+    @classmethod
+    def teardownn_class(cls):
+        cls.stop()

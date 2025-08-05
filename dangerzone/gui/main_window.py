@@ -14,16 +14,19 @@ from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
     from PySide2.QtCore import Qt
+    from PySide2.QtSvg import QSvgWidget
     from PySide2.QtWidgets import QAction
 else:
     try:
         from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide6.QtCore import Qt
         from PySide6.QtGui import QAction
+        from PySide6.QtSvgWidgets import QSvgWidget
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide2.QtCore import Qt
-        from PySide2.QtGui import QAction
+        from PySide2.QtSvg import QSvgWidget
+        from PySide2.QtWidgets import QAction
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
@@ -81,6 +84,31 @@ def load_svg_image(filename: str, width: int, height: int) -> QtGui.QPixmap:
     return pixmap
 
 
+def animate_svg_image(
+    filename: str, width: int, height: int, fps: int = 20
+) -> QSvgWidget:
+    """Load and animate an SVG image.
+
+    Qt has rudimentary support for SVG animations [1], that basically boil down to SVGs
+    that use the `animateTransform` element [2,3]. The rest of the SVGs that use a
+    different `animate*` property will NOT be animated.
+
+    This function animates SVGs using 20FPS by default. We have experimented with higher
+    values, and we're seeing a noticeable CPU overhead, so we **strongly** suggest
+    keeping this number low.
+
+    [1] https://doc.qt.io/qt-6/svgrendering.html#rendering-svg-files
+    [2] https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/animateTransform
+    [3] https://github.com/yjg30737/pyqt-animated-svg-example
+    """
+    path = get_resource_path(filename)
+    svg_widget = QSvgWidget()
+    svg_widget.renderer().setFramesPerSecond(fps)
+    svg_widget.load(str(path))
+    svg_widget.setFixedSize(width, height)
+    return svg_widget
+
+
 def get_supported_extensions() -> List[str]:
     supported_ext = [
         ".pdf",
@@ -118,6 +146,67 @@ def get_supported_extensions() -> List[str]:
         supported_ext += hwp_filters
 
     return supported_ext
+
+
+class StatusBar(QtWidgets.QWidget):
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
+        super(StatusBar, self).__init__()
+        self.dangerzone = dangerzone
+
+        self.spinner = animate_svg_image("spinner.svg", width=15, height=15)
+        self.message = QtWidgets.QLabel("")
+        self.info_icon = QtWidgets.QToolButton()
+        self.info_icon.setIcon(
+            QtGui.QIcon(load_svg_image("info-circle.svg", width=15, height=15))
+        )
+        self.info_icon.setIconSize(QtCore.QSize(15, 15))
+        self.info_icon.setStyleSheet("QToolButton { border: none; }")
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.addStretch()
+        layout.addWidget(self.spinner)
+        layout.addWidget(self.message)
+        layout.addWidget(self.info_icon)
+        self.setLayout(layout)
+
+    def set_status_ok(self, message: str) -> None:
+        self.spinner.hide()
+        self.info_icon.hide()
+        self.message.setText(message)
+        self.setStyleSheet("color: green; font-weight: bold")
+
+    def set_status_working(self, message: str) -> None:
+        self.spinner.show()
+        self.info_icon.show()
+        self.message.setText(message)
+        self.setStyleSheet("color: orange; font-weight: bold")
+
+    def set_status_error(self, message: str) -> None:
+        self.spinner.hide()
+        self.info_icon.show()
+        self.message.setText(message)
+        self.setStyleSheet("color: red; font-weight: bold")
+
+    def handle_startup_begin(self) -> None:
+        self.set_status_working("Starting")
+
+    def handle_task_machine_init(self) -> None:
+        self.set_status_working("Initializing Dangerzone VM")
+
+    def handle_task_machine_start(self) -> None:
+        self.set_status_working("Starting Dangerzone VM")
+
+    def handle_task_update_check(self) -> None:
+        self.set_status_working("Checking for updates")
+
+    def handle_task_container_install(self) -> None:
+        self.set_status_working("Installing Dangerzone sandbox")
+
+    def handle_startup_error(self) -> None:
+        self.set_status_error("Startup failed")
+
+    def handle_startup_success(self) -> None:
+        self.set_status_ok("")
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -221,6 +310,9 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(self.waiting_widget, stretch=1)
         layout.addWidget(self.content_widget, stretch=1)
 
+        self.status_bar = StatusBar(self.dangerzone)
+        layout.addWidget(self.status_bar)
+
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
@@ -232,6 +324,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Log window
         self.log_window = LogWindow(self)
+        self.status_bar.info_icon.clicked.connect(self.log_window.show)
 
         # Configure logging to the log window
         log_handler = LogHandler()

@@ -5,8 +5,13 @@ import time
 from pathlib import Path
 from typing import Optional, Union
 
-from podman import client
-
+# FIXME: We are commenting out the following import, because it requires the Python
+# Podman client, which Dangerzone does not have as a dependency yet.
+#
+# The side-effect of this change is that we can't start the Podman REST API service, but
+# we don't need this feature yet.
+#
+# from podman import client
 from .. import errors
 from . import cli_runner, machine_manager
 

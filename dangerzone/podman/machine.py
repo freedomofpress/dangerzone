@@ -69,6 +69,7 @@ class PodmanMachineManager:
             memory=memory,
             timezone=timezone,
             image=self._get_machine_image_path(),
+            capture_output=False,
         )
         logger.info(f"Podman machine '{self.name}' initialized successfully.")
 
@@ -78,7 +79,7 @@ class PodmanMachineManager:
             name = self.name
         logger.info(f"Starting Podman machine: {name}")
         try:
-            self.podman.machine.start(name=name)
+            self.podman.machine.start(name=name, capture_output=False)
             logger.info(f"Podman machine '{name}' started successfully.")
         except CommandError as e:
             for m in self._get_existing_dangerzone_machines():

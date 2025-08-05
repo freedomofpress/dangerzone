@@ -86,7 +86,9 @@ def cli_main(
     linger: bool = False,
 ) -> None:
     setup_logging()
-    display_banner()
+    # FIXME: This creates an issue in Windows CI tests, so we temporarily disable it
+    # until we find the root cause.
+    # display_banner()
     settings = Settings(debug=debug)
     if set_container_runtime:
         if set_container_runtime == "default":

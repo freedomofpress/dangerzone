@@ -37,6 +37,7 @@ from ..updater import (
     get_installation_strategy,
 )
 from ..util import format_exception, get_resource_path, get_version
+from .log_window import LogHandler, LogWindow
 from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
 from .widgets import TracebackWidget
 
@@ -228,6 +229,15 @@ class MainWindow(QtWidgets.QMainWindow):
         # thing we have to a top-level container element akin to an HTML `<body>`.
         # This allows us to make QSS rules conditional on the OS color mode.
         self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
+
+        # Log window
+        self.log_window = LogWindow(self)
+
+        # Configure logging to the log window
+        log_handler = LogHandler()
+        log_handler.new_record.connect(self.log_window.append_log)
+        logging.getLogger().addHandler(log_handler)
+        logging.getLogger().setLevel(logging.DEBUG)
 
         if hasattr(self.dangerzone.isolation_provider, "check_docker_desktop_version"):
             try:

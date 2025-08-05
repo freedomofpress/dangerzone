@@ -9,6 +9,7 @@ from pathlib import Path, PurePosixPath
 from typing import IO, Callable, Iterable, List, Optional, Tuple, Union
 
 from . import errors
+from .podman.command import PodmanCommand
 from .settings import Settings
 from .util import (
     get_cache_dir,
@@ -114,6 +115,15 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
         raise RuntimeError(msg)
 
 
+def get_podman_path() -> Path:
+    podman_bin = "podman"
+    if platform.system() == "Linux":
+        return None  # Use default Podman location
+    elif platform.system() == "Windows":
+        podman_bin += ".exe"
+    return get_resource_path("vendor") / "podman" / podman_bin
+
+
 def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]:
     """Ensure that the bundled seccomp profile is accessible by the runtime.
 
@@ -181,6 +191,43 @@ def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]
     else:
         # Amusingly, that's an actual runtime error...
         raise RuntimeError(f"Unexpected runtime: '{runtime.name}'")
+
+
+def create_containers_conf() -> Path:
+    podman_path = get_podman_path()
+    helper_binaries_dir = str(podman_path.parent)
+    helper_binaries_dir = helper_binaries_dir.replace("\\", "\\\\")
+    content = f"""\
+[engine]
+helper_binaries_dir=["{helper_binaries_dir}"]
+"""
+    # FIXME: Do not unconditionally write to this file.
+    dst = CONTAINERS_CONF_PATH
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(content)
+    return dst
+
+
+@functools.cache
+def init_podman_command() -> PodmanCommand:
+    settings = Settings()
+
+    if settings.custom_runtime_specified():
+        podman_path = Path(settings.get("container_runtime"))
+        if not podman_path.exists():
+            raise errors.UnsupportedContainerRuntime(podman_path)
+    else:
+        podman_path = get_podman_path()
+
+    options = env = None
+    if platform.system() != "Linux" and not settings.custom_runtime_specified():
+        env = os.environ.copy()
+        env["CONTAINERS_CONF"] = str(create_containers_conf())
+        options = PodmanCommand.GlobalOptions(connection=PODMAN_MACHINE_NAME)
+        if settings.debug:
+            options.log_level = "debug"
+
+    return PodmanCommand(path=podman_path, env=env, options=options)
 
 
 def list_image_digests() -> List[str]:

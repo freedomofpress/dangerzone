@@ -10,10 +10,18 @@ from typing import IO, Callable, Iterable, List, Optional, Tuple, Union
 
 from . import errors
 from .settings import Settings
-from .util import get_cache_dir, get_resource_path, get_subprocess_startupinfo
+from .util import (
+    get_cache_dir,
+    get_resource_path,
+    get_subprocess_startupinfo,
+    get_version,
+)
 
 # Keep the name of the old container here to be able to get rid of it later
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+CONTAINERS_CONF_PATH = get_cache_dir() / "containers.conf"
+PODMAN_MACHINE_PREFIX = "dz-internal-"
+PODMAN_MACHINE_NAME = f"{PODMAN_MACHINE_PREFIX}{get_version()}"
 
 log = logging.getLogger(__name__)
 

@@ -221,8 +221,54 @@ extract.globs = [
 ]
 extract.flatten = true
 
-[tool.mazette.asset.cosign]
+[tool.mazette.asset.podman]
+repo = "containers/podman"
+version = ">=5.4.2"
+platform."windows/amd64" = "podman-remote-release-windows_amd64.zip"
+platform."darwin/amd64" = "podman-remote-release-darwin_amd64.zip"
+platform."darwin/arm64" = "podman-remote-release-darwin_arm64.zip"
+destination = "share/vendor/podman"
+executable = true
+extract.globs = ["**/bin/*"]
+extract.flatten = true
 
+[tool.mazette.asset.gvproxy]
+repo = "containers/gvisor-tap-vsock"
+version = ">=0.8.5"
+platform."darwin/amd64" = "gvproxy-darwin"
+platform."darwin/arm64" = "gvproxy-darwin"
+executable = true
+destination = "share/vendor/podman/gvproxy"
+
+[tool.mazette.asset.vfkit]
+repo = "crc-org/vfkit"
+version = ">=0.6.1"
+platform."darwin/amd64" = "vfkit"
+platform."darwin/arm64" = "vfkit"
+executable = true
+destination = "share/vendor/podman/vfkit"
+
+[tool.mazette.asset.machine-os]
+repo = "containers/podman-machine-os"
+version = ">=5.5.0"
+platform."darwin/amd64" = "podman-machine.x86_64.applehv.raw.zst"
+platform."darwin/arm64" = "podman-machine.aarch64.applehv.raw.zst"
+destination = "share/machine.tar"
+
+# FIXME: Merge this section with the previous one, once Podman 5.6 is out, and
+# they provide WSL2 machine images from their release page
+# (see https://github.com/containers/podman-machine-os/issues/154).
+#
+# In the meantime, I've created a repo where I've packaged the Podman machine
+# image for WSL2, following the instructions in
+# https://github.com/freedomofpress/dangerzone/issues/1145#issuecomment-2935272159
+[tool.mazette.asset.machine-os-wsl]
+repo = "apyrgio/podman-machine-os"
+version = ">=5.5.0"
+platform."windows/amd64" = "podman-machine.x86_64.wsl.tar.zst"
+destination = "share/machine.tar"
+
+[tool.mazette.asset.cosign]
 repo = "sigstore/cosign"
 version = ">=2.5.0"
 platform."darwin/amd64" = "cosign-darwin-amd64"

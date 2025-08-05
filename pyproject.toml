@@ -88,6 +88,14 @@ select = [
 requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.pytest.ini_options]
+filterwarnings = [
+  "ignore:builtin type SwigPyPacked has no __module__ attribute:DeprecationWarning",
+  "ignore:builtin type SwigPyObject has no __module__ attribute:DeprecationWarning",
+  "ignore:builtin type swigvarlink has no __module__ attribute:DeprecationWarning",
+  "ignore:NotImplemented should not be used in a boolean context",
+]
+
 [tool.mazette.asset.tessdata]
 repo = "tesseract-ocr/tessdata_fast"
 version = ">=4.1.0"

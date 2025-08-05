@@ -26,7 +26,7 @@ class Settings:
     # setting `Settings._singleton = None` will force a new instance
     _singleton = None
 
-    def __new__(cls) -> "Settings":
+    def __new__(cls, *args, **kwargs) -> "Settings":
         if cls._singleton is None:
             cls._singleton = super(Settings, cls).__new__(cls)
         return cls._singleton

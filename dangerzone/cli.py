@@ -61,6 +61,18 @@ def print_header(s: str) -> None:
         " let Dangerzone use the default runtime for this OS"
     ),
 )
+@click.option(
+    "--linger",
+    required=False,
+    help=(
+        "Do not stop the Podman machine (VM) that Dangerzone uses to run containers,"
+        " after the conversions have completed. This is useful if you want to run"
+        " multiple conversions in a row, since the startup of the VM takes some time."
+        " If you choose to let the Podman machine linger, you will need to stop it"
+        " manually with `dangerzone-machine stop`. This option applies only to"
+        " Windows/macOS platforms."
+    ),
+)
 @click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
 def cli_main(
@@ -71,6 +83,7 @@ def cli_main(
     dummy_conversion: bool,
     debug: bool,
     set_container_runtime: Optional[str] = None,
+    linger: bool = False,
 ) -> None:
     setup_logging()
     # display_banner()
@@ -149,6 +162,7 @@ def cli_main(
     if (
         dangerzone.isolation_provider.requires_install()
         and platform.system() != "Linux"
+        and not linger
     ):
         click.echo("Stopping Podman machine...")
         PodmanMachineManager().stop()

@@ -133,6 +133,9 @@ class TestCli:
             # to tokenize it.
             args = (args,)
 
+        # Make Windows/macOS tests faster by not stopping the Podman machine all the
+        # time.
+        args = ("--linger", *args)
         if os.environ.get("DUMMY_CONVERSION", False):
             args = ("--unsafe-dummy-conversion", *args)
 

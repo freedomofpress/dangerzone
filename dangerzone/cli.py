@@ -72,7 +72,7 @@ def cli_main(
 ) -> None:
     setup_logging()
     display_banner()
-    settings = Settings()
+    settings = Settings(debug=debug)
     if set_container_runtime:
         if set_container_runtime == "default":
             settings.unset_custom_runtime()

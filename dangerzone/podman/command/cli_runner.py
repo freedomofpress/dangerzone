@@ -214,7 +214,9 @@ class Runner:
             errors.CommandError: If the command fails.
         """
         cmd = self.construct() + cmd
-        return self.run_raw(cmd, check=check, capture_output=capture_output, wait=wait, **skwargs)
+        return self.run_raw(
+            cmd, check=check, capture_output=capture_output, wait=wait, **skwargs
+        )
 
     def run_raw(
         self,

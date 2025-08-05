@@ -12,26 +12,26 @@ from http.client import HTTPException
 
 # isort: unique-list
 __all__ = [
-    'APIError',
-    'CommandError',
-    'BuildError',
-    'ContainerError',
-    'DockerException',
-    'ImageNotFound',
-    'InvalidArgument',
-    'NotFound',
-    'NotFoundError',
-    'PodmanError',
-    'PodmanNotInstalled',
-    'ServiceTerminatedServiceTimeout',
-    'StreamParseError',
+    "APIError",
+    "CommandError",
+    "BuildError",
+    "ContainerError",
+    "DockerException",
+    "ImageNotFound",
+    "InvalidArgument",
+    "NotFound",
+    "NotFoundError",
+    "PodmanError",
+    "PodmanNotInstalled",
+    "ServiceTerminatedServiceTimeout",
+    "StreamParseError",
 ]
 
 try:
     from .exceptions import (
         APIError,
-        CommandError,
         BuildError,
+        CommandError,
         ContainerError,
         DockerException,
         InvalidArgument,
@@ -56,7 +56,9 @@ class NotFoundError(HTTPException):
         super().__init__(message)
         self.response = response
         warnings.warn(
-            "APIConnection() and supporting classes.", PendingDeprecationWarning, stacklevel=2
+            "APIConnection() and supporting classes.",
+            PendingDeprecationWarning,
+            stacklevel=2,
         )
 
 
@@ -110,7 +112,9 @@ class RequestError(HTTPException):
         super().__init__(message)
         self.response = response
         warnings.warn(
-            "APIConnection() and supporting classes.", PendingDeprecationWarning, stacklevel=2
+            "APIConnection() and supporting classes.",
+            PendingDeprecationWarning,
+            stacklevel=2,
         )
 
 
@@ -124,5 +128,7 @@ class InternalServerError(HTTPException):
         super().__init__(message)
         self.response = response
         warnings.warn(
-            "APIConnection() and supporting classes.", PendingDeprecationWarning, stacklevel=2
+            "APIConnection() and supporting classes.",
+            PendingDeprecationWarning,
+            stacklevel=2,
         )

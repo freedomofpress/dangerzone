@@ -172,6 +172,8 @@ def init_podman_command() -> PodmanCommand:
         env = os.environ.copy()
         env["CONTAINERS_CONF"] = str(create_containers_conf())
         options = PodmanCommand.GlobalOptions(connection=PODMAN_MACHINE_NAME)
+        if settings.debug:
+            options.log_level = "debug"
 
     return PodmanCommand(path=podman_path, env=env, options=options)
 

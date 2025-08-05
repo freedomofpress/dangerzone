@@ -62,6 +62,7 @@ jobs:
       - build-container-image
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - runner: windows-2022
@@ -98,7 +99,7 @@ jobs:
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
       - name: Smoke test
-        run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng
+        run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment
@@ -126,6 +127,7 @@ jobs:
       - build-container-image
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           # See https://github.com/abiosoft/colima/issues/970
@@ -165,7 +167,7 @@ jobs:
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
       - name: Smoke test
-        run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng
+        run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
         run: poetry run make test
       - name: Build macOS app
@@ -309,7 +311,7 @@ jobs:
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
 
       - name: Check that the Dangerzone GUI imports work
         run: |
@@ -403,7 +405,7 @@ jobs:
       - name: Run a test command
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
 
       - name: Check that the Dangerzone GUI imports work
         run: |

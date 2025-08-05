@@ -1,16 +1,18 @@
 import logging
+import platform
 import sys
 from typing import List, Optional
 
 import click
 from colorama import Back, Fore, Style
 
-from . import args, errors
+from . import args, errors, startup
 from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
+from .podman.machine import PodmanMachineManager
 from .settings import Settings
 from .updater import install
 from .util import get_version, replace_control_chars
@@ -59,6 +61,18 @@ def print_header(s: str) -> None:
         " let Dangerzone use the default runtime for this OS"
     ),
 )
+@click.option(
+    "--linger",
+    flag_value=True,
+    help=(
+        "Do not stop the Podman machine VM that Dangerzone uses to run containers,"
+        " after the conversions have completed. This is useful if you want to run"
+        " multiple conversions in a row, since the startup of the VM takes some time."
+        " If you choose to let the Podman machine linger, you will need to stop it"
+        " manually with `dangerzone-machine stop`. This option affects only"
+        " Windows/macOS platforms."
+    ),
+)
 @click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
 def cli_main(
@@ -69,6 +83,7 @@ def cli_main(
     dummy_conversion: bool,
     debug: bool,
     set_container_runtime: Optional[str] = None,
+    linger: bool = False,
 ) -> None:
     setup_logging()
     display_banner()
@@ -117,9 +132,15 @@ def cli_main(
                 click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}")
             sys.exit(1)
 
-    # Ensure container is installed
+    tasks = []
     if dangerzone.isolation_provider.requires_install():
-        install()
+        tasks = [
+            startup.MachineInitTask(),
+            startup.MachineStartTask(),
+            startup.UpdateCheckTask(),
+            startup.ContainerInstallTask(),
+        ]
+    startup.StartupLogic(tasks=tasks).run()
 
     # Convert the document
     print_header("Converting document to safe PDF")
@@ -138,13 +159,20 @@ def cli_main(
                 f"Unsafe (original) documents moved to '{ARCHIVE_SUBDIR}' subdirectory"
             )
 
+    ret = 0
     if documents_failed != []:
         print_header("Failed to convert document(s)")
         for document in documents_failed:
             click.echo(replace_control_chars(document.input_filename))
-        sys.exit(1)
-    else:
-        sys.exit(0)
+        ret = 1
+
+    if dangerzone.isolation_provider.requires_install() and not linger:
+        if platform.system() != "Linux":
+            click.echo("Stopping Podman machine...")
+            PodmanMachineManager().stop(wait=False)
+        else:
+            click.echo("No Podman machine was started, ignoring --linger option")
+    sys.exit(ret)
 
 
 args.override_parser_and_check_suspicious_options(cli_main)

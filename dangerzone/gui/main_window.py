@@ -313,18 +313,6 @@ class MainWindow(QtWidgets.QMainWindow):
         logging.getLogger().addHandler(log_handler)
         logging.getLogger().setLevel(logging.DEBUG)
 
-        if hasattr(self.dangerzone.isolation_provider, "check_docker_desktop_version"):
-            try:
-                is_version_valid, version = (
-                    self.dangerzone.isolation_provider.check_docker_desktop_version()
-                )
-                if not is_version_valid:
-                    self.handle_docker_desktop_version_check(is_version_valid, version)
-            except errors.UnsupportedContainerRuntime as e:
-                pass  # It's caught later in the flow.
-            except errors.NoContainerTechException as e:
-                pass  # It's caught later in the flow.
-
         self.show()
 
     def show_update_success(self) -> None:

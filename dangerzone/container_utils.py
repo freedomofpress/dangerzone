@@ -27,46 +27,6 @@ PODMAN_MACHINE_NAME = f"{PODMAN_MACHINE_PREFIX}{get_version()}"
 log = logging.getLogger(__name__)
 
 
-class Runtime(object):
-    """Represents the container runtime to use.
-
-    - It can be specified via the settings, using the "container_runtime" key,
-      which should point to the full path of the runtime;
-    - If the runtime is not specified via the settings, it defaults
-      to "podman" on Linux and "docker" on macOS and Windows.
-    """
-
-    def __init__(self) -> None:
-        settings = Settings()
-
-        if settings.custom_runtime_specified():
-            self.path = Path(settings.get("container_runtime"))
-            if not self.path.exists():
-                raise errors.UnsupportedContainerRuntime(self.path)
-            self.name = self.path.stem
-        else:
-            self.name = self.get_default_runtime_name()
-            self.path = Runtime.path_from_name(self.name)
-
-        if self.name not in ("podman", "docker"):
-            raise errors.UnsupportedContainerRuntime(self.name)
-
-    @staticmethod
-    def path_from_name(name: str) -> Path:
-        name_path = Path(name)
-        if name_path.is_file():
-            return name_path
-        else:
-            runtime = shutil.which(name_path)
-            if runtime is None:
-                raise errors.NoContainerTechException(name)
-            return Path(runtime)
-
-    @staticmethod
-    def get_default_runtime_name() -> str:
-        return "podman" if platform.system() == "Linux" else "docker"
-
-
 # subprocess.run with the correct startupinfo for Windows.
 # We use a partial here to better profit from type checking
 subprocess_run = functools.partial(
@@ -74,7 +34,7 @@ subprocess_run = functools.partial(
 )
 
 
-def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
+def get_runtime_version() -> Tuple[int, int]:
     """Get the major/minor parts of the Docker/Podman version.
 
     Some of the operations we perform in this module rely on some Podman features
@@ -83,23 +43,14 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
     just knowing the major and minor version, since writing/installing a full-blown
     semver parser is an overkill.
     """
-    runtime = runtime or Runtime()
-
     # Get the Docker/Podman version, using a Go template.
-    if runtime.name == "podman":
-        query = "{{.Client.Version}}"
-    else:
-        query = "{{.Server.Version}}"
+    podman = init_podman_command()
+    query = "{{.Client.Version}}"
 
-    cmd = [str(runtime.path), "version", "-f", query]
     try:
-        version = subprocess_run(
-            cmd,
-            capture_output=True,
-            check=True,
-        ).stdout.decode()  # type:ignore[attr-defined]
+        version = podman.run(["version", "-f", query])
     except Exception as e:
-        msg = f"Could not get the version of the {runtime.name.capitalize()} tool: {e}"
+        msg = f"Could not get the version of Podman: {e}"
         raise RuntimeError(msg) from e
 
     # Parse this version and return the major/minor parts, since we don't need the
@@ -109,8 +60,8 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
         return (int(major), int(minor))
     except Exception as e:
         msg = (
-            f"Could not parse the version of the {runtime.name.capitalize()} tool"
-            f" (found: '{version}') due to the following error: {e}"
+            f"Could not parse the version of Podman (found: '{version}') due to the"
+            f" following error: {e}"
         )
         raise RuntimeError(msg)
 
@@ -124,7 +75,7 @@ def get_podman_path() -> Path:
     return get_resource_path("vendor") / "podman" / podman_bin
 
 
-def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]:
+def make_seccomp_json_accessible() -> Union[Path, PurePosixPath]:
     """Ensure that the bundled seccomp profile is accessible by the runtime.
 
     On Linux platforms, this method is basically a no-op since there's no VM
@@ -145,7 +96,7 @@ def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]
     [2] Read about the 'volumes=' config in
         https://github.com/containers/common/blob/main/docs/containers.conf.5.md#machine-table
     """
-    if runtime.name == "podman" and get_runtime_version(runtime) < (4, 0):
+    if get_runtime_version() < (4, 0):
         # On OSes that use:
         #
         # * crun < 0.19
@@ -173,9 +124,9 @@ def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]
     else:
         src = get_resource_path("seccomp.gvisor.json")
 
-    if platform.system() == "Linux" or runtime.name == "docker":
+    if platform.system() == "Linux":
         return src
-    elif runtime.name == "podman":
+    else:
         dst = get_cache_dir() / "seccomp.gvisor.json"
         dst.parent.mkdir(parents=True, exist_ok=True)
         # This file will be overwritten on every conversion, which is unnecessary, but
@@ -188,9 +139,6 @@ def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]
             subpath = dst.relative_to("C:\\").as_posix()
             return PurePosixPath("/mnt/c") / subpath
         return dst
-    else:
-        # Amusingly, that's an actual runtime error...
-        raise RuntimeError(f"Unexpected runtime: '{runtime.name}'")
 
 
 def create_containers_conf() -> Path:
@@ -232,19 +180,16 @@ def init_podman_command() -> PodmanCommand:
 
 def list_image_digests() -> List[str]:
     """Get the digests of all loaded Dangerzone images."""
-    runtime = Runtime()
+    podman = init_podman_command()
     return (
-        subprocess.check_output(
+        podman.run(
             [
-                str(runtime.path),
                 "image",
                 "list",
                 "--format",
                 "{{ .Digest }}",
                 expected_image_name(),
             ],
-            text=True,
-            startupinfo=get_subprocess_startupinfo(),
         )
         .strip()
         .split()
@@ -253,11 +198,10 @@ def list_image_digests() -> List[str]:
 
 def add_image_tag(image_id: str, new_tag: str) -> None:
     """Add a tag to the Dangerzone image."""
-    runtime = Runtime()
+    podman = init_podman_command()
     log.debug(f"Adding tag '{new_tag}' to image '{image_id}'")
-    subprocess.check_output(
-        [str(runtime.path), "tag", image_id, new_tag],
-        startupinfo=get_subprocess_startupinfo(),
+    podman.run(
+        ["tag", image_id, new_tag],
     )
 
 
@@ -270,13 +214,10 @@ def delete_image_digests(
     if not full_digests:
         log.debug("Skipping image digest deletion: nothing to remove")
         return
-    runtime = Runtime()
+    podman = init_podman_command()
     log.warning(f"Deleting container images: {' '.join(full_digests)}")
     try:
-        subprocess.check_output(
-            [str(runtime.path), "rmi", "--force", *full_digests],
-            startupinfo=get_subprocess_startupinfo(),
-        )
+        podman.run(["rmi", "--force", *full_digests])
     except Exception as e:
         log.warning(
             f"Couldn't delete container images '{' '.join(full_digests)}', so leaving it there."
@@ -293,17 +234,12 @@ def clear_old_images(digest_to_keep: str) -> None:
 
 
 def load_image_tarball(tarball_path: Optional[Path] = None) -> None:
-    runtime = Runtime()
     log.info("Installing Dangerzone container image...")
+    podman = init_podman_command()
     if not tarball_path:
         tarball_path = get_resource_path("container.tar")
     try:
-        res = subprocess_run(
-            [str(runtime.path), "load", "-i", str(tarball_path)],
-            startupinfo=get_subprocess_startupinfo(),
-            capture_output=True,
-            check=True,
-        )
+        res = podman.run(["load", "-i", str(tarball_path)])
     except subprocess.CalledProcessError as e:
         if e.stderr:
             error = e.stderr.decode()
@@ -318,32 +254,21 @@ def tag_image_by_digest(digest: str, tag: str) -> None:
     """Tag a container image by digest.
     The sha256: prefix should be omitted from the digest.
     """
-    runtime = Runtime()
+    podman = init_podman_command()
     image_id = get_image_id_by_digest(digest)
-    cmd = [str(runtime.path), "tag", image_id, tag]
-    log.debug(" ".join(cmd))
-    subprocess_run(cmd, check=True)
+    podman.run(["tag", image_id, tag])
 
 
 def get_image_id_by_digest(digest: str) -> str:
     """Get an image ID from a digest.
     The sha256: prefix should be omitted from the digest.
     """
-    runtime = Runtime()
     # There is a "digest" filter that you can use with
     # "podman images -f digest:<digest>", but it's only available
     # for podman >=4.4 (and bookworm ships 4.3)
     # So, fallback on the json format instead
-    cmd = [
-        str(runtime.path),
-        "images",
-        "--format",
-        "json",
-    ]
-    log.debug(" ".join(cmd))
-    process = subprocess_run(cmd, check=True, capture_output=True)
-
-    images = json.loads(process.stdout.decode().strip())  # type:ignore[attr-defined]
+    podman = init_podman_command()
+    images = json.loads(podman.run(["images", "--format", "json"]))
     filtered_images = [
         image["Id"] for image in images if image["Digest"] == f"sha256:{digest}"
     ]
@@ -364,14 +289,9 @@ def container_pull(
     image: str, manifest_digest: str, callback: Optional[Callable] = None
 ) -> None:
     """Pull a container image from a registry."""
-    runtime = Runtime()
-    cmd = [str(runtime.path), "pull", f"{image}@sha256:{manifest_digest}"]
-    process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1,
+    podman = init_podman_command()
+    process = podman.run(
+        ["pull", f"{image}@sha256:{manifest_digest}"], wait=False, text=True, bufsize=1
     )
 
     if callback:
@@ -395,16 +315,10 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
     # update scenario.
     # `podman inspect` is avoided here as it returns the digest of the
     # architecture-bound image.
-
-    runtime = Runtime()
-    cmd = [str(runtime.path), "images", expected_image, "--format", "{{.Digest}}"]
-    log.debug(" ".join(cmd))
-    result = subprocess_run(
-        cmd,
-        capture_output=True,
-        check=True,
+    podman = init_podman_command()
+    output = podman.run(["images", expected_image, "--format", "{{.Digest}}"]).split(
+        "\n"
     )
-    output = result.stdout.decode().strip().split("\n")  # type:ignore[attr-defined]
     # In some cases, the output can be multiple lines with the same digest
     # sets are used to reduce them.
     lines = set(output)

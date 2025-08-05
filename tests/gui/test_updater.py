@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Dict, Union
 
 import pytest
-from PySide6 import QtCore
 from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot

@@ -1,6 +1,13 @@
 import logging
+import typing
 
-from PySide6 import QtCore, QtWidgets
+if typing.TYPE_CHECKING:
+    from PySide2 import QtCore, QtWidgets
+else:
+    try:
+        from PySide6 import QtCore, QtWidgets
+    except ImportError:
+        from PySide2 import QtCore, QtWidgets
 
 from dangerzone.gui.widgets import TracebackWidget
 

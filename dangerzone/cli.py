@@ -63,13 +63,13 @@ def print_header(s: str) -> None:
 )
 @click.option(
     "--linger",
-    required=False,
+    flag_value=True,
     help=(
-        "Do not stop the Podman machine (VM) that Dangerzone uses to run containers,"
+        "Do not stop the Podman machine VM that Dangerzone uses to run containers,"
         " after the conversions have completed. This is useful if you want to run"
         " multiple conversions in a row, since the startup of the VM takes some time."
         " If you choose to let the Podman machine linger, you will need to stop it"
-        " manually with `dangerzone-machine stop`. This option applies only to"
+        " manually with `dangerzone-machine stop`. This option affects only"
         " Windows/macOS platforms."
     ),
 )

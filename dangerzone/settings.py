@@ -24,12 +24,13 @@ class Settings:
     # setting `Settings._singleton = None` will force a new instance
     _singleton = None
 
-    def __new__(cls) -> "Settings":
+    def __new__(cls, *args, **kwargs) -> "Settings":
         if cls._singleton is None:
             cls._singleton = super(Settings, cls).__new__(cls)
         return cls._singleton
 
-    def __init__(self) -> None:
+    def __init__(self, debug: bool = False) -> None:
+        self.debug = debug
         self.settings_filename = get_config_dir() / SETTINGS_FILENAME
         self.default_settings: Dict[str, Any] = self.generate_default_settings()
         # Singletons call multiple times the __init__ method

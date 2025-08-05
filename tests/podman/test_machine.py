@@ -7,6 +7,7 @@ import pytest
 from pytest_subprocess import FakeProcess
 
 from dangerzone import container_utils
+from dangerzone.podman import errors
 from dangerzone.podman.machine import PodmanMachineManager
 from dangerzone.util import get_version
 
@@ -69,7 +70,7 @@ def test_initialize_machine_stale_exists(
     assert rec_init.call_count() == 1
 
 
-def test_start_machine(
+def test_start_machine_success(
     machine_manager: PodmanMachineManager, podman_register: Callable
 ) -> None:
     """Test that the start_machine method runs the correct commands."""
@@ -78,6 +79,39 @@ def test_start_machine(
     rec_start = podman_register(["machine", "start", machine_name])
     machine_manager.start()
     assert rec_start.call_count() == 1
+
+
+def test_start_machine_already_running(
+    machine_manager: PodmanMachineManager, podman_register: Callable
+) -> None:
+    """Test that the start_machine method runs the correct commands."""
+    version = get_version()
+    machine_name = f"dz-internal-{version}"
+    rec_start = podman_register(["machine", "start", machine_name], returncode=1)
+    rec_list = podman_register(
+        ["machine", "list", "--format", "json"],
+        stdout=json.dumps([{"Name": machine_name, "Status": "Running"}]),
+    )
+    machine_manager.start()
+    assert rec_start.call_count() == 1
+    assert rec_list.call_count() == 1
+
+
+def test_start_machine_fail(
+    machine_manager: PodmanMachineManager, podman_register: Callable
+) -> None:
+    """Test that the start_machine method runs the correct commands."""
+    version = get_version()
+    machine_name = f"dz-internal-{version}"
+    rec_start = podman_register(["machine", "start", machine_name], returncode=1)
+    rec_list = podman_register(
+        ["machine", "list", "--format", "json"],
+        stdout=json.dumps([{"Name": machine_name, "Status": "Stopped"}]),
+    )
+    with pytest.raises(errors.CommandError):
+        machine_manager.start()
+    assert rec_start.call_count() == 1
+    assert rec_list.call_count() == 1
 
 
 def test_stop_machine(

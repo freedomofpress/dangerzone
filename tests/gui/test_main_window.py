@@ -336,6 +336,10 @@ def test_update_error(
     window.dangerzone.settings.set("updater_last_check", 0)
     window.dangerzone.settings.set("updater_errors", 0)
 
+    for task in window.startup_thread.tasks:
+        should_skip = not isinstance(task, startup.UpdateCheckTask)
+        mocker.patch.object(task, "should_skip", return_value=should_skip)
+
     # Make requests.get() return an error
     mocker.patch("dangerzone.updater.releases.requests.get")
     requests_mock = releases.requests.get

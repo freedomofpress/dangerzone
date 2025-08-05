@@ -58,9 +58,15 @@ jobs:
       registry_token: ${{ secrets.GITHUB_TOKEN }}
 
   windows:
-    runs-on: windows-latest
-    env:
-      DUMMY_CONVERSION: 1
+    needs:
+      - build-container-image
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2022
+          - runner: windows-2025
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
@@ -75,12 +81,25 @@ jobs:
           path: |
             share/tessdata/
             share/vendor/
+            share/machine.tar
           key: v1-mazette-windows-${{ hashFiles('./mazette.lock') }}
       - name: Install mazette assets
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
       - name: Check cosign is present
         run: ls share/vendor
+      - name: Restore container image
+        uses: actions/cache/restore@v4
+        with:
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+      - name: Smoke test
+        run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment
@@ -95,6 +114,7 @@ jobs:
         # NOTE: This also builds the .exe internally.
         run: poetry run .\install\windows\build-app.bat
       - name: Upload MSI installer
+        if: matrix.runner == 'windows-2025'
         uses: actions/upload-artifact@v4
         with:
           name: Dangerzone.msi
@@ -104,16 +124,18 @@ jobs:
 
   macOS:
     name: "macOS (${{ matrix.arch }})"
+    needs:
+      - build-container-image
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - runner: macos-latest # CPU type: Apple Silicon (M1)
-            arch: arch64
+          # See https://github.com/abiosoft/colima/issues/970
+          - runner: macos-15
+            arch: arm64
           - runner: macos-13 # CPU type: Intel x86_64
             arch: x86_64
-    env:
-      DUMMY_CONVERSION: 1
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
@@ -128,12 +150,32 @@ jobs:
           path: |
             share/tessdata/
             share/vendor/
+            share/machine.tar
           key: v1-mazette-darwin-${{ matrix.arch }}-${{ hashFiles('./mazette.lock') }}
       - name: Install mazette assets
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
+      - name: Check cosign is present
+        run: ls share/vendor
+      - name: Restore container image
+        uses: actions/cache/restore@v4
+        with:
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+      - name: Smoke test
+        continue-on-error: ${{ matrix.arch == 'arm64'}}
+        run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
-        run: poetry run make test
+        run: |
+          if [ ${{ matrix.arch }} == 'arm64' ]; then
+              export DUMMY_CONVERSION=1
+          fi
+          poetry run make test
       - name: Build macOS app
         run: poetry run python ./install/macos/build-app.py
       - name: Upload macOS app
@@ -275,7 +317,7 @@ jobs:
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
 
       - name: Check that the Dangerzone GUI imports work
         run: |
@@ -369,7 +411,7 @@ jobs:
       - name: Run a test command
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
 
       - name: Check that the Dangerzone GUI imports work
         run: |

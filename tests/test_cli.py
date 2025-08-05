@@ -342,7 +342,9 @@ class TestCliConversion(TestCliBasic):
         shutil.copyfile(sample_pdf, doc_path)
         result = self.run_cli(doc_path)
         result.assert_success()
-        assert len(os.listdir(tmp_path)) == 2
+        # NOTE: The temp path should contain the two documents and the settings JSON
+        # file.
+        assert len(os.listdir(tmp_path)) == 3
 
     def test_bulk(self, tmp_path: Path, sample_pdf: str) -> None:
         filenames = ["1.pdf", "2.pdf", "3.pdf"]
@@ -354,7 +356,10 @@ class TestCliConversion(TestCliBasic):
 
         result = self.run_cli(file_paths)
         result.assert_success()
-        assert len(os.listdir(tmp_path)) == 2 * len(filenames)
+
+        # NOTE: The temp path should contain the six documents and the settings JSON
+        # file.
+        assert len(os.listdir(tmp_path)) == 2 * len(filenames) + 1
 
     def test_bulk_fail_on_output_filename(
         self, tmp_path: Path, sample_pdf: str

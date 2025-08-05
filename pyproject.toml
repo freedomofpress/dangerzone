@@ -32,6 +32,7 @@ packaging = "*"
 dangerzone = 'dangerzone:main'
 dangerzone-cli = 'dangerzone:main'
 dangerzone-image = "dangerzone.updater.cli:main"
+dangerzone-machine = "dangerzone.podman.cli:main"
 
 # Dependencies required for packaging the code on various platforms.
 [tool.poetry.group.package.dependencies]

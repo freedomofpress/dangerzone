@@ -133,7 +133,7 @@ jobs:
         include:
           # See https://github.com/abiosoft/colima/issues/970
           - runner: macos-15
-            arch: arch64
+            arch: arm64
           - runner: macos-13 # CPU type: Intel x86_64
             arch: x86_64
     steps:
@@ -168,9 +168,14 @@ jobs:
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
       - name: Smoke test
+        if: matrix.arch == 'x86_64'
         run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
-        run: poetry run make test
+        run: |
+          if [ ${{ matrix.arch }} == 'arm64' ]; then
+              export DUMMY_CONVERSION=1
+          fi
+          poetry run make test
       - name: Build macOS app
         run: poetry run python ./install/macos/build-app.py
       - name: Upload macOS app

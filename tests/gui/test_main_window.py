@@ -158,8 +158,6 @@ def test_default_menu(
     # It doesn't mean they will be applied.
     assert window.dangerzone.settings.get("updater_remote_log_index") is 1000
 
-    window.startup_thread.wait()
-
 
 def test_no_new_release(
     qtbot: QtBot,
@@ -168,6 +166,10 @@ def test_no_new_release(
     window: MainWindow,
 ) -> None:
     """Test that when no new release has been detected, the user is not alerted."""
+    for task in window.startup_thread.tasks:
+        should_skip = not isinstance(task, startup.UpdateCheckTask)
+        mocker.patch.object(task, "should_skip", return_value=should_skip)
+
     # Check that when no update is detected, e.g., due to update cooldown, an empty
     # report is received that does not affect the menu entries.
     curtime = int(time.time())
@@ -331,14 +333,14 @@ def test_update_error(
     window: MainWindow,
 ) -> None:
     """Test that an error during an update check leads to a notification to the user."""
+    for task in window.startup_thread.tasks:
+        should_skip = not isinstance(task, startup.UpdateCheckTask)
+        mocker.patch.object(task, "should_skip", return_value=should_skip)
+
     # Test 1 - Check that the first error does not notify the user.
     window.dangerzone.settings.set("updater_check_all", True)
     window.dangerzone.settings.set("updater_last_check", 0)
     window.dangerzone.settings.set("updater_errors", 0)
-
-    for task in window.startup_thread.tasks:
-        should_skip = not isinstance(task, startup.UpdateCheckTask)
-        mocker.patch.object(task, "should_skip", return_value=should_skip)
 
     # Make requests.get() return an error
     mocker.patch("dangerzone.updater.releases.requests.get")

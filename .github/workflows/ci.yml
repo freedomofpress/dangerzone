@@ -168,7 +168,7 @@ jobs:
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
       - name: Smoke test
-        if: matrix.arch == 'x86_64'
+        continue-on-error: ${{ matrix.arch == 'arm64'}}
         run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
         run: |

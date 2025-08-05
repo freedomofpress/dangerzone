@@ -83,7 +83,7 @@ class PodmanMachineManager:
             logger.info(f"Podman machine '{name}' started successfully.")
         except CommandError as e:
             for m in self._get_existing_dangerzone_machines():
-                if m.get("Name") == self.name and m.get("Status") == "Running":
+                if m.get("Name") == self.name and m.get("Running"):
                     logger.info(f"Podman machine '{name}' is already running")
                     return
             raise

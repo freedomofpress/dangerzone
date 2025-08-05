@@ -90,7 +90,7 @@ def test_start_machine_already_running(
     rec_start = podman_register(["machine", "start", machine_name], returncode=1)
     rec_list = podman_register(
         ["machine", "list", "--format", "json"],
-        stdout=json.dumps([{"Name": machine_name, "Status": "Running"}]),
+        stdout=json.dumps([{"Name": machine_name, "Running": True}]),
     )
     machine_manager.start()
     assert rec_start.call_count() == 1
@@ -106,7 +106,7 @@ def test_start_machine_fail(
     rec_start = podman_register(["machine", "start", machine_name], returncode=1)
     rec_list = podman_register(
         ["machine", "list", "--format", "json"],
-        stdout=json.dumps([{"Name": machine_name, "Status": "Stopped"}]),
+        stdout=json.dumps([{"Name": machine_name, "Running": False}]),
     )
     with pytest.raises(errors.CommandError):
         machine_manager.start()

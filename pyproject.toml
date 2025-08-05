@@ -41,7 +41,7 @@ pywin32 = { version = "*", platform = "win32" }
 pyinstaller = { version = "*", platform = "darwin" }
 doit = "^0.36.0"
 jinja2-cli = "^0.8.2"
-mazette = "^0.2.0"
+mazette = { git = "https://github.com/freedomofpress/mazette", branch = "6-exec"  }
 
 # Dependencies required for linting the code.
 [tool.poetry.group.lint.dependencies]

@@ -30,7 +30,6 @@ from ..updater import releases
 from ..util import get_resource_path, get_version
 from .logic import DangerzoneGui
 from .main_window import MainWindow
-from .updater import UpdaterThread
 
 log = logging.getLogger(__name__)
 
@@ -157,23 +156,10 @@ def gui_main(dummy_conversion: bool, filenames: Optional[List[str]]) -> bool:
         window.content_widget.doc_selection_widget.documents_selected.emit(documents)
 
     window = MainWindow(dangerzone)
-
-    # Check for updates
-    log.debug("Setting up Dangerzone updater in a separate thread")
-    updater = UpdaterThread(dangerzone)
-    window.register_update_handler(updater.finished)
-
-    should_check = updater.should_check_for_updates()
-
-    if should_check:
-        log.debug("Checking for updates")
-        updater.start()
-    else:
-        log.debug("Will not check for updates, based on updater settings")
-
     settings = Settings()
     updates_enabled = bool(settings.get("updater_check_all"))
     window.toggle_updates_action.setChecked(updates_enabled)
+    window.startup_thread.start()
 
     if filenames:
         open_files(filenames)

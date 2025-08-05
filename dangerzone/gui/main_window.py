@@ -14,16 +14,19 @@ from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
     from PySide2.QtCore import Qt
+    from PySide2.QtSvg import QSvgWidget
     from PySide2.QtWidgets import QAction
 else:
     try:
         from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide6.QtCore import Qt
         from PySide6.QtGui import QAction
+        from PySide6.QtSvgWidgets import QSvgWidget
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide2.QtCore import Qt
         from PySide2.QtGui import QAction
+        from PySide2.QtSvg import QSvgWidget
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
@@ -118,6 +121,73 @@ def get_supported_extensions() -> List[str]:
         supported_ext += hwp_filters
 
     return supported_ext
+
+
+class StatusBar(QtWidgets.QWidget):
+    def __init__(self, dangerzone: DangerzoneGui) -> None:
+        super(StatusBar, self).__init__()
+        self.dangerzone = dangerzone
+
+        # XXX: This trick works only for SVGs that use `animateTransform`. The rest of
+        # the SVGs that use a different `animate*` property will NOT be animated.
+        self.spinner = QSvgWidget()
+        self.spinner.renderer().setFramesPerSecond(60)
+        path = get_resource_path("spinner.svg")
+        self.spinner.load(str(path))
+        self.spinner.setFixedSize(15, 15)
+        self.message = QtWidgets.QLabel("")
+        self.info_icon = QtWidgets.QToolButton()
+        self.info_icon.setIcon(
+            QtGui.QIcon(load_svg_image("info-circle.svg", width=15, height=15))
+        )
+        self.info_icon.setIconSize(QtCore.QSize(15, 15))
+        self.info_icon.setStyleSheet("QToolButton { border: none; }")
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.addStretch()
+        layout.addWidget(self.spinner)
+        layout.addWidget(self.message)
+        layout.addWidget(self.info_icon)
+        self.setLayout(layout)
+
+    def set_status_ok(self, message: str) -> None:
+        self.spinner.hide()
+        self.info_icon.hide()
+        self.message.setText(message)
+        self.setStyleSheet("color: green; font-weight: bold")
+
+    def set_status_working(self, message: str) -> None:
+        self.spinner.show()
+        self.info_icon.show()
+        self.message.setText(message)
+        self.setStyleSheet("color: orange; font-weight: bold")
+
+    def set_status_error(self, message: str) -> None:
+        self.spinner.hide()
+        self.info_icon.show()
+        self.message.setText(message)
+        self.setStyleSheet("color: red; font-weight: bold")
+
+    def handle_startup_begin(self):
+        self.set_status_working("Starting")
+
+    def handle_task_machine_init(self):
+        self.set_status_working("Initializing Dangerzone VM")
+
+    def handle_task_machine_start(self):
+        self.set_status_working("Starting Dangerzone VM")
+
+    def handle_task_update_check(self):
+        self.set_status_working("Checking for updates")
+
+    def handle_task_container_install(self):
+        self.set_status_working("Installing container sandbox")
+
+    def handle_startup_error(self):
+        self.set_status_error("Startup failed")
+
+    def handle_startup_success(self):
+        self.set_status_ok("")
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -221,6 +291,9 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(self.waiting_widget, stretch=1)
         layout.addWidget(self.content_widget, stretch=1)
 
+        self.status_bar = StatusBar(self.dangerzone)
+        layout.addWidget(self.status_bar)
+
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
@@ -232,6 +305,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Log window
         self.log_window = LogWindow(self)
+        self.status_bar.info_icon.clicked.connect(self.log_window.show)
 
         # Configure logging to the log window
         log_handler = LogHandler()

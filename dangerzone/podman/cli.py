@@ -38,8 +38,8 @@ def list():
         else:
             click.echo("No Dangerzone Podman machines found.")
     except PodmanError as e:
-        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
-        sys.exit(1)
+        click.echo(f"❌ {e}")
+        raise click.Abort()
 
 
 @main.command()
@@ -53,8 +53,8 @@ def init(cpus, memory, timezone):
         manager.init(cpus=cpus, memory=memory, timezone=timezone)
         click.echo(f"Machine initialized: {manager.name}")
     except PodmanError as e:
-        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
-        sys.exit(1)
+        click.echo(f"❌ {e}")
+        raise click.Abort()
 
 
 @main.command()
@@ -65,8 +65,8 @@ def start():
         manager.start()
         click.echo(f"Machine started: {manager.name}")
     except PodmanError as e:
-        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
-        sys.exit(1)
+        click.echo(f"❌ {e}")
+        raise click.Abort()
 
 
 @main.command()
@@ -77,8 +77,8 @@ def stop():
         manager.stop()
         click.echo(f"Machine stopped: {manager.name}")
     except PodmanError as e:
-        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
-        sys.exit(1)
+        click.echo(f"❌ {e}")
+        raise click.Abort()
 
 
 @main.command()
@@ -95,10 +95,8 @@ def remove(force):
         manager.remove()
         click.echo(f"Machine removed: {manager.name}")
     except PodmanError as e:
-        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
-        sys.exit(1)
-    except click.exceptions.Abort:
-        click.echo("Aborted.")
+        click.echo(f"❌ {e}")
+        raise click.Abort()
 
 
 @main.command()
@@ -115,10 +113,8 @@ def reset(force):
         manager.reset()
         click.echo("Podman machines reset.")
     except PodmanError as e:
-        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
-        sys.exit(1)
-    except click.exceptions.Abort:
-        click.echo("Aborted.")
+        click.echo(f"❌ {e}")
+        raise click.Abort()
 
 
 @main.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
@@ -133,8 +129,8 @@ def raw(ctx):
         else:
             click.echo("Raw command executed.")  # For subprocess.Popen objects
     except PodmanError as e:
-        click.echo(click.style(f"Error: {e}", fg="red"), err=True)
-        sys.exit(1)
+        click.echo(f"❌ {e}")
+        raise click.Abort()
 
 
 if __name__ == "__main__":

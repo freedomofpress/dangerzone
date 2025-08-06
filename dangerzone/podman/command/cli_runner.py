@@ -115,7 +115,7 @@ class Runner:
             path = shutil.which("podman")
             if path is None:
                 raise errors.PodmanNotInstalled()
-            Path(path)
+            path = Path(path)
 
         self.podman_path = path
         if privileged and platform.system() == "Windows":

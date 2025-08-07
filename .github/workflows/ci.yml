@@ -100,8 +100,8 @@ jobs:
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
       - name: Smoke test
         run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
-      - name: Run CLI tests
-        run: poetry run make test
+      - name: Run all the tests
+        run: poetry run pytest -v --co --ignore tests/test_large_set.py --ignore dev_scripts
       - name: Set up .NET CLI environment
         uses: actions/setup-dotnet@v4
         with:

@@ -166,7 +166,7 @@ def cli_main(
             click.echo("Stopping Podman machine...")
             PodmanMachineManager().stop()
         else:
-            logger.info("No Podman machine was started, ignoring --linger option")
+            click.echo("No Podman machine was started, ignoring --linger option")
 
     if documents_failed != []:
         print_header("Failed to convert document(s)")

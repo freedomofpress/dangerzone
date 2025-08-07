@@ -29,7 +29,7 @@ from dangerzone.gui.logic import DangerzoneGui
 
 # import Pyside related objects from here to avoid duplicating import logic.
 from dangerzone.gui.main_window import (
-    ContentWidget,
+    ConversionWidget,
     QtCore,
     QtGui,
     # WaitingWidgetContainer,
@@ -55,12 +55,12 @@ def dummy(mocker: MockerFixture) -> None:
 
 
 @fixture
-def content_widget(qtbot: QtBot, mocker: MockerFixture) -> ContentWidget:
+def content_widget(qtbot: QtBot, mocker: MockerFixture) -> ConversionWidget:
     # Setup
     mock_app = mocker.MagicMock()
     dummy = mocker.MagicMock()
     dz = DangerzoneGui(mock_app, dummy)
-    w = ContentWidget(dz)
+    w = ConversionWidget(dz)
     qtbot.addWidget(w)
     return w
 
@@ -454,7 +454,7 @@ def test_update_error(
 
 
 def test_change_document_button(
-    content_widget: ContentWidget,
+    content_widget: ConversionWidget,
     qtbot: QtBot,
     mocker: MockerFixture,
     sample_pdf: str,
@@ -501,7 +501,7 @@ def test_change_document_button(
 
 
 def test_drop_valid_documents(
-    content_widget: ContentWidget,
+    content_widget: ConversionWidget,
     drag_valid_files_event: QtGui.QDropEvent,
     qtbot: QtBot,
 ) -> None:
@@ -513,7 +513,7 @@ def test_drop_valid_documents(
 
 
 def test_drop_text(
-    content_widget: ContentWidget,
+    content_widget: ConversionWidget,
     drag_text_event: QtGui.QDropEvent,
     qtbot: QtBot,
 ) -> None:
@@ -524,7 +524,7 @@ def test_drop_text(
 
 
 def test_drop_1_invalid_doc(
-    content_widget: ContentWidget,
+    content_widget: ConversionWidget,
     drag_1_invalid_file_event: QtGui.QDropEvent,
     qtbot: QtBot,
 ) -> None:
@@ -535,7 +535,7 @@ def test_drop_1_invalid_doc(
 
 
 def test_drop_1_invalid_2_valid_documents(
-    content_widget: ContentWidget,
+    content_widget: ConversionWidget,
     drag_1_invalid_and_2_valid_files_event: QtGui.QDropEvent,
     qtbot: QtBot,
     monkeypatch: MonkeyPatch,
@@ -594,7 +594,7 @@ def test_installation_failure_exception(
     assert installer.call_count == 1
     assert window.status_bar.styleSheet() == "color: red; font-weight: bold"
     assert window.status_bar.message.text() == "Startup failed"
-    assert window.log_window.label.text() == "Installing container sandbox... failed"
+    assert window.log_window.label.text() == "Installing container sandbox… failed"
     assert "Error during install" in window.log_window.traceback_widget.toPlainText()
 
 

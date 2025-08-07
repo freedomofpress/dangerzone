@@ -13,6 +13,12 @@ from dangerzone.gui.widgets import TracebackWidget
 
 
 class LogHandler(logging.Handler, QtCore.QObject):
+    """Capture application logs and emit them as signals.
+
+    This Qt object is responsible for capturing all application logs, and emitting them
+    as signals, so that other widgets can show them to the user.
+    """
+
     new_record = QtCore.Signal(str)
 
     def __init__(self):
@@ -25,6 +31,13 @@ class LogHandler(logging.Handler, QtCore.QObject):
 
 
 class LogWindow(QtWidgets.QDialog):
+    """Show logs and startup activity.
+
+    Define a widget where the user can see more details about the following:
+    * Application logs
+    * Status of startup tasks
+    """
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Dangerzone Background Task Logs")

@@ -58,36 +58,36 @@ class LogWindow(QtWidgets.QDialog):
         self.setLayout(layout)
 
     def handle_startup_begin(self):
-        self.label.setText("Dangerzone is starting up...")
+        self.label.setText("Dangerzone is starting up…...")
 
     def handle_task_machine_init(self):
         self.label.setText(
-            "Initializing the Dangerzone VM<br>This might take a few minutes..."
+            "Initializing the Dangerzone VM<br>This might take a few minutes…"
         )
 
     def handle_task_machine_start(self):
-        self.label.setText("Starting the Dangerzone VM...")
+        self.label.setText("Starting the Dangerzone VM…")
 
     def handle_task_update_check(self):
-        self.label.setText("Checking for updates...")
+        self.label.setText("Checking for updates…")
 
     def handle_task_container_install(self):
         self.label.setText(
             "Installing the Dangerzone container sandbox<br>"
-            "This might take a few minutes..."
+            "This might take a few minutes…"
         )
 
     def handle_task_machine_init_failed(self, error):
-        self.label.setText("Initializing the Dangerzone VM... failed")
+        self.label.setText("Initializing the Dangerzone VM… failed")
 
     def handle_task_machine_start_failed(self, error):
-        self.label.setText("Starting the Dangerzone VM... failed")
+        self.label.setText("Starting the Dangerzone VM… failed")
 
     def handle_task_update_check_failed(self, error):
-        self.label.setText("Checking for updates... failed")
+        self.label.setText("Checking for updates… failed")
 
     def handle_task_container_install_failed(self, error):
-        self.label.setText("Installing container sandbox... failed")
+        self.label.setText("Installing container sandbox… failed")
 
     def append_log(self, line: str):
         self.traceback_widget.process_output(line)

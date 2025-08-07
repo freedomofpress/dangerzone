@@ -2,7 +2,7 @@ from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
 
 from dangerzone.gui import startup
-from dangerzone.startup import MachineMixin, Task
+from dangerzone.startup import MachineInitTask, MachineStartTask, Task
 from dangerzone.updater import ErrorReport, InstallationStrategy, ReleaseReport
 from dangerzone.updater import errors as update_errors
 
@@ -84,7 +84,7 @@ class StartupThreadMocker(startup.StartupThread):
 
     def expect_tasks_succeed(self, tasks=list[Task]):
         for task in tasks:
-            if isinstance(task, MachineMixin):
+            if isinstance(task, (MachineInitTask, MachineStartTask)):
                 self.make_machine_task_succeed()
             elif isinstance(task, startup.UpdateCheckTask):
                 self.make_update_task_succeed()
@@ -105,7 +105,7 @@ class StartupThreadMocker(startup.StartupThread):
 
     def expect_tasks_skip(self, tasks=list[Task]):
         for task in tasks:
-            if isinstance(task, MachineMixin):
+            if isinstance(task, (MachineInitTask, MachineStartTask)):
                 self.make_machine_task_skip()
             elif isinstance(task, startup.UpdateCheckTask):
                 self.make_update_task_skip()
@@ -126,7 +126,7 @@ class StartupThreadMocker(startup.StartupThread):
 
     def expect_tasks_fail(self, tasks=list[Task]):
         for task in tasks:
-            if isinstance(task, MachineMixin):
+            if isinstance(task, (MachineInitTask, MachineStartTask)):
                 self.make_machine_task_fail()
             elif isinstance(task, startup.UpdateCheckTask):
                 self.make_update_task_fail()

@@ -59,32 +59,29 @@ class Task(abc.ABC):
         pass
 
 
-class MachineMixin:
-    @property
-    def machine(self):
-        return PodmanMachineManager()
-
-    def should_skip(self):
-        return platform.system() == "Linux"
-
-
 #############
 # Basic tasks
 #############
 
 
-class MachineInitTask(MachineMixin, Task):
+class MachineInitTask(Task):
     name = "Initializing Dangerzone VM"
 
+    def should_skip(self):
+        return platform.system() == "Linux"
+
     def run(self):
-        self.machine.init()
+        PodmanMachineManager().init()
 
 
-class MachineStartTask(MachineMixin, Task):
+class MachineStartTask(Task):
     name = "Starting Dangerzone VM"
 
+    def should_skip(self):
+        return platform.system() == "Linux"
+
     def run(self):
-        self.machine.start()
+        PodmanMachineManager().start()
 
 
 class ContainerInstallTask(Task):

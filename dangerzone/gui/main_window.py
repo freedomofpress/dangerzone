@@ -289,16 +289,16 @@ class MainWindow(QtWidgets.QMainWindow):
         header_layout.addSpacing(15)
 
         # Content and waiting widget
-        self.content_widget = ContentWidget(self.dangerzone)
+        self.conversion_widget = ConversionWidget(self.dangerzone)
         self.waiting_widget = WaitingWidget()
-        self.content_widget.hide()
+        self.conversion_widget.hide()
         self.waiting_widget.show()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
         layout.addWidget(self.waiting_widget, stretch=1)
-        layout.addWidget(self.content_widget, stretch=1)
+        layout.addWidget(self.conversion_widget, stretch=1)
 
         self.status_bar = StatusBar(self.dangerzone)
         layout.addWidget(self.status_bar)
@@ -355,7 +355,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_machine_start.failed.connect(
             self.log_window.handle_task_machine_start_failed
         )
-        task_machine_start.completed.connect(self.show_content_widget)
+        task_machine_start.completed.connect(self.show_conversion_widget)
 
         task_update_check.starting.connect(self.status_bar.handle_task_update_check)
         task_update_check.starting.connect(self.log_window.handle_task_update_check)
@@ -505,17 +505,17 @@ class MainWindow(QtWidgets.QMainWindow):
         if check is not None:
             self.dangerzone.settings.set("updater_check_all", check, autosave=True)
 
-    def show_content_widget(self):
+    def show_conversion_widget(self):
         self.waiting_widget.hide()
-        self.content_widget.show()
+        self.conversion_widget.show()
 
     def waiting_finished(self) -> None:
         log.debug("Waiting for the background task has finished")
         self.dangerzone.is_waiting_finished = True
 
-        if self.content_widget.documents_list.conversion_pending:
+        if self.conversion_widget.documents_list.conversion_pending:
             log.debug("Starting pending conversion")
-            self.content_widget.documents_list.start_conversion()
+            self.conversion_widget.documents_list.start_conversion()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
         # Stop the podman machine if it's running
@@ -570,11 +570,11 @@ class WaitingWidget(QtWidgets.QWidget):
         )
 
 
-class ContentWidget(QtWidgets.QWidget):
+class ConversionWidget(QtWidgets.QWidget):
     documents_added = QtCore.Signal(list)
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
-        super(ContentWidget, self).__init__()
+        super(ConversionWidget, self).__init__()
         self.dangerzone = dangerzone
         self.conversion_started = False
 

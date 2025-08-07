@@ -88,6 +88,31 @@ def load_svg_image(filename: str, width: int, height: int) -> QtGui.QPixmap:
     return pixmap
 
 
+def animate_svg_image(
+    filename: str, width: int, height: int, fps: int = 20
+) -> QSvgWidget:
+    """Load and animate an SVG image.
+
+    Qt has rudimentary support for SVG animations [1], that basically boil down to SVGs
+    that use the `animateTransform` element [2,3]. The rest of the SVGs that use a
+    different `animate*` property will NOT be animated.
+
+    This function animates SVGs using 20FPS by default. We have experimented with higher
+    values, and we're seeing a noticeable CPU overhead, so we **strongly** suggest
+    keeping this number low.
+
+    [1] https://doc.qt.io/qt-6/svgrendering.html#rendering-svg-files
+    [2] https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/animateTransform
+    [3] https://github.com/yjg30737/pyqt-animated-svg-example
+    """
+    path = get_resource_path(filename)
+    svg_widget = QSvgWidget()
+    svg_widget.renderer().setFramesPerSecond(fps)
+    svg_widget.load(str(path))
+    svg_widget.setFixedSize(width, height)
+    return svg_widget
+
+
 def get_supported_extensions() -> List[str]:
     supported_ext = [
         ".pdf",
@@ -132,13 +157,7 @@ class StatusBar(QtWidgets.QWidget):
         super(StatusBar, self).__init__()
         self.dangerzone = dangerzone
 
-        # XXX: This trick works only for SVGs that use `animateTransform`. The rest of
-        # the SVGs that use a different `animate*` property will NOT be animated.
-        self.spinner = QSvgWidget()
-        self.spinner.renderer().setFramesPerSecond(60)
-        path = get_resource_path("spinner.svg")
-        self.spinner.load(str(path))
-        self.spinner.setFixedSize(15, 15)
+        self.spinner = animate_svg_image("spinner.svg", width=15, height=15)
         self.message = QtWidgets.QLabel("")
         self.info_icon = QtWidgets.QToolButton()
         self.info_icon.setIcon(

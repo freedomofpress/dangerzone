@@ -7,7 +7,7 @@ from pathlib import Path
 import click
 
 from .. import container_utils
-from ..container_utils import Runtime, expected_image_name
+from ..container_utils import expected_image_name
 from ..util import get_architecture
 from . import cosign, errors, log, registry, signatures
 from .signatures import DEFAULT_PUBKEY_LOCATION

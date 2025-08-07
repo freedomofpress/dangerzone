@@ -257,11 +257,6 @@ class IsolationProvider(ABC):
         pass
 
     @abstractmethod
-    def is_available(self) -> bool:
-        """Whether the backing implementation of the isolation provider is available."""
-        pass
-
-    @abstractmethod
     def get_max_parallel_conversions(self) -> int:
         pass
 

@@ -7,6 +7,7 @@ MYPY_ARGS := --ignore-missing-imports \
 			 --show-error-codes \
 			 --warn-unreachable \
 			 --warn-unused-ignores \
+			 --exclude dangerzone/podman/command/ \
 			 --exclude $(LARGE_TEST_REPO_DIR)/*.py
 
 .PHONY: lint

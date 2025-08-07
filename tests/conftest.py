@@ -6,7 +6,9 @@ from pathlib import Path
 from typing import Any, Callable, Generator, List
 
 import pytest
+from pytest_mock import MockerFixture
 
+from dangerzone import container_utils, startup
 from dangerzone.document import SAFE_EXTENSION
 from dangerzone.gui import Application
 from dangerzone.isolation_provider import container
@@ -23,9 +25,16 @@ TAMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tampered"
 
 
 @pytest.fixture(autouse=True)
+def isolated_settings(mocker: MockerFixture, tmp_path: Path) -> Settings:
+    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
+    return Settings()
+
+
+@pytest.fixture(autouse=True)
 def setup_function() -> Generator[None, None, None]:
     # Reset the settings singleton between each test.
     Settings._singleton = None
+    container_utils.init_podman_command.cache_clear()
     yield
 
 

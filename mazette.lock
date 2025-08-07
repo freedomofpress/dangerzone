@@ -139,6 +139,124 @@
         }
       }
     },
+    "podman": {
+      "windows/amd64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.5.2/podman-remote-release-windows_amd64.zip",
+        "version": "5.5.2",
+        "checksum": "2e63aa82cf0b57305e3b8074cf46c09eab85d04bfa81330697dc07d127b2197a",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      },
+      "darwin/amd64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.5.2/podman-remote-release-darwin_amd64.zip",
+        "version": "5.5.2",
+        "checksum": "77ffabd8a48eef601694c24c7050fd82515651cf681f90538824b0c9e54ca65e",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      },
+      "darwin/arm64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.5.2/podman-remote-release-darwin_arm64.zip",
+        "version": "5.5.2",
+        "checksum": "0f18957c62896ddbd4b8adfd25e3918eb93f652df1f93349bf732a567696635b",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      }
+    },
+    "gvproxy": {
+      "darwin/amd64": {
+        "repo": "containers/gvisor-tap-vsock",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.6/gvproxy-darwin",
+        "version": "0.8.6",
+        "checksum": "e18161fd2dbc67046f4b2a138807fdd1e7f8545b37850328e5a647684e9a809e",
+        "executable": true,
+        "destination": "share/vendor/podman/gvproxy",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "containers/gvisor-tap-vsock",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.6/gvproxy-darwin",
+        "version": "0.8.6",
+        "checksum": "e18161fd2dbc67046f4b2a138807fdd1e7f8545b37850328e5a647684e9a809e",
+        "executable": true,
+        "destination": "share/vendor/podman/gvproxy",
+        "extract": false
+      }
+    },
+    "vfkit": {
+      "darwin/amd64": {
+        "repo": "crc-org/vfkit",
+        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.1/vfkit",
+        "version": "0.6.1",
+        "checksum": "751fb934d8234c0fa0e6558d86010eb36f156a92547f791c5573767af38a2936",
+        "executable": true,
+        "destination": "share/vendor/podman/vfkit",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "crc-org/vfkit",
+        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.1/vfkit",
+        "version": "0.6.1",
+        "checksum": "751fb934d8234c0fa0e6558d86010eb36f156a92547f791c5573767af38a2936",
+        "executable": true,
+        "destination": "share/vendor/podman/vfkit",
+        "extract": false
+      }
+    },
+    "machine-os": {
+      "darwin/amd64": {
+        "repo": "containers/podman-machine-os",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.5.2/podman-machine.x86_64.applehv.raw.zst",
+        "version": "5.5.2",
+        "checksum": "9710cb739ec8b6473863607ecdd7ee27cdc8802b1133ad2e121f98206399a7cc",
+        "executable": false,
+        "destination": "share/machine.tar",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "containers/podman-machine-os",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.5.2/podman-machine.aarch64.applehv.raw.zst",
+        "version": "5.5.2",
+        "checksum": "1f5c0ec861031a3e51ae30af3a34009ca344437609915ecf7833897e2292b448",
+        "executable": false,
+        "destination": "share/machine.tar",
+        "extract": false
+      }
+    },
+    "machine-os-wsl": {
+      "windows/amd64": {
+        "repo": "apyrgio/podman-machine-os",
+        "download_url": "https://github.com/apyrgio/podman-machine-os/releases/download/5.5.0/podman-machine.x86_64.wsl.tar.zst",
+        "version": "5.5.0",
+        "checksum": "ffada992b8a1efea5204e51b89c6bb011253735c6ddb98fd83a806668c377f9e",
+        "executable": false,
+        "destination": "share/machine.tar",
+        "extract": false
+      }
+    },
     "cosign": {
       "darwin/amd64": {
         "repo": "sigstore/cosign",
@@ -178,5 +296,5 @@
       }
     }
   },
-  "config_checksum": "2a66bc2317b33aa43d8c2dce52da7b5f4a69ccd05fb913e51908ff2f1a08d58a"
+  "config_checksum": "305236a69bcb44719c3b6ab10caa8a2fbcbfdec0e0c70dbe00a82ea1a060abce"
 }

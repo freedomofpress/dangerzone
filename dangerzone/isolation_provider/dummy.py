@@ -38,10 +38,6 @@ class Dummy(IsolationProvider):
         super().__init__()
 
     @staticmethod
-    def is_available() -> bool:
-        return True
-
-    @staticmethod
     def requires_install() -> bool:
         return False
 

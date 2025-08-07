@@ -8,6 +8,6 @@ PROJECT_DIR = Path(__file__).parents[1]
 sys.path.insert(0, str(PROJECT_DIR))
 sys.dangerzone_dev = True
 
-from dangerzone.updater import cli
+from dangerzone.podman import cli
 
 cli.main()

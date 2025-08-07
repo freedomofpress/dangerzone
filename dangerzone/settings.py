@@ -2,11 +2,13 @@ import json
 import logging
 import os
 import platform
+import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict
 
 from packaging import version
 
+from . import errors
 from .document import SAFE_EXTENSION
 from .util import get_config_dir, get_version
 
@@ -24,12 +26,13 @@ class Settings:
     # setting `Settings._singleton = None` will force a new instance
     _singleton = None
 
-    def __new__(cls) -> "Settings":
+    def __new__(cls, *args, **kwargs) -> "Settings":
         if cls._singleton is None:
             cls._singleton = super(Settings, cls).__new__(cls)
         return cls._singleton
 
-    def __init__(self) -> None:
+    def __init__(self, debug: bool = False) -> None:
+        self.debug = debug
         self.settings_filename = get_config_dir() / SETTINGS_FILENAME
         self.default_settings: Dict[str, Any] = self.generate_default_settings()
         # Singletons call multiple times the __init__ method
@@ -59,13 +62,21 @@ class Settings:
         return "container_runtime" in self.settings
 
     def set_custom_runtime(self, runtime: str, autosave: bool = False) -> Path:
-        from .container_utils import Runtime  # Avoid circular import
-
-        container_runtime = Runtime.path_from_name(runtime)
+        container_runtime = self.path_from_name(runtime)
         self.settings["container_runtime"] = str(container_runtime)
         if autosave:
             self.save()
         return container_runtime
+
+    def path_from_name(self, name: str) -> Path:
+        name_path = Path(name)
+        if name_path.is_file():
+            return name_path
+        else:
+            runtime = shutil.which(name_path)
+            if runtime is None:
+                raise errors.NoContainerTechException(name)
+            return Path(runtime)
 
     def unset_custom_runtime(self) -> None:
         self.settings.pop("container_runtime")

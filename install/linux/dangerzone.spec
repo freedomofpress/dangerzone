@@ -267,6 +267,7 @@ fi
 /usr/bin/dangerzone
 /usr/bin/dangerzone-cli
 /usr/bin/dangerzone-image
+/usr/bin/dangerzone-machine
 /usr/share/
 %license LICENSE
 %doc README.md

@@ -2,6 +2,13 @@
 # latest release of Dangerzone, and offer our analysis.
 
 ignore:
+  # CVE-2025-6965, and other libsqlite CVEs
+  # =======================================
+  #
+  # Verdict: libsqlite3-0 is only used by python, and we do not use any of its
+  # SQLite-related features, so we are not affected.
+  - package:
+      name: libsqlite3-0
   # CVE-2023-45853
   # ==============
   #
@@ -112,12 +119,3 @@ ignore:
   #    a fix.
   - vulnerability: CVE-2025-49794
   - vulnerability: CVE-2025-49796
-  # CVE-2025-6965
-  # =============
-  #
-  # Debian tracker:
-  # * https://security-tracker.debian.org/tracker/CVE-2025-6965
-  #
-  # Verdict: libsql is only used by python, and we do not use any of its
-  # SQLite-related features, so we are not affected.
-  - vulnerability: CVE-2025-6965

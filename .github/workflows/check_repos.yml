@@ -33,7 +33,7 @@ jobs:
           - distro: debian
             version: "bullseye-slim"  # bullseye / 11
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check installation instructions in a container
         run: |
           podman build .github/workflows/test_check_repos/ \

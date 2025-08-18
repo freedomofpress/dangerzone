@@ -24,7 +24,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install dev. dependencies
         run: |-
@@ -45,7 +45,7 @@ jobs:
       source_date_epoch: ${{ steps.params.outputs.source_date_epoch }}
       image: ${{ steps.params.outputs.full_image_name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -82,7 +82,7 @@ jobs:
           - runs-on: "ubuntu-24.04-arm"
             name: "linux/arm64"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Prepare
         run: |
@@ -144,7 +144,7 @@ jobs:
       digest_amd64: ${{ steps.image.outputs.digest_amd64 }}
       digest_arm64: ${{ steps.image.outputs.digest_arm64 }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Download digests
         uses: actions/download-artifact@v5
@@ -232,7 +232,7 @@ jobs:
           - runs-on: "ubuntu-24.04-arm"
             name: "arm64"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 

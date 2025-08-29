@@ -12,6 +12,20 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Sign the sandbox/container images and automatically upgrade them to their latest version
   ([#1006](https://github.com/freedomofpress/dangerzone/issues/1006)).
   Read more about this feature [in our docs](https://github.com/freedomofpress/dangerzone/blob/main/docs/independent-container-updates.md).
+- Make Dangerzone use an embedded version of Podman under the hood
+  ([#1145](https://github.com/freedomofpress/dangerzone/issues/1145))
+- Bundle Podman images for Windows and macOS alongside our application
+  ([#1170](https://github.com/freedomofpress/dangerzone/issues/1170))
+- Introduce a new CLI helper called `dangerzone-machine` to manage the Podman
+  machine the Dangerzone uses under the hood
+  ([#1172](https://github.com/freedomofpress/dangerzone/issues/1172))
+
+### Removed
+
+- Docker Desktop is no longer required to run Dangerzone. In fact, they are no
+  longer compatible, due to some changes in the bundled container image.
+  Instead, Podman Desktop is used under the hood
+  ([#118](https://github.com/freedomofpress/dangerzone/issues/118))
 
 ### Fixed
 
@@ -30,6 +44,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Improve our release instructions by splitting the large `RELEASE.md` file
   into distinct docs, whose instructions can be executed sequentially
   ([#1212](https://github.com/freedomofpress/dangerzone/pull/1212))
+- Run our full CI test suite on Windows and macOS GitHub runners
+  ([#1009](https://github.com/freedomofpress/dangerzone/issues/1009))
 
 ## [0.9.1](https://github.com/freedomofpress/dangerzone/compare/v0.9.1...0.9.0)
 

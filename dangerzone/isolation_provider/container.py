@@ -126,7 +126,7 @@ class Container(IsolationProvider):
             + command
         )
         podman = container_utils.init_podman_command()
-        return podman.run(
+        proc = podman.run(
             args,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
@@ -136,6 +136,8 @@ class Container(IsolationProvider):
             start_new_session=True,
             wait=False,
         )
+        assert isinstance(proc, subprocess.Popen)
+        return proc
 
     def kill_container(self, name: str) -> None:
         """Terminate a spawned container.
@@ -201,28 +203,11 @@ class Container(IsolationProvider):
         podman = container_utils.init_podman_command()
         name = self.doc_to_pixels_container_name(document)
         all_containers = podman.run(["ps", "-a"])
-        if name in all_containers:  # type:ignore[attr-defined]
+        assert isinstance(all_containers, str)
+        if name in all_containers:
             log.warning(f"Container '{name}' did not stop gracefully")
 
     def get_max_parallel_conversions(self) -> int:
         # FIXME hardcoded 1 until length conversions are better handled
         # https://github.com/freedomofpress/dangerzone/issues/257
         return 1
-
-        n_cpu = 1
-        if platform.system() == "Linux":
-            # if on linux containers run natively
-            cpu_count = os.cpu_count()
-            if cpu_count is not None:
-                n_cpu = cpu_count
-        else:
-            # For Windows and MacOS containers run in VM
-            # So we obtain the CPU count for the VM
-            n_cpu_str = subprocess.check_output(
-                [str(runtime.path), "info", "--format", "{{.NCPU}}"],
-                text=True,
-                startupinfo=get_subprocess_startupinfo(),
-            )
-            n_cpu = int(n_cpu_str.strip())
-
-        return 2 * n_cpu + 1

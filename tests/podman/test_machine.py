@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Callable
 
 import pytest
+from pytest_mock import MockerFixture
 from pytest_subprocess import FakeProcess
 
 from dangerzone import container_utils
@@ -13,7 +14,7 @@ from dangerzone.util import get_version
 
 
 @pytest.fixture
-def machine_manager(mocker) -> PodmanMachineManager:
+def machine_manager(mocker: MockerFixture) -> PodmanMachineManager:
     return PodmanMachineManager()
 
 
@@ -27,7 +28,7 @@ def podman_register(fp: FakeProcess, machine_manager: PodmanMachineManager) -> C
     if platform.system() != "Linux":
         base_cmd += ["--connection", machine_name]
 
-    def fp_register(cmd: list[str], **kwargs):
+    def fp_register(cmd: list[str], **kwargs):  # type: ignore [no-untyped-def]
         return fp.register(base_cmd + cmd, **kwargs)
 
     return fp_register

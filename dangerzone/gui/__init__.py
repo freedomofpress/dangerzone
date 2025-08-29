@@ -153,7 +153,7 @@ def gui_main(dummy_conversion: bool, filenames: Optional[List[str]]) -> bool:
 
     def open_files(filenames: List[str] = []) -> None:
         documents = [Document(filename) for filename in filenames]
-        window.content_widget.doc_selection_widget.documents_selected.emit(documents)
+        window.conversion_widget.doc_selection_widget.documents_selected.emit(documents)
 
     window = MainWindow(dangerzone)
     settings = Settings()

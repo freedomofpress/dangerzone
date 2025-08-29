@@ -20,13 +20,13 @@ logger = logging.getLogger(__name__)
     type=click.Choice(["debug", "info", "warning", "error", "critical"]),
     help="Set the logging level.",
 )
-def main(log_level):
+def main(log_level: str) -> None:
     """Manage Dangerzone Podman machines."""
     logging.basicConfig(level=getattr(logging, log_level.upper()), stream=sys.stderr)
 
 
 @main.command()
-def list():
+def list() -> None:
     """List Dangerzone Podman machines."""
     try:
         manager = PodmanMachineManager()
@@ -46,7 +46,7 @@ def list():
 @click.option("--cpus", type=int, help="Number of CPUs to allocate.")
 @click.option("--memory", type=int, help="Amount of memory in bytes.")
 @click.option("--timezone", type=str, help="Timezone for the machine.")
-def init(cpus, memory, timezone):
+def init(cpus: int, memory: int, timezone: str) -> None:
     """Initialize a Dangerzone Podman machine."""
     try:
         manager = PodmanMachineManager()
@@ -58,7 +58,7 @@ def init(cpus, memory, timezone):
 
 
 @main.command()
-def start():
+def start() -> None:
     """Start the Dangerzone Podman machine."""
     try:
         manager = PodmanMachineManager()
@@ -70,7 +70,7 @@ def start():
 
 
 @main.command()
-def stop():
+def stop() -> None:
     """Stop the Dangerzone Podman machine."""
     try:
         manager = PodmanMachineManager()
@@ -83,7 +83,7 @@ def stop():
 
 @main.command()
 @click.option("-f", "--force", is_flag=True, help="Force removal without prompt.")
-def remove(force):
+def remove(force: bool) -> None:
     """Remove the Dangerzone Podman machine."""
     try:
         manager = PodmanMachineManager()
@@ -101,7 +101,7 @@ def remove(force):
 
 @main.command()
 @click.option("-f", "--force", is_flag=True, help="Force reset without prompt.")
-def reset(force):
+def reset(force: bool) -> None:
     """Reset all Podman machines."""
     try:
         if not force:
@@ -119,7 +119,7 @@ def reset(force):
 
 @main.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
 @click.pass_context
-def raw(ctx):
+def raw(ctx) -> None:  # type: ignore [no-untyped-def]
     """Run a raw Podman command."""
     try:
         manager = PodmanMachineManager()

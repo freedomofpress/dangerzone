@@ -12,7 +12,7 @@ from .. import startup
 from ..updater.releases import EmptyReport, ErrorReport, ReleaseReport
 
 
-class _MetaConflictResolver(type(QtCore.QObject), type(startup.Task)):
+class _MetaConflictResolver(type(QtCore.QObject), type(startup.Task)):  # type: ignore [misc]
     pass
 
 
@@ -25,26 +25,26 @@ class GUIMixin(QtCore.QObject):
     succeeded = QtCore.Signal()
     completed = QtCore.Signal()
 
-    def __init__(self):
+    def __init__(self) -> None:
         QtCore.QObject.__init__(self)
 
-    def handle_skip(self):
+    def handle_skip(self) -> None:
         self.skipped.emit()
         self.completed.emit()
-        super().handle_skip()
+        super().handle_skip()  # type: ignore [misc]
 
-    def handle_start(self):
+    def handle_start(self) -> None:
         self.starting.emit()
-        super().handle_start()
+        super().handle_start()  # type: ignore [misc]
 
-    def handle_error(self, e):
+    def handle_error(self, e: Exception) -> None:
         self.failed.emit(str(e))
-        super().handle_error(e)
+        super().handle_error(e)  # type: ignore [misc]
 
-    def handle_success(self):
+    def handle_success(self) -> None:
         self.succeeded.emit()
         self.completed.emit()
-        super().handle_success()
+        super().handle_success()  # type: ignore [misc]
 
 
 # GUI-fied basic tasks
@@ -75,15 +75,15 @@ class UpdateCheckTask(
     app_update_available = QtCore.Signal(object)
     container_update_available = QtCore.Signal(object)
 
-    def prompt_user(self):
+    def prompt_user(self) -> None:
         super().prompt_user()
         self.needs_user_input.emit()
 
-    def handle_app_update(self, report: ReleaseReport):
+    def handle_app_update(self, report: ReleaseReport) -> None:
         self.app_update_available.emit(report)
         super().handle_app_update(report)
 
-    def handle_container_update(self, report: ReleaseReport):
+    def handle_container_update(self, report: ReleaseReport) -> None:
         self.container_update_available.emit(report)
         super().handle_container_update(report)
 
@@ -93,14 +93,14 @@ class StartupThread(startup.StartupLogic, QtCore.QThread):
     failed = QtCore.Signal(str)
     succeeded = QtCore.Signal()
 
-    def handle_start(self):
+    def handle_start(self) -> None:
         self.starting.emit()
         super().handle_start()
 
-    def handle_error(self, task, e):
+    def handle_error(self, task: startup.Task, e: Exception) -> None:
         self.failed.emit(str(e))
         super().handle_error(task, e)
 
-    def handle_success(self):
+    def handle_success(self) -> None:
         self.succeeded.emit()
         super().handle_success()

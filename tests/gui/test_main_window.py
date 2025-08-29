@@ -55,7 +55,7 @@ def dummy(mocker: MockerFixture) -> None:
 
 
 @fixture
-def content_widget(qtbot: QtBot, mocker: MockerFixture) -> ConversionWidget:
+def conversion_widget(qtbot: QtBot, mocker: MockerFixture) -> ConversionWidget:
     # Setup
     mock_app = mocker.MagicMock()
     dummy = mocker.MagicMock()
@@ -189,7 +189,7 @@ def test_no_new_release(
     window.startup_thread.start()
     window.startup_thread.wait()
 
-    def assertions():
+    def assertions() -> None:
         # Check that the callback function gets an empty report.
         assert_report_equal(check_for_updates_spy.spy_return, EmptyReport())
 
@@ -454,7 +454,7 @@ def test_update_error(
 
 
 def test_change_document_button(
-    content_widget: ConversionWidget,
+    conversion_widget: ConversionWidget,
     qtbot: QtBot,
     mocker: MockerFixture,
     sample_pdf: str,
@@ -464,12 +464,12 @@ def test_change_document_button(
     # Setup first doc selection
     file_dialog_mock = mocker.MagicMock()
     file_dialog_mock.selectedFiles.return_value = (sample_pdf,)
-    content_widget.doc_selection_widget.file_dialog = file_dialog_mock
+    conversion_widget.doc_selection_widget.file_dialog = file_dialog_mock
 
     # Select first file
-    with qtbot.waitSignal(content_widget.documents_added):
+    with qtbot.waitSignal(conversion_widget.documents_added):
         qtbot.mouseClick(
-            content_widget.doc_selection_widget.dangerous_doc_button,
+            conversion_widget.doc_selection_widget.dangerous_doc_button,
             QtCore.Qt.MouseButton.LeftButton,
         )
         file_dialog_mock.accept()
@@ -480,9 +480,9 @@ def test_change_document_button(
     file_dialog_mock.selectedFiles.return_value = (tmp_sample_doc,)
 
     # When clicking on "select docs" button
-    with qtbot.waitSignal(content_widget.documents_added):
+    with qtbot.waitSignal(conversion_widget.documents_added):
         qtbot.mouseClick(
-            content_widget.settings_widget.change_selection_button,
+            conversion_widget.settings_widget.change_selection_button,
             QtCore.Qt.MouseButton.LeftButton,
         )
         file_dialog_mock.accept()
@@ -494,76 +494,80 @@ def test_change_document_button(
     # Then the final document should be only the second one
     docs = [
         doc.input_filename
-        for doc in content_widget.dangerzone.get_unconverted_documents()
+        for doc in conversion_widget.dangerzone.get_unconverted_documents()
     ]
     assert len(docs) == 1
     assert docs[0] == str(tmp_sample_doc)
 
 
 def test_drop_valid_documents(
-    content_widget: ConversionWidget,
+    conversion_widget: ConversionWidget,
     drag_valid_files_event: QtGui.QDropEvent,
     qtbot: QtBot,
 ) -> None:
     with qtbot.waitSignal(
-        content_widget.doc_selection_wrapper.documents_selected,
+        conversion_widget.doc_selection_wrapper.documents_selected,
         check_params_cb=lambda x: len(x) == 2 and isinstance(x[0], Document),
     ):
-        content_widget.doc_selection_wrapper.dropEvent(drag_valid_files_event)
+        conversion_widget.doc_selection_wrapper.dropEvent(drag_valid_files_event)
 
 
 def test_drop_text(
-    content_widget: ConversionWidget,
+    conversion_widget: ConversionWidget,
     drag_text_event: QtGui.QDropEvent,
     qtbot: QtBot,
 ) -> None:
     with qtbot.assertNotEmitted(
-        content_widget.doc_selection_wrapper.documents_selected
+        conversion_widget.doc_selection_wrapper.documents_selected
     ):
-        content_widget.doc_selection_wrapper.dropEvent(drag_text_event)
+        conversion_widget.doc_selection_wrapper.dropEvent(drag_text_event)
 
 
 def test_drop_1_invalid_doc(
-    content_widget: ConversionWidget,
+    conversion_widget: ConversionWidget,
     drag_1_invalid_file_event: QtGui.QDropEvent,
     qtbot: QtBot,
 ) -> None:
     with qtbot.assertNotEmitted(
-        content_widget.doc_selection_wrapper.documents_selected
+        conversion_widget.doc_selection_wrapper.documents_selected
     ):
-        content_widget.doc_selection_wrapper.dropEvent(drag_1_invalid_file_event)
+        conversion_widget.doc_selection_wrapper.dropEvent(drag_1_invalid_file_event)
 
 
 def test_drop_1_invalid_2_valid_documents(
-    content_widget: ConversionWidget,
+    conversion_widget: ConversionWidget,
     drag_1_invalid_and_2_valid_files_event: QtGui.QDropEvent,
     qtbot: QtBot,
     monkeypatch: MonkeyPatch,
 ) -> None:
     # If we accept to continue
     monkeypatch.setattr(
-        content_widget.doc_selection_wrapper, "prompt_continue_without", lambda x: True
+        conversion_widget.doc_selection_wrapper,
+        "prompt_continue_without",
+        lambda x: True,
     )
 
     # Then the 2 valid docs will be selected
     with qtbot.waitSignal(
-        content_widget.doc_selection_wrapper.documents_selected,
+        conversion_widget.doc_selection_wrapper.documents_selected,
         check_params_cb=lambda x: len(x) == 2 and isinstance(x[0], Document),
     ):
-        content_widget.doc_selection_wrapper.dropEvent(
+        conversion_widget.doc_selection_wrapper.dropEvent(
             drag_1_invalid_and_2_valid_files_event
         )
 
     # If we refuse to continue
     monkeypatch.setattr(
-        content_widget.doc_selection_wrapper, "prompt_continue_without", lambda x: False
+        conversion_widget.doc_selection_wrapper,
+        "prompt_continue_without",
+        lambda x: False,
     )
 
     # Then no docs will be selected
     with qtbot.assertNotEmitted(
-        content_widget.doc_selection_wrapper.documents_selected,
+        conversion_widget.doc_selection_wrapper.documents_selected,
     ):
-        content_widget.doc_selection_wrapper.dropEvent(
+        conversion_widget.doc_selection_wrapper.dropEvent(
             drag_1_invalid_and_2_valid_files_event
         )
 
@@ -648,7 +652,7 @@ def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -
     prompt_mock().x_pressed = False
 
     # Check disabling update checks.
-    prompt_mock().launch.return_value = False  # type: ignore [attr-defined]
+    prompt_mock().launch.return_value = False
     expected_settings["updater_check_all"] = False
     handle_needs_user_input_spy = mocker.spy(window, "handle_needs_user_input")
 
@@ -660,7 +664,7 @@ def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -
 
     # Reset the "updater_check_all" field and check enabling update checks.
     window.dangerzone.settings.set("updater_check_all", None)
-    prompt_mock().launch.return_value = True  # type: ignore [attr-defined]
+    prompt_mock().launch.return_value = True
     expected_settings["updater_check_all"] = True
 
     handle_needs_user_input_spy.reset_mock()
@@ -674,7 +678,7 @@ def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -
     #
     # From the third run onwards, users should never be prompted for enabling update
     # checks.
-    prompt_mock().side_effect = RuntimeError("Should not be called")  # type: ignore [attr-defined]
+    prompt_mock().side_effect = RuntimeError("Should not be called")
     for check in [True, False]:
         window.dangerzone.settings.set("updater_check_all", check)
         assert releases.should_check_for_updates(window.dangerzone.settings) == check

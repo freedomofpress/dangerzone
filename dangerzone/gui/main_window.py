@@ -191,25 +191,25 @@ class StatusBar(QtWidgets.QWidget):
         self.message.setText(message)
         self.setStyleSheet("color: red; font-weight: bold")
 
-    def handle_startup_begin(self):
+    def handle_startup_begin(self) -> None:
         self.set_status_working("Starting")
 
-    def handle_task_machine_init(self):
+    def handle_task_machine_init(self) -> None:
         self.set_status_working("Initializing Dangerzone VM")
 
-    def handle_task_machine_start(self):
+    def handle_task_machine_start(self) -> None:
         self.set_status_working("Starting Dangerzone VM")
 
-    def handle_task_update_check(self):
+    def handle_task_update_check(self) -> None:
         self.set_status_working("Checking for updates")
 
-    def handle_task_container_install(self):
+    def handle_task_container_install(self) -> None:
         self.set_status_working("Installing container sandbox")
 
-    def handle_startup_error(self):
+    def handle_startup_error(self) -> None:
         self.set_status_error("Startup failed")
 
-    def handle_startup_success(self):
+    def handle_startup_success(self) -> None:
         self.set_status_ok("")
 
 
@@ -337,7 +337,7 @@ class MainWindow(QtWidgets.QMainWindow):
             ]
         else:
             tasks = [task_update_check]
-        self.startup_thread = startup.StartupThread(tasks, raise_on_error=False)
+        self.startup_thread = startup.StartupThread(tasks, raise_on_error=False)  # type: ignore [arg-type]
         self.startup_thread.succeeded.connect(self.waiting_finished)
         self.startup_thread.starting.connect(self.status_bar.handle_startup_begin)
         self.startup_thread.starting.connect(self.waiting_widget.handle_start)
@@ -433,7 +433,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dangerzone.settings.set("updater_check_all", check)
         self.dangerzone.settings.save()
 
-    def handle_update_check_failed(self, error):
+    def handle_update_check_failed(self, error: str) -> None:
         log.error(f"Encountered an error during an update check: {error}")
         errors = self.dangerzone.settings.get("updater_errors") + 1
         self.dangerzone.settings.set("updater_errors", errors)
@@ -505,7 +505,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if check is not None:
             self.dangerzone.settings.set("updater_check_all", check, autosave=True)
 
-    def show_conversion_widget(self):
+    def show_conversion_widget(self) -> None:
         self.waiting_widget.hide()
         self.conversion_widget.show()
 
@@ -559,7 +559,7 @@ class WaitingWidget(QtWidgets.QWidget):
         layout.addWidget(self.label)
         self.setLayout(layout)
 
-    def handle_start(self):
+    def handle_start(self) -> None:
         # FIXME: The following message is a placeholder, we need to find a more
         # descriptive one.
         self.label.setText(

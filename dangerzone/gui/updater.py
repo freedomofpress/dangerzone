@@ -60,7 +60,7 @@ class UpdateCheckPrompt(Alert):
         return buttons_layout
 
 
-def prompt_for_checks(dangerzone: DangerzoneGui):
+def prompt_for_checks(dangerzone: DangerzoneGui) -> Optional[bool]:
     """Check for Dangerzone updates.
 
     This function is responsible for asking the user if they want to enable

@@ -14,7 +14,9 @@ from dangerzone.isolation_provider.dummy import Dummy
 
 
 @pytest.fixture
-def dangerzone_gui(qtbot: QtBot, mocker: MockerFixture, tmp_path: Path) -> MainWindow:
+def dangerzone_gui(
+    qtbot: QtBot, mocker: MockerFixture, tmp_path: Path
+) -> DangerzoneGui:
     mock_app = mocker.MagicMock()
     dummy = mocker.MagicMock(spec=Dummy)
     return DangerzoneGui(mock_app, dummy)

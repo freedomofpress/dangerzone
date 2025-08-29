@@ -49,6 +49,7 @@ def get_runtime_version() -> Tuple[int, int]:
 
     try:
         version = podman.run(["version", "-f", query])
+        assert isinstance(version, str)
     except Exception as e:
         msg = f"Could not get the version of Podman: {e}"
         raise RuntimeError(msg) from e
@@ -66,7 +67,7 @@ def get_runtime_version() -> Tuple[int, int]:
         raise RuntimeError(msg)
 
 
-def get_podman_path() -> Path:
+def get_podman_path() -> Optional[Path]:
     podman_bin = "podman"
     if platform.system() == "Linux":
         return None  # Use default Podman location
@@ -143,6 +144,7 @@ def make_seccomp_json_accessible() -> Union[Path, PurePosixPath]:
 
 def create_containers_conf() -> Path:
     podman_path = get_podman_path()
+    assert isinstance(podman_path, Path)
     helper_binaries_dir = str(podman_path.parent)
     helper_binaries_dir = helper_binaries_dir.replace("\\", "\\\\")
     content = f"""\
@@ -158,6 +160,7 @@ helper_binaries_dir=["{helper_binaries_dir}"]
 
 @functools.cache
 def init_podman_command() -> PodmanCommand:
+    podman_path: Optional[Path]
     settings = Settings()
 
     if settings.custom_runtime_specified():
@@ -191,7 +194,7 @@ def list_image_digests() -> List[str]:
                 expected_image_name(),
             ],
         )
-        .strip()
+        .strip()  # type: ignore [union-attr]
         .split()
     )
 
@@ -268,7 +271,9 @@ def get_image_id_by_digest(digest: str) -> str:
     # for podman >=4.4 (and bookworm ships 4.3)
     # So, fallback on the json format instead
     podman = init_podman_command()
-    images = json.loads(podman.run(["images", "--format", "json"]))
+    res = podman.run(["images", "--format", "json"])
+    assert isinstance(res, str)
+    images = json.loads(res)
     filtered_images = [
         image["Id"] for image in images if image["Digest"] == f"sha256:{digest}"
     ]
@@ -293,6 +298,7 @@ def container_pull(
     process = podman.run(
         ["pull", f"{image}@sha256:{manifest_digest}"], wait=False, text=True, bufsize=1
     )
+    assert isinstance(process, subprocess.Popen)
 
     if callback:
         for line in process.stdout:  # type: ignore
@@ -316,12 +322,11 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
     # `podman inspect` is avoided here as it returns the digest of the
     # architecture-bound image.
     podman = init_podman_command()
-    output = podman.run(["images", expected_image, "--format", "{{.Digest}}"]).split(
-        "\n"
-    )
+    res = podman.run(["images", expected_image, "--format", "{{.Digest}}"])
+    assert isinstance(res, str)
     # In some cases, the output can be multiple lines with the same digest
     # sets are used to reduce them.
-    lines = set(output)
+    lines = set(res.split("\n"))
     if len(lines) < 1:
         raise errors.ImageNotPresentException(
             f"The image {expected_image} does not exist locally"

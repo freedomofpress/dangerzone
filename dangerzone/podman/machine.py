@@ -26,7 +26,7 @@ class PodmanMachineManager:
         self.prefix = container_utils.PODMAN_MACHINE_PREFIX
 
     @functools.cached_property
-    def podman(self) -> Path:
+    def podman(self) -> PodmanCommand:
         """Instantiate a PodmanCommand class."""
         return container_utils.init_podman_command()
 
@@ -42,7 +42,7 @@ class PodmanMachineManager:
         except (CommandError, json.JSONDecodeError):
             return []
 
-    def _remove_stale_machines(self, existing_machines=List[Dict]) -> None:
+    def _remove_stale_machines(self, existing_machines: List[Dict]) -> None:
         """Remove stale Dangerzone machines."""
         for machine in existing_machines:
             name = machine.get("Name")
@@ -53,7 +53,12 @@ class PodmanMachineManager:
                 except CommandError as e:
                     logger.warning(f"Failed to remove stale machine {name}: {e}")
 
-    def init(self, cpus: int = None, memory: int = None, timezone: str = None) -> None:
+    def init(
+        self,
+        cpus: Optional[int] = None,
+        memory: Optional[int] = None,
+        timezone: Optional[str] = None,
+    ) -> None:
         """Initialize a new Podman machine."""
         existing_machines = self._get_existing_dangerzone_machines()
         self._remove_stale_machines(existing_machines)
@@ -73,7 +78,7 @@ class PodmanMachineManager:
         )
         logger.info(f"Podman machine '{self.name}' initialized successfully.")
 
-    def start(self, name: str = None) -> None:
+    def start(self, name: Optional[str] = None) -> None:
         """Start a Podman machine."""
         if name is None:
             name = self.name
@@ -88,7 +93,7 @@ class PodmanMachineManager:
                     return
             raise
 
-    def stop(self, name: str = None) -> None:
+    def stop(self, name: Optional[str] = None) -> None:
         """Stop a Podman machine."""
         if name is None:
             name = self.name
@@ -96,7 +101,7 @@ class PodmanMachineManager:
         self.podman.machine.stop(name=name)
         logger.info(f"Podman machine '{name}' stopped successfully.")
 
-    def remove(self, name: str = None, force: bool = False) -> None:
+    def remove(self, name: Optional[str] = None, force: bool = False) -> None:
         """Remove a Podman machine."""
         if name is None:
             name = self.name

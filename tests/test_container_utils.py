@@ -6,7 +6,7 @@ from pytest_mock import MockerFixture
 from dangerzone import container_utils, settings
 
 
-def test_get_podman_path(mocker: MockerFixture):
+def test_get_podman_path(mocker: MockerFixture) -> None:
     """Test that we get the correct Podman path, depending on the distro.
 
     We should be getting the default Podman installation (None) on Linux, and the
@@ -26,7 +26,7 @@ def test_get_podman_path(mocker: MockerFixture):
     assert "vendor" in str(path)
 
 
-def test_create_containers_conf(mocker: MockerFixture, tmp_path: pathlib.Path):
+def test_create_containers_conf(mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
     """Test that we don't fail when writing the containers conf file.
 
     Test that we can write and overwrite the config file for Podman containers, and that
@@ -43,7 +43,7 @@ def test_create_containers_conf(mocker: MockerFixture, tmp_path: pathlib.Path):
     assert conf == path.read_text()
 
 
-def test_init_podman_command(mocker: MockerFixture):
+def test_init_podman_command(mocker: MockerFixture) -> None:
     cmd = mocker.patch("dangerzone.container_utils.PodmanCommand")
 
     mocker.patch("platform.system", return_value="Linux")
@@ -62,7 +62,7 @@ def test_init_podman_command(mocker: MockerFixture):
         assert kwargs["options"] is not None
 
 
-def test_init_podman_command_custom_runtime(mocker: MockerFixture):
+def test_init_podman_command_custom_runtime(mocker: MockerFixture) -> None:
     # Test custom runtime
     # Test Windows/macOS Podman command (env, connection)
     # Test Linux Podman

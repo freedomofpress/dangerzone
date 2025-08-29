@@ -146,8 +146,8 @@ def test_update_checks(
 
     # Make requests.get().json() return the above dictionary.
     requests_mock = mocker.patch("dangerzone.updater.releases.requests.get")
-    requests_mock().status_code = 200  # type: ignore [call-arg]
-    requests_mock().json.return_value = mock_upstream_info  # type: ignore [attr-defined, call-arg]
+    requests_mock().status_code = 200
+    requests_mock().json.return_value = mock_upstream_info
 
     mocker.patch(
         "dangerzone.updater.releases.get_remote_digest_and_logindex",
@@ -172,7 +172,7 @@ def test_update_checks(
     )
 
     # Test 3 - Check that HTTP errors are converted to error reports.
-    requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
+    requests_mock.side_effect = Exception("failed")
     report = releases.check_for_updates(settings)
     error_msg = (
         f"Encountered an exception while checking {releases.GH_RELEASE_URL}: failed"
@@ -213,8 +213,8 @@ def test_update_checks_cooldown(
 
     # # Make requests.get().json() return the version info that we want.
     mock_upstream_info = {"tag_name": "99.9.9", "body": "changelog"}
-    requests_mock().status_code = 200  # type: ignore [call-arg]
-    requests_mock().json.return_value = mock_upstream_info  # type: ignore [attr-defined, call-arg]
+    requests_mock().status_code = 200
+    requests_mock().json.return_value = mock_upstream_info
 
     # Test 1: The first time Dangerzone checks for updates, the cooldown period should
     # not stop it. Once we learn about an update, the last check setting should be
@@ -232,7 +232,7 @@ def test_update_checks_cooldown(
     # previous one.
     curtime += 1
     timestamp_mock.return_value = curtime
-    requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
+    requests_mock.side_effect = Exception("failed")
     settings.set("updater_latest_version", get_version())
     settings.set("updater_latest_changelog", None)
 
@@ -289,7 +289,7 @@ def test_update_errors(
     requests_mock = mocker.patch("dangerzone.updater.releases.requests.get")
 
     # Test 1 - Check that request exceptions are being detected as errors.
-    requests_mock.side_effect = Exception("bad url")  # type: ignore [attr-defined]
+    requests_mock.side_effect = Exception("bad url")
     report = releases.check_for_updates(settings)
     assert type(report) == ErrorReport
     assert report.error is not None
@@ -300,8 +300,8 @@ def test_update_errors(
     class MockResponse500:
         status_code = 500
 
-    requests_mock.return_value = MockResponse500()  # type: ignore [attr-defined]
-    requests_mock.side_effect = None  # type: ignore [attr-defined]
+    requests_mock.return_value = MockResponse500()
+    requests_mock.side_effect = None
     report = releases.check_for_updates(settings)
     assert type(report) == ErrorReport
     assert report.error is not None
@@ -314,7 +314,7 @@ def test_update_errors(
         def json(self) -> dict:
             return json.loads("bad json")
 
-    requests_mock.return_value = MockResponseBadJSON()  # type: ignore [attr-defined]
+    requests_mock.return_value = MockResponseBadJSON()
     report = releases.check_for_updates(settings)
     assert type(report) == ErrorReport
     assert report.error is not None
@@ -327,7 +327,7 @@ def test_update_errors(
         def json(self) -> dict:
             return {}
 
-    requests_mock.return_value = MockResponseEmpty()  # type: ignore [attr-defined]
+    requests_mock.return_value = MockResponseEmpty()
     report = releases.check_for_updates(settings)
     assert type(report) == ErrorReport
     assert report.error is not None
@@ -340,7 +340,7 @@ def test_update_errors(
         def json(self) -> dict:
             return {"tag_name": "vbad_version", "body": "changelog"}
 
-    requests_mock.return_value = MockResponseBadVersion()  # type: ignore [attr-defined]
+    requests_mock.return_value = MockResponseBadVersion()
     report = releases.check_for_updates(settings)
     assert type(report) == ErrorReport
     assert report.error is not None
@@ -353,7 +353,7 @@ def test_update_errors(
         def json(self) -> dict:
             return {"tag_name": "v99.9.9", "body": ["bad", "markdown"]}
 
-    requests_mock.return_value = MockResponseBadMarkdown()  # type: ignore [attr-defined]
+    requests_mock.return_value = MockResponseBadMarkdown()
     report = releases.check_for_updates(settings)
     assert type(report) == ErrorReport
     assert report.error is not None
@@ -365,7 +365,7 @@ def test_update_errors(
         def json(self) -> dict:
             return {"tag_name": "v99.9.9", "body": "changelog"}
 
-    requests_mock.return_value = MockResponseValid()  # type: ignore [attr-defined]
+    requests_mock.return_value = MockResponseValid()
     report = releases.check_for_updates(settings)
     assert_report_equal(report, ReleaseReport("99.9.9", "<p>changelog</p>"))
 

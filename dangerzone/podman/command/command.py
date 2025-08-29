@@ -28,10 +28,10 @@ class PodmanCommand:
 
     def __init__(
         self,
-        path: Path = None,
+        path: Optional[Path] = None,
         privileged: bool = False,
-        options: cli_runner.GlobalOptions = None,
-        env: dict = None,
+        options: Optional[cli_runner.GlobalOptions] = None,
+        env: Optional[dict] = None,
     ):
         """Initialize the PodmanCommand.
 

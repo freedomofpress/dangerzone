@@ -95,10 +95,10 @@ class Runner:
 
     def __init__(
         self,
-        path: Path = None,
+        path: Optional[Path] = None,
         privileged: bool = False,
-        options: GlobalOptions = None,
-        env: dict = None,
+        options: Optional[GlobalOptions] = None,
+        env: Optional[dict] = None,
     ):
         """Initialize the Runner.
 
@@ -196,7 +196,7 @@ class Runner:
         capture_output=True,
         wait=True,
         **skwargs,
-    ) -> Union[str, subprocess.Popen]:
+    ) -> Union[str, subprocess.Popen, None]:
         """Run the specified Podman command.
 
         Args:
@@ -227,7 +227,7 @@ class Runner:
         stdin=subprocess.DEVNULL,
         wait=True,
         **skwargs,
-    ) -> Union[str, subprocess.Popen]:
+    ) -> Union[str, subprocess.Popen, None]:
         """Run the command without additional construction. Mostly for internal use.
 
         Args:

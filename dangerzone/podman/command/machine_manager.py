@@ -2,7 +2,7 @@ import builtins
 import json
 import subprocess
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from . import cli_runner
 
@@ -39,20 +39,20 @@ class MachineManager:
 
     def init(
         self,
-        name: str = None,
-        cpus: int = None,
-        disk_size: int = None,
-        ignition_path: Path = None,
-        image: Union[str, Path] = None,
-        memory: int = None,
+        name: Optional[str] = None,
+        cpus: Optional[int] = None,
+        disk_size: Optional[int] = None,
+        ignition_path: Optional[Path] = None,
+        image: Union[str, Path, None] = None,
+        memory: Optional[int] = None,
         now: bool = False,
-        playbook: str = None,
-        rootful: bool = False,
-        timezone: str = None,
-        usb: str = None,
+        playbook: Optional[str] = None,
+        rootful: Optional[bool] = False,
+        timezone: Optional[str] = None,
+        usb: Optional[str] = None,
         user_mode_networking: bool = False,
-        username: str = None,
-        volume: Union[str, builtins.list[str]] = None,
+        username: Optional[str] = None,
+        volume: Union[str, builtins.list[str], None] = None,
         **skwargs,
     ) -> Union[str, subprocess.Popen]:
         """Initialize a new machine.
@@ -98,7 +98,7 @@ class MachineManager:
         )
         return self.runner.run_raw(cmd, **skwargs)
 
-    def start(self, name: str = None, **skwargs) -> None:
+    def start(self, name: Optional[str] = None, **skwargs) -> None:
         """Start a machine.
 
         Args:
@@ -107,7 +107,7 @@ class MachineManager:
         cmd = self.runner.construct("machine", "start", name)
         self.runner.run_raw(cmd, **skwargs)
 
-    def stop(self, name: str = None, **skwargs) -> None:
+    def stop(self, name: Optional[str] = None, **skwargs) -> None:
         """Stop a machine.
 
         Args:
@@ -118,7 +118,7 @@ class MachineManager:
 
     def remove(
         self,
-        name: str = None,
+        name: Optional[str] = None,
         force: bool = False,
         save_image: bool = False,
         save_ignition: bool = False,

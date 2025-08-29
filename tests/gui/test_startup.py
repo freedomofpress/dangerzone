@@ -1,5 +1,10 @@
+import typing
+
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
+
+if typing.TYPE_CHECKING:
+    from PySide2 import QtCore
 
 from dangerzone.gui import startup
 from dangerzone.startup import MachineInitTask, MachineStartTask, Task
@@ -8,7 +13,7 @@ from dangerzone.updater import errors as update_errors
 
 
 class StartupThreadMocker(startup.StartupThread):
-    def __init__(self, qtbot: QtBot, mocker: MockerFixture):
+    def __init__(self, qtbot: QtBot, mocker: MockerFixture) -> None:
         self.qtbot = qtbot
         self.mocker = mocker
         self.task_machine_init = startup.MachineInitTask()
@@ -22,35 +27,35 @@ class StartupThreadMocker(startup.StartupThread):
             self.task_container_install,
         ]
         self.startup_thread = startup.StartupThread(self.tasks, raise_on_error=False)
-        self.expected_signals = []
-        self.not_expected_funcs = []
+        self.expected_signals: list[tuple[QtCore.SignalInstance, str]] = []
+        self.not_expected_funcs: list[typing.Callable] = []
 
-    def make_machine_task_succeed(self):
+    def make_machine_task_succeed(self) -> None:
         self.mocker.patch("platform.system", return_value="Windows")
         self.mocker.patch("dangerzone.startup.PodmanMachineManager")
 
-    def make_machine_task_skip(self):
+    def make_machine_task_skip(self) -> None:
         self.mocker.patch("platform.system", return_value="Linux")
 
-    def make_machine_task_fail(self):
+    def make_machine_task_fail(self) -> None:
         self.mocker.patch("platform.system", return_value="Windows")
         self.mocker.patch(
             "dangerzone.startup.PodmanMachineManager",
             side_effect=Exception("Forcing task to fail"),
         )
 
-    def make_update_task_succeed(self):
+    def make_update_task_succeed(self) -> None:
         self.mocker.patch(
             "dangerzone.updater.releases.should_check_for_updates", return_value=True
         )
         self.mocker.patch("dangerzone.updater.releases.check_for_updates")
 
-    def make_update_task_skip(self):
+    def make_update_task_skip(self) -> None:
         self.mocker.patch(
             "dangerzone.updater.releases.should_check_for_updates", return_value=False
         )
 
-    def make_update_task_fail(self):
+    def make_update_task_fail(self) -> None:
         self.mocker.patch(
             "dangerzone.updater.releases.should_check_for_updates", return_value=True
         )
@@ -59,20 +64,20 @@ class StartupThreadMocker(startup.StartupThread):
             side_effect=Exception("Forcing task to fail"),
         )
 
-    def make_install_task_succeed(self):
+    def make_install_task_succeed(self) -> None:
         self.mocker.patch(
             "dangerzone.updater.installer.get_installation_strategy",
             return_value=InstallationStrategy.INSTALL_LOCAL_CONTAINER,
         )
         self.mocker.patch("dangerzone.updater.installer.install")
 
-    def make_install_task_skip(self):
+    def make_install_task_skip(self) -> None:
         self.mocker.patch(
             "dangerzone.updater.installer.get_installation_strategy",
             return_value=InstallationStrategy.DO_NOTHING,
         )
 
-    def make_install_task_fail(self):
+    def make_install_task_fail(self) -> None:
         self.mocker.patch(
             "dangerzone.updater.installer.get_installation_strategy",
             return_value=InstallationStrategy.INSTALL_LOCAL_CONTAINER,
@@ -82,7 +87,7 @@ class StartupThreadMocker(startup.StartupThread):
             side_effect=Exception("Forcing task to fail"),
         )
 
-    def expect_tasks_succeed(self, tasks=list[Task]):
+    def expect_tasks_succeed(self, tasks: list[Task]) -> None:
         for task in tasks:
             if isinstance(task, (MachineInitTask, MachineStartTask)):
                 self.make_machine_task_succeed()
@@ -98,12 +103,12 @@ class StartupThreadMocker(startup.StartupThread):
                 self.expected_signals.append(
                     (getattr(task, name), f"{task.__class__.__name__}.{name}")
                 )
-            task.handle_skip = self.mocker.MagicMock()
+            task.handle_skip = self.mocker.MagicMock()  # type: ignore [method-assign]
             self.not_expected_funcs.append(task.handle_skip)
-            task.handle_error = self.mocker.MagicMock()
+            task.handle_error = self.mocker.MagicMock()  # type: ignore [method-assign]
             self.not_expected_funcs.append(task.handle_error)
 
-    def expect_tasks_skip(self, tasks=list[Task]):
+    def expect_tasks_skip(self, tasks: list[Task]) -> None:
         for task in tasks:
             if isinstance(task, (MachineInitTask, MachineStartTask)):
                 self.make_machine_task_skip()
@@ -119,12 +124,12 @@ class StartupThreadMocker(startup.StartupThread):
                 self.expected_signals.append(
                     (getattr(task, name), f"{task.__class__.__name__}.{name}")
                 )
-            task.handle_start = self.mocker.MagicMock()
+            task.handle_start = self.mocker.MagicMock()  # type: ignore [method-assign]
             self.not_expected_funcs.append(task.handle_start)
-            task.handle_error = self.mocker.MagicMock()
+            task.handle_error = self.mocker.MagicMock()  # type: ignore [method-assign]
             self.not_expected_funcs.append(task.handle_error)
 
-    def expect_tasks_fail(self, tasks=list[Task]):
+    def expect_tasks_fail(self, tasks: list[Task]) -> None:
         for task in tasks:
             if isinstance(task, (MachineInitTask, MachineStartTask)):
                 self.make_machine_task_fail()
@@ -140,56 +145,56 @@ class StartupThreadMocker(startup.StartupThread):
                 self.expected_signals.append(
                     (getattr(task, name), f"{task.__class__.__name__}.{name}")
                 )
-            task.handle_skip = self.mocker.MagicMock()
+            task.handle_skip = self.mocker.MagicMock()  # type: ignore [method-assign]
             self.not_expected_funcs.append(task.handle_skip)
 
-    def expect_startup_succeed(self):
+    def expect_startup_succeed(self) -> None:
         self.expected_signals += [
             (self.startup_thread.starting, "StartupThread.starting"),
             (self.startup_thread.succeeded, "StartupThread.succeeded"),
         ]
-        self.startup_thread.handle_error = self.mocker.MagicMock()
+        self.startup_thread.handle_error = self.mocker.MagicMock()  # type: ignore [method-assign]
         self.not_expected_funcs.append(self.startup_thread.handle_error)
 
-    def expect_startup_fail(self):
+    def expect_startup_fail(self) -> None:
         self.expected_signals += [
             (self.startup_thread.starting, "StartupThread.starting"),
             (self.startup_thread.failed, "StartupThread.failed"),
         ]
-        self.startup_thread.handle_success = self.mocker.MagicMock()
+        self.startup_thread.handle_success = self.mocker.MagicMock()  # type: ignore [method-assign]
         self.not_expected_funcs.append(self.startup_thread.handle_success)
 
-    def check_run(self):
+    def check_run(self) -> None:
         with self.qtbot.waitSignals(self.expected_signals):
             self.startup_thread.start()
             self.startup_thread.wait()
 
         for func in self.not_expected_funcs:
-            func.assert_not_called()
+            func.assert_not_called()  # type: ignore [attr-defined]
 
 
-def test_startup_all_success(qtbot: QtBot, mocker: MockerFixture):
+def test_startup_all_success(qtbot: QtBot, mocker: MockerFixture) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)
     startup_thread.expect_tasks_succeed(startup_thread.tasks)
     startup_thread.expect_startup_succeed()
     startup_thread.check_run()
 
 
-def test_startup_all_skip(qtbot: QtBot, mocker: MockerFixture):
+def test_startup_all_skip(qtbot: QtBot, mocker: MockerFixture) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)
     startup_thread.expect_tasks_skip(startup_thread.tasks)
     startup_thread.expect_startup_succeed()
     startup_thread.check_run()
 
 
-def test_startup_machine_init_fail(qtbot: QtBot, mocker: MockerFixture):
+def test_startup_machine_init_fail(qtbot: QtBot, mocker: MockerFixture) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)
     startup_thread.expect_tasks_fail([startup_thread.task_machine_init])
     startup_thread.expect_startup_fail()
     startup_thread.check_run()
 
 
-def test_startup_machine_start_fail(qtbot: QtBot, mocker: MockerFixture):
+def test_startup_machine_start_fail(qtbot: QtBot, mocker: MockerFixture) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)
     # NOTE: Make machine_init allowed to fail, so that we can proceed to the
     # machine_start task.
@@ -201,7 +206,7 @@ def test_startup_machine_start_fail(qtbot: QtBot, mocker: MockerFixture):
     startup_thread.check_run()
 
 
-def test_startup_update_check_fail(qtbot: QtBot, mocker: MockerFixture):
+def test_startup_update_check_fail(qtbot: QtBot, mocker: MockerFixture) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)
     startup_thread.expect_tasks_succeed(
         [startup_thread.task_machine_init, startup_thread.task_machine_start]
@@ -214,7 +219,9 @@ def test_startup_update_check_fail(qtbot: QtBot, mocker: MockerFixture):
     startup_thread.check_run()
 
 
-def test_startup_update_check_needs_user_input(qtbot: QtBot, mocker: MockerFixture):
+def test_startup_update_check_needs_user_input(
+    qtbot: QtBot, mocker: MockerFixture
+) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)
     startup_thread.expect_tasks_succeed(
         [
@@ -243,7 +250,7 @@ def test_startup_update_check_needs_user_input(qtbot: QtBot, mocker: MockerFixtu
     startup_thread.check_run()
 
 
-def test_startup_update_check_app_update(qtbot: QtBot, mocker: MockerFixture):
+def test_startup_update_check_app_update(qtbot: QtBot, mocker: MockerFixture) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)
     startup_thread.expect_tasks_succeed(
         [
@@ -268,7 +275,9 @@ def test_startup_update_check_app_update(qtbot: QtBot, mocker: MockerFixture):
     startup_thread.check_run()
 
 
-def test_startup_update_check_container_update(qtbot: QtBot, mocker: MockerFixture):
+def test_startup_update_check_container_update(
+    qtbot: QtBot, mocker: MockerFixture
+) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)
     startup_thread.expect_tasks_succeed(
         [
@@ -293,7 +302,7 @@ def test_startup_update_check_container_update(qtbot: QtBot, mocker: MockerFixtu
     startup_thread.check_run()
 
 
-def test_startup_container_install_fail(qtbot: QtBot, mocker: MockerFixture):
+def test_startup_container_install_fail(qtbot: QtBot, mocker: MockerFixture) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)
     startup_thread.expect_tasks_succeed(
         [

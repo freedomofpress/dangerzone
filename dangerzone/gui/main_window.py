@@ -29,8 +29,8 @@ else:
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
         from PySide2.QtCore import Qt
-        from PySide2.QtGui import QAction
         from PySide2.QtSvg import QSvgWidget
+        from PySide2.QtWidgets import QAction
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document

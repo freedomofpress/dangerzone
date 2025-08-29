@@ -1,21 +1,12 @@
 LARGE_TEST_REPO_DIR:=tests/test_docs_large
 GIT_DESC=$$(git describe)
 JUNIT_FLAGS := --capture=sys -o junit_logging=all
-MYPY_ARGS := --ignore-missing-imports \
-			 --disallow-incomplete-defs \
-			 --disallow-untyped-defs \
-			 --show-error-codes \
-			 --warn-unreachable \
-			 --warn-unused-ignores \
-			 --exclude dangerzone/podman/command/ \
-			 --exclude $(LARGE_TEST_REPO_DIR)/*.py
 
 .PHONY: lint
 lint: ## Check the code for linting, formatting, and typing issues with ruff and mypy
 	ruff check
 	ruff format --check
-	mypy $(MYPY_ARGS) dangerzone
-	mypy $(MYPY_ARGS) tests
+	mypy dangerzone tests
 
 .PHONY: fix
 fix: ## apply all the suggestions from ruff

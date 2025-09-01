@@ -65,7 +65,7 @@ class LogWindow(QtWidgets.QDialog):
         self.setLayout(layout)
 
     def handle_startup_begin(self) -> None:
-        self.label.setText("Dangerzone is starting up…...")
+        self.label.setText("Dangerzone is starting up…")
 
     def handle_task_machine_init(self) -> None:
         self.label.setText(

@@ -50,6 +50,7 @@ class PodmanCommand:
             env=env,
         )
         self.machine = machine_manager.MachineManager(self.runner)
+        self.proc_service: Optional[subprocess.Popen] = None
 
     def run(
         self,
@@ -91,7 +92,7 @@ class PodmanCommand:
         time: Optional[int] = None,
         cors: Optional[str] = None,
         **skwargs,
-    ) -> subprocess.Popen:
+    ) -> None:
         """Start the Podman system service.
 
         This method starts a REST API using Podman's `system service` command.
@@ -113,11 +114,12 @@ class PodmanCommand:
             )
 
         cmd = self.runner.construct("system", "service", uri, time=time, cors=cors)
-        return self.runner.run_raw(cmd, wait=False, **skwargs)
+        proc = self.runner.run_raw(cmd, wait=False, **skwargs)
+        assert isinstance(proc, subprocess.Popen)
+        self.proc_service = proc
 
     def stop_service(
         self,
-        proc: subprocess.Popen,
         timeout: Optional[int] = None,
     ) -> int:
         """Stop the Podman system service.
@@ -131,19 +133,24 @@ class PodmanCommand:
         Returns:
             int: The exit code of the service process.
         """
-        proc.terminate()
+        if self.proc_service is None:
+            raise errors.PodmanError(
+                "The Podman service has not started yet, so there's nothing to stop"
+            )
+
+        self.proc_service.terminate()
         try:
-            ret = proc.wait(timeout=timeout)
+            ret = self.proc_service.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
-            proc.kill()
-            ret = proc.wait()
+            self.proc_service.kill()
+            ret = self.proc_service.wait()
+        self.proc_service = None
         return ret
 
     def wait_for_service(
         self,
         uri: str,
-        proc: subprocess.Popen,
-        timeout: int = None,
+        timeout: Optional[int] = None,
         check_interval: float = 0.1,
     ):
         """Wait for the Podman system service to be operational.
@@ -160,13 +167,18 @@ class PodmanCommand:
         Returns:
             int: The exit code of the service process.
         """
+        if self.proc_service is None:
+            raise errors.PodmanError(
+                "The Podman service has not started yet, so there's nothing to wait"
+            )
+
         start = time.monotonic()
         with client.PodmanClient(base_url=uri) as c:
             while True:
                 if timeout and time.monotonic() - start > timeout:
                     raise errors.ServiceTimeout(timeout)
 
-                ret = proc.poll()
+                ret = self.proc_service.poll()
                 if ret is not None:
                     raise errors.ServiceTerminated(ret)
 
@@ -181,11 +193,11 @@ class PodmanCommand:
     def service(
         self,
         uri: str,
-        cors: str = None,
-        ping_timeout: int = None,
-        stop_timeout: int = None,
+        cors: Optional[str] = None,
+        ping_timeout: Optional[int] = None,
+        stop_timeout: Optional[int] = None,
         **skwargs,
-    ) -> subprocess.Popen:
+    ):
         """Manage the Podman system service.
 
         This method starts a REST API using Podman's `system service` command
@@ -202,12 +214,12 @@ class PodmanCommand:
         Returns:
             subprocess.Popen: The process handle of the `podman system service` command.
         """
-        proc = self.start_service(uri=uri, time=0, cors=cors, **skwargs)
+        self.start_service(uri=uri, time=0, cors=cors, **skwargs)
         try:
-            self.wait_for_service(uri, proc, timeout=ping_timeout)
+            self.wait_for_service(uri, timeout=ping_timeout)
         except (errors.ServiceTimeout, errors.ServiceTerminated):
-            self.stop_service(proc, timeout=stop_timeout)
+            self.stop_service(timeout=stop_timeout)
             raise
 
-        yield proc
-        self.stop_service(proc, timeout=stop_timeout)
+        yield
+        self.stop_service(timeout=stop_timeout)

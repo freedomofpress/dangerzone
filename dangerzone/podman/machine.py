@@ -49,7 +49,7 @@ class PodmanMachineManager:
             if name and name != self.name:
                 logger.info(f"Removing stale Podman machine: {name}")
                 try:
-                    self.remove(name=name, force=True)
+                    self.remove(name=name)
                 except CommandError as e:
                     logger.warning(f"Failed to remove stale machine {name}: {e}")
 
@@ -101,12 +101,12 @@ class PodmanMachineManager:
         self.podman.machine.stop(name=name)
         logger.info(f"Podman machine '{name}' stopped successfully.")
 
-    def remove(self, name: Optional[str] = None, force: bool = False) -> None:
+    def remove(self, name: Optional[str] = None) -> None:
         """Remove a Podman machine."""
         if name is None:
             name = self.name
         logger.info(f"Removing Podman machine: {name}")
-        self.podman.machine.remove(name=name, force=force)
+        self.podman.machine.remove(name=name)
         logger.info(f"Podman machine '{name}' removed successfully.")
 
     def reset(self) -> None:

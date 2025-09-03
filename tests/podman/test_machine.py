@@ -133,7 +133,7 @@ def test_remove_machine(
     version = get_version()
     machine_name = f"dz-internal-{version}"
     rec_rm = podman_register(["machine", "rm", machine_name, "--force"])
-    machine_manager.remove(force=True)
+    machine_manager.remove()
     assert rec_rm.call_count() == 1
 
 

@@ -119,7 +119,6 @@ class MachineManager:
     def remove(
         self,
         name: Optional[str] = None,
-        force: bool = False,
         save_image: bool = False,
         save_ignition: bool = False,
         **skwargs,
@@ -128,7 +127,6 @@ class MachineManager:
 
         Args:
             name (str, optional): Name of the machine to remove.
-            force (bool, optional): Whether to stop the machine. Defaults to False.
             save_image (bool, optional): Whether to save the machine's image. Defaults to False.
             save_ignition (bool, optional): Whether to save the ignition file. Defaults to False.
         """
@@ -136,9 +134,9 @@ class MachineManager:
             "machine",
             "rm",
             name,
-            force=force,
             save_image=save_image,
             save_ignition=save_ignition,
+            force=True,
             **skwargs,
         )
         self.runner.run_raw(cmd, **skwargs)

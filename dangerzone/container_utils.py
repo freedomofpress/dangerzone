@@ -5,8 +5,11 @@ import os
 import platform
 import shutil
 import subprocess
+import sys
 from pathlib import Path, PurePosixPath
 from typing import IO, Callable, Iterable, List, Optional, Tuple, Union
+
+from dangerzone.podman.errors.exceptions import PodmanNotInstalled
 
 from . import errors
 from .podman.command import PodmanCommand
@@ -178,7 +181,23 @@ def init_podman_command() -> PodmanCommand:
         if settings.debug:
             options.log_level = "debug"
 
-    return PodmanCommand(path=podman_path, env=env, options=options)
+    try:
+        return PodmanCommand(path=podman_path, env=env, options=options)
+    except PodmanNotInstalled:
+        if getattr(sys, "dangerzone_dev", False):
+            raise errors.ContainerException(
+                "It seems that Podman is not present in your development environment."
+                " You can run `mazette install` to download and install it."
+                f" Expected path: {podman_path}"
+            )
+        else:
+            raise errors.ContainerException(
+                "Dangerzone could not find the Podman binary locally, which"
+                " is necessary to start containers. This binary should be included as"
+                " part of the installation, so the fact that it's missing indicates"
+                " that your installation may be broken. You can try reinstalling"
+                " Dangerzone, but if the problem persists, please contact us."
+            )
 
 
 def list_image_digests() -> List[str]:

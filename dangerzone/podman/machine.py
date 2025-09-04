@@ -121,4 +121,4 @@ class PodmanMachineManager:
 
     def run_raw_podman_command(self, args: List[str]) -> Union[str, subprocess.Popen]:
         """Run a raw Podman command."""
-        return self.podman.run(args)
+        return self.podman.run(args, stdin=None, capture_output=False)

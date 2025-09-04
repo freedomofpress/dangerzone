@@ -124,10 +124,6 @@ def raw(ctx) -> None:  # type: ignore [no-untyped-def]
     try:
         manager = PodmanMachineManager()
         output = manager.run_raw_podman_command(ctx.args)
-        if isinstance(output, str):
-            click.echo(output)
-        else:
-            click.echo("Raw command executed.")  # For subprocess.Popen objects
     except PodmanError as e:
         click.echo(f"❌ {e}")
         raise click.Abort()

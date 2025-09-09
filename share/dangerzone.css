@@ -72,3 +72,39 @@ MainWindow[OSColorMode="dark"] QLabel[style="warning"] {
     color: #FFD970;
     border-color: #665A00;
 }
+
+/*
+ * Light mode assumes background-color: #ECECEC
+ */
+MainWindow[OSColorMode="light"] QLabel[style="status-error"] {
+    color: #9D0000;
+    font-weight: bold;
+}
+
+MainWindow[OSColorMode="light"] QLabel[style="status-attention"] {
+    color: #7A3800;
+    font-weight: bold;
+}
+
+MainWindow[OSColorMode="light"] QLabel[style="status-success"] {
+    color: #005000;
+    font-weight: bold;
+}
+
+/*
+ * Dark mode assumes background-color: #323232
+ */
+MainWindow[OSColorMode="dark"] QLabel[style="status-error"] {
+    color: #FF9494;
+    font-weight: bold;
+}
+
+MainWindow[OSColorMode="dark"] QLabel[style="status-attention"] {
+    color: #FFD18F;
+    font-weight: bold;
+}
+
+MainWindow[OSColorMode="dark"] QLabel[style="status-success"] {
+    color: #86EE72;
+    font-weight: bold;
+}

@@ -95,5 +95,8 @@ class LogWindow(QtWidgets.QDialog):
     def handle_task_container_install_failed(self, error: str) -> None:
         self.label.setText("Installing the Dangerzone sandbox… failed")
 
+    def handle_startup_success(self) -> None:
+        self.label.setText("Dangerzone is ready")
+
     def append_log(self, line: str) -> None:
         self.traceback_widget.process_output(line)

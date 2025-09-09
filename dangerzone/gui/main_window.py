@@ -298,12 +298,14 @@ class MainWindow(QtWidgets.QMainWindow):
         )  # balance out hamburger to keep logo centered
         header_layout.addStretch()
         header_layout.addWidget(logo)
-        header_layout.addSpacing(10)
+        font_metrics = header_label.fontMetrics()
+        m_width = font_metrics.horizontalAdvance("m")
+        header_layout.addSpacing(int(m_width / 2))
         header_layout.addWidget(header_label)
         header_layout.addWidget(header_version_label)
         header_layout.addStretch()
         header_layout.addWidget(self.hamburger_button)
-        header_layout.addSpacing(15)
+        header_layout.addSpacing(m_width)
 
         # Content and waiting widget
         self.conversion_widget = ConversionWidget(self.dangerzone)
@@ -359,6 +361,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.startup_thread.starting.connect(self.status_bar.handle_startup_begin)
         self.startup_thread.starting.connect(self.waiting_widget.handle_start)
         self.startup_thread.succeeded.connect(self.status_bar.handle_startup_success)
+        self.startup_thread.succeeded.connect(self.log_window.handle_startup_success)
         self.startup_thread.failed.connect(self.status_bar.handle_startup_error)
 
         task_machine_init.starting.connect(self.status_bar.handle_task_machine_init)
@@ -874,7 +877,7 @@ class SettingsWidget(QtWidgets.QWidget):
         self.save_browse_button = QtWidgets.QPushButton("Choose...")
         self.save_browse_button.clicked.connect(self.select_output_directory)
         self.save_location_layout = QtWidgets.QHBoxLayout()
-        self.save_location_layout.setContentsMargins(20, 0, 0, 0)
+        self.save_location_layout.setContentsMargins(0, 0, 0, 0)
         self.save_location_layout.addWidget(self.save_label)
         self.save_location_layout.addWidget(self.save_location)
         self.save_location_layout.addWidget(self.save_browse_button)
@@ -885,7 +888,9 @@ class SettingsWidget(QtWidgets.QWidget):
         save_group_box = QtWidgets.QGroupBox()
         save_group_box.setLayout(save_group_box_innner_layout)
         save_group_box_layout = QtWidgets.QHBoxLayout()
-        save_group_box_layout.setContentsMargins(20, 0, 0, 0)
+        font_metrics = self.save_label.fontMetrics()
+        m_width = font_metrics.horizontalAdvance("m")
+        save_group_box_layout.setContentsMargins(m_width, 0, 0, 0)
         save_group_box_layout.addWidget(save_group_box)
         self.radio_move_untrusted = QtWidgets.QRadioButton(
             "Move original documents to 'unsafe' subdirectory"
@@ -895,9 +900,14 @@ class SettingsWidget(QtWidgets.QWidget):
         self.save_label.clicked.connect(
             lambda: self.radio_save_to.setChecked(True)
         )  # select the radio button when label is clicked
-        self.radio_save_to.setMinimumHeight(30)  # make the QTextEdit fully visible
-        self.radio_save_to.setLayout(self.save_location_layout)
-        save_group_box_innner_layout.addWidget(self.radio_save_to)
+
+        radio_save_to_widget = QtWidgets.QWidget()
+        radio_save_to_layout = QtWidgets.QHBoxLayout()
+        radio_save_to_layout.setContentsMargins(0, 0, 0, 0)
+        radio_save_to_layout.addWidget(self.radio_save_to)
+        radio_save_to_layout.addLayout(self.save_location_layout)
+        radio_save_to_widget.setLayout(radio_save_to_layout)
+        save_group_box_innner_layout.addWidget(radio_save_to_widget)
 
         # Open safe document
         if platform.system() in ["Darwin", "Windows"]:
@@ -950,12 +960,16 @@ class SettingsWidget(QtWidgets.QWidget):
         layout_docs_selected.addWidget(self.change_selection_button)
         layout_docs_selected.addStretch()
         layout.addLayout(layout_docs_selected)
-        layout.addSpacing(20)
+        font_metrics = self.docs_selected_label.fontMetrics()
+        m_width = font_metrics.horizontalAdvance("m")
+        layout.addSpacing(m_width)
         layout.addLayout(self.safe_extension_layout)
         layout.addLayout(save_group_box_layout)
         layout.addLayout(open_layout)
         layout.addLayout(ocr_layout)
-        layout.addSpacing(20)
+        font_metrics = self.docs_selected_label.fontMetrics()
+        m_width = font_metrics.horizontalAdvance("m")
+        layout.addSpacing(m_width)
         layout.addLayout(button_layout)
         layout.addStretch()
         self.setLayout(layout)

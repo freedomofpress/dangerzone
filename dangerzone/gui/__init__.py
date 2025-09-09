@@ -167,6 +167,7 @@ def gui_main(dummy_conversion: bool, filenames: Optional[List[str]]) -> bool:
     # MacOS: Open a new window, if all windows are closed
     def application_activated() -> None:
         window.show()
+        window.adjustSize()
 
     # If we get a file open event, open it
     app.document_selected.connect(open_files)

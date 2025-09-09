@@ -157,11 +157,18 @@ class StatusBar(QtWidgets.QWidget):
         super(StatusBar, self).__init__()
         self.dangerzone = dangerzone
 
-        self.spinner = animate_svg_image("spinner.svg", width=15, height=15)
+        if self.dangerzone.app.os_color_mode.value == "dark":
+            spinner_svg = "spinner-dark.svg"
+            info_svg = "info-circle-dark.svg"
+        else:
+            spinner_svg = "spinner.svg"
+            info_svg = "info-circle.svg"
+
+        self.spinner = animate_svg_image(spinner_svg, width=15, height=15)
         self.message = QtWidgets.QLabel("")
         self.info_icon = QtWidgets.QToolButton()
         self.info_icon.setIcon(
-            QtGui.QIcon(load_svg_image("info-circle.svg", width=15, height=15))
+            QtGui.QIcon(load_svg_image(info_svg, width=15, height=15))
         )
         self.info_icon.setIconSize(QtCore.QSize(15, 15))
         self.info_icon.setStyleSheet("QToolButton { border: none; }")
@@ -173,23 +180,33 @@ class StatusBar(QtWidgets.QWidget):
         layout.addWidget(self.info_icon)
         self.setLayout(layout)
 
+    def _update_style(self) -> None:
+        # Required when dynamically changing properties. See:
+        # https://wiki.qt.io/Dynamic_Properties_and_Stylesheets#Limitations
+        self.message.style().unpolish(self.message)
+        self.message.style().polish(self.message)
+        self.message.update()
+
     def set_status_ok(self, message: str) -> None:
         self.spinner.hide()
         self.info_icon.hide()
+        self.message.setProperty("style", "status-success")
+        self._update_style()
         self.message.setText(message)
-        self.setStyleSheet("color: green; font-weight: bold")
 
     def set_status_working(self, message: str) -> None:
         self.spinner.show()
         self.info_icon.show()
+        self.message.setProperty("style", "status-attention")
+        self._update_style()
         self.message.setText(message)
-        self.setStyleSheet("color: orange; font-weight: bold")
 
     def set_status_error(self, message: str) -> None:
         self.spinner.hide()
         self.info_icon.show()
+        self.message.setProperty("style", "status-error")
+        self._update_style()
         self.message.setText(message)
-        self.setStyleSheet("color: red; font-weight: bold")
 
     def handle_startup_begin(self) -> None:
         self.set_status_working("Starting")
@@ -822,7 +839,7 @@ class SettingsWidget(QtWidgets.QWidget):
         self.safe_extension.setStyleSheet("margin-left: -6px;")  # no left margin
         self.safe_extension.textChanged.connect(self.update_ui)
         self.safe_extension_invalid = QtWidgets.QLabel("")
-        self.safe_extension_invalid.setStyleSheet("color: red")
+        self.safe_extension_invalid.setProperty("style", "status-error")
         self.safe_extension_invalid.hide()
         self.safe_extension_name_layout = QtWidgets.QHBoxLayout()
         self.safe_extension_name_layout.setSpacing(0)

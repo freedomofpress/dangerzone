@@ -6,7 +6,6 @@ from typing import Dict, Optional, Tuple
 
 import requests
 
-from .. import container_utils as runtime
 from .. import errors as dzerrors
 from . import errors, log
 

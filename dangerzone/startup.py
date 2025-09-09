@@ -136,8 +136,7 @@ class StartupLogic:
 
     def handle_error(self, task: Task, e: Exception) -> None:
         logger.error(
-            f"Stopping startup tasks because task '{task.name}' failed with error:"
-            f" {str(e)}"
+            f"Stopping startup tasks because task '{task.name}' failed with an error"
         )
         if self.raise_on_error:
             raise e

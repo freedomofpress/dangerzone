@@ -2,12 +2,15 @@
 
 import functools
 import logging
+import platform
 from pathlib import Path
+from typing import Any, Callable
 
 import click
 
-from .. import container_utils
+from .. import startup
 from ..container_utils import expected_image_name
+from ..podman.machine import PodmanMachineManager
 from ..util import get_architecture
 from . import cosign, errors, log, registry, signatures
 from .signatures import DEFAULT_PUBKEY_LOCATION
@@ -15,6 +18,23 @@ from .signatures import DEFAULT_PUBKEY_LOCATION
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
 DEFAULT_BRANCH = "main"
 DEFAULT_IMAGE_NAME = expected_image_name()
+
+
+def requires_container_runtime(func: Callable) -> Callable:
+    """Decorator to start and stop Podman machines for commands that require it."""
+
+    @functools.wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        tasks = [startup.MachineInitTask(), startup.MachineStartTask()]
+        try:
+            startup.StartupLogic(tasks=tasks).run()
+            res = func(*args, **kwargs)
+        finally:
+            if platform.system() in ["Windows, macOS"]:
+                PodmanMachineManager().stop()
+        return res
+
+    return wrapper
 
 
 @click.group(context_settings={"show_default": True})
@@ -29,6 +49,7 @@ def main(debug: bool) -> None:
 
 
 @main.command()
+@requires_container_runtime
 def upgrade() -> None:
     """Upgrade the sandbox to the latest version available.
 
@@ -76,6 +97,7 @@ def store_signatures(image: str) -> None:
     is_flag=True,
     help="Force the installation, bypassing logindex verification checks",
 )
+@requires_container_runtime
 def load_archive(archive_filename: Path, force: bool) -> None:
     """Use ARCHIVE_FILENAME as the dangerzone sandbox image"""
     try:
@@ -131,6 +153,7 @@ def prepare_archive(image: str, output: str, arch: str) -> None:
     default=DEFAULT_IMAGE_NAME,
     help="The name of the image to check signatures for",
 )
+@requires_container_runtime
 def verify_local(image: str) -> None:
     """
     Ensures local image signature(s) match the embedded public key.

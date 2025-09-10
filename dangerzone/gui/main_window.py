@@ -298,6 +298,9 @@ class MainWindow(QtWidgets.QMainWindow):
             bool(self.dangerzone.settings.get("updater_check_all"))
         )
 
+        # Add the "View logs" action
+        view_logs_action = hamburger_menu.addAction("View logs")
+
         # Add the "Exit" action
         hamburger_menu.addSeparator()
         exit_action = hamburger_menu.addAction("Exit")
@@ -344,7 +347,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Log window
         self.log_window = LogWindow(self)
-        self.status_bar.info_icon.clicked.connect(self.log_window.show)
+        view_logs_action.triggered.connect(self.log_window.show)
+        self.status_bar.info_icon.clicked.connect(self.toggle_log_window)
 
         # Configure logging to the log window
         log_handler = LogHandler()
@@ -595,6 +599,16 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.conversion_widget.documents_list.conversion_pending:
             log.debug("Starting pending conversion")
             self.conversion_widget.documents_list.start_conversion()
+
+    def toggle_log_window(self) -> None:
+        if self.log_window.isVisible():
+            self.log_window.hide()
+        else:
+            self.log_window.show()
+
+    def show_log_window_if_hidden(self) -> None:
+        if not self.log_window.isVisible():
+            self.log_window.show()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
         # Stop the podman machine if it's running

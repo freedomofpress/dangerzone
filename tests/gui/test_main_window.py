@@ -682,3 +682,66 @@ def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -
     for check in [True, False]:
         window.dangerzone.settings.set("updater_check_all", check)
         assert releases.should_check_for_updates(window.dangerzone.settings) == check
+
+
+def test_machine_stop_others_user_input(
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    window: MainWindow,
+) -> None:
+    mocker.patch("platform.system", return_value="Darwin")
+    mock_podman_machine_manager = mocker.patch(
+        "dangerzone.startup.PodmanMachineManager"
+    )
+    mocker.patch("dangerzone.gui.main_window.PodmanMachineManager")
+    mock_podman_machine_manager.return_value.list_other_running_machines.return_value = [
+        "other_machine"
+    ]
+    mock_stop = mocker.patch("dangerzone.startup.MachineStopOthersTask.run")
+    mock_fail = mocker.patch("dangerzone.startup.MachineStopOthersTask.fail")
+
+    # Mock the Alert dialog
+    mock_alert = mocker.patch("dangerzone.gui.main_window.Alert")
+
+    # Simulate user choosing to stop the machine and remember choice
+    mock_alert.return_value.launch.return_value = main_window_module.Alert.Accepted
+    mock_alert.return_value.checkbox.isChecked.return_value = False
+    mock_fail.return_value = False
+
+    # Ensure only MachineStopOthersTask runs
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.MachineStopOthersTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    handle_needs_user_input_stop_others_spy = mocker.spy(
+        window, "handle_needs_user_input_stop_others"
+    )
+    assert window.dangerzone.settings.get("stop_other_podman_machines") == "ask"
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_needs_user_input_stop_others_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_alert.assert_called_once()
+    mock_stop.assert_called_once()
+
+    # Simulate user choosing to quit and remember choice
+    mock_alert.reset_mock()
+    mock_alert.return_value.launch.return_value = main_window_module.Alert.Rejected
+    mock_alert.return_value.checkbox.isChecked.return_value = True
+    mock_fail.assert_not_called()
+
+    mock_stop.reset_mock()
+
+    handle_needs_user_input_stop_others_spy.reset_mock()
+    exit_spy = mocker.spy(window.dangerzone.app, "exit")
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_needs_user_input_stop_others_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_alert.assert_called_once()
+    mock_stop.assert_not_called()
+    assert window.dangerzone.settings.get("stop_other_podman_machines") == "never"
+    exit_spy.assert_called_once_with(1)
+    mock_fail.assert_called_once()

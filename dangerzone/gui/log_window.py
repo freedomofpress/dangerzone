@@ -75,6 +75,9 @@ class LogWindow(QtWidgets.QDialog):
     def handle_task_machine_start(self) -> None:
         self.label.setText("Starting the Dangerzone VM…")
 
+    def handle_task_machine_stop_others(self) -> None:
+        self.label.setText("Stopping other Podman VMs…")
+
     def handle_task_update_check(self) -> None:
         self.label.setText("Checking for updates…")
 
@@ -89,6 +92,9 @@ class LogWindow(QtWidgets.QDialog):
 
     def handle_task_machine_start_failed(self, error: str) -> None:
         self.label.setText("Starting the Dangerzone VM… failed")
+
+    def handle_task_machine_stop_others_failed(self, error: str) -> None:
+        self.label.setText("Stopping other Podman VMs… failed")
 
     def handle_task_update_check_failed(self, error: str) -> None:
         self.label.setText("Checking for updates… failed")

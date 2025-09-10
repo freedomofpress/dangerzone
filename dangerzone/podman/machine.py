@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 from .. import container_utils, util
+from ..errors import OtherMachineRunningError
 from .command import PodmanCommand
 from .errors import CommandError, PodmanError, PodmanNotInstalled
 
@@ -53,6 +54,19 @@ class PodmanMachineManager:
                 except CommandError as e:
                     logger.warning(f"Failed to remove stale machine {name}: {e}")
 
+    def list_other_running_machines(self) -> List[str]:
+        """List other running Podman machines, excluding the expected one."""
+        other_running_machines = []
+        try:
+            machines = self.podman.machine.list()
+            for machine in machines:
+                name = machine.get("Name")
+                if name and name != self.name and machine.get("Running"):
+                    other_running_machines.append(name)
+        except (CommandError, json.JSONDecodeError):
+            pass
+        return other_running_machines
+
     def init(
         self,
         cpus: Optional[int] = None,
@@ -82,6 +96,14 @@ class PodmanMachineManager:
         """Start a Podman machine."""
         if name is None:
             name = self.name
+
+        if platform.system() == "Darwin":
+            other_running_machines = self.list_other_running_machines()
+            if other_running_machines:
+                raise OtherMachineRunningError(
+                    f"Other Podman machines are running: {', '.join(other_running_machines)}"
+                )
+
         logger.info(f"Starting Podman machine: {name}")
         try:
             self.podman.machine.start(name=name, capture_output=False)

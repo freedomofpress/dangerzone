@@ -8,7 +8,7 @@ import subprocess
 import typing
 from collections import OrderedDict
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from colorama import Fore
 
@@ -171,6 +171,7 @@ class Dialog(QtWidgets.QDialog):
         has_cancel: bool = True,
         cancel_text: str = "Cancel",
         extra_button_text: Optional[str] = None,
+        checkbox_text: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.dangerzone = dangerzone
@@ -204,12 +205,19 @@ class Dialog(QtWidgets.QDialog):
             self.cancel_button = QtWidgets.QPushButton(cancel_text)
             self.cancel_button.clicked.connect(self.clicked_cancel)
 
+        self.checkbox: Optional[QtWidgets.QCheckBox] = None
+        if checkbox_text:
+            self.checkbox = QtWidgets.QCheckBox(checkbox_text)
+
         buttons_layout = self.create_buttons_layout()
 
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(message_layout)
         layout.addSpacing(10)
         layout.addLayout(buttons_layout)
+        if self.checkbox:
+            layout.addSpacing(10)
+            layout.addWidget(self.checkbox)
         self.setLayout(layout)
 
     def create_buttons_layout(self) -> QtWidgets.QHBoxLayout:
@@ -241,11 +249,11 @@ class Dialog(QtWidgets.QDialog):
 
 
 class Alert(Dialog):
-    def __init__(  # type: ignore [no-untyped-def]
+    def __init__(
         self,
-        *args,
+        *args: Any,
         message: str = "",
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         self.message = message
         kwargs.setdefault("title", "dangerzone")

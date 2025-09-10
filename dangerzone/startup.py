@@ -12,15 +12,17 @@ else:
         from PySide2 import QtCore
 
 
-from . import settings
+from . import errors, settings
 from .podman.machine import PodmanMachineManager
 from .updater import (
     ErrorReport,
     InstallationStrategy,
     ReleaseReport,
-    errors,
     installer,
     releases,
+)
+from .updater import (
+    errors as updater_errors,
 )
 
 logger = logging.getLogger(__name__)
@@ -84,6 +86,79 @@ class MachineStartTask(Task):
         PodmanMachineManager().start()
 
 
+class MachineStopOthersTask(Task):
+    name = "Stopping other Podman VMs"
+
+    def fail(self, message: str):  # type: ignore [no-untyped-def]
+        raise errors.OtherMachineRunningError(message)
+
+    def should_skip(self) -> bool:
+        if platform.system() in ["Linux", "Windows"]:
+            # * On Linux, there are no Podman machines
+            # * On Windows, WSL allows multiple VMs:
+            #   https://github.com/containers/podman/issues/18415
+            # * On macOS, only one Podman machine can run:
+            #   https://docs.podman.io/en/v5.2.2/markdown/podman-machine-start.1.html
+            return True
+
+        other_running_machines = PodmanMachineManager().list_other_running_machines()
+        if not other_running_machines:
+            return True
+        assert len(other_running_machines) == 1
+        machine_name = other_running_machines[0]
+        logger.info(
+            f"Dangerzone has detected that a Podman machine with name '{machine_name}'"
+            " is already running in your system. This machine needs to stop so that"
+            " Dangerzone can run."
+        )
+
+        stop_setting = settings.Settings().get("stop_other_podman_machines")
+
+        if stop_setting == "always":
+            logger.info(
+                "Stopping the Podman machine because the user has asked us to remember their choice"
+            )
+            return False
+        elif stop_setting == "never":
+            self.fail(
+                "Another Podman machine is running and Dangerzone is configured to not stop it."
+            )
+        elif stop_setting == "ask":
+            logger.debug("We need to prompt the user to stop the other Podman machine")
+            stop = self.prompt_user(machine_name)
+            if not stop:
+                self.fail(
+                    f"User decided to quit Dangerzone instead of stopping Podman"
+                    f" machine '{machine_name}'."
+                )
+                # NOTE: This is required only for testing. Else, we expect it will raise
+                # an exception.
+                return True
+            else:
+                return False
+
+        raise Exception(
+            "BUG: Dangerzone cannot decide how to handle running Podman machine"
+        )
+
+    def prompt_user(self, machine_name: str) -> bool:
+        """Return whether the user has accepted to stop the machine or not."""
+        return self.fail(
+            f"Dangerzone has detected that a Podman machine with name '{machine_name}'"
+            " is already running in the system, but cannot prompt the user to stop it."
+        )
+
+    def run(self) -> None:
+        other_running_machines = PodmanMachineManager().list_other_running_machines()
+        for machine_name in other_running_machines:
+            logger.info(f"Stopping other Podman machine: {machine_name}")
+            PodmanMachineManager().stop(name=machine_name)
+
+        # Verify no other machines are running
+        if PodmanMachineManager().list_other_running_machines():
+            raise RuntimeError("Failed to stop all other running Podman machines.")
+
+
 class ContainerInstallTask(Task):
     name = "Configuring Dangerzone sandbox"
 
@@ -101,7 +176,7 @@ class UpdateCheckTask(Task):
     def should_skip(self) -> bool:
         try:
             return not releases.should_check_for_updates(settings.Settings())
-        except errors.NeedUserInput:
+        except updater_errors.NeedUserInput:
             self.prompt_user()
             return True
 

@@ -156,3 +156,7 @@ class UnsupportedContainerRuntime(ContainerException):
 
 class ContainerPullException(ContainerException):
     pass
+
+
+class OtherMachineRunningError(ContainerException):
+    pass

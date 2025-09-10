@@ -137,16 +137,19 @@ def test_default_menu(
     window = create_main_window(qtbot, mocker, tmp_path)
 
     menu_actions = window.hamburger_button.menu().actions()
-    assert len(menu_actions) == 3
+    assert len(menu_actions) == 4
 
     toggle_updates_action = menu_actions[0]
     assert toggle_updates_action.text() == "Check for updates"
     assert toggle_updates_action.isChecked()
 
-    separator = menu_actions[1]
+    view_logs_action = menu_actions[1]
+    assert view_logs_action.text() == "View logs"
+
+    separator = menu_actions[2]
     assert separator.isSeparator()
 
-    exit_action = menu_actions[2]
+    exit_action = menu_actions[3]
     assert exit_action.text() == "Exit"
 
     # Let's pretend we planned to have a update already
@@ -272,7 +275,7 @@ def test_new_release_is_detected(
 
     # Check that new menu entries have been added.
     menu_actions_after = window.hamburger_button.menu().actions()
-    assert len(menu_actions_after) == 5
+    assert len(menu_actions_after) == 6
     assert menu_actions_after[2:] == menu_actions_before
 
     success_action = menu_actions_after[0]
@@ -406,7 +409,7 @@ def test_update_error(
     qtbot.waitUntil(handle_update_check_failed_spy.assert_called_once)
 
     menu_actions_after = window.hamburger_button.menu().actions()
-    assert len(menu_actions_after) == 5
+    assert len(menu_actions_after) == 6
     assert menu_actions_after[2:] == menu_actions_before
 
     # Check that the hamburger icon has changed with the expected SVG image.

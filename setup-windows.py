@@ -28,5 +28,15 @@ setup(
         Executable(
             "install/windows/dangerzone-cli.py", base=None, icon="share/dangerzone.ico"
         ),
+        Executable(
+            "install/windows/dangerzone-image.py",
+            base=None,
+            icon="share/dangerzone.ico",
+        ),
+        Executable(
+            "install/windows/dangerzone-machine.py",
+            base=None,
+            icon="share/dangerzone.ico",
+        ),
     ],
 )

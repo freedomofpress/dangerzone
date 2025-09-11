@@ -71,7 +71,7 @@ class PodmanMachineManager:
         self,
         cpus: Optional[int] = None,
         memory: Optional[int] = None,
-        timezone: Optional[str] = None,
+        timezone: str = "Etc/UTC",  # Do not leak local timezone
     ) -> None:
         """Initialize a new Podman machine."""
         existing_machines = self._get_existing_dangerzone_machines()

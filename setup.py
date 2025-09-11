@@ -66,6 +66,7 @@ convert the documents within a secure sandbox.
             "dangerzone = dangerzone:main",
             "dangerzone-cli = dangerzone:main",
             "dangerzone-image = dangerzone.updater.cli:main",
+            "dangerzone-machine= dangerzone.podman.cli:main",
         ]
     },
 )

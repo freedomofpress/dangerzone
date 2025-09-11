@@ -32,12 +32,18 @@ def test_create_containers_conf(mocker: MockerFixture, tmp_path: pathlib.Path) -
     Test that we can write and overwrite the config file for Podman containers, and that
     the intermediate dirs will be created.
     """
+    seccomp_path = tmp_path / "seccomp.json"
+    mocker.patch("dangerzone.container_utils.SECCOMP_PATH", seccomp_path)
+    mocker.patch("os.cpu_count", return_value=4)
+
     path = tmp_path / "path" / "to" / "containers.conf"
     mocker.patch("platform.system", return_value="Windows")
     mocker.patch("dangerzone.container_utils.CONTAINERS_CONF_PATH", path)
     container_utils.create_containers_conf()
     conf = path.read_text()
     assert "helper_binaries_dir" in conf
+    assert "cpus=4" in conf
+    assert f'volumes=["{seccomp_path}:{seccomp_path}:ro"]' in conf
 
     container_utils.create_containers_conf()
     assert conf == path.read_text()

@@ -45,7 +45,17 @@ def test_initialize_machine_no_existing(
     rec_list = podman_register(
         ["machine", "list", "--format", "json"], stdout=json.dumps([])
     )
-    rec_init = podman_register(["machine", "init", machine_name, "--image", image_path])
+    rec_init = podman_register(
+        [
+            "machine",
+            "init",
+            machine_name,
+            "--image",
+            image_path,
+            "--timezone",
+            "Etc/UTC",
+        ]
+    )
     machine_manager.init()
     assert rec_list.call_count() == 1
     assert rec_init.call_count() == 1
@@ -65,7 +75,17 @@ def test_initialize_machine_stale_exists(
         stdout=json.dumps([{"Name": stale_machine_name}]),
     )
     rec_rm = podman_register(["machine", "rm", stale_machine_name, "--force"])
-    rec_init = podman_register(["machine", "init", machine_name, "--image", image_path])
+    rec_init = podman_register(
+        [
+            "machine",
+            "init",
+            machine_name,
+            "--image",
+            image_path,
+            "--timezone",
+            "Etc/UTC",
+        ]
+    )
     machine_manager.init()
     assert rec_list.call_count() == 1
     assert rec_rm.call_count() == 1
@@ -230,3 +250,29 @@ def test_run_raw_podman_command(
     recorder = podman_register(raw_command)
     machine_manager.run_raw_podman_command(raw_command)
     assert recorder.call_count() == 1
+
+
+def test_initialize_machine_with_timezone(
+    machine_manager: PodmanMachineManager, podman_register: Callable
+) -> None:
+    """Test that the initialize_machine method runs the correct commands when no machine exists."""
+    version = get_version()
+    machine_name = f"dz-internal-{version}"
+    image_path = str(machine_manager._get_machine_image_path())
+    rec_list = podman_register(
+        ["machine", "list", "--format", "json"], stdout=json.dumps([])
+    )
+    rec_init = podman_register(
+        [
+            "machine",
+            "init",
+            machine_name,
+            "--image",
+            image_path,
+            "--timezone",
+            "America/New_York",
+        ]
+    )
+    machine_manager.init(timezone="America/New_York")
+    assert rec_list.call_count() == 1
+    assert rec_init.call_count() == 1

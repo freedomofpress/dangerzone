@@ -24,6 +24,7 @@ from .util import (
 # Keep the name of the old container here to be able to get rid of it later
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 CONTAINERS_CONF_PATH = get_cache_dir() / "containers.conf"
+SECCOMP_PATH = get_cache_dir() / "seccomp.gvisor.json"
 PODMAN_MACHINE_PREFIX = "dz-internal-"
 PODMAN_MACHINE_NAME = f"{PODMAN_MACHINE_PREFIX}{get_version()}"
 
@@ -131,28 +132,56 @@ def make_seccomp_json_accessible() -> Union[Path, PurePosixPath]:
     if platform.system() == "Linux":
         return src
     else:
-        dst = get_cache_dir() / "seccomp.gvisor.json"
-        dst.parent.mkdir(parents=True, exist_ok=True)
+        SECCOMP_PATH.parent.mkdir(parents=True, exist_ok=True)
         # This file will be overwritten on every conversion, which is unnecessary, but
         # the copy operation should be quick.
-        shutil.copy(src, dst)
+        shutil.copy(src, SECCOMP_PATH)
         if platform.system() == "Windows":
             # Translate the Windows path on the host to the WSL2 path on the VM. That
             # is, change backslashes to forward slashes, and replace 'C:/' with
             # '/mnt/c'.
-            subpath = dst.relative_to("C:\\").as_posix()
+            subpath = SECCOMP_PATH.relative_to("C:\\").as_posix()
             return PurePosixPath("/mnt/c") / subpath
-        return dst
+        return SECCOMP_PATH
 
 
 def create_containers_conf() -> Path:
+    # Determine path of vendored Podman helpers.
+    #
+    # We cannot simply use the vendored Podman binary in order to start a Podman
+    # machine, because it needs to use some other utilities as well (vfkit, gvproxy).
+    # Since we can't install these utilities in $PATH, we have to pass them via the
+    # `helper_binaries_dir` config option. Read more about this field in this section:
+    # https://github.com/containers/common/blob/main/docs/containers.conf.5.md#engine-table
     podman_path = get_podman_path()
     assert isinstance(podman_path, Path)
     helper_binaries_dir = str(podman_path.parent)
     helper_binaries_dir = helper_binaries_dir.replace("\\", "\\\\")
+
+    # Determine volumes of Podman machine.
+    #
+    # By default, Podman machines boot with a permissive view of the host's filesystem.
+    # We want to limit this access as much as possible using the `volumes` config
+    # option, and specifically mounting only the seccomp policy file as read-only.
+    #
+    # Note that the following option does not affect Windows users, because WSL2 will
+    # always mount C: into the VM. Read more in:
+    # https://github.com/freedomofpress/dangerzone/issues/1171#issuecomment-3279044187
+    volume = f"{SECCOMP_PATH}:{SECCOMP_PATH}:ro"
+
+    # Determine CPU count.
+    #
+    # Because the Podman machine is short-lived, we can employ more CPU cores than the
+    # default for the duration of the conversion.
+    cpu_count = os.cpu_count() or 1
+
     content = f"""\
 [engine]
 helper_binaries_dir=["{helper_binaries_dir}"]
+
+[machine]
+cpus={cpu_count}
+volumes=["{volume}"]
 """
     # FIXME: Do not unconditionally write to this file.
     dst = CONTAINERS_CONF_PATH

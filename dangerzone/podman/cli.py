@@ -45,7 +45,9 @@ def list() -> None:
 @main.command()
 @click.option("--cpus", type=int, help="Number of CPUs to allocate.")
 @click.option("--memory", type=int, help="Amount of memory in bytes.")
-@click.option("--timezone", type=str, help="Timezone for the machine.")
+@click.option(
+    "--timezone", type=str, default="Etc/UTC", help="Timezone for the machine."
+)
 def init(cpus: int, memory: int, timezone: str) -> None:
     """Initialize a Dangerzone Podman machine."""
     try:

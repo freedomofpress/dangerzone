@@ -1007,11 +1007,6 @@ class QAUbuntu2404(QADebianBased):
     VERSION = "24.04"
 
 
-class QAUbuntu2410(QADebianBased):
-    DISTRO = "ubuntu"
-    VERSION = "24.10"
-
-
 class QAUbuntu2504(QADebianBased):
     DISTRO = "ubuntu"
     VERSION = "25.04"

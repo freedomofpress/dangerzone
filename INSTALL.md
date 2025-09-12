@@ -76,7 +76,6 @@ an isolated environment. It will be installed automatically when installing Dang
 Dangerzone is available for:
 
 - Ubuntu 25.04 (plucky)
-- Ubuntu 24.10 (oracular)
 - Ubuntu 24.04 (noble)
 - Ubuntu 22.04 (jammy)
 - Debian 13 (trixie)

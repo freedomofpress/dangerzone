@@ -24,7 +24,7 @@ from .util import (
 # Keep the name of the old container here to be able to get rid of it later
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 CONTAINERS_CONF_PATH = get_cache_dir() / "containers.conf"
-SECCOMP_PATH = get_cache_dir() / "seccomp.gvisor.json"
+SECCOMP_PATH = get_cache_dir() / "shared" / "seccomp.gvisor.json"
 PODMAN_MACHINE_PREFIX = "dz-internal-"
 PODMAN_MACHINE_NAME = f"{PODMAN_MACHINE_PREFIX}{get_version()}"
 
@@ -167,7 +167,9 @@ def create_containers_conf() -> Path:
     # Note that the following option does not affect Windows users, because WSL2 will
     # always mount C: into the VM. Read more in:
     # https://github.com/freedomofpress/dangerzone/issues/1171#issuecomment-3279044187
-    volume = f"{SECCOMP_PATH}:{SECCOMP_PATH}:ro"
+    volume = f"{SECCOMP_PATH.parent}:{SECCOMP_PATH.parent}:ro"
+    volume = volume.replace("\\", "\\\\")
+    SECCOMP_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     # Determine CPU count.
     #

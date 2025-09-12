@@ -95,101 +95,105 @@ def test_initialize_machine_stale_exists(
 def test_start_machine_success(
     machine_manager: PodmanMachineManager, podman_register: Callable
 ) -> None:
-    """Test that the start_machine method runs the correct commands."""
+    """Test that the machine starts normally if nothing else is running"""
     version = get_version()
     machine_name = f"dz-internal-{version}"
+    if platform.system() == "Darwin":
+        rec_list_other = podman_register(
+            ["machine", "list", "--format", "json"], stdout=json.dumps([])
+        )
     rec_start = podman_register(["machine", "start", machine_name])
     machine_manager.start()
+    if platform.system() == "Darwin":
+        assert rec_list_other.call_count() == 1
     assert rec_start.call_count() == 1
 
 
 def test_start_machine_already_running(
-    machine_manager: PodmanMachineManager, podman_register: Callable
+    machine_manager: PodmanMachineManager,
+    podman_register: Callable,
+    mocker: MockerFixture,
 ) -> None:
-    """Test that the start_machine method runs the correct commands."""
+    """Test that start() does not fail if machine is already running."""
     version = get_version()
     machine_name = f"dz-internal-{version}"
     rec_start = podman_register(["machine", "start", machine_name], returncode=1)
+    if platform.system() == "Darwin":
+        rec_list_other = podman_register(
+            ["machine", "list", "--format", "json"],
+            stdout=json.dumps([{"Name": machine_name, "Running": True}]),
+        )
     rec_list = podman_register(
         ["machine", "list", "--format", "json"],
         stdout=json.dumps([{"Name": machine_name, "Running": True}]),
     )
     machine_manager.start()
+    if platform.system() == "Darwin":
+        assert rec_list_other.call_count() == 1
     assert rec_start.call_count() == 1
     assert rec_list.call_count() == 1
 
 
+@pytest.mark.skipif(platform.system() != "Darwin", reason="MacOS-specific")
 def test_start_machine_already_running_other_fail(
     machine_manager: PodmanMachineManager,
     podman_register: Callable,
-    mocker: MockerFixture,
 ) -> None:
-    """Test that the start_machine method runs the correct commands."""
-    mocker.patch("platform.system", return_value="Darwin")
+    """Test that start() fails if another machine is already running on macOS."""
     version = get_version()
     machine_name = f"dz-internal-{version}"
-    rec_list_other = podman_register(
-        ["machine", "list", "--format", "json"],
-        stdout=json.dumps([{"Name": "other_machine", "Running": True}]),
-    )
+    if platform.system() == "Darwin":
+        rec_list_other = podman_register(
+            ["machine", "list", "--format", "json"],
+            stdout=json.dumps([{"Name": "other_machine", "Running": True}]),
+        )
     rec_start = podman_register(["machine", "start", machine_name])
     with pytest.raises(dz_errors.OtherMachineRunningError):
         machine_manager.start()
-    assert rec_list_other.call_count() == 1
+    if platform.system() == "Darwin":
+        assert rec_list_other.call_count() == 1
     assert rec_start.call_count() == 0
 
 
-def test_start_machine_already_running_same_success(
+def test_start_machine_stopped_other_success(
     machine_manager: PodmanMachineManager,
     podman_register: Callable,
-    mocker: MockerFixture,
 ) -> None:
-    """Test that the start_machine method runs the correct commands."""
-    mocker.patch("platform.system", return_value="Darwin")
+    """Test that start() works if another stopped machine exists."""
     version = get_version()
     machine_name = f"dz-internal-{version}"
-    rec_list_other = podman_register(
-        ["machine", "list", "--format", "json"],
-        stdout=json.dumps([{"Name": "other_machine", "Running": False}]),
-    )
+    if platform.system() == "Darwin":
+        rec_list_other = podman_register(
+            ["machine", "list", "--format", "json"],
+            stdout=json.dumps([{"Name": "other_machine", "Running": False}]),
+        )
     rec_start = podman_register(["machine", "start", machine_name])
     machine_manager.start()
-    assert rec_list_other.call_count() == 1
-    assert rec_start.call_count() == 1
-
-
-def test_start_machine_other_stopped_success(
-    machine_manager: PodmanMachineManager,
-    podman_register: Callable,
-    mocker: MockerFixture,
-) -> None:
-    """Test that the start_machine method runs the correct commands."""
-    mocker.patch("platform.system", return_value="Darwin")
-    version = get_version()
-    machine_name = f"dz-internal-{version}"
-    rec_list_other = podman_register(
-        ["machine", "list", "--format", "json"],
-        stdout=json.dumps([{"Name": machine_name, "Running": True}]),
-    )
-    rec_start = podman_register(["machine", "start", machine_name])
-    machine_manager.start()
-    assert rec_list_other.call_count() == 1
+    if platform.system() == "Darwin":
+        assert rec_list_other.call_count() == 1
     assert rec_start.call_count() == 1
 
 
 def test_start_machine_fail(
     machine_manager: PodmanMachineManager, podman_register: Callable
 ) -> None:
-    """Test that the start_machine method runs the correct commands."""
+    """Test that start() fails if `podman machine start` fails and the machine is not
+    running."""
     version = get_version()
     machine_name = f"dz-internal-{version}"
     rec_start = podman_register(["machine", "start", machine_name], returncode=1)
+    if platform.system() == "Darwin":
+        rec_list_other = podman_register(
+            ["machine", "list", "--format", "json"], stdout=json.dumps([])
+        )
     rec_list = podman_register(
         ["machine", "list", "--format", "json"],
         stdout=json.dumps([{"Name": machine_name, "Running": False}]),
     )
     with pytest.raises(errors.CommandError):
         machine_manager.start()
+    if platform.system() == "Darwin":
+        assert rec_list_other.call_count() == 1
     assert rec_start.call_count() == 1
     assert rec_list.call_count() == 1
 

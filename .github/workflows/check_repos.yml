@@ -21,8 +21,6 @@ jobs:
           - distro: ubuntu
             version: "25.04"  # plucky
           - distro: ubuntu
-            version: "24.10"  # oracular
-          - distro: ubuntu
             version: "24.04"  # noble
           - distro: ubuntu
             version: "22.04"  # jammy

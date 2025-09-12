@@ -200,8 +200,6 @@ jobs:
           - distro: ubuntu
             version: "24.04"
           - distro: ubuntu
-            version: "24.10"
-          - distro: ubuntu
             version: "25.04"
           - distro: debian
             version: bullseye
@@ -284,8 +282,6 @@ jobs:
             version: "22.04"
           - distro: ubuntu
             version: "24.04"
-          - distro: ubuntu
-            version: "24.10"
           - distro: ubuntu
             version: "25.04"
           - distro: debian
@@ -432,8 +428,6 @@ jobs:
             version: "22.04"
           - distro: ubuntu
             version: "24.04"
-          - distro: ubuntu
-            version: "24.10"
           - distro: ubuntu
             version: "25.04"
           - distro: debian

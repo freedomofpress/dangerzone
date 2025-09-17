@@ -195,6 +195,7 @@ class Runner:
         check: bool = True,
         capture_output=True,
         wait=True,
+        timeout: Optional[int] = None,
         **skwargs,
     ) -> Union[str, subprocess.Popen, None]:
         """Run the specified Podman command.
@@ -204,6 +205,7 @@ class Runner:
             check (bool, optional): Whether to check for errors. Defaults to True.
             capture_output (bool, optional): Whether to capture output. Defaults to True.
             wait (bool, optional): Whether to wait for the command to complete. Defaults to True.
+            timeout (int, optional): Time to wait for the command to finish. Defaults to None.
             **skwargs: Additional keyword arguments for subprocess.
 
         Returns:
@@ -226,6 +228,7 @@ class Runner:
         capture_output=True,
         stdin=subprocess.DEVNULL,
         wait=True,
+        timeout: Optional[int] = None,
         **skwargs,
     ) -> Union[str, subprocess.Popen, None]:
         """Run the command without additional construction. Mostly for internal use.
@@ -236,6 +239,7 @@ class Runner:
             capture_output (bool, optional): Whether to capture output. Defaults to True.
             stdin: Control the process' stdin. Disabled by default, to avoid hanging commands.
             wait (bool, optional): Whether to wait for the command to complete. Defaults to True.
+            timeout (int, optional): Time to wait for the command to finish. Defaults to None.
             **skwargs: Additional keyword arguments for subprocess.
 
         Returns:
@@ -259,6 +263,7 @@ class Runner:
             skwargs.setdefault("check", check)
             skwargs.setdefault("capture_output", capture_output)
             skwargs.setdefault("stdin", stdin)
+            skwargs.setdefault("timeout", timeout)
             ret = subprocess.run(
                 cmd,
                 env=self.env,

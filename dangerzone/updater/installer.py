@@ -20,31 +20,13 @@ from .signatures import (
 log = logging.getLogger(__name__)
 
 
-class CallbackHandler(Handler):
-    """
-    A Logging handler that copies INFO log records
-    to a specified callback.
-
-    The main use-case being to display the progress
-    to the user.
-    """
-
-    def __init__(self, callback: Optional[Callable]) -> None:
-        super().__init__()
-        self.callback = callback
-
-    def emit(self, record: LogRecord) -> None:
-        if record.levelname == "INFO" and self.callback:
-            self.callback(f"{record.getMessage()}\n")
-
-
 class Strategy(Enum):
     DO_NOTHING = 1
     INSTALL_LOCAL_CONTAINER = 2
     INSTALL_REMOTE_CONTAINER = 3
 
 
-def install(callback: Optional[Callable] = None) -> None:
+def install() -> None:
     """
     Determine the installation strategy and apply it.
 
@@ -52,12 +34,10 @@ def install(callback: Optional[Callable] = None) -> None:
     to act upon the to-be-applied installation strategy.
     """
     strategy = get_installation_strategy()
-    apply_installation_strategy(strategy, callback)
+    apply_installation_strategy(strategy)
 
 
-def apply_installation_strategy(
-    strategy: Strategy, callback: Optional[Callable] = None
-) -> None:
+def apply_installation_strategy(strategy: Strategy) -> None:
     """
     Install or upgrade a container registry, based on previous computations.
     """
@@ -70,13 +50,10 @@ def apply_installation_strategy(
         log.debug("Download and install a remote container image")
         container_name = runtime.expected_image_name()
 
-        # Also copy the logs INFO to the user interface
-        updater_log.addHandler(CallbackHandler(callback))
-
         remote_digest, remote_log_index, signatures = get_remote_digest_and_logindex(
             container_name
         )
-        upgrade_container_image(remote_digest, callback=callback, signatures=signatures)
+        upgrade_container_image(remote_digest, signatures=signatures)
         runtime.clear_old_images(digest_to_keep=remote_digest)
 
 

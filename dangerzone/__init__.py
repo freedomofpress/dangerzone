@@ -4,6 +4,11 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+# Patch the stdlib early in the import tree, so we're able to log all calls done in the background
+from . import capture_output
+
+capture_output.patch_stdlib()
+
 # Call freeze_support() to avoid passing unknown options to the subprocess.
 # See https://github.com/freedomofpress/dangerzone/issues/873
 import multiprocessing

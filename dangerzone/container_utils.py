@@ -12,7 +12,9 @@ from typing import IO, Callable, Iterable, List, Optional, Tuple, Union
 from dangerzone.podman.errors.exceptions import PodmanNotInstalled
 
 from . import errors
+from .capture_output import original_subprocess_popen as Popen
 from .podman.command import PodmanCommand
+from .podman.errors import CommandError
 from .settings import Settings
 from .util import (
     get_cache_dir,
@@ -384,25 +386,13 @@ def expected_image_name() -> str:
     return image_name_path.read_text().strip("\n")
 
 
-def container_pull(
-    image: str, manifest_digest: str, callback: Optional[Callable] = None
-) -> None:
+def container_pull(image: str, manifest_digest: str) -> None:
     """Pull a container image from a registry."""
     podman = init_podman_command()
-    process = podman.run(
-        ["pull", f"{image}@sha256:{manifest_digest}"], wait=False, text=True, bufsize=1
-    )
-    assert isinstance(process, subprocess.Popen)
-
-    if callback:
-        for line in process.stdout:  # type: ignore
-            callback(line)
-
-    process.wait()
-    if process.returncode != 0:
-        raise errors.ContainerPullException(
-            f"Could not pull the container image: {process.returncode}"
-        )
+    try:
+        podman.run(["pull", f"{image}@sha256:{manifest_digest}"], capture_output=False)
+    except CommandError:
+        raise errors.ContainerPullException("Could not pull the container image")
 
 
 def get_local_image_digest(image: Optional[str] = None) -> str:

@@ -57,6 +57,23 @@ jobs:
     secrets:
       registry_token: ${{ secrets.GITHUB_TOKEN }}
 
+  # Prepare a second image and upload it to the GHCR
+  # In order to test the upgrade to this new version
+  build-new-container-image:
+    name: Build, push and sign a NEWER container image
+    uses: ./.github/workflows/build-push-image.yml
+    with:
+      registry: "ghcr.io/${{ github.repository_owner }}"
+      registry_user: ${{ github.repository_owner }}
+      image_name: "dangerzone/dangerzone-testing"
+      reproduce: false
+      sign: true
+      fill_cache: false
+      update_container: true # set this to true to generate a new container hash
+      key_name: "tests/assets/dangerzone-testing"
+    secrets:
+      registry_token: ${{ secrets.GITHUB_TOKEN }}
+
   windows:
     needs:
       - build-container-image

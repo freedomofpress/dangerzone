@@ -324,8 +324,12 @@ class MainWindow(QtWidgets.QMainWindow):
         # Content and waiting widget
         self.conversion_widget = ConversionWidget(self.dangerzone)
         self.waiting_widget = WaitingWidget()
-        self.conversion_widget.hide()
-        self.waiting_widget.show()
+        if self.dangerzone.settings.get("successful_first_run") == get_version():
+            self.show_conversion_widget()
+        else:
+            # Do not show the waiting widget, if we have not performed a successful
+            # conversion for this Dangerzone version.
+            self.hide_conversion_widget()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
@@ -379,6 +383,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.startup_thread.starting.connect(self.waiting_widget.handle_start)
         self.startup_thread.succeeded.connect(self.status_bar.handle_startup_success)
         self.startup_thread.succeeded.connect(self.log_window.handle_startup_success)
+        self.startup_thread.succeeded.connect(self.show_conversion_widget)
         self.startup_thread.failed.connect(self.status_bar.handle_startup_error)
 
         task_machine_init.starting.connect(self.status_bar.handle_task_machine_init)
@@ -392,7 +397,6 @@ class MainWindow(QtWidgets.QMainWindow):
         task_machine_start.failed.connect(
             self.log_window.handle_task_machine_start_failed
         )
-        task_machine_start.completed.connect(self.show_conversion_widget)
 
         task_machine_stop_others.starting.connect(
             self.status_bar.handle_task_machine_stop_others
@@ -587,6 +591,10 @@ class MainWindow(QtWidgets.QMainWindow):
             req.reply(False)
             self.startup_thread.wait()
             self.dangerzone.app.exit(1)
+
+    def hide_conversion_widget(self) -> None:
+        self.waiting_widget.show()
+        self.conversion_widget.hide()
 
     def show_conversion_widget(self) -> None:
         self.waiting_widget.hide()
@@ -1393,6 +1401,13 @@ class DocumentWidget(QtWidgets.QWidget):
 
         if self.error:
             return
+
+        if self.dangerzone.settings.get("successful_first_run") != get_version():
+            self.dangerzone.settings.set(
+                "successful_first_run",
+                get_version(),
+                autosave=True,
+            )
 
         # Open
         if self.dangerzone.settings.get("open"):

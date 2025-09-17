@@ -616,7 +616,6 @@ def upgrade_container_image(
     image_str: Optional[str] = None,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
     bypass_logindex_check: bool = False,
-    callback: Optional[Callable] = None,
     signatures: Optional[List[Dict]] = None,
 ) -> None:
     """Verify and upgrade the image to the latest, if signed."""
@@ -639,7 +638,7 @@ def upgrade_container_image(
     if remote_log_index == local_log_index and runtime.list_image_digests():
         raise errors.ImageAlreadyUpToDate()
 
-    runtime.container_pull(image_str, remote_digest, callback=callback)
+    runtime.container_pull(image_str, remote_digest)
 
     # Now that they are verified, store the signatures
     store_signatures(signatures, remote_digest, pubkey)

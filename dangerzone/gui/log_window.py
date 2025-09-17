@@ -83,8 +83,7 @@ class LogWindow(QtWidgets.QDialog):
 
     def handle_task_container_install(self) -> None:
         self.label.setText(
-            "Installing the Dangerzone container sandbox<br>"
-            "This might take a few minutes…"
+            "Installing the Dangerzone sandbox<br>This might take a few minutes…"
         )
 
     def handle_task_machine_init_failed(self, error: str) -> None:
@@ -100,7 +99,7 @@ class LogWindow(QtWidgets.QDialog):
         self.label.setText("Checking for updates… failed")
 
     def handle_task_container_install_failed(self, error: str) -> None:
-        self.label.setText("Installing container sandbox… failed")
+        self.label.setText("Installing the Dangerzone sandbox… failed")
 
     def handle_startup_success(self) -> None:
         self.label.setText("Dangerzone is ready")

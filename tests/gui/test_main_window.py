@@ -601,7 +601,7 @@ def test_installation_failure_exception(
     assert installer.call_count == 1
     assert window.status_bar.message.property("style") == "status-error"
     assert window.status_bar.message.text() == "Startup failed"
-    assert window.log_window.label.text() == "Installing container sandbox… failed"
+    assert window.log_window.label.text() == "Installing the Dangerzone sandbox… failed"
     assert "Error during install" in window.log_window.traceback_widget.toPlainText()
 
 

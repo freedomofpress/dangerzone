@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from .. import container_utils, util
 from ..errors import OtherMachineRunningError
@@ -115,13 +115,19 @@ class PodmanMachineManager:
                     return
             raise
 
-    def stop(self, name: Optional[str] = None) -> None:
+    def stop(
+        self,
+        name: Optional[str] = None,
+        wait: bool = True,
+        timeout: Optional[int] = None,
+    ) -> None:
         """Stop a Podman machine."""
         if name is None:
             name = self.name
         logger.info(f"Stopping Podman machine: {name}")
-        self.podman.machine.stop(name=name)
-        logger.info(f"Podman machine '{name}' stopped successfully.")
+        self.podman.machine.stop(name=name, wait=wait, timeout=timeout)
+        if wait:
+            logger.info(f"Podman machine '{name}' stopped successfully.")
 
     def remove(self, name: Optional[str] = None) -> None:
         """Remove a Podman machine."""

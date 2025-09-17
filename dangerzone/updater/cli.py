@@ -58,10 +58,7 @@ def upgrade() -> None:
     manifest_digest = registry.get_manifest_digest(DEFAULT_IMAGE_NAME)
 
     try:
-        callback = functools.partial(click.echo, nl=False)
-        signatures.upgrade_container_image(
-            manifest_digest, DEFAULT_IMAGE_NAME, callback=callback
-        )
+        signatures.upgrade_container_image(manifest_digest, DEFAULT_IMAGE_NAME)
         click.echo(f"✅ The local image {DEFAULT_IMAGE_NAME} has been upgraded")
         click.echo(f"✅ The image has been signed with {DEFAULT_PUBKEY_LOCATION}")
         click.echo(f"✅ Signatures have been verified and stored locally")

@@ -245,7 +245,6 @@ class Runner:
         Raises:
             errors.CommandError: If the command fails.
         """
-        logger.debug(f"Running: {self.display(cmd)}")
         skwargs.setdefault("startupinfo", get_subprocess_startupinfo())
         if not wait:
             skwargs.setdefault("stdin", stdin)

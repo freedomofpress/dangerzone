@@ -191,6 +191,11 @@ class TestCliBasic(TestCli):
             version = f.read().strip()
             assert version in result.stdout
 
+    @pytest.mark.skipif(
+        os.environ.get("DUMMY_CONVERSION", False)
+        or os.environ.get("QUBES_CONVERSION", False),
+        reason="Test requires a container-based isolation provider",
+    )
     def test_other_machine_running_error(
         self, mocker: MockerFixture, sample_pdf: str
     ) -> None:

@@ -172,6 +172,7 @@ jobs:
         run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
         run: |
+          # Nested virtualization does not seem to work on M1 workers.
           if [ ${{ matrix.arch }} == 'arm64' ]; then
               export DUMMY_CONVERSION=1
           fi

@@ -232,7 +232,7 @@ class StatusBar(QtWidgets.QWidget):
         self.set_status_working("Checking for updates")
 
     def handle_task_container_install(self) -> None:
-        self.set_status_working("Installing container sandbox")
+        self.set_status_working("Installing Dangerzone sandbox")
 
     def handle_startup_error(self) -> None:
         self.set_status_error("Startup failed")

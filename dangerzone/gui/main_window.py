@@ -611,11 +611,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.log_window.show()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
-        # Stop the podman machine if it's running
-        if platform.system() in ["Windows", "Darwin"]:
-            log.debug("Stopping podman machine")
-            PodmanMachineManager().stop()
-
         self.alert = Alert(
             self.dangerzone,
             message="Some documents are still being converted.\n Are you sure you want to quit?",
@@ -636,6 +631,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 return
             else:
                 e.accept()
+
+        # Stop the Podman machine if it's running
+        if platform.system() in ["Windows", "Darwin"]:
+            log.debug("Stopping Podman machine")
+            PodmanMachineManager().stop(wait=False)
 
         self.dangerzone.app.exit(2)
 

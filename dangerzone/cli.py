@@ -162,20 +162,20 @@ def cli_main(
                 f"Unsafe (original) documents moved to '{ARCHIVE_SUBDIR}' subdirectory"
             )
 
-    if dangerzone.isolation_provider.requires_install() and not linger:
-        if platform.system() != "Linux":
-            click.echo("Stopping Podman machine...")
-            PodmanMachineManager().stop()
-        else:
-            click.echo("No Podman machine was started, ignoring --linger option")
-
+    ret = 0
     if documents_failed != []:
         print_header("Failed to convert document(s)")
         for document in documents_failed:
             click.echo(replace_control_chars(document.input_filename))
-        sys.exit(1)
-    else:
-        sys.exit(0)
+        ret = 1
+
+    if dangerzone.isolation_provider.requires_install() and not linger:
+        if platform.system() != "Linux":
+            click.echo("Stopping Podman machine...")
+            PodmanMachineManager().stop(wait=False)
+        else:
+            click.echo("No Podman machine was started, ignoring --linger option")
+    sys.exit(ret)
 
 
 args.override_parser_and_check_suspicious_options(cli_main)

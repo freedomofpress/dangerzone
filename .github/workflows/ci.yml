@@ -168,10 +168,12 @@ jobs:
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
       - name: Smoke test
+        # Nested virtualization does not work on M1 CPUs.
         continue-on-error: ${{ matrix.arch == 'arm64'}}
         run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
         run: |
+          # Nested virtualization does not work on M1 CPUs.
           if [ ${{ matrix.arch }} == 'arm64' ]; then
               export DUMMY_CONVERSION=1
           fi

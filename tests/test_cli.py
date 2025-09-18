@@ -19,6 +19,7 @@ from click.testing import CliRunner, Result
 from pytest_mock import MockerFixture
 from strip_ansi import strip_ansi
 
+from dangerzone import errors
 from dangerzone.cli import cli_main, display_banner
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
@@ -189,6 +190,21 @@ class TestCliBasic(TestCli):
         with open("share/version.txt") as f:
             version = f.read().strip()
             assert version in result.stdout
+
+    @pytest.mark.skipif(
+        os.environ.get("DUMMY_CONVERSION", False)
+        or os.environ.get("QUBES_CONVERSION", False),
+        reason="Test requires a container-based isolation provider",
+    )
+    def test_other_machine_running_error(
+        self, mocker: MockerFixture, sample_pdf: str
+    ) -> None:
+        mocker.patch(
+            "dangerzone.startup.MachineStopOthersTask.should_skip",
+            side_effect=errors.OtherMachineRunningError("Test error"),
+        )
+        result = self.run_cli([sample_pdf])
+        result.assert_failure(exit_code=1)
 
 
 class TestCliConversion(TestCliBasic):

@@ -69,6 +69,14 @@ in our menu, if you are in an air-gapped environment and have another way of lea
 about updates.</p>
 """
 
+MACHINE_NEEDS_STOP_MSG = """\
+<p>Dangerzone has detected that a Podman machine with name '{machine_name}' is already
+running in your system. Unfortunately, this machine needs to stop so that Dangerzone can
+run.</p>
+<p>You can either let Dangerzone stop this machine for you, or quit Dangerzone and
+handle it manually.</p>
+"""
+
 
 HAMBURGER_MENU_SIZE = 30
 
@@ -217,6 +225,9 @@ class StatusBar(QtWidgets.QWidget):
     def handle_task_machine_start(self) -> None:
         self.set_status_working("Starting Dangerzone VM")
 
+    def handle_task_machine_stop_others(self) -> None:
+        self.set_status_working("Stopping other Podman VMs")
+
     def handle_task_update_check(self) -> None:
         self.set_status_working("Checking for updates")
 
@@ -343,12 +354,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Start startup thread
         log.debug("Starting Dangerzone background tasks")
+        task_machine_stop_others = startup.MachineStopOthersTask()
         task_machine_init = startup.MachineInitTask()
         task_machine_start = startup.MachineStartTask()
         task_update_check = startup.UpdateCheckTask()
         task_container_install = startup.ContainerInstallTask()
         if dangerzone.isolation_provider.requires_install():
             tasks = [
+                task_machine_stop_others,
                 task_machine_init,
                 task_machine_start,
                 task_update_check,
@@ -376,6 +389,19 @@ class MainWindow(QtWidgets.QMainWindow):
             self.log_window.handle_task_machine_start_failed
         )
         task_machine_start.completed.connect(self.show_conversion_widget)
+
+        task_machine_stop_others.starting.connect(
+            self.status_bar.handle_task_machine_stop_others
+        )
+        task_machine_stop_others.starting.connect(
+            self.log_window.handle_task_machine_stop_others
+        )
+        task_machine_stop_others.failed.connect(
+            self.log_window.handle_task_machine_stop_others_failed
+        )
+        task_machine_stop_others.needs_user_input.connect(
+            self.handle_needs_user_input_stop_others
+        )
 
         task_update_check.starting.connect(self.status_bar.handle_task_update_check)
         task_update_check.starting.connect(self.log_window.handle_task_update_check)
@@ -524,6 +550,39 @@ class MainWindow(QtWidgets.QMainWindow):
         check = prompt_for_checks(self.dangerzone)
         if check is not None:
             self.dangerzone.settings.set("updater_check_all", check, autosave=True)
+
+    def handle_needs_user_input_stop_others(self, req: startup.PromptRequest) -> None:
+        machine_name = req.req_data["name"]
+        log.debug(f"Prompting user to stop Podman machine '{machine_name}'")
+        alert = Alert(
+            self.dangerzone,
+            title="Detected running Podman machine",
+            message=MACHINE_NEEDS_STOP_MSG.format(machine_name=machine_name),
+            ok_text="Stop the Podman machine",
+            cancel_text="Quit Dangerzone",
+            checkbox_text="Remember my choice",
+        )
+        assert alert.checkbox is not None
+        result = alert.launch()
+
+        if result == Alert.Accepted:
+            if alert.checkbox.isChecked():
+                self.dangerzone.settings.set(
+                    "stop_other_podman_machines",
+                    "always",
+                    autosave=True,
+                )
+            req.reply(True)
+        else:
+            if alert.checkbox.isChecked():
+                self.dangerzone.settings.set(
+                    "stop_other_podman_machines",
+                    "never",
+                    autosave=True,
+                )
+            req.reply(False)
+            self.startup_thread.wait()
+            self.dangerzone.app.exit(1)
 
     def show_conversion_widget(self) -> None:
         self.waiting_widget.hide()

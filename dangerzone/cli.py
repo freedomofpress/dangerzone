@@ -135,6 +135,7 @@ def cli_main(
     tasks = []
     if dangerzone.isolation_provider.requires_install():
         tasks = [
+            startup.MachineStopOthersTask(),
             startup.MachineInitTask(),
             startup.MachineStartTask(),
             startup.UpdateCheckTask(),

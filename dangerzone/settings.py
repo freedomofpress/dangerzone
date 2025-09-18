@@ -56,6 +56,7 @@ class Settings:
             "updater_latest_changelog": "",
             "updater_remote_log_index": 0,
             "updater_errors": 0,
+            "stop_other_podman_machines": "ask",
         }
 
     def custom_runtime_specified(self) -> bool:

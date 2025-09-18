@@ -50,6 +50,38 @@ class GUIMixin(QtCore.QObject):
 # GUI-fied basic tasks
 
 
+class PromptRequest:
+    """A request for prompting a user, with bidirectional input."""
+
+    def __init__(self) -> None:
+        self.req_data: typing.Any = None
+        self.resp_data: typing.Any = None
+        self.sem = QtCore.QSemaphore(0)
+
+    def ask(
+        self,
+        signal: QtCore.SignalInstance,
+        data: typing.Any = None,
+    ) -> typing.Any:
+        self.req_data = data
+        signal.emit(self)
+        self.sem.acquire()
+        return self.resp_data
+
+    def reply(self, data: typing.Any = None) -> None:
+        self.resp_data = data
+        self.sem.release()
+
+
+class MachineStopOthersTask(
+    GUIMixin, startup.MachineStopOthersTask, metaclass=_MetaConflictResolver
+):
+    needs_user_input = QtCore.Signal(object)  # PromptRequest
+
+    def prompt_user(self, machine_name: str) -> bool:
+        return PromptRequest().ask(self.needs_user_input, data={"name": machine_name})
+
+
 class MachineInitTask(
     GUIMixin, startup.MachineInitTask, metaclass=_MetaConflictResolver
 ):

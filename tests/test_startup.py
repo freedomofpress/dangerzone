@@ -84,3 +84,79 @@ def test_startup_fail_not_allowed(mock_startup_spy: StartupSpy) -> None:
     mock_startup_spy.mock_task.handle_error.assert_called_with(exc)
     mock_startup_spy.mock_task.handle_success.assert_not_called()
     mock_startup_spy.mock_task.run.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "os_name, other_machines, setting, should_skip, raises_error, calls_prompt, calls_run",
+    [
+        ("Linux", False, "ask", True, False, False, False),
+        ("Windows", False, "ask", True, False, False, False),
+        ("Darwin", False, "ask", True, False, False, False),
+        ("Darwin", True, "always", False, False, False, True),
+        ("Darwin", True, "never", False, True, False, False),
+        ("Darwin", True, "ask", False, False, True, True),
+        ("Darwin", True, "ask", True, True, True, False),
+    ],
+)
+def test_machine_stop_others_task(
+    mocker: MockerFixture,
+    os_name: str,
+    other_machines: bool,
+    setting: bool,
+    should_skip: bool,
+    raises_error: bool,
+    calls_prompt: bool,
+    calls_run: bool,
+) -> None:
+    mocker.patch("platform.system", return_value=os_name)
+    mocker.patch("dangerzone.settings.Settings.get", return_value=setting)
+    mock_podman_machine_manager = mocker.patch(
+        "dangerzone.startup.PodmanMachineManager"
+    ).return_value
+    mock_prompt_user = mocker.patch(
+        "dangerzone.startup.MachineStopOthersTask.prompt_user",
+        return_value=not should_skip,
+    )
+
+    if other_machines:
+        mock_podman_machine_manager.list_other_running_machines.side_effect = [
+            ["other_machine"],
+            ["other_machine"],
+            [],
+        ]
+    else:
+        mock_podman_machine_manager.list_other_running_machines.return_value = []
+
+    task = startup.MachineStopOthersTask()
+    run_spy = mocker.spy(task, "run")
+
+    if raises_error:
+        with pytest.raises(startup.errors.OtherMachineRunningError):
+            task.should_skip()
+
+        if calls_prompt:
+            mock_prompt_user.assert_called_once()
+        else:
+            mock_prompt_user.assert_not_called()
+
+        assert not calls_run
+        run_spy.assert_not_called()
+    else:
+        assert task.should_skip() == should_skip
+        if calls_prompt:
+            mock_prompt_user.assert_called_once()
+        else:
+            mock_prompt_user.assert_not_called()
+
+        if not should_skip:
+            task.run()
+            if calls_run:
+                run_spy.assert_called_once()
+                mock_podman_machine_manager.stop.assert_called_once_with(
+                    name="other_machine"
+                )
+            else:
+                run_spy.assert_not_called()
+        else:
+            run_spy.assert_not_called()
+            mock_podman_machine_manager.stop.assert_not_called()

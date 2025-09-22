@@ -1,4 +1,7 @@
 import pathlib
+import subprocess
+from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
 from pytest_mock import MockerFixture
@@ -89,3 +92,79 @@ def test_init_podman_command_custom_runtime(mocker: MockerFixture) -> None:
         cmd.reset_mock()
         container_utils.init_podman_command()
         cmd.assert_not_called()
+
+
+def test_list_containers(mocker: MockerFixture) -> None:
+    """Test that list_containers returns the correct containers."""
+    # Mock the podman command
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_podman.return_value.run.return_value = (
+        "dangerzone-container1\ndangerzone-container2\nother-container"
+    )
+
+    # Call the function
+    containers = container_utils.list_containers()
+
+    # Check the result
+    assert containers == ["dangerzone-container1", "dangerzone-container2"]
+    mock_podman.return_value.run.assert_called_once_with(
+        ["ps", "-a", "--format", "{{ .Names }}"]
+    )
+
+
+def test_list_containers_empty(mocker: MockerFixture) -> None:
+    """Test that list_containers returns an empty list if there are no containers."""
+    # Mock the podman command
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_podman.return_value.run.return_value = ""
+
+    # Call the function
+    containers = container_utils.list_containers()
+
+    # Check the result
+    assert containers == []
+
+
+def test_kill_container(mocker: MockerFixture) -> None:
+    """Test that kill_container calls the correct podman command."""
+    # Mock the podman command
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+
+    # Call the function
+    container_utils.kill_container("test-container")
+
+    # Check the result
+    mock_podman.return_value.run.assert_called_once_with(
+        ["kill", "test-container"], check=False, timeout=container_utils.TIMEOUT_KILL
+    )
+
+
+def test_kill_container_timeout(mocker: MockerFixture, caplog: Any) -> None:
+    """Test that kill_container logs a warning on timeout."""
+    # Mock the podman command
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_podman.return_value.run.side_effect = subprocess.TimeoutExpired(
+        "kill", container_utils.TIMEOUT_KILL
+    )
+
+    # Call the function
+    container_utils.kill_container("test-container")
+
+    # Check the log
+    assert "Could not kill container 'test-container'" in caplog.text
+
+
+def test_kill_container_exception(mocker: MockerFixture, caplog: Any) -> None:
+    """Test that kill_container logs an error on exception."""
+    # Mock the podman command
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_podman.return_value.run.side_effect = Exception("test error")
+
+    # Call the function
+    container_utils.kill_container("test-container")
+
+    # Check the log
+    assert (
+        "Unexpected error occurred while killing container 'test-container'"
+        in caplog.text
+    )

@@ -6,7 +6,7 @@ from typing import List, Optional
 import click
 from colorama import Back, Fore, Style
 
-from . import args, errors, startup
+from . import args, errors, shutdown, startup
 from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
@@ -143,12 +143,18 @@ def cli_main(
             startup.UpdateCheckTask(),
             startup.ContainerInstallTask(),
         ]
-    startup.StartupLogic(tasks=tasks).run()
 
-    # Convert the document
-    print_header("Converting document to safe PDF")
+    try:
+        startup.StartupLogic(tasks=tasks).run()
+        print_header("Converting document(s) to safe PDF")
+        dangerzone.convert_documents(ocr_lang)
+    finally:
+        if dangerzone.isolation_provider.requires_install() and not linger:
+            task_container_stop = shutdown.ContainerStopTask()
+            task_machine_stop = shutdown.MachineStopTask()
+            tasks = [task_container_stop, task_machine_stop]
+            shutdown.ShutdownLogic(tasks=tasks).run()
 
-    dangerzone.convert_documents(ocr_lang)
     documents_safe = dangerzone.get_safe_documents()
     documents_failed = dangerzone.get_failed_documents()
 
@@ -162,20 +168,12 @@ def cli_main(
                 f"Unsafe (original) documents moved to '{ARCHIVE_SUBDIR}' subdirectory"
             )
 
-    ret = 0
     if documents_failed != []:
         print_header("Failed to convert document(s)")
         for document in documents_failed:
             click.echo(replace_control_chars(document.input_filename))
-        ret = 1
-
-    if dangerzone.isolation_provider.requires_install() and not linger:
-        if platform.system() != "Linux":
-            click.echo("Stopping Podman machine...")
-            PodmanMachineManager().stop(wait=False)
-        else:
-            click.echo("No Podman machine was started, ignoring --linger option")
-    sys.exit(ret)
+        sys.exit(1)
+    sys.exit(0)
 
 
 args.override_parser_and_check_suspicious_options(cli_main)

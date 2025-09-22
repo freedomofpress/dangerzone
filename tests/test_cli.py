@@ -118,7 +118,10 @@ class CLIResult(Result):
 
 class TestCli:
     def run_cli(
-        self, args: Sequence[str] | str = (), tmp_path: Optional[Path] = None
+        self,
+        args: Sequence[str] | str = (),
+        tmp_path: Optional[Path] = None,
+        linger: bool = True,
     ) -> CLIResult:
         """Run the CLI with the provided arguments.
 
@@ -136,7 +139,8 @@ class TestCli:
 
         # Make Windows/macOS tests faster by not stopping the Podman machine all the
         # time.
-        args = ("--linger", *args)
+        if linger:
+            args = ("--linger", *args)
         if os.environ.get("DUMMY_CONVERSION", False):
             args = ("--unsafe-dummy-conversion", *args)
 
@@ -453,3 +457,58 @@ class TestSecurity(TestCli):
 
         # TODO: Check that this applies for single dash arguments, and concatenated
         # single dash arguments, once Dangerzone supports them.
+
+
+class TestCliShutdown(TestCli):
+    def test_cli_shutdown_normal(
+        self, mocker: MockerFixture, sample_pdf: str, tmp_path: Path
+    ) -> None:
+        """Test that the CLI runs the shutdown sequence on success and error."""
+        mock_container_stop = mocker.patch("dangerzone.shutdown.ContainerStopTask.run")
+        mock_machine_stop = mocker.patch("dangerzone.shutdown.MachineStopTask.run")
+        mock_convert_documents = mocker.patch(
+            "dangerzone.logic.DangerzoneCore.convert_documents",
+        )
+
+        def assert_mocks():
+            mock_container_stop.assert_called_once()
+            if platform.system() != "Linux":
+                mock_machine_stop.assert_called_once()
+            else:
+                mock_machine_stop.assert_not_called()
+            mock_container_stop.reset_mock()
+            mock_machine_stop.reset_mock()
+
+        # The CLI should not linger, so that it can call the shutdown tasks.
+        result = self.run_cli(sample_pdf, tmp_path=tmp_path, linger=False)
+        result.assert_success()
+        assert_mocks()
+
+        mock_convert_documents.side_effect = (Exception("Conversion failed"),)
+        result = self.run_cli(sample_pdf, tmp_path=tmp_path, linger=False)
+        result.assert_failure()
+        assert_mocks()
+
+    def test_cli_shutdown_with_linger(
+        self, mocker: MockerFixture, sample_pdf: str, tmp_path: Path
+    ) -> None:
+        """Test that the CLI with --linger does not run the shutdown sequence on
+        success and error."""
+        mock_container_stop = mocker.patch("dangerzone.shutdown.ContainerStopTask.run")
+        mock_machine_stop = mocker.patch("dangerzone.shutdown.MachineStopTask.run")
+        mock_convert_documents = mocker.patch(
+            "dangerzone.logic.DangerzoneCore.convert_documents",
+        )
+
+        result = self.run_cli([sample_pdf], tmp_path=tmp_path)
+        result.assert_success()
+        mock_container_stop.assert_not_called()
+        mock_machine_stop.assert_not_called()
+        mock_container_stop.reset_mock()
+        mock_machine_stop.reset_mock()
+
+        mock_convert_documents.side_effect = (Exception("Conversion failed"),)
+        result = self.run_cli(sample_pdf, tmp_path=tmp_path)
+        result.assert_failure()
+        mock_container_stop.assert_not_called()
+        mock_machine_stop.assert_not_called()

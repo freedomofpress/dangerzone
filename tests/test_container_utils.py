@@ -43,7 +43,7 @@ def test_create_containers_conf(mocker: MockerFixture, tmp_path: pathlib.Path) -
     conf = path.read_text()
     assert "helper_binaries_dir" in conf
     assert "cpus=4" in conf
-    assert f'volumes=["{tmp_path}:{tmp_path}:ro"]' in conf
+    assert f'volumes=["{tmp_path}:{tmp_path}:ro"]'.replace("\\", "\\\\") in conf
 
     container_utils.create_containers_conf()
     assert conf == path.read_text()

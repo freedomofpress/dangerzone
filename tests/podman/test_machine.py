@@ -28,7 +28,12 @@ def podman_register(fp: FakeProcess, machine_manager: PodmanMachineManager) -> C
 
     base_cmd = [podman_path]
     if platform.system() != "Linux":
-        base_cmd += ["--connection", machine_name]
+        base_cmd += [
+            "--connection",
+            machine_name,
+            "--storage-opt",
+            "overlay.mount_program=/usr/bin/fuse-overlayfs",
+        ]
 
     def fp_register(cmd: list[str], **kwargs):  # type: ignore [no-untyped-def]
         return fp.register(base_cmd + cmd, **kwargs)

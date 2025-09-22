@@ -255,7 +255,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if platform.system() == "Darwin":
             # FIXME have a different height for macOS due to font-size inconsistencies
             # https://github.com/freedomofpress/dangerzone/issues/270
-            self.setMinimumHeight(470)
+            self.setMinimumHeight(550)
         else:
             self.setMinimumHeight(430)
 

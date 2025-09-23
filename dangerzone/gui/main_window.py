@@ -643,7 +643,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.conversion_widget.show()
 
     def waiting_finished(self) -> None:
-        log.debug("Waiting for the background task has finished")
+        log.debug("Startup tasks have finished, any pending conversions can now resume")
         self.dangerzone.is_waiting_finished = True
 
         if self.conversion_widget.documents_list.conversion_pending:

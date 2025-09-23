@@ -470,7 +470,15 @@ class TestCliShutdown(TestCli):
             "dangerzone.logic.DangerzoneCore.convert_documents",
         )
 
-        def assert_mocks():
+        def assert_mocks() -> None:
+            if (
+                os.environ.get("DUMMY_CONVERSION", False)
+                or is_qubes_native_conversion()
+            ):
+                mock_container_stop.assert_not_called()
+                mock_machine_stop.assert_not_called()
+                return
+
             mock_container_stop.assert_called_once()
             if platform.system() != "Linux":
                 mock_machine_stop.assert_called_once()

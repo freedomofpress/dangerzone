@@ -98,6 +98,8 @@ def patched_subprocess_run(  # type: ignore[no-untyped-def]
         log.debug(_decode_if_needed(process.stdout))
     if process.stderr is not None:
         log.debug(_decode_if_needed(process.stderr))
+
+    log.debug(f"Process returncode: {process.returncode}")
     return process
 
 

@@ -64,7 +64,7 @@ class PatchedPopen(original_subprocess_popen):
             if returncode is not None:
                 for t in (thread_out, thread_err):
                     t.join()
-            return rereturncodet
+            return returncode
 
         self.poll = patched_poll
 

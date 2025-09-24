@@ -35,6 +35,7 @@ def verify_blob(pubkey: Path, bundle: str, payload: str) -> None:
     cmd = [
         _COSIGN_BINARY,
         "verify-blob",
+        "--offline",
         "--key",
         str(pubkey.absolute()),
         "--bundle",

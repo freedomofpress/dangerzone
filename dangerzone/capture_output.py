@@ -35,7 +35,7 @@ class PatchedPopen(original_subprocess_popen):
         """
         stdout = kwargs.get("stdout")
         stderr = kwargs.get("stderr")
-        log.debug(shlex.join(args[0]))
+        log.debug(f"Running: {shlex.join(args[0])}")
         if stdout is not None or stderr is not None:
             super().__init__(*args, **kwargs)
             return

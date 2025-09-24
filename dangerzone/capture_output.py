@@ -61,7 +61,6 @@ class PatchedPopen(original_subprocess_popen):
         # Patch the .poll() method to wait for the threads to finish
         def patched_poll(*args, **kwargs):  # type: ignore[no-untyped-def]
             returncode = original_process_poll(*args, **kwargs)
-            log.debug(f"Process returncode: {returncode}")
             if returncode is not None:
                 for t in (thread_out, thread_err):
                     t.join()

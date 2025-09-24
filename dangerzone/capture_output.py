@@ -46,8 +46,6 @@ class PatchedPopen(original_subprocess_popen):
         kwargs["text"] = True
         kwargs["bufsize"] = 1
 
-        # Patch open() to fake a tty during the Popen init
-
         super().__init__(*args, **kwargs)
 
         def _consume_pipe(pipe: IOBase) -> None:

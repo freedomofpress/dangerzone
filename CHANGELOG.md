@@ -35,7 +35,6 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Fix a Dangerzone error that manifested in recent Debian-based environments
   that included both PySide6 and PySide2 libraries
   ([#1218](https://github.com/freedomofpress/dangerzone/issues/1218))
-  <<<<<<< HEAD
 - Issue templates have been updated to work on Windows
   ([#1237](https://github.com/freedomofpress/dangerzone/issues/1237))
 - Question dialogs now show a question mark instead of an alert
@@ -56,6 +55,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   ([#1009](https://github.com/freedomofpress/dangerzone/issues/1009))
 - Add end to end functional tests for independent container updates
   ([#1157](https://github.com/freedomofpress/dangerzone/issues/1157))
+- Add developer instructions for releasing container images independently
+  ([#1162](https://github.com/freedomofpress/dangerzone/issues/1162))
 
 ## [0.9.1](https://github.com/freedomofpress/dangerzone/compare/v0.9.1...0.9.0)
 

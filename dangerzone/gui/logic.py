@@ -259,10 +259,14 @@ class Alert(Dialog):
         kwargs.setdefault("title", "dangerzone")
         super().__init__(*args, **kwargs)
 
+    def get_icon(self, color_mode: str) -> str:
+        return "icon.png"
+
     def create_layout(self) -> QtWidgets.QBoxLayout:
         logo = QtWidgets.QLabel()
+        icon = self.get_icon(self.property("OSColorMode"))
         logo.setPixmap(
-            QtGui.QPixmap.fromImage(QtGui.QImage(str(get_resource_path("icon.png"))))
+            QtGui.QPixmap.fromImage(QtGui.QImage(str(get_resource_path(icon))))
         )
 
         label = QtWidgets.QLabel()
@@ -276,6 +280,11 @@ class Alert(Dialog):
         message_layout.addWidget(label, stretch=1)
 
         return message_layout
+
+
+class Question(Alert):
+    def get_icon(self, color_mode: str) -> str:
+        return "question-dark" if color_mode == "dark" else "question.png"
 
 
 class UpdateDialog(Dialog):

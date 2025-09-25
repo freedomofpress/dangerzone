@@ -46,7 +46,7 @@ from ..updater import (
 )
 from ..util import format_exception, get_resource_path, get_version
 from .log_window import LogHandler, LogWindow
-from .logic import Alert, CollapsibleBox, DangerzoneGui, UpdateDialog
+from .logic import Alert, CollapsibleBox, DangerzoneGui, Dialog, Question, UpdateDialog
 from .widgets import TracebackWidget
 
 log = logging.getLogger(__name__)
@@ -266,7 +266,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle("Dangerzone")
         self.setWindowIcon(self.dangerzone.get_window_icon())
-        self.alert: Optional[Alert] = None
+        self.dialog: Optional[Dialog] = None
 
         self.setMinimumWidth(600)
         if platform.system() == "Darwin":
@@ -611,7 +611,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def handle_needs_user_input_stop_others(self, req: startup.PromptRequest) -> None:
         machine_name = req.req_data["name"]
         log.debug(f"Prompting user to stop Podman machine '{machine_name}'")
-        alert = Alert(
+        question = Question(
             self.dangerzone,
             title="Detected running Podman machine",
             message=MACHINE_NEEDS_STOP_MSG.format(machine_name=machine_name),
@@ -619,11 +619,11 @@ class MainWindow(QtWidgets.QMainWindow):
             cancel_text="Quit Dangerzone",
             checkbox_text="Remember my choice",
         )
-        assert alert.checkbox is not None
-        result = alert.launch()
+        assert question.checkbox is not None
+        result = question.launch()
 
-        if result == Alert.Accepted:
-            if alert.checkbox.isChecked():
+        if result == Question.Accepted:
+            if question.checkbox.isChecked():
                 self.dangerzone.settings.set(
                     "stop_other_podman_machines",
                     "always",
@@ -631,7 +631,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 )
             req.reply(True)
         else:
-            if alert.checkbox.isChecked():
+            if question.checkbox.isChecked():
                 self.dangerzone.settings.set(
                     "stop_other_podman_machines",
                     "never",
@@ -668,7 +668,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.log_window.show()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
-        self.alert = Alert(
+        self.dialog = Alert(
             self.dangerzone,
             message="Some documents are still being converted.\n Are you sure you want to quit?",
             ok_text="Abort conversions",
@@ -677,7 +677,7 @@ class MainWindow(QtWidgets.QMainWindow):
         failed_docs = self.dangerzone.get_failed_documents()
 
         if converting_docs:
-            accept_exit = self.alert.launch()
+            accept_exit = self.dialog.launch()
             if not accept_exit:
                 e.ignore()
                 return
@@ -769,7 +769,7 @@ class ConversionWidget(QtWidgets.QWidget):
 
     def documents_selected(self, docs: List[Document]) -> None:
         if self.conversion_started:
-            self.alert = Alert(
+            self.dialog = Alert(
                 self.dangerzone,
                 message="Dangerzone does not support adding documents after the conversion has started.",
                 has_cancel=False,
@@ -779,7 +779,7 @@ class ConversionWidget(QtWidgets.QWidget):
         # Ensure all files in batch are in the same directory
         dirnames = {os.path.dirname(doc.input_filename) for doc in docs}
         if len(dirnames) > 1:
-            self.alert = Alert(
+            self.dialog = Alert(
                 self.dangerzone,
                 message="Dangerzone does not support adding documents from multiple locations.\n\n The newly added documents were ignored.",
                 has_cancel=False,
@@ -948,14 +948,14 @@ class DocSelectionDropFrame(QtWidgets.QFrame):
             text = f"{num_unsupported_docs} files are not supported."
             ok_text = "Continue without these files"
 
-        self.alert = Alert(
+        self.dialog = Alert(
             self.dangerzone,
             message=f"{text}\nThe supported extensions are: "
             + ", ".join(get_supported_extensions()),
             ok_text=ok_text,
         )
 
-        return self.alert.exec_()
+        return self.dialog.exec_()
 
 
 class SettingsWidget(QtWidgets.QWidget):

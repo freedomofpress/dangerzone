@@ -21,7 +21,7 @@ dangerzone-image upgrade
 You can verify that the image you have locally matches the stored signatures, and that these have been signed with a trusted public key. This is not a required step, and will be done automatically by the Dangerzone software on subsequent runs, so this command is mainly provided as a convenience.
 
 ```bash
-dangerzone-image verify-local ghcr.io/freedomofpress/dangerzone/dangerzone
+dangerzone-image verify-local ghcr.io/freedomofpress/dangerzone/v1
 ```
 
 ## Checking attestations
@@ -33,14 +33,14 @@ been originally built by Github CI runners, from a defined source repository (in
 To verify the attestations against our expectations, use the following command:
 
 ```bash
-dangerzone-image attest-provenance ghcr.io/freedomofpress/dangerzone/dangerzone --repository freedomofpress/dangerzone
+dangerzone-image attest-provenance ghcr.io/freedomofpress/dangerzone/v1 --repository freedomofpress/dangerzone
 ```
 
 In case of success, it will report back:
 
 ```
 🎉 Successfully verified image
-'ghcr.io/freedomofpress/dangerzone/dangerzone:<tag>@sha256:<digest>'
+'ghcr.io/freedomofpress/dangerzone/v1:<tag>@sha256:<digest>'
 and its associated claims:
 - ✅ SLSA Level 3 provenance
 - ✅ GitHub repo: freedomofpress/dangerzone

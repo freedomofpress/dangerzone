@@ -12,6 +12,7 @@ run from the developer's laptop and are not tied to any build environment.
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
+- [ ] (optional) Bump image version from `v1` to `v2`, if the API has changed.
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
 - [ ] [Bump the minimum Docker Desktop versions](#bump-the-minimum-docker-desktop-version) in `isolation_provider/container.py`
 - [ ] Bump the dates and versions in the `Dockerfile.env`

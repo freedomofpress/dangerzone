@@ -78,7 +78,7 @@ jobs:
         run: |
           DEBIAN_ARCHIVE_DATE=$(date -u +'%Y%m%d')
           SOURCE_DATE_EPOCH=$(date -u -d ${DEBIAN_ARCHIVE_DATE} +"%s")
-          TAG=${DEBIAN_ARCHIVE_DATE}-$(git describe --long --first-parent | tail -c +2)
+          TAG=${DEBIAN_ARCHIVE_DATE}-$(git describe --long --first-parent | sed 's/^v//')
           FULL_IMAGE_NAME=${{ inputs.registry }}/${{ inputs.image_name }}:${TAG}
           echo "debian_archive_date=${DEBIAN_ARCHIVE_DATE}" >> $GITHUB_OUTPUT
           echo "source_date_epoch=${SOURCE_DATE_EPOCH}" >> $GITHUB_OUTPUT

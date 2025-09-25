@@ -43,7 +43,7 @@ You can automate these steps from your macOS terminal app with:
 
    ```bash
    poetry run ./dev_scripts/dangerzone-image prepare-archive
-    --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+    --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
    poetry run mazette install
 
@@ -138,7 +138,7 @@ or create your own locally with:
 
 # Build the latest container
 poetry run ./dev_scripts/dangerzone-image prepare-archive
-    --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+    --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
 
 # Create a .deb
@@ -163,7 +163,7 @@ or create your own locally with:
 ./dev_scripts/env.py --distro fedora --version 41 build-dev
 
 poetry run ./dev_scripts/dangerzone-image prepare-archive
-    --image ghcr.io/freedomofpress/dangerzone/dangerzone@sha256:${DIGEST}
+    --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
 
 # Create a .rpm:

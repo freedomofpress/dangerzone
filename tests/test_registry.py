@@ -18,33 +18,33 @@ from dangerzone.updater.registry import (
 
 def test_parse_image_location_no_tag() -> None:
     """Test that parse_image_location correctly handles an image location without a tag."""
-    image_str = "ghcr.io/freedomofpress/dangerzone"
+    image_str = "ghcr.io/freedomofpress/dangerzone/v1"
     image = parse_image_location(image_str)
 
     assert isinstance(image, Image)
     assert image.registry == "ghcr.io"
     assert image.namespace == "freedomofpress"
-    assert image.image_name == "dangerzone"
+    assert image.image_name == "dangerzone/v1"
     assert image.tag == "latest"  # Default tag should be "latest"
     assert image.digest is None
 
 
 def test_parse_image_location_with_tag() -> None:
     """Test that parse_image_location correctly handles an image location with a tag."""
-    image_str = "ghcr.io/freedomofpress/dangerzone:v0.4.2"
+    image_str = "ghcr.io/freedomofpress/dangerzone/v1:v0.4.2"
     image = parse_image_location(image_str)
 
     assert isinstance(image, Image)
     assert image.registry == "ghcr.io"
     assert image.namespace == "freedomofpress"
-    assert image.image_name == "dangerzone"
+    assert image.image_name == "dangerzone/v1"
     assert image.tag == "v0.4.2"
 
 
 def test_parse_image_location_tag_plus_digest() -> None:
     """Test that parse_image_location handles an image location with a tag that includes a digest."""
     image_str = (
-        "ghcr.io/freedomofpress/dangerzone"
+        "ghcr.io/freedomofpress/dangerzone/v1"
         ":20250205-0.8.0-148-ge67fbc1"
         "@sha256:19e8eacd75879d05f6621c2ea8dd955e68ee3e07b41b9d53f4c8cc9929a68a67"
     )
@@ -54,7 +54,7 @@ def test_parse_image_location_tag_plus_digest() -> None:
     assert isinstance(image, Image)
     assert image.registry == "ghcr.io"
     assert image.namespace == "freedomofpress"
-    assert image.image_name == "dangerzone"
+    assert image.image_name == "dangerzone/v1"
     assert image.tag == "20250205-0.8.0-148-ge67fbc1"
     assert (
         image.digest
@@ -80,17 +80,17 @@ def test_parse_invalid_image_location() -> None:
 def test_replace_image_digest() -> None:
     assert (
         replace_image_digest(
-            "ghcr.io/freedomofpress/dangerzone/dangerzone-testing@sha256:123456",
+            "ghcr.io/freedomofpress/dangerzone-testing/v1@sha256:123456",
             "777777",
         )
-        == "ghcr.io/freedomofpress/dangerzone/dangerzone-testing@sha256:777777"
+        == "ghcr.io/freedomofpress/dangerzone-testing/v1@sha256:777777"
     )
     assert (
         replace_image_digest(
-            "ghcr.io/freedomofpress/dangerzone/dangerzone-testing:latest@sha256:123456",
+            "ghcr.io/freedomofpress/dangerzone-testing/v1:latest@sha256:123456",
             "777777",
         )
-        == "ghcr.io/freedomofpress/dangerzone/dangerzone-testing@sha256:777777"
+        == "ghcr.io/freedomofpress/dangerzone-testing/v1@sha256:777777"
     )
 
 

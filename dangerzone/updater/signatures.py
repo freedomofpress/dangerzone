@@ -109,7 +109,7 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
     """
     # FIXME Also verify the identity/docker-reference field against
     # `container_utils.expected_image_name()`
-    # e.g. ghcr.io/freedomofpress/dangerzone/dangerzone
+    # e.g. ghcr.io/freedomofpress/dangerzone/v1
 
     sig_obj = Signature(signature)
     try:

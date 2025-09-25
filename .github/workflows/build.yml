@@ -18,7 +18,7 @@ env:
 
 # Each day, build and publish to ghcr.io:
 #
-# - the dangerzone/dangerzone container image
+# - the dangerzone/v1 container image
 # - the dangerzone/build/{debian,ubuntu,fedora}:version
 #   dev environments used to run the tests
 #

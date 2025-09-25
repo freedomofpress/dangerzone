@@ -11,7 +11,7 @@ instead built nightly on GitHub actions. The maintainer is then responsible to:
 > [!NOTE]
 > This is the only part of the release process that maintainers can run
 > independently, when they want to push out a new container image (read more in
-> [Independent Container Updates](https://github.com/freedomofpress/dangerzone/issues/1006))
+> [Independent Container Updates](../independent-container-updates.md))
 
 ## Picking a release candidate image
 

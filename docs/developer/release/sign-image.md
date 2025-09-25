@@ -28,7 +28,7 @@ needs to:
       | tail -1)
   $ IMAGE=${IMAGE%:*}@$(crane digest ${IMAGE?})
   $ echo $IMAGE
-  ghcr.io/freedomofpress/dangerzone/dangerzone:20250909-0.10.0-339-g1234abcd@sha256:abcd1234...
+  ghcr.io/freedomofpress/dangerzone/v1:20250909-0.10.0-339-g1234abcd@sha256:abcd1234...
   ```
 
 - [ ] Ensure that this image is fresh (no more than two days old) and has been produced by a build that passes CI tests.

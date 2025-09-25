@@ -123,7 +123,7 @@ def test_upgrade_container_without_signatures(mocker: Any) -> None:
     with pytest.raises(errors.SignatureVerificationError):
         upgrade_container_image(
             "sha256:123456",
-            "ghcr.io/freedomofpress/dangerzone/dangerzone",
+            "ghcr.io/freedomofpress/dangerzone/v1",
             TEST_PUBKEY_PATH,
         )
 
@@ -148,7 +148,7 @@ def test_upgrade_container_lower_log_index(mocker: Any) -> None:
     with pytest.raises(errors.InvalidLogIndex):
         upgrade_container_image(
             image_digest,
-            "ghcr.io/freedomofpress/dangerzone/dangerzone",
+            "ghcr.io/freedomofpress/dangerzone/v1",
             TEST_PUBKEY_PATH,
             signatures=signatures,
         )
@@ -156,7 +156,7 @@ def test_upgrade_container_lower_log_index(mocker: Any) -> None:
     # And it should go trough if we ask to bypass the logindex checks
     upgrade_container_image(
         image_digest,
-        "ghcr.io/freedomofpress/dangerzone/dangerzone",
+        "ghcr.io/freedomofpress/dangerzone/v1",
         TEST_PUBKEY_PATH,
         bypass_logindex_check=True,
         signatures=signatures,
@@ -164,7 +164,7 @@ def test_upgrade_container_lower_log_index(mocker: Any) -> None:
 
 
 def test_get_remote_signatures_error(fp: FakeProcess, mocker: Any) -> None:
-    image = "ghcr.io/freedomofpress/dangerzone/dangerzone"
+    image = "ghcr.io/freedomofpress/dangerzone/v1"
     digest = "123456"
     fp.register_subprocess(
         [_COSIGN_BINARY, "download", "signature", f"{image}@sha256:{digest}"],
@@ -175,7 +175,7 @@ def test_get_remote_signatures_error(fp: FakeProcess, mocker: Any) -> None:
 
 
 def test_get_remote_signatures_empty(fp: FakeProcess, mocker: Any) -> None:
-    image = "ghcr.io/freedomofpress/dangerzone/dangerzone"
+    image = "ghcr.io/freedomofpress/dangerzone/v1"
     digest = "123456"
     fp.register_subprocess(
         [_COSIGN_BINARY, "download", "signature", f"{image}@sha256:{digest}"],
@@ -186,7 +186,7 @@ def test_get_remote_signatures_empty(fp: FakeProcess, mocker: Any) -> None:
 
 
 def test_get_remote_signatures_cosign_error(mocker: Any, fp: FakeProcess) -> None:
-    image = "ghcr.io/freedomofpress/dangerzone/dangerzone"
+    image = "ghcr.io/freedomofpress/dangerzone/v1"
     digest = "123456"
 
     fp.register_subprocess(

@@ -36,7 +36,7 @@ jobs:
         uses: anchore/scan-action@v6
         id: scan_container
         with:
-          image: "ghcr.io/freedomofpress/dangerzone/dangerzone:${{ steps.tag.outputs.tag }}"
+          image: "ghcr.io/freedomofpress/dangerzone/v1:${{ steps.tag.outputs.tag }}"
           fail-build: false
           only-fixed: false
           severity-cutoff: critical
@@ -50,7 +50,7 @@ jobs:
       - name: Scan container image
         uses: anchore/scan-action@v6
         with:
-          image: "ghcr.io/freedomofpress/dangerzone/dangerzone:${{ steps.tag.outputs.tag }}"
+          image: "ghcr.io/freedomofpress/dangerzone/v1:${{ steps.tag.outputs.tag }}"
           fail-build: true
           only-fixed: false
           severity-cutoff: critical

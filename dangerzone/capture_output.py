@@ -86,10 +86,14 @@ def patched_subprocess_run(  # type: ignore[no-untyped-def]
     """
     Patch subprocess.run to log stdout and stderr and the command that was run.
     """
-    process = original_subprocess_run(
-        *args,
-        **kwargs,
-    )
+    try:
+        process = original_subprocess_run(
+            *args,
+            **kwargs,
+        )
+    except subprocess.CalledProcessError as e:
+        log.exception(e)
+        raise
 
     # process.std{out,err} is set to `None` by the patched Popen when reading the
     # streams as it comes. If it is set here, it means it is not logged

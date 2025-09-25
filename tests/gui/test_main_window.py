@@ -754,11 +754,13 @@ def test_machine_stop_others_user_input(
     mock_fail = mocker.patch("dangerzone.startup.MachineStopOthersTask.fail")
 
     # Mock the Alert dialog
-    mock_alert = mocker.patch("dangerzone.gui.main_window.Alert")
+    mock_question = mocker.patch("dangerzone.gui.main_window.Question")
 
     # Simulate user choosing to stop the machine and remember choice
-    mock_alert.return_value.launch.return_value = main_window_module.Alert.Accepted
-    mock_alert.return_value.checkbox.isChecked.return_value = False
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Accepted
+    )
+    mock_question.return_value.checkbox.isChecked.return_value = False
     mock_fail.return_value = False
 
     # Ensure only MachineStopOthersTask runs
@@ -775,13 +777,15 @@ def test_machine_stop_others_user_input(
     qtbot.waitUntil(handle_needs_user_input_stop_others_spy.assert_called_once)
     window.startup_thread.wait()
 
-    mock_alert.assert_called_once()
+    mock_question.assert_called_once()
     mock_stop.assert_called_once()
 
     # Simulate user choosing to quit and remember choice
-    mock_alert.reset_mock()
-    mock_alert.return_value.launch.return_value = main_window_module.Alert.Rejected
-    mock_alert.return_value.checkbox.isChecked.return_value = True
+    mock_question.reset_mock()
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Rejected
+    )
+    mock_question.return_value.checkbox.isChecked.return_value = True
     mock_fail.assert_not_called()
 
     mock_stop.reset_mock()
@@ -794,7 +798,7 @@ def test_machine_stop_others_user_input(
     window.startup_thread.wait()
 
     handle_needs_user_input_stop_others_spy.assert_called_once()
-    mock_alert.assert_called_once()
+    mock_question.assert_called_once()
     mock_stop.assert_not_called()
     assert window.dangerzone.settings.get("stop_other_podman_machines") == "never"
     exit_spy.assert_called_once_with(2)

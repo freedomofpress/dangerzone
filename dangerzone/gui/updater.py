@@ -11,7 +11,7 @@ else:
         from PySide2 import QtCore, QtWidgets
 
 from ..updater import errors, releases
-from .logic import Alert, DangerzoneGui
+from .logic import DangerzoneGui, Question
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ OK_TEXT = "Yes, enable sandbox updates"
 CANCEL_TEXT = "No, disable sandbox updates"
 
 
-class UpdateCheckPrompt(Alert):
+class UpdateCheckPrompt(Question):
     """The prompt that asks the users if they want to enable update checks."""
 
     x_pressed = False

@@ -14,6 +14,7 @@ This list is broken down in the following phases:
 
 1. [Pre-release](pre-release.md)
 2. [Prepare build environments](prepare-build-envs.md)
+3. [Sign and release container image](sign-image.md)
 3. [Build release artifacts](build.md)
 4. [QA](qa.md)
 5. [Release](release.md)

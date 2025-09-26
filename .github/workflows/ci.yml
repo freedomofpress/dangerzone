@@ -67,6 +67,19 @@ jobs:
         include:
           - runner: windows-2022
           - runner: windows-2025
+    env:
+      # NOTE: We have to set the encoding for this run to UTF-8, else we get an
+      # enoding error when Dangerzone attempts to display its banner, since the
+      # default seems to be CP-1252:
+      #
+      #     File "D:\a\dangerzone\dangerzone\dangerzone\cli.py", line 225, in display_banner
+      #       print(Back.BLACK + Fore.YELLOW + Style.DIM + "\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e")
+      #       ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      #     File "C:\hostedtoolcache\windows\Python\3.13.7\x64\Lib\encodings\cp1252.py", line 19, in encode
+      #       return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+      #              ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      #   UnicodeEncodeError: 'charmap' codec can't encode characters in position 14-41: character maps to <undefined>
+      PYTHONIOENCODING: UTF-8
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5

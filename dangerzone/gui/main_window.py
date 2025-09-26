@@ -1,3 +1,4 @@
+import functools
 import io
 import logging
 import os
@@ -8,7 +9,7 @@ from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import Callable, List, Optional, Union
 
-from dangerzone.gui import startup
+from dangerzone.gui import shutdown, startup
 from dangerzone.gui.updater import prompt_for_checks
 from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
 
@@ -219,6 +220,9 @@ class StatusBar(QtWidgets.QWidget):
     def handle_startup_begin(self) -> None:
         self.set_status_working("Starting")
 
+    def handle_shutdown_begin(self) -> None:
+        self.set_status_working("Shutting down")
+
     def handle_task_machine_init(self) -> None:
         self.set_status_working("Initializing Dangerzone VM")
 
@@ -228,11 +232,17 @@ class StatusBar(QtWidgets.QWidget):
     def handle_task_machine_stop_others(self) -> None:
         self.set_status_working("Stopping other Podman VMs")
 
+    def handle_task_machine_stop(self) -> None:
+        self.set_status_working("Stopping Dangerzone VM")
+
     def handle_task_update_check(self) -> None:
         self.set_status_working("Checking for updates")
 
     def handle_task_container_install(self) -> None:
         self.set_status_working("Installing Dangerzone sandbox")
+
+    def handle_task_container_stop(self) -> None:
+        self.set_status_working("Stopping Dangerzone sandbox")
 
     def handle_startup_error(self) -> None:
         self.set_status_error("Startup failed")
@@ -436,6 +446,38 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.show()
 
+    def exit(self, ret: int) -> None:
+        log.debug(f"Shutting down Dangerzone with exit code {ret}")
+        self.dangerzone.app.exit(ret)
+
+    def begin_shutdown(self, ret: int) -> None:
+        log.debug(f"Starting the shutdown process with exit code {ret}")
+        if not self.dangerzone.isolation_provider.requires_install():
+            return self.exit(ret)
+
+        task_container_stop = shutdown.ContainerStopTask()
+        task_machine_stop = shutdown.MachineStopTask()
+        tasks = [task_container_stop, task_machine_stop]
+
+        self.shutdown_thread = shutdown.ShutdownThread(tasks)  # type: ignore [arg-type]
+        self.shutdown_thread.starting.connect(self.status_bar.handle_shutdown_begin)
+        self.shutdown_thread.succeeded.connect(
+            functools.partial(self.finish_shutdown, ret=ret)
+        )
+        self.shutdown_thread.failed.connect(
+            functools.partial(self.finish_shutdown, ret=3)
+        )
+        task_container_stop.starting.connect(self.status_bar.handle_task_container_stop)
+        task_container_stop.starting.connect(self.log_window.handle_task_container_stop)
+        task_machine_stop.starting.connect(self.status_bar.handle_task_machine_stop)
+        task_machine_stop.starting.connect(self.log_window.handle_task_machine_stop)
+        self.shutdown_thread.start()
+
+    def finish_shutdown(self, ret: int) -> None:
+        log.debug(f"Finalizing Dangerzone shutdown")
+        self.shutdown_thread.wait()
+        self.exit(ret)
+
     def show_update_success(self) -> None:
         """Inform the user about a new Dangerzone release."""
         version = self.dangerzone.settings.get("updater_latest_version")
@@ -590,7 +632,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 )
             req.reply(False)
             self.startup_thread.wait()
-            self.dangerzone.app.exit(1)
+            self.begin_shutdown(ret=2)
 
     def hide_conversion_widget(self) -> None:
         self.waiting_widget.show()
@@ -626,21 +668,20 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         converting_docs = self.dangerzone.get_converting_documents()
         failed_docs = self.dangerzone.get_failed_documents()
-        if not converting_docs:
-            e.accept()
-            if failed_docs:
-                self.dangerzone.app.exit(1)
-            else:
-                self.dangerzone.app.exit(0)
-        else:
+
+        if converting_docs:
             accept_exit = self.alert.launch()
             if not accept_exit:
                 e.ignore()
                 return
-            else:
-                e.accept()
 
-        self.dangerzone.app.exit(2)
+        ret = 2 if converting_docs else 1 if failed_docs else 0
+        # We are ignoring the close event, because we want to show progress messages in
+        # the status bar, while Dangerzone closes. Once the shutdown task is done, it
+        # will close the application.
+        e.ignore()
+        self.begin_shutdown(ret)
+        # TODO: Handle gracefully the case of a running startup thread as well.
 
 
 class WaitingWidget(QtWidgets.QWidget):

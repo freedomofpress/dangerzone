@@ -2,6 +2,7 @@ import json
 import platform
 from pathlib import Path
 from typing import Callable
+from unittest.mock import MagicMock
 
 import pytest
 from pytest_mock import MockerFixture
@@ -199,9 +200,15 @@ def test_start_machine_fail(
 
 
 def test_stop_machine(
-    machine_manager: PodmanMachineManager, podman_register: Callable
+    machine_manager: PodmanMachineManager,
+    podman_register: Callable,
+    machine_stop: MagicMock,
+    mocker: MockerFixture,
 ) -> None:
     """Test that the stop_machine method runs the correct commands."""
+    # Undo the global mock for this specific test, in order to trigger the underlying
+    # subprocess command.
+    mocker.stop(machine_stop)
     version = get_version()
     machine_name = f"dz-internal-{version}"
     rec_stop = podman_register(["machine", "stop", machine_name])

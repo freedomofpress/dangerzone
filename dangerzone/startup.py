@@ -200,24 +200,31 @@ class UpdateCheckTask(Task):
         logger.info(f"There is an update for the Dangerzone sandbox")
 
 
-class StartupLogic:
+class Runner:
     def __init__(self, tasks: list[Task], raise_on_error: bool = True) -> None:
         self.tasks = tasks
         self.raise_on_error = raise_on_error
         super().__init__()
 
+    def handle_start_custom(self) -> None:
+        pass
+
+    def handle_error_custom(self, task: Task, e: Exception) -> None:
+        pass
+
+    def handle_success_custom(self) -> None:
+        pass
+
     def handle_start(self) -> None:
-        logger.info("Performing some Dangerzone startup tasks")
+        self.handle_start_custom()
 
     def handle_error(self, task: Task, e: Exception) -> None:
-        logger.error(
-            f"Stopping startup tasks because task '{task.name}' failed with an error"
-        )
+        self.handle_error_custom(task, e)
         if self.raise_on_error:
             raise e
 
     def handle_success(self) -> None:
-        logger.info("Successfully finished all Dangerzone startup tasks")
+        self.handle_success_custom()
 
     def run(self) -> None:
         self.handle_start()
@@ -235,3 +242,20 @@ class StartupLogic:
             else:
                 task.handle_success()
         self.handle_success()
+
+
+class StartupMixin:
+    def handle_start_custom(self) -> None:
+        logger.info("Performing some Dangerzone startup tasks")
+
+    def handle_error_custom(self, task: Task, e: Exception) -> None:
+        logger.error(
+            f"Stopping startup tasks because task '{task.name}' failed with an error"
+        )
+
+    def handle_success_custom(self) -> None:
+        logger.info("Successfully finished all Dangerzone startup tasks")
+
+
+class StartupLogic(Runner, StartupMixin):
+    pass

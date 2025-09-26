@@ -4,6 +4,7 @@ import typing
 import zipfile
 from pathlib import Path
 from typing import Any, Callable, Generator, List
+from unittest.mock import MagicMock
 
 import pytest
 from pytest_mock import MockerFixture
@@ -12,6 +13,7 @@ from dangerzone import container_utils, startup
 from dangerzone.document import SAFE_EXTENSION
 from dangerzone.gui import Application
 from dangerzone.isolation_provider import container
+from dangerzone.podman.machine import PodmanMachineManager
 from dangerzone.settings import Settings
 
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
@@ -43,6 +45,13 @@ def setup_function() -> Generator[None, None, None]:
 @pytest.fixture(scope="session")
 def qapp_cls() -> typing.Type[Application]:
     return Application
+
+
+# Use this fixture to make `pytest-qt` invoke our custom QApplication.
+# See https://pytest-qt.readthedocs.io/en/latest/qapplication.html#testing-custom-qapplications
+@pytest.fixture(autouse=True)
+def machine_stop(mocker: MockerFixture) -> MagicMock:
+    return mocker.patch("dangerzone.podman.command.machine_manager.MachineManager.stop")
 
 
 @pytest.fixture

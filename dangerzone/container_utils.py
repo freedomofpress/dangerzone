@@ -67,7 +67,7 @@ def get_runtime_version() -> Tuple[int, int]:
         raise RuntimeError(msg)
 
 
-def get_podman_path() -> Path:
+def get_podman_path() -> Optional[Path]:
     podman_bin = "podman"
     if platform.system() == "Linux":
         return None  # Use default Podman location
@@ -144,6 +144,7 @@ def make_seccomp_json_accessible() -> Union[Path, PurePosixPath]:
 
 def create_containers_conf() -> Path:
     podman_path = get_podman_path()
+    assert isinstance(podman_path, Path)
     helper_binaries_dir = str(podman_path.parent)
     helper_binaries_dir = helper_binaries_dir.replace("\\", "\\\\")
     content = f"""\
@@ -193,7 +194,7 @@ def list_image_digests() -> List[str]:
                 expected_image_name(),
             ],
         )
-        .strip()
+        .strip()  # type: ignore [union-attr]
         .split()
     )
 
@@ -297,6 +298,7 @@ def container_pull(
     process = podman.run(
         ["pull", f"{image}@sha256:{manifest_digest}"], wait=False, text=True, bufsize=1
     )
+    assert isinstance(process, subprocess.Popen)
 
     if callback:
         for line in process.stdout:  # type: ignore
@@ -324,7 +326,7 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
     assert isinstance(res, str)
     # In some cases, the output can be multiple lines with the same digest
     # sets are used to reduce them.
-    lines = set(output)
+    lines = set(res.split("\n"))
     if len(lines) < 1:
         raise errors.ImageNotPresentException(
             f"The image {expected_image} does not exist locally"

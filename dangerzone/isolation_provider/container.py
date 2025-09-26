@@ -23,7 +23,6 @@ from ..util import (
 )
 from .base import IsolationProvider, terminate_process_group
 
-TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
 MINIMUM_DOCKER_DESKTOP = {
     "Darwin": "4.43.1",
     "Windows": "4.43.1",
@@ -91,11 +90,11 @@ class Container(IsolationProvider):
 
     def doc_to_pixels_container_name(self, document: Document) -> str:
         """Unique container name for the doc-to-pixels phase."""
-        return f"dangerzone-doc-to-pixels-{document.id}"
+        return f"{container_utils.CONTAINER_PREFIX}doc-to-pixels-{document.id}"
 
     def pixels_to_pdf_container_name(self, document: Document) -> str:
         """Unique container name for the pixels-to-pdf phase."""
-        return f"dangerzone-pixels-to-pdf-{document.id}"
+        return f"{container_utils.CONTAINER_PREFIX}pixels-to-pdf-{document.id}"
 
     def exec_container(
         self,
@@ -139,36 +138,6 @@ class Container(IsolationProvider):
         assert isinstance(proc, subprocess.Popen)
         return proc
 
-    def kill_container(self, name: str) -> None:
-        """Terminate a spawned container.
-
-        We choose to terminate spawned containers using the `kill` action that the
-        container runtime provides, instead of terminating the process that spawned
-        them. The reason is that this process is not always tied to the underlying
-        container. For instance, in Docker containers, this process is actually
-        connected to the Docker daemon, and killing it will just close the associated
-        standard streams.
-        """
-        podman = container_utils.init_podman_command()
-        try:
-            # We do not check the exit code of the process here, since the container may
-            # have stopped right before invoking this command. In that case, the
-            # command's output will contain some error messages, so we capture them in
-            # order to silence them.
-            #
-            # NOTE: We specify a timeout for this command, since we've seen it hang
-            # indefinitely for specific files. See:
-            # https://github.com/freedomofpress/dangerzone/issues/854
-            podman.run(["kill", name], check=False, timeout=TIMEOUT_KILL)
-        except subprocess.TimeoutExpired:
-            log.warning(
-                f"Could not kill container '{name}' within {TIMEOUT_KILL} seconds"
-            )
-        except Exception as e:
-            log.exception(
-                f"Unexpected error occurred while killing container '{name}': {str(e)}"
-            )
-
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
         # Convert document to pixels
         command = [
@@ -186,8 +155,15 @@ class Container(IsolationProvider):
         # 1. Kill the container, and check that it has exited.
         # 2. Gracefully terminate the conversion process, in case it's stuck on I/O
         #
+        # We choose to terminate spawned containers using first the `kill` action that
+        # the container runtime provides, instead of terminating the process that
+        # spawned them. The reason is that this process is not always tied to the
+        # underlying container. For instance, in Docker containers, this process is
+        # actually connected to the Docker daemon, and killing it will just close the
+        # associated standard streams.
+        #
         # See also https://github.com/freedomofpress/dangerzone/issues/791
-        self.kill_container(self.doc_to_pixels_container_name(document))
+        container_utils.kill_container(self.doc_to_pixels_container_name(document))
         terminate_process_group(p)
 
     def ensure_stop_doc_to_pixels_proc(  # type: ignore [no-untyped-def]

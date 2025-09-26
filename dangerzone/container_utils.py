@@ -23,10 +23,12 @@ from .util import (
 
 # Keep the name of the old container here to be able to get rid of it later
 OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+CONTAINER_PREFIX = "dangerzone-"
 CONTAINERS_CONF_PATH = get_cache_dir() / "containers.conf"
 SECCOMP_PATH = get_cache_dir() / "shared" / "seccomp.gvisor.json"
 PODMAN_MACHINE_PREFIX = "dz-internal-"
 PODMAN_MACHINE_NAME = f"{PODMAN_MACHINE_PREFIX}{get_version()}"
+TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
 
 log = logging.getLogger(__name__)
 
@@ -247,6 +249,45 @@ def list_image_digests() -> List[str]:
         .strip()  # type: ignore [union-attr]
         .split()
     )
+
+
+def list_containers() -> List[str]:
+    """Get all the Dangerzone containers."""
+    podman = init_podman_command()
+    containers = (
+        podman.run(
+            [
+                "ps",
+                "-a",
+                "--format",
+                "{{ .Names }}",
+            ],
+        )
+        .strip()  # type: ignore [union-attr]
+        .split()
+    )
+    return [cont for cont in containers if cont.startswith(CONTAINER_PREFIX)]
+
+
+def kill_container(name: str) -> None:
+    """Terminate a spawned container."""
+    podman = init_podman_command()
+    try:
+        # We do not check the exit code of the process here, since the container may
+        # have stopped right before invoking this command. In that case, the
+        # command's output will contain some error messages, so we capture them in
+        # order to silence them.
+        #
+        # NOTE: We specify a timeout for this command, since we've seen it hang
+        # indefinitely for specific files. See:
+        # https://github.com/freedomofpress/dangerzone/issues/854
+        podman.run(["kill", name], check=False, timeout=TIMEOUT_KILL)
+    except subprocess.TimeoutExpired:
+        log.warning(f"Could not kill container '{name}' within {TIMEOUT_KILL} seconds")
+    except Exception as e:
+        log.exception(
+            f"Unexpected error occurred while killing container '{name}': {str(e)}"
+        )
 
 
 def add_image_tag(image_id: str, new_tag: str) -> None:

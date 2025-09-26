@@ -120,7 +120,7 @@ class UpdateCheckTask(
         super().handle_container_update(report)
 
 
-class StartupThread(startup.StartupLogic, QtCore.QThread):
+class RunnerThread(startup.Runner, QtCore.QThread):
     starting = QtCore.Signal()
     failed = QtCore.Signal(str)
     succeeded = QtCore.Signal()
@@ -136,3 +136,7 @@ class StartupThread(startup.StartupLogic, QtCore.QThread):
     def handle_success(self) -> None:
         self.succeeded.emit()
         super().handle_success()
+
+
+class StartupThread(startup.StartupMixin, RunnerThread):
+    pass

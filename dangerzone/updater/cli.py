@@ -8,7 +8,7 @@ from typing import Any, Callable
 
 import click
 
-from .. import startup
+from .. import shutdown, startup
 from ..container_utils import expected_image_name
 from ..podman.machine import PodmanMachineManager
 from ..util import get_architecture
@@ -30,8 +30,7 @@ def requires_container_runtime(func: Callable) -> Callable:
             startup.StartupLogic(tasks=tasks).run()
             res = func(*args, **kwargs)
         finally:
-            if platform.system() in ["Windows, macOS"]:
-                PodmanMachineManager().stop()
+            shutdown.ShutdownLogic(tasks=[shutdown.MachineStopTask()]).run()
         return res
 
     return wrapper

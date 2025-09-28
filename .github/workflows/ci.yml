@@ -184,6 +184,11 @@ jobs:
         # Nested virtualization does not work on M1 CPUs.
         continue-on-error: ${{ matrix.arch == 'arm64'}}
         run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
+      - name: Setup upterm session
+        uses: owenthereal/action-upterm@v1
+        with:
+          limit-access-to-actor: true # Restrict to the user who triggered the workflow
+          limit-access-to-users: apyrgio
       - name: Run CLI tests
         run: |
           # Nested virtualization does not work on M1 CPUs.

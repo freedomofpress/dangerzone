@@ -39,11 +39,11 @@ body:
         terminal, and provide us with the output:
 
         ```shell
-        'C:\Program Files (x86)\Dangerzone\dangerzone-machine.exe' start
-        'C:\Program Files (x86)\Dangerzone\dangerzone-machine.exe' --log-level debug raw version
-        'C:\Program Files (x86)\Dangerzone\dangerzone-machine.exe' --log-level debug raw info -f json
-        'C:\Program Files (x86)\Dangerzone\dangerzone-machine.exe' --log-level debug raw images
-        'C:\Program Files (x86)\Dangerzone\dangerzone-machine.exe' --log-level debug raw run hello-world
+        'C:\Program Files\Dangerzone\dangerzone-machine.exe' start
+        'C:\Program Files\Dangerzone\dangerzone-machine.exe' --log-level debug raw version
+        'C:\Program Files\Dangerzone\dangerzone-machine.exe' --log-level debug raw info -f json
+        'C:\Program Files\Dangerzone\dangerzone-machine.exe' --log-level debug raw images
+        'C:\Program Files\Dangerzone\dangerzone-machine.exe' --log-level debug raw run hello-world
         ```
 
         This will be automatically formatted into code, so no need for backticks.
@@ -56,7 +56,7 @@ body:
         If the bug occurs during document conversion, we'd like some logs from this process. Please copy and paste the following commands in your terminal, and provide us with the output (replace `\path\to\file` with the path to your document):
 
         ```bash
-        'C:\Program Files (x86)\Dangerzone\dangerzone-cli.exe' --debug \path\to\file
+        'C:\Program Files\Dangerzone\dangerzone-cli.exe' --debug \path\to\file
         ```
 
       render: shell

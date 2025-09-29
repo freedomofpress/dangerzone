@@ -77,7 +77,7 @@ an isolated environment. It will be installed automatically when installing Dang
 > - Ubuntu: We follow upstream support with an extra cutoff date. No support for
 >   versions prior to the second oldest LTS release.
 > - Fedora: We follow upstream support
-> - Debian: current stable, oldstable and LTS releases.
+> - Debian: We support the last two stable releases.
 
 Dangerzone is available for:
 
@@ -86,7 +86,7 @@ Dangerzone is available for:
 - Ubuntu 22.04 (jammy)
 - Debian 13 (trixie)
 - Debian 12 (bookworm)
-- Debian 11 (bullseye)
+- Debian 11 (bullseye), support will be dropped in future releases.
 - Fedora 42
 - Fedora 41
 - Tails

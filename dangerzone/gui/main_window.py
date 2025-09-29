@@ -79,6 +79,13 @@ handle it manually.</p>
 """
 
 
+DEBIAN_BULLSEYE_DEPRECATION_MSG = """\
+<p><b>Warning:</b> Debian Bullseye systems and their derivatives will
+stop being supported in subsequent Dangerzone releases. We encourage you to upgrade to a
+more recent version of your operating system in order to get security updates.</p>
+"""
+
+
 HAMBURGER_MENU_SIZE = 30
 
 
@@ -715,6 +722,19 @@ class ConversionWidget(QtWidgets.QWidget):
         self.dangerzone = dangerzone
         self.conversion_started = False
 
+        self.warning_label = None
+        if platform.system() == "Linux":
+            # Add the warning message only for debian bullseye
+            os_release_path = Path("/etc/os-release")
+            if os_release_path.exists():
+                os_release = os_release_path.read_text()
+                if "Debian GNU/Linux 11" in os_release or "bullseye" in os_release:
+                    self.warning_label = QtWidgets.QLabel(
+                        DEBIAN_BULLSEYE_DEPRECATION_MSG
+                    )
+                    self.warning_label.setWordWrap(True)
+                    self.warning_label.setProperty("style", "warning")
+
         # Doc selection widget
         self.doc_selection_widget = DocSelectionWidget(self.dangerzone)
         self.doc_selection_widget.documents_selected.connect(self.documents_selected)
@@ -740,6 +760,8 @@ class ConversionWidget(QtWidgets.QWidget):
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
+        if self.warning_label:
+            layout.addWidget(self.warning_label)  # Add warning at the top
         layout.addWidget(self.settings_widget, stretch=1)
         layout.addWidget(self.documents_list, stretch=1)
         layout.addWidget(self.doc_selection_wrapper, stretch=1)

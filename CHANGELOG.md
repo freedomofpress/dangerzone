@@ -27,12 +27,16 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   longer compatible, due to some changes in the bundled container image.
   Instead, Podman Desktop is used under the hood
   ([#118](https://github.com/freedomofpress/dangerzone/issues/118))
+- Add a deprecation warning for Debian bullseye ([#1214](https://github.com/freedomofpress/dangerzone/issues/1214))
+- Platform support: Drop support for Ubuntu Oracular (24.10) since it is end of life ([#1246](https://github.com/freedomofpress/dangerzone/issues/1246))
 
 ### Fixed
 
 - Fix a Dangerzone error that manifested in recent Debian-based environments
   that included both PySide6 and PySide2 libraries
   ([#1218](https://github.com/freedomofpress/dangerzone/issues/1218))
+- Issue templates have been updated to work on Windows
+  ([#1237](https://github.com/freedomofpress/dangerzone/issues/1237))
 
 ### Development changes
 
@@ -47,11 +51,6 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   ([#1212](https://github.com/freedomofpress/dangerzone/pull/1212))
 - Run our full CI test suite on Windows and macOS GitHub runners
   ([#1009](https://github.com/freedomofpress/dangerzone/issues/1009))
-
-### Removed
-
-- Add a deprecation warning for Debian bullseye ([#1214](https://github.com/freedomofpress/dangerzone/issues/1214))
-- Platform support: Drop support for Ubuntu Oracular (24.10) since it is end of life ([#1246](https://github.com/freedomofpress/dangerzone/issues/1246))
 
 ## [0.9.1](https://github.com/freedomofpress/dangerzone/compare/v0.9.1...0.9.0)
 

@@ -33,7 +33,6 @@ def test_set_status_ok(status_bar: StatusBar) -> None:
     status_bar.set_status_ok("All good")
     assert status_bar.message.text() == "All good"
     assert status_bar.spinner.isHidden()
-    assert status_bar.info_icon.isHidden()
     assert status_bar.message.property("style") == "status-success"
 
 
@@ -41,7 +40,6 @@ def test_set_status_working(status_bar: StatusBar) -> None:
     status_bar.set_status_working("Something is happening")
     assert status_bar.message.text() == "Something is happening"
     assert not status_bar.spinner.isHidden()
-    assert not status_bar.info_icon.isHidden()
     assert status_bar.message.property("style") == "status-attention"
 
 
@@ -49,7 +47,6 @@ def test_set_status_error(status_bar: StatusBar) -> None:
     status_bar.set_status_error("An error occurred")
     assert status_bar.message.text() == "An error occurred"
     assert status_bar.spinner.isHidden()
-    assert not status_bar.info_icon.isHidden()
     assert status_bar.message.property("style") == "status-error"
 
 
@@ -68,7 +65,6 @@ def test_status_bar_dark_mode_svgs(qtbot: QtBot, mocker: MockerFixture) -> None:
     qtbot.addWidget(widget)
 
     animate_svg_image_mock.assert_called_with("spinner-dark.svg", width=15, height=15)
-    load_svg_image_mock.assert_called_with("info-circle-dark.svg", width=15, height=15)
 
 
 def test_status_bar_light_mode_svgs(qtbot: QtBot, mocker: MockerFixture) -> None:
@@ -86,4 +82,3 @@ def test_status_bar_light_mode_svgs(qtbot: QtBot, mocker: MockerFixture) -> None
     qtbot.addWidget(widget)
 
     animate_svg_image_mock.assert_called_with("spinner.svg", width=15, height=15)
-    load_svg_image_mock.assert_called_with("info-circle.svg", width=15, height=15)

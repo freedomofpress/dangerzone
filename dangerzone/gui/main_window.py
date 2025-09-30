@@ -182,18 +182,11 @@ class StatusBar(QtWidgets.QWidget):
 
         self.spinner = animate_svg_image(spinner_svg, width=15, height=15)
         self.message = QtWidgets.QLabel("")
-        self.info_icon = QtWidgets.QToolButton()
-        self.info_icon.setIcon(
-            QtGui.QIcon(load_svg_image(info_svg, width=15, height=15))
-        )
-        self.info_icon.setIconSize(QtCore.QSize(15, 15))
-        self.info_icon.setStyleSheet("QToolButton { border: none; }")
 
         layout = QtWidgets.QHBoxLayout()
         layout.addStretch()
         layout.addWidget(self.spinner)
         layout.addWidget(self.message)
-        layout.addWidget(self.info_icon)
         self.setLayout(layout)
 
     def _update_style(self) -> None:
@@ -205,21 +198,18 @@ class StatusBar(QtWidgets.QWidget):
 
     def set_status_ok(self, message: str) -> None:
         self.spinner.hide()
-        self.info_icon.hide()
         self.message.setProperty("style", "status-success")
         self._update_style()
         self.message.setText(message)
 
     def set_status_working(self, message: str) -> None:
         self.spinner.show()
-        self.info_icon.show()
         self.message.setProperty("style", "status-attention")
         self._update_style()
         self.message.setText(message)
 
     def set_status_error(self, message: str) -> None:
         self.spinner.hide()
-        self.info_icon.show()
         self.message.setProperty("style", "status-error")
         self._update_style()
         self.message.setText(message)
@@ -369,7 +359,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # Log window
         self.log_window = LogWindow(self)
         view_logs_action.triggered.connect(self.log_window.show)
-        self.status_bar.info_icon.clicked.connect(self.toggle_log_window)
 
         # Configure logging to the log window
         log_handler = LogHandler()
@@ -656,16 +645,6 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.conversion_widget.documents_list.conversion_pending:
             log.debug("Starting pending conversion")
             self.conversion_widget.documents_list.start_conversion()
-
-    def toggle_log_window(self) -> None:
-        if self.log_window.isVisible():
-            self.log_window.hide()
-        else:
-            self.log_window.show()
-
-    def show_log_window_if_hidden(self) -> None:
-        if not self.log_window.isVisible():
-            self.log_window.show()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
         self.dialog = Alert(

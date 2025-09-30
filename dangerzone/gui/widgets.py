@@ -2,21 +2,21 @@ import typing
 from typing import Optional
 
 if typing.TYPE_CHECKING:
+    from PySide2 import QtWidgets
     from PySide2.QtCore import Qt
     from PySide2.QtGui import QTextCursor
-    from PySide2.QtWidgets import QTextEdit
 else:
     try:
+        from PySide6 import QtWidgets
         from PySide6.QtCore import Qt
         from PySide6.QtGui import QTextCursor
-        from PySide6.QtWidgets import QTextEdit
     except ImportError:
+        from PySide2 import QtWidgets
         from PySide2.QtCore import Qt
         from PySide2.QtGui import QTextCursor
-        from PySide2.QtWidgets import QTextEdit
 
 
-class TracebackWidget(QTextEdit):
+class TracebackWidget(QtWidgets.QTextEdit):
     """Reusable component to present tracebacks to the user.
 
     By default, the widget is initialized but does not appear. You need to call
@@ -41,3 +41,6 @@ class TracebackWidget(QTextEdit):
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
         self.setTextCursor(cursor)
+
+    def copy_to_clipboard(self) -> None:
+        QtWidgets.QApplication.clipboard().setText(self.toPlainText())

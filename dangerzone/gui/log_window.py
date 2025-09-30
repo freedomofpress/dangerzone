@@ -59,9 +59,21 @@ class LogWindow(QtWidgets.QDialog):
         self.traceback_widget = TracebackWidget()
         self.traceback_widget.setVisible(True)  # Always visible in the log window
 
+        self.copy_button = QtWidgets.QPushButton("Copy to clipboard")
+        self.copy_button.clicked.connect(self.copy_to_clipboard)
+
+        self.copied_label = QtWidgets.QLabel("")
+
+        self.bottom_layout = QtWidgets.QHBoxLayout()
+        self.bottom_layout.addStretch()
+        self.bottom_layout.addWidget(self.copy_button)
+        self.bottom_layout.addWidget(self.copied_label)
+        self.bottom_layout.addStretch()
+
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.label)
         layout.addWidget(self.traceback_widget)
+        layout.addLayout(self.bottom_layout)
         self.setLayout(layout)
 
     def handle_startup_begin(self) -> None:
@@ -115,3 +127,8 @@ class LogWindow(QtWidgets.QDialog):
 
     def append_log(self, line: str) -> None:
         self.traceback_widget.process_output(line)
+
+    def copy_to_clipboard(self) -> None:
+        self.traceback_widget.copy_to_clipboard()
+        self.copied_label.setText("✓")
+        QtCore.QTimer.singleShot(3000, lambda: self.copied_label.setText(""))

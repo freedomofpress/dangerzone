@@ -168,7 +168,7 @@ def get_supported_extensions() -> List[str]:
     return supported_ext
 
 
-class StatusBar(QtWidgets.QWidget):
+class StatusBar(QtWidgets.QStatusBar):
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super(StatusBar, self).__init__()
         self.dangerzone = dangerzone
@@ -183,34 +183,31 @@ class StatusBar(QtWidgets.QWidget):
         self.spinner = animate_svg_image(spinner_svg, width=15, height=15)
         self.message = QtWidgets.QLabel("")
 
-        layout = QtWidgets.QHBoxLayout()
-        layout.addStretch()
-        layout.addWidget(self.spinner)
-        layout.addWidget(self.message)
-        self.setLayout(layout)
+        self.addPermanentWidget(self.spinner)
+        self.addPermanentWidget(self.message)
 
     def _update_style(self) -> None:
         # Required when dynamically changing properties. See:
         # https://wiki.qt.io/Dynamic_Properties_and_Stylesheets#Limitations
-        self.message.style().unpolish(self.message)
-        self.message.style().polish(self.message)
-        self.message.update()
+        self.style().unpolish(self)
+        self.style().polish(self)
+        self.update()
 
     def set_status_ok(self, message: str) -> None:
         self.spinner.hide()
-        self.message.setProperty("style", "status-success")
+        self.setProperty("style", "status-success")
         self._update_style()
         self.message.setText(message)
 
     def set_status_working(self, message: str) -> None:
         self.spinner.show()
-        self.message.setProperty("style", "status-attention")
+        self.setProperty("style", "status-attention")
         self._update_style()
         self.message.setText(message)
 
     def set_status_error(self, message: str) -> None:
         self.spinner.hide()
-        self.message.setProperty("style", "status-error")
+        self.setProperty("style", "status-error")
         self._update_style()
         self.message.setText(message)
 
@@ -345,7 +342,7 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(self.conversion_widget, stretch=1)
 
         self.status_bar = StatusBar(self.dangerzone)
-        layout.addWidget(self.status_bar)
+        self.setStatusBar(self.status_bar)
 
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(layout)

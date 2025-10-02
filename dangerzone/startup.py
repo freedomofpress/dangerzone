@@ -226,21 +226,23 @@ class Runner:
     def handle_success(self) -> None:
         self.handle_success_custom()
 
+    def run_task(self, task: Task) -> None:
+        if task.should_skip():
+            task.handle_skip()
+            return
+        task.handle_start()
+        task.run()
+        task.handle_success()
+
     def run(self) -> None:
         self.handle_start()
         for task in self.tasks:
-            if task.should_skip():
-                task.handle_skip()
-                continue
-            task.handle_start()
             try:
-                task.run()
+                self.run_task(task)
             except Exception as e:
                 task.handle_error(e)
                 if not task.can_fail:
                     return self.handle_error(task, e)
-            else:
-                task.handle_success()
         self.handle_success()
 
 

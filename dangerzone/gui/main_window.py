@@ -635,7 +635,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if self.conversion_widget.documents_list.conversion_pending:
             log.debug("Starting pending conversion")
-            self.conversion_widget.documents_list.start_conversion()
+            self.conversion_widget.conversion_is_ready_to_start()
 
     def closeEvent(self, e: QtGui.QCloseEvent) -> None:
         self.dialog = Alert(
@@ -712,20 +712,60 @@ class ConversionWidget(QtWidgets.QWidget):
         # Convert
         self.documents_list = DocumentsListWidget(self.dangerzone)
         self.documents_added.connect(self.documents_list.documents_added)
-        self.settings_widget.start_clicked.connect(self.documents_list.start_conversion)
+
         self.settings_widget.change_docs_clicked.connect(
             self.doc_selection_widget.dangerous_doc_button_clicked
         )
         self.documents_list.hide()
+
+        # Enqueued widget
+        self.enqueued_widget = QtWidgets.QWidget()
+        enqueued_layout = QtWidgets.QHBoxLayout()
+        self.enqueued_widget.setLayout(enqueued_layout)
+
+        if self.dangerzone.app.os_color_mode.value == "dark":
+            spinner_svg = "spinner-dark.svg"
+        else:
+            spinner_svg = "spinner.svg"
+        self.spinner = animate_svg_image(spinner_svg, width=15, height=15)
+        self.tick_icon = QtWidgets.QLabel()
+        pixmap = self.load_status_image("status_safe.png")
+        self.tick_icon.setPixmap(pixmap)
+        self.tick_icon.hide()
+
+        enqueued_layout.addStretch()
+        enqueued_layout.addWidget(self.spinner)
+        enqueued_layout.addWidget(self.tick_icon)
+
+        self.enqueued_label = QtWidgets.QLabel(
+            "Documents are enqueued and will be converted after startup tasks finish."
+        )
+        enqueued_layout.addWidget(self.enqueued_label)
+        enqueued_layout.addStretch()
+        self.enqueued_widget.hide()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         if self.warning_label:
             layout.addWidget(self.warning_label)  # Add warning at the top
         layout.addWidget(self.settings_widget, stretch=1)
+        layout.addWidget(self.enqueued_widget)
         layout.addWidget(self.documents_list, stretch=1)
         layout.addWidget(self.doc_selection_wrapper, stretch=1)
         self.setLayout(layout)
+
+    def load_status_image(self, filename: str) -> QtGui.QPixmap:
+        path = get_resource_path(filename)
+        img = QtGui.QImage(str(path))
+        image = QtGui.QPixmap.fromImage(img)
+        return image.scaled(QtCore.QSize(15, 15))
+
+    def conversion_is_ready_to_start(self) -> None:
+        self.spinner.hide()
+        self.tick_icon.show()
+        self.enqueued_label.setText("Startup finished, starting conversion…")
+        self.documents_list.start_conversion()
+        QtCore.QTimer.singleShot(3000, self.enqueued_widget.hide)
 
     def documents_selected(self, docs: List[Document]) -> None:
         if self.conversion_started:
@@ -764,6 +804,9 @@ class ConversionWidget(QtWidgets.QWidget):
         self.conversion_started = True
         self.settings_widget.hide()
         self.documents_list.show()
+        self.documents_list.start_conversion()
+        if self.documents_list.conversion_pending:
+            self.enqueued_widget.show()
 
 
 class DocSelectionWidget(QtWidgets.QWidget):

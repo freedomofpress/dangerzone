@@ -381,7 +381,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.startup_thread.succeeded.connect(self.status_bar.handle_startup_success)
         self.startup_thread.succeeded.connect(self.log_window.handle_startup_success)
         self.startup_thread.succeeded.connect(self.show_conversion_widget)
-        self.startup_thread.failed.connect(self.status_bar.handle_startup_error)
+        self.startup_thread.failed.connect(self.handle_startup_error)
 
         task_machine_init.starting.connect(self.status_bar.handle_task_machine_init)
         task_machine_init.starting.connect(self.log_window.handle_task_machine_init)
@@ -621,6 +621,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.startup_thread.wait()
             self.begin_shutdown(ret=2)
 
+    def handle_startup_error(self, msg: str) -> None:
+        self.status_bar.handle_startup_error()
+        self.waiting_widget.handle_error(msg)
+        self.hide_conversion_widget()
+
     def hide_conversion_widget(self) -> None:
         self.waiting_widget.show()
         self.conversion_widget.hide()
@@ -664,14 +669,33 @@ class MainWindow(QtWidgets.QMainWindow):
 class WaitingWidget(QtWidgets.QWidget):
     def __init__(self) -> None:
         super().__init__()
-        self.label = QtWidgets.QLabel()
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setTextFormat(QtCore.Qt.RichText)
-        self.label.setOpenExternalLinks(True)
-        self.label.setWordWrap(True)
+        self.header = QtWidgets.QLabel()
+        self.header.setAlignment(QtCore.Qt.AlignCenter)
+        self.footer = QtWidgets.QLabel()
+        self.footer.setAlignment(QtCore.Qt.AlignRight)
+        self.footer.setTextFormat(QtCore.Qt.RichText)
+        self.footer.setOpenExternalLinks(True)
+        self.footer.setWordWrap(True)
+        self.traceback_widget = TracebackWidget()
+        self.traceback_widget.setVisible(False)
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.label)
+        layout.addWidget(self.header)
+        layout.addWidget(self.traceback_widget)
+        layout.addWidget(self.footer)
+        layout.addStretch()
         self.setLayout(layout)
+
+    def handle_error(self, msg: str) -> None:
+        self.header.setText("<p>Dangerzone encountered an error during startup:<p>")
+        self.header.setStyleSheet("QLabel { font-size: 20px; }")
+        self.traceback_widget.process_output(msg)
+        self.footer.setText("""\
+            <p>
+              <a href="https://github.com/freedomofpress/dangerzone/wiki/Reporting-an-issue">
+                 Report issue ↗️
+              </a>
+            </p>
+        """)
 
 
 class ConversionWidget(QtWidgets.QWidget):

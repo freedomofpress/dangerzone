@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dangerzone Color Showcase</title>
+    <title>Dangerzone Design System</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -103,9 +103,6 @@
         /* Light Mode */
         .light-mode { background-color: #ececec; color: black; }
         .light-mode .state-section { border-color: #c8c8c8; }
-        .light-mode .status-error { color: #9D0000; font-weight: bold; }
-        .light-mode .status-attention { color: #7A3800; font-weight: bold; }
-        .light-mode .status-success { color: #005000; font-weight: bold; }
         .light-mode .warning { background-color: #FFF3CD; color: #856404; border: 1px solid #FFEEBA; border-radius: 4px; padding: 10px; margin: 10px; }
         .light-mode .safe-extension-filename { background: white; color: grey; border-color: #c8c8c8; }
         .light-mode .line-edit { border-color: #c8c8c8; background-color: white; color: black; }
@@ -118,9 +115,6 @@
         /* Dark Mode */
         .dark-mode { background-color: #323232; color: white; }
         .dark-mode .state-section { border-color: #555; }
-        .dark-mode .status-error { color: #FF9494; font-weight: bold; }
-        .dark-mode .status-attention { color: #FFD18F; font-weight: bold; }
-        .dark-mode .status-success { color: #86EE72; font-weight: bold; }
         .dark-mode .warning { background-color: #332D00; color: #FFD970; border: 1px solid #665A00; border-radius: 4px; padding: 10px; margin: 10px; }
         .dark-mode .safe-extension-filename { background: black; color: grey; border-color: #c8c8c8; }
         .dark-mode .line-edit { border-color: #c8c8c8; background-color: #222; color: white; }
@@ -134,6 +128,51 @@
         .safe-extension-filename { border-width: 1px; border-right-width: 0px; border-style: solid; padding: 5px 0px 5px 5px; }
         .docs-selection { font-size: 18px; }
         .version { font-size: 20px; padding-bottom: 5px; }
+
+        /* Bottom status bar */
+        .bottom-status-bar {
+            padding: 8px 15px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        /* Light mode status bar colors */
+        .light-mode .bottom-status-bar.status-bar-success {
+            background-color: #D4EDDA;
+            color: #155724;
+            border-top: 1px solid #C3E6CB;
+        }
+        .light-mode .bottom-status-bar.status-bar-info {
+            background-color: #D1ECF1;
+            color: #0C5460;
+            border-top: 1px solid #BEE5EB;
+        }
+        .light-mode .bottom-status-bar.status-bar-error {
+            background-color: #F8D7DA;
+            color: #721C24;
+            border-top: 1px solid #F5C6CB;
+        }
+
+        /* Dark mode status bar colors */
+        .dark-mode .bottom-status-bar.status-bar-success {
+            background-color: #1A4D2E;
+            color: #86EE72;
+            border-top: 1px solid #2D6B3F;
+        }
+        .dark-mode .bottom-status-bar.status-bar-info {
+            background-color: #1A3A52;
+            color: #9DD9F0;
+            border-top: 1px solid #2B5472;
+        }
+        .dark-mode .bottom-status-bar.status-bar-error {
+            background-color: #4D1A1A;
+            color: #FF9494;
+            border-top: 1px solid #722D2D;
+        }
     </style>
 </head>
 <body>
@@ -144,10 +183,19 @@
             <h2>Light Mode</h2>
 
             <div class="state-section">
-                <h3>Status Messages</h3>
-                <div class="status-bar"><span class="status-attention">Working: Checking for updates...</span></div>
-                <div class="status-bar"><span class="status-error">Error: Startup failed</span></div>
-                <div class="status-bar"><span class="status-success">Success: Ready</span></div>
+                <h3>Bottom Status Bar</h3>
+                <div class="bottom-status-bar status-bar-success">
+                    <img src="../share/status_safe.png" width="16" height="16" />
+                    <span>All documents converted successfully</span>
+                </div>
+                <div class="bottom-status-bar status-bar-info">
+                    <img src="../share/spinner.svg" width="16" height="16" />
+                    <span>Converting documents...</span>
+                </div>
+                <div class="bottom-status-bar status-bar-error">
+                    <img src="../share/status_failed.png" width="16" height="16" />
+                    <span>Error: Conversion failed for 1 document</span>
+                </div>
             </div>
 
             <div class="state-section">
@@ -169,9 +217,9 @@
 
             <div class="state-section">
                 <h3>Initial State</h3>
-                <div class="status-bar">
-                    <img src="../share/spinner.svg" width="15" height="15" />
-                    <span class="status-attention">Initializing Dangerzone VM</span>
+                <div class="bottom-status-bar status-bar-info">
+                  <img src="../share/spinner.svg" width="15" height="15" />
+                    <span>Initializing Dangerzone VM</span>
                 </div>
             </div>
 
@@ -226,10 +274,19 @@
             <h2>Dark Mode</h2>
 
             <div class="state-section">
-                <h3>Status Messages</h3>
-                <div class="status-bar"><span class="status-attention">Working: Checking for updates...</span></div>
-                <div class="status-bar"><span class="status-error">Error: Startup failed</span></div>
-                <div class="status-bar"><span class="status-success">Success: Ready</span></div>
+                <h3>Bottom Status Bar</h3>
+                <div class="bottom-status-bar status-bar-success">
+                    <img src="../share/status_safe.png" width="16" height="16" />
+                    <span>All documents converted successfully</span>
+                </div>
+                <div class="bottom-status-bar status-bar-info">
+                    <img src="../share/spinner-dark.svg" width="16" height="16" />
+                    <span>Converting documents...</span>
+                </div>
+                <div class="bottom-status-bar status-bar-error">
+                    <img src="../share/status_failed.png" width="16" height="16" />
+                    <span>Error: Conversion failed for 1 document</span>
+                </div>
             </div>
 
             <div class="state-section">
@@ -251,9 +308,9 @@
 
             <div class="state-section">
                 <h3>Initial State</h3>
-                <div class="status-bar">
-                    <img src="../share/spinner-dark.svg" width="15" height="15" />
-                    <span class="status-attention">Initializing Dangerzone VM</span>
+                <div class="bottom-status-bar status-bar-info">
+                  <img src="../share/spinner-dark.svg" width="15" height="15" />
+                    <span>Initializing Dangerzone VM</span>
                 </div>
             </div>
 

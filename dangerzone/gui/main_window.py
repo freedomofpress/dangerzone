@@ -1075,6 +1075,10 @@ class SettingsWidget(QtWidgets.QWidget):
         radio_save_to_widget.setLayout(radio_save_to_layout)
         save_group_box_innner_layout.addWidget(radio_save_to_widget)
 
+        self.save_location_button_group = QtWidgets.QButtonGroup(self)
+        self.save_location_button_group.addButton(self.radio_move_untrusted)
+        self.save_location_button_group.addButton(self.radio_save_to)
+
         # Open safe document
         if platform.system() in ["Darwin", "Windows"]:
             self.open_checkbox = QtWidgets.QCheckBox(

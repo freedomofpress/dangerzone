@@ -47,7 +47,7 @@ class LogWindow(QtWidgets.QDialog):
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Dangerzone Background Task Logs")
+        self.setWindowTitle("Dangerzone Logs")
         self.setMinimumSize(600, 400)
 
         self.label = QtWidgets.QLabel()

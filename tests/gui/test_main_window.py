@@ -7,6 +7,7 @@ import typing
 from typing import Any, Generator, List
 from unittest.mock import MagicMock
 
+import pytest
 from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
@@ -598,6 +599,47 @@ def test_drop_1_invalid_2_valid_documents(
         )
 
 
+@pytest.mark.parametrize(
+    "strategy, callback",
+    [
+        (
+            InstallationStrategy.INSTALL_LOCAL_CONTAINER,
+            "handle_task_container_install_local",
+        ),
+        (
+            InstallationStrategy.INSTALL_REMOTE_CONTAINER,
+            "handle_task_container_install_remote",
+        ),
+    ],
+)
+def test_installation_strategy_message(
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    window: MainWindow,
+    strategy: InstallationStrategy,
+    callback: str,
+) -> None:
+    """Ensures that we send discreet signals when loading or downloading container
+    images.
+    """
+    mock_installer = mocker.patch("dangerzone.updater.installer.install")
+
+    for task in window.startup_thread.tasks:
+        should_skip = not isinstance(task, startup.ContainerInstallTask)
+        mocker.patch.object(task, "should_skip", return_value=should_skip)
+
+    mocker.patch(
+        "dangerzone.updater.installer.get_installation_strategy",
+        return_value=strategy,
+    )
+    status_bar_message_spy = mocker.spy(window.status_bar, callback)
+    log_window_message_spy = mocker.spy(window.log_window, callback)
+    window.startup_thread.start()
+    window.startup_thread.wait()
+    qtbot.waitUntil(status_bar_message_spy.assert_called_once)
+    qtbot.waitUntil(log_window_message_spy.assert_called_once)
+
+
 def test_installation_failure_exception(
     qtbot: QtBot,
     mocker: MockerFixture,
@@ -606,9 +648,13 @@ def test_installation_failure_exception(
     """Ensures that if an exception is raised during image installation,
     it is shown in the GUI.
     """
-    installer = mocker.patch(
+    mock_installer = mocker.patch(
         "dangerzone.updater.installer.install",
         side_effect=RuntimeError("Error during install"),
+    )
+    mock_strategy = mocker.patch(
+        "dangerzone.updater.installer.get_installation_strategy",
+        return_value=InstallationStrategy.INSTALL_LOCAL_CONTAINER,
     )
     for task in window.startup_thread.tasks:
         should_skip = not isinstance(task, startup.ContainerInstallTask)
@@ -621,7 +667,7 @@ def test_installation_failure_exception(
     window.startup_thread.wait()
     qtbot.waitUntil(handle_container_install_failed_spy.assert_called_once)
 
-    assert installer.call_count == 1
+    assert mock_installer.call_count == 1
     assert window.status_bar.property("style") == "status-error"
     assert window.status_bar.message.text() == "Startup failed"
     assert window.log_window.label.text() == "Installing the Dangerzone sandbox… failed"

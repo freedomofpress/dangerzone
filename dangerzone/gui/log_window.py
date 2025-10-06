@@ -96,9 +96,14 @@ class LogWindow(QtWidgets.QDialog):
     def handle_task_update_check(self) -> None:
         self.label.setText("Checking for updates…")
 
-    def handle_task_container_install(self) -> None:
+    def handle_task_container_install_local(self) -> None:
         self.label.setText(
-            "Installing the Dangerzone sandbox<br>This might take a few minutes…"
+            "Installing local Dangerzone sandbox<br>This might take a few minutes…"
+        )
+
+    def handle_task_container_install_remote(self) -> None:
+        self.label.setText(
+            "Downloading and installing Dangerzone sandbox<br>This might take a few minutes…"
         )
 
     def handle_task_container_stop(self) -> None:

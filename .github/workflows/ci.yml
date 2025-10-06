@@ -165,7 +165,7 @@ jobs:
           # See https://github.com/abiosoft/colima/issues/970
           - runner: macos-15
             arch: arm64
-          - runner: macos-13 # CPU type: Intel x86_64
+          - runner: macos-15-intel
             arch: x86_64
     steps:
       - uses: actions/checkout@v5

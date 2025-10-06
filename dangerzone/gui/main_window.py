@@ -185,6 +185,8 @@ class StatusBar(QtWidgets.QStatusBar):
 
         self.addPermanentWidget(self.spinner)
         self.addPermanentWidget(self.message)
+        self.addPermanentWidget(QtWidgets.QLabel(""))
+        self.setSizeGripEnabled(False)
 
     def _update_style(self) -> None:
         # Required when dynamically changing properties. See:
@@ -192,22 +194,28 @@ class StatusBar(QtWidgets.QStatusBar):
         self.style().unpolish(self)
         self.style().polish(self)
         self.update()
+        self.message.style().unpolish(self.message)
+        self.message.style().polish(self.message)
+        self.message.update()
 
     def set_status_ok(self, message: str) -> None:
         self.spinner.hide()
         self.setProperty("style", "status-success")
+        self.message.setProperty("style", "status-success")
         self._update_style()
         self.message.setText(message)
 
     def set_status_working(self, message: str) -> None:
         self.spinner.show()
         self.setProperty("style", "status-attention")
+        self.message.setProperty("style", "status-attention")
         self._update_style()
         self.message.setText(message)
 
     def set_status_error(self, message: str) -> None:
         self.spinner.hide()
         self.setProperty("style", "status-error")
+        self.message.setProperty("style", "status-error")
         self._update_style()
         self.message.setText(message)
 

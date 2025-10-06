@@ -123,7 +123,9 @@ class LogWindow(QtWidgets.QDialog):
         self.label.setText("Installing the Dangerzone sandbox… failed")
 
     def handle_startup_success(self) -> None:
-        self.label.setText("Dangerzone is ready")
+        # We want to hide the text if there's nothing of importance to say to the user,
+        # in the same way that we hide the status bar.
+        self.label.setText("")
 
     def append_log(self, line: str) -> None:
         self.traceback_widget.process_output(line)

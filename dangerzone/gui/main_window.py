@@ -207,8 +207,8 @@ class StatusBar(QtWidgets.QStatusBar):
 
     def set_status_working(self, message: str) -> None:
         self.spinner.show()
-        self.setProperty("style", "status-attention")
-        self.message.setProperty("style", "status-attention")
+        self.setProperty("style", "status-info")
+        self.message.setProperty("style", "status-info")
         self._update_style()
         self.message.setText(message)
 

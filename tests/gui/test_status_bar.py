@@ -39,7 +39,7 @@ def test_set_status_working(status_bar: StatusBar) -> None:
     status_bar.set_status_working("Something is happening")
     assert status_bar.message.text() == "Something is happening"
     assert not status_bar.spinner.isHidden()
-    assert status_bar.property("style") == "status-attention"
+    assert status_bar.property("style") == "status-info"
 
 
 def test_set_status_error(status_bar: StatusBar) -> None:

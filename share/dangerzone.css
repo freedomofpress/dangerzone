@@ -90,12 +90,12 @@ MainWindow[OSColorMode="light"] QStatusBar[style="status-success"] {
     border-top: 0px;
 }
 
-MainWindow[OSColorMode="light"] QStatusBar[style="status-attention"] {
+MainWindow[OSColorMode="light"] QStatusBar[style="status-info"] {
     background-color: #D1ECF1;
     border-top: 1px solid #BEE5EB;
 }
 
-MainWindow[OSColorMode="light"] QLabel[style="status-attention"] {
+MainWindow[OSColorMode="light"] QLabel[style="status-info"] {
     color: #062C32;
 }
 
@@ -117,12 +117,12 @@ MainWindow[OSColorMode="dark"] QStatusBar[style="status-success"] {
     border-top: 0px;
 }
 
-MainWindow[OSColorMode="dark"] QStatusBar[style="status-attention"] {
+MainWindow[OSColorMode="dark"] QStatusBar[style="status-info"] {
     background-color: #1A3A52;
     border-top: 1px solid #2B5472;
 }
 
-MainWindow[OSColorMode="dark"] QLabel[style="status-attention"] {
+MainWindow[OSColorMode="dark"] QLabel[style="status-info"] {
     color: #BDE5F5;
 }
 

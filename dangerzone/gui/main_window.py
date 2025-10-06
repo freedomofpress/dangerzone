@@ -240,8 +240,11 @@ class StatusBar(QtWidgets.QStatusBar):
     def handle_task_update_check(self) -> None:
         self.set_status_working("Checking for updates")
 
-    def handle_task_container_install(self) -> None:
-        self.set_status_working("Installing Dangerzone sandbox")
+    def handle_task_container_install_local(self) -> None:
+        self.set_status_working("Installing local Dangerzone sandbox")
+
+    def handle_task_container_install_remote(self) -> None:
+        self.set_status_working("Downloading and installing Dangerzone sandbox")
 
     def handle_task_container_stop(self) -> None:
         self.set_status_working("Stopping Dangerzone sandbox")
@@ -429,11 +432,17 @@ class MainWindow(QtWidgets.QMainWindow):
         task_update_check.completed.connect(self.handle_update_check_completed)
         task_update_check.needs_user_input.connect(self.handle_needs_user_input)
 
-        task_container_install.starting.connect(
-            self.status_bar.handle_task_container_install
+        task_container_install.load_container.connect(
+            self.status_bar.handle_task_container_install_local
         )
-        task_container_install.starting.connect(
-            self.log_window.handle_task_container_install
+        task_container_install.load_container.connect(
+            self.log_window.handle_task_container_install_local
+        )
+        task_container_install.download_container.connect(
+            self.status_bar.handle_task_container_install_remote
+        )
+        task_container_install.download_container.connect(
+            self.log_window.handle_task_container_install_remote
         )
         task_container_install.failed.connect(
             self.log_window.handle_task_container_install_failed

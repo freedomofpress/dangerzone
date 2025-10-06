@@ -9,6 +9,7 @@ else:
         from PySide2 import QtCore, QtWidgets
 
 from .. import startup
+from ..updater import InstallationStrategy, installer
 from ..updater.releases import EmptyReport, ErrorReport, ReleaseReport
 
 
@@ -97,7 +98,16 @@ class MachineStartTask(
 class ContainerInstallTask(
     GUIMixin, startup.ContainerInstallTask, metaclass=_MetaConflictResolver
 ):
-    pass
+    load_container = QtCore.Signal()
+    download_container = QtCore.Signal()
+
+    def run(self) -> None:
+        strategy = installer.get_installation_strategy()
+        if strategy == InstallationStrategy.INSTALL_LOCAL_CONTAINER:
+            self.load_container.emit()
+        elif strategy == InstallationStrategy.INSTALL_REMOTE_CONTAINER:
+            self.download_container.emit()
+        return super().run()
 
 
 class UpdateCheckTask(

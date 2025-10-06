@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dangerzone Color Showcase</title>
+    <title>Dangerzone Design System</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -93,26 +93,9 @@
             max-width: 100%;
         }
 
-        .status-bar {
-            text-align: right;
-            padding: 3px 5px;
-            height: 15px;
-            line-height: 15px;
-            margin-bottom: 5px;
-            font-weight: bold;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-
         /* Light Mode */
         .light-mode { background-color: #ececec; color: black; }
         .light-mode .state-section { border-color: #c8c8c8; }
-        .light-mode .status-error { color: #9D0000; font-weight: bold; }
-        .light-mode .status-attention { color: #7A3800; font-weight: bold; }
-        .light-mode .status-success { color: #005000; font-weight: bold; }
-        .light-mode .status-attention-bg { background-color: #FFDDC1; color: black; border: 1px solid black; }
-        .light-mode .status-error-bg { background-color: #FFB3B3; color: black; border: 1px solid black; }
-        .light-mode .status-success-bg { background-color: #C8E6C9; color: black; border: 1px solid black; }
         .light-mode .warning { background-color: #FFF3CD; color: #856404; border: 1px solid #FFEEBA; border-radius: 4px; padding: 10px; margin: 10px; }
         .light-mode .safe-extension-filename { background: white; color: grey; border-color: #c8c8c8; }
         .light-mode .line-edit { border-color: #c8c8c8; background-color: white; color: black; }
@@ -125,12 +108,6 @@
         /* Dark Mode */
         .dark-mode { background-color: #323232; color: white; }
         .dark-mode .state-section { border-color: #555; }
-        .dark-mode .status-error { color: #FF9494; font-weight: bold; }
-        .dark-mode .status-attention { color: #FFD18F; font-weight: bold; }
-        .dark-mode .status-success { color: #86EE72; font-weight: bold; }
-        .dark-mode .status-attention-bg { background-color: #FFD18F; color: black; }
-        .dark-mode .status-error-bg { background-color: #FF9494; color: black; }
-        .dark-mode .status-success-bg { background-color: #86EE72; color: black; }
         .dark-mode .warning { background-color: #332D00; color: #FFD970; border: 1px solid #665A00; border-radius: 4px; padding: 10px; margin: 10px; }
         .dark-mode .safe-extension-filename { background: black; color: grey; border-color: #c8c8c8; }
         .dark-mode .line-edit { border-color: #c8c8c8; background-color: #222; color: white; }
@@ -144,6 +121,54 @@
         .safe-extension-filename { border-width: 1px; border-right-width: 0px; border-style: solid; padding: 5px 0px 5px 5px; }
         .docs-selection { font-size: 18px; }
         .version { font-size: 20px; padding-bottom: 5px; }
+
+        /* Bottom status bar */
+        .status-bar {
+            padding: 8px 15px;
+            font-size: 14px;
+            align-items: center;
+            text-align: right;
+            gap: 8px;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+            margin: 10px 0;
+        }
+
+
+
+        /* Light mode status bar colors */
+        .light-mode .status-bar.status-bar-success {
+            background-color: #D4EDDA;
+            color: #0B2D13;
+            border-top: 1px solid #C3E6CB;
+        }
+        .light-mode .status-bar.status-bar-info {
+            background-color: #D1ECF1;
+            color: #062C32;
+            border-top: 1px solid #BEE5EB;
+        }
+        .light-mode .status-bar.status-bar-error {
+            background-color: #F8D7DA;
+            color: #3D0F13;
+            border-top: 1px solid #F5C6CB;
+        }
+
+        /* Dark mode status bar colors */
+        .dark-mode .status-bar.status-bar-success {
+            background-color: #1A4D2E;
+            color: #E0FBDB;
+            border-top: 1px solid #2D6B3F;
+        }
+        .dark-mode .status-bar.status-bar-info {
+            background-color: #1A3A52;
+            color: #BDE5F5;
+            border-top: 1px solid #2B5472;
+        }
+        .dark-mode .status-bar.status-bar-error {
+            background-color: #4D1A1A;
+            color: #FFC7C7;
+            border-top: 1px solid #722D2D;
+        }
     </style>
 </head>
 <body>
@@ -155,9 +180,18 @@
 
             <div class="state-section">
                 <h3>Status Bar</h3>
-                <div class="status-bar status-attention-bg">Working: Checking for updates...</div>
-                <div class="status-bar status-error-bg">Error: Startup failed</div>
-                <div class="status-bar status-success-bg">Success: Ready</div>
+                <div class="status-bar status-bar-success">
+                    <img src="../share/status_safe.png" width="16" height="16" />
+                    <span>All documents converted successfully</span>
+                </div>
+                <div class="status-bar status-bar-info">
+                    <img src="../share/spinner.svg" width="16" height="16" />
+                    <span>Converting documents...</span>
+                </div>
+                <div class="status-bar status-bar-error">
+                    <img src="../share/status_failed.png" width="16" height="16" />
+                    <span>Error: Conversion failed for 1 document</span>
+                </div>
             </div>
 
             <div class="state-section">
@@ -176,6 +210,7 @@
                     <div class="icon-item"><img src="../share/hamburger_menu_update_error.svg" /><code>hamburger_menu_update_error.svg</code></div>
                 </div>
             </div>
+
 
             <div class="state-section">
                 <h3>Document Selection</h3>
@@ -229,9 +264,18 @@
 
             <div class="state-section">
                 <h3>Status Bar</h3>
-                <div class="status-bar status-attention-bg">Working: Checking for updates...</div>
-                <div class="status-bar status-error-bg">Error: Startup failed</div>
-                <div class="status-bar status-success-bg">Success: Ready</div>
+                <div class="status-bar status-bar-success">
+                    <img src="../share/status_safe.png" width="16" height="16" />
+                    <span>All documents converted successfully</span>
+                </div>
+                <div class="status-bar status-bar-info">
+                    <img src="../share/spinner-dark.svg" width="16" height="16" />
+                    <span>Converting documents...</span>
+                </div>
+                <div class="status-bar status-bar-error">
+                    <img src="../share/status_failed.png" width="16" height="16" />
+                    <span>Error: Conversion failed for 1 document</span>
+                </div>
             </div>
 
             <div class="state-section">

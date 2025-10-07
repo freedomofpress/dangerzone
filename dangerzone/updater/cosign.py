@@ -1,8 +1,9 @@
+import os
 import subprocess
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from ..container_utils import subprocess_run
+from ..container_utils import disable_registry_auth, subprocess_run
 from ..util import get_resource_path
 from . import errors, log
 
@@ -53,6 +54,8 @@ def verify_blob(pubkey: Path, bundle: str, payload: str) -> None:
 
 
 def download_signature(image: str, digest: str) -> list[str]:
+    env = os.environ.copy()
+    disable_registry_auth(env)
     try:
         process = subprocess_run(
             [
@@ -61,6 +64,7 @@ def download_signature(image: str, digest: str) -> list[str]:
                 "signature",
                 f"{image}@sha256:{digest}",
             ],
+            env=env,
             capture_output=True,
             check=True,
         )

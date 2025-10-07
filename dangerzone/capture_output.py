@@ -50,7 +50,7 @@ class PatchedPopen(original_subprocess_popen):
 
         def _consume_pipe(pipe: IOBase) -> None:
             for line in iter(pipe.readline, ""):
-                log.debug(_decode_if_needed(line))
+                log.info(_decode_if_needed(line))
 
         # Create threads to read the stdout and stderr
         thread_out = threading.Thread(target=_consume_pipe, args=(self.stdout,))
@@ -99,9 +99,9 @@ def patched_subprocess_run(  # type: ignore[no-untyped-def]
     # streams as it comes. If it is set here, it means it is not logged
     # elsewhere, so do it.
     if process.stdout is not None:
-        log.debug(_decode_if_needed(process.stdout))
+        log.info(_decode_if_needed(process.stdout))
     if process.stderr is not None:
-        log.debug(_decode_if_needed(process.stderr))
+        log.info(_decode_if_needed(process.stderr))
 
     log.debug(f"Process returncode: {process.returncode}")
     return process

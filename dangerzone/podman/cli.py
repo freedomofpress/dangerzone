@@ -22,7 +22,10 @@ logger = logging.getLogger(__name__)
 )
 def main(log_level: str) -> None:
     """Manage Dangerzone Podman machines."""
-    logging.basicConfig(level=getattr(logging, log_level.upper()), stream=sys.stderr)
+    logging.basicConfig(
+        level=getattr(logging, log_level.upper()),
+        format="%(message)s",
+    )
 
 
 @main.command()

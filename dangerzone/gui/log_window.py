@@ -84,48 +84,52 @@ class LogWindow(QtWidgets.QDialog):
 
     def handle_task_machine_init(self) -> None:
         self.label.setText(
-            "Initializing the Dangerzone VM<br>This might take a few minutes…"
+            "Initializing Dangerzone sandbox (creating VM)<br>This might take a few minutes…"
         )
 
     def handle_task_machine_start(self) -> None:
-        self.label.setText("Starting the Dangerzone VM…")
+        self.label.setText("Initializing Dangerzone sandbox (starting VM)…")
 
     def handle_task_machine_stop_others(self) -> None:
-        self.label.setText("Stopping other Podman VMs…")
+        self.label.setText("Initializing Dangerzone sandbox (stopping other VMs)…")
 
     def handle_task_update_check(self) -> None:
         self.label.setText("Checking for updates…")
 
     def handle_task_container_install_local(self) -> None:
         self.label.setText(
-            "Installing local Dangerzone sandbox<br>This might take a few minutes…"
+            "Installing Dangerzone sandbox (from local archive)<br>"
+            "This might take a few minutes…"
         )
 
     def handle_task_container_install_remote(self) -> None:
         self.label.setText(
-            "Downloading and installing Dangerzone sandbox<br>This might take a few minutes…"
+            "Downloading Dangerzone sandbox (from trusted remote)<br>"
+            "This might take a few minutes…"
         )
 
     def handle_task_container_stop(self) -> None:
-        self.label.setText("Stopping the Dangerzone sandbox…")
+        self.label.setText("Stopping the Dangerzone sandbox (clearing jobs)…")
 
     def handle_task_machine_init_failed(self, error: str) -> None:
-        self.label.setText("Initializing the Dangerzone VM… failed")
+        self.label.setText("Initializing Dangerzone sandbox (creating VM)… failed")
 
     def handle_task_machine_start_failed(self, error: str) -> None:
-        self.label.setText("Starting the Dangerzone VM… failed")
+        self.label.setText("Initializing Dangerzone sandbox (starting VM)… failed")
 
     def handle_task_machine_stop_others_failed(self, error: str) -> None:
-        self.label.setText("Stopping other Podman VMs… failed")
+        self.label.setText(
+            "Initializing Dangerzone sandbox (stopping other VMs)… failed"
+        )
 
     def handle_task_machine_stop(self) -> None:
-        self.label.setText("Stopping Dangerzone VM…")
+        self.label.setText("Stopping Dangerzone sandbox (shutting down VM)…")
 
     def handle_task_update_check_failed(self, error: str) -> None:
         self.label.setText("Checking for updates… failed")
 
     def handle_task_container_install_failed(self, error: str) -> None:
-        self.label.setText("Installing the Dangerzone sandbox… failed")
+        self.label.setText("Installing Dangerzone sandbox… failed")
 
     def handle_startup_success(self) -> None:
         # We want to hide the text if there's nothing of importance to say to the user,

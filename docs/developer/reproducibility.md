@@ -65,3 +65,38 @@ This command will build a container image from the current Git commit and the
 provided date for the Debian archives. Then, it will compare the digest of the
 manifest against the provided one. This is a simple way to ensure that the
 created image is bit-for-bit reproducible.
+
+#### Reproducing the image without having a tag
+
+If you don't have the tag of this image, and only have its digest, then it's not
+straightforward to retrieve the Debian archive date and Git commit. We have
+built our images though so that it's possible to find this information, with
+some external tooling (`crane` and `cosign`).
+
+Getting the Debian archive date:
+
+```
+DIGEST=<digest>
+LAYER=$(crane manifest ghcr.io/freedomofpress/dangerzone/v1@${DIGEST?} \
+  | jq -r '.manifests[0].digest')
+crane manifest ghcr.io/freedomofpress/dangerzone/v1@${LAYER?} \
+  | jq -r '.annotations."rocks.dangerzone.debian_archive_date"'
+```
+
+This should return a date like `20251008`.
+
+Getting the Git commit that the image was built from:
+
+```
+DIGEST=<digest>
+cosign download attestation ghcr.io/freedomofpress/dangerzone/v1@${DIGEST?} \
+  | jq -r '.payload' | base64 -d | jq -r '.predicate.invocation.configSource.digest.sha1'
+```
+
+This should return one or more Git commits, that at a certain date have produced
+this container image. Pick any of them that you can `git switch` to.
+
+> [!NOTE]
+> It may be normal for a commit to not exist anymore, if the image was somehow
+> created from a feature branch. Still, one of those commits should be part of
+> the `main` branch.

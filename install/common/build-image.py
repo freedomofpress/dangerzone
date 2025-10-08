@@ -11,6 +11,7 @@ if platform.system() in ["Darwin", "Windows"]:
     CONTAINER_RUNTIME = "docker"
 elif platform.system() == "Linux":
     CONTAINER_RUNTIME = "podman"
+ANNOTATION_DATE = "rocks.dangerzone.debian_archive_date={date}"
 
 
 def str2bool(v):
@@ -113,6 +114,10 @@ def main():
         with open(image_id_path, "w") as f:
             f.write(tag)
 
+    date_annotation = ANNOTATION_DATE.format(date=args.debian_archive_date)
+    print("Will annotate the image with the following:")
+    print(f"- {date_annotation}")
+
     # Build the container image, and tag it with the calculated tag
     print("Building container image")
     cache_args = [] if args.use_cache else ["--no-cache"]
@@ -130,6 +135,8 @@ def main():
             args.runtime,
             "--build-arg",
             f"DEBIAN_ARCHIVE_DATE={args.debian_archive_date}",
+            "--annotation",
+            date_annotation,
             "--datetime",
             args.debian_archive_date,
             *dry_args,

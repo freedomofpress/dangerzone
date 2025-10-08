@@ -4,10 +4,15 @@ import sys
 
 logger = logging.getLogger(__name__)
 
-# Patch the stdlib early in the import tree, so we're able to log all calls done in the background
-from . import capture_output
+basename = os.path.basename(sys.argv[0])
 
-capture_output.patch_stdlib()
+# Patch the stdlib early in the import tree in order to log background calls
+# Only patch dangerzone and dangerzone-cli, to avoid capturing output for other
+# commands (e.g. dangerzone-machine and dangerzone-image)
+if basename in ["dangerzone-cli", "dangerzone", "dangerzone-cli.exe", "dangerzone.exe"]:
+    from . import capture_output
+
+    capture_output.patch_stdlib()
 
 # Call freeze_support() to avoid passing unknown options to the subprocess.
 # See https://github.com/freedomofpress/dangerzone/issues/873
@@ -28,7 +33,6 @@ except ImportError:
 if "DANGERZONE_MODE" in os.environ:
     mode = os.environ["DANGERZONE_MODE"]
 else:
-    basename = os.path.basename(sys.argv[0])
     cli_names = [
         "dangerzone-cli",
         "dangerzone-cli.exe",
@@ -39,6 +43,7 @@ else:
         mode = "cli"
     else:
         mode = "gui"
+
 
 if mode == "cli":
     from .cli import cli_main as main

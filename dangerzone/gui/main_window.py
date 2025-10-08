@@ -226,28 +226,28 @@ class StatusBar(QtWidgets.QStatusBar):
         self.set_status_working("Shutting down")
 
     def handle_task_machine_init(self) -> None:
-        self.set_status_working("Initializing Dangerzone VM")
+        self.set_status_working("Initializing Dangerzone sandbox (creating VM)")
 
     def handle_task_machine_start(self) -> None:
-        self.set_status_working("Starting Dangerzone VM")
+        self.set_status_working("Initializing Dangerzone sandbox (starting VM)")
 
     def handle_task_machine_stop_others(self) -> None:
-        self.set_status_working("Stopping other Podman VMs")
+        self.set_status_working("Initializing Dangerzone sandbox (stopping other VMs)")
 
     def handle_task_machine_stop(self) -> None:
-        self.set_status_working("Stopping Dangerzone VM")
+        self.set_status_working("Stopping Dangerzone sandbox (shutting down VM)")
 
     def handle_task_update_check(self) -> None:
         self.set_status_working("Checking for updates")
 
     def handle_task_container_install_local(self) -> None:
-        self.set_status_working("Installing local Dangerzone sandbox")
+        self.set_status_working("Installing Dangerzone sandbox (from local archive)")
 
     def handle_task_container_install_remote(self) -> None:
-        self.set_status_working("Downloading and installing Dangerzone sandbox")
+        self.set_status_working("Downloading Dangerzone sandbox (from trusted remote)")
 
     def handle_task_container_stop(self) -> None:
-        self.set_status_working("Stopping Dangerzone sandbox")
+        self.set_status_working("Stopping Dangerzone sandbox (clearing jobs)")
 
     def handle_startup_error(self) -> None:
         self.set_status_error("Startup failed")

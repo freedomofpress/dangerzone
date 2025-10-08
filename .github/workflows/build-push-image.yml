@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      
+
       - name: Update the contents of the inner container if asked-for
         if: ${{ inputs.trivially_update_container }}
         run: |
@@ -111,7 +111,7 @@ jobs:
         if: ${{ inputs.trivially_update_container }}
         run: |
           echo "# A comment to generate a new container hash" >> dangerzone/conversion/doc_to_pixels.py
-          
+
       - name: Prepare
         run: |
           platform=${{ matrix.platform.name }}

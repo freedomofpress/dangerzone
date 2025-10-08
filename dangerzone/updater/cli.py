@@ -168,16 +168,6 @@ def verify_local(image: str) -> None:
 @main.command()
 @click.argument("image_name")
 @click.option(
-    "--branch",
-    default=DEFAULT_BRANCH,
-    help="The Git branch that the image was built from",
-)
-@click.option(
-    "--commit",
-    required=True,
-    help="The full Git commit the image was built from",
-)
-@click.option(
     "--repository",
     default=DEFAULT_REPOSITORY,
     help="The github repository to check the attestation for",
@@ -189,8 +179,6 @@ def verify_local(image: str) -> None:
 )
 def attest_provenance(
     image_name: str,
-    branch: str,
-    commit: str,
     repository: str,
     workflow: str,
 ) -> None:
@@ -201,9 +189,7 @@ def attest_provenance(
     # TODO: Parse image and make sure it has a tag. Might even check for a digest.
     # parsed = registry.parse_image_location(image)
 
-    verified = cosign.verify_attestation(
-        image_name, branch, commit, repository, workflow
-    )
+    verified = cosign.verify_attestation(image_name, repository, workflow)
     if verified:
         click.echo(
             f"🎉 Successfully verified image '{image_name}' and its associated claims:"
@@ -211,8 +197,6 @@ def attest_provenance(
         click.echo(f"- ✅ SLSA Level 3 provenance")
         click.echo(f"- ✅ GitHub repo: {repository}")
         click.echo(f"- ✅ GitHub actions workflow: {workflow}")
-        click.echo(f"- ✅ Git branch: {branch}")
-        click.echo(f"- ✅ Git commit: {commit}")
 
 
 if __name__ == "__main__":

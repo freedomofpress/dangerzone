@@ -57,6 +57,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   ([#1157](https://github.com/freedomofpress/dangerzone/issues/1157))
 - Add developer instructions for releasing container images independently
   ([#1162](https://github.com/freedomofpress/dangerzone/issues/1162))
+- Do not check the Git commit/branch when attesting provenance info
+  ([#1270](https://github.com/freedomofpress/dangerzone/issues/1270))
 
 ## [0.9.1](https://github.com/freedomofpress/dangerzone/compare/v0.9.1...0.9.0)
 

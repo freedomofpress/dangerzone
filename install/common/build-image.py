@@ -43,7 +43,8 @@ def determine_git_tag():
             ],
         )
         .decode()
-        .strip()[1:]  # remove the "v" prefix of the tag.
+        .strip()
+        .rstrip("v")  # remove the "v" prefix of the tag.
     )
 
 

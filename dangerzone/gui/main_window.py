@@ -181,7 +181,7 @@ class StatusBar(QtWidgets.QStatusBar):
             info_svg = "info-circle.svg"
 
         self.spinner = animate_svg_image(spinner_svg, width=15, height=15)
-        self.message = QtWidgets.QLabel("")
+        self.message = QLabelClickable("")
 
         self.addPermanentWidget(self.spinner)
         self.addPermanentWidget(self.message)
@@ -347,8 +347,13 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(self.waiting_widget, stretch=1)
         layout.addWidget(self.conversion_widget, stretch=1)
 
+        # Log window
+        self.log_window = LogWindow(self)
+        view_logs_action.triggered.connect(self.log_window.show)
+
         self.status_bar = StatusBar(self.dangerzone)
         self.setStatusBar(self.status_bar)
+        self.status_bar.message.clicked.connect(self.log_window.show)
 
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(layout)
@@ -358,10 +363,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # thing we have to a top-level container element akin to an HTML `<body>`.
         # This allows us to make QSS rules conditional on the OS color mode.
         self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
-
-        # Log window
-        self.log_window = LogWindow(self)
-        view_logs_action.triggered.connect(self.log_window.show)
 
         # Configure logging to the log window
         log_handler = LogHandler()

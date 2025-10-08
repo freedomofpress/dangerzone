@@ -144,6 +144,8 @@ jobs:
           outputs: type=image,"name=${{ inputs.registry }}/${{ inputs.image_name }}",push-by-digest=true,push=true,rewrite-timestamp=true,name-canonical=true
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          annotations: |
+            rocks.dangerzone.debian_archive_date=${{ needs.prepare.outputs.debian_archive_date }}
 
       - name: Export digest
         run: |
@@ -202,7 +204,12 @@ jobs:
         working-directory: ${{ runner.temp }}/digests
         run: |
           DIGESTS=$(printf '${{ needs.build.outputs.image }}@sha256:%s ' *)
-          docker buildx imagetools create -t ${{ needs.build.outputs.image }} ${DIGESTS}
+          # NOTE: The following command does NOT actually add annotations to the root manifest yet.
+          # See https://github.com/freedomofpress/dangerzone/issues/1270#issuecomment-3382134379
+          docker buildx imagetools create \
+              --annotation "manifest-descriptor:rocks.dangerzone.debian_archive_date=${{ needs.build.outputs.debian_archive_date }}" \
+              -t ${{ needs.build.outputs.image }} \
+              ${DIGESTS}
 
       - name: Inspect image
         id: image

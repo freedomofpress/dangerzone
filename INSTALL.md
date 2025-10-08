@@ -133,7 +133,7 @@ echo "deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
 
 Install Dangerzone:
 
-```
+```sh
 sudo apt update
 sudo apt install -y dangerzone
 ```
@@ -164,7 +164,7 @@ sudo apt install -y dangerzone
 
 Type the following commands in a terminal:
 
-```
+```sh
 sudo dnf config-manager addrepo --from-repofile=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 sudo dnf install dangerzone
 ```
@@ -202,6 +202,18 @@ After confirming that it matches, type `y` (for yes) and the installation should
   </tr>
 </table>
 
+### Fedora Atomic (Silverblue, Kinoite, etc.)
+
+Type the following commands in a terminal:
+
+```sh
+curl -o - https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo \
+    | sudo tee /etc/yum.repos.d/dangerzone.repo > /dev/null
+rpm-ostree install dangerzone
+```
+
+After the above command completes, restart your computer to complete the installation.
+
 ### Qubes OS
 
 > [!WARNING]
@@ -233,7 +245,7 @@ Overview of the qubes you'll create:
 Create a **disposable**, offline app qube (`dz-dvm`), based on your default
 template. This will be the qube where the documents will be sanitized:
 
-```
+```sh
 qvm-create --class AppVM --label red --template fedora-41 \
     --prop netvm="" --prop template_for_dispvms=True \
     --prop default_dispvm='' dz-dvm
@@ -251,7 +263,7 @@ dz.Convert         *       @anyvm       @dispvm:dz-dvm  allow
 
 Install Dangerzone:
 
-```
+```sh
 sudo dnf config-manager addrepo --from-repofile=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 sudo dnf install dangerzone-qubes
 ```

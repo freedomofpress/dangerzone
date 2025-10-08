@@ -115,11 +115,7 @@ predicate: {{
       // This condition verifies that the image was generated from
       // the source repository we expect. Replace this with your
       // repository.
-      uri: =~"^git\\+https://github.com/{repository}@refs/heads/{branch}"
-      // Add a condition to check for a specific commit hash
-      digest: {{
-        sha1: "{commit}"
-      }}
+      uri: =~"^git\\+https://github.com/{repository}"
     }}
   }}
 }}
@@ -128,8 +124,6 @@ predicate: {{
 
 def verify_attestation(
     image_name: str,
-    branch: str,
-    commit: str,
     repository: str,
     workflow: str,
 ) -> bool:
@@ -137,9 +131,7 @@ def verify_attestation(
     Look up the image attestation to see if the image has been built
     on Github runners, and from a given repository.
     """
-    policy = CUE_POLICY.format(
-        repository=repository, workflow=workflow, commit=commit, branch=branch
-    )
+    policy = CUE_POLICY.format(repository=repository, workflow=workflow)
 
     # Put the value in files and verify with cosign
     with (

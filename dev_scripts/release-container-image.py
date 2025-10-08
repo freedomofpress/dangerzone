@@ -79,7 +79,7 @@ def preflight_check():
     "--commit",
     default=None,
     help=(
-        "The full SHA1 commit to use when attesting, reproducing and signing. "
+        "The full SHA1 commit to use when reproducing and signing. "
         "Defaults to the git HEAD of the current branch."
     ),
     callback=validate_commit_format_only,
@@ -94,7 +94,6 @@ def preflight_check():
 @click.option(
     "--repository", default="freedomofpress/dangerzone", help="The repository to use"
 )
-@click.option("--branch", default="main")
 @click.option("--workflow", default=".github/workflows/release-container-image.yml")
 @click.option("--image-name", default=IMAGE_NAME_PATH.read_text().strip())
 @click.option(
@@ -109,7 +108,6 @@ def attest_release_sign(
     commit,
     ghcr_signer_path,
     repository,
-    branch,
     workflow,
     image_name,
     skip_reproduction_for,
@@ -130,8 +128,8 @@ def attest_release_sign(
         )
         commit = result.stdout.strip()
 
-    root_manifest, debian_archive_date = get_candidate_image(commit, image_name)
-    attest_provenance(root_manifest, commit, repository, branch, workflow)
+    root_manifest = get_candidate_image(commit, image_name)
+    attest_provenance(root_manifest, repository, workflow)
     digests = get_platform_digests(root_manifest)
 
     # Create temporary directory and clone repository once for all reproductions
@@ -180,9 +178,8 @@ def attest_release_sign(
         sign_image(root_manifest, ghcr_signer_path)
 
 
-def attest_provenance(full_image, commit, repository, branch, workflow):
+def attest_provenance(full_image, repository, workflow):
     click.echo(f"\n🔐 Attesting provenance for image: {full_image}")
-    click.echo(f"   Commit: {commit}\n")
 
     try:
         run(
@@ -194,10 +191,6 @@ def attest_provenance(full_image, commit, repository, branch, workflow):
                 "attest-provenance",
                 "--repository",
                 repository,
-                "--branch",
-                branch,
-                "--commit",
-                commit,
                 "--workflow",
                 workflow,
                 full_image,

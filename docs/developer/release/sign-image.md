@@ -43,7 +43,7 @@ Here is how to pick a container image built from the `main` branch:
 
 Here is how to attest the provenance info and reproducibility of the image:
 
-- [ ] Attest provenance with `poetry run ./dev_scripts/dangerzone-image attest-provenance --commit $(git rev-parse HEAD) $IMAGE`
+- [ ] Attest provenance with `poetry run ./dev_scripts/dangerzone-image attest-provenance $IMAGE`
 - [ ] Grab digests of platform-specific images (`linux/amd64` and `linux/arm64`) with `crane manifest $IMAGE`
 - [ ] Reproduce it bit-for-bit locally for every platform:
 

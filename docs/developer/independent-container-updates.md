@@ -45,8 +45,6 @@ and its associated claims:
 - ✅ SLSA Level 3 provenance
 - ✅ GitHub repo: freedomofpress/dangerzone
 - ✅ GitHub actions workflow: <workflow>
-- ✅ Git branch: <branch>
-- ✅ Git commit: <commit>
 ```
 
 ## Installing image updates to air-gapped environments

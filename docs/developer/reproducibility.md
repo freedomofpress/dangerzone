@@ -66,7 +66,7 @@ provided date for the Debian archives. Then, it will compare the digest of the
 manifest against the provided one. This is a simple way to ensure that the
 created image is bit-for-bit reproducible.
 
-#### Reproducing the image without having a tag
+#### Reproducing the image from its digest
 
 If you don't have the tag of this image, and only have its digest, then it's not
 straightforward to retrieve the Debian archive date and Git commit. We have

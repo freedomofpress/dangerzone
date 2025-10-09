@@ -69,9 +69,7 @@ created image is bit-for-bit reproducible.
 #### Reproducing the image from its digest
 
 If you don't have the tag of this image, and only have its digest, then it's not
-straightforward to retrieve the Debian archive date and Git commit. We have
-built our images though so that it's possible to find this information, with
-some external tooling (`crane` and `cosign`).
+straightforward to retrieve the Debian archive date and Git commit. This data is attached to the images, and can be retrieved with some external tooling (`crane` and `cosign`).
 
 Getting the Debian archive date:
 

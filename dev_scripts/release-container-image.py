@@ -24,15 +24,6 @@ IMAGE_NAME_PATH = PROJECT_ROOT / "share" / "image-name.txt"
 DOCKER_ENV_PATH = PROJECT_ROOT / "Dockerfile.env"
 
 
-def extract_debian_archive_date(image):
-    """We want the "20251007" part out of this:
-
-    ghcr.io/almet/dangerzone/dangerzone:20251007-0.9.0-158-g1603d30
-    """
-    full_tag = image.split(":")[1]
-    return full_tag.split("-")[0]
-
-
 def validate_commit_format_only(ctx, param, value):
     """Validate only the format, don't check if commit exists."""
     if value is None:
@@ -163,7 +154,6 @@ def attest_release_sign(
                 reproduce_image(
                     root_manifest,
                     platform,
-                    debian_archive_date,
                     platform_digest,
                     temp_dir,
                 )
@@ -228,7 +218,6 @@ def get_candidate_image(commit, image_name):
 
         # Get the fresher one
         latest_image = images[-1]
-        debian_date = extract_debian_archive_date(latest_image)
 
         # Get the digest
         result = run(
@@ -243,7 +232,7 @@ def get_candidate_image(commit, image_name):
 
         click.echo(f"✅ Found image:")
         click.echo(f"   {full_image}\n")
-        return full_image, debian_date
+        return full_image
 
     except subprocess.CalledProcessError as e:
         click.echo(f"❌ Error finding candidate image: {e}")
@@ -283,7 +272,6 @@ def get_platform_digests(full_image):
 def reproduce_image(
     root_manifest,
     platform,
-    debian_archive_date,
     platform_image_digest,
     temp_dir,
 ):
@@ -295,7 +283,7 @@ def reproduce_image(
     click.echo(f"\n🔄 Reproducing image for platform: {platform}")
     click.echo(f"   Root manifest: {root_manifest}")
     click.echo(f"   Platform image digest: {platform_image_digest}")
-    click.echo(f"   Debian archive date: {debian_archive_date}")
+    click.echo(f"   Debian archive date: (autodetect)")
     click.echo(f"   Platform image: {platform_image}")
     click.echo(f"   Repository path: {temp_dir}\n")
 
@@ -309,7 +297,7 @@ def reproduce_image(
                 "python",
                 f"{temp_dir}/dev_scripts/reproduce-image.py",
                 "--debian-archive-date",
-                debian_archive_date,
+                "autodetect",
                 "--platform",
                 platform,
                 platform_image,

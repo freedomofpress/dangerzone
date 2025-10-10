@@ -2,13 +2,16 @@
 
 import argparse
 import hashlib
+import json
 import logging
 import pathlib
 import platform
+import shutil
 import stat
 import subprocess
 import sys
 import urllib.request
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -90,12 +93,44 @@ def main():
     )
     args = parse_args()
 
+    if args.debian_archive_date == "autodetect":
+        logger.info(f"Autodetecting Debian archive date for image {args.digest}")
+
+        # Check if the user has passed the full image, in order to get the manifest from
+        # the container registry.
+        if "@sha256:" not in args.digest:
+            logger.error(
+                "Must pass full image name along with the digest to make autodetection work"
+            )
+            sys.exit(1)
+
+        # Check if crane is installed, since it's required for this operation.
+        if not shutil.which("crane"):
+            logger.error("The 'crane' tool is required for the autodetection")
+            sys.exit(1)
+
+        # Grab the Debian archive date from the 'rocks.dangerzone.debian_archive_date'
+        # annotation.
+        resp = (
+            subprocess.run(
+                ["crane", "manifest", args.digest],
+                capture_output=True,
+                check=True,
+            )
+            .stdout.decode()
+            .strip()
+        )
+        date = json.loads(resp)["annotations"]["rocks.dangerzone.debian_archive_date"]
+        logger.info(f"Successfully retrieved Debian archive date: {date}")
+    else:
+        date = args.debian_archive_date
+
     logger.info(f"Building container image")
     build_image(
         args.platform,
         args.runtime,
         not args.no_cache,
-        args.debian_archive_date,
+        date,
     )
 
     logger.info(

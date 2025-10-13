@@ -160,3 +160,40 @@ def test_machine_stop_others_task(
         else:
             run_spy.assert_not_called()
             mock_podman_machine_manager.stop.assert_not_called()
+
+
+def test_startup_skips_podman_tasks_if_custom_runtime_is_specified(
+    mocker: MockerFixture,
+) -> None:
+    """Skip Podman startup tasks when a custom runtime is specified."""
+    mock_settings = mocker.patch("dangerzone.settings.Settings").return_value
+    mock_settings.custom_runtime_specified.return_value = True
+    mocker.patch(
+        "dangerzone.startup.ContainerInstallTask.should_skip", return_value=True
+    )
+    mocker.patch("dangerzone.startup.UpdateCheckTask.should_skip", return_value=True)
+
+    tasks = [
+        startup.MachineInitTask(),
+        startup.MachineStartTask(),
+        startup.MachineStopOthersTask(),
+        startup.ContainerInstallTask(),
+        startup.UpdateCheckTask(),
+    ]
+
+    init_run_spy = mocker.spy(tasks[0], "run")
+    init_skip_spy = mocker.spy(tasks[0], "should_skip")
+    start_run_spy = mocker.spy(tasks[1], "run")
+    start_skip_spy = mocker.spy(tasks[1], "should_skip")
+    stop_others_run_spy = mocker.spy(tasks[2], "run")
+    stop_others_skip_spy = mocker.spy(tasks[2], "should_skip")
+
+    runner = startup.StartupLogic(tasks=tasks)
+    runner.run()
+
+    init_run_spy.assert_not_called()
+    assert init_skip_spy.spy_return == True
+    start_run_spy.assert_not_called()
+    assert start_skip_spy.spy_return == True
+    stop_others_run_spy.assert_not_called()
+    assert stop_others_skip_spy.spy_return == True

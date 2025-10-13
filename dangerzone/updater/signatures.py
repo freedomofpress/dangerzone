@@ -113,12 +113,12 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
 
     sig_obj = Signature(signature)
     try:
-        payload_digest = sig_obj.payload["critical"]["image"]["docker-manifest-digest"]
+        payload_digest = sig_obj.manifest_digest
     except Exception as e:
         raise errors.SignatureVerificationError(
             f"Unable to extract the payload digest from the signature: {e}"
         )
-    if payload_digest != f"sha256:{image_digest}":
+    if payload_digest != image_digest:
         raise errors.SignatureMismatch(
             "The given signature does not match the expected image digest "
             f"({payload_digest}, {image_digest})"

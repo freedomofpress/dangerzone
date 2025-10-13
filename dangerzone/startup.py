@@ -70,7 +70,10 @@ class MachineInitTask(Task):
     name = "Initializing Dangerzone VM"
 
     def should_skip(self) -> bool:
-        return platform.system() == "Linux"
+        return (
+            settings.Settings().custom_runtime_specified()
+            or platform.system() == "Linux"
+        )
 
     def run(self) -> None:
         PodmanMachineManager().init()
@@ -80,7 +83,10 @@ class MachineStartTask(Task):
     name = "Starting Dangerzone VM"
 
     def should_skip(self) -> bool:
-        return platform.system() == "Linux"
+        return (
+            settings.Settings().custom_runtime_specified()
+            or platform.system() == "Linux"
+        )
 
     def run(self) -> None:
         PodmanMachineManager().start()
@@ -93,6 +99,9 @@ class MachineStopOthersTask(Task):
         raise errors.OtherMachineRunningError(message)
 
     def should_skip(self) -> bool:
+        if settings.Settings().custom_runtime_specified():
+            return True
+
         if platform.system() in ["Linux", "Windows"]:
             # * On Linux, there are no Podman machines
             # * On Windows, WSL allows multiple VMs:

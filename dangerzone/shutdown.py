@@ -2,7 +2,7 @@ import logging
 import platform
 import typing
 
-from . import container_utils, startup
+from . import container_utils, settings, startup
 from .podman.machine import PodmanMachineManager
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,10 @@ class MachineStopTask(startup.Task):
     name = "Stopping Dangerzone VM"
 
     def should_skip(self) -> bool:
-        return platform.system() == "Linux"
+        return (
+            settings.Settings().custom_runtime_specified()
+            or platform.system() == "Linux"
+        )
 
     def run(self) -> None:
         PodmanMachineManager().stop()

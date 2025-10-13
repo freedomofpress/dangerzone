@@ -157,19 +157,18 @@ def check_signatures_and_logindex(
     remote_digest: str,
     pubkey: Path,
     signatures: List[Dict],
-    bypass_logindex_check: bool = False,
 ) -> tuple[int, int]:
+    """Check the validity of the signatures and ensure the log indexes are only going upwards"""
     verify_signatures(signatures, remote_digest, pubkey)
 
     incoming_log_index = get_log_index_from_signatures(signatures)
     last_log_index = get_last_log_index()
 
-    if not bypass_logindex_check:
-        if incoming_log_index < last_log_index:
-            raise errors.InvalidLogIndex(
-                f"The incoming log index ({incoming_log_index}) is "
-                f"lower than the last known log index ({last_log_index})"
-            )
+    if incoming_log_index < last_log_index:
+        raise errors.InvalidLogIndex(
+            f"The incoming log index ({incoming_log_index}) is "
+            f"lower than the last known log index ({last_log_index})"
+        )
     return last_log_index, incoming_log_index
 
 
@@ -615,7 +614,6 @@ def upgrade_container_image(
     remote_digest: str,
     image_str: Optional[str] = None,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
-    bypass_logindex_check: bool = False,
     signatures: Optional[List[Dict]] = None,
 ) -> None:
     """Verify and upgrade the image to the latest, if signed."""
@@ -630,7 +628,6 @@ def upgrade_container_image(
         remote_digest,
         pubkey,
         signatures,
-        bypass_logindex_check,
     )
 
     # If the local log index is the same as the remote one, and a sandbox image has

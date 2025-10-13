@@ -153,15 +153,6 @@ def test_upgrade_container_lower_log_index(mocker: Any) -> None:
             signatures=signatures,
         )
 
-    # And it should go trough if we ask to bypass the logindex checks
-    upgrade_container_image(
-        image_digest,
-        "ghcr.io/freedomofpress/dangerzone/v1",
-        TEST_PUBKEY_PATH,
-        bypass_logindex_check=True,
-        signatures=signatures,
-    )
-
 
 def test_get_remote_signatures_error(fp: FakeProcess, mocker: Any) -> None:
     image = "ghcr.io/freedomofpress/dangerzone/v1"

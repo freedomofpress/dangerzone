@@ -195,6 +195,8 @@ def get_last_log_index() -> int:
 
 
 def get_log_index_from_signatures(signatures: List[Dict]) -> int:
+    """Get the max log index from a list of signatures."""
+
     def _reducer(accumulator: int, signature: Dict) -> int:
         try:
             logIndex = int(signature["Bundle"]["Payload"]["logIndex"])
@@ -245,10 +247,15 @@ def upgrade_container_image_airgapped(
     Verify the given archive against its self-contained signatures, then
     upgrade the image and retag it to the expected tag.
 
-    The logic supports "dangerzone archives" only, which have
+    The logic supports "dangerzone archives" only, which have a
     `dangerzone.json` file at the root of the tarball.
 
-    See `prepare_airgapped_archive` for more details.
+    This function is used on airgapped scenarios, as well as when loading
+    the bundled container.tar file (e.g. for new releases, until a new
+    container image is available in the registry)
+
+    See `prepare_airgapped_archive` for more details on how to build such
+    archives.
 
     :return: The loaded image name
     """
@@ -262,10 +269,11 @@ def upgrade_container_image_airgapped(
         if not has_dangerzone_manifest:
             raise errors.InvalidImageArchive()
 
-        # Ensure that the signatures.json is the same as the index.json
-        # with only the images remaining, to avoid situations where we
-        # check the signatures but the index.json differs, making us
-        # think that we're with valid signatures where we indeed aren't.
+        # Sanity check, ensuring that the dangerzone.json file is the same
+        # as the index.json with only the images remaining.
+        # This is to avoid situations where signatures are checked but the
+        # index.json differs, in which case the validity of the signatures
+        # wouldn't mean anything.
         archive.extract(f"./{DANGERZONE_MANIFEST}", tmp_path)
         archive.extract("./index.json", tmp_path)
 
@@ -290,7 +298,7 @@ def upgrade_container_image_airgapped(
         log.info(f"Found image name: {image_name}")
 
     if not bypass_logindex:
-        # Ensure that we only upgrade if the log index is higher than the last known one
+        # Only upgrade if the log index is higher than the last known one
         incoming_log_index = get_log_index_from_signatures(signatures)
         last_log_index = get_last_log_index()
 
@@ -646,6 +654,9 @@ def install_local_container_tar(
 ) -> None:
     tarball_path = get_resource_path("container.tar")
     log.debug("Installing container image %s", tarball_path)
+    # The escape hatch here is made for developers to be able to test
+    # new container images without having to sign them, e.g. when
+    # working on them.
     if bypass_signature_checks():
         runtime.load_image_tarball(tarball_path)
     else:

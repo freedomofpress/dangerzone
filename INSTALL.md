@@ -29,6 +29,12 @@ Notes:
 
 ◎ More information about where that points [in the runner-images repository](https://github.com/actions/runner-images/tree/main)
 
+### Note on unsupported Linux distros
+
+`.deb` and `.rpm` packages are provided for supported distributions. Users in **other** Debian-based or Fedora-based distros — that are not listed above — may be able to install Dangerzone through these packages. Unfortunately, Dangerzone is not tested against these distros, and might fail to install, update, run, or be broken in subtle ways.
+
+Please, proceed at your own risks, only if you know what you're doing.
+
 ## MacOS
 
 - Download [Dangerzone 0.9.1 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.9.1/Dangerzone-0.9.1-arm64.dmg)
@@ -203,6 +209,11 @@ After confirming that it matches, type `y` (for yes) and the installation should
 </table>
 
 ### Fedora Atomic (Silverblue, Kinoite, etc.)
+
+> [!WARNING]
+> This distribution is [not officially supported](#Note-on-unsupported-Linux-distros)
+> by the Dangerzone team. Please, proceed at your own risks,
+> only if you know what you're doing.
 
 Type the following commands in a terminal:
 

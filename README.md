@@ -86,3 +86,10 @@ Dangerzone gets updates to improve its features _and_ to fix problems. So, updat
 ### Can I use Podman Desktop?
 
 Yes! We've introduced [experimental support for Podman Desktop](https://github.com/freedomofpress/dangerzone/blob/main/docs/podman-desktop.md) on Windows and macOS.
+
+### Can I run Dangerzone in an airgapped environment?
+
+Yes, Dangerzone is designed to run in airgapped environments without any
+configuration. If you want to update its container image, follow
+[our instructions](docs/developer/independent-container-updates.md#Installing-image-updates-to-airgapped-environments)
+to do so.

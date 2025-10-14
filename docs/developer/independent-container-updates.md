@@ -6,7 +6,7 @@ This mechanism, known as Independent Container Updates (ICU) allows us to shorte
 
 This increases the security of the conversion process dramatically, making it harder for an attacker to rely on known and patched exploits in our stack.
 
-In order to ensure the sandbox image is trusted, we sign it with [cosign](https://www.sigstore.dev/) signatures, and check them against a key distributed in the Dangerzone application.
+In order to ensure the sandbox image is trusted, we sign it with [Cosign CLI](https://github.com/sigstore/cosign), which is part of the greater [Sigstore](https://www.sigstore.dev/) ecosystem, and verify it against a key distributed in the Dangerzone application.
 
 ## Install updates
 
@@ -67,4 +67,29 @@ On the airgapped machine, copy the file and run the following command:
 
 ```bash
 dangerzone-image load-archive dangerzone-amd64.tar
+```
+
+## Configuring the verification material
+
+Dangerzone [bundles and pins](https://github.com/freedomofpress/dangerzone/issues/1280#issuecomment-3422977474)
+the public key of the [Rekor](https://docs.sigstore.dev/logging/overview/)
+service, which powers the transparency log of Sigstore signatures.
+
+If Sigstore maintainers decide to rotate this key, a new Dangerzone version will
+be released, bundled with the new key. Power users can specify an updated key in
+the meantime, by fetching the latest Rekor public key with:
+
+```
+$ cosign initialize
+$ cat ~/.sigstore/root/tuf-repo-cdn.sigstore.dev/targets/trusted_root.json  \
+    | jq -r .tlogs[0].publicKey.rawBytes \
+    | base64 -d \
+    | openssl pkey -pubin > rekor.pub
+```
+
+And set it with the following environment variable:
+
+```
+export SIGSTORE_REKOR_PUBLIC_KEY=rekor.pub
+dangerzone
 ```

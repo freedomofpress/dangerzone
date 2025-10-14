@@ -549,6 +549,10 @@ jobs:
           # flag, the Podman container is not authorized [2] to access the Xvfb
           # server.
           #
+          # Also, run the tests with no network connection, using the
+          # `--no-network` flag, to ensure that Dangerzone can run in airgapped
+          # installations.
+          #
           # [1] From https://www.x.org/releases/X11R6.7.0/doc/Xserver.1.html#sect4:
           #
           #     disables host-based access control mechanisms. Enables access by
@@ -560,7 +564,10 @@ jobs:
           #     protocol specified". However, we have verified with strace(1)
           #     that the command in the Podman container can read the Xauthority
           #     file successfully.
-          xvfb-run -s '-ac' ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
+          xvfb-run -s '-ac' \
+            ./dev_scripts/env.py \
+              --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+              run --dev --no-network \
               bash -c 'cd dangerzone; poetry run make test'
 
       - name: Upload PDF diffs

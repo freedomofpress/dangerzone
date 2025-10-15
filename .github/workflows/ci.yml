@@ -471,6 +471,8 @@ jobs:
             version: bookworm
           - distro: debian
             version: trixie
+          - distro: debian
+            version: forky
           - distro: fedora
             version: "41"
           - distro: fedora

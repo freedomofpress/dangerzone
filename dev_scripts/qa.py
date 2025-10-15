@@ -981,6 +981,11 @@ class QADebianTrixie(QADebianBased):
     VERSION = "trixie"
 
 
+class QADebianForky(QADebianBased):
+    DISTRO = "debian"
+    VERSION = "forky"
+
+
 class QAUbuntu2204(QADebianBased):
     DISTRO = "ubuntu"
     VERSION = "22.04"

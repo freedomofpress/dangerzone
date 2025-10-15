@@ -32,7 +32,7 @@ Name:           dangerzone-qubes
 Name:           dangerzone
 %endif
 
-Version:        0.9.1
+Version:        0.10.0
 Release:        1%{?dist}
 Summary:        Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs
 

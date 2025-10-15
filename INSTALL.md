@@ -85,6 +85,7 @@ Dangerzone is available for:
 - Ubuntu 25.04 (plucky)
 - Ubuntu 24.04 (noble)
 - Ubuntu 22.04 (jammy)
+- Debian 14 (forky)
 - Debian 13 (trixie)
 - Debian 12 (bookworm)
 - Debian 11 (bullseye), support will be dropped in future releases.

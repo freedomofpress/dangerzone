@@ -7,6 +7,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
 
+## [0.10.0](https://github.com/freedomofpress/dangerzone/compare/v0.10.0...0.9.1)
+
 ### Added
 
 - Sign the sandbox/container images and automatically upgrade them to their latest version

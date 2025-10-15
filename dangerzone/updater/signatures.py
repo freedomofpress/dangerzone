@@ -575,9 +575,8 @@ def prepare_airgapped_archive(
         cosign.save(arch_image, tmp_path)
         cosign.verify_local_image(tmp_path, pubkey)
 
-        # Read from index.json, save it as DANGERZONE_MANIFEST
-        # and then change the index.json contents to only contain
-        # images (noting this as the naming might sound awkward)
+        # Read from index.json, save it as dangerzone.json
+        # and then change the index.json contents to only contain images
         with (
             (tmp_path / "index.json").open() as index_file,
             (tmp_path / DANGERZONE_MANIFEST).open("w+") as dzf,

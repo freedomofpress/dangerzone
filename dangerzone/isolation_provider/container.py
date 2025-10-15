@@ -14,7 +14,6 @@ from ..updater import (
     DEFAULT_PUBKEY_LOCATION,
     UpdaterError,
     bypass_signature_checks,
-    upgrade_container_image,
     verify_local_image,
 )
 from ..util import (

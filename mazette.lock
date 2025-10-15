@@ -142,9 +142,9 @@
     "podman": {
       "windows/amd64": {
         "repo": "containers/podman",
-        "download_url": "https://github.com/containers/podman/releases/download/v5.5.2/podman-remote-release-windows_amd64.zip",
-        "version": "5.5.2",
-        "checksum": "2e63aa82cf0b57305e3b8074cf46c09eab85d04bfa81330697dc07d127b2197a",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.6.2/podman-remote-release-windows_amd64.zip",
+        "version": "5.6.2",
+        "checksum": "9c86b2686dabc287af1de1b4fadc506310718bf84fccbd12f0831fc7726a7cd5",
         "executable": true,
         "destination": "share/vendor/podman",
         "extract": {
@@ -157,9 +157,9 @@
       },
       "darwin/amd64": {
         "repo": "containers/podman",
-        "download_url": "https://github.com/containers/podman/releases/download/v5.5.2/podman-remote-release-darwin_amd64.zip",
-        "version": "5.5.2",
-        "checksum": "77ffabd8a48eef601694c24c7050fd82515651cf681f90538824b0c9e54ca65e",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.6.2/podman-remote-release-darwin_amd64.zip",
+        "version": "5.6.2",
+        "checksum": "20ac39d34f412e4e4e7221696ed7e75e395f22234c89c562f431860a9f889b21",
         "executable": true,
         "destination": "share/vendor/podman",
         "extract": {
@@ -172,9 +172,9 @@
       },
       "darwin/arm64": {
         "repo": "containers/podman",
-        "download_url": "https://github.com/containers/podman/releases/download/v5.5.2/podman-remote-release-darwin_arm64.zip",
-        "version": "5.5.2",
-        "checksum": "0f18957c62896ddbd4b8adfd25e3918eb93f652df1f93349bf732a567696635b",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.6.2/podman-remote-release-darwin_arm64.zip",
+        "version": "5.6.2",
+        "checksum": "f9c36d1fe4c85acd919d71dfedbf4b77d581fabc66960dfa9b62e78d721917a2",
         "executable": true,
         "destination": "share/vendor/podman",
         "extract": {
@@ -189,18 +189,18 @@
     "gvproxy": {
       "darwin/amd64": {
         "repo": "containers/gvisor-tap-vsock",
-        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.6/gvproxy-darwin",
-        "version": "0.8.6",
-        "checksum": "e18161fd2dbc67046f4b2a138807fdd1e7f8545b37850328e5a647684e9a809e",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.7/gvproxy-darwin",
+        "version": "0.8.7",
+        "checksum": "6d3b764d22bd3cc7faadf9ffa56ae638924825631be9b0344a695817c2ffda1e",
         "executable": true,
         "destination": "share/vendor/podman/gvproxy",
         "extract": false
       },
       "darwin/arm64": {
         "repo": "containers/gvisor-tap-vsock",
-        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.6/gvproxy-darwin",
-        "version": "0.8.6",
-        "checksum": "e18161fd2dbc67046f4b2a138807fdd1e7f8545b37850328e5a647684e9a809e",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.7/gvproxy-darwin",
+        "version": "0.8.7",
+        "checksum": "6d3b764d22bd3cc7faadf9ffa56ae638924825631be9b0344a695817c2ffda1e",
         "executable": true,
         "destination": "share/vendor/podman/gvproxy",
         "extract": false
@@ -229,29 +229,27 @@
     "machine-os": {
       "darwin/amd64": {
         "repo": "containers/podman-machine-os",
-        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.5.2/podman-machine.x86_64.applehv.raw.zst",
-        "version": "5.5.2",
-        "checksum": "9710cb739ec8b6473863607ecdd7ee27cdc8802b1133ad2e121f98206399a7cc",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.6.2/podman-machine.x86_64.applehv.raw.zst",
+        "version": "5.6.2",
+        "checksum": "b80be0a4643a7119a1a304efe80334fe4192e02cdbcdf2d1f8d9366be2870c94",
         "executable": false,
         "destination": "share/machine.tar",
         "extract": false
       },
       "darwin/arm64": {
         "repo": "containers/podman-machine-os",
-        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.5.2/podman-machine.aarch64.applehv.raw.zst",
-        "version": "5.5.2",
-        "checksum": "1f5c0ec861031a3e51ae30af3a34009ca344437609915ecf7833897e2292b448",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.6.2/podman-machine.aarch64.applehv.raw.zst",
+        "version": "5.6.2",
+        "checksum": "b8d8609ac44174d2d0c8fb1aa5266bc409c142ed66e33d333e446fa02d9a0a6b",
         "executable": false,
         "destination": "share/machine.tar",
         "extract": false
-      }
-    },
-    "machine-os-wsl": {
+      },
       "windows/amd64": {
-        "repo": "apyrgio/podman-machine-os",
-        "download_url": "https://github.com/apyrgio/podman-machine-os/releases/download/5.5.0/podman-machine.x86_64.wsl.tar.zst",
-        "version": "5.5.0",
-        "checksum": "ffada992b8a1efea5204e51b89c6bb011253735c6ddb98fd83a806668c377f9e",
+        "repo": "containers/podman-machine-os",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.6.2/podman-machine.x86_64.wsl.tar.zst",
+        "version": "5.6.2",
+        "checksum": "3e085930067a0b648ab93c382ce9a09731d6fc53ae2e237ca1061e5d28877335",
         "executable": false,
         "destination": "share/machine.tar",
         "extract": false
@@ -260,41 +258,41 @@
     "cosign": {
       "darwin/amd64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.3/cosign-darwin-amd64",
-        "version": "2.5.3",
-        "checksum": "172731b1c2575dd76069a87d4d17312fd027fe0947e45e4a9ba9b915877e0ed0",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.1/cosign-darwin-amd64",
+        "version": "2.6.1",
+        "checksum": "f1ed2787cc9648fd3c644fcb279e43f3f55da63b788d69a527aa14ad97ffdca1",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       },
       "darwin/arm64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.3/cosign-darwin-arm64",
-        "version": "2.5.3",
-        "checksum": "86e0cad94d0da4c0dab5e26672ede71447a08a0f0d8495b9381c117df27d7d09",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.1/cosign-darwin-arm64",
+        "version": "2.6.1",
+        "checksum": "54047052cf46f40a5c3c95a510db276e164ba77e096aea1ca1b733f770359689",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       },
       "linux/amd64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.3/cosign-linux-amd64",
-        "version": "2.5.3",
-        "checksum": "783b5d6c74105401c63946c68d9b2a4e1aab3c8abce043e06b8510b02b623ec9",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.1/cosign-linux-amd64",
+        "version": "2.6.1",
+        "checksum": "064954c5d8c7e3b28188eee5b1727b31c411550bc5fefd41aa672d3c761d103a",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       },
       "windows/amd64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.5.3/cosign-windows-amd64.exe",
-        "version": "2.5.3",
-        "checksum": "545d87e096cab55e213f25b6ec5c9a74c958f72d05182cee1cd53a4eb6c2e561",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.1/cosign-windows-amd64.exe",
+        "version": "2.6.1",
+        "checksum": "049026dae3246d6ea8201512ec3efce3aab0c7f1d338d52e26c525dd02b418a0",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       }
     }
   },
-  "config_checksum": "305236a69bcb44719c3b6ab10caa8a2fbcbfdec0e0c70dbe00a82ea1a060abce"
+  "config_checksum": "ed79aaae94834dfa94ec1edc6063697b0029e20e1af77bc1bf84b219241c9dad"
 }

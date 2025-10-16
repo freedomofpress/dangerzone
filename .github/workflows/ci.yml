@@ -247,10 +247,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-
+      - name: Install maette tool
+        run: |
+          sudo apt install pipx
+          pipx install poetry
+          poetry install
       - name: Cache mazette assets
         id: cache-mazette
         uses: actions/cache@v4
@@ -258,11 +259,9 @@ jobs:
           path: |
             share/vendor/
           key: v1-mazette-linux-x86_64-${{ hashFiles('./mazette.lock') }}
-
-      - name: Install mazette assets
+      - name: Install mazette
         if: steps.cache-mazette.outputs.cache-hit != 'true'
-        run: uvx mazette install
-
+        run: poetry run mazette install
       - name: Login to GHCR
         run: |
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
@@ -367,7 +366,7 @@ jobs:
     strategy:
       matrix:
         distro: ["fedora"]
-        version: ["41", "42", "43"]
+        version: ["41", "42"]
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -376,8 +375,11 @@ jobs:
         run: |
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
+      - name: Install mazette tool
+        run: |
+          sudo apt install pipx
+          pipx install poetry
+          poetry install
 
       - name: Cache mazette assets
         id: cache-mazette
@@ -390,7 +392,7 @@ jobs:
 
       - name: Install mazette assets
         if: steps.cache-mazette.outputs.cache-hit != 'true'
-        run: uvx mazette install
+        run: poetry run mazette install
 
       - name: Get the dev environment
         run: |
@@ -477,8 +479,6 @@ jobs:
             version: "41"
           - distro: fedora
             version: "42"
-          #- distro: fedora
-          #  version: "43"
 
     steps:
       - name: Checkout

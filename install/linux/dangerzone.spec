@@ -216,16 +216,6 @@ convert the documents within a secure sandbox.
 %prep
 %autosetup -p1 -n dangerzone-%{version}
 
-# XXX: Bump the Python requirement in pyproject.toml from <3.14 to <3.15. Fedora
-# 43 comes with Python 3.14 installed, but our pyproject.toml does not support
-# it because PySide6 in PyPI works with Python 3.13 or earlier.
-#
-# This hack sidesteps this issue, and we haven't noticed any paticular problem
-# with the package that is built from that.
-%if 0%{?fedora} == 43
-sed -i 's/<3.14/<3.15/' pyproject.toml
-%endif
-
 %generate_buildrequires
 %pyproject_buildrequires -R
 

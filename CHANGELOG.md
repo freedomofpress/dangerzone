@@ -46,6 +46,13 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Question dialogs now show a question mark instead of an alert
   ([#1198](https://github.com/freedomofpress/dangerzone/issues/1198))
 
+### Changed
+
+- Update our container image from Debian Bookworm to Debian Trixie
+  ([#1243](https://github.com/freedomofpress/dangerzone/issues/1243))
+- Upgrade the bundled LibreOffice version from 7.x to 25.x, as a result of our
+  Debian Trixie switch ([#1165](https://github.com/freedomofpress/dangerzone/issues/1165))
+
 ### Development changes
 
 - Use the archived backports for Debian bullseye

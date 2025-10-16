@@ -81,6 +81,9 @@ class PodmanMachineManager:
             logger.info(f"Podman machine '{self.name}' already exists.")
             return
 
+        if platform.system() == "Windows":
+            container_utils.subprocess_run(["wsl", "--update"], check=False)
+
         logger.info(f"Initializing Podman machine: {self.name}")
         self.podman.machine.init(
             name=self.name,

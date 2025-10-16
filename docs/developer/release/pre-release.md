@@ -6,7 +6,7 @@ run from the developer's laptop and are not tied to any build environment.
 - [ ] Create a new issue named **QA and Release for version \<VERSION\>**, to track the general progress.
       You can generate its content with the `poetry run ./dev_scripts/generate-release-tasks.py` command.
 - [ ] [Add new Linux platforms and remove obsolete ones](#add-new-linux-platforms-and-remove-obsolete-ones)
-- [ ] Bump the Python dependencies using `poetry lock`
+- [ ] Bump the Python dependencies using `poetry lock --regenerate`
 - [ ] Bump the GitHub asset dependencies using `poetry run mazette lock`
 - [ ] Check for new [WiX releases](https://github.com/wixtoolset/wix/releases) and update it if needed
 - [ ] Update `version` in `pyproject.toml`
@@ -14,7 +14,6 @@ run from the developer's laptop and are not tied to any build environment.
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] (optional) Bump image version from `v1` to `v2`, if the API has changed.
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
-- [ ] [Bump the minimum Docker Desktop versions](#bump-the-minimum-docker-desktop-version) in `isolation_provider/container.py`
 - [ ] Bump the dates and versions in the `Dockerfile.env`
 - [ ] Bump the bundled log index in `dangerzone/updater/signatures.py` with the log index of the bundled sandbox.
 - [ ] Update the download links in our `INSTALL.md` page to point to the new version (the download links will be populated after the release)
@@ -50,9 +49,3 @@ In case of the removal of a version:
 1. Remove any mention to this version from our repo.
    - Consult the previous paragraph, but also `grep` your way around.
 2. Add a notice in our `CHANGELOG.md` about the version removal.
-
-## Bump the minimum Docker Desktop version
-
-We embed the minimum docker desktop versions inside Dangerzone, as an incentive for our macOS and Windows users to upgrade to the latest version.
-
-You can find the latest version at the time of the release by looking at [their release notes](https://docs.docker.com/desktop/release-notes/)

@@ -78,6 +78,8 @@ Here is how to sign the image and push the signatures to ghcr.io:
   crane digest ghcr.io/apyrgio/dangerzone/v1:latest
   cosign verify --key ... ghcr.io/apyrgio/dangerzone-testing/v1:latest
   ```
+- [ ] Bump the bundled log index in `dangerzone/updater/signatures.py` with the log index of the container image.
+  * This step should take place only when releasing a new Dangerzone version.
 
 At this point, the image we had chosen initially will be signed by the
 Dangerzone signing key, and will be tagged as `latest`, meaning that all

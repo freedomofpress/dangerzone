@@ -27,6 +27,11 @@ pyxdg = { version = "*", platform = "linux" }
 requests = "*"
 markdown = "*"
 packaging = "*"
+shiboken6 = [
+   { version = "<6.10.0", python = "3.9" }, # remove when we drop Python 3.9 / Debian Bullseye support
+   { version = "*", python = "^3.10" },
+]
+
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'

@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from ..container_utils import disable_registry_auth, subprocess_run
+from ..container_utils import subprocess_run
 from ..util import get_resource_path
 from . import errors, log
 
@@ -14,7 +14,25 @@ This module exposes functions to interact with the embedded cosign binary.
 _COSIGN_BINARY = str(get_resource_path("vendor/cosign").absolute())
 
 
-def _cosign_run(cmd: list[str], env=None):
+def _cosign_run(
+    cmd: list[str], disable_auth: bool = False,
+) -> subprocess.CompletedProcess:
+    custom_env = {}
+    if disable_auth:
+        # Disable registry authentication by setting auth-related environment variables
+        # to non-existent files.
+        #
+        # This prevents Podman/Docker from using any existing credentials that might be
+        # configured on the system, avoiding potential authentication errors.
+        log.debug("Disabling registry authentication for the 'cosign' command")
+        custom_env["REGISTRY_AUTH_FILE"] = "does-not-exist"
+        custom_env["DOCKER_CONFIG"] = "does-not-exist"
+
+    # NOTE: This is an uncommon way to update envvars. We basically want to ensure that
+    # the environment variables we have set above will be passed to the command,
+    # provided that they don't override the ones that the user has set.
+    env = custom_env | os.environ.copy()
+
     cmd = [_COSIGN_BINARY] + cmd
     return subprocess_run(cmd, capture_output=True, check=True, env=env)
 
@@ -30,7 +48,8 @@ def verify_local_image(oci_image_folder: Path, pubkey: Path) -> None:
                 "--offline",
                 "--local-image",
                 str(oci_image_folder),
-            ]
+            ],
+            disable_auth=True,
         )
     except subprocess.CalledProcessError as e:
         raise errors.SignatureVerificationError(
@@ -49,7 +68,8 @@ def verify_blob(pubkey: Path, bundle: str, payload: str) -> None:
                 "--bundle",
                 bundle,
                 payload,
-            ]
+            ],
+            disable_auth=True,
         )
     except subprocess.CalledProcessError as e:
         raise errors.SignatureVerificationError(f"Failed to verify signature: {e}")
@@ -57,12 +77,10 @@ def verify_blob(pubkey: Path, bundle: str, payload: str) -> None:
 
 
 def download_signature(image: str, digest: str) -> list[str]:
-    env = os.environ.copy()
-    disable_registry_auth(env)
     try:
         process = _cosign_run(
             ["download", "signature", f"{image}@sha256:{digest}"],
-            env=env,
+            disable_auth=True,
         )
     except subprocess.CalledProcessError as e:
         raise errors.NoRemoteSignatures(str(e))
@@ -75,6 +93,7 @@ def save(arch_image: str, destination: Path) -> None:
     try:
         _cosign_run(
             ["save", arch_image, "--dir", str(destination.absolute())],
+            disable_auth=True,
         )
     except subprocess.CalledProcessError as e:
         raise errors.AirgappedImageDownloadError()

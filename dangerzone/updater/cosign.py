@@ -14,42 +14,45 @@ This module exposes functions to interact with the embedded cosign binary.
 _COSIGN_BINARY = str(get_resource_path("vendor/cosign").absolute())
 
 
+def _cosign_run(cmd: list[str], env=None):
+    cmd = [_COSIGN_BINARY] + cmd
+    return subprocess_run(cmd, capture_output=True, check=True, env=env)
+
+
 def verify_local_image(oci_image_folder: Path, pubkey: Path) -> None:
     """Verify the given path against the given public key"""
-    cmd = [
-        _COSIGN_BINARY,
-        "verify",
-        "--key",
-        str(pubkey),
-        "--offline",
-        "--local-image",
-        str(oci_image_folder),
-    ]
-    log.debug(" ".join(cmd))
-    result = subprocess_run(cmd, capture_output=True)
-    if result.returncode != 0:
-        log.info(f"Failed to verify signature: {result.stderr.decode()}")  # type: ignore
-        raise errors.SignatureVerificationError
+    try:
+        _cosign_run(
+            [
+                "verify",
+                "--key",
+                str(pubkey),
+                "--offline",
+                "--local-image",
+                str(oci_image_folder),
+            ]
+        )
+    except subprocess.CalledProcessError as e:
+        raise errors.SignatureVerificationError(
+            f"Failed to verify signature of local image: {e}"
+        )
 
 
 def verify_blob(pubkey: Path, bundle: str, payload: str) -> None:
-    cmd = [
-        _COSIGN_BINARY,
-        "verify-blob",
-        "--offline",
-        "--key",
-        str(pubkey.absolute()),
-        "--bundle",
-        bundle,
-        payload,
-    ]
-    log.debug(" ".join(cmd))
-    result = subprocess_run(cmd, capture_output=True)
-    # If the process return code is not 0, or doesn't contain the expected
-    # string, we raise an error.
-    if result.returncode != 0:
-        log.debug("Failed to verify signature", result)
-        raise errors.SignatureVerificationError("Failed to verify signature", result)
+    try:
+        _cosign_run(
+            [
+                "verify-blob",
+                "--offline",
+                "--key",
+                str(pubkey.absolute()),
+                "--bundle",
+                bundle,
+                payload,
+            ]
+        )
+    except subprocess.CalledProcessError as e:
+        raise errors.SignatureVerificationError(f"Failed to verify signature: {e}")
     log.debug("Verify blob: OK")
 
 
@@ -57,30 +60,23 @@ def download_signature(image: str, digest: str) -> list[str]:
     env = os.environ.copy()
     disable_registry_auth(env)
     try:
-        process = subprocess_run(
-            [
-                _COSIGN_BINARY,
-                "download",
-                "signature",
-                f"{image}@sha256:{digest}",
-            ],
+        process = _cosign_run(
+            ["download", "signature", f"{image}@sha256:{digest}"],
             env=env,
-            capture_output=True,
-            check=True,
         )
     except subprocess.CalledProcessError as e:
         raise errors.NoRemoteSignatures(str(e))
 
     # Remove the last return, split on newlines, convert from JSON
-    return process.stdout.decode("utf-8").strip().split("\n")  # type:ignore[attr-defined]
+    return process.stdout.decode("utf-8").strip().split("\n")
 
 
 def save(arch_image: str, destination: Path) -> None:
-    process = subprocess_run(
-        [_COSIGN_BINARY, "save", arch_image, "--dir", str(destination.absolute())],
-        capture_output=True,
-    )
-    if process.returncode != 0:
+    try:
+        _cosign_run(
+            ["save", arch_image, "--dir", str(destination.absolute())],
+        )
+    except subprocess.CalledProcessError as e:
         raise errors.AirgappedImageDownloadError()
 
 
@@ -141,22 +137,21 @@ def verify_attestation(
         policy_f.flush()
 
         # Call cosign with the temporary file paths
-        cmd = [
-            _COSIGN_BINARY,
-            "verify-attestation",
-            "--type",
-            "slsaprovenance",
-            "--policy",
-            policy_f.name,
-            "--certificate-oidc-issuer",
-            "https://token.actions.githubusercontent.com",
-            "--certificate-identity-regexp",
-            "^https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@refs/tags/v[0-9]+.[0-9]+.[0-9]+$",
-            image_name,
-        ]
-
-        result = subprocess_run(cmd, capture_output=True)
-        if result.returncode != 0:
-            error = result.stderr.decode()  # type:ignore[attr-defined]
-            raise Exception(f"Attestation cannot be verified. {error}")
+        try:
+            _cosign_run(
+                [
+                    "verify-attestation",
+                    "--type",
+                    "slsaprovenance",
+                    "--policy",
+                    policy_f.name,
+                    "--certificate-oidc-issuer",
+                    "https://token.actions.githubusercontent.com",
+                    "--certificate-identity-regexp",
+                    "^https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@refs/tags/v[0-9]+.[0-9]+.[0-9]+$",
+                    image_name,
+                ]
+            )
+        except subprocess.CalledProcessError as e:
+            raise Exception(f"Attestation cannot be verified: {e.stderr.decode()}")
         return True

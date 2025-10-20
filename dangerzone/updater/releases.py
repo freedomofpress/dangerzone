@@ -89,9 +89,13 @@ def ensure_sane_update(cur_version: str, latest_version: str) -> bool:
     if version.parse(cur_version) == version.parse(latest_version):
         return False
     elif version.parse(cur_version) > version.parse(latest_version):
-        raise Exception(
-            "The version received from Github Releases is older than the latest known version"
+        # This case should only affect our QA releases. Log an error in these cases, but
+        # don't block the rest of the update tasks.
+        log.error(
+            "The version received from Github Releases is older than the latest known"
+            f" version: ({cur_version} > {latest_version})"
         )
+        return False
     else:
         return True
 

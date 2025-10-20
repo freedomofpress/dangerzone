@@ -15,7 +15,7 @@ _COSIGN_BINARY = str(get_resource_path("vendor/cosign").absolute())
 
 
 def _cosign_run(
-    cmd: list[str], disable_auth: bool = False,
+    cmd: list[str], disable_auth: bool = False, pin_rekor_key: bool = False
 ) -> subprocess.CompletedProcess:
     custom_env = {}
     if disable_auth:
@@ -27,6 +27,13 @@ def _cosign_run(
         log.debug("Disabling registry authentication for the 'cosign' command")
         custom_env["REGISTRY_AUTH_FILE"] = "does-not-exist"
         custom_env["DOCKER_CONFIG"] = "does-not-exist"
+    if pin_rekor_key:
+        # Pin the Rekor key, so that it's used in offline setups as well, or in case of
+        # network hiccups. See:
+        # https://github.com/freedomofpress/dangerzone/issues/1280
+        rekor_pub_key = str(get_resource_path("rekor.pub"))
+        log.debug(f"Pinning Rekor public key to {rekor_pub_key}")
+        custom_env["SIGSTORE_REKOR_PUBLIC_KEY"] = rekor_pub_key
 
     # NOTE: This is an uncommon way to update envvars. We basically want to ensure that
     # the environment variables we have set above will be passed to the command,
@@ -50,6 +57,7 @@ def verify_local_image(oci_image_folder: Path, pubkey: Path) -> None:
                 str(oci_image_folder),
             ],
             disable_auth=True,
+            pin_rekor_key=True,
         )
     except subprocess.CalledProcessError as e:
         raise errors.SignatureVerificationError(
@@ -70,6 +78,7 @@ def verify_blob(pubkey: Path, bundle: str, payload: str) -> None:
                 payload,
             ],
             disable_auth=True,
+            pin_rekor_key=True,
         )
     except subprocess.CalledProcessError as e:
         raise errors.SignatureVerificationError(f"Failed to verify signature: {e}")

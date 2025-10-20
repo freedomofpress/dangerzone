@@ -421,16 +421,3 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
         )
     image_digest = lines.pop().replace("sha256:", "")
     return image_digest
-
-
-def disable_registry_auth(env: dict) -> None:
-    """Disable registry authentication by setting auth-related environment variables
-    to non-existent files.
-
-    This prevents Podman/Docker from using any existing credentials that might be
-    configured on the system, avoiding potential authentication errors.
-    """
-    if "REGISTRY_AUTH_FILE" not in env:
-        env["REGISTRY_AUTH_FILE"] = "does-not-exist"
-    if "DOCKER_CONFIG" not in env:
-        env["DOCKER_CONFIG"] = "does-not-exist"

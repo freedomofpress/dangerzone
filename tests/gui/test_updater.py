@@ -2,24 +2,38 @@ import json
 import platform
 import sys
 import time
+import typing
 from pathlib import Path
+from typing import Any, Dict, Union
 
 import pytest
-from PySide6 import QtCore
-from pytest import MonkeyPatch
+from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
 
+if typing.TYPE_CHECKING:
+    from PySide2 import QtCore, QtGui, QtWidgets
+else:
+    try:
+        from PySide6 import QtCore, QtGui, QtWidgets
+    except ImportError:
+        from PySide2 import QtCore, QtGui, QtWidgets
+
 from dangerzone import settings
-from dangerzone.gui import updater as updater_module
-from dangerzone.gui.updater import UpdateReport, UpdaterThread
+from dangerzone.gui.logic import Alert, DangerzoneGui
+from dangerzone.gui.updater import CANCEL_TEXT, OK_TEXT, prompt_for_checks
+from dangerzone.updater import releases
+from dangerzone.updater.releases import (
+    EmptyReport,
+    ErrorReport,
+    ReleaseReport,
+)
 from dangerzone.util import get_version
 
 from ..test_settings import default_settings_0_4_1, save_settings
-from .conftest import generate_isolated_updater
 
 
-def default_updater_settings() -> dict:
+def default_updater_settings() -> Dict[str, Any]:
     """Get the default updater settings for the current Dangerzone release.
 
     This function acquires the settings strictly from code, and does not initialize
@@ -32,38 +46,40 @@ def default_updater_settings() -> dict:
     }
 
 
-def assert_report_equal(report1: UpdateReport, report2: UpdateReport) -> None:
-    assert report1.version == report2.version
-    assert report1.changelog == report2.changelog
-    assert report1.error == report2.error
+def assert_report_equal(
+    report1: Union[ReleaseReport, EmptyReport, ErrorReport],
+    report2: Union[ReleaseReport, EmptyReport, ErrorReport],
+) -> None:
+    assert isinstance(report1, (ReleaseReport, EmptyReport, ErrorReport))
+    assert isinstance(report2, (ReleaseReport, EmptyReport, ErrorReport))
+    assert type(report1) == type(report2)
+    # Python dataclasses give us the __eq__ comparison for free
+    assert report1.__eq__(report2)
 
 
-def test_default_updater_settings(updater: UpdaterThread) -> None:
+def test_default_updater_settings(isolated_settings: settings.Settings) -> None:
     """Check that new 0.4.2 installations have the expected updater settings.
 
     This test is mostly a sanity check.
     """
-    assert (
-        updater.dangerzone.settings.get_updater_settings() == default_updater_settings()
-    )
+    assert isolated_settings.get_updater_settings() == default_updater_settings()
 
 
-def test_pre_0_4_2_settings(tmp_path: Path, mocker: MockerFixture) -> None:
+def test_pre_0_4_2_settings(isolated_settings: settings.Settings) -> None:
     """Check settings of installations prior to 0.4.2.
 
     Check that installations that have been upgraded from a version < 0.4.2 to >= 0.4.2
     will automatically get the default updater settings, even though they never existed
     in their settings.json file.
     """
+    tmp_path = isolated_settings.settings_filename.parent
     save_settings(tmp_path, default_settings_0_4_1())
-    updater = generate_isolated_updater(tmp_path, mocker, mock_app=True)
-    assert (
-        updater.dangerzone.settings.get_updater_settings() == default_updater_settings()
-    )
+    assert isolated_settings.get_updater_settings() == default_updater_settings()
 
 
 def test_post_0_4_2_settings(
-    tmp_path: Path, monkeypatch: MonkeyPatch, mocker: MockerFixture
+    isolated_settings: settings.Settings,
+    monkeypatch: MonkeyPatch,
 ) -> None:
     """Check settings of installations post-0.4.2.
 
@@ -73,8 +89,10 @@ def test_post_0_4_2_settings(
     erroneously prompted to a version they already have.
     """
     # Store the settings of Dangerzone 0.4.2 to the filesystem.
+    tmp_path = isolated_settings.settings_filename.parent
     old_settings = settings.Settings.generate_default_settings()
     old_settings["updater_latest_version"] = "0.4.2"
+    # isolated_settings.set("updater_last_check", 0)
     save_settings(tmp_path, old_settings)
 
     # Mimic an upgrade to version 0.4.3, by making Dangerzone report that the current
@@ -84,140 +102,119 @@ def test_post_0_4_2_settings(
     monkeypatch.setattr(settings, "get_version", lambda: "0.4.3")
 
     # Ensure that the Settings class will correct the latest version field to 0.4.3.
-    updater = generate_isolated_updater(tmp_path, mocker, mock_app=True)
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    isolated_settings.load()
+    assert isolated_settings.get_updater_settings() == expected_settings
 
     # Simulate an updater check that found a newer Dangerzone version (e.g., 0.4.4).
     expected_settings["updater_latest_version"] = "0.4.4"
-    updater.dangerzone.settings.set(
+    isolated_settings.set(
         "updater_latest_version", expected_settings["updater_latest_version"]
     )
-    updater.dangerzone.settings.save()
+    isolated_settings.save()
 
     # Ensure that the Settings class will leave the "updater_latest_version" field
     # intact the next time we reload the settings.
-    updater.dangerzone.settings.load()
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
+    isolated_settings.load()
+    assert isolated_settings.get_updater_settings() == expected_settings
 
 
 @pytest.mark.skipif(platform.system() != "Linux", reason="Linux-only test")
-def test_linux_no_check(updater: UpdaterThread, monkeypatch: MonkeyPatch) -> None:
+def test_linux_no_check(
+    isolated_settings: settings.Settings, monkeypatch: MonkeyPatch
+) -> None:
     """Ensure that Dangerzone on Linux does not make any update check."""
     expected_settings = default_updater_settings()
-    expected_settings["updater_check"] = False
+    expected_settings["updater_check_all"] = False
     expected_settings["updater_last_check"] = None
 
     # XXX: Simulate Dangerzone installed via package manager.
     monkeypatch.delattr(sys, "dangerzone_dev")
 
-    assert updater.should_check_for_updates() is False
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
-
-
-def test_user_prompts(updater: UpdaterThread, mocker: MockerFixture) -> None:
-    """Test prompting users to ask them if they want to enable update checks."""
-    # First run
-    #
-    # When Dangerzone runs for the first time, users should not be asked to enable
-    # updates.
-    expected_settings = default_updater_settings()
-    expected_settings["updater_check"] = None
-    expected_settings["updater_last_check"] = 0
-    assert updater.should_check_for_updates() is False
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
-
-    # Second run
-    #
-    # When Dangerzone runs for a second time, users can be prompted to enable update
-    # checks. Depending on their answer, we should either enable or disable them.
-    mocker.patch("dangerzone.gui.updater.UpdateCheckPrompt")
-    prompt_mock = updater_module.UpdateCheckPrompt
-    prompt_mock().x_pressed = False
-
-    # Check disabling update checks.
-    prompt_mock().launch.return_value = False  # type: ignore [attr-defined]
-    expected_settings["updater_check"] = False
-    assert updater.should_check_for_updates() is False
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
-
-    # Reset the "updater_check" field and check enabling update checks.
-    updater.dangerzone.settings.set("updater_check", None)
-    prompt_mock().launch.return_value = True  # type: ignore [attr-defined]
-    expected_settings["updater_check"] = True
-    assert updater.should_check_for_updates() is True
-    assert updater.dangerzone.settings.get_updater_settings() == expected_settings
-
-    # Third run
-    #
-    # From the third run onwards, users should never be prompted for enabling update
-    # checks.
-    prompt_mock().side_effect = RuntimeError("Should not be called")  # type: ignore [attr-defined]
-    for check in [True, False]:
-        updater.dangerzone.settings.set("updater_check", check)
-        assert updater.should_check_for_updates() == check
+    assert releases.should_check_for_updates(isolated_settings) is False
+    assert isolated_settings.get_updater_settings() == expected_settings
 
 
 def test_update_checks(
-    updater: UpdaterThread, monkeypatch: MonkeyPatch, mocker: MockerFixture
+    isolated_settings: settings.Settings,
+    monkeypatch: MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
     """Test version update checks."""
+    settings = isolated_settings
     # This dictionary will simulate GitHub's response.
     mock_upstream_info = {"tag_name": f"v{get_version()}", "body": "changelog"}
 
     # Make requests.get().json() return the above dictionary.
-    mocker.patch("dangerzone.gui.updater.requests.get")
-    requests_mock = updater_module.requests.get
-    requests_mock().status_code = 200  # type: ignore [call-arg]
-    requests_mock().json.return_value = mock_upstream_info  # type: ignore [attr-defined, call-arg]
+    requests_mock = mocker.patch("dangerzone.updater.releases.requests.get")
+    requests_mock().status_code = 200
+    requests_mock().json.return_value = mock_upstream_info
+
+    mocker.patch(
+        "dangerzone.updater.releases.get_remote_digest_and_logindex",
+        return_value=[None, 0, None],
+    )
 
     # Always assume that we can perform multiple update checks in a row.
-    monkeypatch.setattr(updater, "_should_postpone_update_check", lambda: False)
+    mocker.patch(
+        "dangerzone.updater.releases._should_postpone_update_check", return_value=False
+    )
 
     # Test 1 - Check that the current version triggers no updates.
-    report = updater.check_for_updates()
-    assert_report_equal(report, UpdateReport())
+    report = releases.check_for_updates(settings)
+    assert_report_equal(report, EmptyReport())
 
     # Test 2 - Check that a newer version triggers updates, and that the changelog is
     # rendered from Markdown to HTML.
     mock_upstream_info["tag_name"] = "v99.9.9"
-    report = updater.check_for_updates()
+    report = releases.check_for_updates(settings)
     assert_report_equal(
-        report, UpdateReport(version="99.9.9", changelog="<p>changelog</p>")
+        report, ReleaseReport(version="99.9.9", changelog="<p>changelog</p>")
     )
 
     # Test 3 - Check that HTTP errors are converted to error reports.
-    requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
-    report = updater.check_for_updates()
+    requests_mock.side_effect = Exception("failed")
+    report = releases.check_for_updates(settings)
     error_msg = (
-        f"Encountered an exception while checking {updater.GH_RELEASE_URL}: failed"
+        f"Encountered an exception while checking {releases.GH_RELEASE_URL}: failed"
     )
-    assert_report_equal(report, UpdateReport(error=error_msg))
+    assert_report_equal(report, ErrorReport(error=error_msg))
 
     # Test 4 - Check that cached version/changelog info do not trigger an update check.
-    updater.dangerzone.settings.set("updater_latest_version", "99.9.9")
-    updater.dangerzone.settings.set("updater_latest_changelog", "<p>changelog</p>")
+    settings.set("updater_latest_version", "99.9.9")
+    settings.set("updater_latest_changelog", "<p>changelog</p>")
 
-    report = updater.check_for_updates()
+    report = releases.check_for_updates(settings)
     assert_report_equal(
-        report, UpdateReport(version="99.9.9", changelog="<p>changelog</p>")
+        report, ReleaseReport(version="99.9.9", changelog="<p>changelog</p>")
     )
 
 
-def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -> None:
+def test_update_checks_cooldown(
+    isolated_settings: settings.Settings,
+    monkeypatch: MonkeyPatch,
+    mocker: MockerFixture,
+) -> None:
     """Make sure Dangerzone only checks for updates every X hours"""
-    updater.dangerzone.settings.set("updater_check", True)
-    updater.dangerzone.settings.set("updater_last_check", 0)
+    settings = isolated_settings
+
+    settings.set("updater_check_all", True)
+    settings.set("updater_last_check", 0)
 
     # Mock some functions before the tests start
-    cooldown_spy = mocker.spy(updater, "_should_postpone_update_check")
-    timestamp_mock = mocker.patch.object(updater, "_get_now_timestamp")
-    mocker.patch("dangerzone.gui.updater.requests.get")
-    requests_mock = updater_module.requests.get
+    cooldown_spy = mocker.spy(releases, "_should_postpone_update_check")
+    timestamp_mock = mocker.patch.object(releases, "_get_now_timestamp")
+    requests_mock = mocker.patch("dangerzone.updater.releases.requests.get")
+
+    # Mock the response of the container updater check
+    mocker.patch(
+        "dangerzone.updater.releases.get_remote_digest_and_logindex",
+        return_value=[None, 0, None],
+    )
 
     # # Make requests.get().json() return the version info that we want.
     mock_upstream_info = {"tag_name": "99.9.9", "body": "changelog"}
-    requests_mock().status_code = 200  # type: ignore [call-arg]
-    requests_mock().json.return_value = mock_upstream_info  # type: ignore [attr-defined, call-arg]
+    requests_mock().status_code = 200
+    requests_mock().json.return_value = mock_upstream_info
 
     # Test 1: The first time Dangerzone checks for updates, the cooldown period should
     # not stop it. Once we learn about an update, the last check setting should be
@@ -225,69 +222,76 @@ def test_update_checks_cooldown(updater: UpdaterThread, mocker: MockerFixture) -
     curtime = int(time.time())
     timestamp_mock.return_value = curtime
 
-    report = updater.check_for_updates()
+    report = releases.check_for_updates(settings)
     assert cooldown_spy.spy_return is False
-    assert updater.dangerzone.settings.get("updater_last_check") == curtime
-    assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
+    assert settings.get("updater_last_check") == curtime
+    assert_report_equal(report, ReleaseReport("99.9.9", "<p>changelog</p>"))
 
     # Test 2: Advance the current time by 1 second, and ensure that no update will take
     # place, due to the cooldown period. The last check timestamp should remain the
     # previous one.
     curtime += 1
     timestamp_mock.return_value = curtime
-    requests_mock.side_effect = Exception("failed")  # type: ignore [attr-defined]
-    updater.dangerzone.settings.set("updater_latest_version", get_version())
-    updater.dangerzone.settings.set("updater_latest_changelog", None)
+    requests_mock.side_effect = Exception("failed")
+    settings.set("updater_latest_version", get_version())
+    settings.set("updater_latest_changelog", None)
 
-    report = updater.check_for_updates()
+    report = releases.check_for_updates(settings)
     assert cooldown_spy.spy_return is True
-    assert updater.dangerzone.settings.get("updater_last_check") == curtime - 1  # type: ignore [unreachable]
-    assert_report_equal(report, UpdateReport())
+    assert settings.get("updater_last_check") == curtime - 1  # type: ignore [unreachable]
+    assert_report_equal(report, EmptyReport())
 
     # Test 3: Advance the current time by <cooldown period> seconds. Ensure that
     # Dangerzone checks for updates again, and the last check timestamp gets bumped.
-    curtime += updater_module.UPDATE_CHECK_COOLDOWN_SECS
+    curtime += releases.UPDATE_CHECK_COOLDOWN_SECS
     timestamp_mock.return_value = curtime
     requests_mock.side_effect = None
 
-    report = updater.check_for_updates()
+    report = releases.check_for_updates(settings)
     assert cooldown_spy.spy_return is False
-    assert updater.dangerzone.settings.get("updater_last_check") == curtime
-    assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
+    assert settings.get("updater_last_check") == curtime
+    assert_report_equal(report, ReleaseReport("99.9.9", "<p>changelog</p>"))
 
     # Test 4: Make Dangerzone check for updates again, but this time, it should
     # encounter an error while doing so. In that case, the last check timestamp
     # should be bumped, so that subsequent checks don't take place.
-    updater.dangerzone.settings.set("updater_latest_version", get_version())
-    updater.dangerzone.settings.set("updater_latest_changelog", None)
+    settings.set("updater_latest_version", get_version())
+    settings.set("updater_latest_changelog", None)
 
-    curtime += updater_module.UPDATE_CHECK_COOLDOWN_SECS
+    curtime += releases.UPDATE_CHECK_COOLDOWN_SECS
     timestamp_mock.return_value = curtime
     requests_mock.side_effect = Exception("failed")
 
-    report = updater.check_for_updates()
+    report = releases.check_for_updates(settings)
     assert cooldown_spy.spy_return is False
-    assert updater.dangerzone.settings.get("updater_last_check") == curtime
+    assert settings.get("updater_last_check") == curtime
     error_msg = (
-        f"Encountered an exception while checking {updater.GH_RELEASE_URL}: failed"
+        f"Encountered an exception while checking {releases.GH_RELEASE_URL}: failed"
     )
-    assert_report_equal(report, UpdateReport(error=error_msg))
+    assert_report_equal(report, ErrorReport(error=error_msg))
 
 
 def test_update_errors(
-    updater: UpdaterThread, monkeypatch: MonkeyPatch, mocker: MockerFixture
+    isolated_settings: settings.Settings,
+    monkeypatch: MonkeyPatch,
+    mocker: MockerFixture,
 ) -> None:
     """Test update check errors."""
-    # Mock requests.get().
-    mocker.patch("dangerzone.gui.updater.requests.get")
-    requests_mock = updater_module.requests.get
-
+    settings = isolated_settings
     # Always assume that we can perform multiple update checks in a row.
-    monkeypatch.setattr(updater, "_should_postpone_update_check", lambda: False)
+    monkeypatch.setattr(releases, "_should_postpone_update_check", lambda _: False)
+    mocker.patch(
+        "dangerzone.updater.releases.get_remote_digest_and_logindex",
+        return_value=[None, 0, None],
+    )
+
+    # Mock requests.get().
+    requests_mock = mocker.patch("dangerzone.updater.releases.requests.get")
 
     # Test 1 - Check that request exceptions are being detected as errors.
-    requests_mock.side_effect = Exception("bad url")  # type: ignore [attr-defined]
-    report = updater.check_for_updates()
+    requests_mock.side_effect = Exception("bad url")
+    report = releases.check_for_updates(settings)
+    assert type(report) == ErrorReport
     assert report.error is not None
     assert "bad url" in report.error
     assert "Encountered an exception" in report.error
@@ -296,9 +300,10 @@ def test_update_errors(
     class MockResponse500:
         status_code = 500
 
-    requests_mock.return_value = MockResponse500()  # type: ignore [attr-defined]
-    requests_mock.side_effect = None  # type: ignore [attr-defined]
-    report = updater.check_for_updates()
+    requests_mock.return_value = MockResponse500()
+    requests_mock.side_effect = None
+    report = releases.check_for_updates(settings)
+    assert type(report) == ErrorReport
     assert report.error is not None
     assert "Encountered an HTTP 500 error" in report.error
 
@@ -309,8 +314,9 @@ def test_update_errors(
         def json(self) -> dict:
             return json.loads("bad json")
 
-    requests_mock.return_value = MockResponseBadJSON()  # type: ignore [attr-defined]
-    report = updater.check_for_updates()
+    requests_mock.return_value = MockResponseBadJSON()
+    report = releases.check_for_updates(settings)
+    assert type(report) == ErrorReport
     assert report.error is not None
     assert "Received a non-JSON response" in report.error
 
@@ -321,8 +327,9 @@ def test_update_errors(
         def json(self) -> dict:
             return {}
 
-    requests_mock.return_value = MockResponseEmpty()  # type: ignore [attr-defined]
-    report = updater.check_for_updates()
+    requests_mock.return_value = MockResponseEmpty()
+    report = releases.check_for_updates(settings)
+    assert type(report) == ErrorReport
     assert report.error is not None
     assert "Missing required fields in JSON" in report.error
 
@@ -333,8 +340,9 @@ def test_update_errors(
         def json(self) -> dict:
             return {"tag_name": "vbad_version", "body": "changelog"}
 
-    requests_mock.return_value = MockResponseBadVersion()  # type: ignore [attr-defined]
-    report = updater.check_for_updates()
+    requests_mock.return_value = MockResponseBadVersion()
+    report = releases.check_for_updates(settings)
+    assert type(report) == ErrorReport
     assert report.error is not None
     assert "Invalid version" in report.error
 
@@ -345,8 +353,9 @@ def test_update_errors(
         def json(self) -> dict:
             return {"tag_name": "v99.9.9", "body": ["bad", "markdown"]}
 
-    requests_mock.return_value = MockResponseBadMarkdown()  # type: ignore [attr-defined]
-    report = updater.check_for_updates()
+    requests_mock.return_value = MockResponseBadMarkdown()
+    report = releases.check_for_updates(settings)
+    assert type(report) == ErrorReport
     assert report.error is not None
 
     # Test 7 - Check that a valid response passes.
@@ -356,70 +365,41 @@ def test_update_errors(
         def json(self) -> dict:
             return {"tag_name": "v99.9.9", "body": "changelog"}
 
-    requests_mock.return_value = MockResponseValid()  # type: ignore [attr-defined]
-    report = updater.check_for_updates()
-    assert_report_equal(report, UpdateReport("99.9.9", "<p>changelog</p>"))
+    requests_mock.return_value = MockResponseValid()
+    report = releases.check_for_updates(settings)
+    assert_report_equal(report, ReleaseReport("99.9.9", "<p>changelog</p>"))
 
 
 def test_update_check_prompt(
-    qtbot: QtBot,
-    qt_updater: UpdaterThread,
+    dangerzone_gui: DangerzoneGui,
 ) -> None:
     """Test that the prompt to enable update checks works properly."""
-    # Force Dangerzone to check immediately for updates
-    qt_updater.dangerzone.settings.set("updater_last_check", 0)
 
-    # Test 1 - Check that on the second run of Dangerzone, the user is prompted to
-    # choose if they want to enable update checks.
+    # Force Dangerzone to check immediately for updates
+    # Test 1 - The user is prompted to choose if they want to enable update checks, and
+    # they agree.
     def check_button_labels() -> None:
-        dialog = qt_updater.dangerzone.app.activeWindow()
-        assert dialog.ok_button.text() == "Check Automatically"  # type: ignore [attr-defined]
-        assert dialog.cancel_button.text() == "Don't Check"  # type: ignore [attr-defined]
+        dialog = QtWidgets.QApplication.activeWindow()
+        assert dialog.ok_button.text() == OK_TEXT  # type: ignore [attr-defined]
+        assert dialog.cancel_button.text() == CANCEL_TEXT  # type: ignore [attr-defined]
         dialog.ok_button.click()  # type: ignore [attr-defined]
 
     QtCore.QTimer.singleShot(500, check_button_labels)
-    res = qt_updater.should_check_for_updates()
+    assert prompt_for_checks(dangerzone_gui)
 
-    assert res is True
-
-    # Test 2 - Check that when the user chooses to enable update checks, we
-    # store that decision in the settings.
-    qt_updater.check = None
-
-    def click_ok() -> None:
-        dialog = qt_updater.dangerzone.app.activeWindow()
-        dialog.ok_button.click()  # type: ignore [attr-defined]
-
-    QtCore.QTimer.singleShot(500, click_ok)
-    res = qt_updater.should_check_for_updates()
-
-    assert res is True
-    assert qt_updater.check is True
-
-    # Test 3 - Same as the previous test, but check that clicking on cancel stores the
-    # opposite decision.
-    qt_updater.check = None  # type: ignore [unreachable]
-
+    # Test 2 - Same as the previous test, but the user disagrees.
     def click_cancel() -> None:
-        dialog = qt_updater.dangerzone.app.activeWindow()
-        dialog.cancel_button.click()
+        dialog = QtWidgets.QApplication.activeWindow()
+        dialog.cancel_button.click()  # type: ignore
 
     QtCore.QTimer.singleShot(500, click_cancel)
-    res = qt_updater.should_check_for_updates()
+    assert not prompt_for_checks(dangerzone_gui)
 
-    assert res is False
-    assert qt_updater.check is False
-
-    # Test 4 - Same as the previous test, but check that clicking on "X" does not store
+    # Test 3 - Same as the previous test, but check that clicking on "X" does not store
     # any decision.
-    qt_updater.check = None
-
     def click_x() -> None:
-        dialog = qt_updater.dangerzone.app.activeWindow()
+        dialog = QtWidgets.QApplication.activeWindow()
         dialog.close()
 
     QtCore.QTimer.singleShot(500, click_x)
-    res = qt_updater.should_check_for_updates()
-
-    assert res is False
-    assert qt_updater.check is None
+    assert prompt_for_checks(dangerzone_gui) is None

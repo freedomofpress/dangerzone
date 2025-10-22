@@ -138,7 +138,161 @@
           "filetype": "zip"
         }
       }
+    },
+    "podman": {
+      "windows/amd64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.6.2/podman-remote-release-windows_amd64.zip",
+        "version": "5.6.2",
+        "checksum": "9c86b2686dabc287af1de1b4fadc506310718bf84fccbd12f0831fc7726a7cd5",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      },
+      "darwin/amd64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.6.2/podman-remote-release-darwin_amd64.zip",
+        "version": "5.6.2",
+        "checksum": "20ac39d34f412e4e4e7221696ed7e75e395f22234c89c562f431860a9f889b21",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      },
+      "darwin/arm64": {
+        "repo": "containers/podman",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.6.2/podman-remote-release-darwin_arm64.zip",
+        "version": "5.6.2",
+        "checksum": "f9c36d1fe4c85acd919d71dfedbf4b77d581fabc66960dfa9b62e78d721917a2",
+        "executable": true,
+        "destination": "share/vendor/podman",
+        "extract": {
+          "globs": [
+            "**/bin/*"
+          ],
+          "flatten": true,
+          "filetype": "zip"
+        }
+      }
+    },
+    "gvproxy": {
+      "darwin/amd64": {
+        "repo": "containers/gvisor-tap-vsock",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.7/gvproxy-darwin",
+        "version": "0.8.7",
+        "checksum": "6d3b764d22bd3cc7faadf9ffa56ae638924825631be9b0344a695817c2ffda1e",
+        "executable": true,
+        "destination": "share/vendor/podman/gvproxy",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "containers/gvisor-tap-vsock",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.7/gvproxy-darwin",
+        "version": "0.8.7",
+        "checksum": "6d3b764d22bd3cc7faadf9ffa56ae638924825631be9b0344a695817c2ffda1e",
+        "executable": true,
+        "destination": "share/vendor/podman/gvproxy",
+        "extract": false
+      }
+    },
+    "vfkit": {
+      "darwin/amd64": {
+        "repo": "crc-org/vfkit",
+        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.1/vfkit",
+        "version": "0.6.1",
+        "checksum": "751fb934d8234c0fa0e6558d86010eb36f156a92547f791c5573767af38a2936",
+        "executable": true,
+        "destination": "share/vendor/podman/vfkit",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "crc-org/vfkit",
+        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.1/vfkit",
+        "version": "0.6.1",
+        "checksum": "751fb934d8234c0fa0e6558d86010eb36f156a92547f791c5573767af38a2936",
+        "executable": true,
+        "destination": "share/vendor/podman/vfkit",
+        "extract": false
+      }
+    },
+    "machine-os": {
+      "darwin/amd64": {
+        "repo": "containers/podman-machine-os",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.6.2/podman-machine.x86_64.applehv.raw.zst",
+        "version": "5.6.2",
+        "checksum": "b80be0a4643a7119a1a304efe80334fe4192e02cdbcdf2d1f8d9366be2870c94",
+        "executable": false,
+        "destination": "share/machine.tar",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "containers/podman-machine-os",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.6.2/podman-machine.aarch64.applehv.raw.zst",
+        "version": "5.6.2",
+        "checksum": "b8d8609ac44174d2d0c8fb1aa5266bc409c142ed66e33d333e446fa02d9a0a6b",
+        "executable": false,
+        "destination": "share/machine.tar",
+        "extract": false
+      },
+      "windows/amd64": {
+        "repo": "containers/podman-machine-os",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.6.2/podman-machine.x86_64.wsl.tar.zst",
+        "version": "5.6.2",
+        "checksum": "3e085930067a0b648ab93c382ce9a09731d6fc53ae2e237ca1061e5d28877335",
+        "executable": false,
+        "destination": "share/machine.tar",
+        "extract": false
+      }
+    },
+    "cosign": {
+      "darwin/amd64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.1/cosign-darwin-amd64",
+        "version": "2.6.1",
+        "checksum": "f1ed2787cc9648fd3c644fcb279e43f3f55da63b788d69a527aa14ad97ffdca1",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      },
+      "darwin/arm64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.1/cosign-darwin-arm64",
+        "version": "2.6.1",
+        "checksum": "54047052cf46f40a5c3c95a510db276e164ba77e096aea1ca1b733f770359689",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      },
+      "linux/amd64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.1/cosign-linux-amd64",
+        "version": "2.6.1",
+        "checksum": "064954c5d8c7e3b28188eee5b1727b31c411550bc5fefd41aa672d3c761d103a",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      },
+      "windows/amd64": {
+        "repo": "sigstore/cosign",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.1/cosign-windows-amd64.exe",
+        "version": "2.6.1",
+        "checksum": "049026dae3246d6ea8201512ec3efce3aab0c7f1d338d52e26c525dd02b418a0",
+        "executable": true,
+        "destination": "share/vendor/cosign",
+        "extract": false
+      }
     }
   },
-  "config_checksum": "5d5b78b909f93102025e30cf7a7170dcac6b6582082f42799437a747f72914bb"
+  "config_checksum": "ed79aaae94834dfa94ec1edc6063697b0029e20e1af77bc1bf84b219241c9dad"
 }

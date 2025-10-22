@@ -19,6 +19,7 @@ from click.testing import CliRunner, Result
 from pytest_mock import MockerFixture
 from strip_ansi import strip_ansi
 
+from dangerzone import errors
 from dangerzone.cli import cli_main, display_banner
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
@@ -117,7 +118,10 @@ class CLIResult(Result):
 
 class TestCli:
     def run_cli(
-        self, args: Sequence[str] | str = (), tmp_path: Optional[Path] = None
+        self,
+        args: Sequence[str] | str = (),
+        tmp_path: Optional[Path] = None,
+        linger: bool = True,
     ) -> CLIResult:
         """Run the CLI with the provided arguments.
 
@@ -133,6 +137,10 @@ class TestCli:
             # to tokenize it.
             args = (args,)
 
+        # Make Windows/macOS tests faster by not stopping the Podman machine all the
+        # time.
+        if linger:
+            args = ("--linger", *args)
         if os.environ.get("DUMMY_CONVERSION", False):
             args = ("--unsafe-dummy-conversion", *args)
 
@@ -187,6 +195,21 @@ class TestCliBasic(TestCli):
             version = f.read().strip()
             assert version in result.stdout
 
+    @pytest.mark.skipif(
+        os.environ.get("DUMMY_CONVERSION", False)
+        or os.environ.get("QUBES_CONVERSION", False),
+        reason="Test requires a container-based isolation provider",
+    )
+    def test_other_machine_running_error(
+        self, mocker: MockerFixture, sample_pdf: str
+    ) -> None:
+        mocker.patch(
+            "dangerzone.startup.MachineStopOthersTask.should_skip",
+            side_effect=errors.OtherMachineRunningError("Test error"),
+        )
+        result = self.run_cli([sample_pdf])
+        result.assert_failure(exit_code=1)
+
 
 class TestCliConversion(TestCliBasic):
     def test_invalid_lang(self, sample_pdf: str) -> None:
@@ -202,7 +225,12 @@ class TestCliConversion(TestCliBasic):
         result.assert_success()
 
     @for_each_doc
-    def test_formats(self, doc: Path, tmp_path_factory: pytest.TempPathFactory) -> None:
+    def test_formats(
+        self,
+        doc: Path,
+        tmp_path_factory: pytest.TempPathFactory,
+        skip_image_verification: pytest.FixtureRequest,
+    ) -> None:
         reference = (doc.parent / "reference" / doc.stem).with_suffix(".pdf")
         destination = tmp_path_factory.mktemp(doc.stem).with_suffix(".pdf")
 
@@ -337,7 +365,9 @@ class TestCliConversion(TestCliBasic):
         shutil.copyfile(sample_pdf, doc_path)
         result = self.run_cli(doc_path)
         result.assert_success()
-        assert len(os.listdir(tmp_path)) == 2
+        # NOTE: The temp path should contain the two documents and the settings JSON
+        # file.
+        assert len(os.listdir(tmp_path)) == 3
 
     def test_bulk(self, tmp_path: Path, sample_pdf: str) -> None:
         filenames = ["1.pdf", "2.pdf", "3.pdf"]
@@ -349,7 +379,10 @@ class TestCliConversion(TestCliBasic):
 
         result = self.run_cli(file_paths)
         result.assert_success()
-        assert len(os.listdir(tmp_path)) == 2 * len(filenames)
+
+        # NOTE: The temp path should contain the six documents and the settings JSON
+        # file.
+        assert len(os.listdir(tmp_path)) == 2 * len(filenames) + 1
 
     def test_bulk_fail_on_output_filename(
         self, tmp_path: Path, sample_pdf: str
@@ -424,3 +457,66 @@ class TestSecurity(TestCli):
 
         # TODO: Check that this applies for single dash arguments, and concatenated
         # single dash arguments, once Dangerzone supports them.
+
+
+class TestCliShutdown(TestCli):
+    def test_cli_shutdown_normal(
+        self, mocker: MockerFixture, sample_pdf: str, tmp_path: Path
+    ) -> None:
+        """Test that the CLI runs the shutdown sequence on success and error."""
+        mock_container_stop = mocker.patch("dangerzone.shutdown.ContainerStopTask.run")
+        mock_machine_stop = mocker.patch("dangerzone.shutdown.MachineStopTask.run")
+        mock_convert_documents = mocker.patch(
+            "dangerzone.logic.DangerzoneCore.convert_documents",
+        )
+
+        def assert_mocks() -> None:
+            if (
+                os.environ.get("DUMMY_CONVERSION", False)
+                or is_qubes_native_conversion()
+            ):
+                mock_container_stop.assert_not_called()
+                mock_machine_stop.assert_not_called()
+                return
+
+            mock_container_stop.assert_called_once()
+            if platform.system() != "Linux":
+                mock_machine_stop.assert_called_once()
+            else:
+                mock_machine_stop.assert_not_called()
+            mock_container_stop.reset_mock()
+            mock_machine_stop.reset_mock()
+
+        # The CLI should not linger, so that it can call the shutdown tasks.
+        result = self.run_cli(sample_pdf, tmp_path=tmp_path, linger=False)
+        result.assert_success()
+        assert_mocks()
+
+        mock_convert_documents.side_effect = (Exception("Conversion failed"),)
+        result = self.run_cli(sample_pdf, tmp_path=tmp_path, linger=False)
+        result.assert_failure()
+        assert_mocks()
+
+    def test_cli_shutdown_with_linger(
+        self, mocker: MockerFixture, sample_pdf: str, tmp_path: Path
+    ) -> None:
+        """Test that the CLI with --linger does not run the shutdown sequence on
+        success and error."""
+        mock_container_stop = mocker.patch("dangerzone.shutdown.ContainerStopTask.run")
+        mock_machine_stop = mocker.patch("dangerzone.shutdown.MachineStopTask.run")
+        mock_convert_documents = mocker.patch(
+            "dangerzone.logic.DangerzoneCore.convert_documents",
+        )
+
+        result = self.run_cli([sample_pdf], tmp_path=tmp_path)
+        result.assert_success()
+        mock_container_stop.assert_not_called()
+        mock_machine_stop.assert_not_called()
+        mock_container_stop.reset_mock()
+        mock_machine_stop.reset_mock()
+
+        mock_convert_documents.side_effect = (Exception("Conversion failed"),)
+        result = self.run_cli(sample_pdf, tmp_path=tmp_path)
+        result.assert_failure()
+        mock_container_stop.assert_not_called()
+        mock_machine_stop.assert_not_called()

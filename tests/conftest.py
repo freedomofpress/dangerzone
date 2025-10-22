@@ -3,14 +3,41 @@ import sys
 import typing
 import zipfile
 from pathlib import Path
-from typing import Callable, List
+from typing import Any, Callable, Generator, List
+from unittest.mock import MagicMock
 
 import pytest
+from pytest_mock import MockerFixture
 
+from dangerzone import container_utils, startup
 from dangerzone.document import SAFE_EXTENSION
 from dangerzone.gui import Application
+from dangerzone.isolation_provider import container
+from dangerzone.podman.machine import PodmanMachineManager
+from dangerzone.settings import Settings
 
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
+
+
+ASSETS_PATH = Path(__file__).parent / "assets"
+TEST_PUBKEY_PATH = ASSETS_PATH / "test.pub.key"
+INVALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "invalid"
+VALID_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "valid"
+TAMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tampered"
+
+
+@pytest.fixture(autouse=True)
+def isolated_settings(mocker: MockerFixture, tmp_path: Path) -> Settings:
+    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
+    return Settings()
+
+
+@pytest.fixture(autouse=True)
+def setup_function() -> Generator[None, None, None]:
+    # Reset the settings singleton between each test.
+    Settings._singleton = None
+    container_utils.init_podman_command.cache_clear()
+    yield
 
 
 # Use this fixture to make `pytest-qt` invoke our custom QApplication.
@@ -18,6 +45,13 @@ sys.dangerzone_dev = True  # type: ignore[attr-defined]
 @pytest.fixture(scope="session")
 def qapp_cls() -> typing.Type[Application]:
     return Application
+
+
+# Use this fixture to make `pytest-qt` invoke our custom QApplication.
+# See https://pytest-qt.readthedocs.io/en/latest/qapplication.html#testing-custom-qapplications
+@pytest.fixture(autouse=True)
+def machine_stop(mocker: MockerFixture) -> MagicMock:
+    return mocker.patch("dangerzone.podman.command.machine_manager.MachineManager.stop")
 
 
 @pytest.fixture
@@ -109,6 +143,14 @@ def sample_bad_width() -> str:
 @pytest.fixture
 def sample_pdf() -> str:
     return str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
+
+
+@pytest.fixture
+def skip_image_verification(monkeypatch: Any) -> None:
+    def noop(*args: Any, **kwargs: Any) -> bool:
+        return True
+
+    monkeypatch.setattr(container, "verify_local_image", noop)
 
 
 SAMPLE_DIRECTORY = "test_docs"

@@ -5,7 +5,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from typing import IO
+from typing import IO, Callable, Optional
 
 from ..conversion.common import running_on_qubes
 from ..document import Document
@@ -18,15 +18,8 @@ log = logging.getLogger(__name__)
 class Qubes(IsolationProvider):
     """Uses a disposable qube for performing the conversion"""
 
-    def install(self) -> bool:
-        return True
-
     @staticmethod
-    def is_available() -> bool:
-        return True
-
-    @staticmethod
-    def should_wait_install() -> bool:
+    def requires_install() -> bool:
         return False
 
     def get_max_parallel_conversions(self) -> int:

@@ -44,18 +44,19 @@ body:
     validations:
       required: true
   - type: textarea
-    id: docker-info
+    id: podman-info
     attributes:
-      label: Docker info
+      label: Podman info
       description: |
         Please copy and paste the following commands in your
         terminal, and provide us with the output:
 
         ```shell
-        docker version
-        docker info -f 'json'
-        docker images
-        docker run hello-world
+        /Applications/Dangerzone.app/Contents/MacOS/dangerzone-machine start
+        /Applications/Dangerzone.app/Contents/MacOS/dangerzone-machine --log-level debug raw version
+        /Applications/Dangerzone.app/Contents/MacOS/dangerzone-machine --log-level debug raw info -f 'json'
+        /Applications/Dangerzone.app/Contents/MacOS/dangerzone-machine --log-level debug raw images
+        /Applications/Dangerzone.app/Contents/MacOS/dangerzone-machine --log-level debug raw run hello-world
         ```
 
         This will be automatically formatted into code, so no need for backticks.
@@ -70,7 +71,7 @@ body:
 
         ```bash
 
-        /Applications/Dangerzone.app/Contents/MacOS/dangerzone-cli /path/to/file
+        /Applications/Dangerzone.app/Contents/MacOS/dangerzone-cli --debug /path/to/file
         ```
 
       render: shell

@@ -94,10 +94,6 @@ class IsolationProvider(ABC):
     def should_capture_stderr(self) -> bool:
         return self.debug or getattr(sys, "dangerzone_dev", False)
 
-    @abstractmethod
-    def install(self) -> bool:
-        pass
-
     def convert(
         self,
         document: Document,
@@ -256,13 +252,8 @@ class IsolationProvider(ABC):
         return errors.exception_from_error_code(error_code)
 
     @abstractmethod
-    def should_wait_install(self) -> bool:
-        """Whether this isolation provider takes a lot of time to install."""
-        pass
-
-    @abstractmethod
-    def is_available(self) -> bool:
-        """Whether the backing implementation of the isolation provider is available."""
+    def requires_install(self) -> bool:
+        """Whether this isolation provider needs an installation step"""
         pass
 
     @abstractmethod

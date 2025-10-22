@@ -9,7 +9,7 @@ Rules-Requires-Root: no
 
 Package: dangerzone
 Architecture: any
-Depends: ${misc:Depends}, podman, python3, python3-pyside6.qtcore | python3-pyside2.qtcore, python3-pyside6.qtgui | python3-pyside2.qtgui, python3-pyside6.qtwidgets | python3-pyside2.qtwidgets, python3-pyside6.qtsvg | python3-pyside2.qtsvg, python3-platformdirs | python3-appdirs, python3-click, python3-xdg, python3-colorama, python3-requests, python3-markdown, python3-packaging, tesseract-ocr-all
+Depends: ${misc:Depends}, podman, python3, python3-pyside6.qtcore | python3-pyside2.qtcore, python3-pyside6.qtgui | python3-pyside2.qtgui, python3-pyside6.qtwidgets | python3-pyside2.qtwidgets, python3-pyside6.qtsvgwidgets | python3-pyside2.qtsvg, python3-platformdirs | python3-appdirs, python3-click, python3-xdg, python3-colorama, python3-requests, python3-markdown, python3-packaging, tesseract-ocr-all
 Description: Take potentially dangerous PDFs, office documents, or images
   Dangerzone is an open source desktop application that takes potentially dangerous PDFs, office documents, or images and converts them to safe PDFs. It uses disposable VMs on Qubes OS, or container technology in other OSes, to convert the documents within a secure sandbox.
   .

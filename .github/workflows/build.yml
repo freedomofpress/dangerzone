@@ -18,7 +18,7 @@ env:
 
 # Each day, build and publish to ghcr.io:
 #
-# - the dangerzone/dangerzone container image
+# - the dangerzone/v1 container image
 # - the dangerzone/build/{debian,ubuntu,fedora}:version
 #   dev environments used to run the tests
 #
@@ -39,12 +39,16 @@ jobs:
             version: "24.04"
           - distro: ubuntu
             version: "25.04"
+          - distro: ubuntu
+            version: "25.10"
           - distro: debian
             version: bullseye
           - distro: debian
             version: bookworm
           - distro: debian
             version: trixie
+          - distro: debian
+            version: forky
           - distro: fedora
             version: "41"
           - distro: fedora

@@ -122,25 +122,41 @@ def handle_document_errors(func: F) -> F:
 #### Container-related errors
 
 
-class ImageNotPresentException(Exception):
+class ContainerException(Exception):
     pass
 
 
-class ImageInstallationException(Exception):
+class ImageNotPresentException(ContainerException):
     pass
 
 
-class NoContainerTechException(Exception):
+class MultipleImagesFoundException(ContainerException):
+    pass
+
+
+class ImageInstallationException(ContainerException):
+    pass
+
+
+class NoContainerTechException(ContainerException):
     def __init__(self, container_tech: str) -> None:
         super().__init__(f"{container_tech} is not installed")
 
 
-class NotAvailableContainerTechException(Exception):
+class NotAvailableContainerTechException(ContainerException):
     def __init__(self, container_tech: str, error: str) -> None:
         self.error = error
         self.container_tech = container_tech
         super().__init__(f"{container_tech} is not available")
 
 
-class UnsupportedContainerRuntime(Exception):
+class UnsupportedContainerRuntime(ContainerException):
+    pass
+
+
+class ContainerPullException(ContainerException):
+    pass
+
+
+class OtherMachineRunningError(ContainerException):
     pass

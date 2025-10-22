@@ -26,6 +26,7 @@ def data_files_list():
             ["install/linux/press.freedom.dangerzone.png"],
         ),
         ("share/dangerzone", file_list("share")),
+        ("share/dangerzone/vendor", file_list("share/vendor")),
     ]
     return data_files
 
@@ -49,6 +50,10 @@ convert the documents within a secure sandbox.
         "dangerzone.conversion",
         "dangerzone.gui",
         "dangerzone.isolation_provider",
+        "dangerzone.podman",
+        "dangerzone.podman.command",
+        "dangerzone.podman.errors",
+        "dangerzone.updater",
     ],
     data_files=data_files_list(),
     classifiers=[
@@ -60,6 +65,8 @@ convert the documents within a secure sandbox.
         "console_scripts": [
             "dangerzone = dangerzone:main",
             "dangerzone-cli = dangerzone:main",
+            "dangerzone-image = dangerzone.updater.cli:main",
+            "dangerzone-machine= dangerzone.podman.cli:main",
         ]
     },
 )

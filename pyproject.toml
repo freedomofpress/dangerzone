@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dangerzone"
-version = "0.9.1"
+version = "0.10.0"
 description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
 authors = [
     "Freedom of the Press Foundation <info@freedom.press>",
@@ -10,6 +10,7 @@ license = "AGPL-3.0"
 # NOTE: See also https://github.com/freedomofpress/dangerzone/issues/677
 include = [
     { path = "share/*", format = "sdist" },
+    { path = "share/vendor/*", format = "sdist" },
     { path = "qubes/*", format = "sdist" },
     { path = "install/linux/press.freedom.dangerzone.*", format = "sdist" },
     { path = "README.md", format = "sdist" },
@@ -26,11 +27,18 @@ pyxdg = { version = "*", platform = "linux" }
 requests = "*"
 markdown = "*"
 packaging = "*"
+# FIXME: See https://github.com/freedomofpress/dangerzone/issues/1284#issuecomment-3410520568
+shiboken6 = [
+   { version = "<6.10.0", python = "3.9" }, # remove when we drop Python 3.9 / Debian Bullseye support
+   { version = "*", python = "^3.10" },
+]
+
 
 [tool.poetry.scripts]
 dangerzone = 'dangerzone:main'
 dangerzone-cli = 'dangerzone:main'
-#assets = 'assets:main'
+dangerzone-image = "dangerzone.updater.cli:main"
+dangerzone-machine = "dangerzone.podman.cli:main"
 
 # Dependencies required for packaging the code on various platforms.
 [tool.poetry.group.package.dependencies]
@@ -40,7 +48,7 @@ pywin32 = { version = "*", platform = "win32" }
 pyinstaller = { version = "*", platform = "darwin" }
 doit = "^0.36.0"
 jinja2-cli = "^0.8.2"
-mazette = "^0.2.0"
+mazette = "^0.2.1"
 
 # Dependencies required for linting the code.
 [tool.poetry.group.lint.dependencies]
@@ -66,6 +74,7 @@ numpy = [
    { version = "2.0", python = "3.9" }, # remove when we drop python 3.9 support
    { version = "^2.1", python = "^3.10" },
 ]
+pytest-test-groups = "^1.1.0"
 
 [tool.poetry.group.debian.dependencies]
 pymupdf = "^1.24.11"
@@ -76,6 +85,20 @@ httpx = "^0.27.2"
 [tool.doit]
 verbosity = 3
 
+[tool.mypy]
+ignore_missing_imports = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+show_error_codes = true
+warn_unreachable = true
+warn_unused_ignores = true
+exclude = [
+	"dangerzone/podman/command/",
+	"dangerzone/podman/errors/",
+	"dangerzone/podman/errors/",
+	"tests/test_docs_large/",
+]
+
 [tool.ruff.lint]
 select = [
     # isort
@@ -85,6 +108,14 @@ select = [
 [build-system]
 requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+  "ignore:builtin type SwigPyPacked has no __module__ attribute:DeprecationWarning",
+  "ignore:builtin type SwigPyObject has no __module__ attribute:DeprecationWarning",
+  "ignore:builtin type swigvarlink has no __module__ attribute:DeprecationWarning",
+  "ignore:NotImplemented should not be used in a boolean context",
+]
 
 [tool.mazette.asset.tessdata]
 repo = "tesseract-ocr/tessdata_fast"
@@ -219,3 +250,48 @@ extract.globs = [
     "*/yor.traineddata",
 ]
 extract.flatten = true
+
+[tool.mazette.asset.podman]
+repo = "containers/podman"
+version = ">=5.6.2"
+platform."windows/amd64" = "podman-remote-release-windows_amd64.zip"
+platform."darwin/amd64" = "podman-remote-release-darwin_amd64.zip"
+platform."darwin/arm64" = "podman-remote-release-darwin_arm64.zip"
+destination = "share/vendor/podman"
+executable = true
+extract.globs = ["**/bin/*"]
+extract.flatten = true
+
+[tool.mazette.asset.gvproxy]
+repo = "containers/gvisor-tap-vsock"
+version = ">=0.8.5"
+platform."darwin/amd64" = "gvproxy-darwin"
+platform."darwin/arm64" = "gvproxy-darwin"
+executable = true
+destination = "share/vendor/podman/gvproxy"
+
+[tool.mazette.asset.vfkit]
+repo = "crc-org/vfkit"
+version = ">=0.6.1"
+platform."darwin/amd64" = "vfkit"
+platform."darwin/arm64" = "vfkit"
+executable = true
+destination = "share/vendor/podman/vfkit"
+
+[tool.mazette.asset.machine-os]
+repo = "containers/podman-machine-os"
+version = ">=5.6.2"
+platform."darwin/amd64" = "podman-machine.x86_64.applehv.raw.zst"
+platform."darwin/arm64" = "podman-machine.aarch64.applehv.raw.zst"
+platform."windows/amd64" = "podman-machine.x86_64.wsl.tar.zst"
+destination = "share/machine.tar"
+
+[tool.mazette.asset.cosign]
+repo = "sigstore/cosign"
+version = "<3.0.0"
+platform."darwin/amd64" = "cosign-darwin-amd64"
+platform."darwin/arm64" = "cosign-darwin-arm64"
+platform."linux/amd64" = "cosign-linux-amd64"
+platform."windows/amd64" = "cosign-windows-amd64.exe"
+executable = true
+destination = "share/vendor/cosign"

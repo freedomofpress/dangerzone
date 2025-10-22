@@ -1,20 +1,15 @@
 LARGE_TEST_REPO_DIR:=tests/test_docs_large
-GIT_DESC=$$(git describe)
+GIT_DESC=$$(git describe --always)
 JUNIT_FLAGS := --capture=sys -o junit_logging=all
-MYPY_ARGS := --ignore-missing-imports \
-			 --disallow-incomplete-defs \
-			 --disallow-untyped-defs \
-			 --show-error-codes \
-			 --warn-unreachable \
-			 --warn-unused-ignores \
-			 --exclude $(LARGE_TEST_REPO_DIR)/*.py
+TEST_GROUP_COUNT ?= 1
+TEST_GROUP ?= 1
+TEST_GROUP_RANDOM_SEED ?= 999999999
 
 .PHONY: lint
 lint: ## Check the code for linting, formatting, and typing issues with ruff and mypy
 	ruff check
 	ruff format --check
-	mypy $(MYPY_ARGS) dangerzone
-	mypy $(MYPY_ARGS) tests
+	mypy dangerzone tests
 
 .PHONY: fix
 fix: ## apply all the suggestions from ruff
@@ -41,11 +36,19 @@ test-large-init: test-large-requirements
 	git submodule update $(LARGE_TEST_REPO_DIR)
 	cd $(LARGE_TEST_REPO_DIR) && $(MAKE) clone-docs
 
-TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC).junit.xml
+TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC)_$(TEST_GROUP).junit.xml
 .PHONY: test-large
 test-large: test-large-init  ## Run large test set
-	python -m pytest --tb=no tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)
-	python $(TEST_LARGE_RESULTS)/report.py $(TEST_LARGE_RESULTS)
+	python -m pytest \
+		--tb=no \
+		--test-group-count=$(TEST_GROUP_COUNT) \
+		--test-group=$(TEST_GROUP) \
+		--test-group-random-seed=$(TEST_GROUP_RANDOM_SEED) \
+		--junitxml=$(TEST_LARGE_RESULTS) \
+		$(JUNIT_FLAGS) \
+		-v \
+		tests/test_large_set.py::TestLargeSet
+	python $(LARGE_TEST_REPO_DIR)/report.py $(TEST_LARGE_RESULTS)
 
 Dockerfile: Dockerfile.env Dockerfile.in ## Regenerate the Dockerfile from its template
 	poetry run jinja2 Dockerfile.in Dockerfile.env > Dockerfile

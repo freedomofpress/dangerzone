@@ -1,0 +1,156 @@
+name: Large tests
+on:
+  push:
+    branches:
+      - "test-large/**"
+  schedule:
+    - cron: "3 0 * * *" # Run every day at 03:00 UTC.
+  workflow_dispatch:
+
+# Disable multiple concurrent runs on the same branch
+# When a new CI build is triggered, it will cancel the
+# other in-progress ones (for the same branch)
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  # This is already built daily by the "build.yml" file
+  # But we also want to include this in the checks that run on each push.
+  build-container-image:
+    name: Build, push and sign container image
+    uses: ./.github/workflows/build-push-image.yml
+    with:
+      registry: "ghcr.io/${{ github.repository_owner }}"
+      registry_user: ${{ github.repository_owner }}
+      image_name: "dangerzone-testing/v1"
+      reproduce: false
+      sign: true
+      fill_cache: true
+      key_name: "tests/assets/dangerzone-testing"
+    secrets:
+      registry_token: ${{ secrets.GITHUB_TOKEN }}
+
+  run-large-tests:
+    runs-on: ubuntu-latest
+    needs:
+      - build-container-image
+    strategy:
+      matrix:
+        group: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install requirements
+        run: |-
+          sudo apt update -y
+          sudo apt install -y \
+            podman git-lfs libxml2-utils \
+            libqt6gui6 libxcb-cursor0 qt6-qpa-plugins \
+            python3 python3-poetry make
+          poetry install
+
+      - name: Cache mazette assets
+        id: cache-mazette
+        uses: actions/cache@v4
+        with:
+          path: |
+            share/tessdata/
+            share/vendor/
+          key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
+
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
+
+      - name: Restore container image
+        uses: actions/cache/restore@v4
+        with:
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+
+      - name: Smoke test before the party begins
+        run: |-
+          poetry run ./dev_scripts/dangerzone-cli tests/test_docs/sample-pdf.pdf
+
+      - name: Run large tests
+        continue-on-error: true  # We expect test failures
+        run: |-
+          export TEST_GROUP_COUNT=20
+          export TEST_GROUP=${{ matrix.group }}
+          poetry run make test-large
+
+      - name: Show results
+        run: |-
+          cat tests/test_docs_large/results/junit/*
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.group }}
+          path: tests/test_docs_large/results/junit
+          if-no-files-found: error
+          retention-days: 1
+
+  report:
+    runs-on: ubuntu-latest
+    needs:
+      - run-large-tests
+    steps:
+      - name: Download results
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/results
+          pattern: results-*
+          merge-multiple: true
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install requirements
+        run: |-
+          sudo apt update -y
+          sudo apt install -y \
+            podman git-lfs libxml2-utils \
+            python3 python3-poetry make
+          poetry install
+
+      - name: Download the large test repo
+        run: |-
+          make test-large-init
+
+      - name: Combine the results
+        run: |-
+          mkdir -p ${{ runner.temp }}/final_results
+          dev_scripts/merge_large_tests_results.py \
+             ${{ runner.temp }}/results \
+             ${{ runner.temp }}/final_results/results.xml
+
+      - name: Generate a report
+        run: |-
+          poetry run python tests/test_docs_large/report.py \
+              ${{ runner.temp }}/final_results/results.xml \
+              | tee ${{ runner.temp }}/final_results/report.txt
+
+      - name: Upload final results and report
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-results
+          path: ${{ runner.temp }}/final_results
+          if-no-files-found: error

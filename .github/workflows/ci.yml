@@ -11,11 +11,10 @@ on:
 
 permissions:
   packages: write
+  actions: read # for detecting the Github Actions environment.
+  id-token: write # for creating OIDC tokens for signing.
 
 env:
-  REGISTRY_USER: ${{ github.actor }}
-  REGISTRY_PASSWORD: ${{ github.token }}
-  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
   QT_SELECT: "qt6"
 
 # Disable multiple concurrent runs on the same branch
@@ -36,7 +35,7 @@ jobs:
         run: |-
           apt-get update
           apt-get install -y git make python3 python3-poetry --no-install-recommends
-          poetry install --only lint,test
+          poetry install
       - name: Run linters to enforce code style
         run: poetry run make lint
       - name: Check that the QA script is up to date with the docs
@@ -45,40 +44,60 @@ jobs:
   # This is already built daily by the "build.yml" file
   # But we also want to include this in the checks that run on each push.
   build-container-image:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+    name: Build, push and sign container image
+    uses: ./.github/workflows/build-push-image.yml
+    with:
+      registry: "ghcr.io/${{ github.repository_owner }}"
+      registry_user: ${{ github.repository_owner }}
+      image_name: "dangerzone-testing/v1"
+      reproduce: false
+      sign: true
+      fill_cache: true
+      key_name: "tests/assets/dangerzone-testing"
+    secrets:
+      registry_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-      - name: Cache container image
-        id: cache-container-image
-        uses: actions/cache@v4
-        with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
-          path: |-
-            share/container.tar
-            share/image-id.txt
-
-      - name: Build Dangerzone container image
-        if: ${{ steps.cache-container-image.outputs.cache-hit != 'true' }}
-        run: |
-          python3 ./install/common/build-image.py
-
-      - name: Upload container image
-        uses: actions/upload-artifact@v4
-        with:
-          name: container.tar
-          path: share/container.tar
+  # Prepare a second image and upload it to the GHCR
+  # In order to test the upgrade to this new version
+  build-new-container-image:
+    needs: build-container-image
+    name: Build, push and sign a NEWER container image
+    uses: ./.github/workflows/build-push-image.yml
+    with:
+      registry: "ghcr.io/${{ github.repository_owner }}"
+      registry_user: ${{ github.repository_owner }}
+      image_name: "dangerzone-testing/v1"
+      reproduce: false
+      sign: true
+      fill_cache: false
+      trivially_update_container: true
+      key_name: "tests/assets/dangerzone-testing"
+    secrets:
+      registry_token: ${{ secrets.GITHUB_TOKEN }}
 
   windows:
-    runs-on: windows-latest
+    needs:
+      - build-container-image
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2022
+          - runner: windows-2025
     env:
-      DUMMY_CONVERSION: 1
+      # NOTE: We have to set the encoding for this run to UTF-8, else we get an
+      # enoding error when Dangerzone attempts to display its banner, since the
+      # default seems to be CP-1252:
+      #
+      #     File "D:\a\dangerzone\dangerzone\dangerzone\cli.py", line 225, in display_banner
+      #       print(Back.BLACK + Fore.YELLOW + Style.DIM + "\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e")
+      #       ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      #     File "C:\hostedtoolcache\windows\Python\3.13.7\x64\Lib\encodings\cp1252.py", line 19, in encode
+      #       return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+      #              ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      #   UnicodeEncodeError: 'charmap' codec can't encode characters in position 14-41: character maps to <undefined>
+      PYTHONIOENCODING: UTF-8
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
@@ -92,10 +111,26 @@ jobs:
         with:
           path: |
             share/tessdata/
+            share/vendor/
+            share/machine.tar
           key: v1-mazette-windows-${{ hashFiles('./mazette.lock') }}
       - name: Install mazette assets
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
+      - name: Check cosign is present
+        run: ls share/vendor
+      - name: Restore container image
+        uses: actions/cache/restore@v4
+        with:
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+      - name: Smoke test
+        run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment
@@ -110,6 +145,7 @@ jobs:
         # NOTE: This also builds the .exe internally.
         run: poetry run .\install\windows\build-app.bat
       - name: Upload MSI installer
+        if: matrix.runner == 'windows-2025'
         uses: actions/upload-artifact@v4
         with:
           name: Dangerzone.msi
@@ -119,16 +155,18 @@ jobs:
 
   macOS:
     name: "macOS (${{ matrix.arch }})"
+    needs:
+      - build-container-image
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - runner: macos-latest # CPU type: Apple Silicon (M1)
-            arch: arch64
-          - runner: macos-13 # CPU type: Intel x86_64
+          # See https://github.com/abiosoft/colima/issues/970
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
             arch: x86_64
-    env:
-      DUMMY_CONVERSION: 1
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
@@ -142,12 +180,35 @@ jobs:
         with:
           path: |
             share/tessdata/
+            share/vendor/
+            share/machine.tar
           key: v1-mazette-darwin-${{ matrix.arch }}-${{ hashFiles('./mazette.lock') }}
       - name: Install mazette assets
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
+      - name: Check cosign is present
+        run: ls share/vendor
+      - name: Restore container image
+        uses: actions/cache/restore@v4
+        with:
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+      - name: Smoke test
+        # Nested virtualization does not work on M1 CPUs.
+        continue-on-error: ${{ matrix.arch == 'arm64'}}
+        run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
-        run: poetry run make test
+        run: |
+          # Nested virtualization does not work on M1 CPUs.
+          if [ ${{ matrix.arch }} == 'arm64' ]; then
+              export DUMMY_CONVERSION=1
+          fi
+          poetry run make test
       - name: Build macOS app
         run: poetry run python ./install/macos/build-app.py
       - name: Upload macOS app
@@ -164,13 +225,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
+        include: &debian_distros
           - distro: ubuntu
             version: "22.04"
           - distro: ubuntu
             version: "24.04"
           - distro: ubuntu
             version: "25.04"
+          - distro: ubuntu
+            version: "25.10"
           - distro: debian
             version: bullseye
           - distro: debian
@@ -184,6 +247,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install maette tool
+        run: |
+          sudo apt install pipx
+          pipx install poetry
+          poetry install
+      - name: Cache mazette assets
+        id: cache-mazette
+        uses: actions/cache@v4
+        with:
+          path: |
+            share/vendor/
+          key: v1-mazette-linux-x86_64-${{ hashFiles('./mazette.lock') }}
+      - name: Install mazette
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
       - name: Login to GHCR
         run: |
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
@@ -202,11 +280,13 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |-
             share/container.tar
-            share/image-id.txt
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
           fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
       - name: Build Dangerzone .deb
         run: |
@@ -230,19 +310,7 @@ jobs:
       - build-deb
     strategy:
       matrix:
-        include:
-          - distro: ubuntu
-            version: "22.04"
-          - distro: ubuntu
-            version: "24.04"
-          - distro: ubuntu
-            version: "25.04"
-          - distro: debian
-            version: bullseye
-          - distro: debian
-            version: bookworm
-          - distro: debian
-            version: trixie
+        include: *debian_distros
 
     steps:
       - name: Checkout
@@ -268,7 +336,7 @@ jobs:
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
 
       - name: Check that the Dangerzone GUI imports work
         run: |
@@ -282,9 +350,11 @@ jobs:
     needs:
       - build-container-image
     strategy:
-      matrix:
-        distro: ["fedora"]
-        version: ["41", "42"]
+      matrix: &fedora_distros
+        - distro: fedora
+          version: "41"
+        - distro: fedora
+          version: "42"
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -303,8 +373,9 @@ jobs:
         id: cache-mazette
         uses: actions/cache@v4
         with:
-          path: |
+          path: |-
             share/tessdata/
+            share/vendor/
           key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
 
       - name: Install mazette assets
@@ -325,11 +396,13 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |-
             share/container.tar
-            share/image-id.txt
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
           fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
       - name: Build Dangerzone .rpm
         run: |
@@ -359,7 +432,7 @@ jobs:
       - name: Run a test command
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
 
       - name: Check that the Dangerzone GUI imports work
         run: |
@@ -374,22 +447,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - distro: ubuntu
-            version: "22.04"
-          - distro: ubuntu
-            version: "24.04"
-          - distro: ubuntu
-            version: "25.04"
-          - distro: debian
-            version: bullseye
-          - distro: debian
-            version: bookworm
-          - distro: debian
-            version: trixie
-          - distro: fedora
-            version: "41"
-          - distro: fedora
-            version: "42"
+          *debian_distros
+          *fedora_distros
 
     steps:
       - name: Checkout
@@ -411,6 +470,7 @@ jobs:
         with:
           path: |
             share/tessdata/
+            share/vendor/
           key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
 
       - name: Install mazette assets
@@ -435,11 +495,13 @@ jobs:
       - name: Restore container image
         uses: actions/cache/restore@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
           path: |-
             share/container.tar
-            share/image-id.txt
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
           fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
       - name: Setup xvfb (Linux)
         run: |
@@ -457,6 +519,10 @@ jobs:
           # flag, the Podman container is not authorized [2] to access the Xvfb
           # server.
           #
+          # Also, run the tests with no network connection, using the
+          # `--no-network` flag, to ensure that Dangerzone can run in airgapped
+          # installations.
+          #
           # [1] From https://www.x.org/releases/X11R6.7.0/doc/Xserver.1.html#sect4:
           #
           #     disables host-based access control mechanisms. Enables access by
@@ -468,7 +534,10 @@ jobs:
           #     protocol specified". However, we have verified with strace(1)
           #     that the command in the Podman container can read the Xauthority
           #     file successfully.
-          xvfb-run -s '-ac' ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} run --dev \
+          xvfb-run -s '-ac' \
+            ./dev_scripts/env.py \
+              --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+              run --dev --no-network \
               bash -c 'cd dangerzone; poetry run make test'
 
       - name: Upload PDF diffs
@@ -478,3 +547,86 @@ jobs:
           path: tests/test_docs/diffs/*.jpeg
         # Always run this step to publish test results, even on failures
         if: ${{ always() }}
+
+  end-to-end-test:
+    name: "Sandbox upgrade E2E test"
+    runs-on: ubuntu-latest
+    needs:
+      - build-new-container-image
+      - build-container-image
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install mazette tool
+        run: |
+          sudo apt install pipx
+          pipx install poetry
+          poetry install
+
+      - name: Cache mazette assets
+        id: cache-mazette
+        uses: actions/cache@v4
+        with:
+          path: |
+            share/tessdata/
+            share/vendor/
+          key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
+
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
+
+      - name: Login to GHCR
+        run: |
+          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
+
+      - name: Restore container image
+        uses: actions/cache/restore@v4
+        with:
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+
+      - name: Run a conversion
+        run: |
+          poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf
+
+      - name: Update the settings so they check for updates
+        run: |
+          jq '.updater_check_all = true' ~/.config/dangerzone/settings.json > temp.json && mv temp.json ~/.config/dangerzone/settings.json
+
+      - name: Check the digest of the loaded podman image
+        run: |
+          podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
+
+      - uses: imjasonh/setup-crane@v0.1
+
+      - name: Tag a new version of the sandbox
+        run: |
+          crane tag ${{ needs.build-new-container-image.outputs.image_uri }} latest
+
+      - name: Run another conversion
+        run: |
+          poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf
+
+      - name: Check the digest of the loaded podman image
+        run: |
+          podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
+
+      - name: Ensure the container has been upgraded
+        run: |
+          DIGEST=$(podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}")
+          EXPECTED_DIGEST=$(echo "${{ needs.build-new-container-image.outputs.image_uri }}" | grep -Po "@\Ksha256:[a-f0-9]*")
+          if [[ $DIGEST != $EXPECTED_DIGEST ]]; then
+              exit 1
+          fi

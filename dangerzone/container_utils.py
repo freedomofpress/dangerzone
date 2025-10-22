@@ -1,61 +1,48 @@
+import functools
+import json
 import logging
 import os
 import platform
 import shutil
 import subprocess
+import sys
 from pathlib import Path, PurePosixPath
-from typing import List, Optional, Tuple, Union
+from typing import IO, Callable, Iterable, List, Optional, Tuple, Union
+
+from dangerzone.podman.errors.exceptions import PodmanNotInstalled
 
 from . import errors
+from .capture_output import original_subprocess_popen as Popen
+from .podman.command import PodmanCommand
+from .podman.errors import CommandError
 from .settings import Settings
-from .util import get_cache_dir, get_resource_path, get_subprocess_startupinfo
+from .util import (
+    get_cache_dir,
+    get_resource_path,
+    get_subprocess_startupinfo,
+    get_version,
+)
 
-CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+# Keep the name of the old container here to be able to get rid of it later
+OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
+CONTAINER_PREFIX = "dangerzone-"
+CONTAINERS_CONF_PATH = get_cache_dir() / "containers.conf"
+SECCOMP_PATH = get_cache_dir() / "shared" / "seccomp.gvisor.json"
+PODMAN_MACHINE_PREFIX = "dz-internal-"
+PODMAN_MACHINE_NAME = f"{PODMAN_MACHINE_PREFIX}{get_version()}"
+TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
 
 log = logging.getLogger(__name__)
 
 
-class Runtime(object):
-    """Represents the container runtime to use.
-
-    - It can be specified via the settings, using the "container_runtime" key,
-      which should point to the full path of the runtime;
-    - If the runtime is not specified via the settings, it defaults
-      to "podman" on Linux and "docker" on macOS and Windows.
-    """
-
-    def __init__(self) -> None:
-        settings = Settings()
-
-        if settings.custom_runtime_specified():
-            self.path = Path(settings.get("container_runtime"))
-            if not self.path.exists():
-                raise errors.UnsupportedContainerRuntime(self.path)
-            self.name = self.path.stem
-        else:
-            self.name = self.get_default_runtime_name()
-            self.path = Runtime.path_from_name(self.name)
-
-        if self.name not in ("podman", "docker"):
-            raise errors.UnsupportedContainerRuntime(self.name)
-
-    @staticmethod
-    def path_from_name(name: str) -> Path:
-        name_path = Path(name)
-        if name_path.is_file():
-            return name_path
-        else:
-            runtime = shutil.which(name_path)
-            if runtime is None:
-                raise errors.NoContainerTechException(name)
-            return Path(runtime)
-
-    @staticmethod
-    def get_default_runtime_name() -> str:
-        return "podman" if platform.system() == "Linux" else "docker"
+# subprocess.run with the correct startupinfo for Windows.
+# We use a partial here to better profit from type checking
+subprocess_run = functools.partial(
+    subprocess.run, startupinfo=get_subprocess_startupinfo()
+)
 
 
-def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
+def get_runtime_version() -> Tuple[int, int]:
     """Get the major/minor parts of the Docker/Podman version.
 
     Some of the operations we perform in this module rely on some Podman features
@@ -64,24 +51,15 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
     just knowing the major and minor version, since writing/installing a full-blown
     semver parser is an overkill.
     """
-    runtime = runtime or Runtime()
-
     # Get the Docker/Podman version, using a Go template.
-    if runtime.name == "podman":
-        query = "{{.Client.Version}}"
-    else:
-        query = "{{.Server.Version}}"
+    podman = init_podman_command()
+    query = "{{.Client.Version}}"
 
-    cmd = [str(runtime.path), "version", "-f", query]
     try:
-        version = subprocess.run(
-            cmd,
-            startupinfo=get_subprocess_startupinfo(),
-            capture_output=True,
-            check=True,
-        ).stdout.decode()
+        version = podman.run(["version", "-f", query])
+        assert isinstance(version, str)
     except Exception as e:
-        msg = f"Could not get the version of the {runtime.name.capitalize()} tool: {e}"
+        msg = f"Could not get the version of Podman: {e}"
         raise RuntimeError(msg) from e
 
     # Parse this version and return the major/minor parts, since we don't need the
@@ -91,13 +69,22 @@ def get_runtime_version(runtime: Optional[Runtime] = None) -> Tuple[int, int]:
         return (int(major), int(minor))
     except Exception as e:
         msg = (
-            f"Could not parse the version of the {runtime.name.capitalize()} tool"
-            f" (found: '{version}') due to the following error: {e}"
+            f"Could not parse the version of Podman (found: '{version}') due to the"
+            f" following error: {e}"
         )
         raise RuntimeError(msg)
 
 
-def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]:
+def get_podman_path() -> Optional[Path]:
+    podman_bin = "podman"
+    if platform.system() == "Linux":
+        return None  # Use default Podman location
+    elif platform.system() == "Windows":
+        podman_bin += ".exe"
+    return get_resource_path("vendor") / "podman" / podman_bin
+
+
+def make_seccomp_json_accessible() -> Union[Path, PurePosixPath]:
     """Ensure that the bundled seccomp profile is accessible by the runtime.
 
     On Linux platforms, this method is basically a no-op since there's no VM
@@ -118,7 +105,7 @@ def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]
     [2] Read about the 'volumes=' config in
         https://github.com/containers/common/blob/main/docs/containers.conf.5.md#machine-table
     """
-    if runtime.name == "podman" and get_runtime_version(runtime) < (4, 0):
+    if get_runtime_version() < (4, 0):
         # On OSes that use:
         #
         # * crun < 0.19
@@ -146,95 +133,212 @@ def make_seccomp_json_accessible(runtime: Runtime) -> Union[Path, PurePosixPath]
     else:
         src = get_resource_path("seccomp.gvisor.json")
 
-    if platform.system() == "Linux" or runtime.name == "docker":
+    if platform.system() == "Linux":
         return src
-    elif runtime.name == "podman":
-        dst = get_cache_dir() / "seccomp.gvisor.json"
-        dst.parent.mkdir(parents=True, exist_ok=True)
+    else:
+        SECCOMP_PATH.parent.mkdir(parents=True, exist_ok=True)
         # This file will be overwritten on every conversion, which is unnecessary, but
         # the copy operation should be quick.
-        shutil.copy(src, dst)
+        shutil.copy(src, SECCOMP_PATH)
         if platform.system() == "Windows":
             # Translate the Windows path on the host to the WSL2 path on the VM. That
             # is, change backslashes to forward slashes, and replace 'C:/' with
             # '/mnt/c'.
-            subpath = dst.relative_to("C:\\").as_posix()
+            subpath = SECCOMP_PATH.relative_to("C:\\").as_posix()
             return PurePosixPath("/mnt/c") / subpath
-        return dst
+        return SECCOMP_PATH
+
+
+def create_containers_conf() -> Path:
+    # Determine path of vendored Podman helpers.
+    #
+    # We cannot simply use the vendored Podman binary in order to start a Podman
+    # machine, because it needs to use some other utilities as well (vfkit, gvproxy).
+    # Since we can't install these utilities in $PATH, we have to pass them via the
+    # `helper_binaries_dir` config option. Read more about this field in this section:
+    # https://github.com/containers/common/blob/main/docs/containers.conf.5.md#engine-table
+    podman_path = get_podman_path()
+    assert isinstance(podman_path, Path)
+    helper_binaries_dir = str(podman_path.parent)
+    helper_binaries_dir = helper_binaries_dir.replace("\\", "\\\\")
+
+    # Determine volumes of Podman machine.
+    #
+    # By default, Podman machines boot with a permissive view of the host's filesystem.
+    # We want to limit this access as much as possible using the `volumes` config
+    # option, and specifically mounting only the seccomp policy file as read-only.
+    #
+    # Note that the following option does not affect Windows users, because WSL2 will
+    # always mount C: into the VM. Read more in:
+    # https://github.com/freedomofpress/dangerzone/issues/1171#issuecomment-3279044187
+    volume = f"{SECCOMP_PATH.parent}:{SECCOMP_PATH.parent}:ro"
+    volume = volume.replace("\\", "\\\\")
+    SECCOMP_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # Determine CPU count.
+    #
+    # Because the Podman machine is short-lived, we can employ more CPU cores than the
+    # default for the duration of the conversion.
+    cpu_count = os.cpu_count() or 1
+
+    content = f"""\
+[engine]
+helper_binaries_dir=["{helper_binaries_dir}"]
+
+[machine]
+cpus={cpu_count}
+volumes=["{volume}"]
+"""
+    # FIXME: Do not unconditionally write to this file.
+    dst = CONTAINERS_CONF_PATH
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(content)
+    return dst
+
+
+@functools.cache
+def init_podman_command() -> PodmanCommand:
+    podman_path: Optional[Path]
+    settings = Settings()
+
+    if settings.custom_runtime_specified():
+        podman_path = Path(settings.get("container_runtime"))
+        if not podman_path.exists():
+            raise errors.UnsupportedContainerRuntime(podman_path)
     else:
-        # Amusingly, that's an actual runtime error...
-        raise RuntimeError(f"Unexpected runtime: '{runtime.name}'")
+        podman_path = get_podman_path()
+
+    options = env = None
+    if platform.system() != "Linux" and not settings.custom_runtime_specified():
+        env = os.environ.copy()
+        env["CONTAINERS_CONF"] = str(create_containers_conf())
+        options = PodmanCommand.GlobalOptions(
+            connection=PODMAN_MACHINE_NAME,
+            storage_opt="overlay.mount_program=/usr/bin/fuse-overlayfs",
+        )
+        if settings.debug:
+            options.log_level = "debug"
+
+    try:
+        return PodmanCommand(path=podman_path, env=env, options=options)
+    except PodmanNotInstalled:
+        if getattr(sys, "dangerzone_dev", False):
+            raise errors.ContainerException(
+                "It seems that Podman is not present in your development environment."
+                " You can run `mazette install` to download and install it."
+                f" Expected path: {podman_path}"
+            )
+        else:
+            raise errors.ContainerException(
+                "Dangerzone could not find the Podman binary locally, which"
+                " is necessary to start containers. This binary should be included as"
+                " part of the installation, so the fact that it's missing indicates"
+                " that your installation may be broken. You can try reinstalling"
+                " Dangerzone, but if the problem persists, please contact us."
+            )
 
 
-def list_image_tags() -> List[str]:
-    """Get the tags of all loaded Dangerzone images.
-
-    This method returns a mapping of image tags to image IDs, for all Dangerzone
-    images. This can be useful when we want to find which are the local image tags,
-    and which image ID does the "latest" tag point to.
-    """
-    runtime = Runtime()
+def list_image_digests() -> List[str]:
+    """Get the digests of all loaded Dangerzone images."""
+    podman = init_podman_command()
     return (
-        subprocess.check_output(
+        podman.run(
             [
-                str(runtime.path),
                 "image",
                 "list",
                 "--format",
-                "{{ .Tag }}",
-                CONTAINER_NAME,
+                "{{ .Digest }}",
+                expected_image_name(),
             ],
-            text=True,
-            startupinfo=get_subprocess_startupinfo(),
         )
-        .strip()
+        .strip()  # type: ignore [union-attr]
         .split()
     )
 
 
+def list_containers() -> List[str]:
+    """Get all the Dangerzone containers."""
+    podman = init_podman_command()
+    containers = (
+        podman.run(
+            [
+                "ps",
+                "-a",
+                "--format",
+                "{{ .Names }}",
+            ],
+        )
+        .strip()  # type: ignore [union-attr]
+        .split()
+    )
+    return [cont for cont in containers if cont.startswith(CONTAINER_PREFIX)]
+
+
+def kill_container(name: str) -> None:
+    """Terminate a spawned container."""
+    podman = init_podman_command()
+    try:
+        # We do not check the exit code of the process here, since the container may
+        # have stopped right before invoking this command. In that case, the
+        # command's output will contain some error messages, so we capture them in
+        # order to silence them.
+        #
+        # NOTE: We specify a timeout for this command, since we've seen it hang
+        # indefinitely for specific files. See:
+        # https://github.com/freedomofpress/dangerzone/issues/854
+        podman.run(["kill", name], check=False, timeout=TIMEOUT_KILL)
+    except subprocess.TimeoutExpired:
+        log.warning(f"Could not kill container '{name}' within {TIMEOUT_KILL} seconds")
+    except Exception as e:
+        log.exception(
+            f"Unexpected error occurred while killing container '{name}': {str(e)}"
+        )
+
+
 def add_image_tag(image_id: str, new_tag: str) -> None:
     """Add a tag to the Dangerzone image."""
-    runtime = Runtime()
+    podman = init_podman_command()
     log.debug(f"Adding tag '{new_tag}' to image '{image_id}'")
-    subprocess.check_output(
-        [str(runtime.path), "tag", image_id, new_tag],
-        startupinfo=get_subprocess_startupinfo(),
+    podman.run(
+        ["tag", image_id, new_tag],
     )
 
 
-def delete_image_tag(tag: str) -> None:
-    """Delete a Dangerzone image tag."""
-    runtime = Runtime()
-    log.warning(f"Deleting old container image: {tag}")
+def delete_image_digests(
+    digests: Iterable[str], container_name: Optional[str] = None
+) -> None:
+    """Delete a Dangerzone image by its id."""
+    container_name = container_name or expected_image_name()
+    full_digests = [f"{container_name}@{digest}" for digest in digests]
+    if not full_digests:
+        log.debug("Skipping image digest deletion: nothing to remove")
+        return
+    podman = init_podman_command()
+    log.warning(f"Deleting container images: {' '.join(full_digests)}")
     try:
-        subprocess.check_output(
-            [str(runtime.name), "rmi", "--force", tag],
-            startupinfo=get_subprocess_startupinfo(),
-        )
+        podman.run(["rmi", "--force", *full_digests])
     except Exception as e:
         log.warning(
-            f"Couldn't delete old container image '{tag}', so leaving it there."
+            f"Couldn't delete container images '{' '.join(full_digests)}', so leaving it there."
             f" Original error: {e}"
         )
 
 
-def get_expected_tag() -> str:
-    """Get the tag of the Dangerzone image tarball from the image-id.txt file."""
-    with get_resource_path("image-id.txt").open() as f:
-        return f.read().strip()
+def clear_old_images(digest_to_keep: str) -> None:
+    log.debug(f"Digest to keep: {digest_to_keep}")
+    digests = list_image_digests()
+    log.debug(f"Digests installed: {digests}")
+    to_remove = filter(lambda x: x != f"sha256:{digest_to_keep}", digests)
+    delete_image_digests(to_remove)
 
 
-def load_image_tarball() -> None:
-    runtime = Runtime()
+def load_image_tarball(tarball_path: Optional[Path] = None) -> None:
     log.info("Installing Dangerzone container image...")
-    tarball_path = get_resource_path("container.tar")
+    podman = init_podman_command()
+    if not tarball_path:
+        tarball_path = get_resource_path("container.tar")
     try:
-        res = subprocess.run(
-            [str(runtime.path), "load", "-i", str(tarball_path)],
-            startupinfo=get_subprocess_startupinfo(),
-            capture_output=True,
-            check=True,
-        )
+        res = podman.run(["load", "-i", str(tarball_path)])
     except subprocess.CalledProcessError as e:
         if e.stderr:
             error = e.stderr.decode()
@@ -244,27 +348,76 @@ def load_image_tarball() -> None:
             f"Could not install container image: {error}"
         )
 
-    # Loading an image built with Buildkit in Podman 3.4 messes up its name. The tag
-    # somehow becomes the name of the loaded image [1].
-    #
-    # We know that older Podman versions are not generally affected, since Podman v3.0.1
-    # on Debian Bullseye works properly. Also, Podman v4.0 is not affected, so it makes
-    # sense to target only Podman v3.4 for a fix.
-    #
-    # The fix is simple, tag the image properly based on the expected tag from
-    # `share/image-id.txt` and delete the incorrect tag.
-    #
-    # [1] https://github.com/containers/podman/issues/16490
-    if runtime.name == "podman" and get_runtime_version(runtime) == (3, 4):
-        expected_tag = get_expected_tag()
-        bad_tag = f"localhost/{expected_tag}:latest"
-        good_tag = f"{CONTAINER_NAME}:{expected_tag}"
 
-        log.debug(
-            f"Dangerzone images loaded in Podman v3.4 usually have an invalid tag."
-            " Fixing it..."
+def tag_image_by_digest(digest: str, tag: str) -> None:
+    """Tag a container image by digest.
+    The sha256: prefix should be omitted from the digest.
+    """
+    podman = init_podman_command()
+    image_id = get_image_id_by_digest(digest)
+    podman.run(["tag", image_id, tag])
+
+
+def get_image_id_by_digest(digest: str) -> str:
+    """Get an image ID from a digest.
+    The sha256: prefix should be omitted from the digest.
+    """
+    # There is a "digest" filter that you can use with
+    # "podman images -f digest:<digest>", but it's only available
+    # for podman >=4.4 (and bookworm ships 4.3)
+    # So, fallback on the json format instead
+    podman = init_podman_command()
+    res = podman.run(["images", "--format", "json"])
+    assert isinstance(res, str)
+    images = json.loads(res)
+    filtered_images = [
+        image["Id"] for image in images if image["Digest"] == f"sha256:{digest}"
+    ]
+
+    if not filtered_images:
+        raise errors.ImageNotPresentException(
+            f"Unable to find an image with digest {digest}"
         )
-        add_image_tag(bad_tag, good_tag)
-        delete_image_tag(bad_tag)
+    return filtered_images[0]
 
-    log.info("Successfully installed container image")
+
+def expected_image_name() -> str:
+    image_name_path = get_resource_path("image-name.txt")
+    return image_name_path.read_text().strip("\n")
+
+
+def container_pull(image: str, manifest_digest: str) -> None:
+    """Pull a container image from a registry."""
+    podman = init_podman_command()
+    try:
+        podman.run(["pull", f"{image}@sha256:{manifest_digest}"], capture_output=False)
+    except CommandError:
+        raise errors.ContainerPullException("Could not pull the container image")
+
+
+def get_local_image_digest(image: Optional[str] = None) -> str:
+    """
+    Returns a image hash from a local image name
+    """
+    expected_image = image or expected_image_name()
+    # `podman images` returns the digest of the multi-architecture image,
+    # which should match the downloaded signatures on a typical over-the-air
+    # update scenario.
+    # `podman inspect` is avoided here as it returns the digest of the
+    # architecture-bound image.
+    podman = init_podman_command()
+    res = podman.run(["images", expected_image, "--format", "{{.Digest}}"])
+    assert isinstance(res, str)
+    # In some cases, the output can be multiple lines with the same digest
+    # sets are used to reduce them.
+    lines = set(res.split("\n"))
+    if len(lines) < 1:
+        raise errors.ImageNotPresentException(
+            f"The image {expected_image} does not exist locally"
+        )
+    elif len(lines) > 1:
+        raise errors.MultipleImagesFoundException(
+            f"Expected a single line of output, got {len(lines)} lines: {lines}"
+        )
+    image_digest = lines.pop().replace("sha256:", "")
+    return image_digest

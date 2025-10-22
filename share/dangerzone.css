@@ -72,3 +72,76 @@ MainWindow[OSColorMode="dark"] QLabel[style="warning"] {
     color: #FFD970;
     border-color: #665A00;
 }
+
+/*
+ * Status Bar
+ *
+ * Accessibility colors chosen with the help of https://www.whocanuse.com. Our
+ * aim is for AAA rating for all cases, except for "Direct Sunlight" in dark
+ * mode, where we aim for AA rating.
+ */
+
+/*
+ * Light mode assumes background-color: #ECECEC
+ */
+
+MainWindow[OSColorMode="light"] QStatusBar[style="status-success"] {
+    /* We currently want to hide the status bar in case of success */
+    border-top: 0px;
+}
+
+MainWindow[OSColorMode="light"] QStatusBar[style="status-info"] {
+    background-color: #D1ECF1;
+    border-top: 1px solid #BEE5EB;
+}
+
+MainWindow[OSColorMode="light"] QLabel[style="status-info"] {
+    color: #062C32;
+}
+
+MainWindow[OSColorMode="light"] QStatusBar[style="status-error"] {
+    background-color: #F8D7DA;
+    border-top: 1px solid #F5C6CB;
+}
+
+MainWindow[OSColorMode="light"] QLabel[style="status-error"] {
+    color: #3D0F13;
+}
+
+/*
+ * Dark mode assumes background-color: #323232
+ */
+
+MainWindow[OSColorMode="dark"] QStatusBar[style="status-success"] {
+    /* We currently want to hide the status bar in case of success */
+    border-top: 0px;
+}
+
+MainWindow[OSColorMode="dark"] QStatusBar[style="status-info"] {
+    background-color: #1A3A52;
+    border-top: 1px solid #2B5472;
+}
+
+MainWindow[OSColorMode="dark"] QLabel[style="status-info"] {
+    color: #BDE5F5;
+}
+
+MainWindow[OSColorMode="dark"] QStatusBar[style="status-error"] {
+    background-color: #4D1A1A;
+    border-top: 1px solid #722D2D;
+}
+
+MainWindow[OSColorMode="dark"] QLabel[style="status-error"] {
+    color: #FFC7C7;
+}
+
+MainWindow QStatusBar {
+    border: 0px;
+    border-top: 1px solid black;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+MainWindow QStatusBar QLabel {
+    font-size: 12px;
+}

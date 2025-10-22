@@ -1,0 +1,1 @@
+ghcr.io/freedomofpress/dangerzone/v1

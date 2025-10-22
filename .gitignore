@@ -23,6 +23,8 @@ wheels/
 pip-wheel-metadata/
 share/python-wheels/
 share/tessdata/
+share/vendor/
+share/machine.tar
 *.egg-info/
 .installed.cfg
 *.egg

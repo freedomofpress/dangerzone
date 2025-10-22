@@ -14,6 +14,7 @@ DEFAULT_GUI = True
 DEFAULT_USER = "user"
 DEFAULT_DRY = False
 DEFAULT_DEV = False
+DEFAULT_NO_NETWORK = False
 DEFAULT_SHOW_DOCKERFILE = False
 
 # The Linux distributions that we currently support.
@@ -202,6 +203,7 @@ RUN echo user:2000:2000 > /etc/subuid
 RUN echo user:2000:2000 > /etc/subgid
 
 USER user
+RUN mkdir -p /home/user/.local/share/
 WORKDIR /home/user
 
 ########################################
@@ -402,7 +404,13 @@ class Env:
         subprocess.run(self.runtime_cmd + list(args), check=True)
 
     def run(
-        self, cmd, gui=DEFAULT_GUI, user=DEFAULT_USER, dry=DEFAULT_DRY, dev=DEFAULT_DEV
+        self,
+        cmd,
+        gui=DEFAULT_GUI,
+        user=DEFAULT_USER,
+        dry=DEFAULT_DRY,
+        dev=DEFAULT_DEV,
+        no_network=DEFAULT_NO_NETWORK,
     ):
         """Run a command in a Dangerzone environment."""
         # FIXME: Allow wiping the state of the distro before running the environment, to
@@ -476,9 +484,14 @@ class Env:
             f"{dist_state}/containers:/home/user/.local/share/containers",
             "-v",
             f"{dist_state}/.bash_history:/home/user/.bash_history",
+            "-v",
+            f"{dist_state}/.local/share/dangerzone:/home/user/.local/share/dangerzone",
         ]
 
         run_cmd += ["-u", user]
+
+        if no_network:
+            run_cmd += ["--network", "none"]
 
         # Select the proper container image based on whether the user wants to run the
         # command in a dev or end-user environment.
@@ -505,6 +518,10 @@ class Env:
 
         dist_state.mkdir(parents=True, exist_ok=True)
         (dist_state / "containers").mkdir(exist_ok=True)
+
+        (dist_state / ".local" / "share" / "dangerzone").mkdir(
+            parents=True, exist_ok=True
+        )
         (dist_state / ".bash_history").touch(exist_ok=True)
         self.runtime_run(*run_cmd)
 
@@ -558,6 +575,8 @@ class Env:
                 "noble",
                 "25.04",
                 "plucky",
+                "25.10",
+                "questing",
             ):
                 install_deps = (
                     DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS
@@ -621,6 +640,8 @@ class Env:
                 "noble",
                 "25.04",
                 "plucky",
+                "25.10",
+                "questing",
             ):
                 install_deps = DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS
             package_pattern = f"dangerzone_{version}-*_*.deb"
@@ -664,7 +685,12 @@ def env_run(args):
 
     env = Env.from_args(args)
     return env.run(
-        args.command, gui=args.gui, user=args.user, dry=args.dry, dev=args.dev
+        args.command,
+        gui=args.gui,
+        user=args.user,
+        dry=args.dry,
+        dev=args.dev,
+        no_network=args.no_network,
     )
 
 
@@ -737,6 +763,12 @@ def parse_args():
         default=DEFAULT_DEV,
         action="store_true",
         help="Run the command into the dev variant of the Dangerzone environment",
+    )
+    parser_run.add_argument(
+        "--no-network",
+        default=DEFAULT_NO_NETWORK,
+        action="store_true",
+        help="Run the command in a networkless container",
     )
     parser_run.add_argument(
         "command",

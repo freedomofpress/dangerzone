@@ -10,14 +10,14 @@ following sections.
 
 (Unless specified, the architecture of the OS is AMD64)
 
-| Distribution             | Supported releases        | Automated tests        | Manual QA |
-| ------------------------ | ------------------------- | ---------------------- | --------- |
-| [Windows](#windows)      | 2 last releases           | 🗹 (`windows-latest`) ◎ | 🗹         |
-| [macOS intel](#macOS)    | 3 last releases           | 🗹 (`macos-13`) ◎       | 🗹         |
-| [macOS silicon](#macOS)  | 3 last releases           | 🗹 (`macos-latest`) ◎   | 🗹         |
-| [Ubuntu](#ubuntu-debian) | Follow upstream support ✰ | 🗹                      | 🗹         |
-| [Debian](#ubuntu-debian) | Current stable, Oldstable and LTS releases | 🗹     | 🗹         |
-| [Fedora](#fedora)        | Follow upstream support   | 🗹                      | 🗹         |
+| Distribution             | Supported releases        | Automated tests                      | Manual QA |
+| ------------------------ | ------------------------- | ------------------------------------ | --------- |
+| [Windows](#windows)      | 2 last releases           | 🗹 (`windows-2022`, `windows-2025`) ◎ | 🗹         |
+| [macOS intel](#macOS)    | 3 last releases           | 🗹 (`macos-15`) ◎                     | 🗹         |
+| [macOS silicon](#macOS)  | 3 last releases           | 🗹 (`macos-15`) ◎                     | 🗹         |
+| [Ubuntu](#ubuntu-debian) | Follow upstream support ✰ | 🗹                                    | 🗹         |
+| [Debian](#ubuntu-debian) | Current stable, Oldstable and LTS releases | 🗹                   | 🗹         |
+| [Fedora](#fedora)        | Follow upstream support   | 🗹                                    | 🗹         |
 | [Qubes OS](#qubes-os)    | [Beta support](https://github.com/freedomofpress/dangerzone/issues/413) ✢ | 🗷 | Latest Fedora template |
 | [Tails](#tails)          | Only the last release     | 🗷              | Last release only |
 
@@ -37,8 +37,8 @@ Please, proceed at your own risks, only if you know what you're doing.
 
 ## MacOS
 
-- Download [Dangerzone 0.9.1 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.9.1/Dangerzone-0.9.1-arm64.dmg)
-- Download [Dangerzone 0.9.1 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.9.1/Dangerzone-0.9.1-i686.dmg)
+- Download [Dangerzone 0.10.0 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.10.0/Dangerzone-0.10.0-arm64.dmg)
+- Download [Dangerzone 0.10.0 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.10.0/Dangerzone-0.10.0-i686.dmg)
 
 > [!TIP]
 > We support the releases of macOS that are still within Apple's servicing timeline. Apple usually provides security updates for the latest 3 releases, but this isn’t consistently applied and security fixes aren’t guaranteed for the non-latest releases. We are also dependent on [Docker Desktop windows support](https://docs.docker.com/desktop/setup/install/mac-install/)
@@ -51,7 +51,7 @@ You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `bre
 
 ## Windows
 
-- Download [Dangerzone 0.9.1 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.9.1/Dangerzone-0.9.1.msi)
+- Download [Dangerzone 0.10.0 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.10.0/Dangerzone-0.10.0.msi)
 
 > **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 > This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
@@ -77,16 +77,18 @@ an isolated environment. It will be installed automatically when installing Dang
 > - Ubuntu: We follow upstream support with an extra cutoff date. No support for
 >   versions prior to the second oldest LTS release.
 > - Fedora: We follow upstream support
-> - Debian: current stable, oldstable and LTS releases.
+> - Debian: We support the last two stable releases.
 
 Dangerzone is available for:
 
+- Ubuntu 25.10 (questing)
 - Ubuntu 25.04 (plucky)
 - Ubuntu 24.04 (noble)
 - Ubuntu 22.04 (jammy)
+- Debian 14 (forky)
 - Debian 13 (trixie)
 - Debian 12 (bookworm)
-- Debian 11 (bullseye)
+- Debian 11 (bullseye), support will be dropped in future releases.
 - Fedora 42
 - Fedora 41
 - Tails

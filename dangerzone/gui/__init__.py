@@ -24,10 +24,12 @@ from ..document import Document
 from ..isolation_provider.container import Container
 from ..isolation_provider.dummy import Dummy
 from ..isolation_provider.qubes import Qubes, is_qubes_native_conversion
+from ..settings import Settings
+from ..updater import errors as updater_errors
+from ..updater import releases
 from ..util import get_resource_path, get_version
 from .logic import DangerzoneGui
 from .main_window import MainWindow
-from .updater import UpdaterThread
 
 log = logging.getLogger(__name__)
 
@@ -151,25 +153,13 @@ def gui_main(dummy_conversion: bool, filenames: Optional[List[str]]) -> bool:
 
     def open_files(filenames: List[str] = []) -> None:
         documents = [Document(filename) for filename in filenames]
-        window.content_widget.doc_selection_widget.documents_selected.emit(documents)
+        window.conversion_widget.doc_selection_widget.documents_selected.emit(documents)
 
     window = MainWindow(dangerzone)
-
-    # Check for updates
-    log.debug("Setting up Dangerzone updater")
-    updater = UpdaterThread(dangerzone)
-    window.register_update_handler(updater.finished)
-
-    log.debug("Consulting updater settings before checking for updates")
-    if updater.should_check_for_updates():
-        log.debug("Checking for updates")
-        updater.start()
-    else:
-        log.debug("Will not check for updates, based on updater settings")
-
-    # Ensure the status of the toggle updates checkbox is updated, after the user is
-    # prompted to enable updates.
-    window.toggle_updates_action.setChecked(bool(updater.check))
+    settings = Settings()
+    updates_enabled = bool(settings.get("updater_check_all"))
+    window.toggle_updates_action.setChecked(updates_enabled)
+    window.startup_thread.start()
 
     if filenames:
         open_files(filenames)
@@ -177,6 +167,7 @@ def gui_main(dummy_conversion: bool, filenames: Optional[List[str]]) -> bool:
     # MacOS: Open a new window, if all windows are closed
     def application_activated() -> None:
         window.show()
+        window.adjustSize()
 
     # If we get a file open event, open it
     app.document_selected.connect(open_files)

@@ -41,6 +41,7 @@ MSG_BUILD_CTX = """Build environment:
 Build parameters:
 - SOURCE_DATE_EPOCH: {sde}
 - Build args: {build_args}
+- Annotations: {annotations}
 - Tag: {tag}
 - Platform: {platform}
 
@@ -151,12 +152,16 @@ def parse_build_args(args) -> str:
     return args.build_arg or []
 
 
+def parse_annotations(args) -> str:
+    return args.annotation or []
+
+
 def parse_buildkit_args(args, runtime: str) -> str:
     if not args.buildkit_args:
         return []
 
     if runtime != "podman":
-        raise RuntimeError("Cannot specify BuildKit arguments using the Podman runtime")
+        raise RuntimeError("Cannot specify BuildKit arguments using the Docker runtime")
 
     return shlex.split(args.buildkit_args)
 
@@ -297,6 +302,7 @@ def podman_build(
     use_cache: bool,
     output: Path,
     build_args: list,
+    annotations: list,
     platform: str,
     buildkit_args: list,
     dry: bool,
@@ -326,6 +332,10 @@ def podman_build(
         dockerfile_args_buildkit = ["--local", "dockerfile=/tmp/work"]
 
     tag_args = f",name={tag}" if tag else ""
+
+    annotation_args = ""
+    for arg in annotations:
+        annotation_args += f",annotation.{arg}"
 
     cache_args = []
     if use_cache:
@@ -368,7 +378,7 @@ def podman_build(
         f"build-arg:SOURCE_DATE_EPOCH={sde}",
         *_build_args,
         "--output",
-        f"type=docker,dest=/tmp/image/{output.name},rewrite-timestamp=true{tag_args}",
+        f"type=docker,dest=/tmp/image/{output.name},rewrite-timestamp=true{tag_args}{annotation_args}",
         *cache_args,
         *dockerfile_args_buildkit,
         *platform_args,
@@ -387,6 +397,7 @@ def docker_build(
     use_cache: bool,
     output: Path,
     build_args: list,
+    annotations: list,
     platform: str,
     buildx_args: list,
     dry: bool,
@@ -412,6 +423,12 @@ def docker_build(
     for arg in build_args:
         _build_args.append("--build-arg")
         _build_args.append(arg)
+
+    _annotations = []
+    for arg in annotations:
+        _annotations.append("--annotation")
+        _annotations.append(arg)
+
     platform_args = ["--platform", platform] if platform else []
 
     cmd = [
@@ -423,6 +440,7 @@ def docker_build(
         "--build-arg",
         f"SOURCE_DATE_EPOCH={sde}",
         *_build_args,
+        *_annotations,
         "--provenance",
         "false",
         "--output",
@@ -448,6 +466,7 @@ def build(args):
     rootless = parse_rootless(args, runtime)
     buildkit_image = parse_buildkit_image(args, rootless, runtime)
     build_args = parse_build_args(args)
+    annotations = parse_annotations(args)
     platform = args.platform
     buildkit_args = parse_buildkit_args(args, runtime)
     buildx_args = parse_buildx_args(args, runtime)
@@ -469,6 +488,7 @@ def build(args):
             tag=tag or "(not provided)",
             output=output,
             build_args=",".join(build_args) or "(not provided)",
+            annotations=",".join(annotations) or "(not provided)",
             platform=platform or "(default)",
             buildkit_args=" ".join(buildkit_args) or "(not provided)",
             buildx_args=" ".join(buildx_args) or "(not provided)",
@@ -486,6 +506,7 @@ def build(args):
                 use_cache,
                 output,
                 build_args,
+                annotations,
                 platform,
                 buildx_args,
                 dry,
@@ -501,6 +522,7 @@ def build(args):
                 use_cache,
                 output,
                 build_args,
+                annotations,
                 platform,
                 buildkit_args,
                 dry,
@@ -600,6 +622,13 @@ def define_build_cmd_args(parser: argparse.ArgumentParser) -> None:
         action="append",
         default=None,
         help="Set build-time variables",
+    )
+    parser.add_argument(
+        "--annotation",
+        metavar="KEY=VALUE",
+        action="append",
+        default=None,
+        help="Append annotation to the image",
     )
     parser.add_argument(
         "--platform",

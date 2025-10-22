@@ -1,17 +1,20 @@
 import logging
+import platform
 import sys
 from typing import List, Optional
 
 import click
 from colorama import Back, Fore, Style
 
-from . import args, errors
+from . import args, errors, shutdown, startup
 from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
+from .podman.machine import PodmanMachineManager
 from .settings import Settings
+from .updater import install
 from .util import get_version, replace_control_chars
 
 
@@ -58,6 +61,18 @@ def print_header(s: str) -> None:
         " let Dangerzone use the default runtime for this OS"
     ),
 )
+@click.option(
+    "--linger",
+    flag_value=True,
+    help=(
+        "Do not stop the Podman machine VM that Dangerzone uses to run containers,"
+        " after the conversions have completed. This is useful if you want to run"
+        " multiple conversions in a row, since the startup of the VM takes some time."
+        " If you choose to let the Podman machine linger, you will need to stop it"
+        " manually with `dangerzone-machine stop`. This option affects only"
+        " Windows/macOS platforms."
+    ),
+)
 @click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
 def cli_main(
@@ -68,11 +83,12 @@ def cli_main(
     dummy_conversion: bool,
     debug: bool,
     set_container_runtime: Optional[str] = None,
+    linger: bool = False,
 ) -> None:
     setup_logging()
     display_banner()
+    settings = Settings(debug=debug)
     if set_container_runtime:
-        settings = Settings()
         if set_container_runtime == "default":
             settings.unset_custom_runtime()
             click.echo(
@@ -116,13 +132,27 @@ def cli_main(
                 click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}")
             sys.exit(1)
 
-    # Ensure container is installed
-    dangerzone.isolation_provider.install()
+    tasks = []
+    if dangerzone.isolation_provider.requires_install():
+        tasks = [
+            startup.MachineStopOthersTask(),
+            startup.MachineInitTask(),
+            startup.MachineStartTask(),
+            startup.UpdateCheckTask(),
+            startup.ContainerInstallTask(),
+        ]
 
-    # Convert the document
-    print_header("Converting document to safe PDF")
+    try:
+        startup.StartupLogic(tasks=tasks).run()
+        print_header("Converting document(s) to safe PDF")
+        dangerzone.convert_documents(ocr_lang)
+    finally:
+        if dangerzone.isolation_provider.requires_install() and not linger:
+            task_container_stop = shutdown.ContainerStopTask()
+            task_machine_stop = shutdown.MachineStopTask()
+            tasks = [task_container_stop, task_machine_stop]
+            shutdown.ShutdownLogic(tasks=tasks).run()
 
-    dangerzone.convert_documents(ocr_lang)
     documents_safe = dangerzone.get_safe_documents()
     documents_failed = dangerzone.get_failed_documents()
 
@@ -141,8 +171,7 @@ def cli_main(
         for document in documents_failed:
             click.echo(replace_control_chars(document.input_filename))
         sys.exit(1)
-    else:
-        sys.exit(0)
+    sys.exit(0)
 
 
 args.override_parser_and_check_suspicious_options(cli_main)

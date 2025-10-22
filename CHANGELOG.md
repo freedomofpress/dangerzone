@@ -7,11 +7,57 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
 
+## [0.10.0](https://github.com/freedomofpress/dangerzone/compare/v0.10.0...0.9.1)
+
+### Added
+
+- Sign the sandbox/container images and automatically upgrade them to their latest version
+  ([#1006](https://github.com/freedomofpress/dangerzone/issues/1006)).
+  Read more about this feature [in our docs](https://github.com/freedomofpress/dangerzone/blob/main/docs/independent-container-updates.md).
+- Make Dangerzone use an embedded version of Podman under the hood
+  ([#1145](https://github.com/freedomofpress/dangerzone/issues/1145))
+- Bundle Podman images for Windows and macOS alongside our application
+  ([#1170](https://github.com/freedomofpress/dangerzone/issues/1170))
+- Introduce a new CLI helper called `dangerzone-machine` to manage the Podman
+  machine the Dangerzone uses under the hood
+  ([#1172](https://github.com/freedomofpress/dangerzone/issues/1172))
+- Capture all the command outputs in the logs ([#1236](https://github.com/freedomofpress/dangerzone/issues/1172))
+
+### Removed
+
+- Docker Desktop is no longer required to run Dangerzone. In fact, they are no
+  longer compatible, due to some changes in the bundled container image.
+  Instead, Podman Desktop is used under the hood
+  ([#118](https://github.com/freedomofpress/dangerzone/issues/118))
+
 ### Fixed
 
 - Fix a Dangerzone error that manifested in recent Debian-based environments
   that included both PySide6 and PySide2 libraries
   ([#1218](https://github.com/freedomofpress/dangerzone/issues/1218))
+- Issue templates have been updated to work on Windows
+  ([#1237](https://github.com/freedomofpress/dangerzone/issues/1237))
+- Question dialogs now show a question mark instead of an alert
+  ([#1198](https://github.com/freedomofpress/dangerzone/issues/1198))
+
+### Changed
+
+- Update our container image from Debian Bookworm to Debian Trixie
+  ([#1243](https://github.com/freedomofpress/dangerzone/issues/1243))
+- Upgrade the bundled LibreOffice version from 7.x to 25.x, as a result of our
+  Debian Trixie switch ([#1165](https://github.com/freedomofpress/dangerzone/issues/1165))
+
+### Platform changes
+
+- Add support for Ubuntu 25.10 (Questing Quokka)
+  ([#1264](https://github.com/freedomofpress/dangerzone/issues/1264))
+- Add support for the new Debian Testing (Forky)
+  ([#1265](https://github.com/freedomofpress/dangerzone/issues/1265))
+- Drop support for Ubuntu Oracular (24.10) since it is end of life
+  ([#1246](https://github.com/freedomofpress/dangerzone/issues/1246))
+- Add a deprecation warning for Debian bullseye
+  ([#1214](https://github.com/freedomofpress/dangerzone/issues/1214))
+
 
 ### Development changes
 
@@ -24,10 +70,14 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Improve our release instructions by splitting the large `RELEASE.md` file
   into distinct docs, whose instructions can be executed sequentially
   ([#1212](https://github.com/freedomofpress/dangerzone/pull/1212))
-
-### Removed
-
-- Platform support: Drop support for Ubuntu Oracular (24.10) since it is end of life ([#1246](https://github.com/freedomofpress/dangerzone/issues/1246))
+- Run our full CI test suite on Windows and macOS GitHub runners
+  ([#1009](https://github.com/freedomofpress/dangerzone/issues/1009))
+- Add end to end functional tests for independent container updates
+  ([#1157](https://github.com/freedomofpress/dangerzone/issues/1157))
+- Add developer instructions for releasing container images independently
+  ([#1162](https://github.com/freedomofpress/dangerzone/issues/1162))
+- Do not check the Git commit/branch when attesting provenance info
+  ([#1270](https://github.com/freedomofpress/dangerzone/issues/1270))
 
 ## [0.9.1](https://github.com/freedomofpress/dangerzone/compare/v0.9.1...0.9.0)
 

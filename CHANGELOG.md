@@ -22,10 +22,6 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   machine the Dangerzone uses under the hood
   ([#1172](https://github.com/freedomofpress/dangerzone/issues/1172))
 - Capture all the command outputs in the logs ([#1236](https://github.com/freedomofpress/dangerzone/issues/1172))
-- Platform support: Add support for Ubuntu 25.10 (Questing Quokka)
-  ([#1264](https://github.com/freedomofpress/dangerzone/issues/1264))
-- Platform support: Add support for the new Debian Testing (Forky)
-  ([#1265](https://github.com/freedomofpress/dangerzone/issues/1265))
 
 ### Removed
 
@@ -33,8 +29,6 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   longer compatible, due to some changes in the bundled container image.
   Instead, Podman Desktop is used under the hood
   ([#118](https://github.com/freedomofpress/dangerzone/issues/118))
-- Add a deprecation warning for Debian bullseye ([#1214](https://github.com/freedomofpress/dangerzone/issues/1214))
-- Platform support: Drop support for Ubuntu Oracular (24.10) since it is end of life ([#1246](https://github.com/freedomofpress/dangerzone/issues/1246))
 
 ### Fixed
 
@@ -52,6 +46,18 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   ([#1243](https://github.com/freedomofpress/dangerzone/issues/1243))
 - Upgrade the bundled LibreOffice version from 7.x to 25.x, as a result of our
   Debian Trixie switch ([#1165](https://github.com/freedomofpress/dangerzone/issues/1165))
+
+### Platform changes
+
+- Add support for Ubuntu 25.10 (Questing Quokka)
+  ([#1264](https://github.com/freedomofpress/dangerzone/issues/1264))
+- Add support for the new Debian Testing (Forky)
+  ([#1265](https://github.com/freedomofpress/dangerzone/issues/1265))
+- Drop support for Ubuntu Oracular (24.10) since it is end of life
+  ([#1246](https://github.com/freedomofpress/dangerzone/issues/1246))
+- Add a deprecation warning for Debian bullseye
+  ([#1214](https://github.com/freedomofpress/dangerzone/issues/1214))
+
 
 ### Development changes
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import argparse
+import contextlib
 import os
 import shutil
 import subprocess
@@ -19,6 +20,20 @@ def remove_contents(d):
             p.unlink()
         else:
             shutil.rmtree(p)
+
+
+@contextlib.contextmanager
+def exclude_paths(paths):
+    backup_paths = [p.parents[1] / (p.name + ".bak") for p in paths]
+    for path, backup in zip(paths, backup_paths):
+        if path.exists():
+            path.rename(backup)
+    try:
+        yield
+    finally:
+        for path, backup in zip(paths, backup_paths):
+            if backup.exists():
+                backup.rename(path)
 
 
 def build(build_dir, qubes=False):
@@ -64,28 +79,20 @@ def build(build_dir, qubes=False):
     os.symlink(dist_path, srpm_dir)
 
     print("* Creating a Python sdist")
-    tessdata = root / "share" / "tessdata"
-    tessdata_bak = root / "tessdata.bak"
-    container_tar = root / "share" / "container.tar"
-    container_tar_bak = root / "container.tar.bak"
+    excluded_paths = [root / "share" / "tessdata"]
+    if qubes:
+        excluded_paths += [
+            root / "share" / "container.tar",
+            root / "share" / "vendor",
+        ]
 
-    if tessdata.exists():
-        tessdata.rename(tessdata_bak)
-    stash_container = qubes and container_tar.exists()
-    if stash_container and container_tar.exists():
-        container_tar.rename(container_tar_bak)
-    try:
+    with exclude_paths(excluded_paths):
         subprocess.run(["poetry", "build", "-f", "sdist"], cwd=root, check=True)
         # Copy and unlink the Dangerzone sdist, instead of just renaming it. If the
         # build directory is outside the filesystem boundary (e.g., due to a container
         # mount), then a simple rename will not work.
         shutil.copy2(sdist_path, build_dir / "SOURCES" / sdist_name)
         sdist_path.unlink()
-    finally:
-        if tessdata_bak.exists():
-            tessdata_bak.rename(tessdata)
-        if stash_container and container_tar_bak.exists():
-            container_tar_bak.rename(container_tar)
 
     print("* Building RPM package")
     cmd = [

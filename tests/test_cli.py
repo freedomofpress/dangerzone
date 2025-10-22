@@ -237,8 +237,11 @@ class TestCliConversion(TestCliBasic):
         result = self.run_cli([str(doc), "--output-filename", str(destination)])
         result.assert_success()
 
-        # Do not check against reference versions when using a dummy isolation provider
-        if os.environ.get("DUMMY_CONVERSION", False):
+        # Do not check against reference versions when using a dummy or Qubes isolation
+        # provider
+        if os.environ.get("DUMMY_CONVERSION", False) or os.environ.get(
+            "QUBES_CONVERSION", False
+        ):
             return
 
         converted = fitz.open(destination)

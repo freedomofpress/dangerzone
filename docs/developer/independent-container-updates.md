@@ -24,6 +24,8 @@ You can verify that the image you have locally matches the stored signatures, an
 dangerzone-image verify-local ghcr.io/freedomofpress/dangerzone/v1
 ```
 
+The public key used to verify the container signatures is shipped in `share/freedomofpress-dangerzone.pub`, signed by our main Dangerzone release key. You can [verify this signature using `gpg`](https://github.com/freedomofpress/dangerzone/blob/main/INSTALL.md#verifying-pgp-signatures).
+
 ## Checking attestations
 
 Each night, new images are built and pushed to the container registry, alongside

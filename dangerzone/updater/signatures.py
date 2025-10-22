@@ -307,7 +307,13 @@ def upgrade_container_image_airgapped(
                 "The log index is not higher than the last known one"
             )
 
-    image_digest = dz_manifest["manifests"][0].get("digest").replace("sha256:", "")
+    if len(expected_manifest["manifests"]) > 1:
+        raise errors.InvalidDangerzoneManifest(
+            f"Contains more than one manifest: {expected_manifest['manifests']}"
+        )
+    image_digest = (
+        expected_manifest["manifests"][0].get("digest").replace("sha256:", "")
+    )
 
     runtime.load_image_tarball(container_tar)
     # Apply the tag manually here, since images downloaded with `cosign download`

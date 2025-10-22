@@ -231,7 +231,6 @@ convert the documents within a secure sandbox.
 install -pm 755 -d %{buildroot}/usr/share/
 install -pm 755 -d %{buildroot}/usr/share/applications/
 install -pm 755 -d %{buildroot}/usr/share/dangerzone/
-install -pm 755 -d %{buildroot}/usr/share/dangerzone/vendor/
 install -pm 755 -d %{buildroot}/usr/share/pixmaps/
 install -pm 644 install/linux/press.freedom.dangerzone.desktop %{buildroot}/usr/share/applications/
 install -pm 644 install/linux/press.freedom.dangerzone.png %{buildroot}/usr/share/pixmaps/
@@ -242,8 +241,13 @@ shopt -s extglob
 install -pm 644 share/!(*vendor) %{buildroot}/usr/share/dangerzone
 shopt -u extglob
 
+%if 0%{?_qubes}
+echo "Skipping the packaging of the `share/vendor` directory on Qubes"
+%else
 # Copy what's inside the folder separately
+install -pm 755 -d %{buildroot}/usr/share/dangerzone/vendor/
 install -pm 755 share/vendor/* %{buildroot}/usr/share/dangerzone/vendor
+%endif
 
 # In case we create a package for Qubes, add some extra files under
 # /etc/qubes-rpc.

@@ -8,7 +8,9 @@ from dangerzone.conversion import errors
 from dangerzone.document import Document
 from dangerzone.isolation_provider import base
 
-TIMEOUT_STARTUP = 60  # Timeout in seconds until the conversion sandbox starts.
+# Timeout in seconds until the conversion sandbox starts.
+# Tests are really slow on macOS intel, hence the 5 minutes timeout.
+TIMEOUT_STARTUP = 60 * 5
 
 
 @pytest.mark.skipif(

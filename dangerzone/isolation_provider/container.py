@@ -9,6 +9,7 @@ from typing import Callable, List, Optional, Tuple
 from .. import container_utils, errors
 from ..container_utils import make_seccomp_json_accessible, subprocess_run
 from ..document import Document
+from ..podman.errors import CommandError
 from ..settings import Settings
 from ..updater import (
     DEFAULT_PUBKEY_LOCATION,
@@ -177,7 +178,19 @@ class Container(IsolationProvider):
         # should report it.
         podman = container_utils.init_podman_command()
         name = self.doc_to_pixels_container_name(document)
-        all_containers = podman.run(["ps", "-a"])
+        try:
+            all_containers = podman.run(["ps", "-a"])
+        except CommandError as e:
+            # FIXME: This fallback should be removed once we drop support for Ubuntu
+            # 22.04. It's there because `podman ps -a` somehow fails on Ubuntu 22.04,
+            # probably due to a bug. For more info, see
+            # https://github.com/freedomofpress/dangerzone/issues/1294
+            log.warning(
+                f"Could not list containers because 'podman ps -a' failed with: {str(e)}"
+                f"\nContainer '{name}' may still be running..."
+            )
+            return
+
         assert isinstance(all_containers, str)
         if name in all_containers:
             log.warning(f"Container '{name}' did not stop gracefully")

@@ -7,9 +7,8 @@
   > 🚨 Do not use the one from Homebrew as it is known to
   > [cause issues](https://github.com/freedomofpress/dangerzone/issues/471))
 
-
 - [ ] Ensure the `~/.zprofile` of all accounts contains the following lines, and
-  remove any older ones, if they exist:
+      remove any older ones, if they exist:
 
   ```
   PATH="/Library/Frameworks/Python.framework/Versions/<version>/bin:${PATH}"
@@ -76,7 +75,7 @@
 
 - [ ] Verify and install the latest supported Python version from [python.org](https://www.python.org/downloads/macos/)
 
-- [ ] Install Poetry with `python3 -m pip install -U poetry`
+- [ ] Install Poetry with `python -m pip install -U poetry`
 
 - [ ] Ensure that Poetry picks the correct Python version with `poetry debug info`
 

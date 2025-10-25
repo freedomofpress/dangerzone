@@ -19,8 +19,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  --mount=type=bind,source=./container_helpers/repro-sources-list.sh,target=/usr/local/bin/repro-sources-list.sh \
-  --mount=type=bind,source=./container_helpers/gvisor.key,target=/tmp/gvisor.key \
+  --mount=type=bind,source=./dangerzone/container_helpers/repro-sources-list.sh,target=/usr/local/bin/repro-sources-list.sh \
+  --mount=type=bind,source=./dangerzone/container_helpers/gvisor.key,target=/tmp/gvisor.key \
   : "Hacky way to set a date for the Debian snapshot repos" && \
   touch -d ${DEBIAN_ARCHIVE_DATE}Z /etc/apt/sources.list.d/debian.sources && \
   touch -d ${DEBIAN_ARCHIVE_DATE}Z /etc/apt/sources.list && \
@@ -209,7 +209,7 @@ RUN chown dangerzone:dangerzone \
 # Fix permissions in /tmp, so that it can be used by unprivileged users.
 RUN chmod 777 /new_root/tmp
 
-COPY container_helpers/entrypoint.py /new_root
+COPY dangerzone/container_helpers/entrypoint.py /new_root
 # HACK: For reasons that we are not sure yet, we need to explicitly specify the
 # modification time of this file.
 RUN touch -d ${DEBIAN_ARCHIVE_DATE}Z /new_root/entrypoint.py

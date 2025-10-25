@@ -66,7 +66,7 @@ RUN mkdir -p /opt/dangerzone/dangerzone
 RUN touch /opt/dangerzone/dangerzone/__init__.py
 
 # Copy only the Python code, and not any produced .pyc files.
-COPY conversion/*.py /opt/dangerzone/dangerzone/conversion/
+COPY dangerzone/conversion/*.py /opt/dangerzone/dangerzone/conversion/
 
 # Create a directory that will be used by gVisor as the place where it will
 # store the state of its containers.

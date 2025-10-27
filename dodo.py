@@ -49,13 +49,9 @@ def list_language_data():
 ASSETS_DEPS = ["mazette.lock"]
 ASSETS_TARGETS = list_language_data()
 
-IMAGE_DEPS = [
-    "Dockerfile",
-    *list_files("dangerzone/conversion"),
-    *list_files("dangerzone/container_helpers"),
-    "install/common/build-image.py",
+IMAGE_TARGETS = [
+    "share/container.tar",
 ]
-IMAGE_TARGETS = ["share/container.tar", "share/image-id.txt"]
 
 SOURCE_DEPS = [
     *list_files("assets"),
@@ -187,18 +183,14 @@ def task_install_assets():
 def task_build_image():
     """Build the container image using ./install/common/build-image.py"""
     img_src = "share/container.tar"
-    img_dst = RELEASE_DIR / f"container-{VERSION}-{ARCH}.tar"  # FIXME: Add arch
-    img_id_src = "share/image-id.txt"
-    img_id_dst = RELEASE_DIR / "image-id.txt"  # FIXME: Add arch
 
     return {
         "actions": [
-            f"python install/common/build-image.py --runtime={CONTAINER_RUNTIME}",
-            ["cp", img_src, img_dst],
-            ["cp", img_id_src, img_id_dst],
+            f"poetry run dangerzone-image prepare-archive --output {img_src}",
         ],
-        "file_dep": IMAGE_DEPS,
-        "targets": [img_src, img_dst, img_id_src, img_id_dst],
+        "targets": [
+            img_src,
+        ],
         "task_dep": ["init_release_dir", "check_container_runtime"],
         "clean": True,
     }

@@ -186,7 +186,7 @@ def task_build_image():
 
     return {
         "actions": [
-            f"poetry run dangerzone-image prepare-archive --output {img_src}",
+            f"poetry run ./dev_scripts/dangerzone-image prepare-archive --output {img_src}",
         ],
         "targets": [
             img_src,

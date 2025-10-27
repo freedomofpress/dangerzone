@@ -16,6 +16,7 @@ DEFAULT_DRY = False
 DEFAULT_DEV = False
 DEFAULT_NO_NETWORK = False
 DEFAULT_SHOW_DOCKERFILE = False
+DEFAULT_SLOW_RUN = False
 
 # The Linux distributions that we currently support.
 # FIXME: Add a version mapping to avoid mistakes.
@@ -411,6 +412,7 @@ class Env:
         dry=DEFAULT_DRY,
         dev=DEFAULT_DEV,
         no_network=DEFAULT_NO_NETWORK,
+        slow_run=True,
     ):
         """Run a command in a Dangerzone environment."""
         # FIXME: Allow wiping the state of the distro before running the environment, to
@@ -492,6 +494,9 @@ class Env:
 
         if no_network:
             run_cmd += ["--network", "none"]
+
+        if slow_run:
+            run_cmd += ["--cpu-quota", "1000", "--memory", "50000000"]
 
         # Select the proper container image based on whether the user wants to run the
         # command in a dev or end-user environment.
@@ -769,6 +774,12 @@ def parse_args():
         default=DEFAULT_NO_NETWORK,
         action="store_true",
         help="Run the command in a networkless container",
+    )
+    parser_run.add_argument(
+        "--slow-run",
+        default=DEFAULT_SLOW_RUN,
+        action="store_true",
+        help="Run the command in a low CPU and low memory setup",
     )
     parser_run.add_argument(
         "command",

@@ -11,6 +11,7 @@ from dangerzone.isolation_provider import base
 # Timeout in seconds until the conversion sandbox starts.
 # Tests are really slow on macOS intel, hence the 5 minutes timeout.
 TIMEOUT_STARTUP = 60 * 5
+TIMEOUT_GRACE = 60
 
 
 @pytest.mark.skipif(
@@ -118,7 +119,7 @@ class IsolationProviderTermination:
         terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
         popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
 
-        with provider.doc_to_pixels_proc(doc) as proc:
+        with provider.doc_to_pixels_proc(doc, timeout_grace=TIMEOUT_GRACE) as proc:
             # We purposefully do nothing here, so that the process remains running.
             pass
 

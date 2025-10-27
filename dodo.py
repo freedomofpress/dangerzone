@@ -180,8 +180,8 @@ def task_install_assets():
     }
 
 
-def task_build_image():
-    """Build the container image using ./install/common/build-image.py"""
+def task_download_image():
+    """Download the container image using dangerzone-image prepare-archive"""
     img_src = "share/container.tar"
 
     return {
@@ -191,7 +191,7 @@ def task_build_image():
         "targets": [
             img_src,
         ],
-        "task_dep": ["init_release_dir", "check_container_runtime"],
+        "task_dep": ["init_release_dir", "install_assets"],
         "clean": True,
     }
 

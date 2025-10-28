@@ -134,7 +134,7 @@ jobs:
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "8.x"
       - name: Install WiX Toolset

@@ -20,21 +20,22 @@ EOL_PYTHON_URL = "https://endoflife.date/api/python.json"
 CONTENT_QA = r"""# QA
 
 To ensure that new releases do not introduce regressions, and support existing
-and newer platforms, we have to test that the produced packages work as
-expected. We have compiled a list of checks, some of them manual, that a release
-manager needs to follow across several OSes.
+and newer platforms, the produced packages are tested.
 
-Because some of the checks are repetitive and can be automated, we wrote a
-script to help with the QA (see [Scripted QA](#scripted-qa)). It can run the
-tasks for you, pausing when it needs manual intervention. You can run it with:
+Here is a list of checks. Some of them manual, and the release
+manager needs to follow them across several OSes.
+
+Because some of the checks are repetitive, a script automates some of the QA
+(see [Scripted QA](#scripted-qa)). It runs the tasks, prompting you when it needs manual intervention.
+
+It can be run with:
 
 ```bash
 poetry run ./dev_scripts/qa.py {distro}-{version}
 ```
 
-We also have a large collection of documents that we can check against the
-`main` branch prior to a release (see
-[Large Document Testing](#large-document-testing)).
+A large collection of documents is also available, that can be tested against the `main` branch
+prior to a release (see [Large Document Testing](#large-document-testing)).
 
 ## The checklist
 
@@ -97,23 +98,7 @@ We also have a large collection of documents that we can check against the
 
 CONTENT_QA_SCENARIOS = r"""## Scenarios
 
-### 1. Dangerzone correctly identifies that Docker/Podman is not installed
-
-_(Only for MacOS / Windows)_
-
-Temporarily hide the Docker/Podman binaries, e.g., rename the `docker` /
-`podman` binaries to something else. Then run Dangerzone. Dangerzone should
-prompt the user to install Docker/Podman.
-
-### 2. Dangerzone correctly identifies that Docker is not running
-
-_(Only for MacOS / Windows)_
-
-Stop the Docker Desktop application. Then run Dangerzone. Dangerzone should
-prompt the user to start Docker Desktop.
-
-
-### 3. Updating Dangerzone handles external state correctly.
+### 1. Updating Dangerzone handles external state correctly.
 
 _(Applies to Windows/MacOS)_
 
@@ -125,10 +110,10 @@ Open the Dangerzone application and enable some non-default settings.
 Close the Dangerzone application and get the container image for that
 version. For example:
 
-```
-$ docker images dangerzone.rocks/dangerzone
-REPOSITORY                   TAG         IMAGE ID      CREATED       SIZE
-dangerzone.rocks/dangerzone  <tag>       <image ID>    <date>        <size>
+```bash
+$ dangerzone-machine raw images ghcr.io/freedomofpress/dangerzone/v1
+REPOSITORY                            TAG         IMAGE ID      CREATED       SIZE
+ghcr.io/freedomofpress/dangerzone/v1  <tag>       <image ID>    <date>        <size>
 ```
 
 Then run the version under QA and ensure that the settings remain changed.
@@ -136,26 +121,31 @@ Then run the version under QA and ensure that the settings remain changed.
 Afterwards check that new docker image was installed by running the same command
 and seeing the following differences:
 
-```
-$ docker images dangerzone.rocks/dangerzone
-REPOSITORY                   TAG         IMAGE ID        CREATED       SIZE
-dangerzone.rocks/dangerzone  <other tag> <different ID>  <newer date>  <different size>
+```bash
+$ dangerzone-machine raw images ghcr.io/freedomofpress/dangerzone/v1
+REPOSITORY                            TAG         IMAGE ID        CREATED       SIZE
+ghcr.io/freedomofpress/dangerzone/v1  <other tag> <different ID>  <newer date>  <different size>
 ```
 
-### 4. Dangerzone successfully installs the container image
+### 2. Dangerzone successfully installs the container image
 
 _(Only for Linux)_
 
-Remove the Dangerzone container image from Docker/Podman. Then run Dangerzone.
-Dangerzone should install the container image successfully.
+Remove the Dangerzone container image and podman machine with:
 
-### 5. Dangerzone retains the settings of previous runs
+```bash
+dangerzone-machine reset
+```
+
+Then run Dangerzone. Dangerzone should install the podman machine and container image successfully.
+
+### 3. Dangerzone retains the settings of previous runs
 
 Run Dangerzone and make some changes in the settings (e.g., change the OCR
 language, toggle whether to open the document after conversion, etc.). Restart
 Dangerzone. Dangerzone should show the settings that the user chose.
 
-### 6. Dangerzone reports failed conversions
+### 4. Dangerzone reports failed conversions
 
 Run Dangerzone and convert the `tests/test_docs/sample_bad_pdf.pdf` document.
 Dangerzone should fail gracefully, by reporting that the operation failed, and
@@ -163,7 +153,7 @@ showing the following error message:
 
 > The document format is not supported
 
-### 7. Dangerzone succeeds in converting multiple documents
+### 5. Dangerzone succeeds in converting multiple documents
 
 Run Dangerzone against a list of documents, and tick all options. Ensure that:
 * Conversions take place sequentially.
@@ -177,7 +167,7 @@ Run Dangerzone against a list of documents, and tick all options. Ensure that:
   location.
 * The original files have been saved in the `unsafe/` directory.
 
-### 8. Dangerzone is able to handle drag-n-drop
+### 6. Dangerzone is able to handle drag-n-drop
 
 Run Dangerzone against a set of documents that you drag-n-drop. Files should be
 added and conversion should run without issue.
@@ -186,21 +176,21 @@ added and conversion should run without issue.
 > On our end-user container environments for Linux, we can start a file manager
 > with `thunar &`.
 
-### 9. Dangerzone CLI succeeds in converting multiple documents
+### 7. Dangerzone CLI succeeds in converting multiple documents
 
 _(Only for Windows and Linux)_
 
 Run Dangerzone CLI against a list of documents. Ensure that conversions happen
 sequentially, are completed successfully, and we see their progress.
 
-### 10. Dangerzone can open a document for conversion via right-click -> "Open With"
+### 8. Dangerzone can open a document for conversion via right-click -> "Open With"
 
 _(Only for Windows, MacOS and Qubes)_
 
 Go to a directory with office documents, right-click on one, and click on "Open
 With". We should be able to open the file with Dangerzone, and then convert it.
 
-### 11. Dangerzone shows helpful errors for setup issues on Qubes
+### 9. Dangerzone shows helpful errors for setup issues on Qubes
 
 _(Only for Qubes)_
 
@@ -291,7 +281,8 @@ command:
 poetry run mazette install
 ```
 
-Download the latest container image:
+Run the following command to download the latest container image, or
+[build it locally](#building-a-local-container-image):
 
 ```sh
 poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
@@ -356,7 +347,8 @@ command:
 poetry run mazette install
 ```
 
-Download the latest container image:
+Run the following command to download the latest container image, or
+[build it locally](#building-a-local-container-image):
 
 ```sh
 poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
@@ -387,8 +379,6 @@ Create a .rpm:
 """
 
 CONTENT_BUILD_WINDOWS = r"""## Windows
-
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
 
 Install the latest version of Python 3.13 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.13 to PATH" checkbox on the first page of the installer.
 
@@ -421,7 +411,8 @@ command:
 poetry run mazette install
 ```
 
-Download the latest container image:
+Run the following command to download the latest container image, or
+[build it locally](#building-a-local-container-image):
 
 ```sh
 poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
@@ -763,8 +754,8 @@ class QABase(abc.ABC):
         logger.info("Successfully completed QA scenarios")
 
     @task("Download the necessary assets", auto=True)
-    def instal_assets(self):
-        self.run("poetry", "run", "assets", "install")
+    def install_assets(self):
+        self.run("poetry", "run", "mazette", "install")
 
     @classmethod
     @abc.abstractmethod
@@ -825,15 +816,6 @@ class QAWindows(QABase):
             logger.info(
                 f"Verified that the latest Python version ({latest_version}) is installed"
             )
-
-    @QABase.task("Install and Run Docker Desktop", ref=REF_BUILD)
-    def install_docker(self):
-        logger.info("Checking if Docker Desktop is installed and running")
-        if not self.try_run("docker", "info"):
-            logger.info("Failed to verify that Docker Desktop is installed and running")
-            self.prompt("Ensure that Docker Desktop is installed and running")
-        else:
-            logger.info("Verified that Docker Desktop is installed and running")
 
     @QABase.task(
         "Install Poetry and the project's dependencies", ref=REF_BUILD, auto=True

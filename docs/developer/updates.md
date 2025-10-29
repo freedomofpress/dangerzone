@@ -147,7 +147,7 @@ users' safety.
 
 The update frameworks that we learned about are:
 
-## Sparkle Project
+### Sparkle Project
 
 [Sparkle project](https://sparkle-project.org) seems to be the de-facto update
 framework in MacOS. Integrators in practice need to care about two things:
@@ -171,7 +171,7 @@ for interacting with WinSparkle, so this may alleviate some pains.
 Note that the Sparkle project is not a silver bullet. Development missteps can
 happen, and users can be left without updates. Here's an [example issue](https://github.com/sparkle-project/Sparkle/issues/345) that showcases this.
 
-## The Update Framework
+### The Update Framework
 
 [The Update Framework](https://theupdateframework.io/) is a graduated CNCF
 project hosted by Linux Foundation. It's based on the
@@ -188,7 +188,7 @@ required keys and files.
 
 Regardless of whether we use it, knowing about the [threat vectors](https://theupdateframework.io/security/) that it's protecting against is very important.
 
-## Other Projects
+### Other Projects
 
 * Qt has some updater framework as well: https://doc.qt.io/qtinstallerframework/ifw-updates.html
 * Google Chrome has it's own updater framework: https://chromium.googlesource.com/chromium/src.git/+/master/docs/updater/protocol_3_1.md

@@ -10,13 +10,13 @@
   - A valid application password for `notarytool` in the Keychain. You can
     verify this by running:
 
-    ```
+    ```bash
     xcrun notarytool history --apple-id "<email>" --keychain-profile "dz-notarytool-release-key"
     ```
 
-    If you don't find it, you can add it to the Keychain by running:
+    If they key isn't found, add it to the Keychain by running:
 
-    ```
+    ```bash
     xcrun notarytool store-credentials dz-notarytool-release-key --apple-id <email> --team-id <team ID>
     ```
 

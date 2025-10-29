@@ -25,21 +25,19 @@ For usage information, run `./dev_scripts/env.py --help`.
 
 ## Nested containerization
 
-Since the Dangerzone environments are containers, this means that the Podman
-containers that Dangerzone creates have to be nested containers. This has some
-challenges that we will highlight below:
+As Dangerzone environments are containers, the isolation sandbox that Dangerzone create is a nested container. 
+This brings the following challenges:
 
 1. Containers typically only have a subset of syscalls allowed, and sometimes
    only for specific arguments. This happens with the use of
    [seccomp filters](https://docs.docker.com/engine/security/seccomp/). For
    instance, in Docker, the `clone` syscall is limited in containers and cannot
    create new namespaces
-   (https://docs.docker.com/engine/security/seccomp/#significant-syscalls-blocked-by-the-default-profile). For testing/development purposes, we can get around this limitation
-   by disabling the seccomp filters for the external container with
+   (https://docs.docker.com/engine/security/seccomp/#significant-syscalls-blocked-by-the-default-profile). For testing/development purposes, a seccomp filter for the external container is used to get around this limitation, with
    `--security-opt seccomp=unconfined`. This has the same effect as developing
    Dangerzone locally, so it should probably be sufficient for now.
 
-2. While Linux supports nested namespaces, we need extra handling for nested
+2. While Linux supports nested namespaces, extra handling is required for nested
    user namespaces. By default, the configuration for each user namespace (see
    [`man login.defs`](https://man7.org/linux/man-pages/man5/login.defs.5.html)
    is to reserve 65536 UIDs/GIDs, starting from UID/GID 100000. This works fine

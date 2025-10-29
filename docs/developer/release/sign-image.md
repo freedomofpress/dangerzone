@@ -1,17 +1,19 @@
 # Sign and release container image
 
 Since Dangerzone 0.10.0, container images bundled in our packages are built
-nightly in GitHub Actions instead of a trusted, private environment. Releasing
-the image boils down to the following steps:
+nightly in GitHub Actions instead of a trusted, private environment.
+
+Releasing this image for public usage is done via these steps:
 
 1. Pick a container image for a release.
 2. Reproduce it **bit-for-bit** locally.
 3. Sign it with the Dangerzone signing key and mark it as `latest` in ghcr.io.
 
-> [!NOTE]
-> This is the only part of the release process that maintainers can run
-> independently, when they want to push out a new container image (read more
-> about [Independent Container Updates](../independent-container-updates.md))
+These steps can be run with the following script:
+
+```bash
+poetry run ./dev_scripts/release-container-image.py
+```
 
 ## Pick a release candidate image
 
@@ -33,11 +35,11 @@ Here is how to pick a container image built from the `main` branch:
 - [ ] Ensure that this image is fresh (no more than two days old) and has been produced by a build that passes CI tests.
 
 > [!IMPORTANT]
-> Do not attempt to use images created from PRs. The main issue that affects
-> their reproducibility is that GitHub Actions will always internally merge the
-> tip of the feature branch with the base branch, which results into a totally
-> new merge commit. Always prefer images from nightly builds or workflow
-> re-runs.
+> Do not attempt to use images created from PRs. GitHub Actions will always
+> internally merge the tip of the feature branch with the base branch, which
+> results into a totally new merge commit, breaking the reproducibility.
+> 
+> Always prefer images from nightly builds or workflow re-runs.
 
 ## Attest provenance and reproducibility
 
@@ -60,10 +62,9 @@ Here is how to attest the provenance info and reproducibility of the image:
 > 1. The `DATE` argument is the ISO date that is part of the image tag. In the
 >    above example, the date is `20250909`.
 > 2. If the `attest-provenance` command fails, with an indication that the image
->    was built by an older commit, then there may be an explanation. If two CI
->    runs, usually within the same day, ended up building the exact same image,
->    then only one image will be pushed - the oldest one - and anecdotally one
->    attestation.
+>    was built by an older commit, then there may be an explanation: If two CI
+>    runs — usually within the same day — ended up building the exact same image,
+>    then only the oldest image will be pushed, and anecdotally one attestation.
 
 ## Sign and publish image
 
@@ -74,13 +75,12 @@ Here is how to sign the image and push the signatures to ghcr.io:
 - [ ] Prepare a PR, wait until CI passes, and then merge it
 - [ ] Verify that the latest image is signed and has the expected digest:
 
-  ```
+  ```bash
   crane digest ghcr.io/apyrgio/dangerzone/v1:latest
   cosign verify --key ... ghcr.io/apyrgio/dangerzone-testing/v1:latest
   ```
 - [ ] Bump the bundled log index in `dangerzone/updater/signatures.py` with the log index of the container image.
   * This step should take place only when releasing a new Dangerzone version.
 
-At this point, the image we had chosen initially will be signed by the
-Dangerzone signing key, and will be tagged as `latest`, meaning that all
-Dangerzone users will upgrade to it.
+At this point, the new image will be signed by the Dangerzone signing key and tagged as `latest`.
+All Dangerzone users will upgrade to this image.

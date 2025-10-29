@@ -24,9 +24,9 @@ run from the developer's laptop and are not tied to any build environment.
 
 ## Add new Linux platforms and remove obsolete ones
 
-Our currently supported Linux OSes are Debian, Ubuntu, Fedora (we treat Qubes OS
-as a special case of Fedora, release-wise). For each of these platforms, we need
-to check if a new version has been added, or if an existing one is now EOL
+Currently supported Linux OSes are Debian, Ubuntu and Fedora (we treat Qubes OS
+as a special case of Fedora, release-wise). For each of these platforms, check
+if a new version has been added, or if an existing one is now EOL
 (https://endoflife.date/ is handy for this purpose).
 
 In case of a new version (beta, RC, or official release):

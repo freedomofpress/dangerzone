@@ -56,13 +56,14 @@ Dangerzone was inspired by [Qubes trusted PDF](https://blog.invisiblethings.org/
 
 Set up a development environment by following [these instructions](/BUILD.md).
 
-
 # License and Copyright
 
 Licensed under the AGPLv3: [https://opensource.org/licenses/agpl-3.0](https://opensource.org/licenses/agpl-3.0)
 
+```
 Copyright (c) 2022-2024 Freedom of the Press Foundation and Dangerzone contributors
 Copyright (c) 2020-2021 First Look Media
+```
 
 See also [THIRD_PARTY_NOTICE.md](THIRD_PARTY_NOTICE.md) for more information regarding the third-party software that Dangerzone depends on.
 
@@ -85,13 +86,14 @@ Dangerzone gets updates to improve its features _and_ to fix problems. So, updat
 2. Now find the latest available version of Dangerzone: go to the [download page](https://dangerzone.rocks/#downloads). Look for the version number displayed. The number will be using the same format as in Step 1.
 3. Is the version on the Dangerzone download page higher than the version of your installed app? Go ahead and update.
 
-### Can I use Podman Desktop?
-
-Yes! We've introduced [experimental support for Podman Desktop](https://github.com/freedomofpress/dangerzone/blob/main/docs/podman-desktop.md) on Windows and macOS.
-
 ### Can I run Dangerzone in an airgapped environment?
 
 Yes, Dangerzone is designed to run in airgapped environments without any
 configuration. If you want to update its container image, follow
-[our instructions](docs/developer/independent-container-updates.md#Installing-image-updates-to-airgapped-environments)
-to do so.
+[our instructions](docs/developer/independent-container-updates.md#Installing-image-updates-to-airgapped-environments).
+
+### Can I use a custom runtime, such as Podman Desktop?
+
+On Windows and macOS, Dangerzone embeds Podman, so there is no need to.
+
+To use a different podman version, such as Podman Desktop, [follow our documentation](https://github.com/freedomofpress/dangerzone/blob/main/docs/podman-desktop.md).

@@ -1,6 +1,6 @@
 # Release
 
-Once we are confident that the release will be out shortly, and doesn't need any more changes:
+When confident that the release doesn't need any more changes:
 
 - [ ] Create a PGP-signed git tag for the version, e.g., for dangerzone `v0.1.0`:
 
@@ -47,8 +47,7 @@ Once we are confident that the release will be out shortly, and doesn't need any
 
 ## 📣 Publish the release!
 
-Up until this point, we can take back any artifact we have created, because
-nothing is published. To actually publish the release, we can do the following:
+To actually publish the release:
 
 - [ ] Merge the PRs in the [`apt-tools-prod`](https://github.com/freedomofpress/apt-tools-prod/pulls) and [`yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod/pulls) repos.
 - [ ] Make the GitHub draft release public.

@@ -75,7 +75,8 @@ command:
 poetry run mazette install
 ```
 
-Download the latest container image:
+Run the following command to download the latest container image, or
+[build it locally](#building-a-local-container-image):
 
 ```sh
 poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
@@ -139,7 +140,8 @@ command:
 poetry run mazette install
 ```
 
-Download the latest container image:
+Run the following command to download the latest container image, or
+[build it locally](#building-a-local-container-image):
 
 ```sh
 poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
@@ -313,8 +315,6 @@ template for development is if:
 
 ## macOS
 
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop). Make sure to choose your correct CPU, either Intel Chip or Apple Chip.
-
 Install the latest version of Python 3.13 [from python.org](https://www.python.org/downloads/macos/), and make sure `/Library/Frameworks/Python.framework/Versions/3.13/bin` is in your `PATH`.
 
 Clone this repository:
@@ -345,7 +345,8 @@ command:
 poetry run mazette install
 ```
 
-Download the latest container image:
+Run the following command to download the latest container image, or
+[build it locally](#building-a-local-container-image):
 
 ```sh
 poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
@@ -380,8 +381,6 @@ The output is in the `dist` folder.
 
 ## Windows
 
-Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
-
 Install the latest version of Python 3.13 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.13 to PATH" checkbox on the first page of the installer.
 
 Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build Tools"](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and make sure to select "Desktop development with C++" when installing.
@@ -413,7 +412,8 @@ command:
 poetry run mazette install
 ```
 
-Download the latest container image:
+Run the following command to download the latest container image, or
+[build it locally](#building-a-local-container-image):
 
 ```sh
 poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
@@ -475,27 +475,24 @@ poetry run .\install\windows\build-app.bat
 
 When you're done you will have `dist\Dangerzone.msi`.
 
-## Updating the container image
+## Reproducing the container image
 
-The Dangezone container image is reproducible. This means that every time we
-build it, the result will be bit-for-bit the same, with some minor exceptions.
-Read more on how you can update it in `docs/developer/reproducibility.md`.
+The Dangezone container image is bit-for-bit reproducible, meaning that anybody can ensure that the distributed images match the expected ones, avoiding supply-chain attacks. Read more on how to reproduce the images at `docs/developer/reproducibility.md`.
 
 ## Building a local container image
 
-You can optionally build the image locally for testing, without verifying its
+It is possible to build the image locally for testing, without verifying its
 signatures against Sigstore:
 
-```
+```bash
 python3 ./install/common/build-image.py
 export DANGERZONE_BYPASS_SIG_CHECKS=1  # On Linux and macOS
 set DANGERZONE_BYPASS_SIG_CHECKS 1  # On Windows
 ```
 
-If you want to switch back to the original behavior, make sure to remove the
-environment variable:
+To switch back to the original behavior, remove the environment variable:
 
-```
+```bash
 unset DANGERZONE_BYPASS_SIG_CHECKS  # On Linux and macOS
 set DANGERZONE_BYPASS_SIG_CHECKS=  # On Windows
 ```

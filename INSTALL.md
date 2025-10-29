@@ -12,10 +12,10 @@ following sections.
 
 | Distribution             | Supported releases        | Automated tests                      | Manual QA |
 | ------------------------ | ------------------------- | ------------------------------------ | --------- |
-| [Windows](#windows)      | 2 last releases           | 🗹 (`windows-2022`, `windows-2025`) ◎ | 🗹         |
+| [Windows](#windows)      | 2 last releases ⥿         | 🗹 (`windows-2022`, `windows-2025`) ◎ | 🗹         |
 | [macOS intel](#macOS)    | 3 last releases           | 🗹 (`macos-15`) ◎                     | 🗹         |
 | [macOS silicon](#macOS)  | 3 last releases           | 🗹 (`macos-15`) ◎                     | 🗹         |
-| [Ubuntu](#ubuntu-debian) | Follow upstream support ✰ | 🗹                                    | 🗹         |
+| [Ubuntu](#ubuntu-debian) | Follow upstream support   | 🗹                                    | 🗹         |
 | [Debian](#ubuntu-debian) | Current stable, Oldstable and LTS releases | 🗹                   | 🗹         |
 | [Fedora](#fedora)        | Follow upstream support   | 🗹                                    | 🗹         |
 | [Qubes OS](#qubes-os)    | [Beta support](https://github.com/freedomofpress/dangerzone/issues/413) ✢ | 🗷 | Latest Fedora template |
@@ -23,15 +23,15 @@ following sections.
 
 Notes:
 
-✰ Support for Ubuntu Focal [was dropped](https://github.com/freedomofpress/dangerzone/issues/1018)
+⥿ We provide support for Windows 10 on a best effort basis, given that it is currently end of life.
 
 ✢ Qubes OS support assumes the use of a Fedora template. The supported releases follow our general support for Fedora.
 
-◎ More information about where that points [in the runner-images repository](https://github.com/actions/runner-images/tree/main)
+◎ More information [in the runner-images repository](https://github.com/actions/runner-images/tree/main)
 
 ### Note on unsupported Linux distros
 
-`.deb` and `.rpm` packages are provided for supported distributions. Users in **other** Debian-based or Fedora-based distros — that are not listed above — may be able to install Dangerzone through these packages. Unfortunately, Dangerzone is not tested against these distros, and might fail to install, update, run, or be broken in subtle ways.
+`.deb` and `.rpm` packages are provided for supported distributions. Users of **other** Debian-based or Fedora-based distros — that are not listed above — may be able to install Dangerzone through these packages. Unfortunately, Dangerzone is not tested against these distros, and might fail to install, update, run, or be broken in subtle ways.
 
 Please, proceed at your own risks, only if you know what you're doing.
 
@@ -41,34 +41,22 @@ Please, proceed at your own risks, only if you know what you're doing.
 - Download [Dangerzone 0.10.0 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.10.0/Dangerzone-0.10.0-i686.dmg)
 
 > [!TIP]
-> We support the releases of macOS that are still within Apple's servicing timeline. Apple usually provides security updates for the latest 3 releases, but this isn’t consistently applied and security fixes aren’t guaranteed for the non-latest releases. We are also dependent on [Docker Desktop windows support](https://docs.docker.com/desktop/setup/install/mac-install/)
+> We support the releases of macOS that are still within Apple's servicing timeline. Apple usually provides security updates for the latest 3 releases, but this isn't consistently applied and security fixes aren't guaranteed for the non-latest releases.
 
 You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`
-
-> **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
-> This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
-> create the secure environment.
 
 ## Windows
 
 - Download [Dangerzone 0.10.0 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.10.0/Dangerzone-0.10.0.msi)
 
-> **Note**: you will also need to install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
-> This program needs to run alongside Dangerzone at all times, since it is what allows Dangerzone to
-> create the secure environment.
-
 > [!TIP]
 > We generally support Windows releases that are still within [Microsoft’s servicing timeline](https://support.microsoft.com/en-us/help/13853/windows-lifecycle-fact-sheet).
->
-> Docker sets the bottom line:
->
-> > Docker only supports Docker Desktop on Windows for those versions of Windows that are still within [Microsoft’s servicing timeline](https://support.microsoft.com/en-us/help/13853/windows-lifecycle-fact-sheet). Docker Desktop is not supported on server versions of Windows, such as Windows Server 2019 or Windows Server 2022.
 
+Podman [sets the bottom line](https://github.com/containers/podman/blob/main/docs/tutorials/podman-for-windows.md#prerequisites):
+
+> Since Podman uses WSL, you need a recent release of Windows 10 or Windows 11. On x64, WSL requires build 18362 or later, and 19041 or later is required for arm64 systems. Internally, WSL uses virtualization, so your system must support and have hardware virtualization enabled. If you are running Windows on a VM, you must have a VM that supports nested virtualization.
 
 ## Linux
-
-On Linux, Dangerzone uses [Podman](https://podman.io/) instead of Docker Desktop for creating
-an isolated environment. It will be installed automatically when installing Dangerzone.
 
 > [!TIP]
 > We support Ubuntu, Debian, and Fedora releases that are still within
@@ -76,7 +64,7 @@ an isolated environment. It will be installed automatically when installing Dang
 >
 > - Ubuntu: We follow upstream support with an extra cutoff date. No support for
 >   versions prior to the second oldest LTS release.
-> - Fedora: We follow upstream support
+> - Fedora: We follow upstream support.
 > - Debian: We support the last two stable releases.
 
 Dangerzone is available for:
@@ -347,26 +335,26 @@ terminal like this:
 
 For the Windows binary:
 
-```
+```bash
 gpg --verify Dangerzone-0.6.1.msi.asc Dangerzone-0.6.1.msi
 ```
 
 For the macOS binaries (depending on your architecture):
 
-```
+```bash
 gpg --verify Dangerzone-0.6.1-arm64.dmg.asc Dangerzone-0.6.1-arm64.dmg
 gpg --verify Dangerzone-0.6.1-i686.dmg.asc Dangerzone-0.6.1-i686.dmg
 ```
 
 For the container images:
 
-```
+```bash
 gpg --verify container-0.6.1-i686.tar.asc container-0.6.1-i686.tar
 ```
 
 For the source package:
 
-```
+```bash
 gpg --verify dangerzone-0.6.1.tar.gz.asc dangerzone-0.6.1.tar.gz
 ```
 
@@ -375,7 +363,7 @@ hashes as a separate file (`checksums-0.6.1.txt`). This file is signed as well,
 and the signature is embedded within it. You can download this file and verify
 it with:
 
-```
+```bash
 gpg --verify checksums.txt
 ```
 

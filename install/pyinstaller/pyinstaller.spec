@@ -26,42 +26,51 @@ if p == "Windows":
 else:
     icon = None
 
-a = Analysis(
-    ["dangerzone"],
-    pathex=["."],
-    binaries=None,
-    datas=datas,
-    hiddenimports=[],
-    hookspath=[],
-    runtime_hooks=[],
-    excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=None,
-)
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=None)
+def collect(script_name):
+    a = Analysis(
+        [script_name],
+        pathex=["."],
+        binaries=None,
+        datas=datas,
+        hiddenimports=[],
+        hookspath=[],
+        runtime_hooks=[],
+        excludes=[],
+        win_no_prefer_redirects=False,
+        win_private_assemblies=False,
+        cipher=None,
+    )
 
-exe = EXE(
-    pyz,
-    a.scripts,
-    exclude_binaries=True,
-    name="dangerzone",
-    debug=False,
-    strip=False,
-    upx=True,
-    console=False,
-    icon=icon,
-)
+    pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 
-coll = COLLECT(
-    exe, a.binaries, a.zipfiles, a.datas, strip=False, upx=True, name="dangerzone"
-)
+    exe = EXE(
+        pyz,
+        a.scripts,
+        exclude_binaries=True,
+        name=script_name,
+        debug=False,
+        strip=False,
+        upx=True,
+        console=False,
+        icon=icon,
+    )
+
+    coll = COLLECT(
+        exe, a.binaries, a.zipfiles, a.datas, strip=False, upx=True, name=script_name
+    )
+    return coll
+
+
+collections = [
+    collect(name) for name in ["dangerzone", "dangerzone-image", "dangerzone-machine"]
+]
+
 
 # The macOS app bundle
 if p == "Darwin":
     app = BUNDLE(
-        coll,
+        *collections,
         name="Dangerzone.app",
         icon="../macos/dangerzone.icns",
         bundle_identifier="press.freedom.dangerzone",

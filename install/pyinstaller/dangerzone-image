@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# Monkey see, monkey do from install/pyinstaller/dangerzone.
+import os
+
+os.environ["LANG"] = "en_US.UTF-8"
+
+from dangerzone.updater import cli
+
+cli.main()

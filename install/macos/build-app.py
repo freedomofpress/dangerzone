@@ -85,6 +85,8 @@ def sign_app_bundle(build_path, dist_path, app_path):
         glob.glob(f"{app_path}/**/*.so", recursive=True),
         glob.glob(f"{app_path}/**/*.dylib", recursive=True),
         glob.glob(f"{app_path}/**/Python3", recursive=True),
+        glob.glob(f"{app_path}/**/share/vendor/cosign", recursive=True),
+        glob.glob(f"{app_path}/**/share/vendor/podman/*", recursive=True),
         [app_path],
     ):
         codesign(path, entitlements_plist_path, identity_name_application)

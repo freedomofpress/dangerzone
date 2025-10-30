@@ -1,6 +1,6 @@
 # -*- mode: python -*-
-import os
 import inspect
+import os
 import platform
 
 p = platform.system()
@@ -149,11 +149,11 @@ if p == "Darwin":
                     "CFBundleTypeExtensions": ["hwp", "hwpx"],
                     "CFBundleTypeIconFile": "../macos/document.icns",
                     "CFBundleTypeMIMETypes": [
-                        #"application/vnd.hancom.hwp",
-                        #"application/haansofthwp",
+                        # "application/vnd.hancom.hwp",
+                        # "application/haansofthwp",
                         "application/x-hwp",
-                        #"application/vnd.hancom.hwpx",
-                        #"application/haansofthwpx",
+                        # "application/vnd.hancom.hwpx",
+                        # "application/haansofthwpx",
                         "application/hwp+zip",
                         "application/x-hwp+zip",
                     ],

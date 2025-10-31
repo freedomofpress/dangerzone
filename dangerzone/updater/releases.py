@@ -151,13 +151,6 @@ def should_check_for_updates(settings: Settings) -> bool:
     """
     check = settings.get("updater_check_all")
 
-    # TODO: Disable updates for Homebrew installations.
-    if platform.system() == "Linux" and not getattr(sys, "dangerzone_dev", False):
-        log.debug("Running on Linux, disabling updates")
-        if not check:  # if not overridden by user
-            settings.set("updater_check_all", False, autosave=True)
-            return False
-
     if settings.get("updater_last_check") is None:
         log.debug("Dangerzone is running for the first time, updates are stalled")
         settings.set("updater_last_check", 0, autosave=True)
@@ -181,20 +174,28 @@ def check_for_updates(
 
     Checks are spaced by a cooldown period, defined by the
     UPDATE_CHECK_COOLDOWN_SECS constant.
+
+    On Linux, only container image updates are checked (GitHub releases are not
+    checked since users would get Dangerzone updates from their package manager).
     """
     try:
-        # If we already know from a previous run that there is a pending Github Release
-        # return the report.
-        latest_version = settings.get("updater_latest_version")
-        new_gh_version = version.parse(util.get_version()) < version.parse(
-            latest_version
+        is_linux = platform.system() == "Linux" and not getattr(
+            sys, "dangerzone_dev", False
         )
 
-        if new_gh_version:
-            return ReleaseReport(
-                version=latest_version,
-                changelog=settings.get("updater_latest_changelog"),
+        # If we already know from a previous run that there is a pending Github Release
+        # return the report (but skip on Linux).
+        if not is_linux:
+            latest_version = settings.get("updater_latest_version")
+            new_gh_version = version.parse(util.get_version()) < version.parse(
+                latest_version
             )
+
+            if new_gh_version:
+                return ReleaseReport(
+                    version=latest_version,
+                    changelog=settings.get("updater_latest_changelog"),
+                )
 
         # If the previous check happened before the cooldown period expires, do not
         # check again. Else, bump the last check timestamp, before making the actual
@@ -205,14 +206,21 @@ def check_for_updates(
         else:
             settings.set("updater_last_check", _get_now_timestamp(), autosave=True)
 
-        gh_version, gh_changelog = fetch_github_release_info()
-
         report = ReleaseReport()
-        if gh_version and ensure_sane_update(latest_version, gh_version):
-            log.debug(f"New GitHub release detected: {latest_version} < {gh_version}")
-            report.version = gh_version
-            report.changelog = gh_changelog
 
+        # On Linux, skip GitHub release checks (users get updates from package manager)
+        if not is_linux:
+            gh_version, gh_changelog = fetch_github_release_info()
+            latest_version = settings.get("updater_latest_version")
+
+            if gh_version and ensure_sane_update(latest_version, gh_version):
+                log.debug(
+                    f"New GitHub release detected: {latest_version} < {gh_version}"
+                )
+                report.version = gh_version
+                report.changelog = gh_changelog
+
+        # Check for container image updates (on all platforms)
         container_name = container_utils.expected_image_name()
         previous_remote_log_index = settings.get("updater_remote_log_index")
         _, remote_log_index, _ = get_remote_digest_and_logindex(container_name)

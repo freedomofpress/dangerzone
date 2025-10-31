@@ -22,7 +22,7 @@ else:
 from dangerzone import settings
 from dangerzone.gui.logic import Alert, DangerzoneGui
 from dangerzone.gui.updater import CANCEL_TEXT, OK_TEXT, prompt_for_checks
-from dangerzone.updater import releases
+from dangerzone.updater import errors, releases
 from dangerzone.updater.releases import (
     EmptyReport,
     ErrorReport,
@@ -119,19 +119,17 @@ def test_post_0_4_2_settings(
 
 
 @pytest.mark.skipif(platform.system() != "Linux", reason="Linux-only test")
-def test_linux_no_check(
+def test_linux_asks_user_input(
     isolated_settings: settings.Settings, monkeypatch: MonkeyPatch
 ) -> None:
-    """Ensure that Dangerzone on Linux does not make any update check."""
-    expected_settings = default_updater_settings()
-    expected_settings["updater_check_all"] = False
-    expected_settings["updater_last_check"] = None
-
-    # XXX: Simulate Dangerzone installed via package manager.
+    """Ensure that Dangerzone on Linux makes sandbox update check."""
+    isolated_settings.set("updater_check_all", None)
+    isolated_settings.set("updater_last_check", 0)
+    isolated_settings.save()
     monkeypatch.delattr(sys, "dangerzone_dev")
 
-    assert releases.should_check_for_updates(isolated_settings) is False
-    assert isolated_settings.get_updater_settings() == expected_settings
+    with pytest.raises(errors.NeedUserInput):
+        releases.should_check_for_updates(isolated_settings)
 
 
 def test_update_checks(

@@ -38,20 +38,17 @@ def list_files(path, recursive=False):
     return [f for f in glob_fn("*") if f.is_file() and not f.suffix == ".pyc"]
 
 
-def list_language_data():
-    """List the expected language data that Dangerzone downloads and stores locally."""
-    tessdata_dir = Path("share") / "tessdata"
-    langs = json.loads(open(tessdata_dir.parent / "ocr-languages.json").read()).values()
-    targets = [tessdata_dir / f"{lang}.traineddata" for lang in langs]
-    return targets
-
-
 ASSETS_DEPS = ["mazette.lock"]
-ASSETS_TARGETS = list_language_data()
 
-IMAGE_TARGETS = [
-    "share/container.tar",
-]
+# NOTE: The container image is a major dependency of our assets, and we would ideally
+# want to track it with its hash. In practice though, what we need here is to bust
+# doit's cache, when the `latest` tag changes. So, an alternative way to do it without
+# pinning the hash is to monitor changes to the BUNDLED_LOG_INDEX of
+# dangerzone/updater/signatures.py, which is unique per image.
+#
+# FIXME: Find a better way to track the latest image, since if BUNDLE_LOG_INDEX moves to
+# a different file, this target should change as well.
+IMAGE_DEPS = ["dangerzone/updater/signatures.py"]
 
 SOURCE_DEPS = [
     *list_files("assets"),
@@ -63,17 +60,16 @@ PYTHON_DEPS = ["poetry.lock", "pyproject.toml"]
 
 DMG_DEPS = [
     *list_files("install/macos"),
-    *ASSETS_TARGETS,
-    *IMAGE_TARGETS,
     *PYTHON_DEPS,
     *SOURCE_DEPS,
+    *ASSETS_DEPS,
 ]
 
 LINUX_DEPS = [
     *list_files("install/linux"),
-    *IMAGE_TARGETS,
     *PYTHON_DEPS,
     *SOURCE_DEPS,
+    *ASSETS_DEPS,
 ]
 
 DEB_DEPS = [*LINUX_DEPS, *list_files("debian")]
@@ -89,6 +85,41 @@ def copy_dir(src, dst):
 def create_release_dir():
     RELEASE_DIR.mkdir(parents=True, exist_ok=True)
     (RELEASE_DIR / "tmp").mkdir(exist_ok=True)
+
+
+def prepare_dz_dir(dz_dir):
+    """Prepare a Git repo for building artifacts.
+
+    This function creates a pristine Dangerzone repo out of the local one, by copying
+    the Git repo, and doing the following actions on the new directory:
+    1. Clean untracked files with `git clean -fdx`
+    2. Copy the container image under `share/container.tar`
+    3. Install the GitHub assets for this platform
+
+    The above actions should be quite fast, because they just copy files around. That
+    applies to the downloading of the GitHub assets with mazette, since it caches file
+    downloads internally.
+    """
+    arch = "arm64" if ARCH == "arm64" else "amd64"
+    mazette_platform = f"macos/{arch}" if dz_dir.name == "macos" else f"linux/{arch}"
+    img_src = RELEASE_DIR / f"container-{VERSION}-{ARCH}.tar"
+    img_dst = dz_dir / "share" / "container.tar"
+
+    return [
+        (copy_dir, [".", dz_dir]),
+        f"cd {dz_dir} && git clean -fdx",
+        ["cp", img_src, img_dst],
+        [
+            "poetry",
+            "run",
+            "mazette",
+            "install",
+            "-d",
+            dz_dir,
+            "--platform",
+            mazette_platform,
+        ],
+    ]
 
 
 def build_linux_pkg(distro, version, cwd, qubes=False):
@@ -170,28 +201,30 @@ def task_init_release_dir():
     }
 
 
-def task_install_assets():
-    """Download the necessary assets using `poetry run mazette install`"""
+def task_download_cosign(distro=None):
+    """Download the cosign binary under share/vendor."""
     return {
-        "actions": ["poetry run mazette install"],
+        "actions": ["poetry run mazette install cosign"],
         "file_dep": ASSETS_DEPS,
-        "targets": ASSETS_TARGETS,
+        "task_dep": ["poetry_install"],
+        "targets": ["share/vendor/cosign"],
         "clean": True,
     }
 
 
 def task_download_image():
     """Download the container image using dangerzone-image prepare-archive"""
-    img_src = "share/container.tar"
+    img_dst = RELEASE_DIR / f"container-{VERSION}-{ARCH}.tar"
 
     return {
         "actions": [
-            f"poetry run ./dev_scripts/dangerzone-image prepare-archive --output {img_src}",
+            f"poetry run ./dev_scripts/dangerzone-image prepare-archive --output {img_dst}",
         ],
         "targets": [
-            img_src,
+            img_dst,
         ],
-        "task_dep": ["init_release_dir", "install_assets"],
+        "file_dep": IMAGE_DEPS,
+        "task_dep": ["init_release_dir", "poetry_install", "download_cosign"],
         "clean": True,
     }
 
@@ -209,7 +242,7 @@ def task_macos_build_dmg():
 
     return {
         "actions": [
-            (copy_dir, [".", dz_dir]),
+            *prepare_dz_dir(dz_dir),
             f"cd {dz_dir} && poetry run install/macos/build-app.py --with-codesign",
             (
                 "xcrun notarytool submit --wait --apple-id %(apple_id)s"
@@ -225,7 +258,7 @@ def task_macos_build_dmg():
             "macos_check_system",
             "init_release_dir",
             "poetry_install",
-            "install_assets",
+            "download_image",
         ],
         "targets": [dmg_src, dmg_dst],
         "clean": True,
@@ -256,16 +289,23 @@ def task_debian_deb():
     deb_name = f"dangerzone_{VERSION}-1_amd64.deb"
     deb_src = dz_dir / "deb_dist" / deb_name
     deb_dst = RELEASE_DIR / deb_name
+    img_src = RELEASE_DIR / f"container-{VERSION}-{ARCH}.tar"
+    img_dst = dz_dir / "share" / "container.tar"
 
     return {
         "actions": [
-            (copy_dir, [".", dz_dir]),
+            *prepare_dz_dir(dz_dir),
             build_deb(cwd=dz_dir),
             ["cp", deb_src, deb_dst],
             ["rm", "-rf", dz_dir],
         ],
         "file_dep": DEB_DEPS,
-        "task_dep": ["init_release_dir", "debian_env"],
+        "task_dep": [
+            "init_release_dir",
+            "poetry_install",
+            "download_image",
+            "debian_env",
+        ],
         "targets": [deb_dst],
         "clean": True,
     }
@@ -310,13 +350,18 @@ def task_fedora_rpm():
                 "name": version + qubes_ident,
                 "doc": f"Build a Fedora {version} package{qubes_desc}",
                 "actions": [
-                    (copy_dir, [".", dz_dir]),
+                    *prepare_dz_dir(dz_dir),
                     build_rpm(version, cwd=dz_dir, qubes=qubes),
                     ["cp", *rpm_src, RELEASE_DIR],
                     ["rm", "-rf", dz_dir],
                 ],
                 "file_dep": RPM_DEPS,
-                "task_dep": ["init_release_dir", f"fedora_env:{version}"],
+                "task_dep": [
+                    "init_release_dir",
+                    "poetry_install",
+                    "download_image",
+                    f"fedora_env:{version}",
+                ],
                 "targets": rpm_dst,
                 "clean": True,
             }

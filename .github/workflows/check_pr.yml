@@ -25,6 +25,6 @@ jobs:
     steps:
       # Pin the GitHub action to a specific commit that we have audited and know
       # how it works.
-      - uses: tarides/changelog-check-action@509965da3b8ac786a5e2da30c2ccf9661189121f
+      - uses: tarides/changelog-check-action@4d6c2153c7193950ebc9fe622c39277bc57eb2ba
         with:
           changelog: CHANGELOG.md

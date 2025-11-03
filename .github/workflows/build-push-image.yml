@@ -300,7 +300,7 @@ jobs:
     outputs:
       image_uri: ${{ needs.merge.outputs.image_uri }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Prepare env
@@ -332,7 +332,7 @@ jobs:
     needs:
       - sign
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v6

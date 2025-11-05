@@ -257,6 +257,42 @@ def main():
         Id="ProgramFiles64Folder",
     )
 
+    ET.SubElement(
+        package_el,
+        "SetProperty",
+        Action="CADismEnableVMP",
+        Id="DismEnableVMP",
+        Value='"[System64Folder]dism.exe" /online /enable-feature /featureName:VirtualMachinePlatform /all /norestart /quiet"',
+        # FIXME: Add condition
+        Sequence="execute",
+    )
+    ET.SubElement(
+        package_el,
+        "CustomAction",
+        Id="DismEnableVMP",
+        BinaryKey="WixCA",
+        DllEntry="WixQuietExec64",
+        Execute="deferred",
+        Impersonate="no",
+        Return="ignore",
+    )
+
+    install_el = ET.SubElement(
+        package_el,
+        "InstallExecuteSequence",
+    )
+    ET.SubElement(
+        install_el,
+        "Custom",
+        Action="DismEnableVMP",
+    )
+    ET.SubElement(
+        package_el,
+        "ProgressText",
+        Action="DismEnableVMP",
+        Value="Enabling the Virtual Machine Platform Windows feature",
+    )
+
     # Create the directory structure for the installed product
     build_directory_xml(programfilesfolder_el, data)
 

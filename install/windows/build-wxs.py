@@ -217,6 +217,41 @@ def main():
         Message='A previous version of [ProductName] is already installed. Please uninstall it from "Apps & Features" before proceeding with the installation.',
     )
 
+    # Detect if VirtualMachinePlatform is enabled, and if not, enable it and
+    # prompt for a reboot.
+    #
+    # We detect if the feature is enabled by looking for vmwp.exe, which is a
+    # reliable way of checking this. Using "dism.exe /get-featureinfo" is
+    # more brittle because it depends on parsing localized text output.
+    vmp_prop_el = ET.SubElement(package_el, "Property", Id="VMP_ENABLED")
+    dir_search_el = ET.SubElement(
+        vmp_prop_el, "DirectorySearch", Id="VMP_FILE_SEARCH", Path="[System64Folder]"
+    )
+    ET.SubElement(dir_search_el, "FileSearch", Name="vmwp.exe")
+
+    # Enable VirtualMachinePlatform if not enabled
+    ET.SubElement(
+        package_el,
+        "CustomAction",
+        Id="EnableVMP",
+        Directory="INSTALLFOLDER",
+        Execute="deferred",
+        Impersonate="no",
+        ExeCommand="dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart",
+        Return="ignore",
+    )
+
+    # Schedule the custom action and a reboot
+    install_exec_seq_el = ET.SubElement(package_el, "InstallExecuteSequence")
+    custom_el = ET.fromstring(
+        '<Custom Action="EnableVMP" After="InstallFiles">NOT VMP_ENABLED</Custom>'
+    )
+    install_exec_seq_el.append(custom_el)
+    reboot_el = ET.fromstring(
+        '<ScheduleReboot After="InstallFinalize">NOT VMP_ENABLED</ScheduleReboot>'
+    )
+    install_exec_seq_el.append(reboot_el)
+
     # Add the ProgramMenuFolder StandardDirectory
     programmenufolder_el = ET.SubElement(
         package_el,

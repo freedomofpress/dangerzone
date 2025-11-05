@@ -82,7 +82,7 @@ class PodmanMachineManager:
             return
 
         if platform.system() == "Windows":
-            container_utils.subprocess_run(["wsl", "--update"], check=False)
+            container_utils.subprocess_run(["wsl", "--install", "--no-distribution"], check=False)
 
         logger.info(f"Initializing Podman machine: {self.name}")
         self.podman.machine.init(

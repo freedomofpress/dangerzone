@@ -188,6 +188,7 @@ helper_binaries_dir=["{helper_binaries_dir}"]
 [machine]
 cpus={cpu_count}
 volumes=["{volume}"]
+rosetta=false
 """
     # FIXME: Do not unconditionally write to this file.
     dst = CONTAINERS_CONF_PATH

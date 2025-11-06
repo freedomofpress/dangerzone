@@ -52,6 +52,9 @@ jobs:
       - name: Build Rust wrapper
         working-directory: rust-wrapper
         run: cargo build --verbose
+      - name: Build Rust CLI binary
+        working-directory: rust-wrapper
+        run: cargo build --bin dangerzone-rust --verbose
       - name: Run Rust tests
         working-directory: rust-wrapper
         run: cargo test --verbose
@@ -61,6 +64,11 @@ jobs:
       - name: Check Rust formatting
         working-directory: rust-wrapper
         run: cargo fmt -- --check
+      - name: Upload Rust binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dangerzone-rust-binary
+          path: rust-wrapper/target/debug/dangerzone-rust
 
   # This is already built daily by the "build.yml" file
   # But we also want to include this in the checks that run on each push.

@@ -10,6 +10,8 @@ This library provides three main components:
 2. **Stream Reader** - Parse pixel data stream from container output
 3. **PDF Reconstructor** - Rebuild PDF documents from pixel data
 
+Additionally, it includes a **CLI binary** (`dangerzone-rust`) that mimics the functionality of `dangerzone-cli`.
+
 ## Data Format
 
 The pixel stream format from container stdout:
@@ -19,7 +21,39 @@ The pixel stream format from container stdout:
   - Page height (2 bytes, big-endian int)
   - Page data (width × height × 3 bytes, RGB pixels)
 
-## Usage Example
+## CLI Usage
+
+The `dangerzone-rust` binary provides a command-line interface for converting documents:
+
+```bash
+# Convert a single document
+dangerzone-rust input.pdf
+
+# Convert multiple documents
+dangerzone-rust file1.pdf file2.docx file3.png
+
+# Specify output filename (single file only)
+dangerzone-rust input.pdf --output-filename safe-output.pdf
+
+# Enable debug mode
+dangerzone-rust input.pdf --debug
+
+# Use custom container image
+dangerzone-rust input.pdf --container-image custom-image:latest
+
+# View help
+dangerzone-rust --help
+```
+
+### Building the CLI
+
+```bash
+cargo build --bin dangerzone-rust --release
+```
+
+The binary will be available at `target/release/dangerzone-rust`.
+
+## Library Usage Example
 
 ```rust
 use dangerzone_rust::{ContainerRunner, PixelStreamReader, PdfReconstructor};
@@ -62,6 +96,12 @@ Run all tests including integration tests that require a container runtime:
 cargo test -- --ignored
 ```
 
+Run CLI-specific tests:
+
+```bash
+cargo test --test cli_test
+```
+
 ## Features
 
 - **Stream parsing**: Efficiently reads and validates pixel data stream
@@ -69,7 +109,8 @@ cargo test -- --ignored
 - **PDF reconstruction**: Creates valid PDF documents from RGB pixel data
 - **Container runtime detection**: Automatically detects podman or docker
 - **DPI support**: Configurable DPI for accurate PDF dimensions
-- **Comprehensive tests**: Unit tests for all components
+- **CLI interface**: Command-line tool matching dangerzone-cli functionality
+- **Comprehensive tests**: Unit tests for all components + CLI integration tests
 
 ## License
 

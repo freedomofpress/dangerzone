@@ -58,6 +58,9 @@ jobs:
       - name: Run Rust tests
         working-directory: rust-wrapper
         run: cargo test --verbose
+      - name: Run CLI integration tests
+        working-directory: rust-wrapper
+        run: ./test_cli.sh
       - name: Run Rust linter
         working-directory: rust-wrapper
         run: cargo clippy -- -D warnings

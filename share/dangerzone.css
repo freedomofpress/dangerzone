@@ -142,6 +142,10 @@ MainWindow QStatusBar {
     border-top-right-radius: 3px;
 }
 
+MainWindow QStatusBar::item {
+    border: 0px;
+}
+
 MainWindow QStatusBar QLabel {
     font-size: 12px;
 }

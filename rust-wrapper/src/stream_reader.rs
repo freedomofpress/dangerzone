@@ -7,8 +7,8 @@
 //!   - Page height (2 bytes, big-endian int)
 //!   - Page data (width * height * 3 bytes, RGB pixels)
 
-use std::io::{self, Read};
 use byteorder::{BigEndian, ReadBytesExt};
+use std::io::{self, Read};
 
 /// Represents a page with its dimensions and pixel data.
 #[derive(Debug, Clone, PartialEq)]
@@ -28,7 +28,11 @@ impl PageData {
                 actual: pixels.len(),
             });
         }
-        Ok(PageData { width, height, pixels })
+        Ok(PageData {
+            width,
+            height,
+            pixels,
+        })
     }
 
     /// Returns the number of pixels in the page.
@@ -95,7 +99,11 @@ impl<R: Read> PixelStreamReader<R> {
             }
         })?;
 
-        Ok(PageData { width, height, pixels })
+        Ok(PageData {
+            width,
+            height,
+            pixels,
+        })
     }
 
     /// Reads all pages from the stream.
@@ -151,10 +159,10 @@ mod tests {
         let width = 2u16;
         let height = 2u16;
         let pixels = vec![
-            255, 0, 0,    // red pixel
-            0, 255, 0,    // green pixel
-            0, 0, 255,    // blue pixel
-            255, 255, 0,  // yellow pixel
+            255, 0, 0, // red pixel
+            0, 255, 0, // green pixel
+            0, 0, 255, // blue pixel
+            255, 255, 0, // yellow pixel
         ];
 
         let data = create_test_stream(1, vec![(width, height, pixels.clone())]);
@@ -235,7 +243,10 @@ mod tests {
         let result = PageData::new(2, 2, pixels);
         assert!(matches!(
             result,
-            Err(StreamError::InvalidPixelData { expected: 12, actual: 10 })
+            Err(StreamError::InvalidPixelData {
+                expected: 12,
+                actual: 10
+            })
         ));
     }
 }

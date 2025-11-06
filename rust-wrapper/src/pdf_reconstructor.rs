@@ -157,7 +157,7 @@ impl PdfReconstructor {
             page.height as u32,
             page.pixels.clone(),
         )
-        .ok_or_else(|| PdfError::InvalidDimensions {
+        .ok_or(PdfError::InvalidDimensions {
             width: page.width,
             height: page.height,
         })?;
@@ -256,7 +256,10 @@ mod tests {
         let result = reconstructor.reconstruct(vec![page]);
         assert!(matches!(
             result,
-            Err(PdfError::InvalidDimensions { width: 0, height: 100 })
+            Err(PdfError::InvalidDimensions {
+                width: 0,
+                height: 100
+            })
         ));
     }
 }

@@ -7,8 +7,8 @@ pub mod container;
 pub mod pdf_reconstructor;
 pub mod stream_reader;
 
-pub use container::{ContainerRunner, ContainerError};
-pub use pdf_reconstructor::{PdfReconstructor, PdfError};
+pub use container::{ContainerError, ContainerRunner};
+pub use pdf_reconstructor::{PdfError, PdfReconstructor};
 pub use stream_reader::{PixelStreamReader, StreamError};
 
 #[cfg(test)]
@@ -18,8 +18,7 @@ mod tests {
     #[test]
     fn test_library_exports() {
         // This test ensures that the main types are properly exported
-        let _: fn() -> Result<ContainerRunner, ContainerError> = || {
-            Ok(ContainerRunner::new("test-container".to_string()))
-        };
+        let _: fn() -> Result<ContainerRunner, ContainerError> =
+            || Ok(ContainerRunner::new("test-container".to_string()));
     }
 }

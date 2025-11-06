@@ -3,7 +3,7 @@
 //! This module provides functionality to run containers and pass data to them.
 
 use std::io::{self, Write};
-use std::process::{Command, Stdio, Child};
+use std::process::{Child, Command, Stdio};
 
 /// Errors that can occur during container operations.
 #[derive(Debug, thiserror::Error)]
@@ -182,10 +182,8 @@ mod tests {
 
     #[test]
     fn test_with_runtime() {
-        let runner = ContainerRunner::with_runtime(
-            "test-container".to_string(),
-            ContainerRuntime::Docker,
-        );
+        let runner =
+            ContainerRunner::with_runtime("test-container".to_string(), ContainerRuntime::Docker);
         assert_eq!(runner.runtime(), ContainerRuntime::Docker);
     }
 
@@ -207,7 +205,7 @@ mod tests {
     fn test_run_simple_container() {
         let runner = ContainerRunner::new("test-container-simple".to_string());
         let result = runner.run("alpine:latest", &["echo", "hello"], &[]);
-        
+
         if let Ok(child) = result {
             let output = child.wait_with_output().unwrap();
             assert!(output.status.success());
@@ -220,7 +218,7 @@ mod tests {
         let runner = ContainerRunner::new("test-container-input".to_string());
         let input = b"hello world";
         let result = runner.run_with_input("alpine:latest", &["cat"], &[], input);
-        
+
         if let Ok(child) = result {
             let output = child.wait_with_output().unwrap();
             assert!(output.status.success());

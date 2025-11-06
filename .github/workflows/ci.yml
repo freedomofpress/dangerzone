@@ -41,6 +41,27 @@ jobs:
       - name: Check that the QA script is up to date with the docs
         run: "./dev_scripts/qa.py --check-refs"
 
+  rust-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build Rust wrapper
+        working-directory: rust-wrapper
+        run: cargo build --verbose
+      - name: Run Rust tests
+        working-directory: rust-wrapper
+        run: cargo test --verbose
+      - name: Run Rust linter
+        working-directory: rust-wrapper
+        run: cargo clippy -- -D warnings
+      - name: Check Rust formatting
+        working-directory: rust-wrapper
+        run: cargo fmt -- --check
+
   # This is already built daily by the "build.yml" file
   # But we also want to include this in the checks that run on each push.
   build-container-image:

@@ -152,3 +152,7 @@ share/container.tar.gz
 share/image-id.txt
 container/container-pip-requirements.txt
 .doit.db.db
+
+# Rust build artifacts
+rust-wrapper/target/
+rust-wrapper/Cargo.lock

@@ -86,7 +86,7 @@ class PodmanMachineManager:
             # If not set, stdout will contain invisible null characters which
             # renders the output impossible to read and copy/paste.
             container_utils.subprocess_run(
-                ["wsl", "--update"], encoding="UTF16LE", check=False
+                ["wsl", "--update"], encoding="UTF-16LE", check=False
             )
 
         logger.info(f"Initializing Podman machine: {self.name}")

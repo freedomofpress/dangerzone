@@ -113,6 +113,7 @@ def main():
         {
             "xmlns": "http://wixtoolset.org/schemas/v4/wxs",
             "xmlns:ui": "http://wixtoolset.org/schemas/v4/wxs/ui",
+            "xmlns:util": "http://wixtoolset.org/schemas/v4/wxs/util",
         },
     )
 
@@ -260,23 +261,61 @@ def main():
     ET.SubElement(
         package_el,
         "SetProperty",
-        Action="CADismEnableVMP",
         Id="DismEnableVMP",
-        Value='"[System64Folder]dism.exe" /online /enable-feature /featureName:VirtualMachinePlatform /all /norestart /quiet"',
+        # Action="CADismEnableVMP",
+        Value='"[System64Folder]dism.exe" /online /enable-feature /featureName:VirtualMachinePlatform /all /norestart"',
+        # Value="&quot;[System64Folder]dism.exe&quot; /online /enable-feature &quot;/featureName:VirtualMachinePlatform&quot; /all /norestart",
+        # Value="[System64Folder]dism.exe /online /enable-feature /featureName:VirtualMachinePlatform /all /norestart",
         # FIXME: Add condition
+        Before="DismEnableVMP",
         Sequence="execute",
     )
     ET.SubElement(
         package_el,
         "CustomAction",
         Id="DismEnableVMP",
-        BinaryKey="WixCA",
-        DllEntry="WixQuietExec64",
+        # BinaryKey="WixCA",
+        # Property="DismEnableVMP",
+        BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)",
+        DllEntry="WixQuietExec",
         Execute="deferred",
         Impersonate="no",
+        # FIXME: Switch to asyncWait, see docs.firegiant customaction
+        # Return="check",
         Return="ignore",
     )
 
+    ET.SubElement(
+        package_el,
+        "SetProperty",
+        Id="DismEnableWSL",
+        # Action="CADismEnableVMP",
+        Value='"[System64Folder]dism.exe" /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart',
+        # Value="&quot;[System64Folder]dism.exe&quot; /online /enable-feature &quot;/featureName:VirtualMachinePlatform&quot; /all /norestart",
+        # Value="[System64Folder]dism.exe /online /enable-feature /featureName:VirtualMachinePlatform /all /norestart",
+        # FIXME: Add condition
+        Before="DismEnableWSL",
+        Sequence="execute",
+    )
+    ET.SubElement(
+        package_el,
+        "CustomAction",
+        Id="DismEnableWSL",
+        # BinaryKey="WixCA",
+        # Property="DismEnableVMP",
+        BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)",
+        DllEntry="WixQuietExec",
+        Execute="deferred",
+        Impersonate="no",
+        # FIXME: Switch to asyncWait, see docs.firegiant customaction
+        # Return="check",
+        Return="ignore",
+    )
+
+    ET.SubElement(
+        package_el,
+        "util:CheckRebootRequired",
+    )
     install_el = ET.SubElement(
         package_el,
         "InstallExecuteSequence",
@@ -285,12 +324,39 @@ def main():
         install_el,
         "Custom",
         Action="DismEnableVMP",
+        After="InstallInitialize",
+        # FIXME: Add condition
+        Condition="NOT Installed",
     )
     ET.SubElement(
+        install_el,
+        "Custom",
+        Action="DismEnableWSL",
+        After="InstallInitialize",
+        # FIXME: Add condition
+        Condition="NOT Installed",
+    )
+    # ET.SubElement(
+    #    install_el,
+    #    "ScheduleReboot",
+    #    After="InstallFinalize",
+    #    # FIXME: Add condition
+    # )
+    ui_el = ET.SubElement(
         package_el,
+        "UI",
+    )
+    ET.SubElement(
+        ui_el,
         "ProgressText",
         Action="DismEnableVMP",
-        Value="Enabling the Virtual Machine Platform Windows feature",
+        Message="Enabling the Virtual Machine Platform Windows feature",
+    )
+    ET.SubElement(
+        ui_el,
+        "ProgressText",
+        Action="DismEnableWSL",
+        Message="Enabling the WSL2 Windows feature",
     )
 
     # Create the directory structure for the installed product

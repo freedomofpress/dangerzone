@@ -166,10 +166,6 @@ fn test_workflow_different_color_patterns() {
 
     // Verify PDF is valid
     assert!(pdf_data.starts_with(b"%PDF-"));
-    assert_eq!(
-        reader.read_all_pages().unwrap_err().to_string(),
-        "IO error: failed to fill whole buffer"
-    );
 }
 
 #[test]

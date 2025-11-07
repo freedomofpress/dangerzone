@@ -258,13 +258,41 @@ def main():
         Id="ProgramFiles64Folder",
     )
 
+    # Check for the existence of the flag file. If it exists,
+    # VIRTUALMACHINEPLATFORM_ENABLED will be set to the file's path.
+    vmp_enabled_prop = ET.SubElement(
+        package_el, "Property", Id="VIRTUALMACHINEPLATFORM_ENABLED"
+    )
+    temp_dir_search = ET.SubElement(
+        vmp_enabled_prop,
+        "DirectorySearch",
+        Id="TempDirSearch",
+        Path="[TempFolder]",
+    )
+    ET.SubElement(
+        temp_dir_search,
+        "FileSearch",
+        Id="VMPEnabledFlagFile",
+        Name="dz-vmp-enabled.flag",
+    )
+
+    # Run a PowerShell command to check if VMP is enabled, and create a
+    # temporary file if it is.
+    ET.SubElement(
+        package_el,
+        "Property",
+        Id="CheckVMPCmd",
+        Value="powershell.exe -NoProfile -Command \"Remove-Item -Path '[TempFolder]dz-vmp-enabled.flag' -ErrorAction SilentlyContinue; if ((Get-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform).State -eq 'Enabled') { New-Item -Path '[TempFolder]dz-vmp-enabled.flag' -ItemType File -Force }\"",
+    )
     ET.SubElement(
         package_el,
         "CustomAction",
         Id="CheckVMP",
+        Property="CheckVMPCmd",
+        BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)",
+        DllEntry="WixQuietExec",
         Execute="immediate",
-        Impersonate="no",
-        ScriptSourceFile="..\\install\\windows\\CheckVMP.vbs",
+        Return="ignore",
     )
 
     ET.SubElement(
@@ -333,28 +361,28 @@ def main():
         install_el,
         "Custom",
         Action="CheckVMP",
-        After="InstallInitialize",
+        Before="AppSearch",
         Condition='NOT REMOVE="all"',
     )
     ET.SubElement(
         install_el,
         "Custom",
         Action="DismEnableVMP",
-        After="CheckVMP",
-        Condition='NOT REMOVE="all" AND NOT VIRTUALMACHINEPLATFORM_ENABLED = "1"',
+        After="InstallInitialize",
+        Condition='NOT REMOVE="all" AND NOT VIRTUALMACHINEPLATFORM_ENABLED',
     )
     ET.SubElement(
         install_el,
         "Custom",
         Action="DismEnableWSL",
-        After="CheckVMP",
-        Condition='NOT REMOVE="all" AND NOT VIRTUALMACHINEPLATFORM_ENABLED = "1"',
+        After="InstallInitialize",
+        Condition='NOT REMOVE="all" AND NOT VIRTUALMACHINEPLATFORM_ENABLED',
     )
     ET.SubElement(
         install_el,
         "ScheduleReboot",
         After="InstallFinalize",
-        Condition='NOT REMOVE="all" AND NOT VIRTUALMACHINEPLATFORM_ENABLED = "1"',
+        Condition='NOT REMOVE="all" AND NOT VIRTUALMACHINEPLATFORM_ENABLED',
     )
     ui_el = ET.SubElement(
         package_el,

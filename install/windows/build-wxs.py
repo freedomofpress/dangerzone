@@ -282,7 +282,6 @@ def main():
         package_el,
         "Property",
         Id="CheckVMPCmd",
-        Value="powershell.exe -NoProfile -Command \"Remove-Item -Path '[TempFolder]dz-vmp-enabled.flag' -ErrorAction SilentlyContinue; if ((Get-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform).State -eq 'Enabled') { New-Item -Path '[TempFolder]dz-vmp-enabled.flag' -ItemType File -Force }\"",
     )
     ET.SubElement(
         package_el,
@@ -293,6 +292,14 @@ def main():
         DllEntry="WixQuietExec",
         Execute="immediate",
         Return="ignore",
+    )
+    ET.SubElement(
+        package_el,
+        "SetProperty",
+        Id="CheckVMPCmd",
+        Value="powershell.exe -NoProfile -Command \"Remove-Item -Path '[TempFolder]dz-vmp-enabled.flag' -ErrorAction SilentlyContinue; if ((Get-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform).State -eq 'Enabled') { New-Item -Path '[TempFolder]dz-vmp-enabled.flag' -ItemType File -Force }\"",
+        Before="CheckVMP",
+        Sequence="execute",
     )
 
     ET.SubElement(

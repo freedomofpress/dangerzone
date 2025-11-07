@@ -280,8 +280,11 @@ def main():
     # temporary file if it is.
     ET.SubElement(
         package_el,
-        "Property",
-        Id="CheckVMPCmd",
+        "SetProperty",
+        Id="CheckVMP",
+        Value="\"powershell.exe\" -NoProfile -Command \"Remove-Item -Path '[TempFolder]dz-vmp-enabled.flag' -ErrorAction SilentlyContinue; if ((Get-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform).State -eq 'Enabled') { New-Item -Path '[TempFolder]dz-vmp-enabled.flag' -ItemType File -Force }\"",
+        Before="CheckVMP",
+        Sequence="execute",
     )
     ET.SubElement(
         package_el,
@@ -291,15 +294,8 @@ def main():
         BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)",
         DllEntry="WixQuietExec",
         Execute="immediate",
+        Impersonate="no",
         Return="ignore",
-    )
-    ET.SubElement(
-        package_el,
-        "SetProperty",
-        Id="CheckVMPCmd",
-        Value="powershell.exe -NoProfile -Command \"Remove-Item -Path '[TempFolder]dz-vmp-enabled.flag' -ErrorAction SilentlyContinue; if ((Get-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform).State -eq 'Enabled') { New-Item -Path '[TempFolder]dz-vmp-enabled.flag' -ItemType File -Force }\"",
-        Before="CheckVMP",
-        Sequence="execute",
     )
 
     ET.SubElement(

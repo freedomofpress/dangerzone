@@ -260,6 +260,15 @@ def main():
 
     ET.SubElement(
         package_el,
+        "CustomAction",
+        Id="CheckVMP",
+        Execute="immediate",
+        Impersonate="no",
+        ScriptSourceFile="..\\install\\windows\\CheckVMP.vbs",
+    )
+
+    ET.SubElement(
+        package_el,
         "SetProperty",
         Id="DismEnableVMP",
         # Action="CADismEnableVMP",
@@ -323,28 +332,39 @@ def main():
     ET.SubElement(
         install_el,
         "Custom",
-        Action="DismEnableVMP",
+        Action="CheckVMP",
         After="InstallInitialize",
-        # FIXME: Add condition
-        Condition="NOT Installed",
+        Condition='NOT REMOVE="all"',
+    )
+    ET.SubElement(
+        install_el,
+        "Custom",
+        Action="DismEnableVMP",
+        After="CheckVMP",
+        Condition='NOT REMOVE="all" AND NOT VIRTUALMACHINEPLATFORM_ENABLED = "1"',
     )
     ET.SubElement(
         install_el,
         "Custom",
         Action="DismEnableWSL",
-        After="InstallInitialize",
-        # FIXME: Add condition
-        Condition="NOT Installed",
+        After="CheckVMP",
+        Condition='NOT REMOVE="all" AND NOT VIRTUALMACHINEPLATFORM_ENABLED = "1"',
     )
-    # ET.SubElement(
-    #    install_el,
-    #    "ScheduleReboot",
-    #    After="InstallFinalize",
-    #    # FIXME: Add condition
-    # )
+    ET.SubElement(
+        install_el,
+        "ScheduleReboot",
+        After="InstallFinalize",
+        Condition='NOT REMOVE="all" AND NOT VIRTUALMACHINEPLATFORM_ENABLED = "1"',
+    )
     ui_el = ET.SubElement(
         package_el,
         "UI",
+    )
+    ET.SubElement(
+        ui_el,
+        "ProgressText",
+        Action="CheckVMP",
+        Message="Checking if WSL2 is enabled",
     )
     ET.SubElement(
         ui_el,

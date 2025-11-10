@@ -88,12 +88,28 @@ later.</p>
 
 WSL_INSTALL_FAILED_MSG = """\
 <p>Dangerzone failed to install the Windows Subsystem for Linux (WSL).</p>
-<p>If you have just installed Dangerzone, you may need to reboot your computer for
-changes to take effect. If you have already rebooted, please follow the troubleshooting
-instructions here:
-<a href="https://podman-desktop.io/docs/troubleshooting/troubleshooting-podman-on-windows">
-Troubleshooting Podman on Windows</a>.</p>
-<p>You can either try again, or quit Dangerzone.</p>
+<p>If you have just installed Dangerzone, you may need to <b>reboot</b> your computer
+for changes to take effect. If you have already rebooted, then you need to troubleshoot
+your installation.</p>
+
+<p>The best way to get started is to run the following command in a terminal:</p>
+
+<p><b>wsl --install</b></p>
+
+<p>You can also take a look at some
+<a href="https://learn.microsoft.com/en-us/windows/wsl/troubleshooting#common-issues">
+common WSL issues ↗️
+</a>, some
+<a href="https://podman-desktop.io/docs/troubleshooting/troubleshooting-podman-on-windows#older-wsl-versions-might-lead-to-networking-issues">
+troubleshooting tips ↗️
+</a> from Podman, or our logs from the <i>"View logs"</i> menu option.
+</p>
+
+<p>If you feel stuck, don't hesitate to
+<a href="https://github.com/freedomofpress/dangerzone/wiki/Reporting-an-issue">
+    report an issue ↗️
+</a>
+</p>
 """
 
 
@@ -360,12 +376,14 @@ class MainWindow(QtWidgets.QMainWindow):
         # Content and waiting widget
         self.conversion_widget = ConversionWidget(self.dangerzone)
         self.waiting_widget = WaitingWidget()
+        self.wsl_error_widget = WSLErrorWidget()
         self.show_conversion_widget()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
         layout.addWidget(self.waiting_widget, stretch=1)
+        layout.addWidget(self.wsl_error_widget, stretch=1)
         layout.addWidget(self.conversion_widget, stretch=1)
 
         # Log window
@@ -416,19 +434,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.startup_thread.succeeded.connect(self.status_bar.handle_startup_success)
         self.startup_thread.succeeded.connect(self.log_window.handle_startup_success)
         self.startup_thread.succeeded.connect(self.show_conversion_widget)
-        self.startup_thread.failed.connect(self.handle_startup_error)
+        # self.startup_thread.failed.connect(self.handle_startup_error) # Disconnected
+
+        # for task in tasks:
+        #     if isinstance(task, startup.WSLInstallTask):
+        #         task.failed.connect(self.handle_wsl_install_failed)
+        #     else:
+        #         task.failed.connect(self.handle_startup_error)
 
         task_machine_init.starting.connect(self.status_bar.handle_task_machine_init)
         task_machine_init.starting.connect(self.log_window.handle_task_machine_init)
         task_machine_init.failed.connect(
             self.log_window.handle_task_machine_init_failed
         )
+        task_machine_init.failed.connect(self.handle_startup_error)
 
         task_machine_start.starting.connect(self.status_bar.handle_task_machine_start)
         task_machine_start.starting.connect(self.log_window.handle_task_machine_start)
         task_machine_start.failed.connect(
             self.log_window.handle_task_machine_start_failed
         )
+        task_machine_start.failed.connect(self.handle_startup_error)
 
         task_wsl_install.starting.connect(self.status_bar.handle_task_wsl_install)
         task_wsl_install.starting.connect(self.log_window.handle_task_wsl_install)
@@ -445,6 +471,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_machine_stop_others.failed.connect(
             self.log_window.handle_task_machine_stop_others_failed
         )
+        task_machine_stop_others.failed.connect(self.handle_startup_error)
         task_machine_stop_others.needs_user_input.connect(
             self.handle_needs_user_input_stop_others
         )
@@ -477,6 +504,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_container_install.failed.connect(
             self.log_window.handle_task_container_install_failed
         )
+        task_container_install.failed.connect(self.handle_startup_error)
 
         self.show()
 
@@ -686,9 +714,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.begin_shutdown(ret=2)
 
     def handle_wsl_install_failed(self, msg: str) -> None:
-        self.waiting_widget.extra.setText(WSL_INSTALL_FAILED_MSG)
-        self.waiting_widget.extra.setVisible(True)
-        self.waiting_widget.traceback_widget.setVisible(False)
+        log.debug("Displaying WSL install failure widget")
+        self.status_bar.handle_startup_error()
+        self.waiting_widget.hide()
+        self.conversion_widget.hide()
+        self.wsl_error_widget.show()
 
     def handle_startup_error(self, msg: str) -> None:
         self.status_bar.handle_startup_error()
@@ -697,10 +727,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def hide_conversion_widget(self) -> None:
         self.waiting_widget.show()
+        self.wsl_error_widget.hide()
         self.conversion_widget.hide()
 
     def show_conversion_widget(self) -> None:
         self.waiting_widget.hide()
+        self.wsl_error_widget.hide()
         self.conversion_widget.show()
 
     def waiting_finished(self) -> None:
@@ -740,9 +772,6 @@ class WaitingWidget(QtWidgets.QWidget):
         super().__init__()
         self.header = QtWidgets.QLabel()
         self.header.setAlignment(QtCore.Qt.AlignCenter)
-        self.extra = QtWidgets.QLabel()
-        self.extra.setAlignment(QtCore.Qt.AlignCenter)
-        self.extra.setVisible(False)
         self.footer = QtWidgets.QLabel()
         self.footer.setAlignment(QtCore.Qt.AlignRight)
         self.footer.setTextFormat(QtCore.Qt.RichText)
@@ -754,7 +783,6 @@ class WaitingWidget(QtWidgets.QWidget):
         self.layout = layout
         layout.addWidget(self.header)
         layout.addWidget(self.traceback_widget)
-        layout.addWidget(self.extra)
         layout.addWidget(self.footer)
         layout.addStretch()
         self.setLayout(layout)
@@ -770,6 +798,26 @@ class WaitingWidget(QtWidgets.QWidget):
               </a>
             </p>
         """)
+
+
+class WSLErrorWidget(QtWidgets.QWidget):
+    def __init__(self) -> None:
+        super().__init__()
+        self.header = QtWidgets.QLabel()
+        self.header.setText("<p>Dangerzone encountered an error during startup:<p>")
+        self.header.setStyleSheet("QLabel { font-size: 20px; }")
+        self.header.setAlignment(QtCore.Qt.AlignCenter)
+        self.explanation = QtWidgets.QLabel()
+        self.explanation.setText(WSL_INSTALL_FAILED_MSG)
+        self.explanation.setAlignment(QtCore.Qt.AlignCenter)
+        self.explanation.setTextFormat(QtCore.Qt.RichText)
+        self.explanation.setOpenExternalLinks(True)
+        self.explanation.setWordWrap(True)
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.header)
+        layout.addWidget(self.explanation)
+        layout.addStretch()
+        self.setLayout(layout)
 
 
 class ConversionWidget(QtWidgets.QWidget):

@@ -911,9 +911,8 @@ def test_wsl_install_failed_user_input(
         "dangerzone.wsl.install_wsl_and_check_reboot",
         side_effect=errors.WSLInstallFailed,
     )
-    mocker.patch("dangerzone.shutdown.PodmanMachineManager")
-    mock_alert = mocker.patch("dangerzone.gui.main_window.Alert")
-    mock_exit_spy = mocker.spy(window.dangerzone.app, "exit")
+    mock_wsl_error_widget_show = mocker.spy(window.wsl_error_widget, "show")
+    mock_begin_shutdown = mocker.spy(window, "begin_shutdown")
     handle_wsl_install_failed_spy = mocker.spy(window, "handle_wsl_install_failed")
 
     # Ensure only WSLInstallTask runs
@@ -921,16 +920,14 @@ def test_wsl_install_failed_user_input(
         if not isinstance(task, startup.WSLInstallTask):
             mocker.patch.object(task, "should_skip", return_value=True)
 
-    # User acknowledges the alert, leading to shutdown
     window.startup_thread.start()
     qtbot.waitUntil(handle_wsl_install_failed_spy.assert_called_once)
     window.startup_thread.wait()
 
-    mock_alert.assert_called_once()
-    mock_exit_spy.assert_called_once_with(0)
-    handle_wsl_install_failed_spy.reset_mock()
-    mock_alert.reset_mock()
-    mock_exit_spy.reset_mock()
+    mock_wsl_error_widget_show.assert_called_once()
+    assert window.wsl_error_widget.isVisible()
+    assert not window.waiting_widget.isVisible()
+    assert not window.conversion_widget.isVisible()
 
 
 class TestShutdown:

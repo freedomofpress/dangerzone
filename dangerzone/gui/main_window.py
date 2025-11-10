@@ -686,22 +686,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def handle_wsl_install_failed(self, req: startup.PromptRequest) -> None:
         log.debug("Prompting user about WSL install failure")
-        question = Question(
+        alert = Alert(
             self.dangerzone,
             title="WSL installation failed",
             message=WSL_INSTALL_FAILED_MSG,
-            ok_text="Try again",
-            cancel_text="Quit Dangerzone",
+            ok_text="Ok",
         )
-        result = question.launch()
-        if result == Question.Accepted:
-            req.reply(True)
-            # Restart the startup thread to try again
-            self.startup_thread.start()
-        else:
-            req.reply(False)
-            self.startup_thread.wait()
-            self.begin_shutdown(ret=0)
+        alert.launch()
+        req.reply(False)
+        self.startup_thread.wait()
+        self.begin_shutdown(ret=0)
 
     def handle_startup_error(self, msg: str) -> None:
         self.status_bar.handle_startup_error()

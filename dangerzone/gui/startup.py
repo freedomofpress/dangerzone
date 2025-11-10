@@ -107,8 +107,8 @@ class WSLInstallTask(GUIMixin, startup.WSLInstallTask, metaclass=_MetaConflictRe
             # shutdown sequence.
             raise e
         else:
-            # The user chose to quit, so we should exit gracefully.
-            raise SystemExit(0)
+            # This should never happened
+            raise Exception("User chose to quit instead of rebooting")
 
 
 class ContainerInstallTask(

@@ -88,8 +88,9 @@ later.</p>
 
 WSL_INSTALL_FAILED_MSG = """\
 <p>Dangerzone failed to install the Windows Subsystem for Linux (WSL).</p>
-<p>Please ensure you have rebooted your computer after installing WSL. If you have
-already rebooted, please follow the troubleshooting instructions here:
+<p>If you have just installed Dangerzone, you may need to reboot your computer for
+changes to take effect. If you have already rebooted, please follow the troubleshooting
+instructions here:
 <a href="https://podman-desktop.io/docs/troubleshooting/troubleshooting-podman-on-windows">
 Troubleshooting Podman on Windows</a>.</p>
 <p>You can either try again, or quit Dangerzone.</p>
@@ -682,20 +683,12 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             req.reply(False)
             self.startup_thread.wait()
-            self.begin_shutdown(ret=0)
+            self.begin_shutdown(ret=2)
 
-    def handle_wsl_install_failed(self, req: startup.PromptRequest) -> None:
-        log.debug("Prompting user about WSL install failure")
-        alert = Alert(
-            self.dangerzone,
-            title="WSL installation failed",
-            message=WSL_INSTALL_FAILED_MSG,
-            ok_text="Ok",
-        )
-        alert.launch()
-        req.reply(False)
-        self.startup_thread.wait()
-        self.begin_shutdown(ret=0)
+    def handle_wsl_install_failed(self, msg: str) -> None:
+        self.waiting_widget.extra.setText(WSL_INSTALL_FAILED_MSG)
+        self.waiting_widget.extra.setVisible(True)
+        self.waiting_widget.traceback_widget.setVisible(False)
 
     def handle_startup_error(self, msg: str) -> None:
         self.status_bar.handle_startup_error()
@@ -747,6 +740,9 @@ class WaitingWidget(QtWidgets.QWidget):
         super().__init__()
         self.header = QtWidgets.QLabel()
         self.header.setAlignment(QtCore.Qt.AlignCenter)
+        self.extra = QtWidgets.QLabel()
+        self.extra.setAlignment(QtCore.Qt.AlignCenter)
+        self.extra.setVisible(False)
         self.footer = QtWidgets.QLabel()
         self.footer.setAlignment(QtCore.Qt.AlignRight)
         self.footer.setTextFormat(QtCore.Qt.RichText)
@@ -755,8 +751,10 @@ class WaitingWidget(QtWidgets.QWidget):
         self.traceback_widget = TracebackWidget()
         self.traceback_widget.setVisible(False)
         layout = QtWidgets.QVBoxLayout()
+        self.layout = layout
         layout.addWidget(self.header)
         layout.addWidget(self.traceback_widget)
+        layout.addWidget(self.extra)
         layout.addWidget(self.footer)
         layout.addStretch()
         self.setLayout(layout)

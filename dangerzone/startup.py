@@ -179,12 +179,13 @@ class WSLInstallTask(Task):
             wsl.install_wsl_and_check_reboot()
         except errors.WSLInstallFailed as e:
             # Fail with a helpful error message.
-            raise errors.WSLInstallFailed(
+            logger.error(
                 "Dangerzone failed to install the Windows Subsystem for Linux (WSL),"
-                " which is required for the conversion to work. Please follow the"
+                " which is required for it to work. Please follow the"
                 " official guide to install it, and try again:"
                 " https://podman-desktop.io/docs/troubleshooting/troubleshooting-podman-on-windows"
-            ) from e
+            )
+            raise
         except errors.WSLInstallNeedsReboot as e:
             self.handle_wsl_reboot(e)
 

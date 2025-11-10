@@ -423,7 +423,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_wsl_install.starting.connect(self.status_bar.handle_task_wsl_install)
         task_wsl_install.starting.connect(self.log_window.handle_task_wsl_install)
         task_wsl_install.failed.connect(self.log_window.handle_task_wsl_install_failed)
-        task_wsl_install.needs_reboot.connect(self.handle_needs_reboot)
+        task_wsl_install.needs_reboot.connect(self.handle_wsl_needs_reboot)
 
         task_machine_stop_others.starting.connect(
             self.status_bar.handle_task_machine_stop_others
@@ -657,7 +657,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.startup_thread.wait()
             self.begin_shutdown(ret=2)
 
-    def handle_needs_reboot(self, req: startup.PromptRequest) -> None:
+    def handle_wsl_needs_reboot(self, req: startup.PromptRequest) -> None:
         log.debug("Prompting user to reboot")
         question = Question(
             self.dangerzone,

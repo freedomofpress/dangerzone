@@ -945,3 +945,55 @@ def test_wsl_needs_reboot_user_input(
     mock_question.reset_mock()
     mock_shutdown_cmd.reset_mock()
 
+
+def test_wsl_install_failed_user_input(
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    window: MainWindow,
+) -> None:
+    mocker.patch("platform.system", return_value="Windows")
+    mock_wsl_install_task_run = mocker.patch(
+        "dangerzone.startup.WSLInstallTask.run",
+        side_effect=errors.WSLInstallFailed,
+    )
+    mock_question = mocker.patch("dangerzone.gui.main_window.Question")
+    mock_startup_thread_start = mocker.spy(window.startup_thread, "start")
+    mock_exit_spy = mocker.spy(window.dangerzone.app, "exit")
+
+    # Ensure only WSLInstallTask runs
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.WSLInstallTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    handle_wsl_install_failed_spy = mocker.spy(window, "handle_wsl_install_failed")
+
+    # Scenario 1: User accepts ("Try again")
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Accepted
+    )
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_wsl_install_failed_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_question.assert_called_once()
+    mock_startup_thread_start.assert_called_once()
+    handle_wsl_install_failed_spy.reset_mock()
+    mock_question.reset_mock()
+    mock_startup_thread_start.reset_mock()
+
+    # Scenario 2: User rejects ("Quit Dangerzone")
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Rejected
+    )
+    window.startup_thread.start()
+    qtbot.waitUntil(mock_exit_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_question.assert_called_once()
+    mock_startup_thread_start.assert_not_called()
+    mock_exit_spy.assert_called_once_with(0)
+    handle_wsl_install_failed_spy.reset_mock()
+    mock_question.reset_mock()
+    mock_startup_thread_start.reset_mock()
+    mock_exit_spy.reset_mock()
+

@@ -86,6 +86,15 @@ reboot your computer before Dangerzone can use it.</p>
 later.</p>
 """
 
+WSL_INSTALL_FAILED_MSG = """\
+<p>Dangerzone failed to install the Windows Subsystem for Linux (WSL).</p>
+<p>Please ensure you have rebooted your computer after installing WSL. If you have
+already rebooted, please follow the troubleshooting instructions here:
+<a href="https://podman-desktop.io/docs/troubleshooting/troubleshooting-podman-on-windows">
+Troubleshooting Podman on Windows</a>.</p>
+<p>You can either try again, or quit Dangerzone.</p>
+"""
+
 
 DEBIAN_BULLSEYE_DEPRECATION_MSG = """\
 <p><b>Warning:</b> Debian Bullseye systems and their derivatives will
@@ -423,6 +432,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_wsl_install.starting.connect(self.status_bar.handle_task_wsl_install)
         task_wsl_install.starting.connect(self.log_window.handle_task_wsl_install)
         task_wsl_install.failed.connect(self.log_window.handle_task_wsl_install_failed)
+        task_wsl_install.failed.connect(self.handle_wsl_install_failed)
         task_wsl_install.needs_reboot.connect(self.handle_wsl_needs_reboot)
 
         task_machine_stop_others.starting.connect(
@@ -669,6 +679,25 @@ class MainWindow(QtWidgets.QMainWindow):
         result = question.launch()
         if result == Question.Accepted:
             req.reply(True)
+        else:
+            req.reply(False)
+            self.startup_thread.wait()
+            self.begin_shutdown(ret=0)
+
+    def handle_wsl_install_failed(self, req: startup.PromptRequest) -> None:
+        log.debug("Prompting user about WSL install failure")
+        question = Question(
+            self.dangerzone,
+            title="WSL installation failed",
+            message=WSL_INSTALL_FAILED_MSG,
+            ok_text="Try again",
+            cancel_text="Quit Dangerzone",
+        )
+        result = question.launch()
+        if result == Question.Accepted:
+            req.reply(True)
+            # Restart the startup thread to try again
+            self.startup_thread.start()
         else:
             req.reply(False)
             self.startup_thread.wait()

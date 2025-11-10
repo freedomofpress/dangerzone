@@ -158,13 +158,13 @@ class ContainerPullException(ContainerException):
     pass
 
 
-class OtherMachineRunningError(ContainerException):
+class OtherMachineRunningError(Exception):
     pass
 
 
-class WSLInstallFailed(ContainerException):
+class WSLInstallFailed(Exception):
     pass
 
 
-class WSLInstallNeedsReboot(ContainerException):
+class WSLInstallNeedsReboot(Exception):
     pass

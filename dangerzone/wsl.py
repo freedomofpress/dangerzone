@@ -14,7 +14,7 @@ def wsl_list() -> None:
     try:
         subprocess_run(["wsl", "-l", "--quiet"], check=True, capture_output=True)
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        raise errors.ContainerException("WSL is not installed") from e
+        raise Exception("WSL is not installed") from e
 
 
 def wsl_install(no_distribution: bool = True) -> None:
@@ -33,7 +33,7 @@ def is_wsl_installed() -> bool:
     try:
         wsl_list()
         return True
-    except errors.ContainerException:
+    except Exception:
         return False
 
 

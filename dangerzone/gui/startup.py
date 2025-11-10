@@ -95,6 +95,22 @@ class MachineStartTask(
     pass
 
 
+class WSLInstallTask(
+    GUIMixin, startup.WSLInstallTask, metaclass=_MetaConflictResolver
+):
+    needs_reboot = QtCore.Signal(object)  # PromptRequest
+
+    def handle_wsl_reboot(self, e: startup.errors.WSLInstallNeedsReboot) -> None:
+        reboot = PromptRequest().ask(self.needs_reboot)
+        if reboot:
+            # The OS is about to reboot, so there's no need to continue with the
+            # shutdown sequence.
+            raise e
+        else:
+            # The user chose to quit, so we should exit gracefully.
+            raise SystemExit(0)
+
+
 class ContainerInstallTask(
     GUIMixin, startup.ContainerInstallTask, metaclass=_MetaConflictResolver
 ):

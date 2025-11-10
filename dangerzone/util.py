@@ -1,3 +1,4 @@
+import functools
 import platform
 import subprocess
 import sys
@@ -98,6 +99,13 @@ def get_subprocess_startupinfo():  # type: ignore [no-untyped-def]
         return startupinfo
     else:
         return None
+
+
+# subprocess.run with the correct startupinfo for Windows.
+# We use a partial here to better profit from type checking
+subprocess_run = functools.partial(
+    subprocess.run, startupinfo=get_subprocess_startupinfo()
+)
 
 
 def replace_control_chars(untrusted_str: str, keep_newlines: bool = False) -> str:

@@ -3,6 +3,7 @@ import io
 import logging
 import os
 import platform
+import subprocess
 import tempfile
 import typing
 from multiprocessing.pool import ThreadPool
@@ -76,6 +77,13 @@ running in your system. Unfortunately, this machine needs to stop so that Danger
 run.</p>
 <p>You can either let Dangerzone stop this machine for you, or quit Dangerzone and
 handle it manually.</p>
+"""
+
+WSL_NEEDS_REBOOT_MSG = """\
+<p>Dangerzone has installed the Windows Subsystem for Linux (WSL), but you need to
+reboot your computer before Dangerzone can use it.</p>
+<p>You can either reboot your computer now, or quit Dangerzone and reboot it
+later.</p>
 """
 
 
@@ -237,6 +245,9 @@ class StatusBar(QtWidgets.QStatusBar):
     def handle_task_machine_stop(self) -> None:
         self.set_status_working("Stopping Dangerzone sandbox (shutting down VM)")
 
+    def handle_task_wsl_install(self) -> None:
+        self.set_status_working("Installing Windows Subsystem for Linux")
+
     def handle_task_update_check(self) -> None:
         self.set_status_working("Checking for updates")
 
@@ -372,6 +383,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Start startup thread
         log.debug("Starting Dangerzone background tasks")
+        task_wsl_install = startup.WSLInstallTask()
         task_machine_stop_others = startup.MachineStopOthersTask()
         task_machine_init = startup.MachineInitTask()
         task_machine_start = startup.MachineStartTask()
@@ -379,6 +391,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_container_install = startup.ContainerInstallTask()
         if dangerzone.isolation_provider.requires_install():
             tasks = [
+                task_wsl_install,
                 task_machine_stop_others,
                 task_machine_init,
                 task_machine_start,
@@ -406,6 +419,11 @@ class MainWindow(QtWidgets.QMainWindow):
         task_machine_start.failed.connect(
             self.log_window.handle_task_machine_start_failed
         )
+
+        task_wsl_install.starting.connect(self.status_bar.handle_task_wsl_install)
+        task_wsl_install.starting.connect(self.log_window.handle_task_wsl_install)
+        task_wsl_install.failed.connect(self.log_window.handle_task_wsl_install_failed)
+        task_wsl_install.needs_reboot.connect(self.handle_needs_reboot)
 
         task_machine_stop_others.starting.connect(
             self.status_bar.handle_task_machine_stop_others
@@ -638,6 +656,24 @@ class MainWindow(QtWidgets.QMainWindow):
             req.reply(False)
             self.startup_thread.wait()
             self.begin_shutdown(ret=2)
+
+    def handle_needs_reboot(self, req: startup.PromptRequest) -> None:
+        log.debug("Prompting user to reboot")
+        question = Question(
+            self.dangerzone,
+            title="Reboot required",
+            message=WSL_NEEDS_REBOOT_MSG,
+            ok_text="Reboot now",
+            cancel_text="Quit Dangerzone",
+        )
+        result = question.launch()
+        if result == Question.Accepted:
+            subprocess.run(["shutdown", "/r", "/t", "0"])
+            req.reply(True)
+        else:
+            req.reply(False)
+            self.startup_thread.wait()
+            self.begin_shutdown(ret=0)
 
     def handle_startup_error(self, msg: str) -> None:
         self.status_bar.handle_startup_error()

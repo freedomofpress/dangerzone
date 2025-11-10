@@ -12,7 +12,7 @@ else:
         from PySide2 import QtCore
 
 
-from . import errors, settings
+from . import errors, settings, wsl
 from .podman.machine import PodmanMachineManager
 from .updater import (
     ErrorReport,
@@ -166,6 +166,36 @@ class MachineStopOthersTask(Task):
         # Verify no other machines are running
         if PodmanMachineManager().list_other_running_machines():
             raise RuntimeError("Failed to stop all other running Podman machines.")
+
+
+class WSLInstallTask(Task):
+    name = "Installing Windows Subsystem for Linux"
+
+    def should_skip(self) -> bool:
+        return platform.system() != "Windows" or wsl.is_wsl_installed()
+
+    def run(self) -> None:
+        try:
+            wsl.install_wsl_and_check_reboot()
+        except errors.WSLInstallFailed as e:
+            # Fail with a helpful error message.
+            raise errors.WSLInstallFailed(
+                "Dangerzone failed to install the Windows Subsystem for Linux (WSL),"
+                " which is required for the conversion to work. Please follow the"
+                " official guide to install it, and try again:"
+                " https://podman-desktop.io/docs/troubleshooting/troubleshooting-podman-on-windows"
+            ) from e
+        except errors.WSLInstallNeedsReboot as e:
+            self.handle_wsl_reboot(e)
+
+    def handle_wsl_reboot(self, e: errors.WSLInstallNeedsReboot) -> None:
+        # In non-GUI mode, we can't do much better than telling the user to reboot.
+        # In GUI mode, we can override this method to prompt the user to reboot.
+        logger.warning(
+            "Windows Subsystem for Linux (WSL) was installed, but you need to reboot"
+            " your computer before Dangerzone can use it."
+        )
+        raise e
 
 
 class ContainerInstallTask(Task):

@@ -1,9 +1,10 @@
+import platform
 from typing import Optional
 
 import pytest
 from pytest_mock import MockerFixture
 
-from dangerzone import startup
+from dangerzone import errors, startup, wsl
 
 
 class StartupSpy:
@@ -197,3 +198,59 @@ def test_startup_skips_podman_tasks_if_custom_runtime_is_specified(
     assert start_skip_spy.spy_return == True
     stop_others_run_spy.assert_not_called()
     assert stop_others_skip_spy.spy_return == True
+
+
+@pytest.mark.parametrize("os_name", ["Linux", "Darwin"])
+def test_wsl_install_task_should_skip_on_non_windows(
+    mocker: MockerFixture, os_name: str
+) -> None:
+    """Test that WSLInstallTask is skipped on non-Windows OS."""
+    mocker.patch("platform.system", return_value=os_name)
+    task = startup.WSLInstallTask()
+    assert task.should_skip() is True
+
+
+def test_wsl_install_task_should_skip_if_wsl_installed(mocker: MockerFixture) -> None:
+    """Test that WSLInstallTask is skipped if WSL is already installed."""
+    mocker.patch("platform.system", return_value="Windows")
+    mocker.patch("dangerzone.wsl.is_wsl_installed", return_value=True)
+    task = startup.WSLInstallTask()
+    assert task.should_skip() is True
+
+
+def test_wsl_install_task_should_not_skip_if_wsl_not_installed_on_windows(
+    mocker: MockerFixture,
+) -> None:
+    """Test that WSLInstallTask is not skipped if WSL is not installed on Windows."""
+    mocker.patch("platform.system", return_value="Windows")
+    mocker.patch("dangerzone.wsl.is_wsl_installed", return_value=False)
+    task = startup.WSLInstallTask()
+    assert task.should_skip() is False
+
+
+@pytest.mark.skipif(platform.system() != "Windows", reason="Windows-specific")
+def test_wsl_install_task_run_success(mocker: MockerFixture) -> None:
+    """Test that WSLInstallTask run method raises WSLInstallNeedsReboot on success."""
+    mocker.patch("dangerzone.wsl.is_wsl_installed", return_value=False)
+    mock_install_wsl = mocker.patch(
+        "dangerzone.wsl.install_wsl_and_check_reboot",
+        side_effect=errors.WSLInstallNeedsReboot,
+    )
+    task = startup.WSLInstallTask()
+    with pytest.raises(errors.WSLInstallNeedsReboot):
+        task.run()
+    mock_install_wsl.assert_called_once()
+
+
+@pytest.mark.skipif(platform.system() != "Windows", reason="Windows-specific")
+def test_wsl_install_task_run_failure(mocker: MockerFixture) -> None:
+    """Test that WSLInstallTask run method raises WSLInstallFailed on failure."""
+    mocker.patch("dangerzone.wsl.is_wsl_installed", return_value=False)
+    mock_install_wsl = mocker.patch(
+        "dangerzone.wsl.install_wsl_and_check_reboot",
+        side_effect=errors.WSLInstallFailed,
+    )
+    task = startup.WSLInstallTask()
+    with pytest.raises(errors.WSLInstallFailed):
+        task.run()
+    mock_install_wsl.assert_called_once()

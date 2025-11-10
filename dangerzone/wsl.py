@@ -12,7 +12,12 @@ log = logging.getLogger(__name__)
 def wsl_list() -> None:
     """Check if WSL is installed by running 'wsl -l --quiet'."""
     try:
-        subprocess_run(["wsl", "-l", "--quiet"], check=True, capture_output=True, encoding="UTF16LE")
+        subprocess_run(
+            ["wsl", "-l", "--quiet"],
+            check=True,
+            capture_output=True,
+            encoding="UTF16LE",
+        )
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         raise Exception("WSL is not installed") from e
 

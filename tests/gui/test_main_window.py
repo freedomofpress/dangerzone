@@ -978,4 +978,3 @@ def test_wsl_install_failed_user_input(
     handle_wsl_install_failed_spy.reset_mock()
     mock_alert.reset_mock()
     mock_exit_spy.reset_mock()
-

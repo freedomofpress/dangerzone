@@ -96,9 +96,7 @@ class MachineStartTask(
     pass
 
 
-class WSLInstallTask(
-    GUIMixin, startup.WSLInstallTask, metaclass=_MetaConflictResolver
-):
+class WSLInstallTask(GUIMixin, startup.WSLInstallTask, metaclass=_MetaConflictResolver):
     needs_reboot = QtCore.Signal(object)  # PromptRequest
 
     def handle_wsl_reboot(self, e: startup.errors.WSLInstallNeedsReboot) -> None:

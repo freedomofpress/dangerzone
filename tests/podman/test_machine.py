@@ -300,6 +300,3 @@ def test_initialize_machine_with_timezone(
     machine_manager.init(timezone="America/New_York")
     assert rec_list.call_count() == 1
     assert rec_init.call_count() == 1
-
-
-

@@ -111,10 +111,11 @@ class LogWindow(QtWidgets.QDialog):
             "This might take a few minutes…"
         )
 
+    def handle_task_container_stop(self) -> None:
+        self.label.setText("Stopping the Dangerzone sandbox (clearing jobs)…")
+
     def handle_task_machine_init_failed(self, error: str) -> None:
-        self.label.setText(
-            "Initializing Dangerzone sandbox (creating VM)… failed"
-        )
+        self.label.setText("Initializing Dangerzone sandbox (creating VM)… failed")
 
     def handle_task_machine_start_failed(self, error: str) -> None:
         self.label.setText("Initializing Dangerzone sandbox (starting VM)… failed")

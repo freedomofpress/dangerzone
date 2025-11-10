@@ -668,7 +668,6 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         result = question.launch()
         if result == Question.Accepted:
-            subprocess.run(["shutdown", "/r", "/t", "0"])
             req.reply(True)
         else:
             req.reply(False)

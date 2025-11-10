@@ -1,3 +1,4 @@
+import subprocess
 import typing
 
 if typing.TYPE_CHECKING:
@@ -103,6 +104,7 @@ class WSLInstallTask(
     def handle_wsl_reboot(self, e: startup.errors.WSLInstallNeedsReboot) -> None:
         reboot = PromptRequest().ask(self.needs_reboot)
         if reboot:
+            subprocess.run(["shutdown", "/r", "/t", "0"])
             # The OS is about to reboot, so there's no need to continue with the
             # shutdown sequence.
             raise e

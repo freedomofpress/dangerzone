@@ -99,6 +99,18 @@ class LogWindow(QtWidgets.QDialog):
     def handle_task_update_check(self) -> None:
         self.label.setText("Checking for updates…")
 
+    def handle_task_container_install_local(self) -> None:
+        self.label.setText(
+            "Installing Dangerzone sandbox (from local archive)<br>"
+            "This might take a few minutes…"
+        )
+
+    def handle_task_container_install_remote(self) -> None:
+        self.label.setText(
+            "Downloading Dangerzone sandbox (from trusted remote)<br>"
+            "This might take a few minutes…"
+        )
+
     def handle_task_machine_stop_others_failed(self, error: str) -> None:
         self.label.setText(
             "Initializing Dangerzone sandbox (stopping other VMs)… failed"

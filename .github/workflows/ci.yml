@@ -335,7 +335,7 @@ jobs:
           python-version: "3.10"
 
       - name: Download Dangerzone .deb
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: dangerzone.deb
           path: "deb_dist/"

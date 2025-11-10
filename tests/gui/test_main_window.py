@@ -893,3 +893,55 @@ class TestShutdown:
         window.closeEvent(event)
         assert event.isAccepted() is False  # Ignored because shutdown thread takes over
         mock_begin_shutdown.assert_called_once_with(2)
+
+
+def test_wsl_needs_reboot_user_input(
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    window: MainWindow,
+) -> None:
+    mocker.patch("platform.system", return_value="Windows")
+    mock_wsl_install_task_run = mocker.patch(
+        "dangerzone.startup.WSLInstallTask.run",
+        side_effect=errors.WSLInstallNeedsReboot,
+    )
+    mock_question = mocker.patch("dangerzone.gui.main_window.Question")
+    mock_shutdown_cmd = mocker.patch("subprocess.run")
+
+    # Ensure only WSLInstallTask runs
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.WSLInstallTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    handle_wsl_needs_reboot_spy = mocker.spy(window, "handle_wsl_needs_reboot")
+
+    # Scenario 1: User accepts reboot
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Accepted
+    )
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_wsl_needs_reboot_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_question.assert_called_once()
+    mock_shutdown_cmd.assert_called_once_with(["shutdown", "/r", "/t", "0"])
+    handle_wsl_needs_reboot_spy.reset_mock()
+    mock_question.reset_mock()
+    mock_shutdown_cmd.reset_mock()
+
+    # Scenario 2: User rejects reboot
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Rejected
+    )
+    with pytest.raises(SystemExit) as excinfo:
+        window.startup_thread.start()
+        qtbot.waitUntil(handle_wsl_needs_reboot_spy.assert_called_once)
+        window.startup_thread.wait()
+    assert excinfo.value.code == 0
+
+    mock_question.assert_called_once()
+    mock_shutdown_cmd.assert_not_called()
+    handle_wsl_needs_reboot_spy.reset_mock()
+    mock_question.reset_mock()
+    mock_shutdown_cmd.reset_mock()
+

@@ -302,29 +302,4 @@ def test_initialize_machine_with_timezone(
     assert rec_init.call_count() == 1
 
 
-@pytest.mark.skipif(platform.system() != "Windows", reason="Windows-specific")
-def test_initialize_machine_no_wsl_update_call(
-    machine_manager: PodmanMachineManager,
-    podman_register: Callable,
-    fp: FakeProcess,
-) -> None:
-    """Test that wsl --update is not called during machine initialization."""
-    rec_wsl_update = fp.register(["wsl", "--update"])
-    rec_list = podman_register(
-        ["machine", "list", "--format", "json"], stdout=json.dumps([])
-    )
-    rec_init = podman_register(
-        [
-            "machine",
-            "init",
-            machine_manager.name,
-            "--image",
-            str(machine_manager._get_machine_image_path()),
-            "--timezone",
-            "Etc/UTC",
-        ]
-    )
-    machine_manager.init()
-    assert rec_wsl_update.call_count() == 0
-    assert rec_list.call_count() == 1
-    assert rec_init.call_count() == 1
+

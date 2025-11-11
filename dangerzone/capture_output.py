@@ -35,6 +35,7 @@ class PatchedPopen(original_subprocess_popen):
         """
         stdout = kwargs.get("stdout")
         stderr = kwargs.get("stderr")
+        encoding = kwargs.get("encoding")
         log.debug(f"Running: {shlex.join(args[0])}")
         if stdout is not None or stderr is not None:
             super().__init__(*args, **kwargs)
@@ -43,7 +44,7 @@ class PatchedPopen(original_subprocess_popen):
         # Read the stdout and stderr as streams (text=True and bufsize=1)
         kwargs["stdout"] = subprocess.PIPE
         kwargs["stderr"] = subprocess.PIPE
-        if "encoding" is not None:
+        if encoding is not None:
             kwargs["text"] = True
             kwargs["bufsize"] = 1
 

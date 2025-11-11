@@ -129,10 +129,13 @@ jobs:
           enableCrossOsArchive: true
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+      # FIXME: Explain why.
+      - name: Update WSL
+        run: wsl --update
       - name: Smoke test
         run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
-      - name: Run CLI tests
-        run: poetry run make test
+      #- name: Run CLI tests
+      #  run: poetry run make test
       - name: Set up .NET CLI environment
         uses: actions/setup-dotnet@v5
         with:

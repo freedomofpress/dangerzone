@@ -34,16 +34,24 @@ def wsl_status() -> str:
 
 def wsl_install(no_distribution: bool = True) -> None:
     """Install WSL, optionally without a default distribution."""
-    cmd = ["wsl", "--install"]
+    cmd = "--install"
     if no_distribution:
-        cmd.append("--no-distribution")
-    return subprocess_run(cmd, check=True, encoding="UTF-16LE")
+        cmd += " --no-distribution"
+    subprocess.run(
+        ["powershell", "-Command", f"Start-Process wsl -ArgumentList '{cmd}' -Wait"],
+        check=True,
+    )
+    # subprocess_run(cmd, check=True, encoding="UTF-16LE")
     # subprocess.run(cmd, check=True, errors="replace")
 
 
 def wsl_update() -> None:
     """Install WSL, optionally without a default distribution."""
-    return subprocess_run(["wsl", "--update"], check=True, encoding="UTF-16LE")
+    subprocess.run(
+        ["powershell", "-Command", "Start-Process wsl -ArgumentList '--update' -Wait"],
+        check=True,
+    )
+    # subprocess_run(["wsl", "--update"], check=True, encoding="UTF-16LE")
     # subprocess_run(["wsl", "--update"], check=True, errors="replace")
 
 

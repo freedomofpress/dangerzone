@@ -16,7 +16,7 @@ def wsl_list() -> None:
             ["wsl", "-l", "--quiet"],
             check=True,
             capture_output=True,
-            encoding="UTF-16LE",
+            # encoding="UTF-16LE",
         )
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         raise Exception("WSL is not installed") from e
@@ -28,7 +28,8 @@ def wsl_install(no_distribution: bool = True) -> None:
     if no_distribution:
         cmd.append("--no-distribution")
     try:
-        subprocess_run(cmd, check=True, encoding="UTF-16LE")
+        # subprocess_run(cmd, check=True, encoding="UTF-16LE")
+        subprocess_run(cmd, check=True)
     except subprocess.CalledProcessError as e:
         raise errors.WSLInstallFailed("Failed to install WSL") from e
 

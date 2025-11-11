@@ -808,6 +808,7 @@ class WSLErrorWidget(QtWidgets.QWidget):
         self.header.setAlignment(QtCore.Qt.AlignCenter)
         self.explanation = QtWidgets.QLabel()
         self.explanation.setText(WSL_INSTALL_FAILED_MSG)
+        self.explanation.setStyleSheet("QLabel { font-size: 14px; }")
         self.explanation.setAlignment(QtCore.Qt.AlignCenter)
         self.explanation.setTextFormat(QtCore.Qt.RichText)
         self.explanation.setOpenExternalLinks(True)

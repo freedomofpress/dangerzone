@@ -16,7 +16,8 @@ def wsl_list() -> str:
         ["wsl", "-l", "--quiet"],
         check=True,
         capture_output=True,
-        # encoding="UTF-16LE",
+        # errors="replace",
+        encoding="UTF-16LE",
     ).stdout
 
 
@@ -26,7 +27,8 @@ def wsl_status() -> str:
         ["wsl", "--status"],
         check=True,
         capture_output=True,
-        # encoding="UTF-16LE",
+        encoding="UTF-16LE",
+        # errors="replace",
     ).stdout
 
 
@@ -35,14 +37,14 @@ def wsl_install(no_distribution: bool = True) -> None:
     cmd = ["wsl", "--install"]
     if no_distribution:
         cmd.append("--no-distribution")
-    # subprocess_run(cmd, check=True, encoding="UTF-16LE")
-    subprocess_run(cmd, check=True)
+    return subprocess_run(cmd, check=True, encoding="UTF-16LE")
+    # subprocess.run(cmd, check=True, errors="replace")
 
 
 def wsl_update() -> None:
     """Install WSL, optionally without a default distribution."""
-    # subprocess_run(cmd, check=True, encoding="UTF-16LE")
-    subprocess_run(["wsl", "--update"], check=True)
+    return subprocess_run(["wsl", "--update"], check=True, encoding="UTF-16LE")
+    # subprocess_run(["wsl", "--update"], check=True, errors="replace")
 
 
 def is_wsl_installed() -> bool:
@@ -77,7 +79,9 @@ def install_wsl_and_check_reboot() -> None:
         log.info(f"Attempting to install WSL via '{cmd}'")
         try:
             func()
-            if not is_wsl_installed():
+            if is_wsl_installed():
+                return
+            else:
                 raise errors.WSLInstallNeedsReboot
         except subprocess.CalledProcessError as e:
             log.info(f"Did not manage to install WSL via '{cmd}'")

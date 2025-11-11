@@ -169,3 +169,26 @@ class WSLInstallFailed(Exception):
 
 class WSLInstallNeedsReboot(Exception):
     pass
+
+
+class WinShellExecError(Exception):
+    pass
+
+
+class WinShellExecTimeoutExpired(WinShellExecError):
+    def __init__(self) -> None:
+        super().__init__("Timeout expired for process")
+
+
+class WinShellExecStartFailure(WinShellExecError):
+    def __init__(self) -> None:
+        super().__init__("ShellExecuteEx failed to start")
+
+
+class WinShellExecNoHandle(WinShellExecError):
+    def __init__(self) -> None:
+        super().__init__("Process started without a handle")
+
+
+class WinShellExecProcessError(WinShellExecError):
+    pass

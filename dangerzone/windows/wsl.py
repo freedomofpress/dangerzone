@@ -4,8 +4,9 @@ import platform
 import subprocess
 from typing import Callable, Optional, Tuple
 
-from . import errors
-from .util import subprocess_run
+from .. import errors
+from ..util import subprocess_run
+from . import shellexec
 
 log = logging.getLogger(__name__)
 
@@ -34,23 +35,17 @@ def wsl_status() -> str:
 
 def wsl_install(no_distribution: bool = True) -> None:
     """Install WSL, optionally without a default distribution."""
-    cmd = "--install"
+    cmd = ["wsl", "--install"]
     if no_distribution:
-        cmd += " --no-distribution"
-    subprocess.run(
-        ["powershell", "-Command", f"Start-Process wsl -ArgumentList '{cmd}' -Wait"],
-        check=True,
-    )
+        cmd.append("--no-distribution")
+    shellexec.run(cmd, check=True)
     # subprocess_run(cmd, check=True, encoding="UTF-16LE")
     # subprocess.run(cmd, check=True, errors="replace")
 
 
 def wsl_update() -> None:
     """Install WSL, optionally without a default distribution."""
-    subprocess.run(
-        ["powershell", "-Command", "Start-Process wsl -ArgumentList '--update' -Wait"],
-        check=True,
-    )
+    shellexec.run(["wsl", "--update"], check=True)
     # subprocess_run(["wsl", "--update"], check=True, encoding="UTF-16LE")
     # subprocess_run(["wsl", "--update"], check=True, errors="replace")
 
@@ -91,7 +86,7 @@ def install_wsl_and_check_reboot() -> None:
                 return
             else:
                 raise errors.WSLInstallNeedsReboot
-        except subprocess.CalledProcessError as e:
-            log.info(f"Did not manage to install WSL via '{cmd}'")
+        except errors.WinShellExecError as e:
+            log.info(f"Did not manage to install WSL via '{cmd}': {e}")
 
     raise errors.WSLInstallFailed

@@ -12,7 +12,7 @@ else:
         from PySide2 import QtCore
 
 
-from . import errors, settings, wsl
+from . import errors, settings
 from .podman.machine import PodmanMachineManager
 from .updater import (
     ErrorReport,
@@ -24,6 +24,7 @@ from .updater import (
 from .updater import (
     errors as updater_errors,
 )
+from .windows import wsl
 
 logger = logging.getLogger(__name__)
 

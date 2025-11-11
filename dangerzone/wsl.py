@@ -9,17 +9,30 @@ from .util import subprocess_run
 log = logging.getLogger(__name__)
 
 
-def wsl_list() -> None:
-    """Check if WSL is installed by running 'wsl -l --quiet'."""
+def wsl_list() -> str:
+    """List WSL distributions."""
     try:
-        subprocess_run(
+        return subprocess_run(
             ["wsl", "-l", "--quiet"],
             check=True,
             capture_output=True,
             # encoding="UTF-16LE",
-        )
+        ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        raise Exception("WSL is not installed") from e
+        raise errors.WSLNotInstalled
+
+
+def wsl_status() -> str:
+    """Get status of WSL engine."""
+    try:
+        return subprocess_run(
+            ["wsl", "--status"],
+            check=True,
+            capture_output=True,
+            # encoding="UTF-16LE",
+        ).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        raise errors.WSLNotInstalled
 
 
 def wsl_install(no_distribution: bool = True) -> None:
@@ -37,7 +50,7 @@ def wsl_install(no_distribution: bool = True) -> None:
 def is_wsl_installed() -> bool:
     """Return whether WSL is installed or not."""
     try:
-        wsl_list()
+        wsl_status()
         return True
     except Exception:
         return False

@@ -780,7 +780,6 @@ class WaitingWidget(QtWidgets.QWidget):
         self.traceback_widget = TracebackWidget()
         self.traceback_widget.setVisible(False)
         layout = QtWidgets.QVBoxLayout()
-        self.layout = layout
         layout.addWidget(self.header)
         layout.addWidget(self.traceback_widget)
         layout.addWidget(self.footer)

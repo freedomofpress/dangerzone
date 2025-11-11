@@ -2,7 +2,7 @@ import functools
 import logging
 import platform
 import subprocess
-from typing import Optional
+from typing import Callable, Optional, Tuple
 
 from . import errors
 from .util import subprocess_run
@@ -50,8 +50,8 @@ def is_wsl_installed() -> bool:
     try:
         wsl_status()
         return True
-    except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        raise errors.WSLNotInstalled
+    except subprocess.CalledProcessError as e:
+        return False
 
 
 def install_wsl_and_check_reboot() -> None:
@@ -64,7 +64,7 @@ def install_wsl_and_check_reboot() -> None:
     # 2. On a recently updated Windows 10 machine, 'wsl --install [--no-distribution]'
     #    reportedly works.
     # 3. On the windows-2022 GitHub runner, it seems that only 'wsl --update' works.
-    methods = [
+    methods: list[Tuple[Callable, str]] = [
         (wsl_update, "wsl --update"),
         (
             functools.partial(wsl_install, no_distribution=True),
@@ -79,7 +79,7 @@ def install_wsl_and_check_reboot() -> None:
             func()
             if not is_wsl_installed():
                 raise errors.WSLInstallNeedsReboot
-        except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            pass
+        except subprocess.CalledProcessError as e:
+            log.info(f"Did not manage to install WSL via '{cmd}'")
 
     raise errors.WSLInstallFailed

@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 
 
 SEE_MASK_NOCLOSEPROCESS = 0x00000040
+TIMEOUT_INFINITE = 0xFFFFFFFF
 
 
 class SHELLEXECUTEINFOW(ctypes.Structure):
@@ -38,7 +39,7 @@ def _shellexec(
     verb: str = "open",
     cwd: Optional[str] = None,
     show: int = 1,
-    timeout_ms: Optional[int] = None,
+    timeout_ms: int = TIMEOUT_INFINITE,
 ) -> int:
     from ctypes import windll  # type: ignore [attr-defined]
 
@@ -59,7 +60,6 @@ def _shellexec(
         raise errors.WinShellExecStartFailure
     if not sei.hProcess:
         raise errors.WinShellExecNoHandle
-    INFINITE = 0xFFFFFFFF
     WAIT_OBJECT_0 = 0
     WAIT_TIMEOUT = 0x00000102
     res = windll.kernel32.WaitForSingleObject(sei.hProcess, timeout_ms)
@@ -80,7 +80,7 @@ def run(cmd: List, check: bool = False) -> int:
 
     win_ret = _shellexec(cmd[0], args)
 
-    ret = int(ctypes.c_int32(win_ret))
+    ret = ctypes.c_int32(win_ret).value
     if check and ret != 0:
         raise errors.WinShellExecProcessError(
             f"Command '{cmd}' failed with exit code: {ret}"

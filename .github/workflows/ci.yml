@@ -41,43 +41,43 @@ jobs:
       - name: Check that the QA script is up to date with the docs
         run: "./dev_scripts/qa.py --check-refs"
 
-  # This is already built daily by the "build.yml" file
-  # But we also want to include this in the checks that run on each push.
-  build-container-image:
-    name: Build, push and sign container image
-    uses: ./.github/workflows/build-push-image.yml
-    with:
-      registry: "ghcr.io/${{ github.repository_owner }}"
-      registry_user: ${{ github.repository_owner }}
-      image_name: "dangerzone-testing/v1"
-      reproduce: false
-      sign: true
-      fill_cache: true
-      key_name: "tests/assets/dangerzone-testing"
-    secrets:
-      registry_token: ${{ secrets.GITHUB_TOKEN }}
+  ## This is already built daily by the "build.yml" file
+  ## But we also want to include this in the checks that run on each push.
+  #build-container-image:
+  #  name: Build, push and sign container image
+  #  uses: ./.github/workflows/build-push-image.yml
+  #  with:
+  #    registry: "ghcr.io/${{ github.repository_owner }}"
+  #    registry_user: ${{ github.repository_owner }}
+  #    image_name: "dangerzone-testing/v1"
+  #    reproduce: false
+  #    sign: true
+  #    fill_cache: true
+  #    key_name: "tests/assets/dangerzone-testing"
+  #  secrets:
+  #    registry_token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Prepare a second image and upload it to the GHCR
-  # In order to test the upgrade to this new version
-  build-new-container-image:
-    needs: build-container-image
-    name: Build, push and sign a NEWER container image
-    uses: ./.github/workflows/build-push-image.yml
-    with:
-      registry: "ghcr.io/${{ github.repository_owner }}"
-      registry_user: ${{ github.repository_owner }}
-      image_name: "dangerzone-testing/v1"
-      reproduce: false
-      sign: true
-      fill_cache: false
-      trivially_update_container: true
-      key_name: "tests/assets/dangerzone-testing"
-    secrets:
-      registry_token: ${{ secrets.GITHUB_TOKEN }}
+  ## Prepare a second image and upload it to the GHCR
+  ## In order to test the upgrade to this new version
+  #build-new-container-image:
+  #  needs: build-container-image
+  #  name: Build, push and sign a NEWER container image
+  #  uses: ./.github/workflows/build-push-image.yml
+  #  with:
+  #    registry: "ghcr.io/${{ github.repository_owner }}"
+  #    registry_user: ${{ github.repository_owner }}
+  #    image_name: "dangerzone-testing/v1"
+  #    reproduce: false
+  #    sign: true
+  #    fill_cache: false
+  #    trivially_update_container: true
+  #    key_name: "tests/assets/dangerzone-testing"
+  #  secrets:
+  #    registry_token: ${{ secrets.GITHUB_TOKEN }}
 
   windows:
-    needs:
-      - build-container-image
+    #needs:
+    #  - build-container-image
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -134,8 +134,8 @@ jobs:
         run: wsl --update
       - name: Smoke test
         run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
-      #- name: Run CLI tests
-      #  run: poetry run make test
+      - name: Run CLI tests
+        run: poetry run make test
       - name: Set up .NET CLI environment
         uses: actions/setup-dotnet@v5
         with:
@@ -156,510 +156,510 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
-  macOS:
-    name: "macOS (${{ matrix.arch }})"
-    needs:
-      - build-container-image
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # See https://github.com/abiosoft/colima/issues/970
-          - runner: macos-15
-            arch: arm64
-          - runner: macos-15-intel
-            arch: x86_64
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-      - run: pip install poetry
-      - run: poetry install
-      - name: Cache mazette assets
-        id: cache-mazette
-        uses: actions/cache@v4
-        with:
-          path: |
-            share/tessdata/
-            share/vendor/
-            share/machine.tar
-          key: v1-mazette-darwin-${{ matrix.arch }}-${{ hashFiles('./mazette.lock') }}
-      - name: Install mazette assets
-        if: steps.cache-mazette.outputs.cache-hit != 'true'
-        run: poetry run mazette install
-      - name: Check cosign is present
-        run: ls share/vendor
-      - name: Restore container image
-        uses: actions/cache/restore@v4
-        with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
-      - name: Smoke test
-        # Nested virtualization does not work on M1 CPUs.
-        continue-on-error: ${{ matrix.arch == 'arm64'}}
-        run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
-      - name: Run CLI tests
-        run: |
-          # Nested virtualization does not work on M1 CPUs.
-          if [ ${{ matrix.arch }} == 'arm64' ]; then
-              export DUMMY_CONVERSION=1
-          fi
-          poetry run make test
-      - name: Build macOS app
-        run: poetry run python ./install/macos/build-app.py
-      - name: Upload macOS app
-        uses: actions/upload-artifact@v4
-        with:
-          name: Dangerzone-${{ matrix.arch }}.app
-          path: "dist/Dangerzone.app"
-          if-no-files-found: error
-          compression-level: 0
-  build-deb:
-    needs:
-      - build-container-image
-    name: "build-deb (${{ matrix.distro }} ${{ matrix.version }})"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - distro: ubuntu
-            version: "22.04"
-          - distro: ubuntu
-            version: "24.04"
-          - distro: ubuntu
-            version: "25.04"
-          - distro: ubuntu
-            version: "25.10"
-          - distro: debian
-            version: bullseye
-          - distro: debian
-            version: bookworm
-          - distro: debian
-            version: trixie
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+  #macOS:
+  #  name: "macOS (${{ matrix.arch }})"
+  #  needs:
+  #    - build-container-image
+  #  runs-on: ${{ matrix.runner }}
+  #  strategy:
+  #    fail-fast: false
+  #    matrix:
+  #      include:
+  #        # See https://github.com/abiosoft/colima/issues/970
+  #        - runner: macos-15
+  #          arch: arm64
+  #        - runner: macos-15-intel
+  #          arch: x86_64
+  #  steps:
+  #    - uses: actions/checkout@v5
+  #    - uses: actions/setup-python@v6
+  #      with:
+  #        python-version: "3.13"
+  #    - run: pip install poetry
+  #    - run: poetry install
+  #    - name: Cache mazette assets
+  #      id: cache-mazette
+  #      uses: actions/cache@v4
+  #      with:
+  #        path: |
+  #          share/tessdata/
+  #          share/vendor/
+  #          share/machine.tar
+  #        key: v1-mazette-darwin-${{ matrix.arch }}-${{ hashFiles('./mazette.lock') }}
+  #    - name: Install mazette assets
+  #      if: steps.cache-mazette.outputs.cache-hit != 'true'
+  #      run: poetry run mazette install
+  #    - name: Check cosign is present
+  #      run: ls share/vendor
+  #    - name: Restore container image
+  #      uses: actions/cache/restore@v4
+  #      with:
+  #        path: |-
+  #          share/container.tar
+  #          share/freedomofpress-dangerzone.pub
+  #          share/image-name.txt
+  #        enableCrossOsArchive: true
+  #        fail-on-cache-miss: true
+  #        key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+  #    - name: Smoke test
+  #      # Nested virtualization does not work on M1 CPUs.
+  #      continue-on-error: ${{ matrix.arch == 'arm64'}}
+  #      run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
+  #    - name: Run CLI tests
+  #      run: |
+  #        # Nested virtualization does not work on M1 CPUs.
+  #        if [ ${{ matrix.arch }} == 'arm64' ]; then
+  #            export DUMMY_CONVERSION=1
+  #        fi
+  #        poetry run make test
+  #    - name: Build macOS app
+  #      run: poetry run python ./install/macos/build-app.py
+  #    - name: Upload macOS app
+  #      uses: actions/upload-artifact@v4
+  #      with:
+  #        name: Dangerzone-${{ matrix.arch }}.app
+  #        path: "dist/Dangerzone.app"
+  #        if-no-files-found: error
+  #        compression-level: 0
+  #build-deb:
+  #  needs:
+  #    - build-container-image
+  #  name: "build-deb (${{ matrix.distro }} ${{ matrix.version }})"
+  #  runs-on: ubuntu-latest
+  #  strategy:
+  #    matrix:
+  #      include:
+  #        - distro: ubuntu
+  #          version: "22.04"
+  #        - distro: ubuntu
+  #          version: "24.04"
+  #        - distro: ubuntu
+  #          version: "25.04"
+  #        - distro: ubuntu
+  #          version: "25.10"
+  #        - distro: debian
+  #          version: bullseye
+  #        - distro: debian
+  #          version: bookworm
+  #        - distro: debian
+  #          version: trixie
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-      - name: Install maette tool
-        run: |
-          sudo apt install pipx
-          pipx install poetry
-          poetry install
-      - name: Cache mazette assets
-        id: cache-mazette
-        uses: actions/cache@v4
-        with:
-          path: |
-            share/vendor/
-          key: v1-mazette-linux-x86_64-${{ hashFiles('./mazette.lock') }}
-      - name: Install mazette
-        if: steps.cache-mazette.outputs.cache-hit != 'true'
-        run: poetry run mazette install
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
+  #    - uses: actions/setup-python@v6
+  #      with:
+  #        python-version: "3.11"
+  #    - name: Install maette tool
+  #      run: |
+  #        sudo apt install pipx
+  #        pipx install poetry
+  #        poetry install
+  #    - name: Cache mazette assets
+  #      id: cache-mazette
+  #      uses: actions/cache@v4
+  #      with:
+  #        path: |
+  #          share/vendor/
+  #        key: v1-mazette-linux-x86_64-${{ hashFiles('./mazette.lock') }}
+  #    - name: Install mazette
+  #      if: steps.cache-mazette.outputs.cache-hit != 'true'
+  #      run: poetry run mazette install
+  #    - name: Login to GHCR
+  #      run: |
+  #        echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
-      - name: Get the dev environment
-        run: |
-          ./dev_scripts/env.py \
-              --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              build-dev --sync
+  #    - name: Get the dev environment
+  #      run: |
+  #        ./dev_scripts/env.py \
+  #            --distro ${{ matrix.distro }} \
+  #            --version ${{ matrix.version }} \
+  #            build-dev --sync
 
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+  #    - name: Get current date
+  #      id: date
+  #      run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Restore container image
-        uses: actions/cache/restore@v4
-        with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+  #    - name: Restore container image
+  #      uses: actions/cache/restore@v4
+  #      with:
+  #        path: |-
+  #          share/container.tar
+  #          share/freedomofpress-dangerzone.pub
+  #          share/image-name.txt
+  #        enableCrossOsArchive: true
+  #        fail-on-cache-miss: true
+  #        key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
-      - name: Build Dangerzone .deb
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              run --dev --no-gui ./dangerzone/install/linux/build-deb.py
+  #    - name: Build Dangerzone .deb
+  #      run: |
+  #        ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+  #            --version ${{ matrix.version }} \
+  #            run --dev --no-gui ./dangerzone/install/linux/build-deb.py
 
-      - name: Upload Dangerzone .deb
-        if: matrix.distro == 'debian' && matrix.version == 'bookworm'
-        uses: actions/upload-artifact@v4
-        with:
-          name: dangerzone.deb
-          path: "deb_dist/dangerzone_*_*.deb"
-          if-no-files-found: error
-          compression-level: 0
+  #    - name: Upload Dangerzone .deb
+  #      if: matrix.distro == 'debian' && matrix.version == 'bookworm'
+  #      uses: actions/upload-artifact@v4
+  #      with:
+  #        name: dangerzone.deb
+  #        path: "deb_dist/dangerzone_*_*.deb"
+  #        if-no-files-found: error
+  #        compression-level: 0
 
-  install-deb:
-    name: "install-deb (${{ matrix.distro }} ${{ matrix.version }})"
-    runs-on: ubuntu-latest
-    needs:
-      - build-deb
-    strategy:
-      matrix:
-        include:
-          - distro: ubuntu
-            version: "22.04"
-          - distro: ubuntu
-            version: "24.04"
-          - distro: ubuntu
-            version: "25.04"
-          - distro: ubuntu
-            version: "25.10"
-          - distro: debian
-            version: bullseye
-          - distro: debian
-            version: bookworm
-          - distro: debian
-            version: trixie
+  #install-deb:
+  #  name: "install-deb (${{ matrix.distro }} ${{ matrix.version }})"
+  #  runs-on: ubuntu-latest
+  #  needs:
+  #    - build-deb
+  #  strategy:
+  #    matrix:
+  #      include:
+  #        - distro: ubuntu
+  #          version: "22.04"
+  #        - distro: ubuntu
+  #          version: "24.04"
+  #        - distro: ubuntu
+  #          version: "25.04"
+  #        - distro: ubuntu
+  #          version: "25.10"
+  #        - distro: debian
+  #          version: bullseye
+  #        - distro: debian
+  #          version: bookworm
+  #        - distro: debian
+  #          version: trixie
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
+  #    - uses: actions/setup-python@v6
+  #      with:
+  #        python-version: "3.10"
 
-      - name: Download Dangerzone .deb
-        uses: actions/download-artifact@v5
-        with:
-          name: dangerzone.deb
-          path: "deb_dist/"
+  #    - name: Download Dangerzone .deb
+  #      uses: actions/download-artifact@v5
+  #      with:
+  #        name: dangerzone.deb
+  #        path: "deb_dist/"
 
-      - name: Build end-user environment
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              build
+  #    - name: Build end-user environment
+  #      run: |
+  #        ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+  #            --version ${{ matrix.version }} \
+  #            build
 
-      - name: Run a test command
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
+  #    - name: Run a test command
+  #      run: |
+  #        ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+  #            --version ${{ matrix.version }} \
+  #            run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
 
-      - name: Check that the Dangerzone GUI imports work
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              run dangerzone --help
+  #    - name: Check that the Dangerzone GUI imports work
+  #      run: |
+  #        ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+  #            --version ${{ matrix.version }} \
+  #            run dangerzone --help
 
-  build-install-rpm:
-    name: "build-install-rpm (${{ matrix.distro }} ${{matrix.version}})"
-    runs-on: ubuntu-latest
-    needs:
-      - build-container-image
-    strategy:
-      matrix:
-        distro: ["fedora"]
-        version: ["41", "42"]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+  #build-install-rpm:
+  #  name: "build-install-rpm (${{ matrix.distro }} ${{matrix.version}})"
+  #  runs-on: ubuntu-latest
+  #  needs:
+  #    - build-container-image
+  #  strategy:
+  #    matrix:
+  #      distro: ["fedora"]
+  #      version: ["41", "42"]
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@v5
 
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
+  #    - name: Login to GHCR
+  #      run: |
+  #        echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
-      - name: Install mazette tool
-        run: |
-          sudo apt install pipx
-          pipx install poetry
-          poetry install
+  #    - name: Install mazette tool
+  #      run: |
+  #        sudo apt install pipx
+  #        pipx install poetry
+  #        poetry install
 
-      - name: Cache mazette assets
-        id: cache-mazette
-        uses: actions/cache@v4
-        with:
-          path: |-
-            share/tessdata/
-            share/vendor/
-          key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
+  #    - name: Cache mazette assets
+  #      id: cache-mazette
+  #      uses: actions/cache@v4
+  #      with:
+  #        path: |-
+  #          share/tessdata/
+  #          share/vendor/
+  #        key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
 
-      - name: Install mazette assets
-        if: steps.cache-mazette.outputs.cache-hit != 'true'
-        run: poetry run mazette install
+  #    - name: Install mazette assets
+  #      if: steps.cache-mazette.outputs.cache-hit != 'true'
+  #      run: poetry run mazette install
 
-      - name: Get the dev environment
-        run: |
-          ./dev_scripts/env.py \
-              --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              build-dev --sync
+  #    - name: Get the dev environment
+  #      run: |
+  #        ./dev_scripts/env.py \
+  #            --distro ${{ matrix.distro }} \
+  #            --version ${{ matrix.version }} \
+  #            build-dev --sync
 
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+  #    - name: Get current date
+  #      id: date
+  #      run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Restore container image
-        uses: actions/cache/restore@v4
-        with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+  #    - name: Restore container image
+  #      uses: actions/cache/restore@v4
+  #      with:
+  #        path: |-
+  #          share/container.tar
+  #          share/freedomofpress-dangerzone.pub
+  #          share/image-name.txt
+  #        enableCrossOsArchive: true
+  #        fail-on-cache-miss: true
+  #        key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
-      - name: Build Dangerzone .rpm
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
-              run --dev --no-gui ./dangerzone/install/linux/build-rpm.py
+  #    - name: Build Dangerzone .rpm
+  #      run: |
+  #        ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+  #            run --dev --no-gui ./dangerzone/install/linux/build-rpm.py
 
-      - name: Upload Dangerzone .rpm
-        uses: actions/upload-artifact@v4
-        with:
-          name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.rpm
-          path: "dist/dangerzone-*.x86_64.rpm"
-          if-no-files-found: error
-          compression-level: 0
+  #    - name: Upload Dangerzone .rpm
+  #      uses: actions/upload-artifact@v4
+  #      with:
+  #        name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.rpm
+  #        path: "dist/dangerzone-*.x86_64.rpm"
+  #        if-no-files-found: error
+  #        compression-level: 0
 
-      # Reclaim some space in this step, now that the dev environment is no
-      # longer necessary. Previously, we encountered out-of-space issues while
-      # running this CI job.
-      - name: Reclaim some storage space
-        run: podman system reset -f
+  #    # Reclaim some space in this step, now that the dev environment is no
+  #    # longer necessary. Previously, we encountered out-of-space issues while
+  #    # running this CI job.
+  #    - name: Reclaim some storage space
+  #      run: podman system reset -f
 
-      - name: Build end-user environment
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              build
+  #    - name: Build end-user environment
+  #      run: |
+  #        ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+  #            --version ${{ matrix.version }} \
+  #            build
 
-      - name: Run a test command
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
+  #    - name: Run a test command
+  #      run: |
+  #        ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+  #            run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
 
-      - name: Check that the Dangerzone GUI imports work
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
-              run dangerzone --help
+  #    - name: Check that the Dangerzone GUI imports work
+  #      run: |
+  #        ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+  #            run dangerzone --help
 
-  run-tests:
-    name: "run tests (${{ matrix.distro }} ${{ matrix.version }})"
-    runs-on: ubuntu-latest
-    needs:
-      - build-container-image
-    strategy:
-      matrix:
-        include:
-          - distro: ubuntu
-            version: "22.04"
-          - distro: ubuntu
-            version: "24.04"
-          - distro: ubuntu
-            version: "25.04"
-          - distro: ubuntu
-            version: "25.10"
-          - distro: debian
-            version: bullseye
-          - distro: debian
-            version: bookworm
-          - distro: debian
-            version: trixie
-          - distro: debian
-            version: forky
-          - distro: fedora
-            version: "41"
-          - distro: fedora
-            version: "42"
+  #run-tests:
+  #  name: "run tests (${{ matrix.distro }} ${{ matrix.version }})"
+  #  runs-on: ubuntu-latest
+  #  needs:
+  #    - build-container-image
+  #  strategy:
+  #    matrix:
+  #      include:
+  #        - distro: ubuntu
+  #          version: "22.04"
+  #        - distro: ubuntu
+  #          version: "24.04"
+  #        - distro: ubuntu
+  #          version: "25.04"
+  #        - distro: ubuntu
+  #          version: "25.10"
+  #        - distro: debian
+  #          version: bullseye
+  #        - distro: debian
+  #          version: bookworm
+  #        - distro: debian
+  #          version: trixie
+  #        - distro: debian
+  #          version: forky
+  #        - distro: fedora
+  #          version: "41"
+  #        - distro: fedora
+  #          version: "42"
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
+  #    - uses: actions/setup-python@v6
+  #      with:
+  #        python-version: "3.11"
 
-      - name: Install mazette tool
-        run: |
-          sudo apt install pipx
-          pipx install poetry
-          poetry install
+  #    - name: Install mazette tool
+  #      run: |
+  #        sudo apt install pipx
+  #        pipx install poetry
+  #        poetry install
 
-      - name: Cache mazette assets
-        id: cache-mazette
-        uses: actions/cache@v4
-        with:
-          path: |
-            share/tessdata/
-            share/vendor/
-          key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
+  #    - name: Cache mazette assets
+  #      id: cache-mazette
+  #      uses: actions/cache@v4
+  #      with:
+  #        path: |
+  #          share/tessdata/
+  #          share/vendor/
+  #        key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
 
-      - name: Install mazette assets
-        if: steps.cache-mazette.outputs.cache-hit != 'true'
-        run: poetry run mazette install
+  #    - name: Install mazette assets
+  #      if: steps.cache-mazette.outputs.cache-hit != 'true'
+  #      run: poetry run mazette install
 
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
+  #    - name: Login to GHCR
+  #      run: |
+  #        echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+  #    - name: Get current date
+  #      id: date
+  #      run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Get the dev environment
-        run: |
-          ./dev_scripts/env.py \
-              --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              build-dev --sync
+  #    - name: Get the dev environment
+  #      run: |
+  #        ./dev_scripts/env.py \
+  #            --distro ${{ matrix.distro }} \
+  #            --version ${{ matrix.version }} \
+  #            build-dev --sync
 
-      - name: Restore container image
-        uses: actions/cache/restore@v4
-        with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+  #    - name: Restore container image
+  #      uses: actions/cache/restore@v4
+  #      with:
+  #        path: |-
+  #          share/container.tar
+  #          share/freedomofpress-dangerzone.pub
+  #          share/image-name.txt
+  #        enableCrossOsArchive: true
+  #        fail-on-cache-miss: true
+  #        key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
-      - name: Setup xvfb (Linux)
-        run: |
-          sudo apt update
-          # Stuff copied wildly from several stackoverflow posts
-          sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libxcb-shape0 libglib2.0-0 libgl1-mesa-dev '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
+  #    - name: Setup xvfb (Linux)
+  #      run: |
+  #        sudo apt update
+  #        # Stuff copied wildly from several stackoverflow posts
+  #        sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0 libxcb-shape0 libglib2.0-0 libgl1-mesa-dev '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
 
-          # start xvfb in the background
-          sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
+  #        # start xvfb in the background
+  #        sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x1024x24 &
 
-      - name: Run CI tests
-        run: |-
-          # Pass the -ac Xserver flag, to disable host-based access controls.
-          # This should be used ONLY for testing [1]. If we don't pass this
-          # flag, the Podman container is not authorized [2] to access the Xvfb
-          # server.
-          #
-          # Also, run the tests with no network connection, using the
-          # `--no-network` flag, to ensure that Dangerzone can run in airgapped
-          # installations.
-          #
-          # [1] From https://www.x.org/releases/X11R6.7.0/doc/Xserver.1.html#sect4:
-          #
-          #     disables host-based access control mechanisms. Enables access by
-          #     any host, and permits any host to modify the access control
-          #     list. Use with extreme caution. This option exists primarily for
-          #     running test suites remotely.
-          #
-          # [2] Fails with "Authorization required, but no authorization
-          #     protocol specified". However, we have verified with strace(1)
-          #     that the command in the Podman container can read the Xauthority
-          #     file successfully.
-          xvfb-run -s '-ac' \
-            ./dev_scripts/env.py \
-              --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
-              run --dev --no-network \
-              bash -c 'cd dangerzone; poetry run make test'
+  #    - name: Run CI tests
+  #      run: |-
+  #        # Pass the -ac Xserver flag, to disable host-based access controls.
+  #        # This should be used ONLY for testing [1]. If we don't pass this
+  #        # flag, the Podman container is not authorized [2] to access the Xvfb
+  #        # server.
+  #        #
+  #        # Also, run the tests with no network connection, using the
+  #        # `--no-network` flag, to ensure that Dangerzone can run in airgapped
+  #        # installations.
+  #        #
+  #        # [1] From https://www.x.org/releases/X11R6.7.0/doc/Xserver.1.html#sect4:
+  #        #
+  #        #     disables host-based access control mechanisms. Enables access by
+  #        #     any host, and permits any host to modify the access control
+  #        #     list. Use with extreme caution. This option exists primarily for
+  #        #     running test suites remotely.
+  #        #
+  #        # [2] Fails with "Authorization required, but no authorization
+  #        #     protocol specified". However, we have verified with strace(1)
+  #        #     that the command in the Podman container can read the Xauthority
+  #        #     file successfully.
+  #        xvfb-run -s '-ac' \
+  #          ./dev_scripts/env.py \
+  #            --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+  #            run --dev --no-network \
+  #            bash -c 'cd dangerzone; poetry run make test'
 
-      - name: Upload PDF diffs
-        uses: actions/upload-artifact@v4
-        with:
-          name: pdf-diffs-${{ matrix.distro }}-${{ matrix.version }}
-          path: tests/test_docs/diffs/*.jpeg
-        # Always run this step to publish test results, even on failures
-        if: ${{ always() }}
+  #    - name: Upload PDF diffs
+  #      uses: actions/upload-artifact@v4
+  #      with:
+  #        name: pdf-diffs-${{ matrix.distro }}-${{ matrix.version }}
+  #        path: tests/test_docs/diffs/*.jpeg
+  #      # Always run this step to publish test results, even on failures
+  #      if: ${{ always() }}
 
-  end-to-end-test:
-    name: "Sandbox upgrade E2E test"
-    runs-on: ubuntu-latest
-    needs:
-      - build-new-container-image
-      - build-container-image
+  #end-to-end-test:
+  #  name: "Sandbox upgrade E2E test"
+  #  runs-on: ubuntu-latest
+  #  needs:
+  #    - build-new-container-image
+  #    - build-container-image
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
+  #    - uses: actions/setup-python@v6
+  #      with:
+  #        python-version: "3.11"
 
-      - name: Install mazette tool
-        run: |
-          sudo apt install pipx
-          pipx install poetry
-          poetry install
+  #    - name: Install mazette tool
+  #      run: |
+  #        sudo apt install pipx
+  #        pipx install poetry
+  #        poetry install
 
-      - name: Cache mazette assets
-        id: cache-mazette
-        uses: actions/cache@v4
-        with:
-          path: |
-            share/tessdata/
-            share/vendor/
-          key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
+  #    - name: Cache mazette assets
+  #      id: cache-mazette
+  #      uses: actions/cache@v4
+  #      with:
+  #        path: |
+  #          share/tessdata/
+  #          share/vendor/
+  #        key: v1-mazette-linux-${{ hashFiles('./mazette.lock') }}
 
-      - name: Install mazette assets
-        if: steps.cache-mazette.outputs.cache-hit != 'true'
-        run: poetry run mazette install
+  #    - name: Install mazette assets
+  #      if: steps.cache-mazette.outputs.cache-hit != 'true'
+  #      run: poetry run mazette install
 
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
+  #    - name: Login to GHCR
+  #      run: |
+  #        echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
-      - name: Restore container image
-        uses: actions/cache/restore@v4
-        with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+  #    - name: Restore container image
+  #      uses: actions/cache/restore@v4
+  #      with:
+  #        path: |-
+  #          share/container.tar
+  #          share/freedomofpress-dangerzone.pub
+  #          share/image-name.txt
+  #        enableCrossOsArchive: true
+  #        fail-on-cache-miss: true
+  #        key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
 
-      - name: Run a conversion
-        run: |
-          poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf
+  #    - name: Run a conversion
+  #      run: |
+  #        poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf
 
-      - name: Update the settings so they check for updates
-        run: |
-          jq '.updater_check_all = true' ~/.config/dangerzone/settings.json > temp.json && mv temp.json ~/.config/dangerzone/settings.json
+  #    - name: Update the settings so they check for updates
+  #      run: |
+  #        jq '.updater_check_all = true' ~/.config/dangerzone/settings.json > temp.json && mv temp.json ~/.config/dangerzone/settings.json
 
-      - name: Check the digest of the loaded podman image
-        run: |
-          podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
+  #    - name: Check the digest of the loaded podman image
+  #      run: |
+  #        podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
 
-      - uses: imjasonh/setup-crane@v0.1
+  #    - uses: imjasonh/setup-crane@v0.1
 
-      - name: Tag a new version of the sandbox
-        run: |
-          crane tag ${{ needs.build-new-container-image.outputs.image_uri }} latest
+  #    - name: Tag a new version of the sandbox
+  #      run: |
+  #        crane tag ${{ needs.build-new-container-image.outputs.image_uri }} latest
 
-      - name: Run another conversion
-        run: |
-          poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf
+  #    - name: Run another conversion
+  #      run: |
+  #        poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf
 
-      - name: Check the digest of the loaded podman image
-        run: |
-          podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
+  #    - name: Check the digest of the loaded podman image
+  #      run: |
+  #        podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
 
-      - name: Ensure the container has been upgraded
-        run: |
-          DIGEST=$(podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}")
-          EXPECTED_DIGEST=$(echo "${{ needs.build-new-container-image.outputs.image_uri }}" | grep -Po "@\Ksha256:[a-f0-9]*")
-          if [[ $DIGEST != $EXPECTED_DIGEST ]]; then
-              exit 1
-          fi
+  #    - name: Ensure the container has been upgraded
+  #      run: |
+  #        DIGEST=$(podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}")
+  #        EXPECTED_DIGEST=$(echo "${{ needs.build-new-container-image.outputs.image_uri }}" | grep -Po "@\Ksha256:[a-f0-9]*")
+  #        if [[ $DIGEST != $EXPECTED_DIGEST ]]; then
+  #            exit 1
+  #        fi

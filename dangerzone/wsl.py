@@ -1,3 +1,4 @@
+import functools
 import logging
 import platform
 import subprocess
@@ -11,28 +12,22 @@ log = logging.getLogger(__name__)
 
 def wsl_list() -> str:
     """List WSL distributions."""
-    try:
-        return subprocess_run(
-            ["wsl", "-l", "--quiet"],
-            check=True,
-            capture_output=True,
-            # encoding="UTF-16LE",
-        ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        raise errors.WSLNotInstalled
+    return subprocess_run(
+        ["wsl", "-l", "--quiet"],
+        check=True,
+        capture_output=True,
+        # encoding="UTF-16LE",
+    ).stdout
 
 
 def wsl_status() -> str:
     """Get status of WSL engine."""
-    try:
-        return subprocess_run(
-            ["wsl", "--status"],
-            check=True,
-            capture_output=True,
-            # encoding="UTF-16LE",
-        ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        raise errors.WSLNotInstalled
+    return subprocess_run(
+        ["wsl", "--status"],
+        check=True,
+        capture_output=True,
+        # encoding="UTF-16LE",
+    ).stdout
 
 
 def wsl_install(no_distribution: bool = True) -> None:
@@ -40,11 +35,14 @@ def wsl_install(no_distribution: bool = True) -> None:
     cmd = ["wsl", "--install"]
     if no_distribution:
         cmd.append("--no-distribution")
-    try:
-        # subprocess_run(cmd, check=True, encoding="UTF-16LE")
-        subprocess_run(cmd, check=True)
-    except subprocess.CalledProcessError as e:
-        raise errors.WSLInstallFailed("Failed to install WSL") from e
+    # subprocess_run(cmd, check=True, encoding="UTF-16LE")
+    subprocess_run(cmd, check=True)
+
+
+def wsl_update() -> None:
+    """Install WSL, optionally without a default distribution."""
+    # subprocess_run(cmd, check=True, encoding="UTF-16LE")
+    subprocess_run(["wsl", "--update"], check=True)
 
 
 def is_wsl_installed() -> bool:
@@ -52,8 +50,8 @@ def is_wsl_installed() -> bool:
     try:
         wsl_status()
         return True
-    except Exception:
-        return False
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        raise errors.WSLNotInstalled
 
 
 def install_wsl_and_check_reboot() -> None:
@@ -61,18 +59,27 @@ def install_wsl_and_check_reboot() -> None:
     if is_wsl_installed():
         return
 
-    log.info("Attempting to install WSL with --no-distribution")
-    try:
-        wsl_install(no_distribution=True)
-        raise errors.WSLInstallNeedsReboot()
-    except errors.WSLInstallFailed as e1:
-        log.warning(
-            "Failed to install WSL with --no-distribution, trying without it..."
-        )
+    # NOTE: We choose the following methods, due to the devices we have tested WSL on.
+    # 1. On a Windows 11 machine, any of these three methods should work.
+    # 2. On a recently updated Windows 10 machine, 'wsl --install [--no-distribution]'
+    #    reportedly works.
+    # 3. On the windows-2022 GitHub runner, it seems that only 'wsl --update' works.
+    methods = [
+        (wsl_update, "wsl --update"),
+        (
+            functools.partial(wsl_install, no_distribution=True),
+            "wsl --install --no-distribution",
+        ),
+        (wsl_install, "wsl --install"),
+    ]
+
+    for func, cmd in methods:
+        log.info(f"Attempting to install WSL via '{cmd}'")
         try:
-            wsl_install(no_distribution=False)
-            raise errors.WSLInstallNeedsReboot()
-        except errors.WSLInstallFailed as e2:
-            raise errors.WSLInstallFailed(
-                "Failed to install WSL, both with and without --no-distribution"
-            ) from e2
+            func()
+            if not is_wsl_installed():
+                raise errors.WSLInstallNeedsReboot
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            pass
+
+    raise errors.WSLInstallFailed

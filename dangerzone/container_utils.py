@@ -19,7 +19,6 @@ from .settings import Settings
 from .util import (
     get_cache_dir,
     get_resource_path,
-    get_subprocess_startupinfo,
     get_version,
     subprocess_run,
 )

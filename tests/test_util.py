@@ -17,12 +17,6 @@ def test_get_resource_path() -> None:
     )
 
 
-@pytest.mark.skipif(platform.system() != "Windows", reason="Windows-specific")
-def test_get_subprocess_startupinfo() -> None:
-    startupinfo = util.get_subprocess_startupinfo()
-    assert isinstance(startupinfo, subprocess.STARTUPINFO)  # type: ignore[attr-defined]
-
-
 def test_replace_control_chars(uncommon_text: str, sanitized_text: str) -> None:
     """Test that the replace_control_chars() function works properly."""
     assert util.replace_control_chars(uncommon_text) == sanitized_text

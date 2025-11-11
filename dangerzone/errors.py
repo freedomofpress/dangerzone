@@ -168,7 +168,8 @@ class WSLNotInstalled(Exception):
 
 
 class WSLInstallFailed(Exception):
-    pass
+    def __init__(self) -> None:
+        super().__init__("WSL installation failed")
 
 
 class WSLInstallNeedsReboot(Exception):

@@ -92,19 +92,22 @@ def get_version() -> str:
     return version
 
 
-def get_subprocess_startupinfo():  # type: ignore [no-untyped-def]
+# NOTE: We originally used `subprocess.STARTF_USESHOWWINDOW` here, but we encountered a
+# corner case where we couldn't run `wsl --install` on Windows 11 with it. On the other
+# hand, `subprocess.CREATE_NO_WINDOW` is more modern, and actually works in conjunction
+# with `wsl --install`. Probably it has to do with the fact that `wsl --install` needs
+# to elevate its privileges at some point, but we haven't dug further.
+def get_subprocess_creationflags():  # type: ignore [no-untyped-def]
     if platform.system() == "Windows":
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        return startupinfo
+        return subprocess.CREATE_NO_WINDOW
     else:
         return None
 
 
-# subprocess.run with the correct startupinfo for Windows.
+# subprocess.run with the correct flags for Windows.
 # We use a partial here to better profit from type checking
 subprocess_run = functools.partial(
-    subprocess.run, startupinfo=get_subprocess_startupinfo()
+    subprocess.run, creationflags=get_subprocess_creationflags()
 )
 
 

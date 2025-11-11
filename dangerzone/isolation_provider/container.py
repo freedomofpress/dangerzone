@@ -17,10 +17,7 @@ from ..updater import (
     bypass_signature_checks,
     verify_local_image,
 )
-from ..util import (
-    get_resource_path,
-    get_subprocess_startupinfo,
-)
+from ..util import get_resource_path
 from .base import IsolationProvider, terminate_process_group
 
 MINIMUM_DOCKER_DESKTOP = {

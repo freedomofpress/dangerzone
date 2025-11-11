@@ -857,6 +857,7 @@ def test_wsl_needs_reboot_user_input(
     window: MainWindow,
 ) -> None:
     mocker.patch("platform.system", return_value="Windows")
+    mocker.patch("dangerzone.wsl.is_wsl_installed", return_value=False)
     mock_wsl_install_task_run = mocker.patch(
         "dangerzone.wsl.install_wsl_and_check_reboot",
         side_effect=errors.WSLInstallNeedsReboot,
@@ -907,6 +908,7 @@ def test_wsl_install_failed_user_input(
     window: MainWindow,
 ) -> None:
     mocker.patch("platform.system", return_value="Windows")
+    mocker.patch("dangerzone.wsl.is_wsl_installed", return_value=False)
     mock_wsl_install_task_run = mocker.patch(
         "dangerzone.wsl.install_wsl_and_check_reboot",
         side_effect=errors.WSLInstallFailed,

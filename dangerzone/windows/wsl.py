@@ -82,10 +82,20 @@ def install_wsl_and_check_reboot() -> None:
         log.info(f"Attempting to install WSL via '{cmd}'")
         try:
             func()
-            if is_wsl_installed():
-                return
-            else:
-                raise errors.WSLInstallNeedsReboot
+            # FIXME: At this point, we know that the WSL installation has succeeded. We
+            # don't know though if a reboot is required. To be fair, I don't think that
+            # Windows knows that either. If we run `wsl --status`, it may or may not
+            # report an error. If we run:
+            #
+            #     dism.exe /online /get-featureinfo /featurename:...
+            #
+            # it reports that you "possibly" need a reboot.
+            #
+            # We have to err on the side of rebooting here, else we risk doing
+            # `podman machine init`, and hanging Dangerzone. We have encountered this
+            # scenario in Windows 11, where a `wsl --import` call does not seem to
+            # return.
+            raise errors.WSLInstallNeedsReboot
         except errors.WinShellExecError as e:
             log.info(f"Did not manage to install WSL via '{cmd}': {e}")
 

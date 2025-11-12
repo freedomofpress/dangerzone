@@ -468,6 +468,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_wsl_install.starting.connect(self.log_window.handle_task_wsl_install)
         task_wsl_install.failed.connect(self.log_window.handle_task_wsl_install_failed)
         task_wsl_install.failed.connect(self.handle_wsl_install_failed)
+        task_wsl_install.needs_install.connect(self.handle_wsl_needs_install)
         task_wsl_install.needs_reboot.connect(self.handle_wsl_needs_reboot)
 
         task_machine_stop_others.starting.connect(

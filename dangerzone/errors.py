@@ -163,8 +163,7 @@ class OtherMachineRunningError(Exception):
 
 
 class WSLInstallFailed(Exception):
-    def __init__(self) -> None:
-        super().__init__("WSL installation failed")
+    pass
 
 
 class WSLNotInstalled(Exception):

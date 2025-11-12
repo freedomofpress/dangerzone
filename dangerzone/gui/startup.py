@@ -9,7 +9,7 @@ else:
     except ImportError:
         from PySide2 import QtCore, QtWidgets
 
-from .. import startup
+from .. import errors, startup
 from ..updater import InstallationStrategy, installer
 from ..updater.releases import EmptyReport, ErrorReport, ReleaseReport
 
@@ -116,7 +116,9 @@ class WSLInstallTask(GUIMixin, startup.WSLInstallTask, metaclass=_MetaConflictRe
             # rest of the startup steps.
             raise Exception("We are about to reboot..")
         else:
-            raise errors.WSLNeedsReboot("User chose to quit instead of rebooting")
+            raise errors.WSLInstallNeedsReboot(
+                "User chose to quit instead of rebooting"
+            )
 
 
 class ContainerInstallTask(

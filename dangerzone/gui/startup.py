@@ -97,18 +97,26 @@ class MachineStartTask(
 
 
 class WSLInstallTask(GUIMixin, startup.WSLInstallTask, metaclass=_MetaConflictResolver):
+    needs_install = QtCore.Signal(object)  # PromptRequest
     needs_reboot = QtCore.Signal(object)  # PromptRequest
 
-    def handle_wsl_reboot(self, e: startup.errors.WSLInstallNeedsReboot) -> None:
+    def prompt_install(self) -> None:
+        install = PromptRequest().ask(self.needs_install)
+        if install:
+            # The actual installation will take place in the task.
+            return
+        else:
+            raise errors.WSLNotInstalled("User chose to quit instead of installing WSL")
+
+    def prompt_reboot(self, e: startup.errors.WSLInstallNeedsReboot) -> None:
         reboot = PromptRequest().ask(self.needs_reboot)
         if reboot:
             subprocess.run(["shutdown", "/r", "/t", "0"])
             # The OS is about to reboot, so there's no need to continue with the
-            # shutdown sequence.
-            raise e
+            # rest of the startup steps.
+            raise Exception("We are about to reboot..")
         else:
-            # This should never happened
-            raise Exception("User chose to quit instead of rebooting")
+            raise errors.WSLNeedsReboot("User chose to quit instead of rebooting")
 
 
 class ContainerInstallTask(

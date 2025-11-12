@@ -95,8 +95,16 @@ def install_wsl_and_check_reboot() -> None:
             # `podman machine init`, and hanging Dangerzone. We have encountered this
             # scenario in Windows 11, where a `wsl --import` call does not seem to
             # return.
-            raise errors.WSLInstallNeedsReboot
+            raise errors.WSLInstallNeedsReboot(
+                "Windows Subsystem for Linux (WSL) was installed, but you need to reboot"
+                " your computer before Dangerzone can use it."
+            )
         except errors.WinShellExecError as e:
             log.info(f"Did not manage to install WSL via '{cmd}': {e}")
 
-    raise errors.WSLInstallFailed
+    raise errors.WSLInstallFailed(
+        "Dangerzone failed to install the Windows Subsystem for Linux (WSL),"
+        " which is required for it to work. You can attempt to install it on"
+        " your own with 'wsl --install', or check some troubleshooting tips:"
+        " https://podman-desktop.io/docs/troubleshooting/troubleshooting-podman-on-windows"
+    )

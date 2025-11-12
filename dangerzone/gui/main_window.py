@@ -79,6 +79,15 @@ run.</p>
 handle it manually.</p>
 """
 
+WSL_NEEDS_INSTALL_MSG = """\
+<p>Dangerzone requires a Microsoft Windows feature called
+<a href="https://learn.microsoft.com/en-us/windows/wsl/">
+Windows Subsystem for Linux (WSL)
+</a>, which is not present in your system.
+<p>You can let Dangerzone download and install it now, or quit Dangerzone and install it
+on your own.</p>
+"""
+
 WSL_NEEDS_REBOOT_MSG = """\
 <p>Dangerzone has installed the Windows Subsystem for Linux (WSL), but you need to
 reboot your computer before Dangerzone can use it.</p>
@@ -87,7 +96,6 @@ later.</p>
 """
 
 WSL_INSTALL_FAILED_MSG = """\
-<p>Dangerzone failed to install the Windows Subsystem for Linux (WSL).</p>
 <p>If you have just installed Dangerzone, you may need to <b>reboot</b> your computer
 for changes to take effect. If you have already rebooted, then you need to troubleshoot
 your installation.</p>
@@ -107,7 +115,7 @@ troubleshooting tips ↗️
 
 <p>If you feel stuck, don't hesitate to
 <a href="https://github.com/freedomofpress/dangerzone/wiki/Reporting-an-issue">
-    report an issue ↗️
+report an issue ↗️
 </a>
 </p>
 """
@@ -696,6 +704,23 @@ class MainWindow(QtWidgets.QMainWindow):
             self.startup_thread.wait()
             self.begin_shutdown(ret=2)
 
+    def handle_wsl_needs_install(self, req: startup.PromptRequest) -> None:
+        log.debug("Prompting user to install WSL")
+        question = Question(
+            self.dangerzone,
+            title="WSL is required",
+            message=WSL_NEEDS_INSTALL_MSG,
+            ok_text="Install WSL",
+            cancel_text="Quit Dangerzone",
+        )
+        result = question.launch()
+        if result == Question.Accepted:
+            req.reply(True)
+        else:
+            req.reply(False)
+            self.startup_thread.wait()
+            self.begin_shutdown(ret=2)
+
     def handle_wsl_needs_reboot(self, req: startup.PromptRequest) -> None:
         log.debug("Prompting user to reboot")
         question = Question(
@@ -803,7 +828,9 @@ class WSLErrorWidget(QtWidgets.QWidget):
     def __init__(self) -> None:
         super().__init__()
         self.header = QtWidgets.QLabel()
-        self.header.setText("<p>Dangerzone encountered an error during startup:<p>")
+        self.header.setText(
+            "<p>Dangerzone failed to install the Windows Subsystem for Linux (WSL)</p>"
+        )
         self.header.setStyleSheet("QLabel { font-size: 20px; }")
         self.header.setAlignment(QtCore.Qt.AlignCenter)
         self.explanation = QtWidgets.QLabel()

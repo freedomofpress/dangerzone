@@ -176,27 +176,23 @@ class WSLInstallTask(Task):
         return platform.system() != "Windows" or wsl.is_wsl_installed()
 
     def run(self) -> None:
+        self.prompt_install()
         try:
             wsl.install_wsl_and_check_reboot()
-        except errors.WSLInstallFailed as e:
-            # Fail with a helpful error message.
-            logger.error(
-                "Dangerzone failed to install the Windows Subsystem for Linux (WSL),"
-                " which is required for it to work. Please follow the"
-                " official guide to install it, and try again:"
-                " https://podman-desktop.io/docs/troubleshooting/troubleshooting-podman-on-windows"
-            )
-            raise
         except errors.WSLInstallNeedsReboot as e:
-            self.handle_wsl_reboot(e)
+            self.prompt_reboot(e)
 
-    def handle_wsl_reboot(self, e: errors.WSLInstallNeedsReboot) -> None:
-        # In non-GUI mode, we can't do much better than telling the user to reboot.
-        # In GUI mode, we can override this method to prompt the user to reboot.
-        logger.warning(
-            "Windows Subsystem for Linux (WSL) was installed, but you need to reboot"
-            " your computer before Dangerzone can use it."
+    # In CLI mode, we choose to not prompt the user, because we don't want to introduce
+    # any interactivity. For this reason, we raise an exception immediately.
+    # In GUI mode, we can override these methods and prompt the user.
+
+    def prompt_install(self) -> None:
+        raise errors.WSLNotInstalled(
+            "Windows Subsystem for Linux (WSL) needs to be installed so that"
+            " Dangerzone can use it"
         )
+
+    def prompt_reboot(self, e: errors.WSLInstallNeedsReboot) -> None:
         raise e
 
 

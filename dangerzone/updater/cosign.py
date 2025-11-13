@@ -3,8 +3,7 @@ import subprocess
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from ..container_utils import subprocess_run
-from ..util import get_resource_path
+from ..util import get_resource_path, subprocess_run
 from . import errors, log
 
 """

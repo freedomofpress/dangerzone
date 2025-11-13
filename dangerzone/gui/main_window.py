@@ -338,13 +338,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Content and waiting widget
         self.conversion_widget = ConversionWidget(self.dangerzone)
-        self.waiting_widget = WaitingWidget()
+        self.startup_error_widget = StartupErrorWidget()
         self.show_conversion_widget()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
-        layout.addWidget(self.waiting_widget, stretch=1)
+        layout.addWidget(self.startup_error_widget, stretch=1)
         layout.addWidget(self.conversion_widget, stretch=1)
 
         # Log window
@@ -641,15 +641,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def handle_startup_error(self, msg: str) -> None:
         self.status_bar.handle_startup_error()
-        self.waiting_widget.handle_error(msg)
-        self.hide_conversion_widget()
+        self.startup_error_widget.handle_error(msg)
+        self.show_startup_error_widget()
 
     def hide_conversion_widget(self) -> None:
-        self.waiting_widget.show()
+        self.startup_error_widget.show()
         self.conversion_widget.hide()
 
     def show_conversion_widget(self) -> None:
-        self.waiting_widget.hide()
+        self.startup_error_widget.hide()
         self.conversion_widget.show()
 
     def waiting_finished(self) -> None:
@@ -684,7 +684,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # TODO: Handle gracefully the case of a running startup thread as well.
 
 
-class WaitingWidget(QtWidgets.QWidget):
+class StartupErrorWidget(QtWidgets.QWidget):
     def __init__(self) -> None:
         super().__init__()
         self.header = QtWidgets.QLabel()

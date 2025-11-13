@@ -33,7 +33,6 @@ from dangerzone.gui.main_window import (
     ConversionWidget,
     QtCore,
     QtGui,
-    # WaitingWidgetContainer,
 )
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.dummy import Dummy

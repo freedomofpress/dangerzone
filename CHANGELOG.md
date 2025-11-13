@@ -22,7 +22,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   machine the Dangerzone uses under the hood
   ([#1172](https://github.com/freedomofpress/dangerzone/issues/1172))
 - Capture all the command outputs in the logs ([#1236](https://github.com/freedomofpress/dangerzone/issues/1172))
-- Make the `podman pull` command and registry lookups go trough Tor on Tails ([#1335](https://github.com/freedomofpress/dangerzone/issues/1335))
+- Make the `podman pull` command and registry lookups go through Tor on Tails ([#1335](https://github.com/freedomofpress/dangerzone/issues/1335))
+- Add a startup task that installs WSL ([#1312](https://github.com/freedomofpress/dangerzone/issues/1312))
 
 ### Removed
 

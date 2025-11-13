@@ -78,6 +78,47 @@ run.</p>
 handle it manually.</p>
 """
 
+WSL_NEEDS_INSTALL_MSG = """\
+<p>Dangerzone requires a Microsoft Windows feature called
+<a href="https://learn.microsoft.com/en-us/windows/wsl/">
+Windows Subsystem for Linux (WSL)
+</a>, which is not present in your system.
+<p>Should we download and install it now, or quit Dangerzone and install it
+on your own?</p>
+"""
+
+WSL_NEEDS_REBOOT_MSG = """\
+<p>The Windows Subsystem for Linux (WSL) is now installed, but you need to
+reboot your computer to make Dangerzone work.</p>
+<p>You can either reboot your computer now, or quit Dangerzone and reboot it
+later.</p>
+"""
+
+WSL_INSTALL_FAILED_MSG = """\
+<p>If you have just installed Dangerzone, you may need to <b>reboot</b> your computer
+for changes to take effect. If you have already rebooted, then you need to troubleshoot
+your installation.</p>
+
+<p>The best way to get started is to run the following command in a terminal:</p>
+
+<p><b>wsl --install</b></p>
+
+<p>You can also take a look at some
+<a href="https://learn.microsoft.com/en-us/windows/wsl/troubleshooting#common-issues">
+common WSL issues ↗️
+</a>, some
+<a href="https://podman-desktop.io/docs/troubleshooting/troubleshooting-podman-on-windows#older-wsl-versions-might-lead-to-networking-issues">
+troubleshooting tips ↗️
+</a> from Podman, or our logs from the <i>"View logs"</i> menu option.
+</p>
+
+<p>If you feel stuck, don't hesitate to
+<a href="https://github.com/freedomofpress/dangerzone/wiki/Reporting-an-issue">
+report an issue ↗️
+</a>
+</p>
+"""
+
 
 DEBIAN_BULLSEYE_DEPRECATION_MSG = """\
 <p><b>Warning:</b> Debian Bullseye systems and their derivatives will
@@ -237,6 +278,9 @@ class StatusBar(QtWidgets.QStatusBar):
     def handle_task_machine_stop(self) -> None:
         self.set_status_working("Stopping Dangerzone sandbox (shutting down VM)")
 
+    def handle_task_wsl_install(self) -> None:
+        self.set_status_working("Installing Windows Subsystem for Linux")
+
     def handle_task_update_check(self) -> None:
         self.set_status_working("Checking for updates")
 
@@ -339,12 +383,14 @@ class MainWindow(QtWidgets.QMainWindow):
         # Content and waiting widget
         self.conversion_widget = ConversionWidget(self.dangerzone)
         self.startup_error_widget = StartupErrorWidget()
+        self.wsl_error_widget = WSLErrorWidget()
         self.show_conversion_widget()
 
         # Layout
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(header_layout)
         layout.addWidget(self.startup_error_widget, stretch=1)
+        layout.addWidget(self.wsl_error_widget, stretch=1)
         layout.addWidget(self.conversion_widget, stretch=1)
 
         # Log window
@@ -372,6 +418,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Start startup thread
         log.debug("Starting Dangerzone background tasks")
+        task_wsl_install = startup.WSLInstallTask()
         task_machine_stop_others = startup.MachineStopOthersTask()
         task_machine_init = startup.MachineInitTask()
         task_machine_start = startup.MachineStartTask()
@@ -379,6 +426,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_container_install = startup.ContainerInstallTask()
         if dangerzone.isolation_provider.requires_install():
             tasks = [
+                task_wsl_install,
                 task_machine_stop_others,
                 task_machine_init,
                 task_machine_start,
@@ -393,19 +441,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.startup_thread.succeeded.connect(self.status_bar.handle_startup_success)
         self.startup_thread.succeeded.connect(self.log_window.handle_startup_success)
         self.startup_thread.succeeded.connect(self.show_conversion_widget)
-        self.startup_thread.failed.connect(self.handle_startup_error)
 
         task_machine_init.starting.connect(self.status_bar.handle_task_machine_init)
         task_machine_init.starting.connect(self.log_window.handle_task_machine_init)
         task_machine_init.failed.connect(
             self.log_window.handle_task_machine_init_failed
         )
+        task_machine_init.failed.connect(self.handle_startup_error)
 
         task_machine_start.starting.connect(self.status_bar.handle_task_machine_start)
         task_machine_start.starting.connect(self.log_window.handle_task_machine_start)
         task_machine_start.failed.connect(
             self.log_window.handle_task_machine_start_failed
         )
+        task_machine_start.failed.connect(self.handle_startup_error)
+
+        task_wsl_install.starting.connect(self.status_bar.handle_task_wsl_install)
+        task_wsl_install.starting.connect(self.log_window.handle_task_wsl_install)
+        task_wsl_install.failed.connect(self.log_window.handle_task_wsl_install_failed)
+        task_wsl_install.failed.connect(self.handle_wsl_install_failed)
+        task_wsl_install.needs_install.connect(self.handle_wsl_needs_install)
+        task_wsl_install.needs_reboot.connect(self.handle_wsl_needs_reboot)
 
         task_machine_stop_others.starting.connect(
             self.status_bar.handle_task_machine_stop_others
@@ -416,6 +472,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_machine_stop_others.failed.connect(
             self.log_window.handle_task_machine_stop_others_failed
         )
+        task_machine_stop_others.failed.connect(self.handle_startup_error)
         task_machine_stop_others.needs_user_input.connect(
             self.handle_needs_user_input_stop_others
         )
@@ -448,6 +505,7 @@ class MainWindow(QtWidgets.QMainWindow):
         task_container_install.failed.connect(
             self.log_window.handle_task_container_install_failed
         )
+        task_container_install.failed.connect(self.handle_startup_error)
 
         self.show()
 
@@ -639,6 +697,44 @@ class MainWindow(QtWidgets.QMainWindow):
             self.startup_thread.wait()
             self.begin_shutdown(ret=2)
 
+    def handle_wsl_needs_install(self, req: startup.PromptRequest) -> None:
+        log.debug("Prompting user to install WSL")
+        question = Question(
+            self.dangerzone,
+            title="WSL is required",
+            message=WSL_NEEDS_INSTALL_MSG,
+            ok_text="Install WSL",
+            cancel_text="Quit Dangerzone",
+        )
+        result = question.launch()
+        if result == Question.Accepted:
+            req.reply(True)
+        else:
+            req.reply(False)
+            self.startup_thread.wait()
+            self.begin_shutdown(ret=2)
+
+    def handle_wsl_needs_reboot(self, req: startup.PromptRequest) -> None:
+        log.debug("Prompting user to reboot")
+        question = Question(
+            self.dangerzone,
+            title="Reboot required",
+            message=WSL_NEEDS_REBOOT_MSG,
+            ok_text="Reboot now",
+            cancel_text="Quit Dangerzone",
+        )
+        result = question.launch()
+        if result == Question.Accepted:
+            req.reply(True)
+        else:
+            req.reply(False)
+            self.startup_thread.wait()
+            self.begin_shutdown(ret=2)
+
+    def handle_wsl_install_failed(self, msg: str) -> None:
+        self.status_bar.handle_startup_error()
+        self.show_wsl_error_widget()
+
     def handle_startup_error(self, msg: str) -> None:
         self.status_bar.handle_startup_error()
         self.startup_error_widget.handle_error(msg)
@@ -646,11 +742,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def show_startup_error_widget(self) -> None:
         self.startup_error_widget.show()
+        self.wsl_error_widget.hide()
         self.conversion_widget.hide()
 
     def show_conversion_widget(self) -> None:
         self.conversion_widget.show()
         self.startup_error_widget.hide()
+        self.wsl_error_widget.hide()
+
+    def show_wsl_error_widget(self) -> None:
+        self.wsl_error_widget.show()
+        self.startup_error_widget.hide()
+        self.conversion_widget.hide()
 
     def waiting_finished(self) -> None:
         log.debug("Startup tasks have finished")
@@ -714,6 +817,29 @@ class StartupErrorWidget(QtWidgets.QWidget):
               </a>
             </p>
         """)
+
+
+class WSLErrorWidget(QtWidgets.QWidget):
+    def __init__(self) -> None:
+        super().__init__()
+        self.header = QtWidgets.QLabel()
+        self.header.setText(
+            "<p>Dangerzone failed to install the Windows Subsystem for Linux (WSL)</p>"
+        )
+        self.header.setStyleSheet("QLabel { font-size: 20px; }")
+        self.header.setAlignment(QtCore.Qt.AlignCenter)
+        self.explanation = QtWidgets.QLabel()
+        self.explanation.setText(WSL_INSTALL_FAILED_MSG)
+        self.explanation.setStyleSheet("QLabel { font-size: 14px; }")
+        self.explanation.setAlignment(QtCore.Qt.AlignCenter)
+        self.explanation.setTextFormat(QtCore.Qt.RichText)
+        self.explanation.setOpenExternalLinks(True)
+        self.explanation.setWordWrap(True)
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.header)
+        layout.addWidget(self.explanation)
+        layout.addStretch()
+        self.setLayout(layout)
 
 
 class ConversionWidget(QtWidgets.QWidget):

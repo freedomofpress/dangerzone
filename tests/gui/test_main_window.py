@@ -850,6 +850,144 @@ def test_machine_stop_others_user_input(
     mock_fail.assert_called_once()
 
 
+def test_wsl_needs_install_user_input(
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    window: MainWindow,
+) -> None:
+    mocker.patch("platform.system", return_value="Windows")
+    mocker.patch("dangerzone.gui.startup.WSLInstallTask.prompt_reboot")
+    mocker.patch("dangerzone.windows.wsl.is_installed", return_value=False)
+    mock_wsl_install_and_check_reboot = mocker.patch(
+        "dangerzone.windows.wsl.install_and_check_reboot",
+    )
+    mocker.patch("dangerzone.shutdown.PodmanMachineManager")
+    mock_question = mocker.patch("dangerzone.gui.main_window.Question")
+    mocker.patch.object(window, "handle_wsl_install_failed")
+
+    handle_wsl_needs_install_spy = mocker.spy(window, "handle_wsl_needs_install")
+
+    # Scenario 1: User accepts install
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Accepted
+    )
+
+    # Ensure only WSLInstallTask runs
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.WSLInstallTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_wsl_needs_install_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_question.assert_called_once()
+    mock_wsl_install_and_check_reboot.assert_called_once()
+
+    handle_wsl_needs_install_spy.reset_mock()
+    mock_question.reset_mock()
+    mock_wsl_install_and_check_reboot.reset_mock()
+
+    # Scenario 2: User rejects install
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Rejected
+    )
+    begin_shutdown_spy = mocker.spy(window, "begin_shutdown")
+    exit_spy = mocker.spy(window.dangerzone.app, "exit")
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_wsl_needs_install_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_question.assert_called_once()
+    mock_wsl_install_and_check_reboot.assert_not_called()
+    begin_shutdown_spy.assert_called_once_with(2)
+    qtbot.waitUntil(exit_spy.assert_called_once)
+
+
+def test_wsl_needs_reboot_user_input(
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    window: MainWindow,
+) -> None:
+    mocker.patch("platform.system", return_value="Windows")
+    mocker.patch("dangerzone.gui.startup.WSLInstallTask.prompt_install")
+    mocker.patch("dangerzone.windows.wsl.is_installed", return_value=False)
+    mock_wsl_install_task_run = mocker.patch(
+        "dangerzone.windows.wsl.install_and_check_reboot",
+        side_effect=errors.WSLInstallNeedsReboot,
+    )
+    mocker.patch("dangerzone.shutdown.PodmanMachineManager")
+    mock_question = mocker.patch("dangerzone.gui.main_window.Question")
+    mock_install_failed = mocker.patch.object(window, "handle_wsl_install_failed")
+    mock_shutdown_cmd = mocker.patch("dangerzone.util.subprocess_run")
+
+    handle_wsl_needs_reboot_spy = mocker.spy(window, "handle_wsl_needs_reboot")
+
+    # Scenario 1: User accepts reboot
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Accepted
+    )
+
+    # Ensure only WSLInstallTask runs
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.WSLInstallTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_wsl_needs_reboot_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_question.assert_called_once()
+    mock_shutdown_cmd.assert_called_once_with(["shutdown", "/r", "/t", "0"])
+
+    handle_wsl_needs_reboot_spy.reset_mock()
+    mock_question.reset_mock()
+    mock_shutdown_cmd.reset_mock()
+
+    # Scenario 2: User rejects reboot
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Rejected
+    )
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_wsl_needs_reboot_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_question.assert_called_once()
+    mock_shutdown_cmd.assert_not_called()
+
+
+def test_wsl_install_failed_user_input(
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    window: MainWindow,
+) -> None:
+    mocker.patch("platform.system", return_value="Windows")
+    mocker.patch("dangerzone.gui.startup.WSLInstallTask.prompt_install")
+    mocker.patch("dangerzone.windows.wsl.is_installed", return_value=False)
+    mock_wsl_install_task_run = mocker.patch(
+        "dangerzone.windows.wsl.install_and_check_reboot",
+        side_effect=errors.WSLInstallFailed,
+    )
+    mock_wsl_error_widget_show = mocker.spy(window.wsl_error_widget, "show")
+    mock_begin_shutdown = mocker.spy(window, "begin_shutdown")
+    handle_wsl_install_failed_spy = mocker.spy(window, "handle_wsl_install_failed")
+
+    # Ensure only WSLInstallTask runs
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.WSLInstallTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_wsl_install_failed_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_wsl_error_widget_show.assert_called_once()
+    assert window.wsl_error_widget.isVisible()
+    assert not window.startup_error_widget.isVisible()
+    assert not window.conversion_widget.isVisible()
+
+
 class TestShutdown:
     def test_begin_shutdown_no_install_required(
         self, qtbot: QtBot, mocker: MockerFixture, window: MainWindow

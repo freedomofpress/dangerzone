@@ -93,6 +93,9 @@ class LogWindow(QtWidgets.QDialog):
     def handle_task_machine_stop_others(self) -> None:
         self.label.setText("Initializing Dangerzone sandbox (stopping other VMs)…")
 
+    def handle_task_wsl_install(self) -> None:
+        self.label.setText("Installing Windows Subsystem for Linux...")
+
     def handle_task_update_check(self) -> None:
         self.label.setText("Checking for updates…")
 
@@ -121,6 +124,9 @@ class LogWindow(QtWidgets.QDialog):
         self.label.setText(
             "Initializing Dangerzone sandbox (stopping other VMs)… failed"
         )
+
+    def handle_task_wsl_install_failed(self, error: str) -> None:
+        self.label.setText("Installing Windows Subsystem for Linux... failed")
 
     def handle_task_machine_stop(self) -> None:
         self.label.setText("Stopping Dangerzone sandbox (shutting down VM)…")

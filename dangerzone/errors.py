@@ -158,7 +158,19 @@ class ContainerPullException(ContainerException):
     pass
 
 
-class OtherMachineRunningError(ContainerException):
+class OtherMachineRunningError(Exception):
+    pass
+
+
+class WSLInstallFailed(Exception):
+    pass
+
+
+class WSLNotInstalled(Exception):
+    pass
+
+
+class WSLInstallNeedsReboot(Exception):
     pass
 
 

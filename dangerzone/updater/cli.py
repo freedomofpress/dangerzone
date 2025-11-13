@@ -25,7 +25,12 @@ def requires_container_runtime(func: Callable) -> Callable:
 
     @functools.wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        tasks = [startup.MachineInitTask(), startup.MachineStartTask()]
+        tasks = [
+            startup.WSLInstallTask(),
+            startup.MachineStopOthersTask(),
+            startup.MachineInitTask(),
+            startup.MachineStartTask(),
+        ]
         try:
             startup.StartupLogic(tasks=tasks).run()
             res = func(*args, **kwargs)

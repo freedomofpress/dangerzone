@@ -160,3 +160,30 @@ class ContainerPullException(ContainerException):
 
 class OtherMachineRunningError(ContainerException):
     pass
+
+
+class WSLInstallNeedsReboot(WSLException):
+    pass
+
+
+class WinShellExecError(WSLException):
+    pass
+
+
+class WinShellExecTimeoutExpired(WinShellExecError):
+    def __init__(self) -> None:
+        super().__init__("Timeout expired for process")
+
+
+class WinShellExecStartFailure(WinShellExecError):
+    def __init__(self) -> None:
+        super().__init__("ShellExecuteEx failed to start")
+
+
+class WinShellExecNoHandle(WinShellExecError):
+    def __init__(self) -> None:
+        super().__init__("Process started without a handle")
+
+
+class WinShellExecProcessError(WinShellExecError):
+    pass

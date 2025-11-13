@@ -54,6 +54,7 @@ convert the documents within a secure sandbox.
         "dangerzone.podman.command",
         "dangerzone.podman.errors",
         "dangerzone.updater",
+        "dangerzone.windows",
     ],
     data_files=data_files_list(),
     classifiers=[

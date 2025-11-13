@@ -12,7 +12,7 @@ else:
         from PySide2 import QtCore
 
 
-from . import errors, settings
+from . import errors, settings, util
 from .isolation_provider import qubes
 from .podman.machine import PodmanMachineManager
 from .updater import (
@@ -25,6 +25,7 @@ from .updater import (
 from .updater import (
     errors as updater_errors,
 )
+from .windows import wsl
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +168,47 @@ class MachineStopOthersTask(Task):
         # Verify no other machines are running
         if PodmanMachineManager().list_other_running_machines():
             raise RuntimeError("Failed to stop all other running Podman machines.")
+
+
+class WSLInstallTask(Task):
+    name = "Installing Windows Subsystem for Linux"
+
+    def should_skip(self) -> bool:
+        return platform.system() != "Windows" or wsl.is_installed()
+
+    def run(self) -> None:
+        if not self.prompt_install():
+            raise errors.WSLNotInstalled("User chose to quit instead of installing WSL")
+
+        try:
+            wsl.install_and_check_reboot()
+        except errors.WSLInstallNeedsReboot:
+            if self.prompt_reboot():
+                util.subprocess_run(["shutdown", "/r", "/t", "0"])
+                # The OS is about to reboot, so there's no need to continue with the
+                # rest of the startup steps.
+                raise Exception("We are about to reboot..")
+            else:
+                raise errors.WSLInstallNeedsReboot(
+                    "User chose to quit instead of rebooting"
+                )
+
+    # In CLI mode, we choose to not prompt the user, because we don't want to introduce
+    # any interactivity. For this reason, we raise an exception immediately.
+    # In GUI mode, we can override these methods and prompt the user.
+
+    def prompt_install(self) -> bool:
+        raise errors.WSLNotInstalled(
+            "Dangerzone requires Windows Subsystem for Linux (WSL), but it is not"
+            " installed. You can install it with 'wsl --install', or follow the"
+            " instructions in https://aka.ms/wslinstall"
+        )
+
+    def prompt_reboot(self) -> bool:
+        raise errors.WSLInstallNeedsReboot(
+            "Windows Subsystem for Linux (WSL) was installed successfully. Please"
+            " reboot for the changes to take effect."
+        )
 
 
 class ContainerInstallTask(Task):

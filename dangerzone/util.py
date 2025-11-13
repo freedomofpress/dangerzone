@@ -6,11 +6,23 @@ import sys
 import traceback
 import unicodedata
 from pathlib import Path
+from typing import Any
 
 try:
     import platformdirs
 except ImportError:
     import appdirs as platformdirs  # type: ignore[no-redef]
+
+
+# FIXME: We are using `subprocess.STARTF_USESHOWWINDOW` here, but there's a more
+# modern way since Python 3.7 (see also https://github.com/python/cpython/issues/85785)
+@functools.wraps(subprocess.run)
+def subprocess_run(*args: Any, **kwargs: Any) -> subprocess.CompletedProcess:
+    if platform.system() == "Windows":
+        startupinfo = subprocess.STARTUPINFO()  # type: ignore [attr-defined]
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # type: ignore [attr-defined]
+        kwargs.setdefault("startupinfo", startupinfo)
+    return subprocess.run(*args, **kwargs)
 
 
 def get_architecture() -> str:
@@ -91,15 +103,6 @@ def get_version() -> str:
         # it doesn't need to know the version
         version = "unknown"
     return version
-
-
-def get_subprocess_startupinfo():  # type: ignore [no-untyped-def]
-    if platform.system() == "Windows":
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        return startupinfo
-    else:
-        return None
 
 
 def replace_control_chars(untrusted_str: str, keep_newlines: bool = False) -> str:

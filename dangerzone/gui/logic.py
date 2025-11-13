@@ -12,7 +12,7 @@ from typing import Any, Optional
 
 from colorama import Fore
 
-from ..container_utils import subprocess_run
+from ..util import subprocess_run
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:

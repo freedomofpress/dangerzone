@@ -7,7 +7,7 @@ import sys
 from typing import Callable, List, Optional, Tuple
 
 from .. import container_utils, errors
-from ..container_utils import make_seccomp_json_accessible, subprocess_run
+from ..container_utils import make_seccomp_json_accessible
 from ..document import Document
 from ..podman.errors import CommandError
 from ..settings import Settings
@@ -17,10 +17,7 @@ from ..updater import (
     bypass_signature_checks,
     verify_local_image,
 )
-from ..util import (
-    get_resource_path,
-    get_subprocess_startupinfo,
-)
+from ..util import get_resource_path, subprocess_run
 from .base import IsolationProvider, terminate_process_group
 
 MINIMUM_DOCKER_DESKTOP = {

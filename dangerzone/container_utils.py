@@ -19,10 +19,10 @@ from .settings import Settings
 from .util import (
     get_cache_dir,
     get_resource_path,
-    get_subprocess_startupinfo,
     get_tails_socks_proxy,
     get_version,
     linux_system_is,
+    subprocess_run,
 )
 
 # Keep the name of the old container here to be able to get rid of it later
@@ -35,13 +35,6 @@ PODMAN_MACHINE_NAME = f"{PODMAN_MACHINE_PREFIX}{get_version()}"
 TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
 
 log = logging.getLogger(__name__)
-
-
-# subprocess.run with the correct startupinfo for Windows.
-# We use a partial here to better profit from type checking
-subprocess_run = functools.partial(
-    subprocess.run, startupinfo=get_subprocess_startupinfo()
-)
 
 
 def get_runtime_version() -> Tuple[int, int]:

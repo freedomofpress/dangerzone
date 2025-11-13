@@ -85,9 +85,7 @@ class PodmanMachineManager:
             # Set the encoding to non-BOM UTF16, which is what WSL uses.
             # If not set, stdout will contain invisible null characters which
             # renders the output impossible to read and copy/paste.
-            container_utils.subprocess_run(
-                ["wsl", "--update"], encoding="UTF-16LE", check=False
-            )
+            util.subprocess_run(["wsl", "--update"], encoding="UTF-16LE", check=False)
 
         logger.info(f"Initializing Podman machine: {self.name}")
         self.podman.machine.init(

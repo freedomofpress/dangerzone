@@ -8,7 +8,7 @@ else:
     except ImportError:
         from PySide2 import QtCore, QtWidgets
 
-from .. import startup
+from .. import errors, startup
 from ..updater import InstallationStrategy, installer
 from ..updater.releases import EmptyReport, ErrorReport, ReleaseReport
 
@@ -93,6 +93,17 @@ class MachineStartTask(
     GUIMixin, startup.MachineStartTask, metaclass=_MetaConflictResolver
 ):
     pass
+
+
+class WSLInstallTask(GUIMixin, startup.WSLInstallTask, metaclass=_MetaConflictResolver):
+    needs_install = QtCore.Signal(object)  # PromptRequest
+    needs_reboot = QtCore.Signal(object)  # PromptRequest
+
+    def prompt_install(self) -> bool:
+        return PromptRequest().ask(self.needs_install)
+
+    def prompt_reboot(self) -> bool:
+        return PromptRequest().ask(self.needs_reboot)
 
 
 class ContainerInstallTask(

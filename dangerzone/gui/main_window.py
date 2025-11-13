@@ -644,13 +644,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.startup_error_widget.handle_error(msg)
         self.show_startup_error_widget()
 
-    def hide_conversion_widget(self) -> None:
+    def show_startup_error_widget(self) -> None:
         self.startup_error_widget.show()
         self.conversion_widget.hide()
 
     def show_conversion_widget(self) -> None:
-        self.startup_error_widget.hide()
         self.conversion_widget.show()
+        self.startup_error_widget.hide()
 
     def waiting_finished(self) -> None:
         log.debug("Startup tasks have finished")

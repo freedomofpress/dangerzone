@@ -1,16 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import functools
 import logging
 import os
 import sys
+from typing import Any, Callable
 
 import click
 
+from .. import startup
 from .errors import PodmanError
 from .machine import PodmanMachineManager
 
 logger = logging.getLogger(__name__)
+
+
+def requires_wsl(func: Callable) -> Callable:
+    """Decorator to detect and prompt the user to install WSL for commands that require
+    it.
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        startup.StartupLogic(tasks=[startup.WSLInstallTask()]).run()
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 @click.group()
@@ -51,6 +67,7 @@ def list() -> None:
 @click.option(
     "--timezone", type=str, default="Etc/UTC", help="Timezone for the machine."
 )
+@requires_wsl
 def init(cpus: int, memory: int, timezone: str) -> None:
     """Initialize a Dangerzone Podman machine."""
     try:
@@ -63,6 +80,7 @@ def init(cpus: int, memory: int, timezone: str) -> None:
 
 
 @main.command()
+@requires_wsl
 def start() -> None:
     """Start the Dangerzone Podman machine."""
     try:
@@ -75,6 +93,7 @@ def start() -> None:
 
 
 @main.command()
+@requires_wsl
 def stop() -> None:
     """Stop the Dangerzone Podman machine."""
     try:

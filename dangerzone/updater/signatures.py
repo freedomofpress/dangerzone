@@ -17,8 +17,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 from .. import container_utils as runtime
 from .. import errors as dzerrors
-from ..container_utils import subprocess_run
-from ..util import get_resource_path
+from ..util import get_resource_path, subprocess_run
 from . import cosign, errors, log, registry
 
 try:

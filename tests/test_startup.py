@@ -1,9 +1,11 @@
+import platform
 from typing import Optional
 
 import pytest
 from pytest_mock import MockerFixture
 
-from dangerzone import startup
+from dangerzone import errors, startup
+from dangerzone.windows import wsl
 
 
 class StartupSpy:
@@ -197,3 +199,25 @@ def test_startup_skips_podman_tasks_if_custom_runtime_is_specified(
     assert start_skip_spy.spy_return == True
     stop_others_run_spy.assert_not_called()
     assert stop_others_skip_spy.spy_return == True
+
+
+def test_wsl_install_task(mocker: MockerFixture) -> None:
+    """Test the core logic of the WSLInstallTask's run method."""
+    mocker.patch("platform.system", return_value="Windows")
+    mocker.patch("dangerzone.windows.wsl.is_installed", return_value=False)
+
+    # Mock the interactive parts and system calls
+    mocker.patch("dangerzone.startup.WSLInstallTask.prompt_install", return_value=True)
+    mocker.patch(
+        "dangerzone.windows.wsl.install_and_check_reboot",
+        side_effect=errors.WSLInstallNeedsReboot,
+    )
+    mocker.patch("dangerzone.startup.WSLInstallTask.prompt_reboot", return_value=True)
+    mock_subprocess_run = mocker.patch("dangerzone.util.subprocess_run")
+
+    task = startup.WSLInstallTask()
+
+    # Run the task and assert the outcome
+    with pytest.raises(Exception, match="We are about to reboot.."):
+        task.run()
+    mock_subprocess_run.assert_called_once_with(["shutdown", "/r", "/t", "0"])

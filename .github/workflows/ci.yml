@@ -129,6 +129,14 @@ jobs:
           enableCrossOsArchive: true
           fail-on-cache-miss: true
           key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+      # NOTE: We have noticed that the `windows-2022` runner image has WSL
+      # installed, but its kernel is old (plus, the default version is WSL1).
+      # This means that `wsl --status` fails, which by extension means that our
+      # `dangerzone-cli` command and its WSL detection will fail.
+      #
+      # For this reason, we prefer to run `wsl --update` before the tests.
+      - name: Update WSL
+        run: wsl --update
       - name: Smoke test
         run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests

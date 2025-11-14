@@ -162,19 +162,23 @@ class OtherMachineRunningError(Exception):
     pass
 
 
-class WSLInstallFailed(Exception):
+class WSLException(Exception):
     pass
 
 
-class WSLNotInstalled(Exception):
+class WSLInstallFailed(WSLException):
     pass
 
 
-class WSLInstallNeedsReboot(Exception):
+class WSLNotInstalled(WSLException):
     pass
 
 
-class WinShellExecError(Exception):
+class WSLInstallNeedsReboot(WSLException):
+    pass
+
+
+class WinShellExecError(WSLException):
     pass
 
 

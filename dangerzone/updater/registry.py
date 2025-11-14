@@ -1,3 +1,4 @@
+import os
 import re
 from collections import namedtuple
 from dataclasses import dataclass
@@ -7,6 +8,7 @@ from typing import Dict, Optional, Tuple
 import requests
 
 from .. import errors as dzerrors
+from .. import util
 from . import errors, log
 
 # This client interacts with container registries as defined by:
@@ -25,6 +27,13 @@ ACCEPT_MANIFESTS_HEADER = ",".join(
         IMAGE_INDEX_MEDIA_TYPE,
     ]
 )
+
+
+def get_proxies() -> dict:
+    """Define a SOCKS5 proxy if we detect that we are running in Tails"""
+    if util.linux_system_is("Tails"):
+        return {"https": util.get_tails_socks_proxy()}
+    return {}
 
 
 @dataclass
@@ -88,6 +97,7 @@ def _get_auth_header(image: Image) -> Dict[str, str]:
             "service": f"{image.registry}",
             "scope": f"repository:{image.namespace}/{image.image_name}:pull",
         },
+        proxies=get_proxies(),
     )
     response.raise_for_status()
     token = response.json()["token"]
@@ -110,7 +120,7 @@ def get_manifest(image_str: str) -> requests.Response:
     }
     headers.update(_get_auth_header(image))
 
-    response = requests.get(manifest_url, headers=headers)
+    response = requests.get(manifest_url, headers=headers, proxies=get_proxies())
     response.raise_for_status()
     return response
 
@@ -139,7 +149,9 @@ def list_manifests(image_str: str) -> list:
 
 def get_blob(image: Image, digest: str) -> requests.Response:
     response = requests.get(
-        f"{_url(image)}/blobs/{digest}", headers=_get_auth_header(image)
+        f"{_url(image)}/blobs/{digest}",
+        headers=_get_auth_header(image),
+        proxies=get_proxies(),
     )
     response.raise_for_status()
     return response

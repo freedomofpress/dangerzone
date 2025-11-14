@@ -88,8 +88,8 @@ on your own?</p>
 """
 
 WSL_NEEDS_REBOOT_MSG = """\
-<p>Dangerzone has installed the Windows Subsystem for Linux (WSL), but you need to
-reboot your computer before Dangerzone can use it.</p>
+<p>The Windows Subsystem for Linux (WSL) is now installed, but you need to
+reboot your computer to make Dangerzone work.</p>
 <p>You can either reboot your computer now, or quit Dangerzone and reboot it
 later.</p>
 """

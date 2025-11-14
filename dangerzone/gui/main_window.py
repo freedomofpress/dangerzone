@@ -44,7 +44,7 @@ from ..updater import (
     apply_installation_strategy,
     get_installation_strategy,
 )
-from ..util import format_exception, get_resource_path, get_version
+from ..util import format_exception, get_resource_path, get_version, linux_system_is
 from .log_window import LogHandler, LogWindow
 from .logic import Alert, CollapsibleBox, DangerzoneGui, Dialog, Question, UpdateDialog
 from .widgets import TracebackWidget
@@ -725,17 +725,10 @@ class ConversionWidget(QtWidgets.QWidget):
         self.conversion_started = False
 
         self.warning_label = None
-        if platform.system() == "Linux":
-            # Add the warning message only for debian bullseye
-            os_release_path = Path("/etc/os-release")
-            if os_release_path.exists():
-                os_release = os_release_path.read_text()
-                if "Debian GNU/Linux 11" in os_release or "bullseye" in os_release:
-                    self.warning_label = QtWidgets.QLabel(
-                        DEBIAN_BULLSEYE_DEPRECATION_MSG
-                    )
-                    self.warning_label.setWordWrap(True)
-                    self.warning_label.setProperty("style", "warning")
+        if linux_system_is("Debian GNU/Linux 11", "bullseye"):
+            self.warning_label = QtWidgets.QLabel(DEBIAN_BULLSEYE_DEPRECATION_MSG)
+            self.warning_label.setWordWrap(True)
+            self.warning_label.setProperty("style", "warning")
 
         # Doc selection widget
         self.doc_selection_widget = DocSelectionWidget(self.dangerzone)

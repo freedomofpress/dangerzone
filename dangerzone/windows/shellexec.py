@@ -14,6 +14,7 @@ TIMEOUT_INFINITE = 0xFFFFFFFF
 
 
 class SHELLEXECUTEINFOW(ctypes.Structure):
+    # See https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shellexecuteinfow
     _fields_ = [
         ("cbSize", wintypes.DWORD),
         ("fMask", wintypes.ULONG),
@@ -65,7 +66,7 @@ def _shellexec(
         errors.WinShellExecTimeoutExpired: If the process does not finish within the timeout.
 
     Further reading:
-    - ShellExecuteExW: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecuteexw
+    - https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecuteexw
     """
     from ctypes import windll  # type: ignore [attr-defined]
 

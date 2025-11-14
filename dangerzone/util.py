@@ -13,12 +13,14 @@ except ImportError:
     import appdirs as platformdirs  # type: ignore[no-redef]
 
 
-# NOTE: We originally used `subprocess.STARTF_USESHOWWINDOW` here, but there's a more
+# FIXME: We are using `subprocess.STARTF_USESHOWWINDOW` here, but there's a more
 # modern way since Python 3.7 (see also https://github.com/python/cpython/issues/85785)
 @functools.wraps(subprocess.run)
 def subprocess_run(*args: Any, **kwargs: Any) -> subprocess.CompletedProcess:
     if platform.system() == "Windows":
-        kwargs.setdefault("creationflags", subprocess.CREATE_NO_WINDOW)  # type: ignore [attr-defined]
+        startupinfo = subprocess.STARTUPINFO()  # type: ignore [attr-defined]
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # type: ignore [attr-defined]
+        kwargs.setdefault("startupinfo", startupinfo)
     return subprocess.run(*args, **kwargs)
 
 

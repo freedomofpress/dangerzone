@@ -173,14 +173,14 @@ class WSLInstallTask(Task):
     name = "Installing Windows Subsystem for Linux"
 
     def should_skip(self) -> bool:
-        return platform.system() != "Windows" or wsl.is_wsl_installed()
+        return platform.system() != "Windows" or wsl.is_installed()
 
     def run(self) -> None:
         if not self.prompt_install():
             raise errors.WSLNotInstalled("User chose to quit instead of installing WSL")
 
         try:
-            wsl.install_wsl_and_check_reboot()
+            wsl.install_and_check_reboot()
         except errors.WSLInstallNeedsReboot:
             if self.prompt_reboot():
                 util.subprocess_run(["shutdown", "/r", "/t", "0"])

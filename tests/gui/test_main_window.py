@@ -857,9 +857,9 @@ def test_wsl_needs_install_user_input(
 ) -> None:
     mocker.patch("platform.system", return_value="Windows")
     mocker.patch("dangerzone.gui.startup.WSLInstallTask.prompt_reboot")
-    mocker.patch("dangerzone.windows.wsl.is_wsl_installed", return_value=False)
+    mocker.patch("dangerzone.windows.wsl.is_installed", return_value=False)
     mock_wsl_install_and_check_reboot = mocker.patch(
-        "dangerzone.windows.wsl.install_wsl_and_check_reboot",
+        "dangerzone.windows.wsl.install_and_check_reboot",
     )
     mocker.patch("dangerzone.shutdown.PodmanMachineManager")
     mock_question = mocker.patch("dangerzone.gui.main_window.Question")
@@ -912,9 +912,9 @@ def test_wsl_needs_reboot_user_input(
 ) -> None:
     mocker.patch("platform.system", return_value="Windows")
     mocker.patch("dangerzone.gui.startup.WSLInstallTask.prompt_install")
-    mocker.patch("dangerzone.windows.wsl.is_wsl_installed", return_value=False)
+    mocker.patch("dangerzone.windows.wsl.is_installed", return_value=False)
     mock_wsl_install_task_run = mocker.patch(
-        "dangerzone.windows.wsl.install_wsl_and_check_reboot",
+        "dangerzone.windows.wsl.install_and_check_reboot",
         side_effect=errors.WSLInstallNeedsReboot,
     )
     mocker.patch("dangerzone.shutdown.PodmanMachineManager")
@@ -964,9 +964,9 @@ def test_wsl_install_failed_user_input(
 ) -> None:
     mocker.patch("platform.system", return_value="Windows")
     mocker.patch("dangerzone.gui.startup.WSLInstallTask.prompt_install")
-    mocker.patch("dangerzone.windows.wsl.is_wsl_installed", return_value=False)
+    mocker.patch("dangerzone.windows.wsl.is_installed", return_value=False)
     mock_wsl_install_task_run = mocker.patch(
-        "dangerzone.windows.wsl.install_wsl_and_check_reboot",
+        "dangerzone.windows.wsl.install_and_check_reboot",
         side_effect=errors.WSLInstallFailed,
     )
     mock_wsl_error_widget_show = mocker.spy(window.wsl_error_widget, "show")

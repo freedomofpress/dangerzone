@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 # don't print to a handle that Python controls, but to a terminal spawned by Windows.
 
 
-def wsl_list() -> str:
+def ls() -> str:
     """List WSL distributions."""
     return subprocess_run(
         ["wsl", "-l", "--quiet"],
@@ -27,7 +27,7 @@ def wsl_list() -> str:
     ).stdout
 
 
-def wsl_status() -> str:
+def status() -> str:
     """Get status of WSL engine."""
     return subprocess_run(
         ["wsl", "--status"],
@@ -37,7 +37,7 @@ def wsl_status() -> str:
     ).stdout
 
 
-def wsl_install(no_distribution: bool = True) -> None:
+def install(no_distribution: bool = True) -> None:
     """Install WSL, optionally without a default distribution."""
     cmd = ["wsl", "--install"]
     if no_distribution:
@@ -48,27 +48,27 @@ def wsl_install(no_distribution: bool = True) -> None:
     shellexec.run(cmd, check=True)
 
 
-def wsl_update() -> None:
+def update() -> None:
     """Update WSL kernel."""
     # NOTE: On Windows 11, running `wsl --update` somehow does not work with
     # subprocess.run. It works via `ShellExecuteEx` though, which is what we use here.
     shellexec.run(["wsl", "--update"], check=True)
 
 
-def is_wsl_installed() -> bool:
+def is_installed() -> bool:
     """Return whether WSL is installed or not."""
     try:
-        wsl_status()
+        status()
         return True
     except subprocess.CalledProcessError as e:
         return False
 
 
-def install_wsl_and_check_reboot() -> None:
+def install_and_check_reboot() -> None:
     """Install WSL and check if a reboot is required."""
     # Context: https://github.com/freedomofpress/dangerzone/issues/1312
 
-    if is_wsl_installed():
+    if is_installed():
         return
 
     # NOTE: We choose the following methods, due to the devices we have tested WSL on.
@@ -79,12 +79,12 @@ def install_wsl_and_check_reboot() -> None:
     #    only `wsl --update` works, in the sense that it updates the outdated WSL kernel
     #    that it has.
     methods: list[Tuple[Callable, str]] = [
-        (wsl_update, "wsl --update"),
+        (update, "wsl --update"),
         (
-            functools.partial(wsl_install, no_distribution=True),
+            functools.partial(install, no_distribution=True),
             "wsl --install --no-distribution",
         ),
-        (wsl_install, "wsl --install"),
+        (install, "wsl --install"),
     ]
 
     for func, cmd in methods:

@@ -204,12 +204,12 @@ def test_startup_skips_podman_tasks_if_custom_runtime_is_specified(
 def test_wsl_install_task(mocker: MockerFixture) -> None:
     """Test the core logic of the WSLInstallTask's run method."""
     mocker.patch("platform.system", return_value="Windows")
-    mocker.patch("dangerzone.windows.wsl.is_wsl_installed", return_value=False)
+    mocker.patch("dangerzone.windows.wsl.is_installed", return_value=False)
 
     # Mock the interactive parts and system calls
     mocker.patch("dangerzone.startup.WSLInstallTask.prompt_install", return_value=True)
     mocker.patch(
-        "dangerzone.windows.wsl.install_wsl_and_check_reboot",
+        "dangerzone.windows.wsl.install_and_check_reboot",
         side_effect=errors.WSLInstallNeedsReboot,
     )
     mocker.patch("dangerzone.startup.WSLInstallTask.prompt_reboot", return_value=True)

@@ -83,8 +83,8 @@ WSL_NEEDS_INSTALL_MSG = """\
 <a href="https://learn.microsoft.com/en-us/windows/wsl/">
 Windows Subsystem for Linux (WSL)
 </a>, which is not present in your system.
-<p>You can let Dangerzone download and install it now, or quit Dangerzone and install it
-on your own.</p>
+<p>Should we download and install it now, or quit Dangerzone and install it
+on your own?</p>
 """
 
 WSL_NEEDS_REBOOT_MSG = """\

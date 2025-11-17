@@ -1,3 +1,5 @@
+import functools
+import os
 import platform
 import subprocess
 import sys
@@ -142,3 +144,28 @@ def format_exception(e: Exception) -> str:
         output = traceback.format_exception(e)
 
     return "".join(output)
+
+
+@functools.cache
+def linux_system_is(*names: str) -> bool:
+    """Checks if any of the given names are present in /etc/os-release (on Linux)"""
+    if platform.system() == "Linux":
+        os_release_path = Path("/etc/os-release")
+        if os_release_path.exists():
+            os_release = os_release_path.read_text()
+            return any([name in os_release for name in names])
+    return False
+
+
+def get_tails_socks_proxy() -> str:
+    """
+    Generate a SOCKS5 proxy connection address that works on Tails.
+
+    the username part makes it use stream isolation [0], which allows to isolate
+    unrelated streams, putting them on separate circuits so that semantically
+    unrelated traffic is not inadvertently made linkable [1].
+
+    [0] https://spec.torproject.org/socks-extensions.html#extended-auth
+    [1] https://spec.torproject.org/proposals/171-separate-streams.txt
+    """
+    return f"socks5://<torS0X>0:{os.urandom(8).hex()}@127.0.0.1:9050"

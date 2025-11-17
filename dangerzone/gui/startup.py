@@ -1,4 +1,5 @@
 import typing
+from typing import Optional
 
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtWidgets
@@ -8,9 +9,12 @@ else:
     except ImportError:
         from PySide2 import QtCore, QtWidgets
 
-from .. import errors, startup
+from .. import errors, logging, startup
+from ..settings import Settings
 from ..updater import InstallationStrategy, installer
 from ..updater.releases import EmptyReport, ErrorReport, ReleaseReport
+
+log = logging.getLogger(__name__)
 
 
 class _MetaConflictResolver(type(QtCore.QObject), type(startup.Task)):  # type: ignore [misc]
@@ -109,6 +113,7 @@ class WSLInstallTask(GUIMixin, startup.WSLInstallTask, metaclass=_MetaConflictRe
 class ContainerInstallTask(
     GUIMixin, startup.ContainerInstallTask, metaclass=_MetaConflictResolver
 ):
+    needs_user_input = QtCore.Signal(object)
     load_container = QtCore.Signal()
     download_container = QtCore.Signal()
 
@@ -116,9 +121,23 @@ class ContainerInstallTask(
         strategy = installer.get_installation_strategy()
         if strategy == InstallationStrategy.INSTALL_LOCAL_CONTAINER:
             self.load_container.emit()
+            return super().run()
         elif strategy == InstallationStrategy.INSTALL_REMOTE_CONTAINER:
-            self.download_container.emit()
-        return super().run()
+            if Settings().get("updater_ask_before_download"):
+                resp = self.prompt_user()
+                if resp:
+                    self._download_container()
+                else:
+                    log.debug("Skipping new container download (asked by the user)")
+            else:
+                self._download_container()
+
+    def _download_container(self) -> None:
+        self.download_container.emit()
+        super().run()
+
+    def prompt_user(self) -> Optional[bool]:
+        return PromptRequest().ask(self.needs_user_input)
 
 
 class UpdateCheckTask(

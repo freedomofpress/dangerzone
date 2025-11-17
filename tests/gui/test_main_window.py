@@ -182,7 +182,7 @@ def test_default_menu(
     assert window.dangerzone.settings.get("updater_check_all") is False
     # We keep the remote log index in case updates are activated back
     # It doesn't mean they will be applied.
-    assert window.dangerzone.settings.get("updater_remote_log_index") is 1000
+    assert window.dangerzone.settings.get("updater_remote_log_index") == 1000
 
 
 def test_no_new_release(
@@ -631,6 +631,10 @@ def test_installation_strategy_message(
         "dangerzone.updater.installer.get_installation_strategy",
         return_value=strategy,
     )
+
+    # Disable the user prompt for remote container downloads in this test
+    window.dangerzone.settings.set("updater_ask_before_download", False)
+
     status_bar_message_spy = mocker.spy(window.status_bar, callback)
     log_window_message_spy = mocker.spy(window.log_window, callback)
     window.startup_thread.start()
@@ -752,7 +756,9 @@ def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -
     # Check disabling update checks.
     prompt_mock().launch.return_value = False
     expected_settings["updater_check_all"] = False
-    handle_needs_user_input_spy = mocker.spy(window, "handle_needs_user_input")
+    handle_needs_user_input_spy = mocker.spy(
+        window, "handle_needs_user_input_enable_updates"
+    )
 
     window.startup_thread.start()
     window.startup_thread.wait()
@@ -986,6 +992,116 @@ def test_wsl_install_failed_user_input(
     assert window.wsl_error_widget.isVisible()
     assert not window.startup_error_widget.isVisible()
     assert not window.conversion_widget.isVisible()
+
+
+def test_handle_needs_user_input_install_remote_container(
+    qtbot: QtBot, mocker: MockerFixture, window: MainWindow
+) -> None:
+    """Test that user is prompted to download a remote container update."""
+    mock_get_installation_strategy = mocker.patch(
+        "dangerzone.gui.startup.installer.get_installation_strategy",
+        return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
+    )
+    mock_install = mocker.patch("dangerzone.updater.installer.install")
+
+    # Mock the Question dialog - user accepts downloading
+    mock_question = mocker.patch("dangerzone.gui.main_window.Question")
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Accepted
+    )
+    mock_question.return_value.checkbox.isChecked.return_value = False
+
+    # Ensure only ContainerInstallTask runs
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.ContainerInstallTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    handle_needs_user_input_spy = mocker.spy(
+        window, "handle_needs_user_input_install_remote_container"
+    )
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_needs_user_input_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_question.assert_called_once()
+    # Verify that download happened after user accepted
+    mock_install.assert_called_once()
+
+
+def test_handle_needs_user_input_install_remote_container_decline(
+    qtbot: QtBot, mocker: MockerFixture, window: MainWindow
+) -> None:
+    """Test that download is skipped when user declines."""
+    mock_get_installation_strategy = mocker.patch(
+        "dangerzone.gui.startup.installer.get_installation_strategy",
+        return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
+    )
+    mock_install = mocker.patch("dangerzone.updater.installer.install")
+
+    # Mock the Question dialog - user declines downloading
+    mock_question = mocker.patch("dangerzone.gui.main_window.Question")
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Rejected
+    )
+    mock_question.return_value.checkbox.isChecked.return_value = False
+
+    # Ensure only ContainerInstallTask runs
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.ContainerInstallTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    handle_needs_user_input_spy = mocker.spy(
+        window, "handle_needs_user_input_install_remote_container"
+    )
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_needs_user_input_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_question.assert_called_once()
+    # Verify that download did NOT happen after user declined
+    mock_install.assert_not_called()
+
+
+def test_handle_needs_user_input_install_remote_container_checkbox(
+    qtbot: QtBot, mocker: MockerFixture, window: MainWindow
+) -> None:
+    """Test that checking 'Always download' updates the setting."""
+    mock_get_installation_strategy = mocker.patch(
+        "dangerzone.gui.startup.installer.get_installation_strategy",
+        return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
+    )
+    mock_install = mocker.patch("dangerzone.updater.installer.install")
+
+    # Mock the Question dialog - user accepts and checks "always download"
+    mock_question = mocker.patch("dangerzone.gui.main_window.Question")
+    mock_question.return_value.launch.return_value = (
+        main_window_module.Question.Accepted
+    )
+    mock_question.return_value.checkbox.isChecked.return_value = True
+
+    # Ensure only ContainerInstallTask runs
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.ContainerInstallTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    handle_needs_user_input_spy = mocker.spy(
+        window, "handle_needs_user_input_install_remote_container"
+    )
+
+    # Verify initial setting
+    assert window.dangerzone.settings.get("updater_ask_before_download") == True
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_needs_user_input_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    mock_question.assert_called_once()
+    # Verify that download happened
+    mock_install.assert_called_once()
+    # Verify that the setting was updated to False (don't ask again)
+    assert window.dangerzone.settings.get("updater_ask_before_download") == False
 
 
 class TestShutdown:

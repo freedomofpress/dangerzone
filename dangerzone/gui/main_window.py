@@ -119,6 +119,13 @@ report an issue ↗️
 </p>
 """
 
+DOWNLOAD_NEW_CONTAINER_IMAGE_MSG = """\
+<p>A new version of the secure sandbox is available and should be downloaded.</p>
+<p>The download size is usually about 500MiB.</p>
+ <p>Should we proceed now? (If you skip, you will be asked the next time your run Dangerzone)</p>
+<p>Keeping the sandbox up to date helps avoiding security vulnerabilities.
+ It's recommended to always apply updates.</p>
+"""
 
 DEBIAN_BULLSEYE_DEPRECATION_MSG = """\
 <p><b>Warning:</b> Debian Bullseye systems and their derivatives will
@@ -488,7 +495,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.handle_container_update_available
         )
         task_update_check.completed.connect(self.handle_update_check_completed)
-        task_update_check.needs_user_input.connect(self.handle_needs_user_input)
+        task_update_check.needs_user_input.connect(
+            self.handle_needs_user_input_enable_updates
+        )
 
         task_container_install.load_container.connect(
             self.status_bar.handle_task_container_install_local
@@ -506,6 +515,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.log_window.handle_task_container_install_failed
         )
         task_container_install.failed.connect(self.handle_startup_error)
+        task_container_install.needs_user_input.connect(
+            self.handle_needs_user_input_install_remote_container
+        )
 
         self.show()
 
@@ -659,7 +671,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dangerzone.settings.set("updater_errors", 0)
         self.dangerzone.settings.save()
 
-    def handle_needs_user_input(self) -> None:
+    def handle_needs_user_input_enable_updates(self) -> None:
         check = prompt_for_checks(self.dangerzone)
         if check is not None:
             self.dangerzone.settings.set("updater_check_all", check, autosave=True)
@@ -734,6 +746,33 @@ class MainWindow(QtWidgets.QMainWindow):
     def handle_wsl_install_failed(self, msg: str) -> None:
         self.status_bar.handle_startup_error()
         self.show_wsl_error_widget()
+
+    def handle_needs_user_input_install_remote_container(
+        self, req: startup.PromptRequest
+    ) -> None:
+        log.debug("Prompting user to download new remote container")
+        question = Question(
+            self.dangerzone,
+            title="Download Sandbox",
+            message=DOWNLOAD_NEW_CONTAINER_IMAGE_MSG,
+            ok_text="Yes, download update",
+            cancel_text="Skip for now",
+            checkbox_text="Always download sandbox updates",
+        )
+        assert question.checkbox is not None
+        result = question.launch()
+        if question.checkbox.isChecked():
+            self.dangerzone.settings.set(
+                "updater_ask_before_download",
+                False,
+                autosave=True,
+            )
+        if result == Question.Accepted:
+            log.debug("Accepted")
+            req.reply(True)
+            return
+        log.debug("Refused")
+        req.reply(False)
 
     def handle_startup_error(self, msg: str) -> None:
         self.status_bar.handle_startup_error()

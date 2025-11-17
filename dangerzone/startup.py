@@ -2,6 +2,7 @@ import abc
 import logging
 import platform
 import typing
+from typing import Optional
 
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore
@@ -219,6 +220,9 @@ class ContainerInstallTask(Task):
 
     def run(self) -> None:
         installer.install()
+
+    def prompt_user(self) -> Optional[bool]:
+        pass
 
 
 class UpdateCheckTask(Task):

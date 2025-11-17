@@ -639,7 +639,7 @@ jobs:
         run: |
           podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
 
-      - uses: imjasonh/setup-crane@v0.1
+      - uses: imjasonh/setup-crane@v0.4
 
       - name: Tag a new version of the sandbox
         run: |

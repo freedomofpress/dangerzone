@@ -20,7 +20,9 @@ from .util import (
     get_cache_dir,
     get_resource_path,
     get_subprocess_startupinfo,
+    get_tails_socks_proxy,
     get_version,
+    linux_system_is,
 )
 
 # Keep the name of the old container here to be able to get rid of it later
@@ -219,7 +221,9 @@ def init_podman_command() -> PodmanCommand:
         )
         if settings.debug:
             options.log_level = "debug"
-
+    elif linux_system_is("Tails"):
+        env = os.environ.copy()
+        env["HTTPS_PROXY"] = get_tails_socks_proxy()
     try:
         return PodmanCommand(path=podman_path, env=env, options=options)
     except PodmanNotInstalled:

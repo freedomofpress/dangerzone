@@ -146,7 +146,7 @@ jobs:
         run: poetry run .\install\windows\build-app.bat
       - name: Upload MSI installer
         if: matrix.runner == 'windows-2025'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Dangerzone.msi
           path: "dist/Dangerzone.msi"
@@ -212,7 +212,7 @@ jobs:
       - name: Build macOS app
         run: poetry run python ./install/macos/build-app.py
       - name: Upload macOS app
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Dangerzone-${{ matrix.arch }}.app
           path: "dist/Dangerzone.app"
@@ -296,7 +296,7 @@ jobs:
 
       - name: Upload Dangerzone .deb
         if: matrix.distro == 'debian' && matrix.version == 'bookworm'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dangerzone.deb
           path: "deb_dist/dangerzone_*_*.deb"
@@ -422,7 +422,7 @@ jobs:
               run --dev --no-gui ./dangerzone/install/linux/build-rpm.py
 
       - name: Upload Dangerzone .rpm
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.rpm
           path: "dist/dangerzone-*.x86_64.rpm"
@@ -571,7 +571,7 @@ jobs:
               bash -c 'cd dangerzone; poetry run make test'
 
       - name: Upload PDF diffs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pdf-diffs-${{ matrix.distro }}-${{ matrix.version }}
           path: tests/test_docs/diffs/*.jpeg

@@ -13,6 +13,7 @@ else:
 
 
 from . import errors, settings
+from .isolation_provider import qubes
 from .podman.machine import PodmanMachineManager
 from .updater import (
     ErrorReport,
@@ -183,6 +184,11 @@ class UpdateCheckTask(Task):
     name = "Check for updates"
 
     def should_skip(self) -> bool:
+        if qubes.is_qubes_native_conversion():
+            # Update checks on Qubes don't make any sense, because there's no container
+            # image, and application updates happen via the package manager anyway.
+            return True
+
         try:
             return not releases.should_check_for_updates(settings.Settings())
         except updater_errors.NeedUserInput:

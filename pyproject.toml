@@ -294,3 +294,9 @@ platform."linux/amd64" = "cosign-linux-amd64"
 platform."windows/amd64" = "cosign-windows-amd64.exe"
 executable = true
 destination = "share/vendor/cosign"
+
+[tool.mazette.asset.h2orestart]
+repo = "ebandal/H2Orestart"
+version = ">=0.7.7"
+platform.all = "H2Orestart.oxt"
+destination = "dangerzone/container_helpers/H2Orestart.oxt"

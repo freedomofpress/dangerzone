@@ -142,9 +142,9 @@
     "podman": {
       "windows/amd64": {
         "repo": "containers/podman",
-        "download_url": "https://github.com/containers/podman/releases/download/v5.6.2/podman-remote-release-windows_amd64.zip",
-        "version": "5.6.2",
-        "checksum": "9c86b2686dabc287af1de1b4fadc506310718bf84fccbd12f0831fc7726a7cd5",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.7.0/podman-remote-release-windows_amd64.zip",
+        "version": "5.7.0",
+        "checksum": "b2f5b03b5e7a524f2c3a0bb2d44d4bb7de27633525b5ace45259e5d91fb31cdc",
         "executable": true,
         "destination": "share/vendor/podman",
         "extract": {
@@ -157,9 +157,9 @@
       },
       "darwin/amd64": {
         "repo": "containers/podman",
-        "download_url": "https://github.com/containers/podman/releases/download/v5.6.2/podman-remote-release-darwin_amd64.zip",
-        "version": "5.6.2",
-        "checksum": "20ac39d34f412e4e4e7221696ed7e75e395f22234c89c562f431860a9f889b21",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.7.0/podman-remote-release-darwin_amd64.zip",
+        "version": "5.7.0",
+        "checksum": "c583f56a4c06d1bf23612fff522154caaf8a643d2c4e14391b6aa2a6c731bd37",
         "executable": true,
         "destination": "share/vendor/podman",
         "extract": {
@@ -172,9 +172,9 @@
       },
       "darwin/arm64": {
         "repo": "containers/podman",
-        "download_url": "https://github.com/containers/podman/releases/download/v5.6.2/podman-remote-release-darwin_arm64.zip",
-        "version": "5.6.2",
-        "checksum": "f9c36d1fe4c85acd919d71dfedbf4b77d581fabc66960dfa9b62e78d721917a2",
+        "download_url": "https://github.com/containers/podman/releases/download/v5.7.0/podman-remote-release-darwin_arm64.zip",
+        "version": "5.7.0",
+        "checksum": "da093f219cdefaa2f8db92714b521cd15004ed17eab7d3ed246a10791be82788",
         "executable": true,
         "destination": "share/vendor/podman",
         "extract": {
@@ -229,27 +229,27 @@
     "machine-os": {
       "darwin/amd64": {
         "repo": "containers/podman-machine-os",
-        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.6.2/podman-machine.x86_64.applehv.raw.zst",
-        "version": "5.6.2",
-        "checksum": "b80be0a4643a7119a1a304efe80334fe4192e02cdbcdf2d1f8d9366be2870c94",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.7.0/podman-machine.x86_64.applehv.raw.zst",
+        "version": "5.7.0",
+        "checksum": "a14a25057038be4e5809b68f488c6d1ab52047c73c9f2e02f1f80909dbf698be",
         "executable": false,
         "destination": "share/machine.tar",
         "extract": false
       },
       "darwin/arm64": {
         "repo": "containers/podman-machine-os",
-        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.6.2/podman-machine.aarch64.applehv.raw.zst",
-        "version": "5.6.2",
-        "checksum": "b8d8609ac44174d2d0c8fb1aa5266bc409c142ed66e33d333e446fa02d9a0a6b",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.7.0/podman-machine.aarch64.applehv.raw.zst",
+        "version": "5.7.0",
+        "checksum": "bb1db03b631ad8c2d754206c03d1c0b016a36d47e5d8b1ebcfff4421adc79443",
         "executable": false,
         "destination": "share/machine.tar",
         "extract": false
       },
       "windows/amd64": {
         "repo": "containers/podman-machine-os",
-        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.6.2/podman-machine.x86_64.wsl.tar.zst",
-        "version": "5.6.2",
-        "checksum": "3e085930067a0b648ab93c382ce9a09731d6fc53ae2e237ca1061e5d28877335",
+        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.7.0/podman-machine.x86_64.wsl.tar.zst",
+        "version": "5.7.0",
+        "checksum": "f898236a17d102155c6136a161d9f7131f57ebe6eea500c9d909fa5a725238dd",
         "executable": false,
         "destination": "share/machine.tar",
         "extract": false

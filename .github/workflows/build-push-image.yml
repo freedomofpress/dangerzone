@@ -107,6 +107,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Download H2Orestart plugin
+        run: uvx mazette install h2orestart
+
       - name: Update the contents of the inner container if asked-for
         if: ${{ inputs.trivially_update_container }}
         run: |

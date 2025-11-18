@@ -8,8 +8,6 @@ FROM docker.io/library/debian@${DEBIAN_IMAGE_DIGEST} AS dangerzone-image
 
 ARG GVISOR_ARCHIVE_DATE=20251110
 ARG DEBIAN_ARCHIVE_DATE=20251118
-ARG H2ORESTART_CHECKSUM=c99f2c6585c15329885d87960b8b2fd9f415adf80553de6a6b4076756570e4ac
-ARG H2ORESTART_VERSION=v0.7.7
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -36,20 +34,11 @@ RUN \
   apt-get install -y --no-install-recommends \
       python3 python3-fitz libreoffice-nogui libreoffice-java-common \
       python3-magic default-jre-headless fonts-noto-cjk fonts-dejavu \
-      runsc unzip wget && \
+      runsc unzip && \
   : "Clean up for improving reproducibility (optional)" && \
   rm -rf /var/cache/fontconfig/ && \
   rm -rf /etc/ssl/certs/java/cacerts && \
   rm -rf /var/log/* /var/cache/ldconfig/aux-cache
-
-# Download H2ORestart from GitHub using a pinned version and hash. Note that
-# it's available in Debian repos, but not in Bookworm yet.
-RUN mkdir /opt/libreoffice_ext && cd /opt/libreoffice_ext \
-    && H2ORESTART_FILENAME=h2orestart.oxt \
-    && wget https://github.com/ebandal/H2Orestart/releases/download/$H2ORESTART_VERSION/$H2ORESTART_FILENAME \
-    && echo "$H2ORESTART_CHECKSUM  $H2ORESTART_FILENAME" | sha256sum -c \
-    && install -dm777 "/usr/lib/libreoffice/share/extensions/" \
-    && rm /root/.wget-hsts
 
 # Create an unprivileged user both for gVisor and for running Dangerzone.
 # XXX: Make the shadow field "date of last password change" a constant
@@ -67,6 +56,11 @@ RUN touch /opt/dangerzone/dangerzone/__init__.py
 
 # Copy only the Python code, and not any produced .pyc files.
 COPY conversion/*.py /opt/dangerzone/dangerzone/conversion/
+
+# Copy the H2Orestart.oxt LibreOffice plugin, which is managed by Mazette.
+RUN mkdir -p /opt/libreoffice_ext/
+RUN install -dm777 /usr/lib/libreoffice/share/extensions/
+COPY container_helpers/h2orestart.oxt /opt/libreoffice_ext/
 
 # Create a directory that will be used by gVisor as the place where it will
 # store the state of its containers.

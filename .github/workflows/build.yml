@@ -87,10 +87,18 @@ jobs:
         id: cache-container-image
         uses: actions/cache@v4
         with:
-          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'install/common/build-image.py') }}
+          key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'mazette.lock', 'install/common/build-image.py') }}
           path: |
             share/container.tar
             share/image-id.txt
+
+      - name: Install the latest version of uv
+        if: ${{ steps.cache-container-image.outputs.cache-hit != 'true' }}
+        uses: astral-sh/setup-uv@v7
+
+      - name: Download H2Orestart plugin
+        if: ${{ steps.cache-container-image.outputs.cache-hit != 'true' }}
+        run: uvx mazette install h2orestart
 
       - name: Build Dangerzone image
         if: ${{ steps.cache-container-image.outputs.cache-hit != 'true' }}

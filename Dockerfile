@@ -58,8 +58,9 @@ RUN touch /opt/dangerzone/dangerzone/__init__.py
 COPY conversion/*.py /opt/dangerzone/dangerzone/conversion/
 
 # Copy the H2Orestart.oxt LibreOffice plugin, which is managed by Mazette.
-RUN mkdir -p /usr/lib/libreoffice/share/extensions/
-COPY container_helpers/H2Orestart.oxt /usr/lib/libreoffice/share/extensions/
+RUN mkdir -p /opt/libreoffice_ext/
+RUN install -dm777 /usr/lib/libreoffice/share/extensions/
+COPY container_helpers/H2Orestart.oxt /opt/libreoffice_ext/
 
 # Create a directory that will be used by gVisor as the place where it will
 # store the state of its containers.

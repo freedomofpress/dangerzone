@@ -144,6 +144,9 @@ def attest_release_sign(
         click.echo(f"🔀 Checking out commit {commit}...")
         run(["git", "-C", temp_dir, "checkout", commit])
 
+        click.echo(f"Downloading the H2Orestart plugin...")
+        run(["poetry", "run", "mazette", "install", "h2orestart"], cwd=temp_dir)
+
         for platform in ["linux/amd64", "linux/arm64"]:
             platform_digest = digests[platform]
             if platform_digest in skip_reproduction_for:

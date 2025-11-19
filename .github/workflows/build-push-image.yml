@@ -282,6 +282,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Download H2Orestart plugin
+        run: uvx mazette install h2orestart
+
       - name: Reproduce the same container image
         run: |
           ./dev_scripts/reproduce-image.py \

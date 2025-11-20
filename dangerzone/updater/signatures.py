@@ -241,7 +241,7 @@ def upgrade_container_image_airgapped(
     container_tar: Path,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
     bypass_logindex: bool = False,
-) -> str:
+) -> Tuple[str, str]:
     """
     Verify the given archive against its self-contained signatures, then
     upgrade the image and retag it to the expected tag.
@@ -256,7 +256,7 @@ def upgrade_container_image_airgapped(
     See `prepare_airgapped_archive` for more details on how to build such
     archives.
 
-    :return: The loaded image name
+    :return: A two-member tuple with the loaded image name and digest
     """
 
     with TemporaryDirectory() as _tempdir, tarfile.open(container_tar, "r") as archive:
@@ -327,7 +327,7 @@ def upgrade_container_image_airgapped(
         runtime.delete_image_digests([f"sha256:{image_digest}"], image_name)
         raise e
 
-    return image_name
+    return (image_name, image_digest)
 
 
 def get_blob_from_archive(
@@ -655,16 +655,20 @@ def upgrade_container_image(
 
 def install_local_container_tar(
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
-) -> None:
+) -> str:
+    """Install a container tarball stored locally, and return its digest."""
     tarball_path = get_resource_path("container.tar")
     log.debug("Installing container image %s", tarball_path)
     # The escape hatch here is made for developers to be able to test
     # new container images without having to sign them, e.g. when
     # working on them.
     if bypass_signature_checks():
-        runtime.load_image_tarball(tarball_path)
+        return runtime.load_image_tarball(tarball_path)
     else:
-        upgrade_container_image_airgapped(tarball_path, pubkey)
+        image_name, image_digest = upgrade_container_image_airgapped(
+            tarball_path, pubkey
+        )
+        return image_digest
 
 
 def bypass_signature_checks() -> bool:

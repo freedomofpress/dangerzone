@@ -332,13 +332,18 @@ def clear_old_images(digest_to_keep: str) -> None:
     delete_image_digests(to_remove)
 
 
-def load_image_tarball(tarball_path: Optional[Path] = None) -> None:
+def load_image_tarball(tarball_path: Optional[Path] = None) -> str:
+    """Load the image tarball, and return its digest."""
     log.info("Installing Dangerzone container image...")
     podman = init_podman_command()
     if not tarball_path:
         tarball_path = get_resource_path("container.tar")
     try:
-        res = podman.run(["load", "-i", str(tarball_path)])
+        res = podman.run(["load", "-i", str(tarball_path)], capture_output=True)
+        assert isinstance(res, str)
+        # The stdout of the above command is usually 'Loaded image: sha256:<digest>'
+        # we can get the image digest by grabbing the last part of stdout.
+        return res.split()[-1]
     except subprocess.CalledProcessError as e:
         if e.stderr:
             error = e.stderr.decode()

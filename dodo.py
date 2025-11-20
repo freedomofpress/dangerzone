@@ -101,7 +101,7 @@ def prepare_dz_dir(dz_dir):
     downloads internally.
     """
     arch = "arm64" if ARCH == "arm64" else "amd64"
-    mazette_platform = f"macos/{arch}" if dz_dir.name == "macos" else f"linux/{arch}"
+    mazette_platform = f"darwin/{arch}" if dz_dir.name == "macos" else f"linux/{arch}"
     img_src = RELEASE_DIR / f"container-{VERSION}-{ARCH}.tar"
     img_dst = dz_dir / "share" / "container.tar"
 

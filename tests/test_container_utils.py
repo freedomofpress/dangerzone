@@ -168,3 +168,11 @@ def test_kill_container_exception(mocker: MockerFixture, caplog: Any) -> None:
         "Unexpected error occurred while killing container 'test-container'"
         in caplog.text
     )
+
+
+def test_load_image_tarball(mocker: MockerFixture) -> None:
+    """Test that we can load a tarball and get the digest."""
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_podman.return_value.run.return_value = "Loaded image: sha256:mydigest"
+    digest = container_utils.load_image_tarball(pathlib.Path("/fake/path"))
+    assert digest == "sha256:mydigest"

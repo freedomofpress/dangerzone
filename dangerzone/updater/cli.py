@@ -102,11 +102,12 @@ def store_signatures(image: str) -> None:
 def load_archive(archive_filename: Path, force: bool) -> None:
     """Use ARCHIVE_FILENAME as the dangerzone sandbox image"""
     try:
-        loaded_image = signatures.upgrade_container_image_airgapped(
+        loaded_image, image_digest = signatures.upgrade_container_image_airgapped(
             archive_filename, bypass_logindex=force
         )
         click.echo(
             f"✅ Installed image {archive_filename} on the system as {loaded_image}"
+            f" with digest {image_digest}"
         )
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")

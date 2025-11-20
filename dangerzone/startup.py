@@ -4,15 +4,6 @@ import platform
 import typing
 from typing import Optional
 
-if typing.TYPE_CHECKING:
-    from PySide2 import QtCore
-else:
-    try:
-        from PySide6 import QtCore
-    except ImportError:
-        from PySide2 import QtCore
-
-
 from . import errors, settings, util
 from .isolation_provider import qubes
 from .podman.machine import PodmanMachineManager

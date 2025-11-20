@@ -152,4 +152,4 @@ share/container.tar.gz
 share/image-id.txt
 container/container-pip-requirements.txt
 .doit.db.db
-dangerzone/container_helpers/H2Orestart.oxt
+dangerzone/container_helpers/h2orestart.oxt

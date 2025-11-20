@@ -326,7 +326,9 @@ def clear_old_images(digest_to_keep: str) -> None:
     log.debug(f"Digest to keep: {digest_to_keep}")
     digests = list_image_digests()
     log.debug(f"Digests installed: {digests}")
-    to_remove = filter(lambda x: x != f"sha256:{digest_to_keep}", digests)
+    if not digest_to_keep.startswith("sha256:"):
+        digest_to_keep = f"sha256:{digest_to_keep}"
+    to_remove = filter(lambda x: x != digest_to_keep, digests)
     delete_image_digests(to_remove)
 
 

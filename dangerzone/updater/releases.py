@@ -53,6 +53,7 @@ class ReleaseReport:
         )
 
 
+@dataclass
 class EmptyReport:
     """Empty report, when there is nothing to report"""
 

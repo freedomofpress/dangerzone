@@ -30,7 +30,7 @@ jobs:
     container:
       image: debian:bookworm
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install dev. dependencies
         run: |-
           apt-get update
@@ -99,7 +99,7 @@ jobs:
       #   UnicodeEncodeError: 'charmap' codec can't encode characters in position 14-41: character maps to <undefined>
       PYTHONIOENCODING: UTF-8
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -176,7 +176,7 @@ jobs:
           - runner: macos-15-intel
             arch: x86_64
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -250,7 +250,7 @@ jobs:
             version: trixie
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: actions/setup-python@v6
         with:
@@ -336,7 +336,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: actions/setup-python@v6
         with:
@@ -377,7 +377,7 @@ jobs:
         version: ["41", "42", "43"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Login to GHCR
         run: |
@@ -492,7 +492,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: actions/setup-python@v6
         with:
@@ -597,7 +597,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: actions/setup-python@v6
         with:

@@ -72,7 +72,8 @@ pytest-subprocess = "^1.5.2"
 pytest-rerunfailures = "^14.0"
 numpy = [
    { version = "2.0", python = "3.9" }, # remove when we drop python 3.9 support
-   { version = "^2.1", python = "^3.10" },
+   { version = "^2.1", python = "3.10" },
+   { version = "^2.3", python = "^3.11" },
 ]
 
 [tool.poetry.group.debian.dependencies]

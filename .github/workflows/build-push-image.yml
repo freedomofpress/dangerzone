@@ -247,7 +247,7 @@ jobs:
   # This step calls the container workflow to generate provenance and push it to
   # the container registry.
   provenance:
-    if: ${{ inputs.reproduce }}
+    if: ${{ inputs.provenance }}
     needs:
       - merge
     strategy:

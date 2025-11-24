@@ -168,3 +168,34 @@ def test_kill_container_exception(mocker: MockerFixture, caplog: Any) -> None:
         "Unexpected error occurred while killing container 'test-container'"
         in caplog.text
     )
+
+
+def test_load_image_tarball(mocker: MockerFixture) -> None:
+    """Test that we can load a tarball and get the digest."""
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_podman.return_value.run.return_value = "Loaded image: sha256:mydigest"
+    digest = container_utils.load_image_tarball(pathlib.Path("/fake/path"))
+    assert digest == "sha256:mydigest"
+
+
+def test_clear_old_images_deletes_digests(mocker: MockerFixture) -> None:
+    """Test that clear_old_images deletes the old image digests."""
+    # Mock podman calls
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_list = mocker.patch("dangerzone.container_utils.list_image_digests")
+
+    image_name = container_utils.expected_image_name()
+    old_digests = ["sha256:old_digest_1", "sha256:old_digest_2"]
+    old_digests_full = [f"{image_name}@{digest}" for digest in old_digests]
+    new_digest = "sha256:new_digest"
+    all_digests = old_digests + [new_digest]
+    mock_list.return_value = all_digests
+
+    # Call the function
+    container_utils.clear_old_images(digest_to_keep=new_digest)
+
+    # Check that we fetched the right digests
+    mock_list.assert_called_once()
+
+    # Check that we removed the old images
+    mock_podman.return_value.run.assert_any_call(["rmi", "--force", *old_digests_full])

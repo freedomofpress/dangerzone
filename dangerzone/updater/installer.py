@@ -45,7 +45,7 @@ def apply_installation_strategy(strategy: Strategy) -> None:
         return
     elif strategy == Strategy.INSTALL_LOCAL_CONTAINER:
         log.debug("Install the local container tarball")
-        install_local_container_tar()
+        image_digest = install_local_container_tar()
     elif strategy == Strategy.INSTALL_REMOTE_CONTAINER:
         log.debug("Download and install a remote container image")
         container_name = runtime.expected_image_name()
@@ -54,7 +54,10 @@ def apply_installation_strategy(strategy: Strategy) -> None:
             container_name
         )
         upgrade_container_image(remote_digest, signatures=signatures)
-        runtime.clear_old_images(digest_to_keep=remote_digest)
+        image_digest = remote_digest
+
+    # Always clear old images, since we expect only one to exist at a time.
+    runtime.clear_old_images(digest_to_keep=image_digest)
 
 
 def get_installation_strategy() -> Strategy:

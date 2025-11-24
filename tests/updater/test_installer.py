@@ -1,4 +1,5 @@
 from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
 from pytest_mock import MockerFixture
@@ -49,11 +50,12 @@ def test_upgrades_disabled_detect_wrong_container_upgrade(
 ) -> None:
     """
     2. Upgrades are disabled, we want to detect that the locally
-    installed container is not the intended one, and upgrade to the new one
+    installed container is not the intended one, and upgrade to the new one.
+    We also test that old images are cleared.
     """
     mocker.patch(
         f"{installer}.runtime.list_image_digests",
-        return_value=["ghcr.io/freedomofpress/dangerzone/v1:latest"],
+        return_value=["old_digest_1", "old_digest_2"],
     )
     mocker.patch(
         f"{installer}.runtime.expected_image_name",
@@ -66,8 +68,23 @@ def test_upgrades_disabled_detect_wrong_container_upgrade(
     mocker.patch(f"{installer}.get_last_log_index", return_value=100)
     mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
 
-    result = get_installation_strategy()
-    assert result == Strategy.INSTALL_LOCAL_CONTAINER
+    # Check that we get the right strategy
+    strategy = get_installation_strategy()
+    assert strategy == Strategy.INSTALL_LOCAL_CONTAINER
+
+    # Now, check that applying the strategy works as intended
+    mock_install_local = mocker.patch(
+        "dangerzone.updater.installer.install_local_container_tar"
+    )
+    mock_install_local.return_value = "local_digest"
+    mock_clear_old_images = mocker.patch(
+        "dangerzone.updater.installer.runtime.clear_old_images"
+    )
+
+    apply_installation_strategy(strategy)
+
+    mock_install_local.assert_called_once()
+    mock_clear_old_images.assert_called_once_with(digest_to_keep="local_digest")
 
 
 def test_building_dangerzone_from_source_first_time(mocker: MockerFixture) -> None:
@@ -109,10 +126,13 @@ def test_building_dangerzone_from_source_nth_time(mocker: MockerFixture) -> None
 
 
 def test_enable_updates_after_some_time(mocker: MockerFixture) -> None:
-    """5. Enable updates after some time (same as Enable updates immediately)"""
+    """
+    5. Enable updates after some time (same as Enable updates immediately).
+    We also test that old images are cleared.
+    """
     mocker.patch(
         f"{installer}.runtime.list_image_digests",
-        return_value=["ghcr.io/freedomofpress/dangerzone/v1:latest"],
+        return_value=["old_digest_1", "old_digest_2"],
     )
     mocker.patch(
         f"{installer}.runtime.expected_image_name",
@@ -126,8 +146,29 @@ def test_enable_updates_after_some_time(mocker: MockerFixture) -> None:
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
 
-    result = get_installation_strategy()
-    assert result == Strategy.INSTALL_REMOTE_CONTAINER
+    # Check that we get the right strategy
+    strategy = get_installation_strategy()
+    assert strategy == Strategy.INSTALL_REMOTE_CONTAINER
+
+    # Now, check that applying the strategy works as intended
+    mock_get_remote_digest = mocker.patch(
+        "dangerzone.updater.installer.get_remote_digest_and_logindex"
+    )
+    mock_get_remote_digest.return_value = ("remote_digest", 0, [{}])
+    mock_upgrade = mocker.patch("dangerzone.updater.installer.upgrade_container_image")
+    mock_clear_old_images = mocker.patch(
+        "dangerzone.updater.installer.runtime.clear_old_images"
+    )
+    mocker.patch(
+        "dangerzone.updater.installer.runtime.expected_image_name",
+        return_value="some_image_name",
+    )
+
+    apply_installation_strategy(strategy)
+
+    mock_get_remote_digest.assert_called_once_with("some_image_name")
+    mock_upgrade.assert_called_once_with("remote_digest", signatures=[{}])
+    mock_clear_old_images.assert_called_once_with(digest_to_keep="remote_digest")
 
 
 def test_enable_updates_no_new_image_available(mocker: MockerFixture) -> None:

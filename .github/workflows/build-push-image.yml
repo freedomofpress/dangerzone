@@ -15,6 +15,10 @@ on:
       reproduce:
         required: true
         type: boolean
+      attest:
+        required: false
+        default: false
+        type: boolean
       sign:
         required: true
         type: boolean
@@ -243,6 +247,7 @@ jobs:
   # This step calls the container workflow to generate provenance and push it to
   # the container registry.
   provenance:
+    if: ${{ inputs.reproduce }}
     needs:
       - merge
     strategy:

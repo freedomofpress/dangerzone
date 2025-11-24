@@ -42,7 +42,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install dev. dependencies
         run: |-
@@ -64,7 +64,7 @@ jobs:
       image: ${{ steps.params.outputs.full_image_name }}
       tag: ${{ steps.params.outputs.tag }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -105,7 +105,7 @@ jobs:
           - runs-on: "ubuntu-24.04-arm"
             name: "linux/arm64"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v7
@@ -185,7 +185,7 @@ jobs:
       digest_amd64: ${{ steps.image.outputs.digest_amd64 }}
       digest_arm64: ${{ steps.image.outputs.digest_arm64 }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Download digests
         uses: actions/download-artifact@v6
@@ -278,7 +278,7 @@ jobs:
           - runs-on: "ubuntu-24.04-arm"
             name: "arm64"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -312,7 +312,7 @@ jobs:
     outputs:
       image_uri: ${{ needs.merge.outputs.image_uri }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Prepare env
@@ -344,7 +344,7 @@ jobs:
     needs:
       - sign
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v6

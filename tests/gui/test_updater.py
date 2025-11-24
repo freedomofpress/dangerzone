@@ -54,7 +54,7 @@ def assert_report_equal(
     assert isinstance(report2, (ReleaseReport, EmptyReport, ErrorReport))
     assert type(report1) == type(report2)
     # Python dataclasses give us the __eq__ comparison for free
-    assert report1.__eq__(report2)
+    assert report1 == report2
 
 
 def test_default_updater_settings(isolated_settings: settings.Settings) -> None:

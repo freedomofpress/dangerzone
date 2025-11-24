@@ -374,7 +374,7 @@ jobs:
     strategy:
       matrix:
         distro: ["fedora"]
-        version: ["41", "42"]
+        version: ["41", "42", "43"]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -487,6 +487,8 @@ jobs:
             version: "41"
           - distro: fedora
             version: "42"
+          - distro: fedora
+            version: "43"
 
     steps:
       - name: Checkout

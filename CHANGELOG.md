@@ -53,6 +53,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Add support for Ubuntu 25.10 (Questing Quokka)
   ([#1264](https://github.com/freedomofpress/dangerzone/issues/1264))
+- Add support for Fedora 43
+  ([#1263](https://github.com/freedomofpress/dangerzone/issues/1263))
 - Add support for the new Debian Testing (Forky)
   ([#1265](https://github.com/freedomofpress/dangerzone/issues/1265))
 - Drop support for Ubuntu Oracular (24.10) since it is end of life

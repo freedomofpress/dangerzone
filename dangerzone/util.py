@@ -164,11 +164,16 @@ def get_tails_socks_proxy() -> str:
     """
     Generate a SOCKS5 proxy connection address that works on Tails.
 
-    the username part makes it use stream isolation [0], which allows to isolate
-    unrelated streams, putting them on separate circuits so that semantically
-    unrelated traffic is not inadvertently made linkable [1].
+    Passing a random value for username makes C Tor use stream isolation,
+    which allows to isolate unrelated streams, putting them on separate
+    circuits so that semantically unrelated traffic is not inadvertently
+    made linkable [1].
+
+    This authentication scheme is to be upgraded to "<torS0X>" [0] when
+    Tor hits 0.4.9.1 in Tails (currently 0.4.8.19) or if Tails switches
+    to Arti (1.2.8+)
 
     [0] https://spec.torproject.org/socks-extensions.html#extended-auth
     [1] https://spec.torproject.org/proposals/171-separate-streams.txt
     """
-    return f"socks5://<torS0X>0:{os.urandom(8).hex()}@127.0.0.1:9050"
+    return f"socks5://{os.urandom(8).hex()}:0@127.0.0.1:9050"

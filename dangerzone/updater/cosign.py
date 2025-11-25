@@ -3,7 +3,12 @@ import subprocess
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from ..util import get_resource_path, subprocess_run
+from ..util import (
+    get_resource_path,
+    get_tails_socks_proxy,
+    linux_system_is,
+    subprocess_run,
+)
 from . import errors, log
 
 """
@@ -33,6 +38,8 @@ def _cosign_run(
         rekor_pub_key = str(get_resource_path("rekor.pub"))
         log.debug(f"Pinning Rekor public key to {rekor_pub_key}")
         custom_env["SIGSTORE_REKOR_PUBLIC_KEY"] = rekor_pub_key
+    if linux_system_is("Tails"):
+        custom_env["HTTPS_PROXY"] = get_tails_socks_proxy()
 
     # NOTE: This is an uncommon way to update envvars. We basically want to ensure that
     # the environment variables we have set above will be passed to the command,

@@ -1,7 +1,9 @@
 import contextlib
 import logging
+import multiprocessing as mp
 import os
 import platform
+import queue
 import signal
 import subprocess
 import sys
@@ -79,6 +81,30 @@ def sanitize_debug_text(text: bytes) -> str:
     return replace_control_chars(untrusted_text, keep_newlines=True)
 
 
+def _ocr_page_worker(
+    pixmap_bytes: bytes, width: int, height: int, ocr_lang: str, tessdata_dir: str
+) -> bytes:
+    """Worker function for multiprocessing OCR. Returns PDF bytes."""
+    try:
+        pixmap = fitz.Pixmap(
+            fitz.Colorspace(fitz.CS_RGB),
+            width,
+            height,
+            pixmap_bytes,
+            False,
+        )
+        pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
+        return pixmap.pdfocr_tobytes(
+            compress=True,
+            language=ocr_lang,
+            tessdata=tessdata_dir,
+        )
+    except Exception as e:
+        # Re-raise with a picklable exception to avoid multiprocessing errors
+        # when the original exception contains unpicklable SWIG objects
+        raise RuntimeError(str(e)) from None
+
+
 class IsolationProvider(ABC):
     """
     Abstracts an isolation provider
@@ -118,14 +144,6 @@ class IsolationProvider(ABC):
             self.print_progress(document, True, str(e), 0)
             document.mark_as_failed()
 
-    def ocr_page(self, pixmap: fitz.Pixmap, ocr_lang: str) -> bytes:
-        """Get a single page as pixels, OCR it, and return a PDF as bytes."""
-        return pixmap.pdfocr_tobytes(
-            compress=True,
-            language=ocr_lang,
-            tessdata=str(get_tessdata_dir()),
-        )
-
     def pixels_to_pdf_page(
         self,
         untrusted_data: bytes,
@@ -144,7 +162,11 @@ class IsolationProvider(ABC):
         pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
 
         if ocr_lang:  # OCR the document
-            page_pdf_bytes = self.ocr_page(pixmap, ocr_lang)
+            page_pdf_bytes = pixmap.pdfocr_tobytes(
+                compress=True,
+                language=ocr_lang,
+                tessdata=str(get_tessdata_dir()),
+            )
         else:  # Don't OCR
             page_doc = fitz.Document()
             page_doc.insert_file(pixmap)
@@ -175,35 +197,83 @@ class IsolationProvider(ABC):
 
             safe_doc = fitz.Document()
 
-            for page in range(1, n_pages + 1):
-                searchable = "searchable " if ocr_lang else ""
-                text = (
-                    f"Converting page {page}/{n_pages} from pixels to {searchable}PDF"
-                )
-                self.print_progress(document, False, text, percentage)
+            # Use multiprocessing pool for OCR if needed
+            if ocr_lang:
+                max_workers = max(1, mp.cpu_count() - 1)
+                ocr_pool = mp.Pool(processes=max_workers)
+                async_results = {}
+                # Pre-compute tessdata path to pass to workers (they can't access
+                # sys.dangerzone_dev which is set only in the main process)
+                tessdata_dir = str(get_tessdata_dir())
+            else:
+                ocr_pool = None
+                tessdata_dir = None
 
-                width = read_int(p.stdout)
-                height = read_int(p.stdout)
-                if not (1 <= width <= errors.MAX_PAGE_WIDTH):
-                    raise errors.MaxPageWidthException()
-                if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
-                    raise errors.MaxPageHeightException()
+            try:
+                for page in range(1, n_pages + 1):
+                    searchable = "searchable " if ocr_lang else ""
+                    text = f"Converting page {page}/{n_pages} from pixels to {searchable}PDF"
+                    self.print_progress(document, False, text, percentage)
 
-                num_pixels = width * height * 3  # three color channels
-                untrusted_pixels = read_bytes(
-                    p.stdout,
-                    num_pixels,
-                )
+                    width = read_int(p.stdout)
+                    height = read_int(p.stdout)
+                    if not (1 <= width <= errors.MAX_PAGE_WIDTH):
+                        raise errors.MaxPageWidthException()
+                    if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
+                        raise errors.MaxPageHeightException()
 
-                page_pdf = self.pixels_to_pdf_page(
-                    untrusted_pixels,
-                    width,
-                    height,
-                    ocr_lang,
-                )
-                safe_doc.insert_pdf(page_pdf)
+                    num_pixels = width * height * 3  # three color channels
+                    untrusted_pixels = read_bytes(
+                        p.stdout,
+                        num_pixels,
+                    )
 
-                percentage += step
+                    if ocr_lang:
+                        # Submit OCR task to worker pool
+                        assert ocr_pool is not None
+                        result = ocr_pool.apply_async(
+                            _ocr_page_worker,
+                            (untrusted_pixels, width, height, ocr_lang, tessdata_dir),
+                        )
+                        async_results[page] = result
+                        # Keep buffering pages, but collect results that are ready
+                        # to avoid queue overflow
+                        if len(async_results) > max_workers * 2:
+                            for ready_page in sorted(async_results.keys()):
+                                if ready_page in async_results:
+                                    try:
+                                        page_pdf_bytes = async_results[ready_page].get(
+                                            timeout=0
+                                        )
+                                        page_doc = fitz.open("pdf", page_pdf_bytes)
+                                        safe_doc.insert_pdf(page_doc)
+                                        del async_results[ready_page]
+                                        break
+                                    except mp.TimeoutError:
+                                        pass
+                    else:
+                        # No OCR: process immediately
+                        page_pdf = self.pixels_to_pdf_page(
+                            untrusted_pixels,
+                            width,
+                            height,
+                            None,
+                        )
+                        safe_doc.insert_pdf(page_pdf)
+
+                    percentage += step
+
+                # Collect all remaining OCR results
+                if ocr_lang:
+                    for page in sorted(async_results.keys()):
+                        page_pdf_bytes = async_results[page].get()
+                        page_doc = fitz.open("pdf", page_pdf_bytes)
+                        safe_doc.insert_pdf(page_doc)
+
+            finally:
+                if ocr_pool is not None:
+                    ocr_pool.close()
+                    ocr_pool.join()
 
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()

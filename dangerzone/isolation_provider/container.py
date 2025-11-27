@@ -20,11 +20,6 @@ from ..updater import (
 from ..util import get_resource_path, subprocess_run
 from .base import IsolationProvider, terminate_process_group
 
-MINIMUM_DOCKER_DESKTOP = {
-    "Darwin": "4.43.1",
-    "Windows": "4.43.1",
-}
-
 # Define startupinfo for subprocesses
 if platform.system() == "Windows":
     startupinfo = subprocess.STARTUPINFO()  # type: ignore [attr-defined]

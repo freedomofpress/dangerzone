@@ -31,6 +31,7 @@ from dangerzone.gui.logic import DangerzoneGui
 # import Pyside related objects from here to avoid duplicating import logic.
 from dangerzone.gui.main_window import (
     ConversionWidget,
+    MainWindow,
     QtCore,
     QtGui,
 )

@@ -1,5 +1,6 @@
 import contextlib
 import logging
+import multiprocessing as mp
 import os
 import platform
 import signal
@@ -7,6 +8,8 @@ import subprocess
 import sys
 import threading
 from abc import ABC, abstractmethod
+from collections import deque
+from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
 from typing import IO, Callable, Iterator, Optional
 
@@ -79,6 +82,42 @@ def sanitize_debug_text(text: bytes) -> str:
     return replace_control_chars(untrusted_text, keep_newlines=True)
 
 
+def _ocr_pool_initializer() -> None:
+    """Initialize OCR worker processes with optimal thread settings."""
+    # Limit Tesseract to 1 thread per worker
+    os.environ["OMP_THREAD_LIMIT"] = "1"
+    os.environ["OMP_NUM_THREADS"] = "1"
+    os.environ["IS_WORKER_PROCESS"] = "1"
+
+
+def _ocr_page_worker(
+    pixmap_bytes: bytes,
+    width: int,
+    height: int,
+    ocr_lang: str,
+    tessdata_dir: str,
+) -> bytes:
+    """Worker function for multiprocessing OCR. Returns PDF bytes."""
+    try:
+        pixmap = fitz.Pixmap(
+            fitz.Colorspace(fitz.CS_RGB),
+            width,
+            height,
+            pixmap_bytes,
+            False,
+        )
+        pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
+        return pixmap.pdfocr_tobytes(
+            compress=True,
+            language=ocr_lang,
+            tessdata=tessdata_dir,
+        )
+    except Exception as e:
+        # Re-raise with a picklable exception to avoid multiprocessing errors
+        # when the original exception contains unpicklable SWIG objects
+        raise RuntimeError(str(e)) from None
+
+
 class IsolationProvider(ABC):
     """
     Abstracts an isolation provider
@@ -118,22 +157,13 @@ class IsolationProvider(ABC):
             self.print_progress(document, True, str(e), 0)
             document.mark_as_failed()
 
-    def ocr_page(self, pixmap: fitz.Pixmap, ocr_lang: str) -> bytes:
-        """Get a single page as pixels, OCR it, and return a PDF as bytes."""
-        return pixmap.pdfocr_tobytes(
-            compress=True,
-            language=ocr_lang,
-            tessdata=str(get_tessdata_dir()),
-        )
-
     def pixels_to_pdf_page(
         self,
         untrusted_data: bytes,
         untrusted_width: int,
         untrusted_height: int,
-        ocr_lang: Optional[str],
     ) -> fitz.Document:
-        """Convert a byte array of RGB pixels into a PDF page, optionally with OCR."""
+        """Convert a byte array of RGB pixels into a PDF page"""
         pixmap = fitz.Pixmap(
             fitz.Colorspace(fitz.CS_RGB),
             untrusted_width,
@@ -143,12 +173,9 @@ class IsolationProvider(ABC):
         )
         pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
 
-        if ocr_lang:  # OCR the document
-            page_pdf_bytes = self.ocr_page(pixmap, ocr_lang)
-        else:  # Don't OCR
-            page_doc = fitz.Document()
-            page_doc.insert_file(pixmap)
-            page_pdf_bytes = page_doc.tobytes(deflate_images=True)
+        page_doc = fitz.Document()
+        page_doc.insert_file(pixmap)
+        page_pdf_bytes = page_doc.tobytes(deflate_images=True)
 
         return fitz.open("pdf", page_pdf_bytes)
 
@@ -159,6 +186,8 @@ class IsolationProvider(ABC):
         p: subprocess.Popen,
     ) -> None:
         percentage = 0.0
+        # Write the content of the to-be-converted document to the stdin of
+        # the conversion process.
         with open(document.input_filename, "rb") as f:
             try:
                 assert p.stdin is not None
@@ -167,6 +196,7 @@ class IsolationProvider(ABC):
             except BrokenPipeError:
                 raise errors.ConverterProcException()
 
+            # And read the stdout, which should contain the pixel buffers
             assert p.stdout
             n_pages = read_int(p.stdout)
             if n_pages == 0 or n_pages > errors.MAX_PAGES:
@@ -175,35 +205,111 @@ class IsolationProvider(ABC):
 
             safe_doc = fitz.Document()
 
-            for page in range(1, n_pages + 1):
-                searchable = "searchable " if ocr_lang else ""
-                text = (
-                    f"Converting page {page}/{n_pages} from pixels to {searchable}PDF"
-                )
-                self.print_progress(document, False, text, percentage)
-
-                width = read_int(p.stdout)
-                height = read_int(p.stdout)
-                if not (1 <= width <= errors.MAX_PAGE_WIDTH):
-                    raise errors.MaxPageWidthException()
-                if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
-                    raise errors.MaxPageHeightException()
-
-                num_pixels = width * height * 3  # three color channels
-                untrusted_pixels = read_bytes(
-                    p.stdout,
-                    num_pixels,
+            # If we are doing OCR, start a pool of workers to do it in parallel
+            if ocr_lang:
+                max_workers = max(1, round(mp.cpu_count() / 2))
+                ocr_pool = ProcessPoolExecutor(
+                    max_workers=max_workers,
+                    initializer=_ocr_pool_initializer,
+                    mp_context=mp.get_context("spawn"),
                 )
 
-                page_pdf = self.pixels_to_pdf_page(
-                    untrusted_pixels,
-                    width,
-                    height,
-                    ocr_lang,
-                )
-                safe_doc.insert_pdf(page_pdf)
+                # Pre-compute tessdata path to pass to workers (they can't access
+                # sys.dangerzone_dev which is set only in the main process)
+                tessdata_dir = str(get_tessdata_dir())
+                ocr_futures: deque = deque()  # stores (page_num, future) tuples
+                ocr_page_num = 0  # tracks how many pages have completed OCR
+            else:
+                ocr_pool = None
+                tessdata_dir = None
 
-                percentage += step
+            def drain_ocr_futures(block_until_below: Optional[int] = None) -> None:
+                """
+                Collect completed OCR pages (from the front of the queue)
+                and append them to the resulting safe_doc.
+
+                If block_until_below is set, wait on futures until the
+                queue size drops below that threshold.
+                """
+                nonlocal ocr_page_num
+                while ocr_futures:
+                    if (
+                        block_until_below is not None
+                        and len(ocr_futures) <= block_until_below
+                    ):
+                        break
+                    _, future = ocr_futures[0]
+                    if not future.done():
+                        if block_until_below is None:
+                            break  # non-blocking: stop at first incomplete
+                        future.result()  # blocking: wait for the future to complete
+                    page, future = ocr_futures.popleft()
+                    page_pdf_bytes = future.result()
+                    page_doc = fitz.open("pdf", page_pdf_bytes)
+                    safe_doc.insert_pdf(page_doc)
+                    ocr_page_num += 1
+                    ocr_percentage = (ocr_page_num / n_pages) * 100
+                    text = f"Converted page {ocr_page_num}/{n_pages} to searchable PDF"
+                    self.print_progress(document, False, text, ocr_percentage)
+
+            try:
+                for page in range(1, n_pages + 1):
+                    # Block if too many pages are waiting for OCR, to avoid
+                    # filling RAM with pixel buffers from the sandbox.
+                    # Wait until the queue drains to the number of workers
+                    # before resuming.
+                    if ocr_lang and len(ocr_futures) >= 2 * max_workers:
+                        drain_ocr_futures(block_until_below=max_workers)
+
+                    # Consume each page of the rasterizer's output...
+                    width = read_int(p.stdout)
+                    height = read_int(p.stdout)
+                    if not (1 <= width <= errors.MAX_PAGE_WIDTH):
+                        raise errors.MaxPageWidthException()
+                    if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
+                        raise errors.MaxPageHeightException()
+
+                    num_pixels = width * height * 3  # three color channels
+                    untrusted_pixels = read_bytes(
+                        p.stdout,
+                        num_pixels,
+                    )
+
+                    # ... and send them to the OCR worker pool...
+                    if ocr_lang:
+                        assert ocr_pool is not None
+                        assert tessdata_dir is not None
+                        future = ocr_pool.submit(
+                            _ocr_page_worker,
+                            untrusted_pixels,
+                            width,
+                            height,
+                            ocr_lang,
+                            tessdata_dir,
+                        )
+                        ocr_futures.append((page, future))
+
+                        # Non-blocking drain of any completed futures
+                        drain_ocr_futures()
+                    else:
+                        # ... Or process immediately (if no OCR is requested)
+                        page_pdf = self.pixels_to_pdf_page(
+                            untrusted_pixels,
+                            width,
+                            height,
+                        )
+                        safe_doc.insert_pdf(page_pdf)
+                        percentage += step
+                        text = f"Converted page {page}/{n_pages} to PDF"
+                        self.print_progress(document, False, text, percentage)
+
+                # Once all pages have been submitted, wait for remaining futures
+                if ocr_lang:
+                    drain_ocr_futures(block_until_below=0)
+
+            finally:
+                if ocr_pool is not None:
+                    ocr_pool.shutdown()
 
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()

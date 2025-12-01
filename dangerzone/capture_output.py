@@ -36,7 +36,7 @@ class PatchedPopen(original_subprocess_popen):
         stdout = kwargs.get("stdout")
         stderr = kwargs.get("stderr")
         encoding = kwargs.get("encoding")
-        log.debug(f"Running: {shlex.join(args[0])}")
+        log.info(f"Running: {shlex.join(args[0])}")
         if stdout is not None or stderr is not None:
             super().__init__(*args, **kwargs)
             return
@@ -105,7 +105,7 @@ def patched_subprocess_run(  # type: ignore[no-untyped-def]
     if process.stderr is not None:
         log.info(_decode_if_needed(process.stderr))
 
-    log.debug(f"Process returncode: {process.returncode}")
+    log.info(f"Process returncode: {process.returncode}")
     return process
 
 

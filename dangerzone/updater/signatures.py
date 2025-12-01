@@ -35,7 +35,7 @@ def appdata_dir() -> Path:
 
 # RELEASE: Bump this value to the log index of the latest signature
 # to ensure the software can't upgrade to container images that predates it.
-BUNDLED_LOG_INDEX = 708814078
+BUNDLED_LOG_INDEX = 732661252
 
 DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone.pub")
 SIGNATURES_PATH = appdata_dir() / "signatures"

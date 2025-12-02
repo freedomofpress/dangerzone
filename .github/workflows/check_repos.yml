@@ -19,11 +19,15 @@ jobs:
       matrix:
         include:
           - distro: ubuntu
+            version: "25.10"  # questing
+          - distro: ubuntu
             version: "25.04"  # plucky
           - distro: ubuntu
             version: "24.04"  # noble
           - distro: ubuntu
             version: "22.04"  # jammy
+          - distro: debian
+            version: "forky-slim"  # forky / 14
           - distro: debian
             version: "trixie-slim"  # trixie / 13
           - distro: debian
@@ -49,6 +53,8 @@ jobs:
             version: 41
           - distro: fedora
             version: 42
+          - distro: fedora
+            version: 43
     steps:
       - name: Add packages.freedom.press to our YUM sources
         run: |

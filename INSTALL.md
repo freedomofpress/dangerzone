@@ -24,6 +24,7 @@ following sections.
 Notes:
 
 ⥿ We provide support for Windows 10 on a best effort basis, given that it is currently end of life.
+  Windows on Arm [is not supported at this time](https://github.com/freedomofpress/dangerzone/issues/1228).
 
 ✢ Qubes OS support assumes the use of a Fedora template. The supported releases follow our general support for Fedora.
 

@@ -39,7 +39,7 @@ jobs:
       - name: Check cosign is present
         run: ls share/vendor
       - name: Restore container image
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |-
             share/container.tar

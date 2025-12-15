@@ -107,7 +107,7 @@ jobs:
       - run: poetry install
       - name: Cache mazette assets
         id: cache-mazette
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             share/tessdata/
@@ -120,7 +120,7 @@ jobs:
       - name: Check cosign is present
         run: ls share/vendor
       - name: Restore container image
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |-
             share/container.tar
@@ -218,7 +218,7 @@ jobs:
           poetry install
       - name: Cache mazette assets
         id: cache-mazette
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             share/vendor/
@@ -242,7 +242,7 @@ jobs:
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Restore container image
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |-
             share/container.tar
@@ -347,7 +347,7 @@ jobs:
 
       - name: Cache mazette assets
         id: cache-mazette
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |-
             share/tessdata/
@@ -370,7 +370,7 @@ jobs:
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Restore container image
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |-
             share/container.tar
@@ -462,7 +462,7 @@ jobs:
 
       - name: Cache mazette assets
         id: cache-mazette
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             share/tessdata/
@@ -489,7 +489,7 @@ jobs:
               build-dev --sync
 
       - name: Restore container image
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |-
             share/container.tar
@@ -567,7 +567,7 @@ jobs:
 
       - name: Cache mazette assets
         id: cache-mazette
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             share/tessdata/
@@ -583,7 +583,7 @@ jobs:
           echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
       - name: Restore container image
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |-
             share/container.tar

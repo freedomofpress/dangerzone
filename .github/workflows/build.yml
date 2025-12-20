@@ -87,7 +87,7 @@ jobs:
 
       - name: Cache container image
         id: cache-container-image
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           key: v5-${{ steps.date.outputs.date }}-${{ hashFiles('Dockerfile', 'dangerzone/conversion/*.py', 'dangerzone/container_helpers/*', 'mazette.lock', 'install/common/build-image.py') }}
           path: |

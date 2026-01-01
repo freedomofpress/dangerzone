@@ -49,6 +49,7 @@ class OSColorMode(enum.Enum):
 class Application(QtWidgets.QApplication):
     document_selected = QtCore.Signal(list)
     application_activated = QtCore.Signal()
+    color_scheme_changed = QtCore.Signal()
 
     def __init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
         super(Application, self).__init__(*args, **kwargs)
@@ -92,6 +93,8 @@ class Application(QtWidgets.QApplication):
         self.os_color_mode = self.infer_os_color_mode()
         log.debug(f"Inferred system color scheme as {self.os_color_mode}")
 
+        self.paletteChanged.connect(self._handle_palette_change)
+
     def infer_os_color_mode(self) -> OSColorMode:
         """
         Qt 6.5+ explicitly provides the OS color scheme via QStyleHints.colorScheme(),
@@ -105,6 +108,14 @@ class Application(QtWidgets.QApplication):
         if text_color.lightness() > window_color.lightness():
             return OSColorMode.DARK
         return OSColorMode.LIGHT
+
+    def _handle_palette_change(self, palette: QtGui.QPalette) -> None:
+        """Handle system palette changes (e.g., dark/light mode toggle)."""
+        new_mode = self.infer_os_color_mode()
+        if new_mode != self.os_color_mode:
+            log.debug(f"Color scheme changed from {self.os_color_mode} to {new_mode}")
+            self.os_color_mode = new_mode
+            self.color_scheme_changed.emit()
 
 
 @click.command()

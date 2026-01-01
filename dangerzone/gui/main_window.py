@@ -236,6 +236,8 @@ class StatusBar(QtWidgets.QStatusBar):
         self.addPermanentWidget(QtWidgets.QLabel(""))
         self.setSizeGripEnabled(False)
 
+        self.dangerzone.app.color_scheme_changed.connect(self._on_color_scheme_changed)
+
     def _update_style(self) -> None:
         # Required when dynamically changing properties. See:
         # https://wiki.qt.io/Dynamic_Properties_and_Stylesheets#Limitations
@@ -245,6 +247,14 @@ class StatusBar(QtWidgets.QStatusBar):
         self.message.style().unpolish(self.message)
         self.message.style().polish(self.message)
         self.message.update()
+
+    def _on_color_scheme_changed(self) -> None:
+        """Reload spinner SVG when color scheme changes."""
+        if self.dangerzone.app.os_color_mode.value == "dark":
+            spinner_svg = "spinner-dark.svg"
+        else:
+            spinner_svg = "spinner.svg"
+        self.spinner.load(str(get_resource_path(spinner_svg)))
 
     def set_status_ok(self, message: str) -> None:
         self.spinner.hide()
@@ -416,6 +426,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # thing we have to a top-level container element akin to an HTML `<body>`.
         # This allows us to make QSS rules conditional on the OS color mode.
         self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
+
+        # Connect to color scheme changes to update the UI dynamically
+        self.dangerzone.app.color_scheme_changed.connect(self._on_color_scheme_changed)
 
         # Configure logging to the log window
         log_handler = LogHandler()
@@ -825,6 +838,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.begin_shutdown(ret)
         # TODO: Handle gracefully the case of a running startup thread as well.
 
+    def _on_color_scheme_changed(self) -> None:
+        """Handle OS color scheme changes by updating styles."""
+        self.setProperty("OSColorMode", self.dangerzone.app.os_color_mode.value)
+        for widget in self.findChildren(QtWidgets.QWidget):
+            widget.style().unpolish(widget)
+            widget.style().polish(widget)
+            widget.update()
+        self.style().unpolish(self)
+        self.style().polish(self)
+        self.update()
+
 
 class StartupErrorWidget(QtWidgets.QWidget):
     def __init__(self) -> None:
@@ -953,6 +977,16 @@ class ConversionWidget(QtWidgets.QWidget):
         layout.addWidget(self.documents_list, stretch=1)
         layout.addWidget(self.doc_selection_wrapper, stretch=1)
         self.setLayout(layout)
+
+        self.dangerzone.app.color_scheme_changed.connect(self._on_color_scheme_changed)
+
+    def _on_color_scheme_changed(self) -> None:
+        """Reload spinner SVG when color scheme changes."""
+        if self.dangerzone.app.os_color_mode.value == "dark":
+            spinner_svg = "spinner-dark.svg"
+        else:
+            spinner_svg = "spinner.svg"
+        self.spinner.load(str(get_resource_path(spinner_svg)))
 
     def load_status_image(self, filename: str) -> QtGui.QPixmap:
         path = get_resource_path(filename)

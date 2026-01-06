@@ -119,3 +119,21 @@ ignore:
   #    a fix.
   - vulnerability: CVE-2025-49794
   - vulnerability: CVE-2025-49796
+
+  # CVE-2025-13836
+  # ==============
+  #
+  # When reading an HTTP response from a server, if no read amount is
+  # specified, the default behavior will be to use Content-Length. This allows
+  # a malicious server to cause the client to read large amounts of data into
+  # memory, potentially causing OOM or other DoS.
+  #
+  # Debian tracker: https://security-tracker.debian.org/tracker/CVE-2025-13836
+  #
+  # Verdict: we are not affected because we don't use any HTTP server
+  # capabilities inside the container. Outside the container, this could lead
+  # to OOM attacks when looking for updates on the client in case of Github
+  # servers compromise, which we deem acceptable until the next client release
+  # (0.11.0). Moreover, the Debian Security team deems it as a minor issue for
+  # Trixie, and there's currently no fix out for it.
+  - vulnerability: CVE-2025-13836

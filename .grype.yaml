@@ -137,3 +137,17 @@ ignore:
   # (0.11.0). Moreover, the Debian Security team deems it as a minor issue for
   # Trixie, and there's currently no fix out for it.
   - vulnerability: CVE-2025-13836
+
+  # CVE-2025-68973
+  # ##############
+  #
+  # In GnuPG before 2.4.9, armor_filter in g10/armor.c has two increments of an
+  # index variable where one is intended, leading to an out-of-bounds write for
+  # crafted input. (For ExtendedLTS, 2.2.51 and later are fixed versions.)
+  # 
+  # Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2025-68973
+  #
+  # Verdict: the container doesn't use GPG itself and so is not affected.
+  # Clients might be, but it's orthogonal to what we can do to solve this
+  # issue.
+  - vulnerability: CVE-2025-68973

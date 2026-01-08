@@ -102,6 +102,7 @@ ignore:
   # 2. Our container image is based on Debian Bookworm, which is not affected by
   #    this bug.
   - vulnerability: CVE-2025-4517
+
   # CVE-2025-49794, CVE-2025-49796
   # ==============================
   #

@@ -104,9 +104,13 @@ class DangerzoneGui(DangerzoneCore):
             # Opportunistically query for default pdf handler
             default_pdf_viewer = None
             try:
-                default_pdf_viewer = subprocess.check_output(
-                    ["xdg-mime", "query", "default", "application/pdf"]
-                ).decode()
+                default_pdf_viewer = (
+                    subprocess.check_output(
+                        ["xdg-mime", "query", "default", "application/pdf"]
+                    )
+                    .decode()
+                    .strip()
+                )  # remove trailing "\n"
             except (FileNotFoundError, subprocess.CalledProcessError) as e:
                 # Log it and continue
                 log.info(

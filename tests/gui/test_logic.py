@@ -35,7 +35,7 @@ def test_order_mime_handers() -> None:
 
     with (
         mock.patch(
-            "subprocess.check_output", return_value=b"libreoffice-draw.desktop"
+            "subprocess.check_output", return_value=b"libreoffice-draw.desktop\n"
         ) as mock_default_mime_hander,
         mock.patch(
             "os.listdir",

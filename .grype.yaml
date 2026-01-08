@@ -152,3 +152,20 @@ ignore:
   # Clients might be, but it's orthogonal to what we can do to solve this
   # issue.
   - vulnerability: CVE-2025-68973
+
+  # CVE-2025-68972
+  # ##############
+  #
+  # In GnuPG through 2.4.8, if a signed message has \f at the end of a
+  # plaintext line, an adversary can construct a modified message that places
+  # additional text after the signed material, such that signature verification
+  # of the modified message succeeds (although an "invalid armor" message is
+  # printed during verification). This is related to use of \f as a marker to
+  # denote truncation of a long plaintext line.
+  #
+  # Debian Tracker: https://security-tracker.debian.org/tracker/CVE-2025-68972
+  #
+  # Verdict: We do not use GnuPG or dirmngr in a way that is problematic
+  # related to this issue (e.g. we do not trust the text output in a way), and
+  # no fixes have been provided by upstream so far.
+  - vulnerability: CVE-2025-68972

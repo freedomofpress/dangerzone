@@ -10,6 +10,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 ### Fixed
 
 - Fix default PDF reader selection on Linux ([#814](https://github.com/freedomofpress/dangerzone/issues/814))
+- Update the theme correctly on dark/light mode changes
+  ([#1238](https://github.com/freedomofpress/dangerzone/issues/1238))
+
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/compare/v0.10.0...0.9.1)
 

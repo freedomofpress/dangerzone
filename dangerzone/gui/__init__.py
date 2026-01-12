@@ -85,6 +85,9 @@ class Application(QtWidgets.QApplication):
             elif event.type() == QtCore.QEvent.ApplicationActivate:
                 self.application_activated.emit()
                 return True
+            elif event.type() == QtCore.QEvent.Type.ApplicationPaletteChange:
+                self._handle_palette_change()
+                return True
 
             return self.original_event(event)
 
@@ -92,8 +95,6 @@ class Application(QtWidgets.QApplication):
 
         self.os_color_mode = self.infer_os_color_mode()
         log.debug(f"Inferred system color scheme as {self.os_color_mode}")
-
-        self.paletteChanged.connect(self._handle_palette_change)
 
     def infer_os_color_mode(self) -> OSColorMode:
         """
@@ -109,7 +110,7 @@ class Application(QtWidgets.QApplication):
             return OSColorMode.DARK
         return OSColorMode.LIGHT
 
-    def _handle_palette_change(self, palette: QtGui.QPalette) -> None:
+    def _handle_palette_change(self) -> None:
         """Handle system palette changes (e.g., dark/light mode toggle)."""
         new_mode = self.infer_os_color_mode()
         if new_mode != self.os_color_mode:

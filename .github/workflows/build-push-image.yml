@@ -215,6 +215,12 @@ jobs:
           docker buildx imagetools create \
               --annotation "manifest-descriptor:rocks.dangerzone.debian_archive_date=${{ needs.build.outputs.debian_archive_date }}" \
               -t ${{ needs.build.outputs.image }} \
+              ${DIGESTS} || \
+          # In case of failures, try to --append instead \
+          docker buildx imagetools create \
+              --append \
+              --annotation "manifest-descriptor:rocks.dangerzone.debian_archive_date=${{ needs.build.outputs.debian_archive_date }}" \
+              -t ${{ needs.build.outputs.image }} \
               ${DIGESTS}
 
       - name: Inspect image

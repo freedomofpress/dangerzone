@@ -130,31 +130,25 @@ def window(
     window = create_main_window(qtbot, mocker, tmp_path)
     yield window
 
-    # FIXME: There's something in pytest that:
-    #
-    # 1. calls the `.closeEvent()` method of the `MainWindow` fixture, and
-    # 2. does not respect the `.ignore()` method of the event, and closes immediately
-    #
-    # Because we spawn a thread to perform the shutdown tasks, and no one waits this
-    # thread, this chain of events leads to the following behavior:
-    #
-    #   PASSED
-    #
-    #   =============== 1 passed in 3.18s ==================
-    #   QThread: Destroyed while thread '' is still running
-    #   Aborted (core dumped)
-    #
-    # It looks like `QtBot` is the culprit, but I haven't found a better way to affect
-    # it's behavior. In order to circumvent it, we can eagerly wait for the shutdown
-    # thread to finish, which is not pretty nor stable, but works for now.
+    # Prevent shutdown thread creation during cleanup. When pytest-qt closes the
+    # widget, it triggers closeEvent which calls begin_shutdown. By setting
+    # requires_install to False, begin_shutdown exits immediately without
+    # creating the shutdown_thread, avoiding the "QThread: Destroyed while
+    # thread is still running" error.
+    window.dangerzone.isolation_provider.requires_install.return_value = False  # type: ignore [attr-defined]
+
+    # Wait for any running threads to complete
     if hasattr(window, "shutdown_thread"):
         window.shutdown_thread.wait()
+    if hasattr(window, "startup_thread"):
+        window.startup_thread.wait()
 
 
 def test_default_menu(
     qtbot: QtBot, mocker: MockerFixture, tmp_path: pathlib.Path
 ) -> None:
     """Check that the default menu entries are in order."""
+    # Set the setting BEFORE creating the window so the menu action is initialized correctly
     mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
     settings.Settings().set("updater_check_all", True)
     window = create_main_window(qtbot, mocker, tmp_path)
@@ -183,6 +177,15 @@ def test_default_menu(
     # We keep the remote log index in case updates are activated back
     # It doesn't mean they will be applied.
     assert window.dangerzone.settings.get("updater_remote_log_index") == 1000
+
+    # Cleanup: prevent shutdown thread creation during cleanup
+    # The window fixture can't be used here ecause the settings need to be
+    # initialized before the window is created.
+    window.dangerzone.isolation_provider.requires_install.return_value = False  # type: ignore [attr-defined]
+    if hasattr(window, "shutdown_thread"):
+        window.shutdown_thread.wait()
+    if hasattr(window, "startup_thread"):
+        window.startup_thread.wait()
 
 
 def test_no_new_release(

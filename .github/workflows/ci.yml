@@ -161,71 +161,27 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
-  macOS:
-    name: "macOS (${{ matrix.arch }})"
+  # See https://github.com/abiosoft/colima/issues/970
+  macOS-arm64:
     needs:
       - build-container-image
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # See https://github.com/abiosoft/colima/issues/970
-          - runner: macos-15
-            arch: arm64
-          - runner: macos-15-intel
-            arch: x86_64
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-      - run: pip install poetry
-      - run: poetry install
-      - name: Cache mazette assets
-        id: cache-mazette
-        uses: actions/cache@v4
-        with:
-          path: |
-            share/tessdata/
-            share/vendor/
-            share/machine.tar
-          key: v1-mazette-darwin-${{ matrix.arch }}-${{ hashFiles('./mazette.lock') }}
-      - name: Install mazette assets
-        if: steps.cache-mazette.outputs.cache-hit != 'true'
-        run: poetry run mazette install
-      - name: Check cosign is present
-        run: ls share/vendor
-      - name: Restore container image
-        uses: actions/cache/restore@v4
-        with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
-      - name: Smoke test
-        # Nested virtualization does not work on M1 CPUs.
-        continue-on-error: ${{ matrix.arch == 'arm64'}}
-        run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
-      - name: Run CLI tests
-        run: |
-          # Nested virtualization does not work on M1 CPUs.
-          if [ ${{ matrix.arch }} == 'arm64' ]; then
-              export DUMMY_CONVERSION=1
-          fi
-          poetry run make test
-      - name: Build macOS app
-        run: poetry run python ./install/macos/build-app.py
-      - name: Upload macOS app
-        uses: actions/upload-artifact@v5
-        with:
-          name: Dangerzone-${{ matrix.arch }}.app
-          path: "dist/Dangerzone.app"
-          if-no-files-found: error
-          compression-level: 0
+    uses: ./.github/workflows/ci_macos.yml
+    with:
+      runner: macos-15
+      arch: arm64
+      image_uri: ${{ needs.build-container-image.outputs.image_uri }}
+
+  # Run Intel tests only on scheduled/manual runs (they take ~2.5 hours).
+  # See https://github.com/freedomofpress/dangerzone/issues/1338
+  macOS-intel:
+    needs:
+      - build-container-image
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/ci_macos.yml
+    with:
+      runner: macos-15-intel
+      arch: x86_64
+      image_uri: ${{ needs.build-container-image.outputs.image_uri }}
   build-deb:
     needs:
       - build-container-image

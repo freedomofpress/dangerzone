@@ -1,0 +1,70 @@
+name: macOS Build
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: true
+        type: string
+      arch:
+        required: true
+        type: string
+      image_uri:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: "macOS (${{ inputs.arch }})"
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - run: pip install poetry
+      - run: poetry install
+      - name: Cache mazette assets
+        id: cache-mazette
+        uses: actions/cache@v4
+        with:
+          path: |
+            share/tessdata/
+            share/vendor/
+            share/machine.tar
+          key: v1-mazette-darwin-${{ inputs.arch }}-${{ hashFiles('./mazette.lock') }}
+      - name: Install mazette assets
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
+      - name: Check cosign is present
+        run: ls share/vendor
+      - name: Restore container image
+        uses: actions/cache/restore@v4
+        with:
+          path: |-
+            share/container.tar
+            share/freedomofpress-dangerzone.pub
+            share/image-name.txt
+          enableCrossOsArchive: true
+          fail-on-cache-miss: true
+          key: v6-container-${{ inputs.image_uri }}
+      - name: Smoke test
+        # Nested virtualization does not work on M1 CPUs.
+        continue-on-error: ${{ inputs.arch == 'arm64' }}
+        run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
+      - name: Run CLI tests
+        run: |
+          # Nested virtualization does not work on M1 CPUs.
+          if [ ${{ inputs.arch }} == 'arm64' ]; then
+              export DUMMY_CONVERSION=1
+          fi
+          poetry run make test
+      - name: Build macOS app
+        run: poetry run python ./install/macos/build-app.py
+      - name: Upload macOS app
+        uses: actions/upload-artifact@v5
+        with:
+          name: Dangerzone-${{ inputs.arch }}.app
+          path: "dist/Dangerzone.app"
+          if-no-files-found: error
+          compression-level: 0

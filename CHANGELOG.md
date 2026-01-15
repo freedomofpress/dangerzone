@@ -14,6 +14,12 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   ([#1238](https://github.com/freedomofpress/dangerzone/issues/1238))
 
 
+### Development changes
+
+- Run macOS Intel CI tests only on scheduled/manual runs to reduce PR CI time
+  ([#1338](https://github.com/freedomofpress/dangerzone/issues/1338))
+
+
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/compare/v0.10.0...0.9.1)
 
 ### Added

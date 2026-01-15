@@ -9,7 +9,7 @@ from typing import IO, Callable, Optional
 
 from ..conversion.common import running_on_qubes
 from ..document import Document
-from ..util import get_resource_path
+from ..updater.signatures import is_container_tar_bundled
 from .base import IsolationProvider
 
 log = logging.getLogger(__name__)
@@ -123,6 +123,6 @@ def is_qubes_native_conversion() -> bool:
         # This disambiguates if it is running a Qubes targetted build or not
         # (Qubes-specific builds don't ship the container image)
 
-        return not get_resource_path("container.tar").exists()
+        return not is_container_tar_bundled()
     else:
         return False

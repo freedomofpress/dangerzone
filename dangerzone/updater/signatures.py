@@ -19,6 +19,7 @@ from .. import container_utils as runtime
 from .. import errors as dzerrors
 from ..util import get_resource_path, subprocess_run
 from . import cosign, errors, log, registry
+from .log_index import LAST_KNOWN_LOG_INDEX
 
 try:
     import platformdirs
@@ -33,9 +34,14 @@ def appdata_dir() -> Path:
     return Path(platformdirs.user_data_dir("dangerzone"))
 
 
-# RELEASE: Bump this value to the log index of the latest signature
-# to ensure the software can't upgrade to container images that predates it.
-BUNDLED_LOG_INDEX = 732661252
+def is_container_tar_bundled() -> bool:
+    """Check if a container.tar file is bundled with this installation.
+
+    Some Dangerzone packages (e.g., dangerzone-slim) may not include a
+    bundled container image, requiring users to download it from the registry.
+    """
+    return get_resource_path("container.tar").exists()
+
 
 DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone.pub")
 SIGNATURES_PATH = appdata_dir() / "signatures"
@@ -187,7 +193,7 @@ def verify_signatures(
 def get_last_log_index() -> int:
     SIGNATURES_PATH.mkdir(parents=True, exist_ok=True)
     if not LAST_LOG_INDEX.exists():
-        return BUNDLED_LOG_INDEX
+        return LAST_KNOWN_LOG_INDEX
 
     with open(LAST_LOG_INDEX) as f:
         return int(f.read())

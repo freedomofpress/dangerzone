@@ -43,12 +43,9 @@ ASSETS_DEPS = ["mazette.lock"]
 # NOTE: The container image is a major dependency of our assets, and we would ideally
 # want to track it with its hash. In practice though, what we need here is to bust
 # doit's cache, when the `latest` tag changes. So, an alternative way to do it without
-# pinning the hash is to monitor changes to the BUNDLED_LOG_INDEX of
-# dangerzone/updater/signatures.py, which is unique per image.
-#
-# FIXME: Find a better way to track the latest image, since if BUNDLE_LOG_INDEX moves to
-# a different file, this target should change as well.
-IMAGE_DEPS = ["dangerzone/updater/signatures.py"]
+# pinning the hash is to monitor changes to the LAST_KNOWN_LOG_INDEX of
+# dangerzone/updater/log_index.py, which is unique per image.
+IMAGE_DEPS = ["dangerzone/updater/log_index.py"]
 
 SOURCE_DEPS = [
     *list_files("assets"),

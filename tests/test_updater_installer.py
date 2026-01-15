@@ -39,7 +39,8 @@ def test_user_installs_dangerzone_for_the_first_time(mocker: MockerFixture) -> N
         "updater_check_all": False
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 10)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 10)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.INSTALL_LOCAL_CONTAINER
@@ -66,7 +67,8 @@ def test_upgrades_disabled_detect_wrong_container_upgrade(
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=100)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     # Check that we get the right strategy
     strategy = get_installation_strategy()
@@ -98,7 +100,8 @@ def test_building_dangerzone_from_source_first_time(mocker: MockerFixture) -> No
         "updater_check_all": False
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 10)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 10)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.INSTALL_LOCAL_CONTAINER
@@ -119,7 +122,8 @@ def test_building_dangerzone_from_source_nth_time(mocker: MockerFixture) -> None
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.DO_NOTHING
@@ -144,7 +148,8 @@ def test_enable_updates_after_some_time(mocker: MockerFixture) -> None:
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     # Check that we get the right strategy
     strategy = get_installation_strategy()
@@ -187,7 +192,8 @@ def test_enable_updates_no_new_image_available(mocker: MockerFixture) -> None:
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.DO_NOTHING
@@ -208,7 +214,8 @@ def test_downgrade_dangerzone_application(mocker: MockerFixture) -> None:
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=300)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.DO_NOTHING
@@ -229,7 +236,8 @@ def test_disable_updates(mocker: MockerFixture) -> None:
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=300)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.DO_NOTHING
@@ -247,7 +255,8 @@ def test_podman_state_reset_updates_enabled(mocker: MockerFixture) -> None:
         "updater_remote_log_index": 300,
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.INSTALL_REMOTE_CONTAINER
@@ -264,7 +273,8 @@ def test_podman_state_reset_updates_disabled(mocker: MockerFixture) -> None:
         "updater_check_all": False
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.INSTALL_LOCAL_CONTAINER
@@ -286,7 +296,8 @@ def test_upgrade_to_latest_container_via_cli(mocker: MockerFixture) -> None:
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.DO_NOTHING
@@ -308,7 +319,8 @@ def test_install_new_dangerzone_version_updates_enabled(mocker: MockerFixture) -
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.INSTALL_REMOTE_CONTAINER
@@ -329,7 +341,59 @@ def test_airgapped_installation_container_tarball(mocker: MockerFixture) -> None
     }.get(key)
     mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
-    mocker.patch(f"{installer}.BUNDLED_LOG_INDEX", 300)
+    mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 300)
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
     result = get_installation_strategy()
     assert result == Strategy.INSTALL_LOCAL_CONTAINER
+
+
+def test_no_bundled_container_tar_first_install(mocker: MockerFixture) -> None:
+    """User installs dangerzone-slim (no container.tar) for the first time.
+
+    Without a bundled container, the strategy should fall back to remote
+    installation if updates are enabled.
+    """
+    mocker.patch(f"{installer}.runtime.list_image_digests", return_value=[])
+    mocker.patch(
+        f"{installer}.runtime.expected_image_name",
+        return_value="ghcr.io/freedomofpress/dangerzone/v1",
+    )
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+        "updater_check_all": True,
+        "updater_remote_log_index": 300,
+    }.get(key)
+    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
+    # No container.tar bundled, so is_container_tar_bundled returns False
+    # making bundled_log_index effectively 0
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=False)
+
+    result = get_installation_strategy()
+    assert result == Strategy.INSTALL_REMOTE_CONTAINER
+
+
+def test_no_bundled_container_tar_updates_disabled(mocker: MockerFixture) -> None:
+    """User installs dangerzone-slim (no container.tar) with updates disabled.
+
+    Without a bundled container and with updates disabled, the strategy
+    should be DO_NOTHING if there's already an image installed, or
+    INSTALL_REMOTE_CONTAINER if there's no image (since max would be 0).
+    In this case, with no images and no remote updates, max_log_index is 0
+    and local_log_index is 0, so DO_NOTHING is returned.
+    """
+    mocker.patch(f"{installer}.runtime.list_image_digests", return_value=[])
+    mocker.patch(
+        f"{installer}.runtime.expected_image_name",
+        return_value="ghcr.io/freedomofpress/dangerzone/v1",
+    )
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+        "updater_check_all": False,
+    }.get(key)
+    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
+    # No container.tar bundled, so is_container_tar_bundled returns False
+    # making bundled_log_index effectively 0
+    mocker.patch(f"{installer}.is_container_tar_bundled", return_value=False)
+
+    result = get_installation_strategy()
+    # With all indexes at 0, local_log_index == max_log_index, so DO_NOTHING
+    assert result == Strategy.DO_NOTHING

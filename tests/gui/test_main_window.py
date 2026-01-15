@@ -37,7 +37,7 @@ from dangerzone.gui.main_window import (
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.dummy import Dummy
 from dangerzone.updater import (
-    BUNDLED_LOG_INDEX,
+    LAST_KNOWN_LOG_INDEX,
     EmptyReport,
     InstallationStrategy,
     ReleaseReport,

@@ -7,12 +7,13 @@ from .. import container_utils as runtime
 from ..settings import Settings
 from . import log as updater_log
 from . import registry, signatures
+from .log_index import LAST_KNOWN_LOG_INDEX
 from .signatures import (
-    BUNDLED_LOG_INDEX,
     LAST_LOG_INDEX,
     get_last_log_index,
     get_remote_digest_and_logindex,
     install_local_container_tar,
+    is_container_tar_bundled,
     upgrade_container_image,
     verify_local_image,
 )
@@ -94,16 +95,21 @@ def get_installation_strategy() -> Strategy:
     #   If the update checker cannot run right away, it will use the latest
     #   value that it has observed.
     #
-    # BUNDLED_LOG_INDEX:
+    # bundled_log_index:
     #
     #   The log index of the image bundled with dangerzone.
     #   It remains the same during the lifetime of a released Dangerzone
-    #   version, and it can never be None/0.
+    #   version.
+    #
+    #   If no container.tar is bundled (e.g., dangerzone-slim), this is
+    #   set to 0 so that the installer falls back to remote installation.
     #
     # max_log_index:
     #
     #   The target log index for this run, calculated as
     #   the max of all the above indexes.
+
+    bundled_log_index = LAST_KNOWN_LOG_INDEX if is_container_tar_bundled() else 0
 
     podman_images = runtime.list_image_digests()
     settings = Settings()
@@ -124,10 +130,10 @@ def get_installation_strategy() -> Strategy:
         remote_log_index = settings.get("updater_remote_log_index")
 
     # Get the greatest log index, and store it as our target number
-    max_log_index = max(local_log_index, remote_log_index, BUNDLED_LOG_INDEX)
+    max_log_index = max(local_log_index, remote_log_index, bundled_log_index)
     log.debug(f"local_log_index={local_log_index}")
     log.debug(f"remote_log_index={remote_log_index}")
-    log.debug(f"bundled_log_index={BUNDLED_LOG_INDEX}")
+    log.debug(f"bundled_log_index={bundled_log_index}")
     log.debug(f"max_log_index={max_log_index}")
 
     # More information about the rationale and design for these installation
@@ -140,7 +146,7 @@ def get_installation_strategy() -> Strategy:
         # Scenarios: 6, 7, 8, + 10 & 12 (already installed by CLI)
         log.debug("Installation strategy: Do nothing")
         return Strategy.DO_NOTHING
-    elif BUNDLED_LOG_INDEX == max_log_index:
+    elif bundled_log_index == max_log_index:
         # The bundled sandbox image is fresher than the installed version
         # or just as fresh as the remote one.
         #

@@ -13,6 +13,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Update the theme correctly on dark/light mode changes
   ([#1238](https://github.com/freedomofpress/dangerzone/issues/1238))
 
+### Added
+
+- Dangerzone is able to function without a bundled `container.tar` file 
+  ([#1400](https://github.com/freedomofpress/dangerzone/pull/1400))
+
 
 ### Development changes
 

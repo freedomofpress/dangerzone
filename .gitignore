@@ -134,9 +134,11 @@ dmypy.json
 
 debian/.debhelper
 debian/dangerzone
+debian/dangerzone-slim
 debian/files
 debian/debhelper-build-stamp
 debian/dangerzone.*
+debian/dangerzone-slim.*
 .pybuild/
 
 # Other

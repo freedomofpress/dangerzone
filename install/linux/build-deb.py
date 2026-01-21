@@ -46,28 +46,36 @@ def main():
     if os.path.exists(deb_dist_path):
         shutil.rmtree(deb_dist_path)
 
-    print("* Building DEB package")
+    container_tar = root / "share" / "container.tar"
+    if not container_tar.exists():
+        sys.exit(
+            "Error: share/container.tar is required to build the dangerzone-full"
+            " package. Run: dangerzone-image prepare-archive --output share/container.tar"
+        )
+
+    print("* Building DEB packages")
     if args.distro is None:
         deb_ver = "1"
     else:
         deb_ver = args.distro
 
-    run(
-        [
-            "dpkg-buildpackage",
-        ]
-    )
+    # A single dpkg-buildpackage run produces both the dangerzone (slim) and
+    # dangerzone-full packages. The debian/rules file handles stripping
+    # container.tar from the slim package's staging directory.
+    run(["dpkg-buildpackage"])
 
     os.makedirs(deb_dist_path, exist_ok=True)
     print("")
     print("* To install run:")
 
-    # dpkg-buildpackage produces a .deb file in the parent folder
-    # that needs to be copied to the `deb_dist` folder manually
-    src = root.parent / f"dangerzone_{version}_amd64.deb"
-    destination = root / "deb_dist" / f"dangerzone_{version}-{deb_ver}_amd64.deb"
-    shutil.move(src, destination)
-    print(f"sudo dpkg -i {destination}")
+    # dpkg-buildpackage produces .deb files in the parent folder
+    # that need to be copied to the `deb_dist` folder manually
+    for pkg_name in ["dangerzone", "dangerzone-full"]:
+        src = root.parent / f"{pkg_name}_{version}_amd64.deb"
+        if src.exists():
+            destination = deb_dist_path / f"{pkg_name}_{version}-{deb_ver}_amd64.deb"
+            shutil.move(src, destination)
+            print(f"sudo dpkg -i {destination}")
 
 
 if __name__ == "__main__":

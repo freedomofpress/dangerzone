@@ -302,7 +302,57 @@ jobs:
               --version ${{ matrix.version }} \
               build
 
+      - name: Download container image
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone-image upgrade
+
       - name: Run a test command
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
+
+      - name: Check that the Dangerzone GUI imports work
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone --help
+
+
+  install-deb-full:
+    name: "install-deb-full (${{ matrix.distro }} ${{ matrix.version }})"
+    runs-on: ubuntu-latest
+    needs:
+      - build-deb
+    strategy:
+      matrix:
+        include:
+          - distro: debian
+            version: bookworm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Download Dangerzone full .deb
+        uses: actions/download-artifact@v6
+        with:
+          name: dangerzone-full.deb
+          path: "deb_dist/"
+
+      - name: Build end-user environment with full package
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              build --full
+
+      - name: Run a test command (container bundled)
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
@@ -402,6 +452,11 @@ jobs:
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
               build
+
+      - name: Download container image
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+              run dangerzone-image upgrade
 
       - name: Run a test command
         run: |

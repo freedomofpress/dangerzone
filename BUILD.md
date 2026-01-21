@@ -170,6 +170,13 @@ Create a .rpm:
 ./install/linux/build-rpm.py
 ```
 
+Or alternatively, build a slim version of Dangerzone, which doesn't contain the
+`container.tar` image (it will then be downloaded on the first run).
+
+```sh
+./install/linux/build-rpm.py --slim
+```
+
 ## Qubes OS
 
 > :warning: Native Qubes support is in beta stage, so the instructions below

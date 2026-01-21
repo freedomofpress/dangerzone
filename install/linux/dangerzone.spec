@@ -28,6 +28,8 @@
 
 %if 0%{?_qubes}
 Name:           dangerzone-qubes
+%elif 0%{?_slim}
+Name:           dangerzone-slim
 %else
 Name:           dangerzone
 %endif
@@ -57,10 +59,17 @@ Source0:        https://github.com/freedomofpress/dangerzone/archive/refs/tags/v
 # Users who install Dangerzone with native Qubes support must uninstall
 # Dangerzone with container support.
 Conflicts:      dangerzone
+Conflicts:      dangerzone-slim
+%elif 0%{?_slim}
+# Users who install Dangerzone slim must uninstall
+# Dangerzone with native Qubes support and container support.
+Conflicts:      dangerzone
+Conflicts:      dangerzone-qubes
 %else
 # Users who install Dangerzone with container support must uninstall Dangerzone
 # with native Qubes support.
 Conflicts:      dangerzone-qubes
+Conflicts:      dangerzone-slim
 %endif
 
 ################################################################################
@@ -74,7 +83,7 @@ BuildRequires:  python3-devel
 Requires:       python3-magic
 Requires:       libreoffice
 %else
-# Container-only requirements
+# Container-only or -slim requirements
 Requires:       podman
 %endif
 

@@ -36,7 +36,7 @@ def exclude_paths(paths):
                 backup.rename(path)
 
 
-def build(build_dir, qubes=False):
+def build(build_dir, qubes=False, slim=False):
     """Build an RPM package in a temporary directory.
 
     The build process is the following:
@@ -86,6 +86,11 @@ def build(build_dir, qubes=False):
             root / "share" / "vendor",
         ]
 
+    if slim:
+        excluded_paths += [
+            root / "share" / "container.tar",
+        ]
+
     with exclude_paths(excluded_paths):
         subprocess.run(["poetry", "build", "-f", "sdist"], cwd=root, check=True)
         # Copy and unlink the Dangerzone sdist, instead of just renaming it. If the
@@ -112,6 +117,11 @@ def build(build_dir, qubes=False):
             "--define",
             "_qubes 1",
         ]
+    if slim:
+        cmd += [
+            "--define",
+            "_slim 1",
+        ]
     subprocess.run(cmd, check=True)
 
     print("")
@@ -125,13 +135,16 @@ def main():
         "--qubes", action="store_true", help="Build RPM package for a Qubes OS system"
     )
     parser.add_argument(
+        "--slim", action="store_true", help="Build RPM package without container.tar"
+    )
+    parser.add_argument(
         "--build-dir",
         default=Path.home() / "rpmbuild",
         help="Working directory for rpmbuild command",
     )
     args = parser.parse_args()
 
-    build(args.build_dir, args.qubes)
+    build(args.build_dir, args.qubes, args.slim)
 
 
 if __name__ == "__main__":

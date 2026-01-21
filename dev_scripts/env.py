@@ -617,14 +617,16 @@ class Env:
     def build(
         self,
         show_dockerfile=DEFAULT_SHOW_DOCKERFILE,
+        slim=False,
     ):
         """Build a Linux environment and install Dangerzone in it."""
         build_dir = distro_build(self.distro, self.version)
         os.makedirs(build_dir, exist_ok=True)
         version = dz_version()
+        pkg_name = "dangerzone-slim" if slim else "dangerzone"
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_FEDORA_DEPS
-            package_pattern = f"dangerzone-{version}-*.fc{self.version}.x86_64.rpm"
+            package_pattern = f"{pkg_name}-{version}-*.fc{self.version}.x86_64.rpm"
             package_src = self.find_dz_package(git_root() / "dist", package_pattern)
             package = package_src.name
             package_dst = build_dir / package
@@ -644,7 +646,7 @@ class Env:
                 "questing",
             ):
                 install_deps = DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS
-            package_pattern = f"dangerzone_{version}-*_*.deb"
+            package_pattern = f"{pkg_name}_{version}-*_*.deb"
             package_src = self.find_dz_package(git_root() / "deb_dist", package_pattern)
             package = package_src.name
             package_dst = build_dir / package
@@ -705,6 +707,7 @@ def env_build(args):
     env = Env.from_args(args)
     return env.build(
         show_dockerfile=args.show_dockerfile,
+        slim=args.slim,
     )
 
 
@@ -806,6 +809,12 @@ def parse_args():
         default=DEFAULT_SHOW_DOCKERFILE,
         action="store_true",
         help="Do not build, only show the Dockerfile",
+    )
+    parser_build.add_argument(
+        "--slim",
+        default=False,
+        action="store_true",
+        help="Install dangerzone-slim package instead of dangerzone",
     )
 
     return parser.parse_args()

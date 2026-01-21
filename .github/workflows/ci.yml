@@ -322,6 +322,99 @@ jobs:
               --version ${{ matrix.version }} \
               run dangerzone --help
 
+  build-deb-slim:
+    name: "build-deb-slim (debian bookworm)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install maette tool
+        run: |
+          sudo apt install pipx
+          pipx install poetry
+          poetry install
+      - name: Cache mazette assets
+        id: cache-mazette
+        uses: actions/cache@v4
+        with:
+          path: |
+            share/vendor/
+          key: v1-mazette-linux-x86_64-${{ hashFiles('./mazette.lock') }}
+      - name: Install mazette
+        if: steps.cache-mazette.outputs.cache-hit != 'true'
+        run: poetry run mazette install
+      - name: Login to GHCR
+        run: |
+          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
+
+      - name: Get the dev environment
+        run: |
+          ./dev_scripts/env.py \
+              --distro debian \
+              --version bookworm \
+              build-dev --sync
+
+      - name: Build Dangerzone slim .deb
+        run: |
+          ./dev_scripts/env.py --distro debian \
+              --version bookworm \
+              run --dev --no-gui ./dangerzone/install/linux/build-deb.py --slim
+
+      - name: Upload Dangerzone slim .deb
+        uses: actions/upload-artifact@v5
+        with:
+          name: dangerzone-slim.deb
+          path: "deb_dist/dangerzone-slim_*_*.deb"
+          if-no-files-found: error
+          compression-level: 0
+
+  install-deb-slim:
+    name: "install-deb-slim (${{ matrix.distro }} ${{ matrix.version }})"
+    runs-on: ubuntu-latest
+    needs:
+      - build-deb-slim
+    strategy:
+      matrix:
+        include:
+          - distro: debian
+            version: bookworm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Download Dangerzone slim .deb
+        uses: actions/download-artifact@v6
+        with:
+          name: dangerzone-slim.deb
+          path: "deb_dist/"
+
+      - name: Build end-user environment
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              build --slim
+
+      - name: Run a test command (container will be downloaded)
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
+
+      - name: Check that the Dangerzone GUI imports work
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone --help
+
   build-install-rpm:
     name: "build-install-rpm (${{ matrix.distro }} ${{matrix.version}})"
     runs-on: ubuntu-latest

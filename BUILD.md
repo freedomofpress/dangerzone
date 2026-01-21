@@ -101,6 +101,13 @@ Create a .deb:
 ./install/linux/build-deb.py
 ```
 
+Or alternatively, build a slim version of Dangerzone, which doesn't contain the
+`container.tar` image (it will then be downloaded on the first run).
+
+```sh
+./install/linux/build-deb.py --slim
+```
+
 ## Fedora
 
 Install dependencies:

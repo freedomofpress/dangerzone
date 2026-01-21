@@ -173,11 +173,13 @@ poetry run ./dev_scripts/dangerzone-image prepare-archive
     --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
 
-# Create a .rpm:
+# Create the default .rpm:
 ./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"
+# Create the slim .rpm:
+./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py --slim"
 ```
 
-Publish the .rpm under `./dist` to the
+Publish the .rpms under `./dist` to the
 [`freedomofpress/yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod) repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 #### Qubes

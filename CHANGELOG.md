@@ -17,6 +17,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Dangerzone is able to function without a bundled `container.tar` file 
   ([#1400](https://github.com/freedomofpress/dangerzone/pull/1400))
+- OCR tasks are now queued, resulting in up to x2.4 speedup 
+  ([#1329](https://github.com/freedomofpress/dangerzone/issues/1329))
 
 
 ### Development changes

@@ -225,6 +225,7 @@ convert the documents within a secure sandbox.
 %install
 %pyproject_install
 %pyproject_save_files dangerzone
+rm -f %{buildroot}%{_bindir}/dangerzone-machine
 
 # Create some extra directories for non-Python data, which are not covered by
 # pyproject_save_files.
@@ -271,7 +272,6 @@ fi
 /usr/bin/dangerzone
 /usr/bin/dangerzone-cli
 /usr/bin/dangerzone-image
-/usr/bin/dangerzone-machine
 /usr/share/
 %license LICENSE
 %doc README.md

@@ -10,4 +10,5 @@ export DH_VERBOSE=1
 
 override_dh_builddeb:
 	./install/linux/debian-vendor-pymupdf.py --dest debian/dangerzone/usr/lib/python3/dist-packages/dangerzone/vendor/
+	rm -f debian/dangerzone/usr/bin/dangerzone-machine
 	dh_builddeb $@

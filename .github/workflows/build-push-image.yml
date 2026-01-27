@@ -147,8 +147,8 @@ jobs:
             DEBIAN_ARCHIVE_DATE=${{ needs.prepare.outputs.debian_archive_date }}
           source_date_epoch: ${{ needs.prepare.outputs.source_date_epoch }}
           outputs: type=image,"name=${{ inputs.registry }}/${{ inputs.image_name }}",push-by-digest=true,push=true,name-canonical=true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          #cache-from: type=gha
+          #cache-to: type=gha,mode=max
           annotations: |
             rocks.dangerzone.debian_archive_date=${{ needs.prepare.outputs.debian_archive_date }}
 

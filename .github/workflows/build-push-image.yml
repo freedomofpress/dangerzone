@@ -139,15 +139,14 @@ jobs:
 
       - name: Build and push by digest
         id: build
-        uses: docker/build-push-action@v6
+        uses: freedomofpress/repro-build@fix-actions
         with:
           context: ./dangerzone/
           file: Dockerfile
           build-args: |
             DEBIAN_ARCHIVE_DATE=${{ needs.prepare.outputs.debian_archive_date }}
-            SOURCE_DATE_EPOCH=${{ needs.prepare.outputs.source_date_epoch }}
-          provenance: false
-          outputs: type=image,"name=${{ inputs.registry }}/${{ inputs.image_name }}",push-by-digest=true,push=true,rewrite-timestamp=true,name-canonical=true
+          source_date_epoch: ${{ needs.prepare.outputs.source_date_epoch }}
+          outputs: type=image,"name=${{ inputs.registry }}/${{ inputs.image_name }}",push-by-digest=true,push=true,name-canonical=true
           cache-from: type=gha
           cache-to: type=gha,mode=max
           annotations: |
@@ -288,6 +287,7 @@ jobs:
         with:
           fetch-depth: 0
 
+
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v7
 
@@ -295,15 +295,13 @@ jobs:
         run: uvx mazette install h2orestart
 
       - name: Reproduce the same container image
-        run: |
-          ./dev_scripts/reproduce-image.py \
-            --runtime \
-            docker \
-            --debian-archive-date \
-            ${{ needs.merge.outputs.debian_archive_date }} \
-            --platform \
-            linux/${{ matrix.platform.name }} \
-            ${{ needs.merge.outputs[format('digest_{0}', matrix.platform.name)] }}
+        uses: freedomofpress/repro-build/verify@fix-actions
+        with:
+          target_image: ${{ needs.merge.outputs.debian_archive_date }}
+          file: Dockerfile
+          platforms: linux/${{ matrix.platform.name }}
+          source_date_epoch: ${{ needs.merge.outputs.source_date_epoch }}
+          runtime: docker
 
   sign:
     if: ${{ inputs.sign }}

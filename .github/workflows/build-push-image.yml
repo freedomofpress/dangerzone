@@ -139,7 +139,7 @@ jobs:
 
       - name: Build and push by digest
         id: build
-        uses: freedomofpress/repro-build@fix-actions
+        uses: freedomofpress/repro-build@v1
         with:
           context: ./dangerzone/
           file: Dockerfile
@@ -295,7 +295,7 @@ jobs:
         run: uvx mazette install h2orestart
 
       - name: Reproduce the same container image
-        uses: freedomofpress/repro-build/verify@fix-actions
+        uses: freedomofpress/repro-build/verify@v1
         with:
           target_image: ${{ needs.merge.outputs.debian_archive_date }}
           file: Dockerfile

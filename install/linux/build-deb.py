@@ -38,8 +38,8 @@ def exclude_paths(paths):
 
 
 @contextlib.contextmanager
-def slim_debian_files():
-    """Temporarily modify debian files for slim package build."""
+def full_debian_files():
+    """Temporarily modify debian files for full package build (with container.tar)."""
     control_path = root / "debian" / "control"
     changelog_path = root / "debian" / "changelog"
     rules_path = root / "debian" / "rules"
@@ -49,21 +49,21 @@ def slim_debian_files():
     rules_orig = rules_path.read_text()
 
     control_new = (
-        control_orig.replace("Source: dangerzone", "Source: dangerzone-slim")
-        .replace("Package: dangerzone", "Package: dangerzone-slim")
+        control_orig.replace("Source: dangerzone", "Source: dangerzone-full")
+        .replace("Package: dangerzone", "Package: dangerzone-full")
         .replace(
-            "Depends: ${misc:Depends}",
-            "Conflicts: dangerzone, dangerzone-qubes\nDepends: ${misc:Depends}",
+            "Conflicts: dangerzone-full, dangerzone-qubes",
+            "Conflicts: dangerzone, dangerzone-qubes",
         )
     )
 
     changelog_new = re.sub(
-        r"^dangerzone \(", "dangerzone-slim (", changelog_orig, flags=re.MULTILINE
+        r"^dangerzone \(", "dangerzone-full (", changelog_orig, flags=re.MULTILINE
     )
 
     rules_new = rules_orig.replace(
-        "export PYBUILD_NAME=dangerzone", "export PYBUILD_NAME=dangerzone-slim"
-    ).replace("debian/dangerzone/", "debian/dangerzone-slim/")
+        "export PYBUILD_NAME=dangerzone", "export PYBUILD_NAME=dangerzone-full"
+    ).replace("debian/dangerzone/", "debian/dangerzone-full/")
 
     try:
         control_path.write_text(control_new)
@@ -92,9 +92,9 @@ def main():
         help="The name of the Debian-based distro",
     )
     parser.add_argument(
-        "--slim",
+        "--full",
         action="store_true",
-        help="Build DEB package without container.tar",
+        help="Build DEB package with container.tar bundled",
     )
     args = parser.parse_args()
 
@@ -113,13 +113,16 @@ def main():
     else:
         deb_ver = args.distro
 
-    if args.slim:
-        pkg_name = "dangerzone-slim"
-        with slim_debian_files(), exclude_paths([root / "share" / "container.tar"]):
+    if args.full:
+        # Full package: includes container.tar
+        pkg_name = "dangerzone-full"
+        with full_debian_files():
             run(["dpkg-buildpackage"])
     else:
+        # Default package: does NOT include container.tar
         pkg_name = "dangerzone"
-        run(["dpkg-buildpackage"])
+        with exclude_paths([root / "share" / "container.tar"]):
+            run(["dpkg-buildpackage"])
 
     os.makedirs(deb_dist_path, exist_ok=True)
     print("")

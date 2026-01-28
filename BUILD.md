@@ -173,11 +173,13 @@ Create a .rpm:
 ./install/linux/build-rpm.py
 ```
 
-Or alternatively, build a slim version of Dangerzone, which doesn't contain the
-`container.tar` image (it will then be downloaded on the first run).
+This builds the `dangerzone` package, which doesn't contain the `container.tar`
+image (it will be downloaded on the first run).
+
+To build the `dangerzone-full` package with the container bundled:
 
 ```sh
-./install/linux/build-rpm.py --slim
+./install/linux/build-rpm.py --full
 ```
 
 ## Qubes OS

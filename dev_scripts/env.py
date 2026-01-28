@@ -617,13 +617,13 @@ class Env:
     def build(
         self,
         show_dockerfile=DEFAULT_SHOW_DOCKERFILE,
-        slim=False,
+        full=False,
     ):
         """Build a Linux environment and install Dangerzone in it."""
         build_dir = distro_build(self.distro, self.version)
         os.makedirs(build_dir, exist_ok=True)
         version = dz_version()
-        pkg_name = "dangerzone-slim" if slim else "dangerzone"
+        pkg_name = "dangerzone-full" if full else "dangerzone"
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_FEDORA_DEPS
             package_pattern = f"{pkg_name}-{version}-*.fc{self.version}.x86_64.rpm"
@@ -707,7 +707,7 @@ def env_build(args):
     env = Env.from_args(args)
     return env.build(
         show_dockerfile=args.show_dockerfile,
-        slim=args.slim,
+        full=args.full,
     )
 
 
@@ -811,10 +811,10 @@ def parse_args():
         help="Do not build, only show the Dockerfile",
     )
     parser_build.add_argument(
-        "--slim",
+        "--full",
         default=False,
         action="store_true",
-        help="Install dangerzone-slim package instead of dangerzone",
+        help="Install dangerzone-full package (with bundled container) instead of dangerzone",
     )
 
     return parser.parse_args()

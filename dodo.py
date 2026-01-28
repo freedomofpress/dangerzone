@@ -84,13 +84,13 @@ def create_release_dir():
     (RELEASE_DIR / "tmp").mkdir(exist_ok=True)
 
 
-def prepare_dz_dir(dz_dir, slim=False):
+def prepare_dz_dir(dz_dir, full=False):
     """Prepare a Git repo for building artifacts.
 
     This function creates a pristine Dangerzone repo out of the local one, by copying
     the Git repo, and doing the following actions on the new directory:
     1. Clean untracked files with `git clean -fdx`
-    2. Copy the container image under `share/container.tar` (unless slim=True)
+    2. Copy the container image under `share/container.tar` (only if full=True)
     3. Install the GitHub assets for this platform
 
     The above actions should be quite fast, because they just copy files around. That
@@ -106,7 +106,7 @@ def prepare_dz_dir(dz_dir, slim=False):
         (copy_dir, [".", dz_dir]),
         f"cd {dz_dir} && git clean -fdx",
     ]
-    if not slim:
+    if full:
         actions.append(["cp", img_src, img_dst])
     actions.append(
         [
@@ -123,7 +123,7 @@ def prepare_dz_dir(dz_dir, slim=False):
     return actions
 
 
-def build_linux_pkg(distro, version, cwd, qubes=False, slim=False):
+def build_linux_pkg(distro, version, cwd, qubes=False, full=False):
     """Generic command for building a .deb/.rpm in a Dangerzone dev environment."""
     pkg = "rpm" if distro == "fedora" else "deb"
     cmd = [
@@ -140,19 +140,19 @@ def build_linux_pkg(distro, version, cwd, qubes=False, slim=False):
     ]
     if qubes:
         cmd += ["--qubes"]
-    if slim:
-        cmd += ["--slim"]
+    if full:
+        cmd += ["--full"]
     return CmdAction(" ".join(cmd), cwd=cwd)
 
 
-def build_deb(cwd, slim=False):
+def build_deb(cwd, full=False):
     """Build a .deb package on Debian Bookworm."""
-    return build_linux_pkg(distro="debian", version="bookworm", cwd=cwd, slim=slim)
+    return build_linux_pkg(distro="debian", version="bookworm", cwd=cwd, full=full)
 
 
-def build_rpm(version, cwd, qubes=False, slim=False):
+def build_rpm(version, cwd, qubes=False, full=False):
     """Build an .rpm package on the requested Fedora distro."""
-    return build_linux_pkg(distro="fedora", version=version, cwd=cwd, qubes=qubes, slim=slim)
+    return build_linux_pkg(distro="fedora", version=version, cwd=cwd, qubes=qubes, full=full)
 
 
 ### Tasks
@@ -288,11 +288,11 @@ def task_debian_env():
 
 def task_debian_deb():
     """Build Debian packages for Debian Bookworm."""
-    for slim in (False, True):
-        slim_ident = "-slim" if slim else ""
-        slim_desc = " (slim)" if slim else ""
-        dz_dir = RELEASE_DIR / "tmp" / f"debian{slim_ident}"
-        pkg_name = f"dangerzone{slim_ident}"
+    for full in (False, True):
+        full_ident = "-full" if full else ""
+        full_desc = " (full)" if full else ""
+        dz_dir = RELEASE_DIR / "tmp" / f"debian{full_ident}"
+        pkg_name = f"dangerzone{full_ident}"
         deb_name = f"{pkg_name}_{VERSION}-1_amd64.deb"
         deb_src = dz_dir / "deb_dist" / deb_name
         deb_dst = RELEASE_DIR / deb_name
@@ -302,19 +302,19 @@ def task_debian_deb():
             "poetry_install",
             "debian_env",
         ]
-        if not slim:
+        if full:
             task_deps.append("download_image")
         else:
-            # Ensure slim build doesn't run in parallel with default build,
+            # Ensure full build doesn't run in parallel with default build,
             # as both modify the same debian/ files during the build process.
             task_deps.append("debian_deb:default")
 
         yield {
-            "name": "slim" if slim else "default",
-            "doc": f"Build a Debian Bookworm package{slim_desc}",
+            "name": "full" if full else "default",
+            "doc": f"Build a Debian Bookworm package{full_desc}",
             "actions": [
-                *prepare_dz_dir(dz_dir, slim=slim),
-                build_deb(cwd=dz_dir, slim=slim),
+                *prepare_dz_dir(dz_dir, full=full),
+                build_deb(cwd=dz_dir, full=full),
                 ["cp", deb_src, deb_dst],
                 ["rm", "-rf", dz_dir],
             ],
@@ -348,18 +348,18 @@ def task_fedora_env():
 
 def task_fedora_rpm():
     """Build Fedora packages for every supported version."""
-    # Build variants: regular, qubes, and slim (slim and qubes are mutually exclusive)
+    # Build variants: regular, qubes, and full (full and qubes are mutually exclusive)
     variants = [
-        {"qubes": False, "slim": False},
-        {"qubes": True, "slim": False},
-        {"qubes": False, "slim": True},
+        {"qubes": False, "full": False},
+        {"qubes": True, "full": False},
+        {"qubes": False, "full": True},
     ]
     for version in FEDORA_VERSIONS:
         for variant in variants:
             qubes = variant["qubes"]
-            slim = variant["slim"]
-            variant_ident = "-qubes" if qubes else ("-slim" if slim else "")
-            variant_desc = " for Qubes" if qubes else (" (slim)" if slim else "")
+            full = variant["full"]
+            variant_ident = "-qubes" if qubes else ("-full" if full else "")
+            variant_desc = " for Qubes" if qubes else (" (full)" if full else "")
             dz_dir = RELEASE_DIR / "tmp" / f"f{version}{variant_ident}"
             rpm_names = [
                 f"dangerzone{variant_ident}-{VERSION}-1.fc{version}.x86_64.rpm",
@@ -373,15 +373,15 @@ def task_fedora_rpm():
                 "poetry_install",
                 f"fedora_env:{version}",
             ]
-            if not slim:
+            if full:
                 task_deps.append("download_image")
 
             yield {
                 "name": version + variant_ident,
                 "doc": f"Build a Fedora {version} package{variant_desc}",
                 "actions": [
-                    *prepare_dz_dir(dz_dir, slim=slim),
-                    build_rpm(version, cwd=dz_dir, qubes=qubes, slim=slim),
+                    *prepare_dz_dir(dz_dir, full=full),
+                    build_rpm(version, cwd=dz_dir, qubes=qubes, full=full),
                     ["cp", *rpm_src, RELEASE_DIR],
                     ["rm", "-rf", dz_dir],
                 ],

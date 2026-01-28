@@ -36,7 +36,7 @@ def exclude_paths(paths):
                 backup.rename(path)
 
 
-def build(build_dir, qubes=False, slim=False):
+def build(build_dir, qubes=False, full=False):
     """Build an RPM package in a temporary directory.
 
     The build process is the following:
@@ -47,10 +47,11 @@ def build(build_dir, qubes=False, slim=False):
        (default: ~/rpmbuild), and use symlinks to point to ./dist, so that we don't need
        to move files explicitly.
     3. Create a Python source distribution using `poetry build`. If we are building a
-       Qubes package and there is a container image under `share/`, stash it temporarily
-       under a different directory.
+       Qubes package, stash the container image and vendor folder temporarily. For the
+       default package, stash the container image. For the full package, include
+       the container image.
     4. Build both binary and source RPMs using rpmbuild. Optionally, pass to the SPEC
-        `_qubes` flag, that denotes we want to build a package for Qubes.
+        `_qubes` or `_full` flag.
     """
     dist_path = root / "dist"
     specfile_name = "dangerzone.spec"
@@ -85,11 +86,12 @@ def build(build_dir, qubes=False, slim=False):
             root / "share" / "container.tar",
             root / "share" / "vendor",
         ]
-
-    if slim:
+    elif not full:
+        # Default package: exclude container.tar
         excluded_paths += [
             root / "share" / "container.tar",
         ]
+    # Full package: include container.tar (don't exclude it)
 
     with exclude_paths(excluded_paths):
         subprocess.run(["poetry", "build", "-f", "sdist"], cwd=root, check=True)
@@ -117,10 +119,10 @@ def build(build_dir, qubes=False, slim=False):
             "--define",
             "_qubes 1",
         ]
-    if slim:
+    if full:
         cmd += [
             "--define",
-            "_slim 1",
+            "_full 1",
         ]
     subprocess.run(cmd, check=True)
 
@@ -135,7 +137,7 @@ def main():
         "--qubes", action="store_true", help="Build RPM package for a Qubes OS system"
     )
     parser.add_argument(
-        "--slim", action="store_true", help="Build RPM package without container.tar"
+        "--full", action="store_true", help="Build RPM package with container.tar bundled"
     )
     parser.add_argument(
         "--build-dir",
@@ -144,7 +146,7 @@ def main():
     )
     args = parser.parse_args()
 
-    build(args.build_dir, args.qubes, args.slim)
+    build(args.build_dir, args.qubes, args.full)
 
 
 if __name__ == "__main__":

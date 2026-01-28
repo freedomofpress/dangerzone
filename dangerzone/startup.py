@@ -228,9 +228,26 @@ class UpdateCheckTask(Task):
 
         try:
             return not releases.should_check_for_updates(settings.Settings())
-        except updater_errors.NeedUserInput:
-            self.prompt_user()
-            return True
+        except updater_errors.NeedUserInput as e:
+            download_required = isinstance(e, updater_errors.NeedUserInputNoContainer)
+            accepted = self.prompt_user(download_required=download_required)
+
+            if download_required:
+                # No container available: blocking prompt, handle response
+                if accepted is True:
+                    settings.Settings().set("updater_check_all", True, autosave=True)
+                    # Proceed with update check immediately so the remote
+                    # container can be downloaded.
+                    return False
+                elif accepted is False:
+                    # User declined - raise an error to stop startup
+                    raise errors.UpdaterDisabledNoContainer()
+                # User pressed X - treat as decline
+                raise errors.UpdaterDisabledNoContainer()
+            else:
+                # Container available: non-blocking prompt, handler saves setting
+                # Skip update check, user will be prompted again next run if needed
+                return True
 
     def run(self) -> None:
         report = releases.check_for_updates(settings.Settings())
@@ -242,8 +259,16 @@ class UpdateCheckTask(Task):
         elif isinstance(report, ErrorReport):
             raise RuntimeError(report.error)
 
-    def prompt_user(self) -> None:
-        pass
+    def prompt_user(self, download_required: bool = False) -> Optional[bool]:
+        """Prompt the user to enable updates.
+
+        Args:
+            download_required: If True, no container is available and download is required.
+
+        Returns:
+            True if user accepts, False if user declines, None if user dismissed.
+        """
+        return None
 
     def handle_app_update(self, report: ReleaseReport) -> None:
         logger.info(f"Dangerzone {report.version} is out and can be installed")

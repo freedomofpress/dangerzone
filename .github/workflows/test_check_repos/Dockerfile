@@ -34,7 +34,7 @@ RUN sudo gpg --keyserver hkps://keys.openpgp.org \
     --recv-keys DE28AB241FA48260FAC9B8BAA7C9B38522604281
 RUN sudo chmod +r /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
 RUN . /etc/os-release && echo "deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
-    https://packages.freedom.press/apt-tools-prod ${VERSION_CODENAME?} main" \
+    https://packages-r2-prod.freedom.press/apt-tools-prod ${VERSION_CODENAME?} main" \
     | sudo tee /etc/apt/sources.list.d/fpf-apt-tools.list
 
 RUN sudo apt-get update

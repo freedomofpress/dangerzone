@@ -59,7 +59,7 @@ jobs:
       - name: Add packages.freedom.press to our YUM sources
         run: |
           dnf install -y 'dnf-command(config-manager)'
-          dnf-3 config-manager --add-repo=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
+          dnf-3 config-manager --add-repo=https://packages-r2-prod.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 
       - name: Replace 'rawhide' string with Fedora version
         # The previous command has created a `dangerzone.repo` file. The

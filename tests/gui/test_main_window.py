@@ -732,6 +732,12 @@ def test_close_event(
 
 def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -> None:
     """Test prompting users to ask them if they want to enable update checks."""
+    # Mock is_container_tar_bundled to return True so we don't trigger the
+    # "no container available" code path (which has different behavior).
+    mocker.patch(
+        "dangerzone.updater.releases.is_container_tar_bundled", return_value=True
+    )
+
     # First run
     #
     # When Dangerzone runs for the first time, users should not be asked to enable
@@ -769,6 +775,15 @@ def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -
     qtbot.waitUntil(handle_needs_user_input_spy.assert_called_once)
     assert window.dangerzone.settings.get_updater_settings() == expected_settings
 
+    # Verify that prompt was called with download_required=False
+    prompt_mock.assert_called()
+    call_kwargs = prompt_mock.call_args
+    # The prompt is called with positional args (dangerzone, message=..., ok_text=..., cancel_text=...)
+    # We check the message to verify it's not no-container mode
+    assert "Enable automatic sandbox updates?" in call_kwargs.kwargs.get(
+        "message", call_kwargs[1].get("message", "")
+    )
+
     # Reset the "updater_check_all" field and check enabling update checks.
     window.dangerzone.settings.set("updater_check_all", None)
     prompt_mock().launch.return_value = True
@@ -789,6 +804,92 @@ def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -
     for check in [True, False]:
         window.dangerzone.settings.set("updater_check_all", check)
         assert releases.should_check_for_updates(window.dangerzone.settings) == check
+
+
+def test_user_prompts_no_container(
+    qtbot: QtBot, window: MainWindow, mocker: MockerFixture
+) -> None:
+    """Test prompting users when no container is available (download required)."""
+    # Mock is_container_tar_bundled to return False (no bundled container)
+    mocker.patch(
+        "dangerzone.updater.releases.is_container_tar_bundled", return_value=False
+    )
+    # Mock LAST_LOG_INDEX to be a mock Path that returns False for exists()
+    mock_last_log_index = mocker.MagicMock()
+    mock_last_log_index.exists.return_value = False
+    mocker.patch(
+        "dangerzone.updater.releases.LAST_LOG_INDEX", mock_last_log_index
+    )
+
+    # Only run the UpdateCheckTask
+    for task in window.startup_thread.tasks:
+        if not isinstance(task, startup.UpdateCheckTask):
+            mocker.patch.object(task, "should_skip", return_value=True)
+
+    # Mock the prompt
+    prompt_mock = mocker.patch("dangerzone.gui.updater.UpdateCheckPrompt")
+    prompt_mock().x_pressed = False
+
+    # Scenario 1: User accepts download
+    prompt_mock().launch.return_value = True
+
+    handle_download_spy = mocker.spy(
+        window, "handle_needs_user_input_download_container"
+    )
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_download_spy.assert_called_once)
+    window.startup_thread.wait()
+
+    # User accepted, so updater_check_all should be True
+    assert window.dangerzone.settings.get("updater_check_all") is True
+
+    # Verify that prompt was called with download message
+    prompt_mock.assert_called()
+    call_kwargs = prompt_mock.call_args
+    assert "Enable sandbox download?" in call_kwargs.kwargs.get(
+        "message", call_kwargs[1].get("message", "")
+    )
+
+    # Reset for scenario 2
+    window.dangerzone.settings.set("updater_check_all", None)
+    window.dangerzone.settings.set("updater_last_check", None)
+    handle_download_spy.reset_mock()
+
+    # Scenario 2: User declines download
+    prompt_mock().launch.return_value = False
+
+    # Mock shutdown to prevent actual shutdown
+    mock_begin_shutdown = mocker.patch.object(window, "begin_shutdown")
+    mocker.patch.object(window.startup_thread, "wait")
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_download_spy.assert_called_once)
+
+    # Give the QTimer a chance to fire
+    qtbot.wait(100)
+
+    # User declined, shutdown should be triggered
+    mock_begin_shutdown.assert_called_once_with(ret=2)
+
+    # Reset for scenario 3
+    window.dangerzone.settings.set("updater_check_all", None)
+    window.dangerzone.settings.set("updater_last_check", None)
+    handle_download_spy.reset_mock()
+    mock_begin_shutdown.reset_mock()
+
+    # Scenario 3: User presses X (dismisses)
+    prompt_mock().launch.return_value = None
+    prompt_mock().x_pressed = True
+
+    window.startup_thread.start()
+    qtbot.waitUntil(handle_download_spy.assert_called_once)
+
+    # Give the QTimer a chance to fire
+    qtbot.wait(100)
+
+    # User dismissed, shutdown should also be triggered
+    mock_begin_shutdown.assert_called_once_with(ret=2)
 
 
 def test_machine_stop_others_user_input(

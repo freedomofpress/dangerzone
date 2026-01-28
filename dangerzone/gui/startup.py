@@ -81,7 +81,7 @@ class PromptRequest:
 class MachineStopOthersTask(
     GUIMixin, startup.MachineStopOthersTask, metaclass=_MetaConflictResolver
 ):
-    needs_user_input = QtCore.Signal(object)  # PromptRequest
+    needs_user_input = QtCore.Signal(object)
 
     def prompt_user(self, machine_name: str) -> bool:
         return PromptRequest().ask(self.needs_user_input, data={"name": machine_name})
@@ -144,12 +144,25 @@ class UpdateCheckTask(
     GUIMixin, startup.UpdateCheckTask, metaclass=_MetaConflictResolver
 ):
     needs_user_input = QtCore.Signal()
+    needs_user_input_download = QtCore.Signal(object)  # PromptRequest
     app_update_available = QtCore.Signal(object)
     container_update_available = QtCore.Signal(object)
 
-    def prompt_user(self) -> None:
-        super().prompt_user()
-        self.needs_user_input.emit()
+    def prompt_user(self, download_required: bool = False) -> Optional[bool]:
+        """Prompt user to enable updates.
+
+        When download is required (no container available), this blocks until the user
+        responds. Otherwise, this is non-blocking (user will be asked again next run).
+
+        Returns True if user accepts, False if user declines, None if dismissed/non-blocking.
+        """
+        if download_required:
+            # No container available: block until user responds
+            return PromptRequest().ask(self.needs_user_input_download)
+        else:
+            # Container available: non-blocking, just emit and return
+            self.needs_user_input.emit()
+            return None
 
     def handle_app_update(self, report: ReleaseReport) -> None:
         self.app_update_available.emit(report)

@@ -511,6 +511,9 @@ class MainWindow(QtWidgets.QMainWindow):
         task_update_check.needs_user_input.connect(
             self.handle_needs_user_input_enable_updates
         )
+        task_update_check.needs_user_input_download.connect(
+            self.handle_needs_user_input_download_container
+        )
 
         task_container_install.load_container.connect(
             self.status_bar.handle_task_container_install_local
@@ -685,9 +688,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dangerzone.settings.save()
 
     def handle_needs_user_input_enable_updates(self) -> None:
+        """Handle the prompt to enable updates (container already available)."""
         check = prompt_for_checks(self.dangerzone)
         if check is not None:
             self.dangerzone.settings.set("updater_check_all", check, autosave=True)
+
+    def handle_needs_user_input_download_container(
+        self, req: startup.PromptRequest
+    ) -> None:
+        """Handle the prompt to download container (no container available).
+
+        This is a blocking prompt - the user must accept or the app will shut down.
+        """
+        check = prompt_for_checks(self.dangerzone, download_required=True)
+        if check is True:
+            req.reply(True)
+        else:
+            # User declined or pressed X - shutdown
+            req.reply(False)
+            QtCore.QTimer.singleShot(0, self._handle_download_declined)
+
+    def _handle_download_declined(self) -> None:
+        """Handle shutdown when user declines to download container."""
+        log.debug("User declined container download, shutting down")
+        self.startup_thread.wait()
+        self.begin_shutdown(ret=2)
 
     def handle_needs_user_input_stop_others(self, req: startup.PromptRequest) -> None:
         machine_name = req.req_data["name"]

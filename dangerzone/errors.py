@@ -199,3 +199,13 @@ class WinShellExecNoHandle(WinShellExecError):
 
 class WinShellExecProcessError(WinShellExecError):
     pass
+
+
+class UpdaterDisabledNoContainer(Exception):
+    """User declined to enable updates, but no container image is available."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            "No container image is available. "
+            "Updates must be enabled to download the container and use Dangerzone."
+        )

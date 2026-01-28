@@ -134,3 +134,9 @@ class NeedUserInput(UpdaterError):
     """The user has not yet been prompted to know if they want to check for updates."""
 
     pass
+
+
+class NeedUserInputNoContainer(NeedUserInput):
+    """The user must enable updates when no container image is available."""
+
+    pass

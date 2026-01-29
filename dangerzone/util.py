@@ -1,4 +1,5 @@
 import functools
+import mimetypes
 import os
 import platform
 import subprocess
@@ -177,3 +178,26 @@ def get_tails_socks_proxy() -> str:
     [1] https://spec.torproject.org/proposals/171-separate-streams.txt
     """
     return f"socks5://{os.urandom(8).hex()}:0@127.0.0.1:9050"
+
+def guess_mime_type_from_ext(ext: str) -> str:
+    """Get mimetype from extension"""
+    if not ext.startswith("."):
+            ext = f".{ext}"
+    mime_type, _ = mimetypes.guess_type(f"file{ext}")
+    if not mime_type:
+        return "unknown"
+    return mime_type
+
+def is_default_application(mime_type: str) -> bool:
+    """Checks if Dangerzone is the default application for the given mime_type"""
+    try:
+        default_application = (
+            subprocess.check_output(
+                ["xdg-mime", "query", "default", f"{mime_type}"]
+            )
+            .decode()
+            .strip()
+        )  # remove trailing "\n"
+    except (FileNotFoundError, subprocess.CalledProcessError) as e:
+        raise e
+    return default_application == "press.freedom.dangerzone.desktop"

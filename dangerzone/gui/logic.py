@@ -119,11 +119,16 @@ class DangerzoneGui(DangerzoneCore):
                 log.debug(f"xdg-mime query failed: {e}")
 
             # Find all .desktop files
-            for search_path in [
-                "/usr/share/applications",
-                "/usr/local/share/applications",
-                os.path.expanduser("~/.local/share/applications"),
-            ]:
+            # Use dict.fromkeys (rather than a set) to retain paths order
+            # (only dict keys are used, values are set to `None`)
+            for search_path in dict.fromkeys(
+                os.environ.get(
+                    "XDG_DATA_DIRS",
+                    "/usr/local/share:/usr/share",
+                ).split(":")
+                + [os.path.expanduser("~/.local/share")]
+            ):
+                search_path = os.path.join(search_path, "applications")
                 try:
                     for filename in os.listdir(search_path):
                         full_filename = os.path.join(search_path, filename)

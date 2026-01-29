@@ -98,6 +98,18 @@ class DangerzoneGui(DangerzoneCore):
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.Popen(args)
 
+    def set_as_default_application(self, mime_type: str) -> None:
+        try:
+            subprocess.run(
+                ["xdg-mime", "default", "press.freedom.dangerzone.desktop", mime_type],
+                check=True
+            )
+        except (FileNotFoundError, subprocess.CalledProcessError) as e:
+            log.info(
+                f"xdg-mime default failed, could not set Dangerzone as default application for {mime_type}."
+            )
+            log.debug(f"xdg-mime default failed: {e}")
+
     def _find_pdf_viewers(self) -> OrderedDict[str, str]:
         pdf_viewers: OrderedDict[str, str] = OrderedDict()
         if platform.system() == "Linux":

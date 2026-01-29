@@ -14,6 +14,7 @@ from dangerzone.gui.updater import prompt_for_checks
 from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
 
 from ..podman.machine import PodmanMachineManager
+from dangerzone import util
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
@@ -1571,6 +1572,11 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         # to ensure docker-daemon detection logic runs first
         self.thread_pool_initized = False
 
+    def _on_default_app_changed(self, mime_type: str) -> None:
+        for widget in self.docs_list_widget_map.values():
+            if widget.mime_type == mime_type:
+                widget.update_make_default_app_button()
+
     def clear(self) -> None:
         self.docs_list = []
         self.docs_list_widget_map = {}
@@ -1581,6 +1587,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
             item = QtWidgets.QListWidgetItem()
             item.setSizeHint(QtCore.QSize(500, 50))
             widget = DocumentWidget(self.dangerzone, document)
+            widget.default_app_changed.connect(self._on_default_app_changed)
             self.addItem(item)
             self.setItemWidget(item, widget)
 
@@ -1618,6 +1625,8 @@ class DocumentsListWidget(QtWidgets.QListWidget):
 
 
 class DocumentWidget(QtWidgets.QWidget):
+    default_app_changed = QtCore.Signal(str) # mime_type
+
     def __init__(
         self,
         dangerzone: DangerzoneGui,
@@ -1659,14 +1668,27 @@ class DocumentWidget(QtWidgets.QWidget):
         self.progress.setRange(0, 100)
         self.progress.setValue(0)
 
+        # Make Dangerzone default app button
+        self.mime_type = util.guess_mime_type_from_ext(Path(self.document.input_filename).suffix)
+        self.make_default_app_button = QtWidgets.QPushButton("Make default")
+        self.make_default_app_button.clicked.connect(
+            lambda: self._make_default_application()
+        )
+        self.make_default_app_button.setVisible(not util.is_default_application(self.mime_type))
+
         # Layout
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.status_image)
         layout.addWidget(self.dangerous_doc_label)
         layout.addWidget(self.progress)
         layout.addWidget(self.error_label)
+        layout.addWidget(self.make_default_app_button)
         self.setLayout(layout)
 
+    def _make_default_application(self) -> None:
+        self.dangerzone.set_as_default_application(self.mime_type)
+        self.default_app_changed.emit(self.mime_type)
+        
     def update_progress(self, error: bool, text: str, percentage: int) -> None:
         self.update_status_image()
         if error:
@@ -1694,6 +1716,11 @@ class DocumentWidget(QtWidgets.QWidget):
             self.status_image.setPixmap(self.img_status_failed)
         elif self.document.is_safe():
             self.status_image.setPixmap(self.img_status_safe)
+
+    def update_make_default_app_button(self) -> None:
+        self.make_default_app_button.setVisible(
+            not util.is_default_application(self.mime_type)
+        )
 
     def all_done(self) -> None:
         self.update_status_image()

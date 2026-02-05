@@ -1,3 +1,3 @@
-from dangerzone.updater import cli
+from dangerzone.updater.cli import run
 
-cli.main()
+run()

@@ -86,6 +86,7 @@ jobs:
           - runner: windows-2022
           - runner: windows-2025
     env:
+      DANGERZONE_DEV: "1"
       # NOTE: We have to set the encoding for this run to UTF-8, else we get an
       # enoding error when Dangerzone attempts to display its banner, since the
       # default seems to be CP-1252:
@@ -138,7 +139,7 @@ jobs:
       - name: Update WSL
         run: wsl --update
       - name: Smoke test
-        run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
+        run: poetry run dangerzone-cli .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment
@@ -550,6 +551,8 @@ jobs:
     needs:
       - build-new-container-image
       - build-container-image
+    env:
+      DANGERZONE_DEV: "1"
 
     steps:
       - name: Checkout
@@ -595,7 +598,7 @@ jobs:
 
       - name: Run a conversion
         run: |
-          poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf
+          poetry run dangerzone-cli ./tests/test_docs/sample-pdf.pdf
 
       - name: Update the settings so they check for updates
         run: |
@@ -613,7 +616,7 @@ jobs:
 
       - name: Run another conversion
         run: |
-          poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf
+          poetry run dangerzone-cli ./tests/test_docs/sample-pdf.pdf
 
       - name: Check the digest of the loaded podman image
         run: |

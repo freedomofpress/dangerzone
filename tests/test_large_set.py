@@ -64,8 +64,9 @@ class TestLargeSet(TestCli):
         output_file_path = str(tmp_path / "output.pdf")
         p = subprocess.Popen(
             [
-                "python",
-                "dev_scripts/dangerzone-cli",
+                "poetry",
+                "run",
+                "dangerzone-cli",
                 "--output-filename",
                 output_file_path,
                 "--ocr-lang",

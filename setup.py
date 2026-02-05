@@ -64,10 +64,10 @@ convert the documents within a secure sandbox.
     ],
     entry_points={
         "console_scripts": [
-            "dangerzone = dangerzone:main",
-            "dangerzone-cli = dangerzone:main",
-            "dangerzone-image = dangerzone.updater.cli:main",
-            "dangerzone-machine= dangerzone.podman.cli:main",
+            "dangerzone-cli = dangerzone.cli:run",
+            "dangerzone-image = dangerzone.updater.cli:run",
+            "dangerzone-machine = dangerzone.podman.cli:main",
+            "dangerzone = dangerzone.gui.run:run",
         ]
     },
 )

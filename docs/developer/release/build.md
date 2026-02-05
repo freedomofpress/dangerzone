@@ -40,7 +40,7 @@ From your macOS terminal app:
 2. Retrieve the container image and download the necessary assets:
 
    ```bash
-   poetry run ./dev_scripts/dangerzone-image prepare-archive
+   poetry run dangerzone-image prepare-archive
     --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
 
@@ -101,8 +101,8 @@ From your macOS terminal app:
   ```
 - [ ] Download the container image with signatures:
   ```bash
-  poetry run ./dev_scripts/dangerzone-image prepare-archive
-    --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
+  poetry run dangerzone-image prepare-archive
+    --image ghcr.io/ofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
   ```
 - [ ] Download the necessary assets with `poetry run mazette install`
@@ -139,7 +139,7 @@ or create it locally with:
 poetry run mazette install
 
 # Retrieve the latest container
-poetry run ./dev_scripts/dangerzone-image prepare-archive
+poetry run dangerzone-image prepare-archive
     --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
 
@@ -169,7 +169,7 @@ or create it locally with:
 poetry run mazette install
 
 # Retrieve the latest container
-poetry run ./dev_scripts/dangerzone-image prepare-archive
+poetry run dangerzone-image prepare-archive
     --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
 

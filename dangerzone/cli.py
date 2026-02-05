@@ -75,7 +75,7 @@ def print_header(s: str) -> None:
 )
 @click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
-def cli_main(
+def run(
     output_filename: Optional[str],
     ocr_lang: Optional[str],
     filenames: Optional[List[str]],
@@ -175,7 +175,7 @@ def cli_main(
     sys.exit(0)
 
 
-args.override_parser_and_check_suspicious_options(cli_main)
+args.override_parser_and_check_suspicious_options(run)
 
 
 def setup_logging() -> None:

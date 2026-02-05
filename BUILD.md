@@ -79,20 +79,17 @@ Run the following command to download the latest container image, or
 [build it locally](#building-a-local-container-image):
 
 ```sh
-poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
+poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
 Run from source tree:
 
 ```sh
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+poetry run dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+poetry run dangerzone
 ```
 
 Create a .deb:
@@ -144,20 +141,17 @@ Run the following command to download the latest container image, or
 [build it locally](#building-a-local-container-image):
 
 ```sh
-poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
+poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
 Run from source tree:
 
 ```sh
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+poetry run dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+poetry run dangerzone
 ```
 
 > [!NOTE]
@@ -287,10 +281,10 @@ you wish to test the Qubes conversion, run the following commands on the `dz` de
 ```sh
 
 # run the CLI
-QUBES_CONVERSION=1 poetry run ./dev_scripts/dangerzone-cli --help
+QUBES_CONVERSION=1 poetry run dangerzone-cli --help
 
 # run the GUI
-QUBES_CONVERSION=1 poetry run ./dev_scripts/dangerzone
+QUBES_CONVERSION=1 poetry run dangerzone
 ```
 
 And when creating a `.rpm` you'll need to enable the `--qubes` flag.
@@ -349,20 +343,17 @@ Run the following command to download the latest container image, or
 [build it locally](#building-a-local-container-image):
 
 ```sh
-poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
+poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
 Run from source tree:
 
 ```sh
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+poetry run dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+poetry run dangerzone
 ```
 
 To create an app bundle, use the `build_app.py` script:
@@ -416,20 +407,17 @@ Run the following command to download the latest container image, or
 [build it locally](#building-a-local-container-image):
 
 ```sh
-poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
+poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
 After that you can launch dangerzone during development with:
 
 ```
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-.\dev_scripts\dangerzone-cli.bat --help
+poetry run dangerzone-cli --help
 
 # run the GUI
-.\dev_scripts\dangerzone.bat
+poetry run dangerzone
 ```
 
 ### If you want to build the Windows installer

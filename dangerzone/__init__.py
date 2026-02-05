@@ -30,22 +30,5 @@ try:
 except ImportError:
     pass
 
-if "DANGERZONE_MODE" in os.environ:
-    mode = os.environ["DANGERZONE_MODE"]
-else:
-    cli_names = [
-        "dangerzone-cli",
-        "dangerzone-cli.exe",
-        "dangerzone-image",
-        "dangerzone-image.exe",
-    ]
-    if basename in cli_names:
-        mode = "cli"
-    else:
-        mode = "gui"
-
-
-if mode == "cli":
-    from .cli import cli_main as main
-else:
-    from .gui import gui_main as main  # noqa: F401
+if os.environ.get("DANGERZONE_DEV", "0") == "1":
+    setattr(sys, "dangerzone_dev", True)

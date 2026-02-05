@@ -215,7 +215,7 @@ def task_download_image():
 
     return {
         "actions": [
-            f"poetry run ./dev_scripts/dangerzone-image prepare-archive --output {img_dst}",
+            f"poetry run dangerzone-image prepare-archive --output {img_dst}",
         ],
         "targets": [
             img_dst,

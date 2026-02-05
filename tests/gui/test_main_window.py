@@ -23,7 +23,7 @@ else:
 
 from dangerzone import container_utils, errors, settings, startup
 from dangerzone.document import Document
-from dangerzone.gui import MainWindow
+from dangerzone.gui.main_window import MainWindow
 from dangerzone.gui import main_window as main_window_module
 from dangerzone.gui import updater as updater_module
 from dangerzone.gui.logic import DangerzoneGui

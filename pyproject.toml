@@ -1,5 +1,7 @@
-[tool.poetry]
+[project]
 name = "dangerzone"
+
+[tool.poetry]
 version = "0.10.0"
 description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
 authors = [
@@ -33,12 +35,11 @@ shiboken6 = [
    { version = "*", python = "^3.10" },
 ]
 
-
-[tool.poetry.scripts]
-dangerzone = 'dangerzone:main'
-dangerzone-cli = 'dangerzone:main'
-dangerzone-image = "dangerzone.updater.cli:main"
-dangerzone-machine = "dangerzone.podman.cli:main"
+[project.scripts]
+dangerzone-cli = "dangerzone.cli:run"
+dangerzone-image = "dangerzone.updater.cli:run"
+dangerzone-machine = "dangerzone.podman.cli:run"
+dangerzone = "dangerzone.gui.run:run"
 
 # Dependencies required for packaging the code on various platforms.
 [tool.poetry.group.package.dependencies]

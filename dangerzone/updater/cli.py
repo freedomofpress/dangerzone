@@ -43,7 +43,7 @@ def requires_container_runtime(func: Callable) -> Callable:
 
 @click.group(context_settings={"show_default": True})
 @click.option("--debug", is_flag=True)
-def main(debug: bool) -> None:
+def run(debug: bool) -> None:
     if debug:
         click.echo("Debug mode enabled")
         level = logging.DEBUG
@@ -52,7 +52,7 @@ def main(debug: bool) -> None:
     logging.basicConfig(level=level)
 
 
-@main.command()
+@run.command()
 @requires_container_runtime
 def upgrade() -> None:
     """Upgrade the sandbox to the latest version available.
@@ -77,7 +77,7 @@ def upgrade() -> None:
         raise click.Abort()
 
 
-@main.command()
+@run.command()
 @click.option(
     "--image",
     default=DEFAULT_IMAGE_NAME,
@@ -91,7 +91,7 @@ def store_signatures(image: str) -> None:
     click.echo(f"✅ Signatures have been verified and stored locally")
 
 
-@main.command()
+@run.command()
 @click.argument("archive_filename", type=click.Path(exists=True))
 @click.option(
     "--force",
@@ -119,7 +119,7 @@ def load_archive(archive_filename: Path, force: bool) -> None:
         raise click.Abort()
 
 
-@main.command()
+@run.command()
 @click.option(
     "--image",
     default=DEFAULT_IMAGE_NAME,
@@ -149,7 +149,7 @@ def prepare_archive(image: str, output: str, arch: str) -> None:
         raise click.Abort()
 
 
-@main.command()
+@run.command()
 @click.option(
     "--image",
     default=DEFAULT_IMAGE_NAME,
@@ -171,7 +171,7 @@ def verify_local(image: str) -> None:
         )
 
 
-@main.command()
+@run.command()
 @click.argument("image_name")
 @click.option(
     "--repository",
@@ -206,4 +206,4 @@ def attest_provenance(
 
 
 if __name__ == "__main__":
-    main()
+    run()

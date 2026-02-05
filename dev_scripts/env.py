@@ -160,6 +160,7 @@ COPY storage.conf /home/user/.config/containers
 # See https://github.com/freedomofpress/dangerzone/issues/351
 # FIXME: pipx install poetry does not work for Ubuntu Focal.
 ENV PATH="$PATH:/home/user/.local/bin"
+ENV DANGERZONE_DEV=1
 RUN pipx install poetry
 RUN pipx inject poetry poetry-plugin-export
 

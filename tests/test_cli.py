@@ -20,7 +20,7 @@ from pytest_mock import MockerFixture
 from strip_ansi import strip_ansi
 
 from dangerzone import errors
-from dangerzone.cli import cli_main, display_banner
+from dangerzone.cli import display_banner, run
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 
@@ -153,7 +153,7 @@ class TestCli:
                 cwd = os.getcwd()
                 os.chdir(tmp_path)
 
-            result = CliRunner().invoke(cli_main, args)
+            result = CliRunner().invoke(run, args)
         finally:
             if tmp_path is not None:
                 os.chdir(cwd)

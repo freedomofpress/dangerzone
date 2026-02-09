@@ -366,7 +366,7 @@ jobs:
           echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
           poetry run mazette install cosign
           mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
-          poetry run dangerzone-image prepare-archive \
+          DANGERZONE_DEV=1 poetry run dangerzone-image prepare-archive \
             --image ${{ needs.sign.outputs.image_uri }} \
             --arch amd64 --output="share/container.tar"
 

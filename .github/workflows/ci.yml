@@ -138,7 +138,7 @@ jobs:
       - name: Update WSL
         run: wsl --update
       - name: Smoke test
-        run: poetry run .\dev_scripts\dangerzone-cli.bat .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
+        run: poetry run dangerzone-cli .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
         run: poetry run make test
       - name: Set up .NET CLI environment

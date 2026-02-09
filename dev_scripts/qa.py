@@ -416,10 +416,10 @@ After that you can launch dangerzone during development with:
 
 ```
 # run the CLI
-.\dev_scripts\dangerzone-cli.bat --help
+poetry run dangerzone-cli --help
 
 # run the GUI
-.\dev_scripts\dangerzone.bat
+poetry run dangerzone
 ```
 """
 

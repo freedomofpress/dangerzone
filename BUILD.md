@@ -413,14 +413,11 @@ poetry run dangerzone-image prepare-archive --output share/container.tar
 After that you can launch dangerzone during development with:
 
 ```
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-.\dev_scripts\dangerzone-cli.bat --help
+poetry run dangerzone-cli --help
 
 # run the GUI
-.\dev_scripts\dangerzone.bat
+poetry run dangerzone
 ```
 
 ### If you want to build the Windows installer

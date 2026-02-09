@@ -285,20 +285,17 @@ Run the following command to download the latest container image, or
 [build it locally](#building-a-local-container-image):
 
 ```sh
-poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
+poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
 Run from source tree:
 
 ```sh
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+poetry run dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+poetry run dangerzone
 ```
 
 Create a .deb:
@@ -351,20 +348,17 @@ Run the following command to download the latest container image, or
 [build it locally](#building-a-local-container-image):
 
 ```sh
-poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
+poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
 Run from source tree:
 
 ```sh
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
-./dev_scripts/dangerzone-cli --help
+poetry run dangerzone-cli --help
 
 # run the GUI
-./dev_scripts/dangerzone
+poetry run dangerzone
 ```
 
 > [!NOTE]
@@ -415,15 +409,12 @@ Run the following command to download the latest container image, or
 [build it locally](#building-a-local-container-image):
 
 ```sh
-poetry run ./dev_scripts/dangerzone-image prepare-archive --output share/container.tar
+poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
 After that you can launch dangerzone during development with:
 
 ```
-# start a shell in the virtual environment
-poetry shell
-
 # run the CLI
 .\dev_scripts\dangerzone-cli.bat --help
 

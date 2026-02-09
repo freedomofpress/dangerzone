@@ -51,7 +51,7 @@ jobs:
       - name: Smoke test
         # Nested virtualization does not work on M1 CPUs.
         continue-on-error: ${{ inputs.arch == 'arm64' }}
-        run: poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
+        run: poetry run dangerzone-cli ./tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests
         run: |
           # Nested virtualization does not work on M1 CPUs.

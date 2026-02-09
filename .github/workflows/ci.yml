@@ -595,7 +595,7 @@ jobs:
 
       - name: Run a conversion
         run: |
-          poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf
+          poetry run dangerzone-cli ./tests/test_docs/sample-pdf.pdf
 
       - name: Update the settings so they check for updates
         run: |
@@ -613,7 +613,7 @@ jobs:
 
       - name: Run another conversion
         run: |
-          poetry run ./dev_scripts/dangerzone-cli ./tests/test_docs/sample-pdf.pdf
+          poetry run dangerzone-cli ./tests/test_docs/sample-pdf.pdf
 
       - name: Check the digest of the loaded podman image
         run: |

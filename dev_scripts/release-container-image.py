@@ -179,8 +179,7 @@ def attest_provenance(full_image, repository, workflow):
             [
                 "poetry",
                 "run",
-                "python",
-                "dev_scripts/dangerzone-image",
+                "dangerzone-image",
                 "attest-provenance",
                 "--repository",
                 repository,

@@ -2,6 +2,7 @@
 name = "dangerzone"
 
 [tool.poetry]
+name = "dangerzone"
 version = "0.10.0"
 description = "Take potentially dangerous PDFs, office documents, or images and convert them to safe PDFs"
 authors = [

@@ -23,7 +23,6 @@ else:
 
 from dangerzone import container_utils, errors, settings, startup
 from dangerzone.document import Document
-from dangerzone.gui.main_window import MainWindow
 from dangerzone.gui import main_window as main_window_module
 from dangerzone.gui import updater as updater_module
 from dangerzone.gui.logic import DangerzoneGui
@@ -31,6 +30,7 @@ from dangerzone.gui.logic import DangerzoneGui
 # import Pyside related objects from here to avoid duplicating import logic.
 from dangerzone.gui.main_window import (
     ConversionWidget,
+    MainWindow,
     QtCore,
     QtGui,
 )

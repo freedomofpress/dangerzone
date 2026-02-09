@@ -38,7 +38,7 @@ shiboken6 = [
 [project.scripts]
 dangerzone-cli = "dangerzone.cli:run"
 dangerzone-image = "dangerzone.updater.cli:run"
-dangerzone-machine = "dangerzone.podman.cli:run"
+dangerzone-machine = "dangerzone.podman.cli:main"
 dangerzone = "dangerzone.gui.run:run"
 
 # Dependencies required for packaging the code on various platforms.

@@ -476,7 +476,7 @@ def store_signatures(
     """
     Store signatures locally in the SIGNATURE_PATH folder, like this:
 
-    ~/.config/dangerzone/signatures/
+    ~/.local/share/dangerzone/signatures/
     ├── <pubkey-digest>
     │   ├── <image-digest>.json
     │   ├── <image-digest>.json

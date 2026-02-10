@@ -1,3 +1,3 @@
-import dangerzone
+from dangerzone.gui.run import run
 
-dangerzone.main()
+run()

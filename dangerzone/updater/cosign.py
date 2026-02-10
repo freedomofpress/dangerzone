@@ -117,8 +117,8 @@ def save(arch_image: str, destination: Path) -> None:
 # NOTE: You can grab the SLSA attestation for an image/tag pair with the following
 # commands:
 #
-#     IMAGE=ghcr.io/apyrgio/dangerzone/dangerzone
-#     TAG=20250129-0.8.0-149-gbf2f5ac
+#     IMAGE=ghcr.io/freedomofpress/dangerzone/v1
+#     TAG=latest
 #     DIGEST=$(crane digest ${IMAGE?}:${TAG?})
 #     ATT_MANIFEST=${IMAGE?}:${DIGEST/:/-}.att
 #     ATT_BLOB=${IMAGE?}@$(crane manifest ${ATT_MANIFEST?} | jq -r '.layers[0].digest')

@@ -86,6 +86,7 @@ jobs:
           - runner: windows-2022
           - runner: windows-2025
     env:
+      DANGERZONE_DEV: "1"
       # NOTE: We have to set the encoding for this run to UTF-8, else we get an
       # enoding error when Dangerzone attempts to display its banner, since the
       # default seems to be CP-1252:
@@ -550,6 +551,8 @@ jobs:
     needs:
       - build-new-container-image
       - build-container-image
+    env:
+      DANGERZONE_DEV: "1"
 
     steps:
       - name: Checkout

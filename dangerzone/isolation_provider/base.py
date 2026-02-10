@@ -254,6 +254,7 @@ class IsolationProvider(ABC):
                     # ... and send them to the OCR worker pool
                     if ocr_lang:
                         assert ocr_pool is not None
+                        assert tessdata_dir is not None
                         future = ocr_pool.submit(
                             _ocr_page_worker,
                             untrusted_pixels,

@@ -217,26 +217,27 @@ class IsolationProvider(ABC):
                 # Pre-compute tessdata path to pass to workers (they can't access
                 # sys.dangerzone_dev which is set only in the main process)
                 tessdata_dir = str(get_tessdata_dir())
-                ocr_futures: deque = deque()
+                ocr_futures: deque = deque()  # stores (page_num, future) tuples
+                ocr_page_num = 0  # tracks how many pages have completed OCR
             else:
                 ocr_pool = None
                 tessdata_dir = None
 
             def collect_ready_futures() -> None:
                 """Collect completed futures from the front of the queue."""
-                while ocr_futures and ocr_futures[0].done():
-                    future = ocr_futures.popleft()
+                nonlocal ocr_page_num
+                while ocr_futures and ocr_futures[0][1].done():
+                    page, future = ocr_futures.popleft()
                     page_pdf_bytes = future.result()
-                    # TODO: Print progress here instead
                     page_doc = fitz.open("pdf", page_pdf_bytes)
                     safe_doc.insert_pdf(page_doc)
+                    ocr_page_num += 1
+                    ocr_percentage = (ocr_page_num / n_pages) * 100
+                    text = f"Converted page {ocr_page_num}/{n_pages} to searchable PDF"
+                    self.print_progress(document, False, text, ocr_percentage)
 
             try:
                 for page in range(1, n_pages + 1):
-                    searchable = "searchable " if ocr_lang else ""
-                    text = f"Converting page {page}/{n_pages} from pixels to {searchable}PDF"
-                    self.print_progress(document, False, text, percentage)
-
                     # Consume each page of the rasterizer's output...
                     width = read_int(p.stdout)
                     height = read_int(p.stdout)
@@ -263,7 +264,7 @@ class IsolationProvider(ABC):
                             ocr_lang,
                             tessdata_dir,
                         )
-                        ocr_futures.append(future)
+                        ocr_futures.append((page, future))
 
                         # Collect results that are ready (in order) to avoid
                         # memory buildup
@@ -276,15 +277,22 @@ class IsolationProvider(ABC):
                             height,
                         )
                         safe_doc.insert_pdf(page_pdf)
-
-                    percentage += step
+                        percentage += step
+                        text = f"Converted page {page}/{n_pages} to PDF"
+                        self.print_progress(document, False, text, percentage)
 
                 # Once all pages have been submitted, wait for remaining futures
                 if ocr_lang:
-                    for future in ocr_futures:
+                    for page, future in ocr_futures:
                         page_pdf_bytes = future.result()
                         page_doc = fitz.open("pdf", page_pdf_bytes)
                         safe_doc.insert_pdf(page_doc)
+                        ocr_page_num += 1
+                        ocr_percentage = (ocr_page_num / n_pages) * 100
+                        text = (
+                            f"Converted page {ocr_page_num}/{n_pages} to searchable PDF"
+                        )
+                        self.print_progress(document, False, text, ocr_percentage)
 
             finally:
                 if ocr_pool is not None:

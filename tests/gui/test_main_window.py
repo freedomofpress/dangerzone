@@ -817,9 +817,7 @@ def test_user_prompts_no_container(
     # Mock LAST_LOG_INDEX to be a mock Path that returns False for exists()
     mock_last_log_index = mocker.MagicMock()
     mock_last_log_index.exists.return_value = False
-    mocker.patch(
-        "dangerzone.updater.releases.LAST_LOG_INDEX", mock_last_log_index
-    )
+    mocker.patch("dangerzone.updater.releases.LAST_LOG_INDEX", mock_last_log_index)
 
     # Only run the UpdateCheckTask
     for task in window.startup_thread.tasks:

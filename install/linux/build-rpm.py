@@ -137,7 +137,9 @@ def main():
         "--qubes", action="store_true", help="Build RPM package for a Qubes OS system"
     )
     parser.add_argument(
-        "--full", action="store_true", help="Build RPM package with container.tar bundled"
+        "--full",
+        action="store_true",
+        help="Build RPM package with container.tar bundled",
     )
     parser.add_argument(
         "--build-dir",

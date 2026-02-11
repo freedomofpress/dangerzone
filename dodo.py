@@ -152,7 +152,9 @@ def build_deb(cwd, full=False):
 
 def build_rpm(version, cwd, qubes=False, full=False):
     """Build an .rpm package on the requested Fedora distro."""
-    return build_linux_pkg(distro="fedora", version=version, cwd=cwd, qubes=qubes, full=full)
+    return build_linux_pkg(
+        distro="fedora", version=version, cwd=cwd, qubes=qubes, full=full
+    )
 
 
 ### Tasks

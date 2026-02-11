@@ -258,12 +258,26 @@ jobs:
               --version ${{ matrix.version }} \
               run --dev --no-gui ./dangerzone/install/linux/build-deb.py
 
+      - name: Build Dangerzone full .deb
+        run: |
+          ./dev_scripts/env.py --distro debian \
+              --version bookworm \
+              run --dev --no-gui ./dangerzone/install/linux/build-deb.py --full
+
       - name: Upload Dangerzone .deb
         if: matrix.distro == 'debian' && matrix.version == 'bookworm'
         uses: actions/upload-artifact@v6
         with:
           name: dangerzone.deb
           path: "deb_dist/dangerzone_*_*.deb"
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Dangerzone-full .deb
+        uses: actions/upload-artifact@v5
+        with:
+          name: dangerzone-full.deb
+          path: "deb_dist/dangerzone-full_*_*.deb"
           if-no-files-found: error
           compression-level: 0
 
@@ -322,112 +336,6 @@ jobs:
               --version ${{ matrix.version }} \
               run dangerzone --help
 
-  build-deb:
-    name: "build-deb (debian bookworm)"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-      - name: Install poetry
-        run: |
-          sudo apt install pipx
-          pipx install poetry
-          poetry install
-      - name: Cache mazette assets
-        id: cache-mazette
-        uses: actions/cache@v4
-        with:
-          path: |
-            share/vendor/
-          key: v1-mazette-linux-x86_64-${{ hashFiles('./mazette.lock') }}
-      - name: Install mazette
-        if: steps.cache-mazette.outputs.cache-hit != 'true'
-        run: poetry run mazette install
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
-
-      - name: Get the dev environment
-        run: |
-          ./dev_scripts/env.py \
-              --distro debian \
-              --version bookworm \
-              build-dev --sync
-
-      - name: Build Dangerzone .deb
-        run: |
-          ./dev_scripts/env.py --distro debian \
-              --version bookworm \
-              run --dev --no-gui ./dangerzone/install/linux/build-deb.py
-
-      - name: Upload Dangerzone .deb
-        uses: actions/upload-artifact@v5
-        with:
-          name: dangerzone.deb
-          path: "deb_dist/dangerzone_*_*.deb"
-          if-no-files-found: error
-          compression-level: 0
-
-      - name: Build Dangerzone full .deb
-        run: |
-          ./dev_scripts/env.py --distro debian \
-              --version bookworm \
-              run --dev --no-gui ./dangerzone/install/linux/build-deb.py --full
-
-      - name: Upload Dangerzone full .deb
-        uses: actions/upload-artifact@v5
-        with:
-          name: dangerzone-full.deb
-          path: "deb_dist/dangerzone-full_*_*.deb"
-          if-no-files-found: error
-          compression-level: 0
-
-  install-deb:
-    name: "install-deb (${{ matrix.distro }} ${{ matrix.version }})"
-    runs-on: ubuntu-latest
-    needs:
-      - build-deb
-    strategy:
-      matrix:
-        include:
-          - distro: debian
-            version: bookworm
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
-
-      - name: Download Dangerzone .deb
-        uses: actions/download-artifact@v6
-        with:
-          name: dangerzone.deb
-          path: "deb_dist/"
-
-      - name: Build end-user environment
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              build
-
-      - name: Run a test command (container will be downloaded)
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
-
-      - name: Check that the Dangerzone GUI imports work
-        run: |
-          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
-              --version ${{ matrix.version }} \
-              run dangerzone --help
 
   install-deb-full:
     name: "install-deb-full (${{ matrix.distro }} ${{ matrix.version }})"

@@ -274,6 +274,7 @@ jobs:
               run --dev --no-gui ./dangerzone/install/linux/build-deb.py --full
 
       - name: Upload Dangerzone-full .deb
+        if: matrix.distro == 'debian' && matrix.version == 'bookworm'
         uses: actions/upload-artifact@v5
         with:
           name: dangerzone-full.deb

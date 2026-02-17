@@ -2,6 +2,7 @@ import abc
 import logging
 import platform
 import typing
+from collections.abc import Sequence
 from typing import Optional
 
 from . import errors, settings, util
@@ -278,7 +279,7 @@ class UpdateCheckTask(Task):
 
 
 class Runner:
-    def __init__(self, tasks: list[Task], raise_on_error: bool = True) -> None:
+    def __init__(self, tasks: Sequence[Task], raise_on_error: bool = True) -> None:
         self.tasks = tasks
         self.raise_on_error = raise_on_error
         super().__init__()
@@ -318,6 +319,8 @@ class Runner:
                 self.run_task(task)
             except Exception as e:
                 task.handle_error(e)
+                if isinstance(e, errors.UpdaterDisabledNoContainer):
+                    raise
                 if not task.can_fail:
                     return self.handle_error(task, e)
         self.handle_success()

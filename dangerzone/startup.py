@@ -2,6 +2,7 @@ import abc
 import logging
 import platform
 import typing
+from collections.abc import Sequence
 from typing import Optional
 
 from . import errors, settings, util
@@ -288,7 +289,7 @@ class UpdateCheckTask(Task):
 
 
 class Runner:
-    def __init__(self, tasks: list[Task], raise_on_error: bool = True) -> None:
+    def __init__(self, tasks: Sequence[Task], raise_on_error: bool = True) -> None:
         self.tasks = tasks
         self.raise_on_error = raise_on_error
         super().__init__()

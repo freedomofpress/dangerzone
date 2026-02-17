@@ -9,7 +9,7 @@ import sys
 import threading
 from abc import ABC, abstractmethod
 from collections import deque
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from io import BytesIO
 from typing import IO, Callable, Iterator, Optional
 
@@ -90,20 +90,22 @@ def _ocr_pool_initializer() -> None:
     os.environ["IS_WORKER_PROCESS"] = "1"
 
 
-def _ocr_page_worker(
-    pixmap_bytes: bytes,
-    width: int,
-    height: int,
-    ocr_lang: str,
-    tessdata_dir: str,
-) -> bytes:
+def worker_ocr(ctx) -> bytes:
     """Worker function for multiprocessing OCR. Returns PDF bytes."""
+    page = ctx["page"]
+    width = ctx["width"]
+    height = ctx["height"]
+    num_pixels = ctx["num_pixels"]
+    untrusted_pixels = ctx["untrusted_pixels"]
+    tessdata_dir = ctx["tessdata_dir"]
+    ocr_lang = ctx["ocr_lang"]
+
     try:
         pixmap = fitz.Pixmap(
             fitz.Colorspace(fitz.CS_RGB),
             width,
             height,
-            pixmap_bytes,
+            untrusted_pixels,
             False,
         )
         pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
@@ -112,6 +114,31 @@ def _ocr_page_worker(
             language=ocr_lang,
             tessdata=tessdata_dir,
         )
+    except Exception as e:
+        # Re-raise with a picklable exception to avoid multiprocessing errors
+        # when the original exception contains unpicklable SWIG objects
+        raise RuntimeError(str(e)) from None
+
+
+def worker_deflate(ctx):
+    page = ctx["page"]
+    width = ctx["width"]
+    height = ctx["height"]
+    num_pixels = ctx["num_pixels"]
+    untrusted_pixels = ctx["untrusted_pixels"]
+
+    pixmap = fitz.Pixmap(
+        fitz.Colorspace(fitz.CS_RGB),
+        untrusted_width,
+        untrusted_height,
+        untrusted_data,
+        False,
+    )
+    try:
+        pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
+        page_doc = fitz.Document()
+        page_doc.insert_file(pixmap)
+        return page_doc.tobytes(deflate_images=True)
     except Exception as e:
         # Re-raise with a picklable exception to avoid multiprocessing errors
         # when the original exception contains unpicklable SWIG objects
@@ -179,6 +206,56 @@ class IsolationProvider(ABC):
 
         return fitz.open("pdf", page_pdf_bytes)
 
+    def pool_setup(self):
+        avail_workers = mp.cpu_count()
+        max_workers = int(os.environ.get("DZ_POOL_WORKERS", avail_workers))
+        print(f"SHITE: Will use {max_workers} workers")
+        pool_type = os.environ.get("DZ_POOL_TYPE", "process")
+        if pool_type == "thread":
+            pool_cls = ThreadPoolExecutor
+        elif pool_type == "process":
+            pool_cls = ProcessPoolExecutor
+        else:
+            raise Exception("What are you smoking man?")
+        print(f"SHITE: Will use {pool_cls} pool")
+
+        ocr_pool = pool_cls(
+            max_workers=max_workers,
+            initializer=_ocr_pool_initializer,
+            # mp_context=mp.get_context("spawn"),
+        )
+        return ocr_pool
+
+        # # Pre-compute tessdata path to pass to workers (they can't access
+        # # sys.dangerzone_dev which is set only in the main process)
+        # tessdata_dir = str(get_tessdata_dir())
+
+    def iter_untrusted_pixels(self, p, n_pages):
+        for page in range(1, n_pages + 1):
+            # Consume each page of the rasterizer's output...
+            width = read_int(p.stdout)
+            height = read_int(p.stdout)
+            if not (1 <= width <= errors.MAX_PAGE_WIDTH):
+                raise errors.MaxPageWidthException()
+            if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
+                raise errors.MaxPageHeightException()
+
+            num_pixels = width * height * 3  # three color channels
+            untrusted_pixels = read_bytes(
+                p.stdout,
+                num_pixels,
+            )
+
+            yield {
+                "page": page,
+                "width": width,
+                "height": height,
+                "num_pixels": num_pixels,
+                "untrusted_pixels": untrusted_pixels,
+                "tessdata_dir": str(get_tessdata_dir()),
+                "ocr_lang": "eng",
+            }
+
     def convert_with_proc(
         self,
         document: Document,
@@ -205,98 +282,22 @@ class IsolationProvider(ABC):
 
             safe_doc = fitz.Document()
 
-            # If we are doing OCR, start a pool of workers to do it in parallel
-            if ocr_lang:
-                max_workers = max(1, mp.cpu_count() - 1)
-                ocr_pool = ProcessPoolExecutor(
-                    max_workers=max_workers,
-                    initializer=_ocr_pool_initializer,
-                    mp_context=mp.get_context("spawn"),
-                )
+        pool = self.pool_setup()
+        worker_fn = worker_ocr if ocr_lang else worker_deflate
 
-                # Pre-compute tessdata path to pass to workers (they can't access
-                # sys.dangerzone_dev which is set only in the main process)
-                tessdata_dir = str(get_tessdata_dir())
-                ocr_futures: deque = deque()  # stores (page_num, future) tuples
-                ocr_page_num = 0  # tracks how many pages have completed OCR
-            else:
-                ocr_pool = None
-                tessdata_dir = None
+        searchable = "searchable " if ocr_lang else ""
 
-            def collect_ready_futures() -> None:
-                """Collect completed futures from the front of the queue."""
-                nonlocal ocr_page_num
-                while ocr_futures and ocr_futures[0][1].done():
-                    page, future = ocr_futures.popleft()
-                    page_pdf_bytes = future.result()
-                    page_doc = fitz.open("pdf", page_pdf_bytes)
-                    safe_doc.insert_pdf(page_doc)
-                    ocr_page_num += 1
-                    ocr_percentage = (ocr_page_num / n_pages) * 100
-                    text = f"Converted page {ocr_page_num}/{n_pages} to searchable PDF"
-                    self.print_progress(document, False, text, ocr_percentage)
+        def _iter_untrusted_pixels():
+            return self.iter_untrusted_pixels(p, n_pages)
 
-            try:
-                for page in range(1, n_pages + 1):
-                    # Consume each page of the rasterizer's output...
-                    width = read_int(p.stdout)
-                    height = read_int(p.stdout)
-                    if not (1 <= width <= errors.MAX_PAGE_WIDTH):
-                        raise errors.MaxPageWidthException()
-                    if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
-                        raise errors.MaxPageHeightException()
-
-                    num_pixels = width * height * 3  # three color channels
-                    untrusted_pixels = read_bytes(
-                        p.stdout,
-                        num_pixels,
-                    )
-
-                    # ... and send them to the OCR worker pool
-                    if ocr_lang:
-                        assert ocr_pool is not None
-                        assert tessdata_dir is not None
-                        future = ocr_pool.submit(
-                            _ocr_page_worker,
-                            untrusted_pixels,
-                            width,
-                            height,
-                            ocr_lang,
-                            tessdata_dir,
-                        )
-                        ocr_futures.append((page, future))
-
-                        # Collect results that are ready (in order) to avoid
-                        # memory buildup
-                        collect_ready_futures()
-                    else:
-                        # No OCR: process immediately
-                        page_pdf = self.pixels_to_pdf_page(
-                            untrusted_pixels,
-                            width,
-                            height,
-                        )
-                        safe_doc.insert_pdf(page_pdf)
-                        percentage += step
-                        text = f"Converted page {page}/{n_pages} to PDF"
-                        self.print_progress(document, False, text, percentage)
-
-                # Once all pages have been submitted, wait for remaining futures
-                if ocr_lang:
-                    for page, future in ocr_futures:
-                        page_pdf_bytes = future.result()
-                        page_doc = fitz.open("pdf", page_pdf_bytes)
-                        safe_doc.insert_pdf(page_doc)
-                        ocr_page_num += 1
-                        ocr_percentage = (ocr_page_num / n_pages) * 100
-                        text = (
-                            f"Converted page {ocr_page_num}/{n_pages} to searchable PDF"
-                        )
-                        self.print_progress(document, False, text, ocr_percentage)
-
-            finally:
-                if ocr_pool is not None:
-                    ocr_pool.shutdown()
+        for page, page_pdf_bytes in enumerate(
+            pool.map(worker_fn, _iter_untrusted_pixels())
+        ):
+            page_pdf = fitz.open("pdf", page_pdf_bytes)
+            safe_doc.insert_pdf(page_pdf)
+            text = f"Converted page {page}/{n_pages} from pixels to {searchable}PDF"
+            self.print_progress(document, False, text, percentage)
+            percentage += step
 
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()

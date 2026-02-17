@@ -275,7 +275,7 @@ jobs:
 
       - name: Upload Dangerzone-full .deb
         if: matrix.distro == 'debian' && matrix.version == 'bookworm'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: dangerzone-full.deb
           path: "deb_dist/dangerzone-full_*_*.deb"
@@ -324,6 +324,12 @@ jobs:
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
               build
+
+      - name: Download container image
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone-image upgrade
 
       - name: Run a test command
         run: |
@@ -463,6 +469,11 @@ jobs:
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
               build
+
+      - name: Download container image
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+              run dangerzone-image upgrade
 
       - name: Run a test command
         run: |

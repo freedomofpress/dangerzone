@@ -60,7 +60,17 @@ class Task(abc.ABC):
 #############
 
 
-class MachineInitTask(Task):
+class _NonLinuxTask(Task):
+    """Base class for tasks only relevant on specific platforms (macOS/Windows)."""
+
+    def handle_skip(self) -> None:
+        if platform.system() == "Linux":
+            logger.debug(f"Task '{self.name}' will be skipped")
+        else:
+            super().handle_skip()
+
+
+class MachineInitTask(_NonLinuxTask):
     name = "Initializing Dangerzone VM"
 
     def should_skip(self) -> bool:
@@ -73,7 +83,7 @@ class MachineInitTask(Task):
         PodmanMachineManager().init()
 
 
-class MachineStartTask(Task):
+class MachineStartTask(_NonLinuxTask):
     name = "Starting Dangerzone VM"
 
     def should_skip(self) -> bool:
@@ -86,7 +96,7 @@ class MachineStartTask(Task):
         PodmanMachineManager().start()
 
 
-class MachineStopOthersTask(Task):
+class MachineStopOthersTask(_NonLinuxTask):
     name = "Stopping other Podman VMs"
 
     def fail(self, message: str):  # type: ignore [no-untyped-def]
@@ -162,7 +172,7 @@ class MachineStopOthersTask(Task):
             raise RuntimeError("Failed to stop all other running Podman machines.")
 
 
-class WSLInstallTask(Task):
+class WSLInstallTask(_NonLinuxTask):
     name = "Installing Windows Subsystem for Linux"
 
     def should_skip(self) -> bool:

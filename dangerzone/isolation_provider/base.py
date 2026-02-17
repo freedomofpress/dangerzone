@@ -1,4 +1,5 @@
 import contextlib
+import itertools
 import logging
 import multiprocessing as mp
 import os
@@ -7,6 +8,7 @@ import signal
 import subprocess
 import sys
 import threading
+import time
 from abc import ABC, abstractmethod
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
@@ -100,6 +102,8 @@ def worker_ocr(ctx) -> bytes:
     tessdata_dir = ctx["tessdata_dir"]
     ocr_lang = ctx["ocr_lang"]
 
+    start = time.perf_counter()
+
     try:
         pixmap = fitz.Pixmap(
             fitz.Colorspace(fitz.CS_RGB),
@@ -109,11 +113,17 @@ def worker_ocr(ctx) -> bytes:
             False,
         )
         pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
-        return pixmap.pdfocr_tobytes(
+        page_bytes = pixmap.pdfocr_tobytes(
             compress=True,
             language=ocr_lang,
             tessdata=tessdata_dir,
         )
+
+        end = time.perf_counter()
+        elapsed = end - start
+        print(f"PAGE {page} finished in: {elapsed:.4f}")
+
+        return (elapsed, page_bytes)
     except Exception as e:
         # Re-raise with a picklable exception to avoid multiprocessing errors
         # when the original exception contains unpicklable SWIG objects
@@ -122,27 +132,59 @@ def worker_ocr(ctx) -> bytes:
 
 def worker_deflate(ctx):
     page = ctx["page"]
-    width = ctx["width"]
-    height = ctx["height"]
+    untrusted_width = ctx["width"]
+    untrusted_height = ctx["height"]
     num_pixels = ctx["num_pixels"]
     untrusted_pixels = ctx["untrusted_pixels"]
+    import time
+
+    start = time.perf_counter()
 
     pixmap = fitz.Pixmap(
         fitz.Colorspace(fitz.CS_RGB),
         untrusted_width,
         untrusted_height,
-        untrusted_data,
+        untrusted_pixels,
         False,
     )
     try:
         pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
         page_doc = fitz.Document()
         page_doc.insert_file(pixmap)
-        return page_doc.tobytes(deflate_images=True)
+        page_bytes = page_doc.tobytes(deflate_images=True)
+
+        end = time.perf_counter()
+        elapsed = end - start
+        print(f"PAGE {page} finished in: {elapsed:.4f}")
+
+        return (elapsed, page_bytes)
     except Exception as e:
         # Re-raise with a picklable exception to avoid multiprocessing errors
         # when the original exception contains unpicklable SWIG objects
         raise RuntimeError(str(e)) from None
+
+
+def bounded_map(executor, func, iterable, depth: int):
+    """
+    Map a function over an iterable with a fixed queue depth.
+
+    1. Submits jobs immediately starting from the first item.
+    2. Limits active/pending jobs to 'depth'.
+    3. Yields results in the original order.
+    """
+    it = iter(iterable)
+
+    # Step 1: Submit the first 'N' jobs to fill the buffer
+    futures = deque(executor.submit(func, item) for item in itertools.islice(it, depth))
+
+    # Step 2: As each job finishes, yield it and submit a new one
+    for item in it:
+        yield futures.popleft().result()  # Blocks until the oldest job is done
+        futures.append(executor.submit(func, item))
+
+    # Step 3: Drain the remaining jobs in the deque
+    while futures:
+        yield futures.popleft().result()
 
 
 class IsolationProvider(ABC):
@@ -207,9 +249,9 @@ class IsolationProvider(ABC):
         return fitz.open("pdf", page_pdf_bytes)
 
     def pool_setup(self):
-        avail_workers = mp.cpu_count()
+        avail_workers = mp.cpu_count() - 1
         max_workers = int(os.environ.get("DZ_POOL_WORKERS", avail_workers))
-        print(f"SHITE: Will use {max_workers} workers")
+        print(f"DZ: Will use {max_workers} workers")
         pool_type = os.environ.get("DZ_POOL_TYPE", "process")
         if pool_type == "thread":
             pool_cls = ThreadPoolExecutor
@@ -217,18 +259,14 @@ class IsolationProvider(ABC):
             pool_cls = ProcessPoolExecutor
         else:
             raise Exception("What are you smoking man?")
-        print(f"SHITE: Will use {pool_cls} pool")
+        print(f"DZ: Will use {pool_cls} pool")
 
         ocr_pool = pool_cls(
             max_workers=max_workers,
             initializer=_ocr_pool_initializer,
-            # mp_context=mp.get_context("spawn"),
+            # mp_context=mp.get_context("forkserver"),
         )
         return ocr_pool
-
-        # # Pre-compute tessdata path to pass to workers (they can't access
-        # # sys.dangerzone_dev which is set only in the main process)
-        # tessdata_dir = str(get_tessdata_dir())
 
     def iter_untrusted_pixels(self, p, n_pages):
         for page in range(1, n_pages + 1):
@@ -253,7 +291,7 @@ class IsolationProvider(ABC):
                 "num_pixels": num_pixels,
                 "untrusted_pixels": untrusted_pixels,
                 "tessdata_dir": str(get_tessdata_dir()),
-                "ocr_lang": "eng",
+                "ocr_lang": "eng",  # FIXME: I was too bored to do this the right way.
             }
 
     def convert_with_proc(
@@ -290,14 +328,25 @@ class IsolationProvider(ABC):
         def _iter_untrusted_pixels():
             return self.iter_untrusted_pixels(p, n_pages)
 
-        for page, page_pdf_bytes in enumerate(
-            pool.map(worker_fn, _iter_untrusted_pixels())
+        queue_depth = int(os.environ.get("DZ_QUEUE_DEPTH", 2 * pool._max_workers))
+        total_elapsed = 0
+        print(f"DZ: Queue depth: {queue_depth}")
+        print("DZ: Here we go...")
+
+        start = time.perf_counter()
+        for page, (elapsed, page_pdf_bytes) in enumerate(
+            bounded_map(pool, worker_fn, _iter_untrusted_pixels(), queue_depth)
         ):
+            total_elapsed += elapsed
             page_pdf = fitz.open("pdf", page_pdf_bytes)
             safe_doc.insert_pdf(page_pdf)
             text = f"Converted page {page}/{n_pages} from pixels to {searchable}PDF"
             self.print_progress(document, False, text, percentage)
             percentage += step
+
+        end = time.perf_counter()
+        print(f"DZ: Finished in: {(end - start):.4f}")
+        print(f"DZ: Total worker time {total_elapsed:.4f}")
 
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()

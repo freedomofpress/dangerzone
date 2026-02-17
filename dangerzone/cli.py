@@ -144,7 +144,19 @@ def cli_main(
         ]
 
     try:
-        startup.StartupLogic(tasks=tasks).run()
+        try:
+            startup.StartupLogic(tasks=tasks).run()
+        except errors.UpdaterDisabledNoContainer:
+            click.echo(
+                "\n"
+                + Fore.RED
+                + Style.BRIGHT
+                + "No container image found."
+                + Style.RESET_ALL
+                + " Please initialize Dangerzone by running:\n\n"
+                "    dangerzone-image upgrade\n"
+            )
+            sys.exit(1)
         print_header("Converting document(s) to safe PDF")
         dangerzone.convert_documents(ocr_lang)
     finally:

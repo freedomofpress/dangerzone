@@ -318,6 +318,8 @@ class Runner:
                 self.run_task(task)
             except Exception as e:
                 task.handle_error(e)
+                if isinstance(e, errors.UpdaterDisabledNoContainer):
+                    raise
                 if not task.can_fail:
                     return self.handle_error(task, e)
         self.handle_success()

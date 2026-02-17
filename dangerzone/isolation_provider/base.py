@@ -268,7 +268,7 @@ class IsolationProvider(ABC):
         )
         return ocr_pool
 
-    def iter_untrusted_pixels(self, p, n_pages):
+    def iter_untrusted_pixels(self, p, n_pages, ocr_lang):
         for page in range(1, n_pages + 1):
             # Consume each page of the rasterizer's output...
             width = read_int(p.stdout)
@@ -291,7 +291,7 @@ class IsolationProvider(ABC):
                 "num_pixels": num_pixels,
                 "untrusted_pixels": untrusted_pixels,
                 "tessdata_dir": str(get_tessdata_dir()),
-                "ocr_lang": "eng",  # FIXME: I was too bored to do this the right way.
+                "ocr_lang": ocr_lang,
             }
 
     def convert_with_proc(
@@ -326,7 +326,7 @@ class IsolationProvider(ABC):
         searchable = "searchable " if ocr_lang else ""
 
         def _iter_untrusted_pixels():
-            return self.iter_untrusted_pixels(p, n_pages)
+            return self.iter_untrusted_pixels(p, n_pages, ocr_lang)
 
         queue_depth = int(os.environ.get("DZ_QUEUE_DEPTH", 2 * pool._max_workers))
         total_elapsed = 0

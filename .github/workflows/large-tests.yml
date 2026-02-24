@@ -4,7 +4,7 @@ on:
     branches:
       - "test-large/**"
   schedule:
-    - cron: "3 0 * * *" # Run every day at 03:00 UTC.
+    - cron: "0 3 * * 1" # Run at 03:00 on Monday
   workflow_dispatch:
 
 # Disable multiple concurrent runs on the same branch

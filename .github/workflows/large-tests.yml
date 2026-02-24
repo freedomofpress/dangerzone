@@ -86,7 +86,7 @@ jobs:
       - name: Run large tests
         continue-on-error: true  # We expect test failures
         run: |-
-          export TEST_GROUP_COUNT=20
+          export TEST_GROUP_COUNT=20000
           export TEST_GROUP=${{ matrix.group }}
           poetry run make test-large
 

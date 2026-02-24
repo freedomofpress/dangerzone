@@ -22,7 +22,7 @@ test: ## Run the tests
 	# shared state.
 	# See more in https://github.com/freedomofpress/dangerzone/issues/493
 	pytest --co -q tests/gui | grep -e '^tests/' | xargs -n 1 pytest -v
-	pytest -v --cov --ignore dev_scripts --ignore tests/gui --ignore tests/test_large_set.py
+	pytest -v --cov --ignore dev_scripts --ignore tests/gui
 
 
 .PHONY: test-large-requirements
@@ -39,7 +39,7 @@ test-large-init: test-large-requirements
 TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC)_$(TEST_GROUP).junit.xml
 .PHONY: test-large
 test-large: test-large-init  ## Run large test set
-	python -m pytest \
+	DZ_RUN_LARGE_TESTS=1 python -m pytest \
 		--tb=no \
 		--test-group-count=$(TEST_GROUP_COUNT) \
 		--test-group=$(TEST_GROUP) \

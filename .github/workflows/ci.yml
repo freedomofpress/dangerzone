@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include: &debian_distros
+        include:
           - distro: ubuntu
             version: "22.04"
           - distro: ubuntu
@@ -274,7 +274,21 @@ jobs:
       - build-deb
     strategy:
       matrix:
-        include: *debian_distros
+        include:
+          - distro: ubuntu
+            version: "22.04"
+          - distro: ubuntu
+            version: "24.04"
+          - distro: ubuntu
+            version: "25.04"
+          - distro: ubuntu
+            version: "25.10"
+          - distro: debian
+            version: bullseye
+          - distro: debian
+            version: bookworm
+          - distro: debian
+            version: trixie
 
     steps:
       - name: Checkout
@@ -314,13 +328,9 @@ jobs:
     needs:
       - build-container-image
     strategy:
-      matrix: &fedora_distros
-        - distro: fedora
-          version: "41"
-        - distro: fedora
-          version: "42"
-        - distro: fedora
-          version: "43"
+      matrix:
+        distro: ["fedora"]
+        version: ["41", "42", "43"]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -413,8 +423,28 @@ jobs:
     strategy:
       matrix:
         include:
-          *debian_distros
-          *fedora_distros
+          - distro: ubuntu
+            version: "22.04"
+          - distro: ubuntu
+            version: "24.04"
+          - distro: ubuntu
+            version: "25.04"
+          - distro: ubuntu
+            version: "25.10"
+          - distro: debian
+            version: bullseye
+          - distro: debian
+            version: bookworm
+          - distro: debian
+            version: trixie
+          - distro: debian
+            version: forky
+          - distro: fedora
+            version: "41"
+          - distro: fedora
+            version: "42"
+          - distro: fedora
+            version: "43"
 
     steps:
       - name: Checkout

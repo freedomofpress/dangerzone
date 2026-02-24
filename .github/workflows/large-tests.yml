@@ -138,13 +138,13 @@ jobs:
       - name: Combine the results
         run: |-
           mkdir -p ${{ runner.temp }}/final_results
-          dev_scripts/merge_large_tests_results.py \
+          dev_scripts/large_tests/merge_results.py \
              ${{ runner.temp }}/results \
              ${{ runner.temp }}/final_results/results.xml
 
       - name: Generate a report
         run: |-
-          poetry run python tests/test_docs_large/report.py \
+          poetry run python dev_scripts/large_tests/report.py \
               ${{ runner.temp }}/final_results/results.xml \
               | tee ${{ runner.temp }}/final_results/report.txt
 

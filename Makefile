@@ -48,7 +48,7 @@ test-large: test-large-init  ## Run large test set
 		$(JUNIT_FLAGS) \
 		-v \
 		tests/test_large_set.py::TestLargeSet
-	python $(LARGE_TEST_REPO_DIR)/report.py $(TEST_LARGE_RESULTS)
+	python ./dev_scripts/large_tests/report.py $(TEST_LARGE_RESULTS)
 
 Dockerfile: Dockerfile.env Dockerfile.in ## Regenerate the Dockerfile from its template
 	poetry run jinja2 Dockerfile.in Dockerfile.env > Dockerfile

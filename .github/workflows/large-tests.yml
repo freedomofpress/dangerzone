@@ -50,7 +50,7 @@ jobs:
         run: |-
           sudo apt update -y
           sudo apt install -y \
-            podman git-lfs libxml2-utils \
+            git-lfs libxml2-utils \
             libqt6gui6 libxcb-cursor0 qt6-qpa-plugins \
             python3 python3-poetry make
           poetry install
@@ -127,7 +127,7 @@ jobs:
         run: |-
           sudo apt update -y
           sudo apt install -y \
-            podman git-lfs libxml2-utils \
+            git-lfs libxml2-utils \
             python3 python3-poetry make
           poetry install
 

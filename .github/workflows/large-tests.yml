@@ -135,9 +135,6 @@ jobs:
         run: |-
           make test-large-init
 
-      - name: Setup upterm session
-        uses: owenthereal/action-upterm@v1
-
       - name: Combine the results
         run: |-
           mkdir -p ${{ runner.temp }}/final_results

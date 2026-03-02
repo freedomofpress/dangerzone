@@ -64,7 +64,7 @@ jobs:
       - name: Build macOS app
         run: poetry run python ./install/macos/build-app.py
       - name: Upload macOS app
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Dangerzone-${{ inputs.arch }}.app
           path: "dist/Dangerzone.app"

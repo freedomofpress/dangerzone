@@ -188,7 +188,9 @@ class DocumentToPixels(DangerzoneConverter):
             except (ValueError, fitz.FileDataError):
                 raise errors.DocCorruptedException()
         elif conversion["type"] == "eml":
-            doc = await self._convert_eml(input_file)
+            # This should now be handled by extract_recursive/mailbagit during indexing
+            # But if somehow we are called directly on an EML in sanitize mode:
+            raise errors.DocFormatUnsupported("Email files must be processed via archive mode (indexing)")
         elif conversion["type"] == "libreoffice":
             doc = await self._convert_libreoffice(input_file, conversion)
         else:
@@ -214,49 +216,6 @@ class DocumentToPixels(DangerzoneConverter):
             await self.write_page_data(rgb_buf)
 
         self.update_progress("Converted document to pixels")
-
-    async def _convert_eml(self, input_file: str) -> fitz.Document:
-        """Convert an EML file to a PDF document using LibreOffice as an intermediate step."""
-        from email import message_from_binary_file
-        from email.policy import default
-        with open(input_file, "rb") as f:
-            msg = message_from_binary_file(f, policy=default)
-        
-        # Extract body
-        body = msg.get_body(preferencelist=('html', 'plain'))
-        if body:
-            content = body.get_content()
-            charset = body.get_charset() or 'utf-8'
-        else:
-            content = ""
-            charset = 'utf-8'
-        
-        html_filename = "/tmp/email.html"
-        with open(html_filename, "w", encoding=charset, errors="replace") as f:
-            f.write(content)
-        
-        self.update_progress("Converting EML to PDF using LibreOffice")
-        args = [
-            "libreoffice",
-            "--headless",
-            "--safe-mode",
-            "--convert-to",
-            "pdf",
-            "--outdir",
-            "/tmp",
-            html_filename,
-        ]
-        await self.run_command(
-            args,
-            error_message="Conversion of EML to PDF with LibreOffice failed",
-        )
-        pdf_filename = "/tmp/email.pdf"
-        if not os.path.exists(pdf_filename):
-            raise errors.LibreofficeFailure()
-        try:
-            return fitz.open(pdf_filename)
-        except (ValueError, fitz.FileDataError):
-            raise errors.DocCorruptedException()
 
     async def _convert_libreoffice(self, input_file: str, conversion: Dict[str, Optional[str]]) -> fitz.Document:
         """Convert a document to PDF using LibreOffice."""
@@ -337,6 +296,12 @@ SUPPORTED_ARCHIVE_MIMES = [
     "application/x-xz",
 ]
 
+SUPPORTED_EMAIL_MIMES = [
+    "message/rfc822",
+    "application/vnd.ms-outlook",
+    "application/mbox",
+]
+
 
 def is_archive(path: str) -> bool:
     try:
@@ -346,32 +311,68 @@ def is_archive(path: str) -> bool:
     return mime_type in SUPPORTED_ARCHIVE_MIMES
 
 
-def _extract_to_dir(current_path: str, current_out: str, max_files: int, counter: List[int]) -> None:
-    """Helper to recursively extract archives to a directory."""
+def is_email(path: str) -> bool:
+    try:
+        mime_type = magic.from_file(path, mime=True)
+    except Exception:
+        mime_type = "application/octet-stream"
+    return mime_type in SUPPORTED_EMAIL_MIMES
+
+
+async def _extract_email(input_path: str, output_dir: str, converter: "DocumentToPixels") -> None:
+    """Extract email body and attachments using mailbagit."""
+    temp_mailbag_out = f"{output_dir}_mailbag_tmp"
+    os.makedirs(temp_mailbag_out, exist_ok=True)
+    
+    args = [
+        "mailbagit",
+        input_path,
+        "--output",
+        temp_mailbag_out,
+        "--derivative",
+        "pdf",
+        "--css",
+        "/dev/null",
+    ]
+    
+    await converter.run_command(
+        args,
+        error_message="mailbagit conversion failed",
+    )
+    
+    # Move relevant items to output_dir
+    for root, dirs, files in os.walk(temp_mailbag_out):
+        for f in files:
+            if f.lower().endswith(".pdf"):
+                shutil.move(os.path.join(root, f), os.path.join(output_dir, "body.pdf"))
+        if "attachments" in dirs:
+            shutil.move(os.path.join(root, "attachments"), os.path.join(output_dir, "attachments"))
+            
+    shutil.rmtree(temp_mailbag_out)
+
+
+async def _extract_recursive_all(input_path: str, output_dir: str, max_files: int, counter: List[int], converter: "DocumentToPixels") -> None:
+    """Helper to recursively extract archives AND emails to a directory."""
     if counter[0] >= max_files:
         return
 
-    if zipfile.is_zipfile(current_path):
-        with zipfile.ZipFile(current_path, "r") as z:
-            z.extractall(current_out)
-    elif py7zr and py7zr.is_7zfile(current_path):
-        with py7zr.SevenZipFile(current_path, mode='r') as z:
-            z.extractall(current_out)
-    elif tarfile.is_tarfile(current_path):
-        with tarfile.open(current_path, "r:*") as t:
-            t.extractall(current_out)
+    if zipfile.is_zipfile(input_path):
+        with zipfile.ZipFile(input_path, "r") as z:
+            z.extractall(output_dir)
+    elif py7zr and py7zr.is_7zfile(input_path):
+        with py7zr.SevenZipFile(input_path, mode='r') as z:
+            z.extractall(output_dir)
+    elif tarfile.is_tarfile(input_path):
+        with tarfile.open(input_path, "r:*") as t:
+            t.extractall(output_dir)
+    elif is_email(input_path):
+        await _extract_email(input_path, output_dir, converter)
     else:
-        # Check if it's a lone compressed file (not a tarball)
-        mime = magic.from_file(current_path, mime=True)
+        # Check if it's a lone compressed file
+        mime = magic.from_file(input_path, mime=True)
         if mime in ["application/gzip", "application/x-bzip2", "application/x-xz"]:
-            # Extract single compressed file
-            # e.g. test.pdf.gz -> test.pdf
-            base = os.path.basename(current_path)
-            # Remove extension
+            base = os.path.basename(input_path)
             out_name = os.path.splitext(base)[0]
-            # If it was .tar.gz, out_name is .tar, which will be handled in recursion if we wanted,
-            # but here we are in a directory.
-            # For simplicity, let's just use shlex or similar? No, just open and read.
             import gzip, bz2, lzma
             if mime == "application/gzip":
                 open_func = gzip.open
@@ -380,39 +381,37 @@ def _extract_to_dir(current_path: str, current_out: str, max_files: int, counter
             else:
                 open_func = lzma.open
             
-            with open_func(current_path, 'rb') as f_in:
-                with open(os.path.join(current_out, out_name), 'wb') as f_out:
+            with open_func(input_path, 'rb') as f_in:
+                with open(os.path.join(output_dir, out_name), 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
         else:
             return
 
-    # Check for nested archives and update counter
-    for root, dirs, files in os.walk(current_out):
+    # Collect items just extracted to recurse if needed
+    items_to_recurse = []
+    for root, dirs, files in os.walk(output_dir):
         for file in files:
-            if counter[0] >= max_files:
-                return
-            file_path = os.path.join(root, file)
+            items_to_recurse.append(os.path.join(root, file))
+
+    for file_path in items_to_recurse:
+        if counter[0] >= max_files:
+            return
+        if is_archive(file_path) or is_email(file_path):
+            sub_out = os.path.join(os.path.dirname(file_path), f"{os.path.basename(file_path)}.extracted")
+            os.makedirs(sub_out, exist_ok=True)
+            await _extract_recursive_all(file_path, sub_out, max_files, counter, converter)
             counter[0] += 1
-            if is_archive(file_path):
-                # Extract to a subfolder
-                sub_out = os.path.join(root, f"{file}.extracted")
-                os.makedirs(sub_out, exist_ok=True)
-                _extract_to_dir(file_path, sub_out, max_files, counter)
 
 
-def extract_recursive(input_path: str, output_dir: str) -> List[str]:
-    """Recursively extract archives."""
-    max_files = 1000  # Basic protection
-    counter = [0]  # Use a list to have a mutable counter across recursion
-
-    _extract_to_dir(input_path, output_dir, max_files, counter)
-
-    # Collect all files that are not directories
+async def extract_recursive(input_path: str, output_dir: str, converter: "DocumentToPixels") -> List[str]:
+    """Recursively extract archives and emails."""
+    max_files = 1000
+    counter = [0]
+    await _extract_recursive_all(input_path, output_dir, max_files, counter, converter)
     extracted_files = []
     for root, dirs, files in os.walk(output_dir):
         for file in files:
             extracted_files.append(os.path.join(root, file))
-
     return extracted_files
 
 
@@ -423,30 +422,27 @@ async def handle_index(output_dir: Optional[str] = None) -> None:
     except EOFError:
         sys.exit(1)
 
-    temp_input = "/tmp/index_input"
+    random_id = secrets.token_hex(4)
+    temp_input = f"/tmp/dz-input-{random_id}"
     with open(temp_input, "wb") as f:
         f.write(data)
 
-    if output_dir is None:
-        output_dir = f"/tmp/dz-extracted-{secrets.token_hex(4)}"
-
-    if is_archive(temp_input):
+    converter = DocumentToPixels()
+    if is_archive(temp_input) or is_email(temp_input):
+        if output_dir is None:
+            output_dir = f"/tmp/dz-extracted-{random_id}"
         os.makedirs(output_dir, exist_ok=True)
-        files = extract_recursive(temp_input, output_dir)
+        files = await extract_recursive(temp_input, output_dir, converter)
         await DocumentToPixels.write_int(len(files))
         for f in files:
             f_bytes = f.encode()
             await DocumentToPixels.write_int(len(f_bytes))
             await DocumentToPixels.write_bytes(f_bytes)
     else:
-        # It's a single file
-        # If output_dir doesn't exist, we'll use it as the filename
-        parent = os.path.dirname(output_dir)
-        if parent:
-            os.makedirs(parent, exist_ok=True)
-        shutil.move(temp_input, output_dir)
+        # It's a single file. Protocol: report 1 file, name does NOT start with /
+        # We report it as 'tmp/dz-input-xxxx'
         await DocumentToPixels.write_int(1)
-        f_bytes = output_dir.encode()
+        f_bytes = temp_input.lstrip("/").encode()
         await DocumentToPixels.write_int(len(f_bytes))
         await DocumentToPixels.write_bytes(f_bytes)
 

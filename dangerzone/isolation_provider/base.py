@@ -478,15 +478,52 @@ class IsolationProvider(ABC):
         if n_files == 0:
             raise errors.DocCorruptedException("Archive is empty")
 
-        safe_doc = fitz.Document()
+        # Protocol: if first file starts with /, it's an archive
+        is_archive_mode = filenames[0].startswith("/")
 
-        for i, filename in enumerate(filenames):
-            self._convert_file(document, filename, ocr_lang, safe_doc, i, n_files)
+        if not is_archive_mode:
+            # Single file mode (existing behavior)
+            safe_doc = fitz.Document()
+            self._convert_file(document, filenames[0], ocr_lang, safe_doc, 0, 1)
+            # Saving it with a different name first, because PyMuPDF cannot handle
+            # non-Unicode chars.
+            safe_doc.save(document.sanitized_output_filename)
+            os.replace(document.sanitized_output_filename, document.output_filename)
+        else:
+            # Archive mode: create a directory {name}-safe/ and put safe PDFs in it
+            # Determine base path in container to calculate relative paths
+            common_base = os.path.commonpath(filenames)
+            
+            # Host output directory
+            input_base = os.path.splitext(document.input_filename)[0]
+            output_dir = f"{input_base}-safe"
+            os.makedirs(output_dir, exist_ok=True)
 
-        # Saving it with a different name first, because PyMuPDF cannot handle
-        # non-Unicode chars.
-        safe_doc.save(document.sanitized_output_filename)
-        os.replace(document.sanitized_output_filename, document.output_filename)
+            for i, filename in enumerate(filenames):
+                # Calculate relative path
+                rel_path = os.path.relpath(filename, common_base)
+                # Ensure no traversal (just in case)
+                rel_path = os.path.normpath(rel_path)
+                if rel_path.startswith("..") or os.path.isabs(rel_path):
+                    log.warning(f"Skipping potentially dangerous path: {filename}")
+                    continue
+
+                # Host target file
+                target_filename = os.path.join(output_dir, rel_path)
+                # Ensure it ends in .pdf
+                if not target_filename.lower().endswith(".pdf"):
+                    target_filename += ".pdf"
+                
+                os.makedirs(os.path.dirname(target_filename), exist_ok=True)
+
+                safe_doc = fitz.Document()
+                self._convert_file(document, filename, ocr_lang, safe_doc, i, n_files)
+                
+                # Sanitize target filename for PyMuPDF
+                sanitized_target = replace_control_chars(target_filename)
+                safe_doc.save(sanitized_target)
+                if sanitized_target != target_filename:
+                    os.replace(sanitized_target, target_filename)
 
         text = "Successfully converted document"
         self.print_progress(document, False, text, 100)

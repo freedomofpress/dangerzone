@@ -34,7 +34,8 @@ RUN \
   apt-get install -y --no-install-recommends \
       python3 python3-fitz libreoffice-nogui libreoffice-java-common \
       python3-magic default-jre-headless fonts-noto-cjk fonts-dejavu \
-      runsc unzip && \
+      runsc unzip python3-pip && \
+  pip3 install --break-system-packages --ignore-installed mailbagit[all] && \
   : "Clean up for improving reproducibility (optional)" && \
   rm -rf /var/cache/fontconfig/ && \
   rm -rf /etc/ssl/certs/java/cacerts && \

@@ -66,9 +66,9 @@ class Dummy(IsolationProvider):
 
     def start_doc_to_pixels_sandbox(self, document: Document) -> subprocess.Popen:
         # For dummy, we can just start a sleep process or another dummy process.
-        # We use a finite sleep so that tests don't hang for too long if wait() is called.
+        # We use a long sleep so that it stays up during the multiple exec calls.
         return subprocess.Popen(
-            ["sleep", "10"],
+            ["sleep", "1000"],
             stdin=subprocess.PIPE,
             start_new_session=True,
         )
@@ -96,7 +96,8 @@ class Dummy(IsolationProvider):
     def terminate_doc_to_pixels_sandbox(
         self, document: Document, p: subprocess.Popen
     ) -> None:
-        terminate_process_group(p)
+        from .base import kill_process_group
+        kill_process_group(p)
 
     def get_max_parallel_conversions(self) -> int:
         return 1

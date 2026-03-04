@@ -98,6 +98,15 @@ Create a .deb:
 ./install/linux/build-deb.py
 ```
 
+This builds the `dangerzone` package, which doesn't contain the `container.tar`
+image (it will be downloaded on the first run).
+
+To build the `dangerzone-full` package with the container bundled:
+
+```sh
+./install/linux/build-deb.py --full
+```
+
 ## Fedora
 
 Install dependencies:
@@ -162,6 +171,15 @@ Create a .rpm:
 
 ```sh
 ./install/linux/build-rpm.py
+```
+
+This builds the `dangerzone` package, which doesn't contain the `container.tar`
+image (it will be downloaded on the first run).
+
+To build the `dangerzone-full` package with the container bundled:
+
+```sh
+./install/linux/build-rpm.py --full
 ```
 
 ## Qubes OS

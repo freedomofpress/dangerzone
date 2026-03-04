@@ -33,6 +33,23 @@ documentation ↗️</a>.</p>
 OK_TEXT = "Yes, enable sandbox updates"
 CANCEL_TEXT = "No, disable sandbox updates"
 
+MSG_CONFIRM_DOWNLOAD_CONTAINER = """\
+<p>
+    <b>Enable sandbox download?</b>
+</p>
+
+<p>Dangerzone needs to download the sandbox from the internet to convert documents.</p>
+
+<p>If you enable this option, Dangerzone will download the sandbox now and
+periodically check for updates.</p>
+<p>This is <b>required</b> for Dangerzone to work. If you prefer an offline install,
+you can download the full version with an embedded container.</p>
+
+<p>If you need to run Dangerzone in an air-gapped environment, see <a href="https://github.com/freedomofpress/dangerzone/blob/main/docs/developer/independent-container-updates.md#installing-image-updates-to-air-gapped-environments">our documentation</a>.</p>
+"""
+OK_TEXT_DOWNLOAD = "Yes, download sandbox"
+CANCEL_TEXT_DOWNLOAD = "Quit Dangerzone"
+
 
 class UpdateCheckPrompt(Question):
     """The prompt that asks the users if they want to enable update checks."""
@@ -61,19 +78,36 @@ class UpdateCheckPrompt(Question):
         return buttons_layout
 
 
-def prompt_for_checks(dangerzone: DangerzoneGui) -> Optional[bool]:
-    """Check for Dangerzone updates.
+def prompt_for_checks(
+    dangerzone: DangerzoneGui, download_required: bool = False
+) -> Optional[bool]:
+    """Prompt the user to enable update checks.
 
-    This function is responsible for asking the user if they want to enable
-    update checks or not, and then performing the update check.
+    Args:
+        dangerzone: The DangerzoneGui instance.
+        download_required: If True, no container is available and download is required.
+
+    Returns:
+        True if the user accepts enabling updates
+        False if the user declines
+        None if the user pressed X (dismissed without choosing)
     """
+    if download_required:
+        message = MSG_CONFIRM_DOWNLOAD_CONTAINER
+        ok_text = OK_TEXT_DOWNLOAD
+        cancel_text = CANCEL_TEXT_DOWNLOAD
+        log.debug("Prompting the user for container download (no container available)")
+    else:
+        message = MSG_CONFIRM_UPDATE_CHECKS
+        ok_text = OK_TEXT
+        cancel_text = CANCEL_TEXT
+        log.debug("Prompting the user for update checks")
 
-    log.debug("Prompting the user for update checks")
     prompt = UpdateCheckPrompt(
         dangerzone,
-        message=MSG_CONFIRM_UPDATE_CHECKS,
-        ok_text=OK_TEXT,
-        cancel_text=CANCEL_TEXT,
+        message=message,
+        ok_text=ok_text,
+        cancel_text=cancel_text,
     )
     check = prompt.launch()
     if check is not None and not prompt.x_pressed:

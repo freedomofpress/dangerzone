@@ -62,7 +62,7 @@ class Qubes(IsolationProvider):
     ) -> subprocess.Popen:
         raise NotImplementedError("start_exec is not implemented for Qubes")
 
-    def terminate_doc_to_pixels_proc(
+    def terminate_doc_to_pixels_sandbox(
         self, document: Document, p: subprocess.Popen
     ) -> None:
         """Terminate a spawned disposable qube.

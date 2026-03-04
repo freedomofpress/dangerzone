@@ -29,7 +29,7 @@ class IsolationProviderTest:
         provider.progress_callback = mocker.MagicMock()
         doc = Document(pdf_11k_pages)
 
-        p = provider.start_doc_to_pixels_proc(doc)
+        p = provider.start_doc_to_pixels_sandbox(doc)
         with pytest.raises(errors.ConverterProcException):
             provider.convert_with_proc(doc, None, p)
             assert provider.get_proc_exception(p) == errors.MaxPagesException
@@ -46,7 +46,7 @@ class IsolationProviderTest:
             "dangerzone.conversion.errors.MAX_PAGES", 1
         )  # sample_doc has 4 pages > 1
         doc = Document(sample_doc)
-        p = provider.start_doc_to_pixels_proc(doc)
+        p = provider.start_doc_to_pixels_sandbox(doc)
         with pytest.raises(errors.MaxPagesException):
             provider.convert_with_proc(doc, None, p)
 
@@ -60,12 +60,12 @@ class IsolationProviderTest:
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
         doc = Document(sample_bad_width)
-        p = provider.start_doc_to_pixels_proc(doc)
+        p = provider.start_doc_to_pixels_sandbox(doc)
         with pytest.raises(errors.MaxPageWidthException):
             provider.convert_with_proc(doc, None, p)
 
         doc = Document(sample_bad_height)
-        p = provider.start_doc_to_pixels_proc(doc)
+        p = provider.start_doc_to_pixels_sandbox(doc)
         with pytest.raises(errors.MaxPageHeightException):
             provider.convert_with_proc(doc, None, p)
 
@@ -93,10 +93,10 @@ class IsolationProviderTermination:
         doc = Document()
         provider.progress_callback = mocker.MagicMock()
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
-        terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
+        terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_sandbox")
         popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
 
-        with provider.doc_to_pixels_proc(doc) as proc:
+        with provider.doc_to_pixels_sandbox(doc) as proc:
             assert proc.stdin
             proc.stdin.close()
             proc.wait(TIMEOUT_STARTUP)
@@ -116,10 +116,10 @@ class IsolationProviderTermination:
         doc = Document()
         provider.progress_callback = mocker.MagicMock()
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
-        terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
+        terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_sandbox")
         popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
 
-        with provider.doc_to_pixels_proc(doc, timeout_grace=TIMEOUT_GRACE) as proc:
+        with provider.doc_to_pixels_sandbox(doc, timeout_grace=TIMEOUT_GRACE) as proc:
             # We purposefully do nothing here, so that the process remains running.
             pass
 
@@ -140,11 +140,11 @@ class IsolationProviderTermination:
         # We mock the terminate_doc_to_pixels_proc() method, so that the process must be
         # killed.
         terminate_proc_mock = mocker.patch.object(
-            provider, "terminate_doc_to_pixels_proc", return_value=None
+            provider, "terminate_doc_to_pixels_sandbox", return_value=None
         )
         kill_pg_spy = mocker.spy(base, "kill_process_group")
 
-        with provider.doc_to_pixels_proc(doc, timeout_grace=0) as proc:
+        with provider.doc_to_pixels_sandbox(doc, timeout_grace=0) as proc:
             pass
 
         get_proc_exception_spy.assert_not_called()
@@ -161,18 +161,18 @@ class IsolationProviderTermination:
         # block the operation.
         doc = Document()
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
-        # We mock both the terminate_doc_to_pixels_proc() method, and our kill
+        # We mock both the terminate_doc_to_pixels_sandbox() method, and our kill
         # invocation, so that the process will seem as unkillable.
-        terminate_proc_orig = provider.terminate_doc_to_pixels_proc
+        terminate_proc_orig = provider.terminate_doc_to_pixels_sandbox
         terminate_proc_mock = mocker.patch.object(
-            provider, "terminate_doc_to_pixels_proc", return_value=None
+            provider, "terminate_doc_to_pixels_sandbox", return_value=None
         )
         kill_pg_orig = base.kill_process_group
         kill_pg_mock = mocker.patch(
             "dangerzone.isolation_provider.base.kill_process_group", return_value=None
         )
 
-        with provider.doc_to_pixels_proc(doc, timeout_grace=0, timeout_force=0) as proc:
+        with provider.doc_to_pixels_sandbox(doc, timeout_grace=0, timeout_force=0) as proc:
             pass
 
         get_proc_exception_spy.assert_not_called()
@@ -181,12 +181,12 @@ class IsolationProviderTermination:
         assert proc.poll() is None
 
         # Reset the function to the original state.
-        provider.terminate_doc_to_pixels_proc = terminate_proc_orig  # type: ignore [method-assign]
+        provider.terminate_doc_to_pixels_sandbox = terminate_proc_orig  # type: ignore [method-assign]
         base.kill_process_group = kill_pg_orig
 
         # Really kill the spawned process, so that it doesn't linger after the tests
         # complete.
-        provider.ensure_stop_doc_to_pixels_proc(doc, proc)
+        provider.ensure_stop_doc_to_pixels_sandbox(doc, proc)
         assert proc.poll() is not None
 
     def test_failed(
@@ -199,11 +199,11 @@ class IsolationProviderTermination:
         doc = Document()
         provider.progress_callback = mocker.MagicMock()
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
-        terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
+        terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_sandbox")
         popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
 
         with pytest.raises(errors.DocFormatUnsupported):
-            with provider.doc_to_pixels_proc(doc, timeout_exception=0) as proc:
+            with provider.doc_to_pixels_sandbox(doc, timeout_exception=0) as proc:
                 assert proc.stdin
                 # Sending an invalid file to the conversion process should report it as
                 # an unsupported format.
@@ -230,11 +230,11 @@ class IsolationProviderTermination:
         doc = Document()
         provider.progress_callback = mocker.MagicMock()
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
-        terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
+        terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_sandbox")
         popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
 
         with pytest.raises(errors.UnexpectedConversionError):
-            with provider.doc_to_pixels_proc(doc, timeout_exception=0) as proc:
+            with provider.doc_to_pixels_sandbox(doc, timeout_exception=0) as proc:
                 raise errors.ConverterProcException
 
         get_proc_exception_spy.assert_called()

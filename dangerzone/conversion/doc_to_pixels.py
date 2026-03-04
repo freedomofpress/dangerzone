@@ -8,6 +8,11 @@ import tarfile
 import zipfile
 from typing import Dict, List, Optional
 
+try:
+    import py7zr
+except ImportError:
+    py7zr = None
+
 # XXX: PyMUPDF logs to stdout by default [1]. The PyMuPDF devs provide a way [2] to log to
 # stderr, but it's based on environment variables. These envvars are consulted at import
 # time [3], so we have to set them here, before we import `fitz`.
@@ -164,6 +169,8 @@ class DocumentToPixels(DangerzoneConverter):
             # .tif
             "image/tiff": {"type": "PyMuPDF"},
             "image/x-tiff": {"type": "PyMuPDF"},
+            # .eml
+            "message/rfc822": {"type": "eml"},
         }
 
         # Detect MIME type
@@ -180,42 +187,10 @@ class DocumentToPixels(DangerzoneConverter):
                 doc = fitz.open(input_file, filetype=mime_type)
             except (ValueError, fitz.FileDataError):
                 raise errors.DocCorruptedException()
+        elif conversion["type"] == "eml":
+            doc = await self._convert_eml(input_file)
         elif conversion["type"] == "libreoffice":
-            libreoffice_ext = conversion.get("libreoffice_ext", None)
-            # Disable conversion for HWP/HWPX on specific platforms. See:
-            #
-            #     https://github.com/freedomofpress/dangerzone/issues/494
-            #     https://github.com/freedomofpress/dangerzone/issues/498
-            if libreoffice_ext == "h2orestart.oxt" and running_on_qubes():
-                raise errors.DocFormatUnsupportedHWPQubes()
-            if libreoffice_ext:
-                await self.install_libreoffice_ext(libreoffice_ext)
-            self.update_progress("Converting to PDF using LibreOffice")
-            args = [
-                "libreoffice",
-                "--headless",
-                "--safe-mode",
-                "--convert-to",
-                "pdf",
-                "--outdir",
-                "/tmp",
-                input_file,
-            ]
-            await self.run_command(
-                args,
-                error_message="Conversion to PDF with LibreOffice failed",
-            )
-            pdf_filename = f"{input_file}.pdf"
-            # XXX: Sometimes, LibreOffice can fail with status code 0. So, we need to
-            # always check if the file exists. See:
-            #
-            #     https://github.com/freedomofpress/dangerzone/issues/494
-            if not os.path.exists(pdf_filename):
-                raise errors.LibreofficeFailure()
-            try:
-                doc = fitz.open(pdf_filename)
-            except (ValueError, fitz.FileDataError):
-                raise errors.DocCorruptedException()
+            doc = await self._convert_libreoffice(input_file, conversion)
         else:
             # NOTE: This should never be reached
             raise errors.DocFormatUnsupported()
@@ -239,6 +214,92 @@ class DocumentToPixels(DangerzoneConverter):
             await self.write_page_data(rgb_buf)
 
         self.update_progress("Converted document to pixels")
+
+    async def _convert_eml(self, input_file: str) -> fitz.Document:
+        """Convert an EML file to a PDF document using LibreOffice as an intermediate step."""
+        from email import message_from_binary_file
+        from email.policy import default
+        with open(input_file, "rb") as f:
+            msg = message_from_binary_file(f, policy=default)
+        
+        # Extract body
+        body = msg.get_body(preferencelist=('html', 'plain'))
+        if body:
+            content = body.get_content()
+            charset = body.get_charset() or 'utf-8'
+        else:
+            content = ""
+            charset = 'utf-8'
+        
+        html_filename = "/tmp/email.html"
+        with open(html_filename, "w", encoding=charset, errors="replace") as f:
+            f.write(content)
+        
+        self.update_progress("Converting EML to PDF using LibreOffice")
+        args = [
+            "libreoffice",
+            "--headless",
+            "--safe-mode",
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            "/tmp",
+            html_filename,
+        ]
+        await self.run_command(
+            args,
+            error_message="Conversion of EML to PDF with LibreOffice failed",
+        )
+        pdf_filename = "/tmp/email.pdf"
+        if not os.path.exists(pdf_filename):
+            raise errors.LibreofficeFailure()
+        try:
+            return fitz.open(pdf_filename)
+        except (ValueError, fitz.FileDataError):
+            raise errors.DocCorruptedException()
+
+    async def _convert_libreoffice(self, input_file: str, conversion: Dict[str, Optional[str]]) -> fitz.Document:
+        """Convert a document to PDF using LibreOffice."""
+        libreoffice_ext = conversion.get("libreoffice_ext", None)
+        # Disable conversion for HWP/HWPX on specific platforms. See:
+        #
+        #     https://github.com/freedomofpress/dangerzone/issues/494
+        #     https://github.com/freedomofpress/dangerzone/issues/498
+        if libreoffice_ext == "h2orestart.oxt" and running_on_qubes():
+            raise errors.DocFormatUnsupportedHWPQubes()
+        if libreoffice_ext:
+            await self.install_libreoffice_ext(libreoffice_ext)
+        self.update_progress("Converting to PDF using LibreOffice")
+        args = [
+            "libreoffice",
+            "--headless",
+            "--safe-mode",
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            "/tmp",
+            input_file,
+        ]
+        await self.run_command(
+            args,
+            error_message="Conversion to PDF with LibreOffice failed",
+        )
+        # LibreOffice outputs to /tmp/<basename>.pdf
+        base = os.path.basename(input_file)
+        # If input_file has no extension, LibreOffice still adds .pdf
+        # If it has extension, it replaces it.
+        name_part = os.path.splitext(base)[0]
+        pdf_filename = os.path.join("/tmp", f"{name_part}.pdf")
+        # XXX: Sometimes, LibreOffice can fail with status code 0. So, we need to
+        # always check if the file exists. See:
+        #
+        #     https://github.com/freedomofpress/dangerzone/issues/494
+        if not os.path.exists(pdf_filename):
+            raise errors.LibreofficeFailure()
+        try:
+            return fitz.open(pdf_filename)
+        except (ValueError, fitz.FileDataError):
+            raise errors.DocCorruptedException()
 
     async def install_libreoffice_ext(self, libreoffice_ext: str) -> None:
         self.update_progress(f"Installing LibreOffice extension '{libreoffice_ext}'")
@@ -279,10 +340,9 @@ SUPPORTED_ARCHIVE_MIMES = [
 
 def is_archive(path: str) -> bool:
     try:
-        mime = magic.Magic(mime=True)
-        mime_type = mime.from_file(path)
-    except TypeError:
-        mime_type = magic.detect_from_filename(path).mime_type
+        mime_type = magic.from_file(path, mime=True)
+    except Exception:
+        mime_type = "application/octet-stream"
     return mime_type in SUPPORTED_ARCHIVE_MIMES
 
 
@@ -294,11 +354,37 @@ def _extract_to_dir(current_path: str, current_out: str, max_files: int, counter
     if zipfile.is_zipfile(current_path):
         with zipfile.ZipFile(current_path, "r") as z:
             z.extractall(current_out)
+    elif py7zr and py7zr.is_7zfile(current_path):
+        with py7zr.SevenZipFile(current_path, mode='r') as z:
+            z.extractall(current_out)
     elif tarfile.is_tarfile(current_path):
         with tarfile.open(current_path, "r:*") as t:
             t.extractall(current_out)
     else:
-        return
+        # Check if it's a lone compressed file (not a tarball)
+        mime = magic.from_file(current_path, mime=True)
+        if mime in ["application/gzip", "application/x-bzip2", "application/x-xz"]:
+            # Extract single compressed file
+            # e.g. test.pdf.gz -> test.pdf
+            base = os.path.basename(current_path)
+            # Remove extension
+            out_name = os.path.splitext(base)[0]
+            # If it was .tar.gz, out_name is .tar, which will be handled in recursion if we wanted,
+            # but here we are in a directory.
+            # For simplicity, let's just use shlex or similar? No, just open and read.
+            import gzip, bz2, lzma
+            if mime == "application/gzip":
+                open_func = gzip.open
+            elif mime == "application/x-bzip2":
+                open_func = bz2.open
+            else:
+                open_func = lzma.open
+            
+            with open_func(current_path, 'rb') as f_in:
+                with open(os.path.join(current_out, out_name), 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+        else:
+            return
 
     # Check for nested archives and update counter
     for root, dirs, files in os.walk(current_out):
@@ -378,19 +464,21 @@ async def handle_sanitize(input_file: Optional[str] = None) -> None:
         with open(input_file, "wb") as f:
             f.write(data)
 
+    exit_code = 0
+    converter = DocumentToPixels()
     try:
-        converter = DocumentToPixels()
         await converter.convert(input_file)
     except errors.ConversionException as e:
         await DocumentToPixels.write_bytes(str(e).encode(), file=sys.stderr)
-        sys.exit(e.error_code)
+        exit_code = e.error_code
     except Exception as e:
         await DocumentToPixels.write_bytes(str(e).encode(), file=sys.stderr)
-        error_code = errors.UnexpectedConversionError.error_code
-        sys.exit(error_code)
+        exit_code = errors.UnexpectedConversionError.error_code
 
     # Write debug information
     await DocumentToPixels.write_bytes(converter.captured_output, file=sys.stderr)
+    if exit_code != 0:
+        sys.exit(exit_code)
 
 
 async def main() -> None:

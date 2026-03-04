@@ -136,6 +136,43 @@ class Container(IsolationProvider):
         name = self.doc_to_pixels_container_name(document)
         return self.exec_container(command, name=name)
 
+    def _wait_for_container(self, name: str, timeout: int = 30) -> None:
+        """Wait for the container to be in 'running' state and runsc to be ready."""
+        import time
+
+        podman = container_utils.init_podman_command()
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            # 1. Check podman state
+            try:
+                state = podman.run(
+                    ["inspect", name, "--format", "{{.State.Status}}"],
+                    check=False,
+                )
+                if isinstance(state, str) and state.strip() == "running":
+                    # 2. Check if runsc is ready by running a no-op command
+                    runsc_cmd = [
+                        "exec",
+                        name,
+                        "/usr/bin/runsc",
+                        "--root=/home/dangerzone/.containers",
+                        "exec",
+                        "dangerzone",
+                        "/usr/bin/true",
+                    ]
+                    # We use check=False to avoid noisy logs if it fails
+                    proc = podman.run(runsc_cmd, check=False)
+                    if (
+                        proc == ""
+                    ):  # Successful run of /usr/bin/true via podman.run(..., wait=True) returns empty string stdout
+                        return
+            except CommandError:
+                pass
+            time.sleep(0.1)
+        raise errors.ContainerException(
+            f"Container '{name}' or runsc did not start within {timeout}s"
+        )
+
     def start_exec(
         self,
         document: Document,
@@ -143,6 +180,10 @@ class Container(IsolationProvider):
         stdin: Optional[int] = subprocess.PIPE,
     ) -> subprocess.Popen:
         container_name = self.doc_to_pixels_container_name(document)
+
+        # Ensure container is ready before exec
+        self._wait_for_container(container_name)
+
         podman = container_utils.init_podman_command()
 
         # Nested exec: podman exec -> runsc exec
@@ -170,7 +211,7 @@ class Container(IsolationProvider):
         assert isinstance(proc, subprocess.Popen)
         return proc
 
-    def terminate_doc_to_pixels_proc(
+    def terminate_doc_to_pixels_sandbox(
         self, document: Document, p: subprocess.Popen
     ) -> None:
         # There are two steps to gracefully terminate a conversion process:
@@ -188,10 +229,10 @@ class Container(IsolationProvider):
         container_utils.kill_container(self.doc_to_pixels_container_name(document))
         terminate_process_group(p)
 
-    def ensure_stop_doc_to_pixels_proc(  # type: ignore [no-untyped-def]
+    def ensure_stop_doc_to_pixels_sandbox(  # type: ignore [no-untyped-def]
         self, document: Document, *args, **kwargs
     ) -> None:
-        super().ensure_stop_doc_to_pixels_proc(document, *args, **kwargs)
+        super().ensure_stop_doc_to_pixels_sandbox(document, *args, **kwargs)
 
         # Check if the container no longer exists, either because we successfully killed
         # it, or because it exited on its own. We operate under the assumption that

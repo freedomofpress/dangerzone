@@ -23,7 +23,7 @@ elif os.environ.get("DUMMY_CONVERSION", False):
 class QubesWait(Qubes):
     """Qubes isolation provider that blocks until the disposable qube has started."""
 
-    def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
+    def start_doc_to_pixels_sandbox(self, document: Document) -> subprocess.Popen:
         # Check every 100ms if the disposable qube has started. Qubes gives us no
         # way to figure this out, but `qrexec-client-vm` has an interesting
         # property. It will start a vchan server **only** once the disposable qube
@@ -35,7 +35,7 @@ class QubesWait(Qubes):
         # since it's test code, we can live with it.
         #
         # [1]: https://www.qubes-os.org/doc/qrexec-internals/#domx-invoke-execution-of-qubes-service-qubesservice-in-domy
-        proc = super().start_doc_to_pixels_proc(document)
+        proc = super().start_doc_to_pixels_sandbox(document)
         for i in range(300):
             for p in pathlib.Path(f"/proc/{proc.pid}/fd").iterdir():
                 if str(p.resolve()).startswith("/dev/xen"):

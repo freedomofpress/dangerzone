@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
-from typing import IO, Callable, Iterator, Optional, List
+from typing import IO, Callable, Iterator, List, Optional
 
 import fitz
 from colorama import Fore, Style
@@ -127,6 +127,54 @@ def _stream_stderr(process_stderr: IO[bytes], stderr_buf: IO[bytes]) -> None:
         log.debug(f"Stderr stream closed: {e}")
 
 
+def _drain_ocr_futures(
+    ocr_futures: deque,
+    safe_doc: fitz.Document,
+    counter: List[int],
+    n_pages: int,
+    document: Document,
+    print_progress: Callable,
+    file_info: Optional[tuple] = None,
+    block_until_below: Optional[int] = None,
+) -> None:
+    """
+    Collect completed OCR pages (from the front of the queue)
+    and append them to the resulting safe_doc.
+
+    If block_until_below is set, wait on futures until the
+    queue size drops below that threshold.
+    """
+    while ocr_futures:
+        if block_until_below is not None and len(ocr_futures) <= block_until_below:
+            break
+        _, future = ocr_futures[0]
+        if not future.done():
+            if block_until_below is None:
+                break  # non-blocking: stop at first incomplete
+            future.result()  # blocking: wait for the future to complete
+        _, future = ocr_futures.popleft()
+        page_pdf_bytes = future.result()
+        page_doc = fitz.open("pdf", page_pdf_bytes)
+        safe_doc.insert_pdf(page_doc)
+        counter[0] += 1
+        ocr_page_num = counter[0]
+
+        if file_info:
+            file_index, total_files, file_step, base_percentage, display_filename = (
+                file_info
+            )
+            text = (
+                f"Converted file {file_index + 1}/{total_files} ({display_filename}), "
+                f"page {ocr_page_num}/{n_pages} to searchable PDF"
+            )
+            page_percentage = (ocr_page_num / n_pages) * file_step
+            print_progress(document, False, text, base_percentage + page_percentage)
+        else:
+            ocr_percentage = (ocr_page_num / n_pages) * 100
+            text = f"Converted page {ocr_page_num}/{n_pages} to searchable PDF"
+            print_progress(document, False, text, ocr_percentage)
+
+
 class IsolationProvider(ABC):
     """
     Abstracts an isolation provider
@@ -192,25 +240,6 @@ class IsolationProvider(ABC):
     def start_exec(
         self,
         document: Document,
-<<<<<<< HEAD
-        ocr_lang: Optional[str],
-        p: subprocess.Popen,
-    ) -> None:
-        percentage = 0.0
-        # Write the content of the to-be-converted document to the stdin of
-        # the conversion process.
-        with open(document.input_filename, "rb") as f:
-            try:
-                assert p.stdin is not None
-                p.stdin.write(f.read())
-                p.stdin.close()
-            except BrokenPipeError:
-                raise errors.ConverterProcException()
-
-            # And read the stdout, which should contain the pixel buffers
-            assert p.stdout
-            n_pages = read_int(p.stdout)
-=======
         command: List[str],
         stdin: Optional[int] = subprocess.PIPE,
     ) -> subprocess.Popen:
@@ -297,7 +326,7 @@ class IsolationProvider(ABC):
     ) -> None:
         """Sanitize a single file from the indexed list and add its pages to safe_doc."""
         display_filename = replace_control_chars(os.path.basename(filename))
-        log.debug(f"Sanitizing file {file_index+1}/{total_files}: {filename}")
+        log.debug(f"Sanitizing file {file_index + 1}/{total_files}: {filename}")
 
         with self.run_exec(document, ["sanitize", filename]) as sanitize_proc:
             assert sanitize_proc.stdout
@@ -309,7 +338,6 @@ class IsolationProvider(ABC):
                     raise errors.exception_from_error_code(ret)
                 raise
 
->>>>>>> 6ea5f019 (WIP for archives)
             if n_pages == 0 or n_pages > errors.MAX_PAGES:
                 raise errors.MaxPagesException()
 
@@ -317,7 +345,6 @@ class IsolationProvider(ABC):
             file_step = 100 / total_files
             base_percentage = file_index * file_step
 
-<<<<<<< HEAD
             # If we are doing OCR, start a pool of workers to do it in parallel
             if ocr_lang:
                 max_workers = max(1, round(mp.cpu_count() / 2))
@@ -325,72 +352,22 @@ class IsolationProvider(ABC):
                     max_workers=max_workers,
                     initializer=_ocr_pool_initializer,
                     mp_context=mp.get_context("spawn"),
-=======
-            for page in range(1, n_pages + 1):
-                searchable = "searchable " if ocr_lang else ""
-                text = (
-                    f"Converting file {file_index+1}/{total_files} ({display_filename}), "
-                    f"page {page}/{n_pages} from pixels to {searchable}PDF"
                 )
-
-                # Page percentage within the file
-                page_percentage = (page - 1) * (file_step / n_pages)
-                self.print_progress(
-                    document, False, text, base_percentage + page_percentage
-                )
-
-                width = read_int(sanitize_proc.stdout)
-                height = read_int(sanitize_proc.stdout)
-                if not (1 <= width <= errors.MAX_PAGE_WIDTH):
-                    raise errors.MaxPageWidthException()
-                if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
-                    raise errors.MaxPageHeightException()
-
-                num_pixels = width * height * 3  # three color channels
-                untrusted_pixels = read_bytes(
-                    sanitize_proc.stdout,
-                    num_pixels,
->>>>>>> 6ea5f019 (WIP for archives)
-                )
-
                 # Pre-compute tessdata path to pass to workers (they can't access
                 # sys.dangerzone_dev which is set only in the main process)
                 tessdata_dir = str(get_tessdata_dir())
                 ocr_futures: deque = deque()  # stores (page_num, future) tuples
-                ocr_page_num = 0  # tracks how many pages have completed OCR
+                ocr_page_num_counter = [0]  # tracks how many pages have completed OCR
+                file_info = (
+                    file_index,
+                    total_files,
+                    file_step,
+                    base_percentage,
+                    display_filename,
+                )
             else:
                 ocr_pool = None
                 tessdata_dir = None
-
-<<<<<<< HEAD
-            def drain_ocr_futures(block_until_below: Optional[int] = None) -> None:
-                """
-                Collect completed OCR pages (from the front of the queue)
-                and append them to the resulting safe_doc.
-
-                If block_until_below is set, wait on futures until the
-                queue size drops below that threshold.
-                """
-                nonlocal ocr_page_num
-                while ocr_futures:
-                    if (
-                        block_until_below is not None
-                        and len(ocr_futures) <= block_until_below
-                    ):
-                        break
-                    _, future = ocr_futures[0]
-                    if not future.done():
-                        if block_until_below is None:
-                            break  # non-blocking: stop at first incomplete
-                        future.result()  # blocking: wait for the future to complete
-                    page, future = ocr_futures.popleft()
-                    page_pdf_bytes = future.result()
-                    page_doc = fitz.open("pdf", page_pdf_bytes)
-                    safe_doc.insert_pdf(page_doc)
-                    ocr_page_num += 1
-                    ocr_percentage = (ocr_page_num / n_pages) * 100
-                    text = f"Converted page {ocr_page_num}/{n_pages} to searchable PDF"
-                    self.print_progress(document, False, text, ocr_percentage)
 
             try:
                 for page in range(1, n_pages + 1):
@@ -399,11 +376,20 @@ class IsolationProvider(ABC):
                     # Wait until the queue drains to the number of workers
                     # before resuming.
                     if ocr_lang and len(ocr_futures) >= 2 * max_workers:
-                        drain_ocr_futures(block_until_below=max_workers)
+                        _drain_ocr_futures(
+                            ocr_futures,
+                            safe_doc,
+                            ocr_page_num_counter,
+                            n_pages,
+                            document,
+                            self.print_progress,
+                            file_info=file_info,
+                            block_until_below=max_workers,
+                        )
 
                     # Consume each page of the rasterizer's output...
-                    width = read_int(p.stdout)
-                    height = read_int(p.stdout)
+                    width = read_int(sanitize_proc.stdout)
+                    height = read_int(sanitize_proc.stdout)
                     if not (1 <= width <= errors.MAX_PAGE_WIDTH):
                         raise errors.MaxPageWidthException()
                     if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
@@ -411,7 +397,7 @@ class IsolationProvider(ABC):
 
                     num_pixels = width * height * 3  # three color channels
                     untrusted_pixels = read_bytes(
-                        p.stdout,
+                        sanitize_proc.stdout,
                         num_pixels,
                     )
 
@@ -430,7 +416,15 @@ class IsolationProvider(ABC):
                         ocr_futures.append((page, future))
 
                         # Non-blocking drain of any completed futures
-                        drain_ocr_futures()
+                        _drain_ocr_futures(
+                            ocr_futures,
+                            safe_doc,
+                            ocr_page_num_counter,
+                            n_pages,
+                            document,
+                            self.print_progress,
+                            file_info=file_info,
+                        )
                     else:
                         # ... Or process immediately (if no OCR is requested)
                         page_pdf = self.pixels_to_pdf_page(
@@ -439,23 +433,38 @@ class IsolationProvider(ABC):
                             height,
                         )
                         safe_doc.insert_pdf(page_pdf)
-                        percentage += step
-                        text = f"Converted page {page}/{n_pages} to PDF"
-                        self.print_progress(document, False, text, percentage)
+
+                        searchable = "searchable " if ocr_lang else ""
+                        text = (
+                            f"Converting file {file_index + 1}/{total_files} ({display_filename}), "
+                            f"page {page}/{n_pages} from pixels to {searchable}PDF"
+                        )
+                        page_percentage = (page / n_pages) * file_step
+                        self.print_progress(
+                            document, False, text, base_percentage + page_percentage
+                        )
 
                 # Once all pages have been submitted, wait for remaining futures
                 if ocr_lang:
-                    drain_ocr_futures(block_until_below=0)
+                    _drain_ocr_futures(
+                        ocr_futures,
+                        safe_doc,
+                        ocr_page_num_counter,
+                        n_pages,
+                        document,
+                        self.print_progress,
+                        file_info=file_info,
+                        block_until_below=0,
+                    )
 
             finally:
                 if ocr_pool is not None:
                     ocr_pool.shutdown()
-=======
+
             sanitize_proc.stdout.close()
             ret = sanitize_proc.wait()
             if ret != 0:
                 raise errors.exception_from_error_code(ret)
->>>>>>> 6ea5f019 (WIP for archives)
 
     def convert_with_proc(
         self,
@@ -530,13 +539,13 @@ class IsolationProvider(ABC):
         pass
 
     @abstractmethod
-    def terminate_doc_to_pixels_proc(
+    def terminate_doc_to_pixels_sandbox(
         self, document: Document, p: subprocess.Popen
     ) -> None:
         """Terminate gracefully the process started for the doc-to-pixels phase."""
         pass
 
-    def ensure_stop_doc_to_pixels_proc(
+    def ensure_stop_doc_to_pixels_sandbox(
         self,
         document: Document,
         p: subprocess.Popen,
@@ -557,7 +566,7 @@ class IsolationProvider(ABC):
 
         # At this point, the process is still running. This may be benign, as we haven't
         # waited for it yet. Terminate it gracefully.
-        self.terminate_doc_to_pixels_proc(document, p)
+        self.terminate_doc_to_pixels_sandbox(document, p)
         try:
             p.wait(timeout_grace)
         except subprocess.TimeoutExpired:
@@ -601,7 +610,7 @@ class IsolationProvider(ABC):
             exception = self.get_proc_exception(p, timeout_exception)
             raise exception from e
         finally:
-            self.ensure_stop_doc_to_pixels_proc(
+            self.ensure_stop_doc_to_pixels_sandbox(
                 document, p, timeout_grace=timeout_grace, timeout_force=timeout_force
             )
 

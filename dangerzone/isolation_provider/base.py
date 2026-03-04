@@ -323,8 +323,8 @@ class IsolationProvider(ABC):
         safe_doc: fitz.Document,
         file_index: int,
         total_files: int,
-    ) -> None:
-        """Sanitize a single file from the indexed list and add its pages to safe_doc."""
+    ) -> bool:
+        """Sanitize a single file. Returns True if successful, False if unsupported (logged as warning)."""
         display_filename = replace_control_chars(os.path.basename(filename))
         log.debug(f"Sanitizing file {file_index + 1}/{total_files}: {filename}")
 
@@ -335,7 +335,13 @@ class IsolationProvider(ABC):
             except errors.ConverterProcException:
                 ret = sanitize_proc.wait()
                 if ret != 0:
-                    raise errors.exception_from_error_code(ret)
+                    try:
+                        raise errors.exception_from_error_code(ret)
+                    except errors.DocFormatUnsupported:
+                        log.warning(f"Skipping unsupported file: {display_filename}")
+                        return False
+                    except errors.ConversionException:
+                        raise
                 raise
 
             if n_pages == 0 or n_pages > errors.MAX_PAGES:
@@ -464,7 +470,14 @@ class IsolationProvider(ABC):
             sanitize_proc.stdout.close()
             ret = sanitize_proc.wait()
             if ret != 0:
-                raise errors.exception_from_error_code(ret)
+                try:
+                    raise errors.exception_from_error_code(ret)
+                except errors.DocFormatUnsupported:
+                    log.warning(f"Skipping unsupported file: {display_filename}")
+                    return False
+                except errors.ConversionException:
+                    raise
+        return True
 
     def convert_with_proc(
         self,
@@ -484,7 +497,10 @@ class IsolationProvider(ABC):
         if not is_archive_mode:
             # Single file mode (existing behavior)
             safe_doc = fitz.Document()
-            self._convert_file(document, filenames[0], ocr_lang, safe_doc, 0, 1)
+            success = self._convert_file(document, filenames[0], ocr_lang, safe_doc, 0, 1)
+            if not success:
+                # If the only file is unsupported, we fail
+                raise errors.DocFormatUnsupported()
             # Saving it with a different name first, because PyMuPDF cannot handle
             # non-Unicode chars.
             safe_doc.save(document.sanitized_output_filename)
@@ -517,8 +533,10 @@ class IsolationProvider(ABC):
                 os.makedirs(os.path.dirname(target_filename), exist_ok=True)
 
                 safe_doc = fitz.Document()
-                self._convert_file(document, filename, ocr_lang, safe_doc, i, n_files)
-                
+                success = self._convert_file(document, filename, ocr_lang, safe_doc, i, n_files)
+                if not success:
+                    continue
+
                 # Sanitize target filename for PyMuPDF
                 sanitized_target = replace_control_chars(target_filename)
                 safe_doc.save(sanitized_target)

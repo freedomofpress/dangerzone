@@ -171,6 +171,10 @@ class DocumentToPixels(DangerzoneConverter):
             "image/x-tiff": {"type": "PyMuPDF"},
             # .eml
             "message/rfc822": {"type": "eml"},
+            # .txt
+            "text/plain": {"type": "libreoffice"},
+            # .html
+            "text/html": {"type": "libreoffice"},
         }
 
         # Detect MIME type
@@ -190,7 +194,9 @@ class DocumentToPixels(DangerzoneConverter):
         elif conversion["type"] == "eml":
             # This should now be handled by extract_recursive/mailbagit during indexing
             # But if somehow we are called directly on an EML in sanitize mode:
-            raise errors.DocFormatUnsupported("Email files must be processed via archive mode (indexing)")
+            raise errors.DocFormatUnsupported(
+                "Email files must be processed via archive mode (indexing)"
+            )
         elif conversion["type"] == "libreoffice":
             doc = await self._convert_libreoffice(input_file, conversion)
         else:
@@ -217,7 +223,9 @@ class DocumentToPixels(DangerzoneConverter):
 
         self.update_progress("Converted document to pixels")
 
-    async def _convert_libreoffice(self, input_file: str, conversion: Dict[str, Optional[str]]) -> fitz.Document:
+    async def _convert_libreoffice(
+        self, input_file: str, conversion: Dict[str, Optional[str]]
+    ) -> fitz.Document:
         """Convert a document to PDF using LibreOffice."""
         libreoffice_ext = conversion.get("libreoffice_ext", None)
         # Disable conversion for HWP/HWPX on specific platforms. See:
@@ -311,47 +319,112 @@ def is_archive(path: str) -> bool:
     return mime_type in SUPPORTED_ARCHIVE_MIMES
 
 
-def is_email(path: str) -> bool:
+def get_email_format(path: str) -> Optional[str]:
+    """Identify the email format (eml, msg, mbox) based on mime, description, and content."""
     try:
         mime_type = magic.from_file(path, mime=True)
+        description = magic.from_file(path, mime=False).lower()
     except Exception:
-        mime_type = "application/octet-stream"
-    return mime_type in SUPPORTED_EMAIL_MIMES
+        return None
+
+    if mime_type == "application/vnd.ms-outlook" or "outlook" in description:
+        return "msg"
+    if mime_type == "application/mbox" or "mbox" in description:
+        return "mbox"
+    if mime_type == "message/rfc822":
+        return "eml"
+
+    # Use magic description for robust detection
+    if "mime entity" in description or "rfc 822 mail" in description:
+        return "eml"
+
+    # Content-based check for ambiguous text/plain files
+    if mime_type == "text/plain":
+        try:
+            from email.parser import BytesHeaderParser
+            with open(path, "rb") as f:
+                start_bytes = f.read(4096)
+                start = start_bytes.lower()
+                
+                # MBOX heuristic: starts with "From "
+                if start.startswith(b"from "):
+                    return "mbox"
+                
+                # EML heuristic: multiple standard headers
+                msg = BytesHeaderParser().parsebytes(start_bytes)
+                headers = ["subject", "from", "to", "date", "mime-version"]
+                found_count = 0
+                for h in headers:
+                    if h in msg:
+                        found_count += 1
+                if found_count >= 2:
+                    return "eml"
+        except Exception:
+            pass
+
+    return None
+
+
+def is_email(path: str) -> bool:
+    return get_email_format(path) is not None
 
 
 async def _extract_email(input_path: str, output_dir: str, converter: "DocumentToPixels") -> None:
     """Extract email body and attachments using mailbagit."""
     temp_mailbag_out = f"{output_dir}_mailbag_tmp"
-    os.makedirs(temp_mailbag_out, exist_ok=True)
-    
+
+    input_format = get_email_format(input_path) or "eml"
+
     args = [
         "mailbagit",
         input_path,
-        "--output",
+        "--mailbag",
         temp_mailbag_out,
-        "--derivative",
-        "pdf",
-        "--css",
-        "/dev/null",
+        "--input",
+        input_format,
+        "--derivatives",
+        "html",
     ]
-    
+
     await converter.run_command(
         args,
         error_message="mailbagit conversion failed",
     )
-    
+
     # Move relevant items to output_dir
     for root, dirs, files in os.walk(temp_mailbag_out):
-        for f in files:
-            if f.lower().endswith(".pdf"):
-                shutil.move(os.path.join(root, f), os.path.join(output_dir, "body.pdf"))
         if "attachments" in dirs:
-            shutil.move(os.path.join(root, "attachments"), os.path.join(output_dir, "attachments"))
-            
+            src_attachments = os.path.join(root, "attachments")
+            dest_attachments = os.path.join(output_dir, "attachments")
+            os.makedirs(dest_attachments, exist_ok=True)
+            for item in os.listdir(src_attachments):
+                shutil.move(os.path.join(src_attachments, item), os.path.join(dest_attachments, item))
+            # Don't walk into the moved directory
+            dirs.remove("attachments")
+        
+        for f in files:
+            if f.lower().endswith(".html"):
+                shutil.move(os.path.join(root, f), os.path.join(output_dir, "body.html"))
+
     shutil.rmtree(temp_mailbag_out)
 
+    # Final cleanup of output_dir to ensure no metadata files leaked through
+    metadata_names = ["attachments.csv", "mailbag.csv", "bag-info.txt", "bagit.txt", "mailbag.log"]
+    for root, dirs, files in os.walk(output_dir):
+        for f in files:
+            f_lower = f.lower()
+            if f_lower in metadata_names or f_lower.startswith("manifest-") or f_lower.startswith("tagmanifest-"):
+                os.remove(os.path.join(root, f))
 
-async def _extract_recursive_all(input_path: str, output_dir: str, max_files: int, counter: List[int], converter: "DocumentToPixels") -> None:
+
+
+async def _extract_recursive_all(
+    input_path: str,
+    output_dir: str,
+    max_files: int,
+    counter: List[int],
+    converter: "DocumentToPixels",
+) -> None:
     """Helper to recursively extract archives AND emails to a directory."""
     if counter[0] >= max_files:
         return
@@ -360,7 +433,7 @@ async def _extract_recursive_all(input_path: str, output_dir: str, max_files: in
         with zipfile.ZipFile(input_path, "r") as z:
             z.extractall(output_dir)
     elif py7zr and py7zr.is_7zfile(input_path):
-        with py7zr.SevenZipFile(input_path, mode='r') as z:
+        with py7zr.SevenZipFile(input_path, mode="r") as z:
             z.extractall(output_dir)
     elif tarfile.is_tarfile(input_path):
         with tarfile.open(input_path, "r:*") as t:
@@ -373,16 +446,19 @@ async def _extract_recursive_all(input_path: str, output_dir: str, max_files: in
         if mime in ["application/gzip", "application/x-bzip2", "application/x-xz"]:
             base = os.path.basename(input_path)
             out_name = os.path.splitext(base)[0]
-            import gzip, bz2, lzma
+            import bz2
+            import gzip
+            import lzma
+
             if mime == "application/gzip":
                 open_func = gzip.open
             elif mime == "application/x-bzip2":
                 open_func = bz2.open
             else:
                 open_func = lzma.open
-            
-            with open_func(input_path, 'rb') as f_in:
-                with open(os.path.join(output_dir, out_name), 'wb') as f_out:
+
+            with open_func(input_path, "rb") as f_in:
+                with open(os.path.join(output_dir, out_name), "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
         else:
             return
@@ -397,13 +473,19 @@ async def _extract_recursive_all(input_path: str, output_dir: str, max_files: in
         if counter[0] >= max_files:
             return
         if is_archive(file_path) or is_email(file_path):
-            sub_out = os.path.join(os.path.dirname(file_path), f"{os.path.basename(file_path)}.extracted")
+            sub_out = os.path.join(
+                os.path.dirname(file_path), f"{os.path.basename(file_path)}.extracted"
+            )
             os.makedirs(sub_out, exist_ok=True)
-            await _extract_recursive_all(file_path, sub_out, max_files, counter, converter)
+            await _extract_recursive_all(
+                file_path, sub_out, max_files, counter, converter
+            )
             counter[0] += 1
 
 
-async def extract_recursive(input_path: str, output_dir: str, converter: "DocumentToPixels") -> List[str]:
+async def extract_recursive(
+    input_path: str, output_dir: str, converter: "DocumentToPixels"
+) -> List[str]:
     """Recursively extract archives and emails."""
     max_files = 1000
     counter = [0]
@@ -428,23 +510,36 @@ async def handle_index(output_dir: Optional[str] = None) -> None:
         f.write(data)
 
     converter = DocumentToPixels()
-    if is_archive(temp_input) or is_email(temp_input):
-        if output_dir is None:
-            output_dir = f"/tmp/dz-extracted-{random_id}"
-        os.makedirs(output_dir, exist_ok=True)
-        files = await extract_recursive(temp_input, output_dir, converter)
-        await DocumentToPixels.write_int(len(files))
-        for f in files:
-            f_bytes = f.encode()
+    exit_code = 0
+    try:
+        if is_archive(temp_input) or is_email(temp_input):
+            if output_dir is None:
+                output_dir = f"/tmp/dz-extracted-{random_id}"
+            os.makedirs(output_dir, exist_ok=True)
+            files = await extract_recursive(temp_input, output_dir, converter)
+            await DocumentToPixels.write_int(len(files))
+            for f in files:
+                # Protocol: ALWAYS absolute paths for indexed files (start with /)
+                path = os.path.abspath(f)
+                f_bytes = path.encode()
+                await DocumentToPixels.write_int(len(f_bytes))
+                await DocumentToPixels.write_bytes(f_bytes)
+
+        else:
+            # It's a single file. Protocol: report 1 file, name does NOT start with /
+            # We report it as 'tmp/dz-input-xxxx'
+            await DocumentToPixels.write_int(1)
+            f_bytes = temp_input.lstrip("/").encode()
             await DocumentToPixels.write_int(len(f_bytes))
             await DocumentToPixels.write_bytes(f_bytes)
-    else:
-        # It's a single file. Protocol: report 1 file, name does NOT start with /
-        # We report it as 'tmp/dz-input-xxxx'
-        await DocumentToPixels.write_int(1)
-        f_bytes = temp_input.lstrip("/").encode()
-        await DocumentToPixels.write_int(len(f_bytes))
-        await DocumentToPixels.write_bytes(f_bytes)
+    except Exception as e:
+        await DocumentToPixels.write_bytes(str(e).encode(), file=sys.stderr)
+        exit_code = 1
+
+    # Write debug information
+    await DocumentToPixels.write_bytes(converter.captured_output, file=sys.stderr)
+    if exit_code != 0:
+        sys.exit(exit_code)
 
 
 async def handle_sanitize(input_file: Optional[str] = None) -> None:

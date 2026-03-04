@@ -203,6 +203,7 @@ def get_supported_extensions() -> List[str]:
         ".pbm",
         ".ppm",
         ".svg",
+        ".txt",
     ]
 
     # XXX: We disable loading HWP/HWPX files on Qubes, because H2ORestart does not work there.

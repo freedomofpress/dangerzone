@@ -5,7 +5,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from typing import IO, Callable, Optional
+from typing import IO, Callable, Optional, List
 
 from ..conversion.common import running_on_qubes
 from ..document import Document
@@ -25,7 +25,7 @@ class Qubes(IsolationProvider):
     def get_max_parallel_conversions(self) -> int:
         return 1
 
-    def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
+    def start_doc_to_pixels_sandbox(self, document: Document) -> subprocess.Popen:
         dev_mode = getattr(sys, "dangerzone_dev", False) is True
         if dev_mode:
             # Use dz.ConvertDev RPC call instead, if we are in development mode.
@@ -53,6 +53,14 @@ class Qubes(IsolationProvider):
             self.teleport_dz_module(p.stdin)
 
         return p
+
+    def start_exec(
+        self,
+        document: Document,
+        command: List[str],
+        stdin: Optional[int] = subprocess.PIPE,
+    ) -> subprocess.Popen:
+        raise NotImplementedError("start_exec is not implemented for Qubes")
 
     def terminate_doc_to_pixels_proc(
         self, document: Document, p: subprocess.Popen

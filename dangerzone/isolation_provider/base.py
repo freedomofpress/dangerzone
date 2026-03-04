@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
-from typing import IO, Callable, Iterator, Optional
+from typing import IO, Callable, Iterator, Optional, List
 
 import fitz
 from colorama import Fore, Style
@@ -118,6 +118,15 @@ def _ocr_page_worker(
         raise RuntimeError(str(e)) from None
 
 
+def _stream_stderr(process_stderr: IO[bytes], stderr_buf: IO[bytes]) -> None:
+    """Helper to stream stderr from a process to a buffer."""
+    try:
+        for line in process_stderr:
+            stderr_buf.write(line)
+    except (ValueError, IOError) as e:
+        log.debug(f"Stderr stream closed: {e}")
+
+
 class IsolationProvider(ABC):
     """
     Abstracts an isolation provider
@@ -142,7 +151,7 @@ class IsolationProvider(ABC):
         self.progress_callback = progress_callback
         document.mark_as_converting()
         try:
-            with self.doc_to_pixels_proc(document) as conversion_proc:
+            with self.doc_to_pixels_sandbox(document) as conversion_proc:
                 self.convert_with_proc(document, ocr_lang, conversion_proc)
             document.mark_as_safe()
             if document.archive_after_conversion:
@@ -179,9 +188,11 @@ class IsolationProvider(ABC):
 
         return fitz.open("pdf", page_pdf_bytes)
 
-    def convert_with_proc(
+    @abstractmethod
+    def start_exec(
         self,
         document: Document,
+<<<<<<< HEAD
         ocr_lang: Optional[str],
         p: subprocess.Popen,
     ) -> None:
@@ -199,12 +210,114 @@ class IsolationProvider(ABC):
             # And read the stdout, which should contain the pixel buffers
             assert p.stdout
             n_pages = read_int(p.stdout)
+=======
+        command: List[str],
+        stdin: Optional[int] = subprocess.PIPE,
+    ) -> subprocess.Popen:
+        pass
+
+    @contextlib.contextmanager
+    def run_exec(
+        self,
+        document: Document,
+        command: List[str],
+        stdin: Optional[int] = subprocess.PIPE,
+    ) -> Iterator[subprocess.Popen]:
+        """Run a command in the sandbox, capture stderr, and yield the process."""
+        stderr = BytesIO()
+        p = self.start_exec(document, command, stdin)
+        stderr_thread = self.start_stderr_thread(p, stderr)
+
+        try:
+            yield p
+        finally:
+            # Ensure the process has exited
+            p.wait()
+
+            if stderr_thread:
+                stderr_thread.join(timeout=1)
+                debug_bytes = stderr.getvalue()
+                debug_log = sanitize_debug_text(debug_bytes)
+                incomplete = "(incomplete) " if stderr_thread.is_alive() else ""
+
+                if command[0] == "index":
+                    desc = "Indexing"
+                elif command[0] == "sanitize" and len(command) > 1:
+                    filename = replace_control_chars(os.path.basename(command[1]))
+                    desc = f"Conversion ({filename})"
+                else:
+                    desc = f"Exec ({' '.join(command)})"
+
+                log.info(
+                    f"{desc} output\n"
+                    f"----- {desc.upper()} LOG START {incomplete}-----\n"
+                    f"{debug_log}"
+                    f"----- {desc.upper()} LOG END -----"
+                )
+
+    def _get_filenames(self, document: Document) -> List[str]:
+        """Run the 'index' command and return the list of filenames to sanitize."""
+        self.print_progress(document, False, "Indexing archive", 0)
+        with open(document.input_filename, "rb") as f:
+            with self.run_exec(document, ["index"]) as index_proc:
+                try:
+                    assert index_proc.stdin is not None
+                    index_proc.stdin.write(f.read())
+                    index_proc.stdin.close()
+                except BrokenPipeError:
+                    raise errors.ConverterProcException()
+
+                assert index_proc.stdout
+                try:
+                    n_files = read_int(index_proc.stdout)
+                except errors.ConverterProcException:
+                    # Command might have failed
+                    ret = index_proc.wait()
+                    if ret != 0:
+                        raise errors.exception_from_error_code(ret)
+                    raise
+
+                filenames = []
+                for _ in range(n_files):
+                    filename_len = read_int(index_proc.stdout)
+                    filename = read_bytes(index_proc.stdout, filename_len).decode()
+                    filenames.append(filename)
+
+                index_proc.wait()
+        return filenames
+
+    def _convert_file(
+        self,
+        document: Document,
+        filename: str,
+        ocr_lang: Optional[str],
+        safe_doc: fitz.Document,
+        file_index: int,
+        total_files: int,
+    ) -> None:
+        """Sanitize a single file from the indexed list and add its pages to safe_doc."""
+        display_filename = replace_control_chars(os.path.basename(filename))
+        log.debug(f"Sanitizing file {file_index+1}/{total_files}: {filename}")
+
+        with self.run_exec(document, ["sanitize", filename]) as sanitize_proc:
+            assert sanitize_proc.stdout
+            try:
+                n_pages = read_int(sanitize_proc.stdout)
+            except errors.ConverterProcException:
+                ret = sanitize_proc.wait()
+                if ret != 0:
+                    raise errors.exception_from_error_code(ret)
+                raise
+
+>>>>>>> 6ea5f019 (WIP for archives)
             if n_pages == 0 or n_pages > errors.MAX_PAGES:
                 raise errors.MaxPagesException()
-            step = 100 / n_pages
 
-            safe_doc = fitz.Document()
+            # Global progress: each file takes 100 / total_files percent
+            file_step = 100 / total_files
+            base_percentage = file_index * file_step
 
+<<<<<<< HEAD
             # If we are doing OCR, start a pool of workers to do it in parallel
             if ocr_lang:
                 max_workers = max(1, round(mp.cpu_count() / 2))
@@ -212,6 +325,32 @@ class IsolationProvider(ABC):
                     max_workers=max_workers,
                     initializer=_ocr_pool_initializer,
                     mp_context=mp.get_context("spawn"),
+=======
+            for page in range(1, n_pages + 1):
+                searchable = "searchable " if ocr_lang else ""
+                text = (
+                    f"Converting file {file_index+1}/{total_files} ({display_filename}), "
+                    f"page {page}/{n_pages} from pixels to {searchable}PDF"
+                )
+
+                # Page percentage within the file
+                page_percentage = (page - 1) * (file_step / n_pages)
+                self.print_progress(
+                    document, False, text, base_percentage + page_percentage
+                )
+
+                width = read_int(sanitize_proc.stdout)
+                height = read_int(sanitize_proc.stdout)
+                if not (1 <= width <= errors.MAX_PAGE_WIDTH):
+                    raise errors.MaxPageWidthException()
+                if not (1 <= height <= errors.MAX_PAGE_HEIGHT):
+                    raise errors.MaxPageHeightException()
+
+                num_pixels = width * height * 3  # three color channels
+                untrusted_pixels = read_bytes(
+                    sanitize_proc.stdout,
+                    num_pixels,
+>>>>>>> 6ea5f019 (WIP for archives)
                 )
 
                 # Pre-compute tessdata path to pass to workers (they can't access
@@ -223,6 +362,7 @@ class IsolationProvider(ABC):
                 ocr_pool = None
                 tessdata_dir = None
 
+<<<<<<< HEAD
             def drain_ocr_futures(block_until_below: Optional[int] = None) -> None:
                 """
                 Collect completed OCR pages (from the front of the queue)
@@ -310,16 +450,35 @@ class IsolationProvider(ABC):
             finally:
                 if ocr_pool is not None:
                     ocr_pool.shutdown()
+=======
+            sanitize_proc.stdout.close()
+            ret = sanitize_proc.wait()
+            if ret != 0:
+                raise errors.exception_from_error_code(ret)
+>>>>>>> 6ea5f019 (WIP for archives)
 
-        # Ensure nothing else is read after all bitmaps are obtained
-        p.stdout.close()
+    def convert_with_proc(
+        self,
+        document: Document,
+        ocr_lang: Optional[str],
+        p: subprocess.Popen,
+    ) -> None:
+        filenames = self._get_filenames(document)
+        n_files = len(filenames)
+
+        if n_files == 0:
+            raise errors.DocCorruptedException("Archive is empty")
+
+        safe_doc = fitz.Document()
+
+        for i, filename in enumerate(filenames):
+            self._convert_file(document, filename, ocr_lang, safe_doc, i, n_files)
 
         # Saving it with a different name first, because PyMuPDF cannot handle
         # non-Unicode chars.
         safe_doc.save(document.sanitized_output_filename)
         os.replace(document.sanitized_output_filename, document.output_filename)
 
-        # TODO handle leftover code input
         text = "Successfully converted document"
         self.print_progress(document, False, text, 100)
 
@@ -367,7 +526,7 @@ class IsolationProvider(ABC):
         pass
 
     @abstractmethod
-    def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
+    def start_doc_to_pixels_sandbox(self, document: Document) -> subprocess.Popen:
         pass
 
     @abstractmethod
@@ -418,7 +577,7 @@ class IsolationProvider(ABC):
                 )
 
     @contextlib.contextmanager
-    def doc_to_pixels_proc(
+    def doc_to_pixels_sandbox(
         self,
         document: Document,
         timeout_exception: int = TIMEOUT_EXCEPTION,
@@ -428,7 +587,7 @@ class IsolationProvider(ABC):
         """Start a conversion process, pass it to the caller, and then clean it up."""
         # Store the proc stderr in memory
         stderr = BytesIO()
-        p = self.start_doc_to_pixels_proc(document)
+        p = self.start_doc_to_pixels_sandbox(document)
         stderr_thread = self.start_stderr_thread(p, stderr)
 
         if platform.system() != "Windows":
@@ -456,28 +615,20 @@ class IsolationProvider(ABC):
                 incomplete = "(incomplete) " if stderr_thread.is_alive() else ""
 
                 log.info(
-                    "Conversion output (doc to pixels)\n"
-                    f"----- DOC TO PIXELS LOG START {incomplete}-----\n"
+                    "Conversion output (sandbox)\n"
+                    f"----- SANDBOX LOG START {incomplete}-----\n"
                     f"{debug_log}"  # no need for an extra newline here
-                    "----- DOC TO PIXELS LOG END -----"
+                    "----- SANDBOX LOG END -----"
                 )
 
     def start_stderr_thread(
         self, process: subprocess.Popen, stderr: IO[bytes]
     ) -> Optional[threading.Thread]:
         """Start a thread to read stderr from the process"""
-
-        def _stream_stderr(process_stderr: IO[bytes]) -> None:
-            try:
-                for line in process_stderr:
-                    stderr.write(line)
-            except (ValueError, IOError) as e:
-                log.debug(f"Stderr stream closed: {e}")
-
         if process.stderr:
             stderr_thread = threading.Thread(
                 target=_stream_stderr,
-                args=(process.stderr,),
+                args=(process.stderr, stderr),
                 daemon=True,
             )
             stderr_thread.start()

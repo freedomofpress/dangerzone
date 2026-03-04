@@ -130,15 +130,45 @@ class Container(IsolationProvider):
         assert isinstance(proc, subprocess.Popen)
         return proc
 
-    def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
-        # Convert document to pixels
-        command = [
+    def start_doc_to_pixels_sandbox(self, document: Document) -> subprocess.Popen:
+        # Start a persistent container that stays up
+        command = ["sleep", "infinity"]
+        name = self.doc_to_pixels_container_name(document)
+        return self.exec_container(command, name=name)
+
+    def start_exec(
+        self,
+        document: Document,
+        command: List[str],
+        stdin: Optional[int] = subprocess.PIPE,
+    ) -> subprocess.Popen:
+        container_name = self.doc_to_pixels_container_name(document)
+        podman = container_utils.init_podman_command()
+
+        # Nested exec: podman exec -> runsc exec
+        full_command = [
+            "exec",
+            "-i",
+            container_name,
+            "/usr/bin/runsc",
+            "--root=/home/dangerzone/.containers",
+            "exec",
+            "dangerzone",
             "/usr/bin/python3",
             "-m",
             "dangerzone.conversion.doc_to_pixels",
-        ]
-        name = self.doc_to_pixels_container_name(document)
-        return self.exec_container(command, name=name)
+        ] + command
+
+        proc = podman.run(
+            full_command,
+            stdin=stdin,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+            wait=False,
+        )
+        assert isinstance(proc, subprocess.Popen)
+        return proc
 
     def terminate_doc_to_pixels_proc(
         self, document: Document, p: subprocess.Popen

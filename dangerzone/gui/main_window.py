@@ -209,9 +209,24 @@ def get_supported_extensions() -> List[str]:
     # See:
     #
     # https://github.com/freedomofpress/dangerzone/issues/494
-    hwp_filters = [".hwp", ".hwpx"]
-    if is_qubes_native_conversion():
+    if not is_qubes_native_conversion():
+        hwp_filters = [".hwp", ".hwpx"]
         supported_ext += hwp_filters
+
+        supported_ext += [
+            ".zip",
+            ".tar",
+            ".gz",
+            ".bz2",
+            ".7z",
+            ".xz",
+            ".tar.gz",
+            ".tgz",
+            ".tar.bz2",
+            ".tbz2",
+            ".tar.xz",
+            ".txz",
+        ]
 
     return supported_ext
 

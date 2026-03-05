@@ -21,7 +21,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - It is now possible to convert another set of documents after a first batch ([#549](https://github.com/freedomofpress/dangerzone/issues/549))
 - OCR tasks are now queued, resulting in up to x6 speedup
   ([#1329](https://github.com/freedomofpress/dangerzone/issues/1329))
-
+- Add a security policy for our project
+  ([#1278](https://github.com/freedomofpress/dangerzone/issues/1278))
 
 ### Development changes
 
@@ -29,7 +30,6 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   ([#1338](https://github.com/freedomofpress/dangerzone/issues/1338))
 - Set the severity cutoff of our code scans from Critical to High, on a biweekly basis
   ([#1438](https://github.com/freedomofpress/dangerzone/issues/1438))
-
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/compare/v0.10.0...0.9.1)
 

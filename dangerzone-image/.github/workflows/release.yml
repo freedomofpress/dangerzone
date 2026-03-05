@@ -1,3 +1,5 @@
+# Publish images from the latest main each night, or when
+# main is updated.
 name: Release multi-arch container image
 
 on:
@@ -5,13 +7,12 @@ on:
   push:
     branches:
       - main
-      - "test/**"
   schedule:
     - cron: "0 0 * * *" # Run every day at 00:00 UTC.
 
 jobs:
   build-push-image:
-    uses: ./.github/workflows/build-push-image.yml
+    uses: ./.github/workflows/actions/build-push.yml
     with:
       registry: ghcr.io/${{ github.repository_owner }}
       registry_user: ${{ github.actor }}

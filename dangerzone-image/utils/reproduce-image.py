@@ -40,7 +40,7 @@ def build_image(
     date_args = [] if not date else ["--debian-archive-date", date]
     run(
         "python3",
-        "./install/common/build-image.py",
+        "./build-image.py",
         *platform_args,
         *runtime_args,
         *cache_args,
@@ -137,10 +137,10 @@ def main():
         f"Check that the reproduced image has the expected digest: {args.digest}"
     )
     run(
-        "./dev_scripts/repro-build.py",
+        "./repro-build.py",
         "analyze",
         "--show-contents",
-        "share/container.tar",
+        "container.tar",
         "--expected-image-digest",
         args.digest,
     )

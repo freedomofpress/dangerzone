@@ -1,13 +1,13 @@
 # NOTE: Updating the packages to their latest versions requires bumping the
 # Dockerfile args below. For more info about this file, read
-# docs/developer/reproducibility.md.
+# docs/reproducibility.md.
 
-ARG DEBIAN_IMAGE_DIGEST={{DEBIAN_IMAGE_DIGEST}}
+ARG DEBIAN_IMAGE_DIGEST=sha256:9812458f2932ede726468ba07bcb9e51bceb1f0c7f16ee30baa789ccee7cc202
 
 FROM docker.io/library/debian@${DEBIAN_IMAGE_DIGEST} AS dangerzone-image
 
-ARG GVISOR_ARCHIVE_DATE={{GVISOR_ARCHIVE_DATE}}
-ARG DEBIAN_ARCHIVE_DATE={{DEBIAN_ARCHIVE_DATE}}
+ARG GVISOR_ARCHIVE_DATE=20251110
+ARG DEBIAN_ARCHIVE_DATE=20251118
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -17,8 +17,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  --mount=type=bind,source=./container_helpers/repro-sources-list.sh,target=/usr/local/bin/repro-sources-list.sh \
-  --mount=type=bind,source=./container_helpers/gvisor.key,target=/tmp/gvisor.key \
+  --mount=type=bind,source=./helpers/repro-sources-list.sh,target=/usr/local/bin/repro-sources-list.sh \
+  --mount=type=bind,source=./helpers/gvisor.key,target=/tmp/gvisor.key \
   : "Hacky way to set a date for the Debian snapshot repos" && \
   touch -d ${DEBIAN_ARCHIVE_DATE}Z /etc/apt/sources.list.d/debian.sources && \
   touch -d ${DEBIAN_ARCHIVE_DATE}Z /etc/apt/sources.list && \
@@ -58,9 +58,10 @@ RUN touch /opt/dangerzone/dangerzone/__init__.py
 COPY conversion/*.py /opt/dangerzone/dangerzone/conversion/
 
 # Copy the H2Orestart.oxt LibreOffice plugin, which is managed by Mazette.
-RUN mkdir -p /opt/libreoffice_ext/
-RUN install -dm777 /usr/lib/libreoffice/share/extensions/
-COPY container_helpers/h2orestart.oxt /opt/libreoffice_ext/
+# TODO: Use H20restart from Debian
+# RUN mkdir -p /opt/libreoffice_ext/
+# RUN install -dm777 /usr/lib/libreoffice/share/extensions/
+# COPY ./helpers/h2orestart.oxt /opt/libreoffice_ext/
 
 # Create a directory that will be used by gVisor as the place where it will
 # store the state of its containers.
@@ -203,7 +204,7 @@ RUN chown dangerzone:dangerzone \
 # Fix permissions in /tmp, so that it can be used by unprivileged users.
 RUN chmod 777 /new_root/tmp
 
-COPY container_helpers/entrypoint.py /new_root
+COPY helpers/entrypoint.py /new_root
 # HACK: For reasons that we are not sure yet, we need to explicitly specify the
 # modification time of this file.
 RUN touch -d ${DEBIAN_ARCHIVE_DATE}Z /new_root/entrypoint.py

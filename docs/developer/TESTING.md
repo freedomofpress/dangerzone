@@ -33,6 +33,5 @@ make report
 If you want to run the report on some historical test result, you can call:
 
 ```bash
-cd tests/docs_test_large
-python report.py tests/test_docs_large/results/junit/commit_<COMMIT_ID>.junit.xml
+python ./dev_scripts/large_tests/report.py tests/test_docs_large/results/junit/commit_<COMMIT_ID>.junit.xml
 ```

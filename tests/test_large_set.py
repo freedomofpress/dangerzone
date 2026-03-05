@@ -11,6 +11,12 @@ from dangerzone.document import SAFE_EXTENSION
 
 from .test_cli import TestCli
 
+if not os.environ.get("DZ_RUN_LARGE_TESTS", False):
+    pytest.skip(
+        "Skipping running large tests, unless the `DZ_RUN_LARGE_TESTS` envvar is set",
+        allow_module_level=True,
+    )
+
 test_docs_repo_dir = Path(__file__).parent / "test_docs_large"
 test_docs_dir = test_docs_repo_dir / "all_documents"
 TEST_DOCS_REPO = "git@github.com:freedomofpress/dangerzone-test-set.git"
@@ -19,14 +25,7 @@ FORMATS_REGEX = (
 )
 
 
-def ensure_test_data_exists() -> None:
-    if len(os.listdir(test_docs_repo_dir)) == 0:
-        print("Test data repository it empty. Skipping large tests.")
-        sys.exit(1)
-
-
 def get_test_docs(min_size: int, max_size: int) -> List[Path]:
-    ensure_test_data_exists()
     return sorted(
         [
             doc
@@ -69,8 +68,6 @@ class TestLargeSet(TestCli):
                 "dangerzone-cli",
                 "--output-filename",
                 output_file_path,
-                "--ocr-lang",
-                "eng",
                 str(doc),
             ],
             stdout=subprocess.PIPE,

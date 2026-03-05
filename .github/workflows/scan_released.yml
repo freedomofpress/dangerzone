@@ -4,6 +4,11 @@ on:
     - cron: '0 0 * * *' # Run every day at 00:00 UTC.
   workflow_dispatch:
 
+env:
+  # Severity cutoff is 'critical' by default, except for the 5th and 20th of
+  # month (i.e., biweekly), where we turn it to 'high'.
+  SEVERITY_CUTOFF: ${{ github.event_name == 'schedule' && (github.triggering_actor == 'schedule' && (format('{0}', github.event.schedule) == '0 0 5 * *' || format('{0}', github.event.schedule) == '0 0 20 * *')) && 'high' || 'critical' }}
+
 jobs:
   security-scan-container:
     strategy:
@@ -22,7 +27,7 @@ jobs:
         uses: ./.github/actions/scan-container
         with:
           image: "ghcr.io/freedomofpress/dangerzone/v1:latest"
-          severity-cutoff: critical
+          severity-cutoff: ${{ env.SEVERITY_CUTOFF }}
           upload-sarif: true
           sarif-category: container-${{ matrix.arch }}
 
@@ -55,6 +60,6 @@ jobs:
       - name: Scan application
         uses: ./.github/actions/scan-app
         with:
-          severity-cutoff: critical
+          severity-cutoff: ${{ env.SEVERITY_CUTOFF }}
           upload-sarif: true
           sarif-category: app

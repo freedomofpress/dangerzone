@@ -15,11 +15,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Added
 
-- Dangerzone is able to function without a bundled `container.tar` file 
+- Dangerzone is able to function without a bundled `container.tar` file
   ([#1400](https://github.com/freedomofpress/dangerzone/pull/1400))
 - Look for desktop entries in `XDG_DATA_DIRS` paths on Linux ([#1413](https://github.com/freedomofpress/dangerzone/issues/1413))
 - It is now possible to convert another set of documents after a first batch ([#549](https://github.com/freedomofpress/dangerzone/issues/549))
-- OCR tasks are now queued, resulting in up to x6 speedup 
+- OCR tasks are now queued, resulting in up to x6 speedup
   ([#1329](https://github.com/freedomofpress/dangerzone/issues/1329))
 
 
@@ -27,6 +27,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Run macOS Intel CI tests only on scheduled/manual runs to reduce PR CI time
   ([#1338](https://github.com/freedomofpress/dangerzone/issues/1338))
+- Set the severity cutoff of our code scans from Critical to High, on a biweekly basis
+  ([#1438](https://github.com/freedomofpress/dangerzone/issues/1438))
 
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/compare/v0.10.0...0.9.1)

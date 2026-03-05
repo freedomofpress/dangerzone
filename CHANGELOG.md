@@ -8,6 +8,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...HEAD)
 
+### Development changes
+
+- Add a security policy for our project
+  ([#1278](https://github.com/freedomofpress/dangerzone/issues/1278))
+
 ## [0.11.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.11.0)
 
 ### Changes

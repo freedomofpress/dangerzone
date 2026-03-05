@@ -71,7 +71,7 @@ jobs:
       - name: Update the contents of the inner container if asked-for
         if: ${{ inputs.trivially_update_container }}
         run: |
-          echo "# A comment to generate a new container hash $RANDOM" >> dangerzone/conversion/doc_to_pixels.py
+          echo "# A comment to generate a new container hash $RANDOM" >> conversion/doc_to_pixels.py
 
       - name: Compute image parameters
         id: params
@@ -107,16 +107,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Download H2Orestart plugin
-        run: uvx mazette install h2orestart
-
       - name: Update the contents of the inner container if asked-for
         if: ${{ inputs.trivially_update_container }}
         run: |
-          echo "# A comment to generate a new container hash" >> dangerzone/conversion/doc_to_pixels.py
+          echo "# A comment to generate a new container hash" >> conversion/doc_to_pixels.py
 
       - name: Prepare
         run: |
@@ -288,15 +282,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Download H2Orestart plugin
-        run: uvx mazette install h2orestart
-
       - name: Reproduce the same container image
         run: |
-          ./dev_scripts/reproduce-image.py \
+          ./reproduce-image.py \
             --runtime \
             docker \
             --debian-archive-date \
@@ -343,39 +331,3 @@ jobs:
         run: |-
           cosign sign --recursive -d --key=${{ inputs.key_name }}.key "${{ env.IMAGE_URI }}"
         shell: bash
-
-  fill-cache:
-    if: ${{ inputs.fill_cache }}
-    runs-on: "ubuntu-latest"
-    needs:
-      - sign
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-      - run: pip install poetry
-      - run: poetry install
-      - name: Prepare cached assets
-        run: |-
-          # Only an amd64 image is prepared here.
-          # arm64 images would be useful for silicon macOS but the Github CI
-          # currently does not support nested virtualisation for this platform.
-          echo "${{ inputs.registry }}/${{ inputs.image_name }}" > share/image-name.txt
-          poetry run mazette install cosign
-          mv ${{ inputs.key_name }}.pub share/freedomofpress-dangerzone.pub
-          poetry run ./dev_scripts/dangerzone-image prepare-archive \
-            --image ${{ needs.sign.outputs.image_uri }} \
-            --arch amd64 --output="share/container.tar"
-
-      - name: Cache container image
-        id: cache-container-image
-        uses: actions/cache@v5
-        with:
-          key: v6-container-${{ needs.sign.outputs.image_uri }}
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt

@@ -1,0 +1,29 @@
+name: Tests
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "test/**"
+  schedule:
+    - cron: "2 0 * * *" # Run every day at 02:00 UTC.
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  actions: read # for detecting the Github Actions environment.
+  id-token: write # for creating OIDC tokens for signing.
+
+jobs:  
+  build-container-image:
+    name: Build, push and sign container image
+    uses: ./.github/workflows/actions/build-push.yml
+    with:
+      registry: "ghcr.io/${{ github.repository_owner }}"
+      registry_user: ${{ github.repository_owner }}
+      image_name: "dangerzone-testing/v1"
+      reproduce: false
+      sign: true
+      key_name: "tests/assets/dangerzone-testing"
+    secrets:
+      registry_token: ${{ secrets.GITHUB_TOKEN }}

@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-BUILD_CONTEXT = "dangerzone"
+BUILD_CONTEXT = "src"
 IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/v1"
 if platform.system() in ["Darwin", "Windows"]:
     CONTAINER_RUNTIME = "docker"
@@ -75,7 +75,7 @@ def main():
     parser.add_argument(
         "--output",
         "-o",
-        default=str(Path("share") / "container.tar"),
+        default=str(Path("container.tar")),
         help="Path to store the container image",
     )
     parser.add_argument(
@@ -109,7 +109,7 @@ def main():
     image_name_tagged = f"{IMAGE_NAME}:{tag}"
 
     print(f"Will tag the container image as '{image_name_tagged}'")
-    image_id_path = Path("share") / "image-id.txt"
+    image_id_path = Path("image-id.txt")
     if not args.dry:
         with open(image_id_path, "w") as f:
             f.write(tag)
@@ -129,7 +129,7 @@ def main():
     subprocess.run(
         [
             sys.executable,
-            str(Path("dev_scripts") / "repro-build.py"),
+            str(Path("utils") / "repro-build.py"),
             "build",
             "--runtime",
             args.runtime,

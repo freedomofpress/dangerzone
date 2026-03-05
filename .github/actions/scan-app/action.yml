@@ -1,0 +1,41 @@
+name: Scan Application
+description: Scans the Dangerzone application code for vulnerabilities
+inputs:
+  path:
+    description: Path to scan
+    required: true
+    default: "."
+  severity-cutoff:
+    description: Severity cutoff for the scan
+    required: false
+    default: critical
+  upload-sarif:
+    description: Whether to upload the SARIF report
+    required: false
+    default: false
+  sarif-category:
+    description: Category for the SARIF report
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Scan application
+      uses: anchore/scan-action@v7
+      id: scan
+      with:
+        path: ${{ inputs.path }}
+        fail-build: true
+        only-fixed: false
+        severity-cutoff: ${{ inputs.severity-cutoff }}
+
+    - name: Upload application scan report
+      if: ${{ inputs.upload-sarif && !cancelled() }}
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif }}
+        category: ${{ inputs.sarif-category }}
+
+    - name: Inspect application scan report
+      if: always()
+      shell: bash
+      run: cat ${{ steps.scan.outputs.sarif }}

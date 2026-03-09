@@ -105,7 +105,7 @@ RUN apt-get update \
     && apt-get install -y passt || echo "Skipping installation of passt package" \
     && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends dh-python make build-essential \
+    && apt-get install -y --no-install-recommends adduser dh-python make build-essential \
         git {qt_deps} pipx python3 python3-pip python3-venv dpkg-dev debhelper python3-setuptools \
         python3-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -171,7 +171,7 @@ RUN cd /home/user/dangerzone && poetry --no-ansi install
 DOCKERFILE_BUILD_DEBIAN_DEPS = r"""
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends mupdf thunar \
+    && apt-get install -y --no-install-recommends adduser mupdf thunar \
     && rm -rf /var/lib/apt/lists/*
 """
 

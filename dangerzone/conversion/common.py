@@ -7,6 +7,12 @@ from typing import Callable, List, Optional, TextIO, Tuple
 DEFAULT_DPI = 150  # Pixels per inch
 INT_BYTES = 2
 
+# File types
+FILETYPE_DOCUMENT = 0
+FILETYPE_IMAGE = 1
+FILETYPE_AUDIO = 2
+FILETYPE_VIDEO = 3
+
 
 def running_on_qubes() -> bool:
     # https://www.qubes-os.org/faq/#what-is-the-canonical-way-to-detect-qubes-vm

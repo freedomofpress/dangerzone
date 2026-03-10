@@ -28,7 +28,15 @@ import fitz
 import magic
 
 from . import errors
-from .common import DEFAULT_DPI, DangerzoneConverter, running_on_qubes
+from .common import (
+    DEFAULT_DPI,
+    FILETYPE_AUDIO,
+    FILETYPE_DOCUMENT,
+    FILETYPE_IMAGE,
+    FILETYPE_VIDEO,
+    DangerzoneConverter,
+    running_on_qubes,
+)
 
 
 class DocumentToPixels(DangerzoneConverter):
@@ -44,10 +52,157 @@ class DocumentToPixels(DangerzoneConverter):
     async def write_page_data(self, data: bytes) -> None:
         return await self.write_bytes(data)
 
+    async def write_uint8(self, num: int) -> None:
+        return await self.write_bytes(num.to_bytes(1, "big"))
+
     def update_progress(self, text: str, *, error: bool = False) -> None:
         print(text, file=sys.stderr)
 
-    async def convert(self, input_file: str = "/tmp/input_file") -> None:
+    def get_file_type(self, path: str) -> int:
+        mime_type = self.detect_mime_type(path)
+        if mime_type.startswith("audio/"):
+            return FILETYPE_AUDIO
+        if mime_type.startswith("video/"):
+            return FILETYPE_VIDEO
+        if mime_type.startswith("image/"):
+            # Some images might be handled by PyMuPDF (Document) or might be just images
+            # Dangerzone treats them as documents (converted to PDF)
+            # But the user asked for a generic "image" type.
+            # Actually, Dangerzone's `conversions` dict lists many images.
+            return FILETYPE_IMAGE
+        return FILETYPE_DOCUMENT
+
+    async def convert_audio(self, input_file: str) -> None:
+        self.update_progress("Streaming audio to pixels (raw PCM)")
+        # Audio: PCM s16le, 44100Hz, 2 channels
+        args = [
+            "ffmpeg",
+            "-i",
+            input_file,
+            "-ar",
+            "44100",
+            "-ac",
+            "2",
+            "-c:a",
+            "pcm_s16le",
+            "-f",
+            "s16le",
+            "-",
+        ]
+        # We need to stream the stdout directly to the provider.
+        # run_command captures output, which might fill RAM.
+        # Instead, we should use a manual subprocess call that streams to stdout.
+        proc = await asyncio.create_subprocess_exec(
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        assert proc.stdout is not None
+        assert proc.stderr is not None
+        
+        # Read stdout in chunks and write to sys.stdout
+        while not proc.stdout.at_eof():
+            chunk = await proc.stdout.read(65536)
+            sys.stdout.buffer.write(chunk)
+            sys.stdout.buffer.flush()
+        
+        # Read stderr and capture it
+        stderr = await proc.stderr.read()
+        self.captured_output += stderr
+        
+        ret = await proc.wait()
+        if ret != 0:
+            raise errors.ConversionException("Audio conversion failed")
+
+    async def convert_video(self, input_file: str) -> None:
+        self.update_progress("Streaming video to pixels (raw RGB)")
+        # ffprobe for metadata
+        ffprobe_args = [
+            "ffprobe",
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=width,height,r_frame_rate",
+            "-of",
+            "default=noprint_wrappers=1",
+            input_file,
+        ]
+        stdout, stderr = await self.run_command(ffprobe_args, error_message="ffprobe failed")
+        
+        metadata = {}
+        for line in stdout.decode().splitlines():
+            if "=" in line:
+                key, val = line.split("=", 1)
+                metadata[key] = val
+        
+        width = int(metadata.get("width", 0))
+        height = int(metadata.get("height", 0))
+        fps_raw = metadata.get("r_frame_rate", "25/1")
+        if "/" in fps_raw:
+            num, den = fps_raw.split("/")
+            fps = round(int(num) / int(den))
+        else:
+            fps = int(fps_raw)
+            
+        # Write metadata to stdout: width, height, fps (all uint16)
+        await self.write_int(width)
+        await self.write_int(height)
+        await self.write_int(fps)
+        
+        # Video: raw RGB24
+        ffmpeg_args = [
+            "ffmpeg",
+            "-i",
+            input_file,
+            "-c:v",
+            "rawvideo",
+            "-pix_fmt",
+            "rgb24",
+            "-f",
+            "rawvideo",
+            "-",
+        ]
+        proc = await asyncio.create_subprocess_exec(
+            *ffmpeg_args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        assert proc.stdout is not None
+        assert proc.stderr is not None
+        
+        while not proc.stdout.at_eof():
+            chunk = await proc.stdout.read(65536)
+            sys.stdout.buffer.write(chunk)
+            sys.stdout.buffer.flush()
+            
+        stderr = await proc.stderr.read()
+        self.captured_output += stderr
+        
+        ret = await proc.wait()
+        if ret != 0:
+            raise errors.ConversionException("Video conversion failed")
+
+    async def convert(
+        self,
+        input_file: str = "/tmp/input_file",
+        *,
+        audio_only: bool = False,
+        video_only: bool = False,
+    ) -> None:
+        file_type = self.get_file_type(input_file)
+        if file_type == FILETYPE_AUDIO or audio_only:
+            return await self.convert_audio(input_file)
+        if file_type == FILETYPE_VIDEO:
+            if not video_only and not audio_only:
+                raise errors.ConversionException(
+                    "Video files require parallel sanitization. Please run with --video-only or --audio-only."
+                )
+            if video_only:
+                return await self.convert_video(input_file)
+            # audio_only for video is handled above
+
         conversions: Dict[str, Dict[str, Optional[str]]] = {
             # .pdf
             "application/pdf": {"type": "PyMuPDF"},
@@ -519,16 +674,23 @@ async def handle_index(output_dir: Optional[str] = None) -> None:
             files = await extract_recursive(temp_input, output_dir, converter)
             await DocumentToPixels.write_int(len(files))
             for f in files:
-                # Protocol: ALWAYS absolute paths for indexed files (start with /)
+                # Protocol: <type>: uint8, <length>: uint16, <path>: varchar
+                # ALWAYS absolute paths for indexed files (start with /)
                 path = os.path.abspath(f)
+                file_type = converter.get_file_type(path)
+                await converter.write_uint8(file_type)
+                
                 f_bytes = path.encode()
                 await DocumentToPixels.write_int(len(f_bytes))
                 await DocumentToPixels.write_bytes(f_bytes)
 
         else:
-            # It's a single file. Protocol: report 1 file, name does NOT start with /
-            # We report it as 'tmp/dz-input-xxxx'
+            # It's a single file. Protocol: report 1 file
+            # We report it as 'tmp/dz-input-xxxx' (without leading / to indicate it's the main file)
             await DocumentToPixels.write_int(1)
+            file_type = converter.get_file_type(temp_input)
+            await converter.write_uint8(file_type)
+            
             f_bytes = temp_input.lstrip("/").encode()
             await DocumentToPixels.write_int(len(f_bytes))
             await DocumentToPixels.write_bytes(f_bytes)
@@ -542,7 +704,12 @@ async def handle_index(output_dir: Optional[str] = None) -> None:
         sys.exit(exit_code)
 
 
-async def handle_sanitize(input_file: Optional[str] = None) -> None:
+async def handle_sanitize(
+    input_file: Optional[str] = None,
+    *,
+    audio_only: bool = False,
+    video_only: bool = False,
+) -> None:
     """Handle the 'sanitize' command or default behavior: convert a file to pixels."""
     if input_file is None:
         # Backwards compatibility: read from stdin
@@ -558,7 +725,11 @@ async def handle_sanitize(input_file: Optional[str] = None) -> None:
     exit_code = 0
     converter = DocumentToPixels()
     try:
-        await converter.convert(input_file)
+        await converter.convert(
+            input_file,
+            audio_only=audio_only,
+            video_only=video_only,
+        )
     except errors.ConversionException as e:
         await DocumentToPixels.write_bytes(str(e).encode(), file=sys.stderr)
         exit_code = e.error_code
@@ -581,13 +752,19 @@ async def main() -> None:
 
     sanitize_parser = subparsers.add_parser("sanitize")
     sanitize_parser.add_argument("path", nargs="?", default=None)
+    sanitize_parser.add_argument("--audio-only", action="store_true")
+    sanitize_parser.add_argument("--video-only", action="store_true")
 
     args = parser.parse_args()
 
     if args.command == "index":
         await handle_index(args.output_dir)
     elif args.command == "sanitize":
-        await handle_sanitize(args.path)
+        await handle_sanitize(
+            args.path,
+            audio_only=args.audio_only,
+            video_only=args.video_only,
+        )
     else:
         # Default behavior (backwards compatibility)
         await handle_sanitize()

@@ -227,6 +227,17 @@ def get_supported_extensions() -> List[str]:
             ".tbz2",
             ".tar.xz",
             ".txz",
+            # Audio
+            ".mp3",
+            ".wav",
+            ".ogg",
+            ".flac",
+            # Video
+            ".mp4",
+            ".mkv",
+            ".mov",
+            ".avi",
+            ".webm",
         ]
 
     return supported_ext

@@ -17,7 +17,14 @@ import fitz
 from colorama import Fore, Style
 
 from ..conversion import errors
-from ..conversion.common import DEFAULT_DPI, INT_BYTES
+from ..conversion.common import (
+    DEFAULT_DPI,
+    FILETYPE_AUDIO,
+    FILETYPE_DOCUMENT,
+    FILETYPE_IMAGE,
+    FILETYPE_VIDEO,
+    INT_BYTES,
+)
 from ..document import Document
 from ..util import get_tessdata_dir, replace_control_chars
 
@@ -284,8 +291,8 @@ class IsolationProvider(ABC):
                     f"----- {desc.upper()} LOG END -----"
                 )
 
-    def _get_filenames(self, document: Document) -> List[str]:
-        """Run the 'index' command and return the list of filenames to sanitize."""
+    def _get_index(self, document: Document) -> List[tuple[str, int]]:
+        """Run the 'index' command and return the list of (filename, type) to sanitize."""
         self.print_progress(document, False, "Indexing archive", 0)
         with open(document.input_filename, "rb") as f:
             with self.run_exec(document, ["index"]) as index_proc:
@@ -306,14 +313,184 @@ class IsolationProvider(ABC):
                         raise errors.exception_from_error_code(ret)
                     raise
 
-                filenames = []
+                index = []
                 for _ in range(n_files):
+                    file_type = int.from_bytes(
+                        read_bytes(index_proc.stdout, 1), "big"
+                    )
                     filename_len = read_int(index_proc.stdout)
                     filename = read_bytes(index_proc.stdout, filename_len).decode()
-                    filenames.append(filename)
+                    index.append((filename, file_type))
 
                 index_proc.wait()
-        return filenames
+        return index
+
+    def _convert_audio(
+        self,
+        document: Document,
+        filename: str,
+        output_filename: str,
+        file_index: int,
+        total_files: int,
+    ) -> None:
+        display_filename = replace_control_chars(os.path.basename(filename))
+        log.debug(f"Sanitizing audio file {file_index + 1}/{total_files}: {filename}")
+        
+        file_step = 100 / total_files
+        base_percentage = file_index * file_step
+        
+        self.print_progress(
+            document, False, f"Sanitizing audio ({display_filename})", base_percentage
+        )
+
+        with self.run_exec(document, ["sanitize", "--audio-only", filename]) as sanitize_proc:
+            assert sanitize_proc.stdout is not None
+            
+            # Local ffmpeg to encode raw PCM to safe MKV (Opus)
+            ffmpeg_cmd = [
+                "ffmpeg",
+                "-y",
+                "-f", "s16le",
+                "-ar", "44100",
+                "-ac", "2",
+                "-i", "-",
+                "-c:a", "libopus",
+                output_filename
+            ]
+            
+            ffmpeg_proc = subprocess.Popen(
+                ffmpeg_cmd,
+                stdin=subprocess.PIPE,
+                stderr=self.proc_stderr,
+            )
+            assert ffmpeg_proc.stdin is not None
+            
+            try:
+                while True:
+                    chunk = sanitize_proc.stdout.read(65536)
+                    if not chunk:
+                        break
+                    ffmpeg_proc.stdin.write(chunk)
+            finally:
+                ffmpeg_proc.stdin.close()
+                ffmpeg_proc.wait()
+                if ffmpeg_proc.returncode != 0:
+                    raise errors.ConversionException("Local audio encoding failed")
+
+    def _convert_video(
+        self,
+        document: Document,
+        filename: str,
+        output_filename: str,
+        file_index: int,
+        total_files: int,
+    ) -> None:
+        display_filename = replace_control_chars(os.path.basename(filename))
+        log.debug(f"Sanitizing video file {file_index + 1}/{total_files}: {filename}")
+        
+        file_step = 100 / total_files
+        base_percentage = file_index * file_step
+        
+        self.print_progress(
+            document, False, f"Sanitizing video ({display_filename})", base_percentage
+        )
+
+        # Create pipes
+        r_audio, w_audio = os.pipe()
+        r_video, w_video = os.pipe()
+
+        # Start parallel sanitize commands
+        p_video = self.start_exec(document, ["sanitize", "--video-only", filename])
+        p_audio = self.start_exec(document, ["sanitize", "--audio-only", filename])
+
+        assert p_video.stdout is not None
+        assert p_audio.stdout is not None
+
+        # Read video metadata from p_video.stdout
+        try:
+            width = read_int(p_video.stdout)
+            height = read_int(p_video.stdout)
+            fps = read_int(p_video.stdout)
+        except errors.ConverterProcException:
+            # Check for errors in processes
+            terminate_process_group(p_video)
+            terminate_process_group(p_audio)
+            os.close(r_audio)
+            os.close(w_audio)
+            os.close(r_video)
+            os.close(w_video)
+            raise
+
+        # Local ffmpeg to encode raw PCM and RGB to safe WebM (VP9/Opus)
+        if platform.system() != "Windows":
+            audio_input = f"/dev/fd/{r_audio}"
+            video_input = f"/dev/fd/{r_video}"
+        else:
+            # On Windows, we'll try to use pipe:X but it's fragile.
+            # For now, let's use the FD numbers.
+            audio_input = f"pipe:{r_audio}"
+            video_input = f"pipe:{r_video}"
+        
+        ffmpeg_cmd = [
+            "ffmpeg", "-y",
+            "-f", "s16le", "-ar", "44100", "-ac", "2", "-i", audio_input,
+            "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{width}x{height}", "-r", str(fps), "-i", video_input,
+            "-c:v", "libvpx-vp9", "-c:a", "libopus",
+            "-crf", "30", "-b:v", "0", # VP9 recommended settings for quality
+            output_filename
+        ]
+
+        import threading
+        
+        def pipe_thread(src, dst_fd):
+            with os.fdopen(dst_fd, "wb") as dst:
+                try:
+                    while True:
+                        chunk = src.read(65536)
+                        if not chunk:
+                            break
+                        dst.write(chunk)
+                except (IOError, BrokenPipeError):
+                    pass
+
+        try:
+            # We must make the read ends inheritable
+            if platform.system() == "Windows":
+                # On Windows, we use handle inheritance
+                os.set_handle_inheritable(r_audio, True)
+                os.set_handle_inheritable(r_video, True)
+            
+            ffmpeg_proc = subprocess.Popen(
+                ffmpeg_cmd,
+                stdin=subprocess.PIPE, # FD 0, unused
+                stderr=self.proc_stderr,
+                pass_fds=(r_audio, r_video) if platform.system() != "Windows" else [],
+            )
+            
+            # Actually, I'll use a helper to pipe from sanitize to the write end of the pipes
+            t_audio = threading.Thread(target=pipe_thread, args=(p_audio.stdout, w_audio))
+            t_video = threading.Thread(target=pipe_thread, args=(p_video.stdout, w_video))
+            
+            t_audio.start()
+            t_video.start()
+            
+            ffmpeg_proc.wait()
+            
+            t_audio.join()
+            t_video.join()
+            
+            p_audio.wait()
+            p_video.wait()
+            
+            if ffmpeg_proc.returncode != 0:
+                raise errors.ConversionException("Local video encoding failed")
+        finally:
+            os.close(r_audio)
+            os.close(r_video)
+            # w_audio and w_video are closed in the threads
+            
+            terminate_process_group(p_audio)
+            terminate_process_group(p_video)
 
     def _convert_file(
         self,
@@ -485,29 +662,36 @@ class IsolationProvider(ABC):
         ocr_lang: Optional[str],
         p: subprocess.Popen,
     ) -> None:
-        filenames = self._get_filenames(document)
-        n_files = len(filenames)
+        index = self._get_index(document)
+        n_files = len(index)
 
         if n_files == 0:
             raise errors.DocCorruptedException("Archive is empty")
 
         # Protocol: if first file starts with /, it's an archive
-        is_archive_mode = filenames[0].startswith("/")
+        is_archive_mode = index[0][0].startswith("/")
 
         if not is_archive_mode:
             # Single file mode (existing behavior)
-            safe_doc = fitz.Document()
-            success = self._convert_file(document, filenames[0], ocr_lang, safe_doc, 0, 1)
-            if not success:
-                # If the only file is unsupported, we fail
-                raise errors.DocFormatUnsupported()
-            # Saving it with a different name first, because PyMuPDF cannot handle
-            # non-Unicode chars.
-            safe_doc.save(document.sanitized_output_filename)
-            os.replace(document.sanitized_output_filename, document.output_filename)
+            filename, file_type = index[0]
+            if file_type in [FILETYPE_DOCUMENT, FILETYPE_IMAGE]:
+                safe_doc = fitz.Document()
+                success = self._convert_file(document, filename, ocr_lang, safe_doc, 0, 1)
+                if not success:
+                    # If the only file is unsupported, we fail
+                    raise errors.DocFormatUnsupported()
+                # Saving it with a different name first, because PyMuPDF cannot handle
+                # non-Unicode chars.
+                safe_doc.save(document.sanitized_output_filename)
+                os.replace(document.sanitized_output_filename, document.output_filename)
+            elif file_type == FILETYPE_AUDIO:
+                self._convert_audio(document, filename, document.output_filename, 0, 1)
+            elif file_type == FILETYPE_VIDEO:
+                self._convert_video(document, filename, document.output_filename, 0, 1)
         else:
-            # Archive mode: create a directory {name}-safe/ and put safe PDFs in it
+            # Archive mode: create a directory {name}-safe/ and put safe PDFs/media in it
             # Determine base path in container to calculate relative paths
+            filenames = [item[0] for item in index]
             common_base = os.path.commonpath(filenames)
             
             # Host output directory
@@ -515,7 +699,7 @@ class IsolationProvider(ABC):
             output_dir = f"{input_base}-safe"
             os.makedirs(output_dir, exist_ok=True)
 
-            for i, filename in enumerate(filenames):
+            for i, (filename, file_type) in enumerate(index):
                 # Calculate relative path
                 rel_path = os.path.relpath(filename, common_base)
                 # Ensure no traversal (just in case)
@@ -526,22 +710,32 @@ class IsolationProvider(ABC):
 
                 # Host target file
                 target_filename = os.path.join(output_dir, rel_path)
-                # Ensure it ends in .pdf
-                if not target_filename.lower().endswith(".pdf"):
-                    target_filename += ".pdf"
                 
-                os.makedirs(os.path.dirname(target_filename), exist_ok=True)
-
-                safe_doc = fitz.Document()
-                success = self._convert_file(document, filename, ocr_lang, safe_doc, i, n_files)
-                if not success:
-                    continue
-
-                # Sanitize target filename for PyMuPDF
-                sanitized_target = replace_control_chars(target_filename)
-                safe_doc.save(sanitized_target)
-                if sanitized_target != target_filename:
-                    os.replace(sanitized_target, target_filename)
+                if file_type in [FILETYPE_DOCUMENT, FILETYPE_IMAGE]:
+                    # Ensure it ends in .pdf
+                    if not target_filename.lower().endswith(".pdf"):
+                        target_filename += ".pdf"
+                    os.makedirs(os.path.dirname(target_filename), exist_ok=True)
+                    safe_doc = fitz.Document()
+                    success = self._convert_file(document, filename, ocr_lang, safe_doc, i, n_files)
+                    if not success:
+                        continue
+                    sanitized_target = replace_control_chars(target_filename)
+                    safe_doc.save(sanitized_target)
+                    if sanitized_target != target_filename:
+                        os.replace(sanitized_target, target_filename)
+                elif file_type == FILETYPE_AUDIO:
+                    # Ensure appropriate extension for safe output
+                    if not target_filename.lower().endswith(".mkv"):
+                        target_filename += ".mkv"
+                    os.makedirs(os.path.dirname(target_filename), exist_ok=True)
+                    self._convert_audio(document, filename, target_filename, i, n_files)
+                elif file_type == FILETYPE_VIDEO:
+                    # Ensure appropriate extension for safe output
+                    if not target_filename.lower().endswith(".webm"):
+                        target_filename += ".webm"
+                    os.makedirs(os.path.dirname(target_filename), exist_ok=True)
+                    self._convert_video(document, filename, target_filename, i, n_files)
 
         text = "Successfully converted document"
         self.print_progress(document, False, text, 100)

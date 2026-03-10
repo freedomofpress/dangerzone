@@ -99,17 +99,17 @@ class DocumentToPixels(DangerzoneConverter):
         )
         assert proc.stdout is not None
         assert proc.stderr is not None
-        
+
         # Read stdout in chunks and write to sys.stdout
         while not proc.stdout.at_eof():
             chunk = await proc.stdout.read(65536)
             sys.stdout.buffer.write(chunk)
             sys.stdout.buffer.flush()
-        
+
         # Read stderr and capture it
         stderr = await proc.stderr.read()
         self.captured_output += stderr
-        
+
         ret = await proc.wait()
         if ret != 0:
             raise errors.ConversionException("Audio conversion failed")
@@ -129,14 +129,16 @@ class DocumentToPixels(DangerzoneConverter):
             "default=noprint_wrappers=1",
             input_file,
         ]
-        stdout, stderr = await self.run_command(ffprobe_args, error_message="ffprobe failed")
-        
+        stdout, stderr = await self.run_command(
+            ffprobe_args, error_message="ffprobe failed"
+        )
+
         metadata = {}
         for line in stdout.decode().splitlines():
             if "=" in line:
                 key, val = line.split("=", 1)
                 metadata[key] = val
-        
+
         width = int(metadata.get("width", 0))
         height = int(metadata.get("height", 0))
         fps_raw = metadata.get("r_frame_rate", "25/1")
@@ -145,12 +147,12 @@ class DocumentToPixels(DangerzoneConverter):
             fps = round(int(num) / int(den))
         else:
             fps = int(fps_raw)
-            
+
         # Write metadata to stdout: width, height, fps (all uint16)
         await self.write_int(width)
         await self.write_int(height)
         await self.write_int(fps)
-        
+
         # Video: raw RGB24
         ffmpeg_args = [
             "ffmpeg",
@@ -171,15 +173,15 @@ class DocumentToPixels(DangerzoneConverter):
         )
         assert proc.stdout is not None
         assert proc.stderr is not None
-        
+
         while not proc.stdout.at_eof():
             chunk = await proc.stdout.read(65536)
             sys.stdout.buffer.write(chunk)
             sys.stdout.buffer.flush()
-            
+
         stderr = await proc.stderr.read()
         self.captured_output += stderr
-        
+
         ret = await proc.wait()
         if ret != 0:
             raise errors.ConversionException("Video conversion failed")
@@ -497,14 +499,15 @@ def get_email_format(path: str) -> Optional[str]:
     if mime_type == "text/plain":
         try:
             from email.parser import BytesHeaderParser
+
             with open(path, "rb") as f:
                 start_bytes = f.read(4096)
                 start = start_bytes.lower()
-                
+
                 # MBOX heuristic: starts with "From "
                 if start.startswith(b"from "):
                     return "mbox"
-                
+
                 # EML heuristic: multiple standard headers
                 msg = BytesHeaderParser().parsebytes(start_bytes)
                 headers = ["subject", "from", "to", "date", "mime-version"]
@@ -524,7 +527,9 @@ def is_email(path: str) -> bool:
     return get_email_format(path) is not None
 
 
-async def _extract_email(input_path: str, output_dir: str, converter: "DocumentToPixels") -> None:
+async def _extract_email(
+    input_path: str, output_dir: str, converter: "DocumentToPixels"
+) -> None:
     """Extract email body and attachments using mailbagit."""
     temp_mailbag_out = f"{output_dir}_mailbag_tmp"
 
@@ -553,24 +558,38 @@ async def _extract_email(input_path: str, output_dir: str, converter: "DocumentT
             dest_attachments = os.path.join(output_dir, "attachments")
             os.makedirs(dest_attachments, exist_ok=True)
             for item in os.listdir(src_attachments):
-                shutil.move(os.path.join(src_attachments, item), os.path.join(dest_attachments, item))
+                shutil.move(
+                    os.path.join(src_attachments, item),
+                    os.path.join(dest_attachments, item),
+                )
             # Don't walk into the moved directory
             dirs.remove("attachments")
-        
+
         for f in files:
             if f.lower().endswith(".html"):
-                shutil.move(os.path.join(root, f), os.path.join(output_dir, "body.html"))
+                shutil.move(
+                    os.path.join(root, f), os.path.join(output_dir, "body.html")
+                )
 
     shutil.rmtree(temp_mailbag_out)
 
     # Final cleanup of output_dir to ensure no metadata files leaked through
-    metadata_names = ["attachments.csv", "mailbag.csv", "bag-info.txt", "bagit.txt", "mailbag.log"]
+    metadata_names = [
+        "attachments.csv",
+        "mailbag.csv",
+        "bag-info.txt",
+        "bagit.txt",
+        "mailbag.log",
+    ]
     for root, dirs, files in os.walk(output_dir):
         for f in files:
             f_lower = f.lower()
-            if f_lower in metadata_names or f_lower.startswith("manifest-") or f_lower.startswith("tagmanifest-"):
+            if (
+                f_lower in metadata_names
+                or f_lower.startswith("manifest-")
+                or f_lower.startswith("tagmanifest-")
+            ):
                 os.remove(os.path.join(root, f))
-
 
 
 async def _extract_recursive_all(
@@ -679,7 +698,7 @@ async def handle_index(output_dir: Optional[str] = None) -> None:
                 path = os.path.abspath(f)
                 file_type = converter.get_file_type(path)
                 await converter.write_uint8(file_type)
-                
+
                 f_bytes = path.encode()
                 await DocumentToPixels.write_int(len(f_bytes))
                 await DocumentToPixels.write_bytes(f_bytes)
@@ -690,7 +709,7 @@ async def handle_index(output_dir: Optional[str] = None) -> None:
             await DocumentToPixels.write_int(1)
             file_type = converter.get_file_type(temp_input)
             await converter.write_uint8(file_type)
-            
+
             f_bytes = temp_input.lstrip("/").encode()
             await DocumentToPixels.write_int(len(f_bytes))
             await DocumentToPixels.write_bytes(f_bytes)

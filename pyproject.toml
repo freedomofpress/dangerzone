@@ -27,6 +27,7 @@ pyxdg = { version = "*", platform = "linux" }
 requests = "*"
 markdown = "*"
 packaging = "*"
+av = "^15.0.0"
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/1284#issuecomment-3410520568
 shiboken6 = [
    { version = "<6.10.0", python = "3.9" }, # remove when we drop Python 3.9 / Debian Bullseye support

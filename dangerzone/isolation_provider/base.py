@@ -13,7 +13,10 @@ from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
 from typing import IO, Callable, Iterator, List, Optional
 
+import av
+import fractions
 import fitz
+import numpy as np
 from colorama import Fore, Style
 
 from ..conversion import errors
@@ -315,9 +318,8 @@ class IsolationProvider(ABC):
 
                 index = []
                 for _ in range(n_files):
-                    file_type = int.from_bytes(
-                        read_bytes(index_proc.stdout, 1), "big"
-                    )
+                    # breakpoint()
+                    file_type = int.from_bytes(read_bytes(index_proc.stdout, 1), "big")
                     filename_len = read_int(index_proc.stdout)
                     filename = read_bytes(index_proc.stdout, filename_len).decode()
                     index.append((filename, file_type))
@@ -335,36 +337,43 @@ class IsolationProvider(ABC):
     ) -> None:
         display_filename = replace_control_chars(os.path.basename(filename))
         log.debug(f"Sanitizing audio file {file_index + 1}/{total_files}: {filename}")
-        
+
         file_step = 100 / total_files
         base_percentage = file_index * file_step
-        
+
         self.print_progress(
             document, False, f"Sanitizing audio ({display_filename})", base_percentage
         )
 
-        with self.run_exec(document, ["sanitize", "--audio-only", filename]) as sanitize_proc:
+        with self.run_exec(
+            document, ["sanitize", "--audio-only", filename]
+        ) as sanitize_proc:
             assert sanitize_proc.stdout is not None
-            
+
             # Local ffmpeg to encode raw PCM to safe MKV (Opus)
             ffmpeg_cmd = [
                 "ffmpeg",
                 "-y",
-                "-f", "s16le",
-                "-ar", "44100",
-                "-ac", "2",
-                "-i", "-",
-                "-c:a", "libopus",
-                output_filename
+                "-f",
+                "s16le",
+                "-ar",
+                "44100",
+                "-ac",
+                "2",
+                "-i",
+                "-",
+                "-c:a",
+                "libopus",
+                output_filename,
             ]
-            
+
             ffmpeg_proc = subprocess.Popen(
                 ffmpeg_cmd,
                 stdin=subprocess.PIPE,
                 stderr=self.proc_stderr,
             )
             assert ffmpeg_proc.stdin is not None
-            
+
             try:
                 while True:
                     chunk = sanitize_proc.stdout.read(65536)
@@ -388,16 +397,17 @@ class IsolationProvider(ABC):
         display_filename = replace_control_chars(os.path.basename(filename))
         log.debug(f"Sanitizing video file {file_index + 1}/{total_files}: {filename}")
         
+        import av.logging
+        av.logging.set_level(av.logging.VERBOSE)
+
         file_step = 100 / total_files
         base_percentage = file_index * file_step
-        
+
         self.print_progress(
             document, False, f"Sanitizing video ({display_filename})", base_percentage
         )
 
-        # Create pipes
-        r_audio, w_audio = os.pipe()
-        r_video, w_video = os.pipe()
+        # No longer using os.pipe directly for ffmpeg, using PyAV instead
 
         # Start parallel sanitize commands
         p_video = self.start_exec(document, ["sanitize", "--video-only", filename])
@@ -415,82 +425,148 @@ class IsolationProvider(ABC):
             # Check for errors in processes
             terminate_process_group(p_video)
             terminate_process_group(p_audio)
-            os.close(r_audio)
-            os.close(w_audio)
-            os.close(r_video)
-            os.close(w_video)
             raise
 
-        # Local ffmpeg to encode raw PCM and RGB to safe WebM (VP9/Opus)
-        if platform.system() != "Windows":
-            audio_input = f"/dev/fd/{r_audio}"
-            video_input = f"/dev/fd/{r_video}"
-        else:
-            # On Windows, we'll try to use pipe:X but it's fragile.
-            # For now, let's use the FD numbers.
-            audio_input = f"pipe:{r_audio}"
-            video_input = f"pipe:{r_video}"
-        
-        ffmpeg_cmd = [
-            "ffmpeg", "-y",
-            "-f", "s16le", "-ar", "44100", "-ac", "2", "-i", audio_input,
-            "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{width}x{height}", "-r", str(fps), "-i", video_input,
-            "-c:v", "libvpx-vp9", "-c:a", "libopus",
-            "-crf", "30", "-b:v", "0", # VP9 recommended settings for quality
-            output_filename
-        ]
+        # Use PyAV to encode raw PCM and RGB to safe WebM (VP9/Opus)
+        # Create an output container
+        container = av.open(output_filename, mode="w", format="webm")
 
-        import threading
-        
-        def pipe_thread(src, dst_fd):
-            with os.fdopen(dst_fd, "wb") as dst:
-                try:
-                    while True:
-                        chunk = src.read(65536)
-                        if not chunk:
-                            break
-                        dst.write(chunk)
-                except (IOError, BrokenPipeError):
-                    pass
+        # Add video stream
+        video_stream = container.add_stream("libvpx-vp9", rate=fps)
+        video_stream.width = width
+        video_stream.height = height
+        video_stream.pix_fmt = "yuv420p"
+        video_stream.options = {
+            "crf": "30",
+            "b:v": "0",
+        }  # VP9 recommended settings for quality
 
+        # Add audio stream
+        audio_stream = container.add_stream("libopus", layout="stereo", rate=48000, format='s16')
+        audio_stream.options = {"b:a": "128k"}  # Standard Opus bitrate
+        channels = 2 # Assuming stereo layout as specified
+        audio_stream.time_base = fractions.Fraction(1, 48000) # Explicitly set time_base for consistency
+
+        # Audio resampler: from 44.1kHz (s16) to 48kHz (s16)
+        resampler = av.AudioResampler(
+            format='s16', # Output format changed to s16
+            layout=audio_stream.layout, # Output layout
+            rate=audio_stream.rate,     # Output rate
+        )
+
+        # FIFO for audio samples to match encoder frame size
+        fifo = av.AudioFifo()
+
+        # Frame counters
+        video_pts = 0
+        audio_pts = 0
+
+        # Expected samples per channel for the encoder
+        encoder_frame_size = audio_stream.codec_context.frame_size
+
+        # Read frames from the sanitize processes and encode them
         try:
-            # We must make the read ends inheritable
-            if platform.system() == "Windows":
-                # On Windows, we use handle inheritance
-                os.set_handle_inheritable(r_audio, True)
-                os.set_handle_inheritable(r_video, True)
-            
-            ffmpeg_proc = subprocess.Popen(
-                ffmpeg_cmd,
-                stdin=subprocess.PIPE, # FD 0, unused
-                stderr=self.proc_stderr,
-                pass_fds=(r_audio, r_video) if platform.system() != "Windows" else [],
-            )
-            
-            # Actually, I'll use a helper to pipe from sanitize to the write end of the pipes
-            t_audio = threading.Thread(target=pipe_thread, args=(p_audio.stdout, w_audio))
-            t_video = threading.Thread(target=pipe_thread, args=(p_video.stdout, w_video))
-            
-            t_audio.start()
-            t_video.start()
-            
-            ffmpeg_proc.wait()
-            
-            t_audio.join()
-            t_video.join()
-            
-            p_audio.wait()
-            p_video.wait()
-            
-            if ffmpeg_proc.returncode != 0:
-                raise errors.ConversionException("Local video encoding failed")
+            video_done = False
+            audio_done = False
+            while True:
+                # Read video frame (if available)
+                untrusted_pixels = b""
+                if not video_done:
+                    video_frame_size = width * height * 3  # RGB24
+                    untrusted_pixels = p_video.stdout.read(video_frame_size)
+                    if not untrusted_pixels:
+                        video_done = True
+
+                # Read audio frame (if available)
+                untrusted_audio = b""
+                if not audio_done:
+                    audio_chunk_size = 3840  # bytes, corresponds to 960 s16le stereo samples
+                    untrusted_audio = p_audio.stdout.read(audio_chunk_size)
+                    if not untrusted_audio:
+                        audio_done = True
+
+                if video_done and audio_done:
+                    break  # Both streams ended
+
+                # Encode video frame
+                if untrusted_pixels:
+                    video_array = np.frombuffer(untrusted_pixels, dtype=np.uint8).reshape((height, width, 3))
+                    rgb_frame = av.VideoFrame.from_ndarray(video_array, format="rgb24")
+                    frame = rgb_frame.reformat(format='yuv420p')
+
+                    frame.pts = video_pts
+                    video_pts += 1  # Manually increment pts for each frame
+                    for packet in video_stream.encode(frame):
+                        container.mux(packet)
+
+                # Encode audio frame
+                if untrusted_audio:
+                    # Convert bytes to numpy array of int16
+                    audio_array = np.frombuffer(untrusted_audio, dtype=np.int16)
+
+                    # Input audio frame (44.1kHz)
+                    # For packed formats like s16, PyAV often expects (1, samples*channels)
+                    audio_array = audio_array.reshape(1, -1)
+                    in_frame = av.AudioFrame.from_ndarray(audio_array, format='s16', layout='stereo')
+                    in_frame.sample_rate = 44100 # Explicitly set sample rate for input frame
+
+                    # Resample input frame
+                    resampled_frames = resampler.resample(in_frame)
+                    for rf in resampled_frames:
+                        fifo.write(rf)
+
+                    # Process FIFO in chunks of encoder_frame_size
+                    while encoder_frame_size > 0 and fifo.samples >= encoder_frame_size:
+                        out_frame = fifo.read(encoder_frame_size)
+                        out_frame.pts = audio_pts
+                        audio_pts += out_frame.samples
+                        out_frame.time_base = audio_stream.time_base
+                        for packet in audio_stream.encode(out_frame):
+                            container.mux(packet)
+
+                    if encoder_frame_size == 0:
+                        out_frame = fifo.read(0)
+                        if out_frame:
+                            out_frame.pts = audio_pts
+                            audio_pts += out_frame.samples
+                            out_frame.time_base = audio_stream.time_base
+                            for packet in audio_stream.encode(out_frame):
+                                container.mux(packet)
+
+            # Flush remaining frames
+            for packet in video_stream.encode():  # Flush video encoder
+                container.mux(packet)
+
+            # Flush resampler
+            flushed_resampled_frames = resampler.resample(None)
+            for rf in flushed_resampled_frames:
+                fifo.write(rf)
+
+            # Encode any remaining samples in FIFO
+            if fifo.samples > 0:
+                out_frame = fifo.read(fifo.samples)
+                out_frame.pts = audio_pts
+                audio_pts += out_frame.samples
+                out_frame.time_base = audio_stream.time_base
+                for packet in audio_stream.encode(out_frame):
+                    container.mux(packet)
+
+            # Flush audio encoder
+            for packet in audio_stream.encode():  # Flush audio encoder
+                container.mux(packet)
+        except Exception as e:
+            log.error(f"Error during video encoding with PyAV: {e}")
+            raise errors.ConversionException(
+                "Local video encoding failed with PyAV"
+            ) from e
         finally:
-            os.close(r_audio)
-            os.close(r_video)
-            # w_audio and w_video are closed in the threads
-            
-            terminate_process_group(p_audio)
-            terminate_process_group(p_video)
+            container.close()
+
+        #     p_audio.wait()
+        #     p_video.wait()
+
+        #     terminate_process_group(p_audio)
+        #     terminate_process_group(p_video)
 
     def _convert_file(
         self,
@@ -674,9 +750,27 @@ class IsolationProvider(ABC):
         if not is_archive_mode:
             # Single file mode (existing behavior)
             filename, file_type = index[0]
+
+            # Construct the target_filename with the appropriate extension
+            base_output_filename = os.path.splitext(document.input_filename)[0]
+            if file_type == FILETYPE_AUDIO:
+                target_filename = f"{base_output_filename}.mkv"
+            elif file_type == FILETYPE_VIDEO:
+                target_filename = f"{base_output_filename}.webm"
+            else:  # FILETYPE_DOCUMENT, FILETYPE_IMAGE, or unknown
+                target_filename = f"{base_output_filename}.pdf"
+
+            # Set the file type discovered from indexing
+            document.file_type = file_type
+
+            # Set the output filename
+            document.output_filename = target_filename
+
             if file_type in [FILETYPE_DOCUMENT, FILETYPE_IMAGE]:
                 safe_doc = fitz.Document()
-                success = self._convert_file(document, filename, ocr_lang, safe_doc, 0, 1)
+                success = self._convert_file(
+                    document, filename, ocr_lang, safe_doc, 0, 1
+                )
                 if not success:
                     # If the only file is unsupported, we fail
                     raise errors.DocFormatUnsupported()
@@ -693,7 +787,7 @@ class IsolationProvider(ABC):
             # Determine base path in container to calculate relative paths
             filenames = [item[0] for item in index]
             common_base = os.path.commonpath(filenames)
-            
+
             # Host output directory
             input_base = os.path.splitext(document.input_filename)[0]
             output_dir = f"{input_base}-safe"
@@ -710,32 +804,53 @@ class IsolationProvider(ABC):
 
                 # Host target file
                 target_filename = os.path.join(output_dir, rel_path)
-                
+
+                # Create a temporary Document object to handle validation and extensions
+                media_doc = Document(filename, file_type=file_type)
+
                 if file_type in [FILETYPE_DOCUMENT, FILETYPE_IMAGE]:
                     # Ensure it ends in .pdf
                     if not target_filename.lower().endswith(".pdf"):
                         target_filename += ".pdf"
-                    os.makedirs(os.path.dirname(target_filename), exist_ok=True)
+                    media_doc.output_filename = target_filename
+
+                    os.makedirs(
+                        os.path.dirname(media_doc.output_filename), exist_ok=True
+                    )
                     safe_doc = fitz.Document()
-                    success = self._convert_file(document, filename, ocr_lang, safe_doc, i, n_files)
+                    success = self._convert_file(
+                        document, filename, ocr_lang, safe_doc, i, n_files
+                    )
                     if not success:
                         continue
-                    sanitized_target = replace_control_chars(target_filename)
+                    sanitized_target = replace_control_chars(media_doc.output_filename)
                     safe_doc.save(sanitized_target)
-                    if sanitized_target != target_filename:
-                        os.replace(sanitized_target, target_filename)
+                    if sanitized_target != media_doc.output_filename:
+                        os.replace(sanitized_target, media_doc.output_filename)
                 elif file_type == FILETYPE_AUDIO:
                     # Ensure appropriate extension for safe output
                     if not target_filename.lower().endswith(".mkv"):
                         target_filename += ".mkv"
-                    os.makedirs(os.path.dirname(target_filename), exist_ok=True)
-                    self._convert_audio(document, filename, target_filename, i, n_files)
+                    media_doc.output_filename = target_filename
+
+                    os.makedirs(
+                        os.path.dirname(media_doc.output_filename), exist_ok=True
+                    )
+                    self._convert_audio(
+                        document, filename, media_doc.output_filename, i, n_files
+                    )
                 elif file_type == FILETYPE_VIDEO:
                     # Ensure appropriate extension for safe output
                     if not target_filename.lower().endswith(".webm"):
                         target_filename += ".webm"
-                    os.makedirs(os.path.dirname(target_filename), exist_ok=True)
-                    self._convert_video(document, filename, target_filename, i, n_files)
+                    media_doc.output_filename = target_filename
+
+                    os.makedirs(
+                        os.path.dirname(media_doc.output_filename), exist_ok=True
+                    )
+                    self._convert_video(
+                        document, filename, media_doc.output_filename, i, n_files
+                    )
 
         text = "Successfully converted document"
         self.print_progress(document, False, text, 100)

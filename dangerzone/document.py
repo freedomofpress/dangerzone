@@ -8,6 +8,12 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Optional
 
 from . import errors, util
+from dangerzone.conversion.common import (
+    FILETYPE_AUDIO,
+    FILETYPE_DOCUMENT,
+    FILETYPE_IMAGE,
+    FILETYPE_VIDEO,
+)
 
 SAFE_EXTENSION = "-safe.pdf"
 ARCHIVE_SUBDIR = "unsafe"
@@ -34,6 +40,7 @@ class Document:
         output_filename: Optional[str] = None,
         suffix: str = SAFE_EXTENSION,
         archive: bool = False,
+        file_type: Optional[int] = None,
     ) -> None:
         # NOTE: See https://github.com/freedomofpress/dangerzone/pull/216#discussion_r1015449418
         self.id = secrets.token_urlsafe(6)[0:6]
@@ -42,6 +49,7 @@ class Document:
         self._output_filename: Optional[str] = None
         self._archive = False
         self._suffix = suffix
+        self._file_type = file_type
 
         if input_filename:
             self.input_filename = input_filename
@@ -67,9 +75,16 @@ class Document:
             raise errors.InputFileNotReadableException() from e
 
     @staticmethod
-    def validate_output_filename(filename: str) -> None:
-        if not filename.endswith(".pdf"):
-            raise errors.NonPDFOutputFileException()
+    def validate_output_filename(filename: str, file_type: Optional[int] = None) -> None:
+        if file_type == FILETYPE_AUDIO:
+            if not filename.lower().endswith(".mkv"):
+                raise errors.InvalidOutputExtension("Audio files must end with .mkv")
+        elif file_type == FILETYPE_VIDEO:
+            if not filename.lower().endswith(".webm"):
+                raise errors.InvalidOutputExtension("Video files must end with .webm")
+        elif file_type in [None, FILETYPE_DOCUMENT, FILETYPE_IMAGE]:
+            if not filename.lower().endswith(".pdf"):
+                raise errors.NonPDFOutputFileException()
 
         if platform.system() == "Windows":
             final_filename = PureWindowsPath(filename).name
@@ -120,12 +135,20 @@ class Document:
     @output_filename.setter
     def output_filename(self, filename: str) -> None:
         filename = self.normalize_filename(filename)
-        self.validate_output_filename(filename)
+        self.validate_output_filename(filename, self._file_type)
         self._output_filename = filename
 
     @property
     def sanitized_output_filename(self) -> str:
         return util.replace_control_chars(self.output_filename)
+
+    @property
+    def file_type(self) -> Optional[int]:
+        return self._file_type
+
+    @file_type.setter
+    def file_type(self, value: Optional[int]) -> None:
+        self._file_type = value
 
     @property
     def suffix(self) -> str:

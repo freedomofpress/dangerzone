@@ -1,4 +1,5 @@
 import contextlib
+import fractions
 import logging
 import multiprocessing as mp
 import os
@@ -14,7 +15,6 @@ from io import BytesIO
 from typing import IO, Callable, Iterator, List, Optional
 
 import av
-import fractions
 import fitz
 import numpy as np
 from colorama import Fore, Style
@@ -297,6 +297,9 @@ class IsolationProvider(ABC):
     def _get_index(self, document: Document) -> List[tuple[str, int]]:
         """Run the 'index' command and return the list of (filename, type) to sanitize."""
         self.print_progress(document, False, "Indexing archive", 0)
+        import time
+
+        time.sleep(10)
         with open(document.input_filename, "rb") as f:
             with self.run_exec(document, ["index"]) as index_proc:
                 try:
@@ -396,8 +399,9 @@ class IsolationProvider(ABC):
     ) -> None:
         display_filename = replace_control_chars(os.path.basename(filename))
         log.debug(f"Sanitizing video file {file_index + 1}/{total_files}: {filename}")
-        
+
         import av.logging
+
         av.logging.set_level(av.logging.VERBOSE)
 
         file_step = 100 / total_files
@@ -442,16 +446,20 @@ class IsolationProvider(ABC):
         }  # VP9 recommended settings for quality
 
         # Add audio stream
-        audio_stream = container.add_stream("libopus", layout="stereo", rate=48000, format='s16')
+        audio_stream = container.add_stream(
+            "libopus", layout="stereo", rate=48000, format="s16"
+        )
         audio_stream.options = {"b:a": "128k"}  # Standard Opus bitrate
-        channels = 2 # Assuming stereo layout as specified
-        audio_stream.time_base = fractions.Fraction(1, 48000) # Explicitly set time_base for consistency
+        channels = 2  # Assuming stereo layout as specified
+        audio_stream.time_base = fractions.Fraction(
+            1, 48000
+        )  # Explicitly set time_base for consistency
 
         # Audio resampler: from 44.1kHz (s16) to 48kHz (s16)
         resampler = av.AudioResampler(
-            format='s16', # Output format changed to s16
-            layout=audio_stream.layout, # Output layout
-            rate=audio_stream.rate,     # Output rate
+            format="s16",  # Output format changed to s16
+            layout=audio_stream.layout,  # Output layout
+            rate=audio_stream.rate,  # Output rate
         )
 
         # FIFO for audio samples to match encoder frame size
@@ -480,7 +488,9 @@ class IsolationProvider(ABC):
                 # Read audio frame (if available)
                 untrusted_audio = b""
                 if not audio_done:
-                    audio_chunk_size = 3840  # bytes, corresponds to 960 s16le stereo samples
+                    audio_chunk_size = (
+                        3840  # bytes, corresponds to 960 s16le stereo samples
+                    )
                     untrusted_audio = p_audio.stdout.read(audio_chunk_size)
                     if not untrusted_audio:
                         audio_done = True
@@ -490,9 +500,11 @@ class IsolationProvider(ABC):
 
                 # Encode video frame
                 if untrusted_pixels:
-                    video_array = np.frombuffer(untrusted_pixels, dtype=np.uint8).reshape((height, width, 3))
+                    video_array = np.frombuffer(
+                        untrusted_pixels, dtype=np.uint8
+                    ).reshape((height, width, 3))
                     rgb_frame = av.VideoFrame.from_ndarray(video_array, format="rgb24")
-                    frame = rgb_frame.reformat(format='yuv420p')
+                    frame = rgb_frame.reformat(format="yuv420p")
 
                     frame.pts = video_pts
                     video_pts += 1  # Manually increment pts for each frame
@@ -507,8 +519,12 @@ class IsolationProvider(ABC):
                     # Input audio frame (44.1kHz)
                     # For packed formats like s16, PyAV often expects (1, samples*channels)
                     audio_array = audio_array.reshape(1, -1)
-                    in_frame = av.AudioFrame.from_ndarray(audio_array, format='s16', layout='stereo')
-                    in_frame.sample_rate = 44100 # Explicitly set sample rate for input frame
+                    in_frame = av.AudioFrame.from_ndarray(
+                        audio_array, format="s16", layout="stereo"
+                    )
+                    in_frame.sample_rate = (
+                        44100  # Explicitly set sample rate for input frame
+                    )
 
                     # Resample input frame
                     resampled_frames = resampler.resample(in_frame)

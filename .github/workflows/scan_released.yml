@@ -4,6 +4,11 @@ on:
     - cron: '0 0 * * *' # Run every day at 00:00 UTC.
   workflow_dispatch:
 
+env:
+  # Severity cutoff is 'critical' by default, except for the 5th and 20th of
+  # month (i.e., biweekly), where we turn it to 'high'.
+  SEVERITY_CUTOFF: ${{ github.event_name == 'schedule' && (github.triggering_actor == 'schedule' && (format('{0}', github.event.schedule) == '0 0 5 * *' || format('{0}', github.event.schedule) == '0 0 20 * *')) && 'high' || 'critical' }}
+
 jobs:
   security-scan-container:
     strategy:
@@ -17,30 +22,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      # NOTE: Scan first without failing, else we won't be able to read the scan
-      # report.
-      - name: Scan container image (no fail)
-        uses: anchore/scan-action@v7
-        id: scan_container
+
+      - name: Scan container
+        uses: ./.github/actions/scan-container
         with:
           image: "ghcr.io/freedomofpress/dangerzone/v1:latest"
-          fail-build: false
-          only-fixed: false
-          severity-cutoff: critical
-      - name: Upload container scan report
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: ${{ steps.scan_container.outputs.sarif }}
-          category: container-${{ matrix.arch }}
-      - name: Inspect container scan report
-        run: cat ${{ steps.scan_container.outputs.sarif }}
-      - name: Scan container image
-        uses: anchore/scan-action@v7
-        with:
-          image: "ghcr.io/freedomofpress/dangerzone/v1:latest"
-          fail-build: true
-          only-fixed: false
-          severity-cutoff: critical
+          severity-cutoff: ${{ env.SEVERITY_CUTOFF }}
+          upload-sarif: true
+          sarif-category: container-${{ matrix.arch }}
 
   security-scan-app:
     strategy:
@@ -54,35 +43,23 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
       - name: Checkout the latest released tag
         run: |
           # Grab the latest Grype ignore list before git checkout overwrites it.
           cp .grype.yaml .grype.yaml.new
+          # Grab the scan code for the GitHub action.
+          cp -r .github/actions/scan-app .github/actions/scan-app.new
           VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | jq -r '.tag_name')
           git checkout $VERSION
           # Restore the newest Grype ignore list.
           mv .grype.yaml.new .grype.yaml
-      # NOTE: Scan first without failing, else we won't be able to read the scan
-      # report.
-      - name: Scan application (no fail)
-        uses: anchore/scan-action@v7
-        id: scan_app
-        with:
-          path: "."
-          fail-build: false
-          only-fixed: false
-          severity-cutoff: critical
-      - name: Upload application scan report
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: ${{ steps.scan_app.outputs.sarif }}
-          category: app
-      - name: Inspect application scan report
-        run: cat ${{ steps.scan_app.outputs.sarif }}
+          # Restore the GHA action.
+          mv .github/actions/scan-app.new .github/actions/scan-app
+
       - name: Scan application
-        uses: anchore/scan-action@v7
+        uses: ./.github/actions/scan-app
         with:
-          path: "."
-          fail-build: true
-          only-fixed: false
-          severity-cutoff: critical
+          severity-cutoff: ${{ env.SEVERITY_CUTOFF }}
+          upload-sarif: true
+          sarif-category: app

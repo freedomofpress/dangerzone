@@ -148,7 +148,7 @@ poetry run dangerzone-image prepare-archive
 ```
 
 Publish the .deb under `./deb_dist` to the
-[`freedomofpress/apt-tools-prod`](https://github.com/freedomofpress/apt-tools-prod)
+[`freedomofpress/packages`](https://github.com/freedomofpress/packages)
 repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 #### Fedora
@@ -173,12 +173,14 @@ poetry run dangerzone-image prepare-archive
     --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
 
-# Create a .rpm:
+# Create the dangerzone .rpm (without container):
 ./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"
+# Create the dangerzone-full .rpm (with container bundled):
+./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py --full"
 ```
 
-Publish the .rpm under `./dist` to the
-[`freedomofpress/yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod) repo, by sending a PR. Follow the instructions in that repo on how to do so.
+Publish the .rpms under `./dist` to the
+[`freedomofpress/packages`](https://github.com/freedomofpress/packages) repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 #### Qubes
 
@@ -188,4 +190,4 @@ Create a `.rpm` for Qubes:
 ./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py --qubes"
 ```
 
-and similarly publish it to the [`freedomofpress/yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod) repo.
+and similarly publish it to the [`freedomofpress/packages`](https://github.com/freedomofpress/packages) repo.

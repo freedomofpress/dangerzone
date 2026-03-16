@@ -125,7 +125,7 @@ RUN dnf install -y git rpm-build podman python3 python3-devel python3-poetry-cor
 # See https://github.com/freedomofpress/dangerzone/issues/286#issuecomment-1347149783
 RUN rpm --restore shadow-utils
 
-RUN dnf install -y mupdf thunar && dnf clean all
+RUN dnf install -y --allowerasing mupdf thunar && dnf clean all
 """
 
 # The Dockerfile for building a development environment for Dangerzone. Parts of the
@@ -176,7 +176,7 @@ RUN apt-get update \
 """
 
 DOCKERFILE_BUILD_FEDORA_DEPS = r"""
-RUN dnf install -y mupdf thunar && dnf clean all
+RUN dnf install --allowerasing -y mupdf thunar && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.
 # See https://github.com/freedomofpress/dangerzone/issues/286#issuecomment-1347149783

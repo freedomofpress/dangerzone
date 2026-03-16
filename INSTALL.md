@@ -53,7 +53,7 @@ You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `bre
 > [!TIP]
 > We generally support Windows releases that are still within [Microsoft’s servicing timeline](https://support.microsoft.com/en-us/help/13853/windows-lifecycle-fact-sheet).
 
-Podman [sets the bottom line](https://github.com/containers/podman/blob/main/docs/tutorials/podman-for-windows.md#prerequisites):
+Podman [sets the bottom line](https://github.com/containers/podman/blob/v5.8.1/docs/tutorials/podman-for-windows.md#prerequisites):
 
 > Since Podman uses WSL, you need a recent release of Windows 10 or Windows 11. On x64, WSL requires build 18362 or later, and 19041 or later is required for arm64 systems. Internally, WSL uses virtualization, so your system must support and have hardware virtualization enabled. If you are running Windows on a VM, you must have a VM that supports nested virtualization.
 

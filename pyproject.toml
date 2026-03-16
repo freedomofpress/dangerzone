@@ -250,9 +250,11 @@ extract.globs = [
 ]
 extract.flatten = true
 
+# FIXME: Remove this pin after we put out a version with a deprecation warning
+# for Windows 10 systems.
 [tool.mazette.asset.podman]
 repo = "containers/podman"
-version = ">=5.6.2"
+version = "<6.0.0"
 platform."windows/amd64" = "podman-remote-release-windows_amd64.zip"
 platform."darwin/amd64" = "podman-remote-release-darwin_amd64.zip"
 platform."darwin/arm64" = "podman-remote-release-darwin_arm64.zip"
@@ -281,7 +283,7 @@ destination = "share/vendor/podman/vfkit"
 
 [tool.mazette.asset.machine-os]
 repo = "containers/podman-machine-os"
-version = ">=5.6.2"
+version = "<6.0.0"
 platform."darwin/amd64" = "podman-machine.x86_64.applehv.raw.zst"
 platform."darwin/arm64" = "podman-machine.aarch64.applehv.raw.zst"
 platform."windows/amd64" = "podman-machine.x86_64.wsl.tar.zst"

@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-The Dangerzone team takes security seriously. If you discover a security-related
+If you discover a security-related
 issue, we appreciate your help in disclosing it to us in a responsible manner.
 
 **Preferred way of disclosing security issues:**

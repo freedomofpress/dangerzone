@@ -15,13 +15,17 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Added
 
-- Dangerzone is able to function without a bundled `container.tar` file 
+- Dangerzone is able to function without a bundled `container.tar` file
   ([#1400](https://github.com/freedomofpress/dangerzone/pull/1400))
 - Look for desktop entries in `XDG_DATA_DIRS` paths on Linux ([#1413](https://github.com/freedomofpress/dangerzone/issues/1413))
 - It is now possible to convert another set of documents after a first batch ([#549](https://github.com/freedomofpress/dangerzone/issues/549))
-- OCR tasks are now queued, resulting in up to x6 speedup 
+- OCR tasks are now queued, resulting in up to x6 speedup
   ([#1329](https://github.com/freedomofpress/dangerzone/issues/1329))
 
+### Platform changes
+
+- Add a deprecation warning for Windows 10
+  ([#1357](https://github.com/freedomofpress/dangerzone/issues/1357))
 
 ### Development changes
 

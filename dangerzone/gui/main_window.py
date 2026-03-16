@@ -127,10 +127,10 @@ DOWNLOAD_NEW_CONTAINER_IMAGE_MSG = """\
  It's recommended to always apply updates.</p>
 """
 
-DEBIAN_BULLSEYE_DEPRECATION_MSG = """\
-<p><b>Warning:</b> Debian Bullseye systems and their derivatives will
-stop being supported in subsequent Dangerzone releases. We encourage you to upgrade to a
-more recent version of your operating system in order to get security updates.</p>
+WINDOWS_10_DEPRECATION_MSG = """\
+<p><b>Warning:</b> Windows 10 will stop being supported in subsequent Dangerzone
+releases. We encourage you to upgrade to a more recent version of your operating system
+in order to get security updates.</p>
 """
 
 
@@ -914,8 +914,8 @@ class ConversionWidget(QtWidgets.QWidget):
         self.conversion_started = False
 
         self.warning_label = None
-        if linux_system_is("Debian GNU/Linux 11", "bullseye"):
-            self.warning_label = QtWidgets.QLabel(DEBIAN_BULLSEYE_DEPRECATION_MSG)
+        if platform.system() == "Windows" and platform.release() == "10":
+            self.warning_label = QtWidgets.QLabel(WINDOWS_10_DEPRECATION_MSG)
             self.warning_label.setWordWrap(True)
             self.warning_label.setProperty("style", "warning")
 

@@ -1,22 +1,29 @@
 # Security Policy
 
+The Dangerzone team welcomes feedback from security researchers and the general
+public to help improve our security. If you believe you have discovered a
+security issue, we want to hear from you. This policy outlines steps for
+reporting vulnerabilities to us, what we expect, what you can expect from us.
+
 ## Reporting a vulnerability
 
-If you discover a security-related
-issue, we appreciate your help in disclosing it to us in a responsible manner.
+**Please do not report security vulnerabilities through public GitHub issues.**
 
-**Preferred way of disclosing security issues:**
-* **GitHub:** Please use the GitHub Security Advisory
-  ["Report a vulnerability"](https://github.com/freedomofpress/dangerzone/security/advisories/new)
-  tab, which creates a private issue, instead of a public one.
-* **Email:** Please send your report to support@dangerzone.rocks.
-* **Encrypted communication:** If the finding is security-critical, you may
-  request a Signal username for further communication.
+Our preferred communication channels are:
+* **Signal:** TKTK.
+* **Email:** support@dangerzone.rocks.
 
-We ask that you do not disclose the vulnerability publicly until we have had the
-opportunity to address it.
+A member of our team should acknowledge your report **within 2 weeks**. If we
+fail to do so, please use a different communication channel.
 
-## Security policy
+Once we have acknowledged the report, we ask for **at least 6 weeks** to
+investigate, implement, and release a fix before any public disclosure, unless
+we mutually agree on a different timeline. During that time we will keep you
+updated as we make progress, and we will be available for any question you may
+have. If we determine that a coordinated public disclosure is necessary before a
+fix is ready, we will work with you on messaging and timing.
+
+## What's in scope
 
 Dangerzone has two main security goals:
 * Malicious documents should not infect the user's device, or communicate with
@@ -24,7 +31,9 @@ Dangerzone has two main security goals:
 * All metadata should be destroyed after the conversion process.
 
 Any vulnerability that undermines these two goals **is considered critical** and
-we advise you to report it via Signal.
+we advise you to report it via Signal. Other vulnerabilt
+
+### About CVEs in our container image
 
 Dangerzone uses several third-party tools to sanitize documents, such as
 [LibreOffice](https://www.libreoffice.org/) and [PyMuPDF](https://pymupdf.io/).
@@ -39,6 +48,9 @@ by known vulnerabilities, i.e., CVEs. We have nightly security scans for
 Critical CVEs, and biweekly security scans for High CVEs. We aim for a 4 week
 update cadence of our container image, or earlier, if a security finding
 necessitates it.
+
+If you have encountered a CVE in our container image that violates the above
+policy, please report it to us.
 
 ## Security Advisories
 

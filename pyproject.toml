@@ -269,9 +269,11 @@ platform."darwin/arm64" = "gvproxy-darwin"
 executable = true
 destination = "share/vendor/podman/gvproxy"
 
+# FIXME: Temporarily pin vfkit to 0.6.1, until the upstream provides a way to
+# sign their releases (see https://github.com/crc-org/vfkit/issues/437).
 [tool.mazette.asset.vfkit]
 repo = "crc-org/vfkit"
-version = ">=0.6.1"
+version = "==0.6.1"
 platform."darwin/amd64" = "vfkit"
 platform."darwin/arm64" = "vfkit"
 executable = true

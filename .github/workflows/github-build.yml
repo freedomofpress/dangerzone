@@ -1,0 +1,18 @@
+name: Check github-builder
+
+permissions:
+  contents: read
+
+on:
+  push:
+
+  build:
+    uses: docker/github-builder/.github/workflows/build.yml@v1
+    permissions:
+      contents: read # to fetch the repository content
+      id-token: write # for signing attestation(s) with GitHub OIDC Token
+      packages: write # for pushing to GHCR
+    with:
+      output: image
+      push: true
+      meta-images: ghcr.io/freedomofpress/dangerzone-test-github-builder

@@ -6,6 +6,7 @@ permissions:
 on:
   push:
 
+jobs:
   build:
     uses: docker/github-builder/.github/workflows/build.yml@v1
     permissions:

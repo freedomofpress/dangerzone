@@ -17,3 +17,7 @@ jobs:
       output: image
       push: true
       meta-images: ghcr.io/freedomofpress/dangerzone-test-github-builder
+      registry-auths: |
+        - registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}

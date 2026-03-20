@@ -46,6 +46,9 @@ def test_order_mime_handers() -> None:
             ],
         ) as mock_list,
         mock.patch("dangerzone.gui.logic.DesktopEntry", return_value=mock_desktop),
+        mock.patch.dict(
+            "os.environ", {"XDG_DATA_DIRS": "/usr/local/share:/usr/share"}
+        ),
     ):
         dz = DangerzoneGui(mock_app, dummy)
 
@@ -93,6 +96,9 @@ def test_mime_handers_succeeds_no_default_found() -> None:
             ],
         ) as mock_list,
         mock.patch("dangerzone.gui.logic.DesktopEntry", return_value=mock_desktop),
+        mock.patch.dict(
+            "os.environ", {"XDG_DATA_DIRS": "/usr/local/share:/usr/share"}
+        ),
     ):
         dz = DangerzoneGui(mock_app, dummy)
 
@@ -122,6 +128,9 @@ def test_malformed_desktop_entry_is_catched() -> None:
                 [],
                 [],
             ],
+        ),
+        mock.patch.dict(
+            "os.environ", {"XDG_DATA_DIRS": "/usr/local/share:/usr/share"}
         ),
     ):
         mock_desktop.side_effect = ParsingError("Oh noes!", "malformed.desktop")

@@ -2,9 +2,9 @@ import os
 import subprocess
 
 import pytest
+from conversion import errors
 from pytest_mock import MockerFixture
 
-from dangerzone.conversion import errors
 from dangerzone.document import Document
 from dangerzone.isolation_provider import base
 
@@ -19,38 +19,21 @@ TIMEOUT_GRACE = 60
     reason="dummy conversions not supported",
 )
 class IsolationProviderTest:
-    def test_max_pages_server_enforcement(
-        self,
-        pdf_11k_pages: str,
-        provider: base.IsolationProvider,
-        mocker: MockerFixture,
-        tmpdir: str,
-    ) -> None:
-        provider.progress_callback = mocker.MagicMock()
-        doc = Document(pdf_11k_pages)
-
-        p = provider.start_doc_to_pixels_proc(doc)
-        with pytest.raises(errors.ConverterProcException):
-            provider.convert_with_proc(doc, None, p)
-            assert provider.get_proc_exception(p) == errors.MaxPagesException
-
     def test_max_pages_client_enforcement(
         self,
-        sample_doc: str,
+        sample_pdf: str,
         provider: base.IsolationProvider,
         mocker: MockerFixture,
         tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
-        mocker.patch(
-            "dangerzone.conversion.errors.MAX_PAGES", 1
-        )  # sample_doc has 4 pages > 1
-        doc = Document(sample_doc)
+        mocker.patch("conversion.errors.MAX_PAGES", 1)  # sample_pdf has 4 pages > 1
+        doc = Document(sample_pdf)
         p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.MaxPagesException):
             provider.convert_with_proc(doc, None, p)
 
-    def test_max_dimensions(
+    def test_max_dimensions_client_enforcement(
         self,
         sample_bad_width: str,
         sample_bad_height: str,

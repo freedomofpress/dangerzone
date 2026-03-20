@@ -7,7 +7,8 @@ import zipfile
 from pathlib import Path
 from typing import IO, Callable, Optional
 
-from ..conversion.common import running_on_qubes
+from conversion.common import running_on_qubes
+
 from ..document import Document
 from ..updater.signatures import is_container_tar_bundled
 from .base import IsolationProvider

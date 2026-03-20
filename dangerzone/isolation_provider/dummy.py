@@ -3,7 +3,8 @@ import subprocess
 import sys
 from typing import Callable, Optional
 
-from ..conversion.common import DangerzoneConverter
+from conversion.common import DangerzoneConverter
+
 from ..document import Document
 from .base import IsolationProvider, terminate_process_group
 

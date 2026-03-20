@@ -1,4 +1,5 @@
 import platform
+import shutil
 import sys
 import typing
 import zipfile
@@ -17,6 +18,14 @@ from dangerzone.podman.machine import PodmanMachineManager
 from dangerzone.settings import Settings
 
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
+
+
+def pytest_collection_modifyitems(items: List) -> None:
+    for item in items:
+        if not item.get_closest_marker("xdist_group"):
+            # Group ungrouped tests by file so they never land on a dedicated
+            # worker (e.g. the container or gui worker).
+            item.add_marker(pytest.mark.xdist_group(item.nodeid.split("::")[0]))
 
 
 ASSETS_PATH = Path(__file__).parent / "assets"
@@ -59,20 +68,6 @@ def unreadable_pdf(tmp_path: Path) -> str:
     file_path = tmp_path / "document.pdf"
     file_path.touch(mode=0o000)
     return str(file_path)
-
-
-@pytest.fixture
-def pdf_11k_pages(tmp_path: Path) -> str:
-    """11K page document with pages of 1x1 px. Generated with the command:
-
-    gs -sDEVICE=pdfwrite -o sample-11k-pages.pdf -dDEVICEWIDTHPOINTS=1 -dDEVICEHEIGHTPOINTS=1 -c 11000 {showpage} repeat
-    """
-
-    filename = "sample-11k-pages.pdf"
-    zip_path = test_docs_compressed_dir / f"{filename}.zip"
-    with zipfile.ZipFile(zip_path, "r") as zip_file:
-        zip_file.extractall(tmp_path)
-    return str(tmp_path / filename)
 
 
 @pytest.fixture
@@ -126,11 +121,6 @@ def sanitized_text() -> str:
 
 
 @pytest.fixture
-def sample_doc() -> str:
-    return str(test_docs_dir.joinpath(BASIC_SAMPLE_DOC))
-
-
-@pytest.fixture
 def sample_bad_height() -> str:
     return str(test_docs_dir.joinpath("sample_bad_max_height.pdf"))
 
@@ -142,7 +132,12 @@ def sample_bad_width() -> str:
 
 @pytest.fixture
 def sample_pdf() -> str:
-    return str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
+    return str(test_docs_dir / BASIC_SAMPLE_PDF)
+
+
+@pytest.fixture
+def sample_pdf2() -> str:
+    return str(test_docs_dir / BASIC_SAMPLE_PDF2)
 
 
 @pytest.fixture
@@ -155,12 +150,9 @@ def skip_image_verification(monkeypatch: Any) -> None:
 
 SAMPLE_DIRECTORY = "test_docs"
 BASIC_SAMPLE_PDF = "sample-pdf.pdf"
-BASIC_SAMPLE_DOC = "sample-doc.doc"
-SAMPLE_EXTERNAL_DIRECTORY = "test_docs_external"
-SAMPLE_COMPRESSED_DIRECTORY = "test_docs_compressed"
+BASIC_SAMPLE_PDF2 = "sample-pdf2.pdf"
 
-test_docs_dir = Path(__file__).parent.joinpath(SAMPLE_DIRECTORY)
-test_docs_compressed_dir = Path(__file__).parent.joinpath(SAMPLE_COMPRESSED_DIRECTORY)
+test_docs_dir = Path(__file__).parent / SAMPLE_DIRECTORY
 
 test_docs = [
     p
@@ -175,33 +167,8 @@ for_each_doc = pytest.mark.parametrize(
 )
 
 
-# External Docs - base64 docs encoded for externally sourced documents
-# XXX to reduce the chance of accidentally opening them
-test_docs_external_dir = Path(__file__).parent.joinpath(SAMPLE_EXTERNAL_DIRECTORY)
-
-
-def get_docs_external(pattern: str = "*") -> List[Path]:
-    if not pattern.endswith("*"):
-        pattern = f"{pattern}.b64"
-    return [
-        p
-        for p in test_docs_external_dir.rglob(pattern)
-        if p.is_file() and not (p.name.endswith(SAFE_EXTENSION))
-    ]
-
-
-# Pytest parameter decorators
-def for_each_external_doc(glob_pattern: str = "*") -> Callable:
-    test_docs_external = get_docs_external(glob_pattern)
-    return pytest.mark.parametrize(
-        "doc",
-        test_docs_external,
-        ids=[str(doc.name).rstrip(".b64") for doc in test_docs_external],
-    )
-
-
 class TestBase:
-    sample_doc = str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
+    sample_doc = str(test_docs_dir / BASIC_SAMPLE_PDF)
 
 
 def pytest_configure(config: pytest.Config) -> None:

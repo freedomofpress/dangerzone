@@ -15,9 +15,9 @@ from typing import IO, Callable, Iterator, Optional
 
 import fitz
 from colorama import Fore, Style
+from conversion import errors
+from conversion.common import DEFAULT_DPI, INT_BYTES
 
-from ..conversion import errors
-from ..conversion.common import DEFAULT_DPI, INT_BYTES
 from ..document import Document
 from ..util import get_tessdata_dir, replace_control_chars
 

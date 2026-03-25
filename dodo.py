@@ -84,13 +84,13 @@ def create_release_dir():
     (RELEASE_DIR / "tmp").mkdir(exist_ok=True)
 
 
-def prepare_dz_dir(dz_dir):
+def prepare_dz_dir(dz_dir, full=False):
     """Prepare a Git repo for building artifacts.
 
     This function creates a pristine Dangerzone repo out of the local one, by copying
     the Git repo, and doing the following actions on the new directory:
     1. Clean untracked files with `git clean -fdx`
-    2. Copy the container image under `share/container.tar`
+    2. Copy the container image under `share/container.tar` (only if full=True)
     3. Install the GitHub assets for this platform
 
     The above actions should be quite fast, because they just copy files around. That
@@ -102,10 +102,13 @@ def prepare_dz_dir(dz_dir):
     img_src = RELEASE_DIR / f"container-{VERSION}-{ARCH}.tar"
     img_dst = dz_dir / "share" / "container.tar"
 
-    return [
+    actions = [
         (copy_dir, [".", dz_dir]),
         f"cd {dz_dir} && git clean -fdx",
-        ["cp", img_src, img_dst],
+    ]
+    if full:
+        actions.append(["cp", img_src, img_dst])
+    actions.append(
         [
             "poetry",
             "run",
@@ -115,11 +118,12 @@ def prepare_dz_dir(dz_dir):
             dz_dir,
             "--platform",
             mazette_platform,
-        ],
-    ]
+        ]
+    )
+    return actions
 
 
-def build_linux_pkg(distro, version, cwd, qubes=False):
+def build_linux_pkg(distro, version, cwd, qubes=False, full=False):
     """Generic command for building a .deb/.rpm in a Dangerzone dev environment."""
     pkg = "rpm" if distro == "fedora" else "deb"
     cmd = [
@@ -136,17 +140,21 @@ def build_linux_pkg(distro, version, cwd, qubes=False):
     ]
     if qubes:
         cmd += ["--qubes"]
+    if full:
+        cmd += ["--full"]
     return CmdAction(" ".join(cmd), cwd=cwd)
 
 
-def build_deb(cwd):
+def build_deb(cwd, full=False):
     """Build a .deb package on Debian Bookworm."""
-    return build_linux_pkg(distro="debian", version="bookworm", cwd=cwd)
+    return build_linux_pkg(distro="debian", version="bookworm", cwd=cwd, full=full)
 
 
-def build_rpm(version, cwd, qubes=False):
+def build_rpm(version, cwd, qubes=False, full=False):
     """Build an .rpm package on the requested Fedora distro."""
-    return build_linux_pkg(distro="fedora", version=version, cwd=cwd, qubes=qubes)
+    return build_linux_pkg(
+        distro="fedora", version=version, cwd=cwd, qubes=qubes, full=full
+    )
 
 
 ### Tasks
@@ -281,31 +289,42 @@ def task_debian_env():
 
 
 def task_debian_deb():
-    """Build a Debian package for Debian Bookworm."""
-    dz_dir = RELEASE_DIR / "tmp" / "debian"
-    deb_name = f"dangerzone_{VERSION}-1_amd64.deb"
-    deb_src = dz_dir / "deb_dist" / deb_name
-    deb_dst = RELEASE_DIR / deb_name
-    img_src = RELEASE_DIR / f"container-{VERSION}-{ARCH}.tar"
-    img_dst = dz_dir / "share" / "container.tar"
+    """Build Debian packages for Debian Bookworm."""
+    for full in (False, True):
+        full_ident = "-full" if full else ""
+        full_desc = " (full)" if full else ""
+        dz_dir = RELEASE_DIR / "tmp" / f"debian{full_ident}"
+        pkg_name = f"dangerzone{full_ident}"
+        deb_name = f"{pkg_name}_{VERSION}-1_amd64.deb"
+        deb_src = dz_dir / "deb_dist" / deb_name
+        deb_dst = RELEASE_DIR / deb_name
 
-    return {
-        "actions": [
-            *prepare_dz_dir(dz_dir),
-            build_deb(cwd=dz_dir),
-            ["cp", deb_src, deb_dst],
-            ["rm", "-rf", dz_dir],
-        ],
-        "file_dep": DEB_DEPS,
-        "task_dep": [
+        task_deps = [
             "init_release_dir",
             "poetry_install",
-            "download_image",
             "debian_env",
-        ],
-        "targets": [deb_dst],
-        "clean": True,
-    }
+        ]
+        if full:
+            task_deps.append("download_image")
+        else:
+            # Ensure full build doesn't run in parallel with default build,
+            # as both modify the same debian/ files during the build process.
+            task_deps.append("debian_deb:default")
+
+        yield {
+            "name": "full" if full else "default",
+            "doc": f"Build a Debian Bookworm package{full_desc}",
+            "actions": [
+                *prepare_dz_dir(dz_dir, full=full),
+                build_deb(cwd=dz_dir, full=full),
+                ["cp", deb_src, deb_dst],
+                ["rm", "-rf", dz_dir],
+            ],
+            "file_dep": DEB_DEPS,
+            "task_dep": task_deps,
+            "targets": [deb_dst],
+            "clean": True,
+        }
 
 
 def task_fedora_env():
@@ -331,34 +350,45 @@ def task_fedora_env():
 
 def task_fedora_rpm():
     """Build Fedora packages for every supported version."""
+    # Build variants: regular, qubes, and full (full and qubes are mutually exclusive)
+    variants = [
+        {"qubes": False, "full": False},
+        {"qubes": True, "full": False},
+        {"qubes": False, "full": True},
+    ]
     for version in FEDORA_VERSIONS:
-        for qubes in (True, False):
-            qubes_ident = "-qubes" if qubes else ""
-            qubes_desc = " for Qubes" if qubes else ""
-            dz_dir = RELEASE_DIR / "tmp" / f"f{version}{qubes_ident}"
+        for variant in variants:
+            qubes = variant["qubes"]
+            full = variant["full"]
+            variant_ident = "-qubes" if qubes else ("-full" if full else "")
+            variant_desc = " for Qubes" if qubes else (" (full)" if full else "")
+            dz_dir = RELEASE_DIR / "tmp" / f"f{version}{variant_ident}"
             rpm_names = [
-                f"dangerzone{qubes_ident}-{VERSION}-1.fc{version}.x86_64.rpm",
-                f"dangerzone{qubes_ident}-{VERSION}-1.fc{version}.src.rpm",
+                f"dangerzone{variant_ident}-{VERSION}-1.fc{version}.x86_64.rpm",
+                f"dangerzone{variant_ident}-{VERSION}-1.fc{version}.src.rpm",
             ]
             rpm_src = [dz_dir / "dist" / rpm_name for rpm_name in rpm_names]
             rpm_dst = [RELEASE_DIR / rpm_name for rpm_name in rpm_names]
 
+            task_deps = [
+                "init_release_dir",
+                "poetry_install",
+                f"fedora_env:{version}",
+            ]
+            if full:
+                task_deps.append("download_image")
+
             yield {
-                "name": version + qubes_ident,
-                "doc": f"Build a Fedora {version} package{qubes_desc}",
+                "name": version + variant_ident,
+                "doc": f"Build a Fedora {version} package{variant_desc}",
                 "actions": [
-                    *prepare_dz_dir(dz_dir),
-                    build_rpm(version, cwd=dz_dir, qubes=qubes),
+                    *prepare_dz_dir(dz_dir, full=full),
+                    build_rpm(version, cwd=dz_dir, qubes=qubes, full=full),
                     ["cp", *rpm_src, RELEASE_DIR],
                     ["rm", "-rf", dz_dir],
                 ],
                 "file_dep": RPM_DEPS,
-                "task_dep": [
-                    "init_release_dir",
-                    "poetry_install",
-                    "download_image",
-                    f"fedora_env:{version}",
-                ],
+                "task_dep": task_deps,
                 "targets": rpm_dst,
                 "clean": True,
             }

@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import contextlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -20,6 +22,60 @@ def run(cmd):
     subprocess.run(cmd, cwd=root, check=True)
 
 
+@contextlib.contextmanager
+def exclude_paths(paths):
+    """Temporarily exclude paths by renaming them."""
+    backup_paths = [p.parents[1] / (p.name + ".bak") for p in paths]
+    for path, backup in zip(paths, backup_paths):
+        if path.exists():
+            path.rename(backup)
+    try:
+        yield
+    finally:
+        for path, backup in zip(paths, backup_paths):
+            if backup.exists():
+                backup.rename(path)
+
+
+@contextlib.contextmanager
+def full_debian_files():
+    """Temporarily modify debian files for full package build (with container.tar)."""
+    control_path = root / "debian" / "control"
+    changelog_path = root / "debian" / "changelog"
+    rules_path = root / "debian" / "rules"
+
+    control_orig = control_path.read_text()
+    changelog_orig = changelog_path.read_text()
+    rules_orig = rules_path.read_text()
+
+    control_new = (
+        control_orig.replace("Source: dangerzone", "Source: dangerzone-full")
+        .replace("Package: dangerzone", "Package: dangerzone-full")
+        .replace(
+            "Conflicts: dangerzone-full, dangerzone-qubes",
+            "Conflicts: dangerzone, dangerzone-qubes",
+        )
+    )
+
+    changelog_new = re.sub(
+        r"^dangerzone \(", "dangerzone-full (", changelog_orig, flags=re.MULTILINE
+    )
+
+    rules_new = rules_orig.replace(
+        "export PYBUILD_NAME=dangerzone", "export PYBUILD_NAME=dangerzone-full"
+    ).replace("debian/dangerzone/", "debian/dangerzone-full/")
+
+    try:
+        control_path.write_text(control_new)
+        changelog_path.write_text(changelog_new)
+        rules_path.write_text(rules_new)
+        yield
+    finally:
+        control_path.write_text(control_orig)
+        changelog_path.write_text(changelog_orig)
+        rules_path.write_text(rules_orig)
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog=sys.argv[0],
@@ -34,6 +90,11 @@ def main():
         "--distro",
         required=False,
         help="The name of the Debian-based distro",
+    )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Build DEB package with container.tar bundled",
     )
     args = parser.parse_args()
 
@@ -52,11 +113,16 @@ def main():
     else:
         deb_ver = args.distro
 
-    run(
-        [
-            "dpkg-buildpackage",
-        ]
-    )
+    if args.full:
+        # Full package: includes container.tar
+        pkg_name = "dangerzone-full"
+        with full_debian_files():
+            run(["dpkg-buildpackage"])
+    else:
+        # Default package: does NOT include container.tar
+        pkg_name = "dangerzone"
+        with exclude_paths([root / "share" / "container.tar"]):
+            run(["dpkg-buildpackage"])
 
     os.makedirs(deb_dist_path, exist_ok=True)
     print("")
@@ -64,8 +130,8 @@ def main():
 
     # dpkg-buildpackage produces a .deb file in the parent folder
     # that needs to be copied to the `deb_dist` folder manually
-    src = root.parent / f"dangerzone_{version}_amd64.deb"
-    destination = root / "deb_dist" / f"dangerzone_{version}-{deb_ver}_amd64.deb"
+    src = root.parent / f"{pkg_name}_{version}_amd64.deb"
+    destination = root / "deb_dist" / f"{pkg_name}_{version}-{deb_ver}_amd64.deb"
     shutil.move(src, destination)
     print(f"sudo dpkg -i {destination}")
 

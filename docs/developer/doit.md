@@ -29,7 +29,7 @@ and you have ample disk space. You can run:
 
 ```bash
 doit clean --dry-run  # if you want to see what would happen
-doit clean  # you'll be asked to cofirm that you want to clean everything
+doit clean  # you'll be asked to confirm that you want to clean everything
 ```
 
 Finally, you can build all the release artifacts with `doit`, or a specific task

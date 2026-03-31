@@ -3,14 +3,20 @@ name = "dangerzone-insecure-conversion"
 
 version = "1.0.0"
 authors = [
-    {name = "Freedom of the Press Foundation",
-     email = "dangerzone@freedom.press"}
+    {name = "Freedom of the Press Foundation", email = "dangerzone@freedom.press"}
 ]
-description = "INTERNAL (insecure) Dangerzone document to pixels conversion."
+description = "Internal (INSECURE!) Dangerzone document to pixels conversion."
 readme = "README.md"
-requires-python = ">3.11"
+requires-python = ">=3.9"
 dependencies = [
-    "pymupdf"
+    "pymupdf",
+    "python-magic",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
 ]
 
 [build-system]

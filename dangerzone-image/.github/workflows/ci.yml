@@ -15,6 +15,32 @@ permissions:
   id-token: write # for creating OIDC tokens for signing.
 
 jobs:
+  tests:
+    name: Run tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Build Dangerzone image
+        run: python3 build-image.py
+
+      - name: Load local image for tests
+        run: |
+          podman load -i container.tar | sed -e 's/Loaded image: //' | tr -d '\n' > tests/share/image-id.txt
+
+      - name: Install dependencies
+        run: uv venv && uv pip install -e ".[dev]"
+
+      - name: Run tests
+        run: uv run pytest
+
   build-container-image:
     name: Build, push and sign container image
     uses: ./.github/workflows/build-push.yml

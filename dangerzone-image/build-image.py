@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 BUILD_CONTEXT = "src"
-IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone/v1"
+IMAGE_NAME = "ghcr.io/freedomofpress/dangerzone-alpha/v1"
 if platform.system() in ["Darwin", "Windows"]:
     CONTAINER_RUNTIME = "docker"
 elif platform.system() == "Linux":

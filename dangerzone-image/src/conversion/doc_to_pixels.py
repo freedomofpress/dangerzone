@@ -99,32 +99,32 @@ class DocumentToPixels(DangerzoneConverter):
             # PR: https://github.com/freedomofpress/dangerzone/pull/460
             # "application/haansofthwp": {
             #    "type": "libreoffice",
-            #    "libreoffice_ext": "h2orestart.oxt",
+            #    "libreoffice_ext": "h2orestart",
             # },
             # "application/vnd.hancom.hwp": {
             #    "type": "libreoffice",
-            #    "libreoffice_ext": "h2orestart.oxt",
+            #    "libreoffice_ext": "h2orestart",
             # },
             "application/x-hwp": {
                 "type": "libreoffice",
-                "libreoffice_ext": "h2orestart.oxt",
+                "libreoffice_ext": "h2orestart",
             },
             # .hwpx
             # "application/haansofthwpx": {
             #    "type": "libreoffice",
-            #    "libreoffice_ext": "h2orestart.oxt",
+            #    "libreoffice_ext": "h2orestart",
             # },
             # "application/vnd.hancom.hwpx": {
             #    "type": "libreoffice",
-            #    "libreoffice_ext": "h2orestart.oxt",
+            #    "libreoffice_ext": "h2orestart",
             # },
             "application/x-hwp+zip": {
                 "type": "libreoffice",
-                "libreoffice_ext": "h2orestart.oxt",
+                "libreoffice_ext": "h2orestart",
             },
             "application/hwp+zip": {
                 "type": "libreoffice",
-                "libreoffice_ext": "h2orestart.oxt",
+                "libreoffice_ext": "h2orestart",
             },
             # At least .odt, .docx, .odg, .odp, .ods, and .pptx
             "application/zip": {
@@ -178,10 +178,9 @@ class DocumentToPixels(DangerzoneConverter):
         elif conversion["type"] == "libreoffice":
             libreoffice_ext = conversion.get("libreoffice_ext", None)
             # Disable conversion for HWP/HWPX on specific platforms. See:
-            #
-            #     https://github.com/freedomofpress/dangerzone/issues/494
-            #     https://github.com/freedomofpress/dangerzone/issues/498
-            if libreoffice_ext == "h2orestart.oxt" and running_on_qubes():
+            # - https://github.com/freedomofpress/dangerzone/issues/494
+            # - https://github.com/freedomofpress/dangerzone/issues/498
+            if libreoffice_ext == "h2orestart" and running_on_qubes():
                 raise errors.DocFormatUnsupportedHWPQubes()
             if libreoffice_ext:
                 await self.install_libreoffice_ext(libreoffice_ext)
@@ -237,15 +236,15 @@ class DocumentToPixels(DangerzoneConverter):
 
     async def install_libreoffice_ext(self, libreoffice_ext: str) -> None:
         self.update_progress(f"Installing LibreOffice extension '{libreoffice_ext}'")
-        unzip_args = [
-            "unzip",
-            "-d",
-            f"/usr/lib/libreoffice/share/extensions/{libreoffice_ext}/",
+        cp_args = [
+            "cp",
+            "-r",
             f"/opt/libreoffice_ext/{libreoffice_ext}",
+            f"/usr/lib/libreoffice/share/extensions/{libreoffice_ext}",
         ]
         await self.run_command(
-            unzip_args,
-            error_message="LibreOffice extension installation failed (unzipping)",
+            cp_args,
+            error_message="LibreOffice extension installation failed",
         )
 
     def detect_mime_type(self, path: str) -> str:

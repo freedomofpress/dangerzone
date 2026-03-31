@@ -35,6 +35,13 @@ RUN \
       python3 python3-fitz libreoffice-nogui libreoffice-java-common \
       python3-magic default-jre-headless fonts-noto-cjk fonts-dejavu \
       runsc unzip && \
+  : "Get H2Orestart from Debian: download .deb and extract (can't install due to libreoffice-core vs libreoffice-core-nogui conflict)" && \
+  mkdir -p /opt/libreoffice_ext/ && \
+  install -dm777 /usr/lib/libreoffice/share/extensions/ && \
+  apt-get download libreoffice-h2orestart && \
+  dpkg-deb --extract libreoffice-h2orestart_*.deb /tmp/h2orestart && \
+  mv /tmp/h2orestart/usr/lib/libreoffice/share/extensions/h2orestart /opt/libreoffice_ext/ && \
+  rm -rf /tmp/h2orestart libreoffice-h2orestart_*.deb && \
   : "Clean up for improving reproducibility (optional)" && \
   rm -rf /var/cache/fontconfig/ && \
   rm -rf /etc/ssl/certs/java/cacerts && \
@@ -56,12 +63,6 @@ RUN touch /opt/dangerzone/dangerzone/__init__.py
 
 # Copy only the Python code, and not any produced .pyc files.
 COPY conversion/*.py /opt/dangerzone/dangerzone/conversion/
-
-# Copy the H2Orestart.oxt LibreOffice plugin, which is managed by Mazette.
-# TODO: Use H20restart from Debian
-# RUN mkdir -p /opt/libreoffice_ext/
-# RUN install -dm777 /usr/lib/libreoffice/share/extensions/
-# COPY ./helpers/h2orestart.oxt /opt/libreoffice_ext/
 
 # Create a directory that will be used by gVisor as the place where it will
 # store the state of its containers.

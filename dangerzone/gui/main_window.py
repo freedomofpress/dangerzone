@@ -1034,7 +1034,11 @@ class ConversionWidget(QtWidgets.QWidget):
         # Clear previously selected documents
         self.dangerzone.clear_documents()
         self.documents_list.clear()
-        self.dangerzone.output_dir = list(dirnames)[0]
+        saved_output_dir = self.dangerzone.settings.get("output_dir")
+        if saved_output_dir and os.path.isdir(saved_output_dir):
+            self.dangerzone.output_dir = saved_output_dir
+        else:
+            self.dangerzone.output_dir = list(dirnames)[0]
 
         for doc in docs:
             self.dangerzone.add_document(doc)
@@ -1508,6 +1512,9 @@ class SettingsWidget(QtWidgets.QWidget):
             if selected_dir is not None:
                 self.dangerzone.output_dir = str(selected_dir)
                 self.save_location.setText(selected_dir)
+                self.dangerzone.settings.set(
+                    "output_dir", str(selected_dir), autosave=True
+                )
 
     def start_button_clicked(self) -> None:
         for document in self.dangerzone.get_unconverted_documents():

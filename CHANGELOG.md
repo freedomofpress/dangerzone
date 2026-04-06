@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...HEAD)
+## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.10.0...HEAD)
 
 ### Fixed
 
@@ -34,7 +34,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Pin Podman to v5.x.x, to support Windows 10 installations for one last release
   ([#1357](https://github.com/freedomofpress/dangerzone/issues/1357))
 
-## [0.10.0](https://github.com/freedomofpress/dangerzone/compare/v0.10.0...0.9.1)
+## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 
 ### Added
 
@@ -89,7 +89,6 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Add a deprecation warning for Debian bullseye
   ([#1214](https://github.com/freedomofpress/dangerzone/issues/1214))
 
-
 ### Development changes
 
 - Use the archived backports for Debian bullseye
@@ -110,7 +109,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Do not check the Git commit/branch when attesting provenance info
   ([#1270](https://github.com/freedomofpress/dangerzone/issues/1270))
 
-## [0.9.1](https://github.com/freedomofpress/dangerzone/compare/v0.9.1...0.9.0)
+## [0.9.1](https://github.com/freedomofpress/dangerzone/releases/tag/v0.9.1) - 2025-07-10
 
 ### Fixed
 
@@ -145,7 +144,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Use a newer `cx_Freeze` version that fixes an issue with bundling PyMuPDF
   ([1128](https://github.com/freedomofpress/dangerzone/issues/1128))
 
-## [0.9.0](https://github.com/freedomofpress/dangerzone/compare/v0.9.0...0.8.1)
+## [0.9.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.9.0) - 2025-04-09
 
 ### Added
 
@@ -176,7 +175,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Platform support: Drop support for Ubuntu Focal, since it's nearing end-of-life ([#1018](https://github.com/freedomofpress/dangerzone/issues/1018))
 - Platform support: Drop support for Fedora 39 ([#999](https://github.com/freedomofpress/dangerzone/issues/999))
 
-## Changed
+### Changed
 
 - Switch base image to Debian Stable ([#1046](https://github.com/freedomofpress/dangerzone/issues/1046))
 - Track image tags instead of image IDs in `image-id.txt` ([#1020](https://github.com/freedomofpress/dangerzone/issues/1020))
@@ -208,7 +207,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - tests: mark the hancom office suite tests for rerun on failures ([#991](https://github.com/freedomofpress/dangerzone/pull/991))
 - Update reference template for Qubes to Fedora 41 ([#1078](https://github.com/freedomofpress/dangerzone/issues/1078))
 
-## [0.8.1](https://github.com/freedomofpress/dangerzone/compare/v0.8.1...0.8.0)
+## [0.8.1](https://github.com/freedomofpress/dangerzone/releases/tag/v0.8.1) - 2024-12-24
 
 - Update the container image
 
@@ -221,7 +220,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Platform support: Drop support for Fedora 39, since it's end-of-life ([#999](https://github.com/freedomofpress/dangerzone/pull/999))
 
-## Updated
+### Updated
 
 - Bump `slsa-framework/slsa-github-generator` from 2.0.0 to 2.1.0 ([#1109](https://github.com/freedomofpress/dangerzone/pull/1109))
 
@@ -231,7 +230,7 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 
 - Automate a large portion of our release tasks with `doit` ([#1016](https://github.com/freedomofpress/dangerzone/issues/1016))
 
-## [0.8.0](https://github.com/freedomofpress/dangerzone/compare/v0.8.0...0.7.1)
+## [0.8.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.8.0) - 2024-11-06
 
 ### Added
 
@@ -271,13 +270,13 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 - Switch from CircleCI runners to Github actions ([#674](https://github.com/freedomofpress/dangerzone/issues/674))
 - Sign Windows executables and installer with SHA256 rather than SHA1 ([#931](https://github.com/freedomofpress/dangerzone/pull/931)). Thanks [@jkarasti](https://github.com/jkarasti) for the contribution!
 
-## [0.7.1](https://github.com/freedomofpress/dangerzone/compare/v0.7.1...v0.7.0)
+## [0.7.1](https://github.com/freedomofpress/dangerzone/releases/tag/v0.7.1) - 2024-10-01
 
 ### Fixed
 
 - Fix an `image-id.txt` mismatch happening on Docker Desktop >= 4.30.0 ([#933](https://github.com/freedomofpress/dangerzone/issues/933))
 
-## [0.7.0](https://github.com/freedomofpress/dangerzone/compare/v0.7.0...v0.6.1)
+## [0.7.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.7.0) - 2024-07-10
 
 ### Added
 
@@ -311,7 +310,7 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 - Added a design doc for the gVisor integration ([#815](https://github.com/freedomofpress/dangerzone/pull/815))
 - Removed the python shebang from some files
 
-## Dangerzone 0.6.1
+## [0.6.1](https://github.com/freedomofpress/dangerzone/releases/tag/v0.6.1) - 2024-05-13
 
 ### Added
 
@@ -335,14 +334,14 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 - Use the newest reimplementation of the PyMuPDF rendering engine (`fitz`) ([issue #700](https://github.com/freedomofpress/dangerzone/issues/700))
 - Development: Build Dangerzone using the latest Wix 3.14 release ([#746](https://github.com/freedomofpress/dangerzone/pull/746)
 
-## Dangerzone 0.6.0
+## [0.6.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.6.0) - 2024-02-26
 
 ### Added
 
 - Platform support: Fedora 39 ([issue #606](https://github.com/freedomofpress/dangerzone/issues/606))
 - Add new file formats: epub svg and several image formats (BMP, PNM, BPM, PPM) ([issue #697](https://github.com/freedomofpress/dangerzone/issues/697))
 
-## Fixed
+### Fixed
 
 - Fix mismatched between between original document and converted one ([issue #626](https://github.com/freedomofpress/dangerzone/issues/)). This does not affect the quality of the final document.
 - Capitalize "dangerzone" on the application as well as on the Linux desktop shortcut, thanks to [@sudwhiwdh](https://github.com/sudwhiwdh) [#676](https://github.com/freedomofpress/dangerzone/pull/676)
@@ -364,7 +363,7 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 - Removed timeouts ([issue #687](https://github.com/freedomofpress/dangerzone/issues/687))
 - Platform support: Drop Ubuntu 23.04 (Lunar Lobster), since it's end-of-life ([issue #705](https://github.com/freedomofpress/dangerzone/issues/705))
 
-## Dangerzone 0.5.1
+## [0.5.1](https://github.com/freedomofpress/dangerzone/releases/tag/v0.5.1) - 2023-12-08
 
 ### Fixed
 
@@ -386,7 +385,7 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
   officially communicated on the advisory date and is only included here since
   this is the first release since it was announced.
 
-## Dangerzone 0.5.0
+## [0.5.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.5.0) - 2023-10-19
 
 ### Added
 
@@ -436,7 +435,7 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 
 - Do not allow attackers to show error or log messages to Qubes users ([issue #456](https://github.com/freedomofpress/dangerzone/issues/456))
 
-## Dangerzone 0.4.2
+## [0.4.2](https://github.com/freedomofpress/dangerzone/releases/tag/v0.4.2) - 2023-08-08
 
 ### Added
 
@@ -471,7 +470,7 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 - Sanitize potentially unsafe characters from strings that are shown in the
   GUI/terminal ([PR #491](https://github.com/freedomofpress/dangerzone/pull/491))
 
-## Dangerzone 0.4.1
+## [0.4.1](https://github.com/freedomofpress/dangerzone/releases/tag/v0.4.1) - 2023-04-24
 
 ### Added
 
@@ -524,7 +523,7 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 
 - Bug fix: Do not print debug logs in end-user executables ([issue #316](https://github.com/freedomofpress/dangerzone/issues/316))
 
-## Dangerzone 0.4.0
+## [0.4.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.4.0) - 2022-12-01
 
 - Platform support: Re-add Fedora 37 support
 - Platform support: Add Debian Bookworm (12) support ([issue #172](https://github.com/freedomofpress/dangerzone/issues/172))
@@ -541,60 +540,61 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 - Bug fix: re-adds support for 'open with Dangerzone' from finder on macOS ([issue #268](https://github.com/freedomofpress/dangerzone/issues/268))
 - Bug fix: (macOS) quit Dangerzone when main window is closed ([issue #271](https://github.com/freedomofpress/dangerzone/issues/271))
 
-## Dangerzone 0.3.2
+## [0.3.2](https://github.com/freedomofpress/dangerzone/releases/tag/v0.3.2) - 2022-09-06
 
 - Bug fix: some non-ascii characters like “ would prevent Dangerzone from working ([issue #144](https://github.com/freedomofpress/dangerzone/issues/144))
 - Bug fix: error where Dangerzone would show "permission denied: '/tmp/input_file'" ([issue #157](https://github.com/freedomofpress/dangerzone/issues/157))
 - Bug fix: remove containers after use, enabling Dangerzone to run after 1000+ converted docs ([issue #197](https://github.com/freedomofpress/dangerzone/pull/197))
 - Security: limit container capabilities, run in container as non-root and limit privilege escalation ([issue #169](https://github.com/freedomofpress/dangerzone/issues/169))
 
-## Dangerzone 0.3.1
+## [0.3.1](https://github.com/freedomofpress/dangerzone/releases/tag/v0.3.1) - 2021-12-14
 
 - Bug fix: Allow converting documents on different mounted filesystems than the container volume
 - Bug fix: In GUI mode, don't always OCR document
 - Bug fix: In macOS, fix "open with" Dangerzone so documents are automatically selected
 - Windows: Change packaging to avoid anti-virus false positives
 
-## Dangerzone 0.3
+## [0.3](https://github.com/freedomofpress/dangerzone/releases/tag/v0.3) - 2021-12-01
 
 - Removes the need for internet access by shipping the Dangerzone container image directly with the software
 - Friendly user experience with a progress bar
 - Support for Macs with M1 chips
 
-## Dangerzone 0.2.1
+## [0.2.1](https://github.com/freedomofpress/dangerzone/releases/tag/v0.2.1) - 2021-06-22
 
 - Switch from Docker to Podman for Linux
 - Improve CLI colors
 
-## Dangerzone 0.2
+## [0.2](https://github.com/freedomofpress/dangerzone/releases/tag/v0.2) - 2021-06-22
 
 - Command line support and improved terminal output
 - Additional container hardening
 - Fix macOS crash on quit
 - Fix --custom-container CLI argument
 
-## Dangerzone 0.1.5
+## [0.1.5](https://github.com/freedomofpress/dangerzone/releases/tag/v0.1.5) - 2021-02-11
 
 - Add support for macOS Big Sur
 - Drop support for Ubuntu 19.10
 
-## Dangerzone 0.1.4
+## [0.1.4](https://github.com/freedomofpress/dangerzone/releases/tag/v0.1.4) - 2020-10-30
 
 - Suppress confusing stderr output, and fix bug when converting specific documents
 - Switch from PyQt5 to PySide2
 - Improve Windows and Mac packaging
 - Add support for Fedora 32
 
-## Dangerzone 0.1.3
+## [0.1.3](https://github.com/freedomofpress/dangerzone/releases/tag/v0.1.3) - 2020-09-25
 
 - Add support for Ubuntu 20.04 LTS (#79)
 - Prevent crash in macOS if specific PDF viewers are installed (#75)
 
-## Dangerzone 0.1.2 (Linux only)
+## [0.1.2](https://github.com/freedomofpress/dangerzone/releases/tag/v0.1.2) - 2020-04-09
 
+- (Linux only)
 - Add support for Ubuntu 18.04 LTS
 
-## Dangerzone 0.1.1
+## [0.1.1](https://github.com/freedomofpress/dangerzone/releases/tag/v0.1.1) - 2020-03-17
 
 - Fix macOS bug that caused a crash on versions earlier than Catalina
 - Fix macOS app bundle ODF extensions (`.ods .odt`)
@@ -604,6 +604,6 @@ Thanks [@jkarasti](https://github.com/jkarasti) for the contribution.
 - Allow opening `.docm` files
 - Allow using a custom container for testing
 
-## Dangerzone 0.1
+## [0.1](https://github.com/freedomofpress/dangerzone/releases/tag/v0.1) - 2020-02-29
 
 - First release

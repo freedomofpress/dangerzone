@@ -88,7 +88,9 @@ def _make_obj(obj_num: int, content: bytes) -> bytes:
 def _make_stream_obj(obj_num: int, dictionary: bytes, stream_data: bytes) -> bytes:
     """Wrap content as a PDF stream object."""
     header = f"{obj_num} 0 obj\n".encode()
-    dict_with_length = dictionary.rstrip(b">") + f" /Length {len(stream_data)} >>".encode()
+    dict_with_length = (
+        dictionary.rstrip(b">") + f" /Length {len(stream_data)} >>".encode()
+    )
     return (
         header
         + dict_with_length

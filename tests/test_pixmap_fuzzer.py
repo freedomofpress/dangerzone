@@ -27,6 +27,8 @@ from __future__ import annotations
 
 import pytest
 
+from dangerzone.conversion.errors import MAX_PAGE_HEIGHT, MAX_PAGE_WIDTH
+
 try:
     import fitz
 
@@ -35,10 +37,6 @@ except ImportError:
     HAS_FITZ = False
 
 pytestmark = pytest.mark.skipif(not HAS_FITZ, reason="PyMuPDF (fitz) not installed")
-
-# Dangerzone bounds from dangerzone/conversion/errors.py
-MAX_PAGE_WIDTH = 10_000
-MAX_PAGE_HEIGHT = 10_000
 
 
 class TestPixmapBoundaryDimensions:
@@ -55,11 +53,9 @@ class TestPixmapBoundaryDimensions:
         ],
         ids=["1x1", "100x100", "10000x1", "1x10000", "max-square"],
     )
-    def test_valid_dimensions_within_bounds(self, width, height):
+    def test_valid_dimensions_within_bounds(self, width: int, height: int) -> None:
         """Pixmap creation should succeed for dimensions within dangerzone bounds."""
         cs = fitz.csRGB
-        # RGB: 3 bytes per pixel
-        pixel_data = bytes(width * height * 3)
         try:
             pix = fitz.Pixmap(cs, fitz.IRect(0, 0, width, height), False)
             assert pix.width == width
@@ -82,7 +78,9 @@ class TestPixmapBoundaryDimensions:
         ],
         ids=["zero-w", "zero-h", "zero-both", "neg-w", "neg-h"],
     )
-    def test_invalid_dimensions_rejected(self, width, height, desc):
+    def test_invalid_dimensions_rejected(
+        self, width: int, height: int, desc: str
+    ) -> None:
         """MuPDF should reject zero or negative dimensions gracefully."""
         cs = fitz.csRGB
         try:
@@ -105,7 +103,7 @@ class TestPixmapBoundaryDimensions:
         ],
         ids=["10001x1", "1x10001", "65535x1", "1x65535", "100000x1"],
     )
-    def test_dimensions_beyond_dangerzone_bounds(self, width, height):
+    def test_dimensions_beyond_dangerzone_bounds(self, width: int, height: int) -> None:
         """Dimensions exceeding dangerzone's MAX_PAGE_WIDTH/HEIGHT.
 
         These should never reach fitz.Pixmap in production because
@@ -135,7 +133,7 @@ class TestPixmapBufferMismatch:
     verify MuPDF handles buffer size mismatches safely.
     """
 
-    def test_correct_buffer_size(self):
+    def test_correct_buffer_size(self) -> None:
         """Baseline: correct buffer size works."""
         w, h = 10, 10
         cs = fitz.csRGB
@@ -143,7 +141,7 @@ class TestPixmapBufferMismatch:
         assert pix.width == w
         assert pix.height == h
 
-    def test_pixmap_samples_length(self):
+    def test_pixmap_samples_length(self) -> None:
         """Verify samples buffer length matches expected dimensions."""
         w, h = 50, 30
         pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, w, h), False)
@@ -152,7 +150,7 @@ class TestPixmapBufferMismatch:
             f"Expected {expected_len} bytes, got {len(pix.samples)}"
         )
 
-    def test_pixmap_with_alpha(self):
+    def test_pixmap_with_alpha(self) -> None:
         """Pixmap with alpha channel has 4 bytes per pixel."""
         w, h = 20, 20
         pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, w, h), True)  # alpha=True
@@ -190,7 +188,9 @@ class TestDangerzoneBoundsProperty:
         COLORSPACE_CONFIGS,
         ids=[c[0].replace(" ", "-") for c in COLORSPACE_CONFIGS],
     )
-    def test_max_width_stride_below_intmax(self, name, bpc, channels):
+    def test_max_width_stride_below_intmax(
+        self, name: str, bpc: int, channels: int
+    ) -> None:
         """With dangerzone's MAX_PAGE_WIDTH, stride never overflows."""
         stride = MAX_PAGE_WIDTH * bpc * channels
         margin = self.INT_MAX / stride
@@ -200,7 +200,7 @@ class TestDangerzoneBoundsProperty:
         # Log the safety margin for visibility
         print(f"\n  {name}: stride={stride}, safety margin={margin:.0f}x")
 
-    def test_minimum_overflow_width(self):
+    def test_minimum_overflow_width(self) -> None:
         """Calculate the minimum width needed to overflow for each colorspace.
 
         This documents how far beyond dangerzone's bounds an attacker would
@@ -231,7 +231,7 @@ class TestPixmapColorspaces:
         ],
         ids=["RGB", "Gray", "CMYK"],
     )
-    def test_standard_colorspaces(self, cs_attr, channels, name):
+    def test_standard_colorspaces(self, cs_attr: str, channels: int, name: str) -> None:
         """All standard colorspaces work at moderate dimensions."""
         cs = getattr(fitz, cs_attr)
         w, h = 100, 100
@@ -240,7 +240,7 @@ class TestPixmapColorspaces:
         assert pix.height == h
         assert pix.n == channels, f"{name}: expected {channels} channels, got {pix.n}"
 
-    def test_colorspace_at_max_bounds(self):
+    def test_colorspace_at_max_bounds(self) -> None:
         """RGB pixmap at dangerzone's maximum dimensions."""
         w, h = MAX_PAGE_WIDTH, 1  # tall would be too much memory
         pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, w, h), False)
@@ -260,7 +260,7 @@ class TestFuzzRandomPixelData:
         [0x00, 0xFF, 0x80, 0xDE],
         ids=["zeros", "ones", "mid", "pattern"],
     )
-    def test_fill_patterns(self, fill_byte):
+    def test_fill_patterns(self, fill_byte: int) -> None:
         """Various fill patterns written into Pixmap should not crash."""
         w, h = 50, 50
         pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, w, h), False)
@@ -273,7 +273,7 @@ class TestFuzzRandomPixelData:
         # Verify the data stuck
         assert pix.samples[0] == fill_byte
 
-    def test_structured_pixel_data(self):
+    def test_structured_pixel_data(self) -> None:
         """Pixel data with struct-packed values (simulating IPC stream)."""
         w, h = 10, 10
         pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, w, h), False)
@@ -290,7 +290,7 @@ class TestFuzzRandomPixelData:
         mv[:] = bytes(pixel_data)
         assert len(pix.samples) == w * h * 3
 
-    def test_pixmap_clear_and_refill(self):
+    def test_pixmap_clear_and_refill(self) -> None:
         """Create, clear, refill cycle should not corrupt memory."""
         w, h = 100, 100
         pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, w, h), False)

@@ -17,9 +17,9 @@ over stdout as a binary stream:
 
 Usage:
 
-    python tests/fuzz_ipc_standalone.py                    # default 10000 iterations
+    make fuzz                                      # default 10000 iterations
     python tests/fuzz_ipc_standalone.py --iterations 50000
-    python tests/fuzz_ipc_standalone.py --seed 42          # reproducible run
+    python tests/fuzz_ipc_standalone.py --seed 42  # reproducible run
 
 Any exception that is NOT an expected protocol-violation error is reported as a
 potential bug and causes a non-zero exit.
@@ -36,35 +36,16 @@ import time
 from io import BytesIO
 from typing import IO, List, Tuple
 
-# ---------------------------------------------------------------------------
-# Inlined parsing functions from dangerzone/isolation_provider/base.py and
-# dangerzone/conversion/common.py.  We inline them to avoid importing the
-# full dangerzone package (which pulls in PyMuPDF, Qt, etc.) -- the fuzzer
-# only needs the wire-protocol parsing and bounds constants.
-# ---------------------------------------------------------------------------
-
-INT_BYTES = 2  # from dangerzone.conversion.common
-
-MAX_PAGES = 10_000
-MAX_PAGE_WIDTH = 10_000
-MAX_PAGE_HEIGHT = 10_000
-
-
-class ConverterProcException(Exception):
-    """Mirrors dangerzone.conversion.errors.ConverterProcException."""
-
-
-class MaxPagesException(Exception):
-    """Mirrors dangerzone.conversion.errors.MaxPagesException."""
-
-
-class MaxPageWidthException(Exception):
-    """Mirrors dangerzone.conversion.errors.MaxPageWidthException."""
-
-
-class MaxPageHeightException(Exception):
-    """Mirrors dangerzone.conversion.errors.MaxPageHeightException."""
-
+from dangerzone.conversion.common import INT_BYTES
+from dangerzone.conversion.errors import (
+    MAX_PAGE_HEIGHT,
+    MAX_PAGE_WIDTH,
+    MAX_PAGES,
+    ConverterProcException,
+    MaxPageHeightException,
+    MaxPagesException,
+    MaxPageWidthException,
+)
 
 EXPECTED_EXCEPTIONS = (
     ConverterProcException,
@@ -72,6 +53,12 @@ EXPECTED_EXCEPTIONS = (
     MaxPageWidthException,
     MaxPageHeightException,
 )
+
+
+# ---------------------------------------------------------------------------
+# Lightweight IPC parsing — mirrors dangerzone.isolation_provider.base but
+# avoids importing base.py (which transitively pulls in PyMuPDF and Qt).
+# ---------------------------------------------------------------------------
 
 
 def read_bytes(f: IO[bytes], size: int, exact: bool = True) -> bytes:
@@ -83,7 +70,7 @@ def read_bytes(f: IO[bytes], size: int, exact: bool = True) -> bytes:
 
 
 def read_int(f: IO[bytes]) -> int:
-    """Read 2 bytes from a file-like object, and decode them as int (mirrors base.read_int)."""
+    """Read 2 bytes big-endian unsigned int (mirrors base.read_int)."""
     untrusted_int = f.read(INT_BYTES)
     if len(untrusted_int) != INT_BYTES:
         raise ConverterProcException()
@@ -226,7 +213,9 @@ def main() -> None:
     seed = args.seed if args.seed is not None else int.from_bytes(os.urandom(8), "big")
     rng = random.Random(seed)
 
-    print(f"Fuzzing IPC pixel stream protocol: {args.iterations} iterations, seed={seed}")
+    print(
+        f"Fuzzing IPC pixel stream protocol: {args.iterations} iterations, seed={seed}"
+    )
     t0 = time.monotonic()
 
     unexpected_errors: List[Tuple[int, bytes, Exception]] = []
@@ -245,20 +234,23 @@ def main() -> None:
     elapsed = time.monotonic() - t0
     rate = args.iterations / elapsed if elapsed > 0 else float("inf")
 
-    print(f"Completed {args.iterations} iterations in {elapsed:.2f}s ({rate:.0f} iter/s)")
+    print(
+        f"Completed {args.iterations} iterations in {elapsed:.2f}s ({rate:.0f} iter/s)"
+    )
 
     if unexpected_errors:
         print(f"\nFOUND {len(unexpected_errors)} UNEXPECTED EXCEPTION(S):")
-        for idx, data, exc in unexpected_errors[:10]:  # show first 10
-            print(f"  iteration {idx}: {type(exc).__name__}: {exc}")
-            print(f"    input ({len(data)} bytes): {data[:80]!r}{'...' if len(data) > 80 else ''}")
+        for idx, data, err in unexpected_errors[:10]:  # show first 10
+            print(f"  iteration {idx}: {type(err).__name__}: {err}")
+            print(
+                f"    input ({len(data)} bytes): {data[:80]!r}"
+                f"{'...' if len(data) > 80 else ''}"
+            )
         sys.exit(1)
     else:
         print("No unexpected exceptions found.")
 
-    # ---------------------------------------------------------------------------
     # Optional: exercise fitz.Pixmap if PyMuPDF is available
-    # ---------------------------------------------------------------------------
     fuzz_pixmap(rng, iterations=min(args.iterations, 1000))
 
     sys.exit(0)
@@ -334,8 +326,12 @@ def fuzz_pixmap(rng: random.Random, iterations: int = 1000) -> None:
 
     elapsed = time.monotonic() - t0
     rate = iterations / elapsed if elapsed > 0 else float("inf")
-    print(f"  Completed {iterations} pixmap iterations in {elapsed:.2f}s ({rate:.0f}/s)")
-    print(f"  Results: {successes} ok, {graceful_errors} rejected, {crashes} unexpected")
+    print(
+        f"  Completed {iterations} pixmap iterations in {elapsed:.2f}s ({rate:.0f}/s)"
+    )
+    print(
+        f"  Results: {successes} ok, {graceful_errors} rejected, {crashes} unexpected"
+    )
 
     if crashes > 0:
         print(f"  WARNING: {crashes} unexpected exceptions in fitz.Pixmap fuzzing")

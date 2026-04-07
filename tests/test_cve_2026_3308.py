@@ -61,6 +61,8 @@ from typing import Optional, Tuple
 
 import pytest
 
+from dangerzone.conversion.errors import MAX_PAGE_WIDTH
+
 try:
     import fitz
 
@@ -203,7 +205,7 @@ def _is_vulnerable_version() -> bool:
 class TestCVE20263308:
     """Test suite for CVE-2026-3308: MuPDF fz_unpack_stream integer overflow."""
 
-    def test_pdf_is_parseable(self):
+    def test_pdf_is_parseable(self) -> None:
         """Verify the crafted PDF is valid enough for MuPDF to open."""
         pdf_bytes = make_cve_2026_3308_pdf()
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
@@ -215,7 +217,7 @@ class TestCVE20263308:
         page.get_images()
         doc.close()
 
-    def test_overflow_arithmetic(self):
+    def test_overflow_arithmetic(self) -> None:
         """Verify the integer overflow arithmetic independent of MuPDF.
 
         This documents WHY the chosen dimensions trigger the bug:
@@ -240,7 +242,7 @@ class TestCVE20263308:
         # (-2147483648 + 7) >> 3 = -2147483641 >> 3 = -268435456 (arithmetic shift)
         # A negative stride means near-zero or negative allocation size
 
-    def test_render_crafted_image(self):
+    def test_render_crafted_image(self) -> None:
         """Attempt to render the crafted PDF page.
 
         On VULNERABLE versions (PyMuPDF 1.27.0 / MuPDF 1.27.0):
@@ -280,7 +282,7 @@ class TestCVE20263308:
 
         doc.close()
 
-    def test_dangerzone_bounds_prevent_overflow(self):
+    def test_dangerzone_bounds_prevent_overflow(self) -> None:
         """Verify that dangerzone's dimension bounds (10000x10000) make the
         overflow unreachable for any colorspace.
 
@@ -292,7 +294,6 @@ class TestCVE20263308:
 
         Even the worst case is 3 orders of magnitude below INT_MAX.
         """
-        MAX_PAGE_WIDTH = 10_000
         INT_MAX = 2**31 - 1
 
         # Test all standard colorspace/depth combinations
@@ -321,12 +322,14 @@ class TestCVE20263308:
             # Boundary cases that are close to but below overflow
             (16777216, 1, 16, "/DeviceCMYK", "w*16*4 = 2^30 (half of INT_MAX)"),
             (33554432, 1, 16, "/DeviceCMYK", "w*16*4 = 2^31 (exact overflow)"),
-            (89478485, 1, 8, "/DeviceRGB", "w*8*3 = 2^31-7 (just below overflow)"),
+            (89478485, 1, 8, "/DeviceRGB", "w*8*3 = 2^31-8 (just below overflow)"),
             (1, 1, 8, "/DeviceRGB", "minimal safe image"),
         ],
         ids=["half-intmax", "exact-overflow", "near-overflow-rgb", "minimal"],
     )
-    def test_crafted_dimensions(self, width, height, bpc, cs, desc):  # noqa: ARG002
+    def test_crafted_dimensions(  # noqa: ARG002
+        self, width: int, height: int, bpc: int, cs: str, desc: str
+    ) -> None:
         """Test various dimension combinations near the overflow boundary."""
         pdf_bytes = make_cve_2026_3308_pdf(
             width=width, height=height, bits_per_component=bpc, colorspace=cs
@@ -348,7 +351,7 @@ class TestCVE20263308:
 
         doc.close()
 
-    def test_version_detection(self):
+    def test_version_detection(self) -> None:
         """Sanity check: version detection works."""
         ver = _parse_fitz_version(fitz.__version__)
         assert len(ver) >= 3

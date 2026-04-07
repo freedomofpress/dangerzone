@@ -478,6 +478,87 @@ def test_update_error(
 
 
 ##
+# Output directory persistence tests
+##
+
+
+def test_saved_output_dir_used_when_valid(
+    conversion_widget: ConversionWidget,
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    sample_pdf: str,
+    tmp_path: pathlib.Path,
+) -> None:
+    """When a saved output_dir exists on disk, it is used instead of the input file's directory."""
+    saved_dir = tmp_path / "my-safe-pdfs"
+    saved_dir.mkdir()
+    conversion_widget.dangerzone.settings.set("output_dir", str(saved_dir))
+
+    doc = Document(sample_pdf)
+    conversion_widget.documents_selected([doc])
+
+    assert conversion_widget.dangerzone.output_dir == str(saved_dir)
+
+
+def test_saved_output_dir_ignored_when_missing(
+    conversion_widget: ConversionWidget,
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    sample_pdf: str,
+) -> None:
+    """When the saved output_dir no longer exists, fall back to the input file's directory."""
+    conversion_widget.dangerzone.settings.set(
+        "output_dir", "/nonexistent/directory/that/does/not/exist"
+    )
+
+    doc = Document(sample_pdf)
+    conversion_widget.documents_selected([doc])
+
+    assert conversion_widget.dangerzone.output_dir == os.path.dirname(sample_pdf)
+
+
+def test_saved_output_dir_ignored_when_none(
+    conversion_widget: ConversionWidget,
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    sample_pdf: str,
+) -> None:
+    """When output_dir is None (fresh install), fall back to the input file's directory."""
+    assert conversion_widget.dangerzone.settings.get("output_dir") is None
+
+    doc = Document(sample_pdf)
+    conversion_widget.documents_selected([doc])
+
+    assert conversion_widget.dangerzone.output_dir == os.path.dirname(sample_pdf)
+
+
+def test_selecting_output_dir_persists_to_settings(
+    conversion_widget: ConversionWidget,
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    sample_pdf: str,
+    tmp_path: pathlib.Path,
+) -> None:
+    """When the user picks a new output directory, it is saved to settings."""
+    # First, select a document so the settings widget is available
+    doc = Document(sample_pdf)
+    conversion_widget.documents_selected([doc])
+
+    target_dir = tmp_path / "chosen-dir"
+    target_dir.mkdir()
+
+    # Mock the file dialog to return our target directory
+    mock_dialog = mocker.patch("dangerzone.gui.main_window.QtWidgets.QFileDialog")
+    mock_instance = mock_dialog.return_value
+    mock_instance.exec.return_value = QtWidgets.QFileDialog.Accepted
+    mock_instance.selectedFiles.return_value = [str(target_dir)]
+
+    conversion_widget.settings_widget.select_output_directory()
+
+    assert conversion_widget.dangerzone.settings.get("output_dir") == str(target_dir)
+
+
+##
 # Document Selection tests
 ##
 

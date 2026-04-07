@@ -104,3 +104,33 @@ def test_new_settings_added(tmp_path: Path, mocker: MockerFixture) -> None:
     assert 20 == settings2.get("new_setting_autosaved")
     with pytest.raises(KeyError):
         settings2.get("new_setting")
+
+
+def test_output_dir_default_is_none(tmp_path: Path, mocker: MockerFixture) -> None:
+    """The output_dir setting defaults to None."""
+    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
+    settings = Settings()
+    assert settings.get("output_dir") is None
+
+
+def test_output_dir_persists_across_restarts(
+    tmp_path: Path, mocker: MockerFixture
+) -> None:
+    """A saved output_dir is restored after recreating Settings."""
+    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
+    settings = Settings()
+    settings.set("output_dir", "/home/user/safe-pdfs", autosave=True)
+
+    Settings._singleton = None
+    settings2 = Settings()
+    assert settings2.get("output_dir") == "/home/user/safe-pdfs"
+
+
+def test_output_dir_added_to_old_settings(
+    tmp_path: Path, mocker: MockerFixture
+) -> None:
+    """Upgrading from a pre-output_dir settings file adds the key."""
+    save_settings(tmp_path, default_settings_0_4_1())
+    mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
+    settings = Settings()
+    assert settings.get("output_dir") is None

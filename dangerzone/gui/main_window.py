@@ -1667,9 +1667,14 @@ class DocumentWidget(QtWidgets.QWidget):
         self.dangerous_doc_label.setAlignment(
             QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft
         )
-        self.dangerous_doc_label.setText(os.path.basename(self.document.input_filename))
+        doc_name = os.path.basename(self.document.input_filename)
+        self.dangerous_doc_label.setToolTip(doc_name)
         self.dangerous_doc_label.setMinimumWidth(200)
         self.dangerous_doc_label.setMaximumWidth(200)
+        # Elide text with '...' when the filename is too long for the label width
+        metrics = self.dangerous_doc_label.fontMetrics()
+        elided = metrics.elidedText(doc_name, QtCore.Qt.ElideMiddle, 195)
+        self.dangerous_doc_label.setText(elided)
 
         # Conversion status images
         self.img_status_unconverted = self.load_status_image("status_unconverted.png")

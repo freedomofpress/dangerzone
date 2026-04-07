@@ -180,24 +180,13 @@ oci_config: dict[str, typing.Any] = {
         ],
     },
 }
-not_forwarded_env = set(
-    (
-        "PATH",
-        "HOME",
-        "SHLVL",
-        "HOSTNAME",
-        "TERM",
-        "PWD",
-        "RUNSC_FLAGS",
-        "RUNSC_DEBUG",
-    )
-)
-for key_val in oci_config["process"]["env"]:
-    not_forwarded_env.add(key_val[: key_val.index("=")])
+# Allowlist: only forward environment variables the conversion process needs.
+# This prevents leaking sensitive variables (cloud credentials, API keys,
+# CI tokens) that the outer container may have inherited.
+allowed_env = {"LANG", "LC_ALL", "LC_CTYPE", "LANGUAGE", "TZ"}
 for key, val in os.environ.items():
-    if key in not_forwarded_env:
-        continue
-    oci_config["process"]["env"].append("%s=%s" % (key, val))
+    if key in allowed_env:
+        oci_config["process"]["env"].append("%s=%s" % (key, val))
 if os.environ.get("RUNSC_DEBUG"):
     log("Command inside gVisor sandbox: {}", command)
     log("OCI config:")

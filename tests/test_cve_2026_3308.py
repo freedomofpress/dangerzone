@@ -266,15 +266,15 @@ class TestCVE20263308:
                 # If we get here, MuPDF handled it gracefully
                 assert pixmap is not None
             except (RuntimeError, MemoryError, ValueError, OSError):
-                # Graceful rejection of the malformed image — this is fine.
-                # MuPDF raises various exception types:
-                #   - mupdf.FzErrorSystem (subclass of RuntimeError) for malloc failures
-                #   - RuntimeError for general MuPDF errors
-                #   - MemoryError for allocation failures
-                #   - ValueError for invalid parameters
-                #   - OSError for I/O related failures
-                # Any of these means MuPDF caught the problem before corrupting memory.
-                pass
+                pass  # Standard Python exceptions from MuPDF
+            except Exception as exc:
+                # PyMuPDF's SWIG bindings raise FzErrorSystem/FzErrorBase which
+                # inherit directly from Exception (not RuntimeError). These are
+                # graceful rejections — MuPDF caught the problem.
+                if "mupdf" in type(exc).__module__ or "pymupdf" in type(exc).__module__:
+                    pass
+                else:
+                    raise
 
         doc.close()
 
@@ -337,9 +337,12 @@ class TestCVE20263308:
         try:
             page.get_pixmap()
         except (RuntimeError, MemoryError, ValueError, OSError):
-            # MuPDF caught the problem and raised a Python exception —
-            # this is the safe behavior we want to verify.
-            pass
+            pass  # Standard Python exceptions from MuPDF
+        except Exception as exc:
+            if "mupdf" in type(exc).__module__ or "pymupdf" in type(exc).__module__:
+                pass  # PyMuPDF SWIG exceptions (FzErrorSystem, etc.)
+            else:
+                raise
 
         doc.close()
 

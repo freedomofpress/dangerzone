@@ -14,6 +14,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Fix default PDF reader selection on Linux ([#814](https://github.com/freedomofpress/dangerzone/issues/814))
 - Update the theme correctly on dark/light mode changes
   ([#1238](https://github.com/freedomofpress/dangerzone/issues/1238))
+- Update Linux .desktop file with missing MIME types for HWP and ODF formats ([#646](https://github.com/freedomofpress/dangerzone/issues/646))
 
 ### Added
 

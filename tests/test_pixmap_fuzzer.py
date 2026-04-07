@@ -25,10 +25,6 @@ USAGE
 
 from __future__ import annotations
 
-import struct
-import sys
-from typing import Optional
-
 import pytest
 
 try:
@@ -41,7 +37,6 @@ except ImportError:
 pytestmark = pytest.mark.skipif(not HAS_FITZ, reason="PyMuPDF (fitz) not installed")
 
 # Dangerzone bounds from dangerzone/conversion/errors.py
-MAX_PAGES = 10_000
 MAX_PAGE_WIDTH = 10_000
 MAX_PAGE_HEIGHT = 10_000
 

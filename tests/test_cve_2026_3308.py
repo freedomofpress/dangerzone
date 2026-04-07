@@ -57,10 +57,6 @@ USAGE
 
 from __future__ import annotations
 
-import signal
-import struct
-import sys
-import textwrap
 from typing import Optional, Tuple
 
 import pytest
@@ -118,7 +114,6 @@ def make_cve_2026_3308_pdf(
         obj 4: Contents stream (draws the image)
         obj 5: Image XObject (the payload)
     """
-    objects: list[Tuple[int, bytes]] = []
     offsets: list[int] = []
     body = b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n"  # header + high-byte comment
 
@@ -213,9 +208,9 @@ class TestCVE20263308:
         assert doc.page_count == 1
         page = doc[0]
         # The page should exist and have our image reference
-        xobjects = page.get_images()
-        # MuPDF should find the image XObject (may report it differently
-        # depending on version, but the page should load)
+        # Verify the page loads (image XObject may be reported differently
+        # depending on version, but the page itself should be parseable)
+        page.get_images()
         doc.close()
 
     def test_overflow_arithmetic(self):
@@ -270,14 +265,15 @@ class TestCVE20263308:
                 pixmap = page.get_pixmap()
                 # If we get here, MuPDF handled it gracefully
                 assert pixmap is not None
-            except (RuntimeError, MemoryError, ValueError, Exception) as exc:
-                # Graceful rejection of the malformed image - this is fine.
+            except (RuntimeError, MemoryError, ValueError, OSError):
+                # Graceful rejection of the malformed image — this is fine.
                 # MuPDF raises various exception types:
-                #   - mupdf.FzErrorSystem for malloc failures
+                #   - mupdf.FzErrorSystem (subclass of RuntimeError) for malloc failures
                 #   - RuntimeError for general MuPDF errors
                 #   - MemoryError for allocation failures
-                # Any Python-visible exception means MuPDF caught the problem
-                # before corrupting memory, which is the safe behavior.
+                #   - ValueError for invalid parameters
+                #   - OSError for I/O related failures
+                # Any of these means MuPDF caught the problem before corrupting memory.
                 pass
 
         doc.close()
@@ -295,7 +291,6 @@ class TestCVE20263308:
         Even the worst case is 3 orders of magnitude below INT_MAX.
         """
         MAX_PAGE_WIDTH = 10_000
-        MAX_PAGE_HEIGHT = 10_000
         INT_MAX = 2**31 - 1
 
         # Test all standard colorspace/depth combinations
@@ -309,15 +304,14 @@ class TestCVE20263308:
         ]
 
         for name, depth, channels in configs:
-            product = MAX_PAGE_WIDTH * depth * channels
-            assert product < INT_MAX, (
-                f"{name}: w*depth*n = {product} exceeds INT_MAX ({INT_MAX})"
+            stride = MAX_PAGE_WIDTH * depth * channels
+            margin = INT_MAX / stride
+            assert stride < INT_MAX, (
+                f"{name}: w*depth*n = {stride} exceeds INT_MAX ({INT_MAX})"
             )
-            # Even with max height factored into total allocation
-            total = MAX_PAGE_WIDTH * MAX_PAGE_HEIGHT * depth * channels
-            # This is a large number but Python handles it fine;
-            # the point is the STRIDE calculation uses only width
-            assert product < INT_MAX, f"{name} stride overflows"
+            assert margin > 1000, (
+                f"{name}: safety margin is only {margin:.0f}x (expected >1000x)"
+            )
 
     @pytest.mark.parametrize(
         "width,height,bpc,cs,desc",
@@ -325,12 +319,12 @@ class TestCVE20263308:
             # Boundary cases that are close to but below overflow
             (16777216, 1, 16, "/DeviceCMYK", "w*16*4 = 2^30 (half of INT_MAX)"),
             (33554432, 1, 16, "/DeviceCMYK", "w*16*4 = 2^31 (exact overflow)"),
-            (67108864, 1, 8, "/DeviceRGB", "w*8*3 = 2^30.2 (near overflow)"),
+            (89478485, 1, 8, "/DeviceRGB", "w*8*3 = 2^31-7 (just below overflow)"),
             (1, 1, 8, "/DeviceRGB", "minimal safe image"),
         ],
         ids=["half-intmax", "exact-overflow", "near-overflow-rgb", "minimal"],
     )
-    def test_crafted_dimensions(self, width, height, bpc, cs, desc):
+    def test_crafted_dimensions(self, width, height, bpc, cs, desc):  # noqa: ARG002
         """Test various dimension combinations near the overflow boundary."""
         pdf_bytes = make_cve_2026_3308_pdf(
             width=width, height=height, bits_per_component=bpc, colorspace=cs
@@ -342,8 +336,9 @@ class TestCVE20263308:
         # None should cause a segfault on non-vulnerable versions.
         try:
             page.get_pixmap()
-        except (RuntimeError, MemoryError, ValueError, Exception):
-            # Any Python-level exception is acceptable (means MuPDF caught it)
+        except (RuntimeError, MemoryError, ValueError, OSError):
+            # MuPDF caught the problem and raised a Python exception —
+            # this is the safe behavior we want to verify.
             pass
 
         doc.close()

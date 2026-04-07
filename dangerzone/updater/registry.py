@@ -98,6 +98,7 @@ def _get_auth_header(image: Image) -> Dict[str, str]:
             "scope": f"repository:{image.namespace}/{image.image_name}:pull",
         },
         proxies=get_proxies(),
+        timeout=30,
     )
     response.raise_for_status()
     token = response.json()["token"]
@@ -120,7 +121,9 @@ def get_manifest(image_str: str) -> requests.Response:
     }
     headers.update(_get_auth_header(image))
 
-    response = requests.get(manifest_url, headers=headers, proxies=get_proxies())
+    response = requests.get(
+        manifest_url, headers=headers, proxies=get_proxies(), timeout=30
+    )
     response.raise_for_status()
     return response
 
@@ -152,6 +155,7 @@ def get_blob(image: Image, digest: str) -> requests.Response:
         f"{_url(image)}/blobs/{digest}",
         headers=_get_auth_header(image),
         proxies=get_proxies(),
+        timeout=30,
     )
     response.raise_for_status()
     return response

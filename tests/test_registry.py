@@ -9,6 +9,7 @@ from dangerzone.updater.registry import (
     Image,
     _get_auth_header,
     _url,
+    get_blob,
     get_manifest,
     get_manifest_digest,
     parse_image_location,
@@ -157,6 +158,41 @@ def test_get_manifest_digest() -> None:
 
     # Verify the result
     assert digest == expected_digest
+
+
+def test_requests_get_includes_timeout(mocker: MockerFixture) -> None:
+    """Test that all requests.get() calls in registry.py pass a timeout kwarg."""
+    image_str = "ghcr.io/freedomofpress/dangerzone:v0.4.2"
+
+    mock_response = mocker.Mock()
+    mock_response.json.return_value = {"token": "dummy_token"}
+    mock_response.raise_for_status.return_value = None
+    mock_response.content = b"{}"
+    mock_response.status_code = 200
+
+    mock_get = mocker.patch("requests.get", return_value=mock_response)
+    mocker.patch("dangerzone.updater.registry.get_proxies", return_value={})
+
+    # Exercise _get_auth_header (first requests.get call)
+    _get_auth_header(parse_image_location(image_str))
+    assert mock_get.call_args_list[-1].kwargs.get("timeout") == 30
+
+    # Exercise get_manifest (second requests.get call, plus auth call)
+    mock_get.reset_mock()
+    get_manifest(image_str)
+    for call in mock_get.call_args_list:
+        assert call.kwargs.get("timeout") == 30, (
+            f"requests.get() missing timeout for URL: {call.args[0]}"
+        )
+
+    # Exercise get_blob (third requests.get call, plus auth call)
+    mock_get.reset_mock()
+    image = parse_image_location(image_str)
+    get_blob(image, "sha256:abc123")
+    for call in mock_get.call_args_list:
+        assert call.kwargs.get("timeout") == 30, (
+            f"requests.get() missing timeout for URL: {call.args[0]}"
+        )
 
 
 def test_get_manifest_digest_from_registry(mocker: MockerFixture) -> None:

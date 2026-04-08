@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 import pytest
 from pytest import MonkeyPatch

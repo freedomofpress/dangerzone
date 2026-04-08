@@ -20,7 +20,7 @@ from dangerzone.settings import Settings
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
 
 
-def pytest_collection_modifyitems(items: List) -> None:
+def _add_xdist_groups(items: List) -> None:
     for item in items:
         if not item.get_closest_marker("xdist_group"):
             # Group ungrouped tests by file so they never land on a dedicated
@@ -190,6 +190,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 def pytest_collection_modifyitems(
     config: pytest.Config, items: List[pytest.Item]
 ) -> None:
+    _add_xdist_groups(items)
     if not config.getoption("--generate-reference-pdfs"):
         skip_generator = pytest.mark.skip(
             reason="Only run when --generate-reference-pdfs is provided"

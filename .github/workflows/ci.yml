@@ -32,8 +32,11 @@ jobs:
       - name: Install dev. dependencies
         run: |-
           apt-get update
-          apt-get install -y git make python3 python3-poetry --no-install-recommends
-          poetry install
+          apt-get install -y git make python3 pipx --no-install-recommends
+          pipx install poetry
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Install Python dependencies
+        run: poetry install
       - name: Run linters to enforce code style
         run: poetry run make lint
       - name: Check that the QA script is up to date with the docs

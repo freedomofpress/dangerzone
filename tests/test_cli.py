@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 import fitz
-import numpy as npF
+import numpy as np
 import pytest
 from click.testing import CliRunner, Result
 from pytest_mock import MockerFixture

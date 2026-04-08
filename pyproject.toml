@@ -276,9 +276,9 @@ destination = "share/vendor/podman/gvproxy"
 # sign their releases (see https://github.com/crc-org/vfkit/issues/437).
 [tool.mazette.asset.vfkit]
 repo = "crc-org/vfkit"
-version = "==0.6.1"
-platform."darwin/amd64" = "vfkit"
-platform."darwin/arm64" = "vfkit"
+version = ">=0.6.1"
+platform."darwin/amd64" = "vfkit-unsigned"
+platform."darwin/arm64" = "vfkit-unsigned"
 executable = true
 destination = "share/vendor/podman/vfkit"
 

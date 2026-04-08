@@ -349,7 +349,7 @@ def test_airgapped_installation_container_tarball(mocker: MockerFixture) -> None
 
 
 def test_no_bundled_container_tar_first_install(mocker: MockerFixture) -> None:
-    """User installs dangerzone-slim (no container.tar) for the first time.
+    """User installs dangerzone (no container.tar) for the first time.
 
     Without a bundled container, the strategy should fall back to remote
     installation if updates are enabled.
@@ -373,7 +373,7 @@ def test_no_bundled_container_tar_first_install(mocker: MockerFixture) -> None:
 
 
 def test_no_bundled_container_tar_updates_disabled(mocker: MockerFixture) -> None:
-    """User installs dangerzone-slim (no container.tar) with updates disabled.
+    """User installs dangerzone (no container.tar) with updates disabled.
 
     Without a bundled container and with updates disabled, the strategy
     should be DO_NOTHING if there's already an image installed, or

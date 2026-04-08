@@ -118,6 +118,20 @@ def _ocr_page_worker(
         raise RuntimeError(str(e)) from None
 
 
+def _deepseek_ocr_page_worker(
+    pixmap_bytes: bytes,
+    width: int,
+    height: int,
+) -> bytes:
+    """Worker function for DeepSeek-OCR. Returns searchable PDF bytes.
+
+    Runs sequentially (no multiprocessing) since the GPU model is a singleton.
+    """
+    from ..deepseek_ocr import ocr_page_to_pdf
+
+    return ocr_page_to_pdf(pixmap_bytes, width, height)
+
+
 class IsolationProvider(ABC):
     """
     Abstracts an isolation provider
@@ -138,12 +152,15 @@ class IsolationProvider(ABC):
         document: Document,
         ocr_lang: Optional[str],
         progress_callback: Optional[Callable] = None,
+        ocr_backend: str = "tesseract",
     ) -> None:
         self.progress_callback = progress_callback
         document.mark_as_converting()
         try:
             with self.doc_to_pixels_proc(document) as conversion_proc:
-                self.convert_with_proc(document, ocr_lang, conversion_proc)
+                self.convert_with_proc(
+                    document, ocr_lang, conversion_proc, ocr_backend=ocr_backend
+                )
             document.mark_as_safe()
             if document.archive_after_conversion:
                 document.archive()
@@ -184,6 +201,7 @@ class IsolationProvider(ABC):
         document: Document,
         ocr_lang: Optional[str],
         p: subprocess.Popen,
+        ocr_backend: str = "tesseract",
     ) -> None:
         percentage = 0.0
         # Write the content of the to-be-converted document to the stdin of
@@ -205,8 +223,10 @@ class IsolationProvider(ABC):
 
             safe_doc = fitz.Document()
 
+            use_deepseek = ocr_lang and ocr_backend == "deepseek"
+
             # If we are doing OCR, start a pool of workers to do it in parallel
-            if ocr_lang:
+            if ocr_lang and not use_deepseek:
                 max_workers = max(1, round(mp.cpu_count() / 2))
                 ocr_pool = ProcessPoolExecutor(
                     max_workers=max_workers,
@@ -219,6 +239,10 @@ class IsolationProvider(ABC):
                 tessdata_dir = str(get_tessdata_dir())
                 ocr_futures: deque = deque()  # stores (page_num, future) tuples
                 ocr_page_num = 0  # tracks how many pages have completed OCR
+            elif use_deepseek:
+                ocr_pool = None
+                tessdata_dir = None
+                ocr_page_num = 0
             else:
                 ocr_pool = None
                 tessdata_dir = None
@@ -257,8 +281,8 @@ class IsolationProvider(ABC):
                     # Block if too many pages are waiting for OCR, to avoid
                     # filling RAM with pixel buffers from the sandbox.
                     # Wait until the queue drains to the number of workers
-                    # before resuming.
-                    if ocr_lang and len(ocr_futures) >= 2 * max_workers:
+                    # before resuming. (Not needed for DeepSeek — sequential.)
+                    if ocr_lang and not use_deepseek and len(ocr_futures) >= 2 * max_workers:
                         drain_ocr_futures(block_until_below=max_workers)
 
                     # Consume each page of the rasterizer's output...
@@ -276,7 +300,18 @@ class IsolationProvider(ABC):
                     )
 
                     # ... and send them to the OCR worker pool...
-                    if ocr_lang:
+                    if use_deepseek:
+                        # DeepSeek-OCR: sequential GPU inference (no multiprocessing)
+                        page_pdf_bytes = _deepseek_ocr_page_worker(
+                            untrusted_pixels, width, height
+                        )
+                        page_doc = fitz.open("pdf", page_pdf_bytes)
+                        safe_doc.insert_pdf(page_doc)
+                        ocr_page_num += 1
+                        ocr_percentage = (ocr_page_num / n_pages) * 100
+                        text = f"DeepSeek OCR: converted page {ocr_page_num}/{n_pages}"
+                        self.print_progress(document, False, text, ocr_percentage)
+                    elif ocr_lang:
                         assert ocr_pool is not None
                         assert tessdata_dir is not None
                         future = ocr_pool.submit(
@@ -304,7 +339,7 @@ class IsolationProvider(ABC):
                         self.print_progress(document, False, text, percentage)
 
                 # Once all pages have been submitted, wait for remaining futures
-                if ocr_lang:
+                if ocr_lang and not use_deepseek:
                     drain_ocr_futures(block_until_below=0)
 
             finally:

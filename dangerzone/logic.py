@@ -59,7 +59,10 @@ class DangerzoneCore(object):
         self.documents = []
 
     def convert_documents(
-        self, ocr_lang: Optional[str], stdout_callback: Optional[Callable] = None
+        self,
+        ocr_lang: Optional[str],
+        stdout_callback: Optional[Callable] = None,
+        ocr_backend: str = "tesseract",
     ) -> None:
         def convert_doc(document: Document) -> None:
             try:
@@ -67,6 +70,7 @@ class DangerzoneCore(object):
                     document,
                     ocr_lang,
                     stdout_callback,
+                    ocr_backend=ocr_backend,
                 )
 
             except Exception:

@@ -33,6 +33,10 @@ shiboken6 = [
    { version = "*", python = "^3.10" },
 ]
 
+# Optional: DeepSeek-OCR-3B GPU backend (demo)
+[tool.poetry.extras]
+deepseek = ["torch", "transformers", "einops"]
+
 [tool.poetry.scripts]
 dangerzone-cli = "dangerzone.cli:run"
 dangerzone-image = "dangerzone.updater.cli:run"

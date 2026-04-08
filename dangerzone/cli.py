@@ -31,6 +31,12 @@ def print_header(s: str) -> None:
 )
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
 @click.option(
+    "--ocr-backend",
+    type=click.Choice(["tesseract", "deepseek"]),
+    default="tesseract",
+    help="OCR engine: tesseract (default) or deepseek (GPU, DeepSeek-OCR-3B)",
+)
+@click.option(
     "--archive",
     "archive",
     flag_value=True,
@@ -78,6 +84,7 @@ def print_header(s: str) -> None:
 def run(
     output_filename: Optional[str],
     ocr_lang: Optional[str],
+    ocr_backend: str,
     filenames: Optional[List[str]],
     archive: bool,
     dummy_conversion: bool,
@@ -146,7 +153,7 @@ def run(
     try:
         startup.StartupLogic(tasks=tasks).run()
         print_header("Converting document(s) to safe PDF")
-        dangerzone.convert_documents(ocr_lang)
+        dangerzone.convert_documents(ocr_lang, ocr_backend=ocr_backend)
     finally:
         if dangerzone.isolation_provider.requires_install() and not linger:
             task_container_stop = shutdown.ContainerStopTask()

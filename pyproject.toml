@@ -34,6 +34,8 @@ shiboken6 = [
 ]
 
 # Optional: DeepSeek-OCR-3B GPU backend (demo)
+# Requires: transformers==4.46.3 (model uses LlamaFlashAttention2 removed in 5.x)
+# Also needs: pillow, addict, easydict, matplotlib, torchvision (model custom code deps)
 [tool.poetry.extras]
 deepseek = ["torch", "transformers", "einops"]
 

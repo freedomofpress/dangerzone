@@ -101,10 +101,9 @@ def ocr_page(
             image_size=640,
             crop_mode=True,
             save_results=False,
-            test_compress=False,
+            eval_mode=True,
         )
 
-    # model.infer returns the OCR text (or a list — handle both)
     if isinstance(result, list):
         return "\n".join(str(r) for r in result)
     return str(result) if result else ""

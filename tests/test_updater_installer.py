@@ -375,11 +375,9 @@ def test_no_bundled_container_tar_first_install(mocker: MockerFixture) -> None:
 def test_no_bundled_container_tar_updates_disabled(mocker: MockerFixture) -> None:
     """User installs dangerzone-slim (no container.tar) with updates disabled.
 
-    Without a bundled container and with updates disabled, the strategy
-    should be DO_NOTHING if there's already an image installed, or
-    INSTALL_REMOTE_CONTAINER if there's no image (since max would be 0).
-    In this case, with no images and no remote updates, max_log_index is 0
-    and local_log_index is 0, so DO_NOTHING is returned.
+    Without a bundled container and with no local images, the strategy
+    should fall back to INSTALL_REMOTE_CONTAINER regardless of update
+    settings, since there is no other way to get the image.
     """
     mocker.patch(f"{installer}.runtime.list_image_digests", return_value=[])
     mocker.patch(
@@ -395,5 +393,5 @@ def test_no_bundled_container_tar_updates_disabled(mocker: MockerFixture) -> Non
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=False)
 
     result = get_installation_strategy()
-    # With all indexes at 0, local_log_index == max_log_index, so DO_NOTHING
-    assert result == Strategy.DO_NOTHING
+    # No bundled tar and no local images: must pull from registry
+    assert result == Strategy.INSTALL_REMOTE_CONTAINER

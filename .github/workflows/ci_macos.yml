@@ -40,7 +40,7 @@ jobs:
       - name: Use the testing image and key
         run: |-
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
-          echo "ghcr.io/freedomofpress/dangerzone-testing/v1" > share/image-name.txt
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
       - name: Smoke test
         # Nested virtualization does not work on M1 CPUs.
         continue-on-error: ${{ inputs.arch == 'arm64' }}

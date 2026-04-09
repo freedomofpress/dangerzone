@@ -88,7 +88,7 @@ jobs:
       - name: Use the testing image and key
         run: |-
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
-          echo "ghcr.io/freedomofpress/dangerzone-testing/v1" > share/image-name.txt
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
       # NOTE: We have noticed that the `windows-2022` runner image has WSL
       # installed, but its kernel is old (plus, the default version is WSL1).
@@ -193,7 +193,7 @@ jobs:
       - name: Use the testing image and key
         run: |-
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
-          echo "ghcr.io/freedomofpress/dangerzone-testing/v1" > share/image-name.txt
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
       - name: Build Dangerzone .deb
         run: |
@@ -309,7 +309,7 @@ jobs:
       - name: Use the testing image and key
         run: |-
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
-          echo "ghcr.io/freedomofpress/dangerzone-testing/v1" > share/image-name.txt
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
       - name: Build Dangerzone .rpm
         run: |
@@ -420,7 +420,7 @@ jobs:
       - name: Use the testing image and key
         run: |-
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
-          echo "ghcr.io/freedomofpress/dangerzone-testing/v1" > share/image-name.txt
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
       - name: Setup xvfb (Linux)
         run: |
@@ -505,7 +505,7 @@ jobs:
       - name: Use the testing image and key
         run: |-
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
-          echo "ghcr.io/freedomofpress/dangerzone-testing/v1" > share/image-name.txt
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
       - name: Load the old container image
         run: |

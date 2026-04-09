@@ -91,6 +91,21 @@ jobs:
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
+      - name: Cache container image archive
+        id: cache-container
+        uses: actions/cache@v5
+        with:
+          path: share/container.tar
+          key: v1-container-tar-${{ runner.arch }}-${{ hashFiles('share/image-name.txt') }}
+
+      - name: Download the container image as a tar archive
+        if: steps.cache-container.outputs.cache-hit != 'true'
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --output share/container.tar
+
       # NOTE: We have noticed that the `windows-2022` runner image has WSL
       # installed, but its kernel is old (plus, the default version is WSL1).
       # This means that `wsl --status` fails, which by extension means that our
@@ -195,6 +210,21 @@ jobs:
         run: |-
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
+
+      - name: Cache container image archive
+        id: cache-container
+        uses: actions/cache@v5
+        with:
+          path: share/container.tar
+          key: v1-container-tar-${{ runner.arch }}-${{ hashFiles('share/image-name.txt') }}
+
+      - name: Download the container image as a tar archive
+        if: steps.cache-container.outputs.cache-hit != 'true'
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --output share/container.tar
 
       - name: Build Dangerzone .deb
         run: |
@@ -312,6 +342,21 @@ jobs:
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
+      - name: Cache container image archive
+        id: cache-container
+        uses: actions/cache@v5
+        with:
+          path: share/container.tar
+          key: v1-container-tar-${{ runner.arch }}-${{ hashFiles('share/image-name.txt') }}
+
+      - name: Download the container image as a tar archive
+        if: steps.cache-container.outputs.cache-hit != 'true'
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --output share/container.tar
+
       - name: Build Dangerzone .rpm
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
@@ -423,6 +468,21 @@ jobs:
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
+      - name: Cache container image archive
+        id: cache-container
+        uses: actions/cache@v5
+        with:
+          path: share/container.tar
+          key: v1-container-tar-${{ runner.arch }}-${{ hashFiles('share/image-name.txt') }}
+
+      - name: Download the container image as a tar archive
+        if: steps.cache-container.outputs.cache-hit != 'true'
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --output share/container.tar
+
       - name: Setup xvfb (Linux)
         run: |
           sudo apt update
@@ -517,16 +577,9 @@ jobs:
       - name: Download and store signatures for the old image
         env:
           DANGERZONE_DEV: "1"
-        run: |
-          IMAGE=$(cat share/image-name.txt)
-          poetry run python -c "
-          from dangerzone.updater import registry, signatures
-          image = '${IMAGE}:old-latest'
-          digest = registry.get_manifest_digest(image)
-          sigs = signatures.get_remote_signatures(image, digest)
-          signatures.verify_signatures(sigs, digest)
-          signatures.store_signatures(sigs, digest)
-          "
+        run: >-
+          poetry run dangerzone-image store-signatures
+          --image $(cat share/image-name.txt):old-latest
 
       - name: Run a conversion
         run: |

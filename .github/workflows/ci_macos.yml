@@ -41,6 +41,19 @@ jobs:
         run: |-
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
+      - name: Cache container image archive
+        id: cache-container
+        uses: actions/cache@v4
+        with:
+          path: share/container.tar
+          key: v1-container-tar-${{ inputs.arch }}-${{ hashFiles('share/image-name.txt') }}
+      - name: Download the container image as a tar archive
+        if: steps.cache-container.outputs.cache-hit != 'true'
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --output share/container.tar
       - name: Smoke test
         # Nested virtualization does not work on M1 CPUs.
         continue-on-error: ${{ inputs.arch == 'arm64' }}

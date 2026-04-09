@@ -139,13 +139,7 @@ def get_installation_strategy() -> Strategy:
     # More information about the rationale and design for these installation
     # and upgrade scenarios can be found here:
     # https://github.com/freedomofpress/dangerzone/issues/1156
-    if not podman_images and not is_container_tar_bundled() and max_log_index == 0:
-        # No container image is available locally and no bundled tarball exists.
-        # Fall back to pulling from the registry, which will also download and
-        # verify signatures.
-        log.debug("Installation strategy: Remote container install (no bundled tar)")
-        return Strategy.INSTALL_REMOTE_CONTAINER
-    elif local_log_index == max_log_index:
+    if local_log_index == max_log_index:
         # Sandbox is either up-to-date, user has disabled upgrades
         # or has downgraded to a previous application version.
         #

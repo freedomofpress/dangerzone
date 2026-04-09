@@ -3,8 +3,7 @@ import subprocess
 import sys
 from typing import Callable, Optional
 
-from conversion.common import DangerzoneConverter
-
+from ..conversion_errors import INT_BYTES
 from ..document import Document
 from .base import IsolationProvider, terminate_process_group
 
@@ -15,11 +14,11 @@ def dummy_script() -> None:
     sys.stdin.buffer.read()
     pages = 2
     width = height = 9
-    DangerzoneConverter._write_int(pages)
+    sys.stdout.buffer.write(pages.to_bytes(INT_BYTES, "big", signed=False))
     for page in range(pages):
-        DangerzoneConverter._write_int(width)
-        DangerzoneConverter._write_int(height)
-        DangerzoneConverter._write_bytes(width * height * 3 * b"A")
+        sys.stdout.buffer.write(width.to_bytes(INT_BYTES, "big", signed=False))
+        sys.stdout.buffer.write(height.to_bytes(INT_BYTES, "big", signed=False))
+        sys.stdout.buffer.write(width * height * 3 * b"A")
 
 
 class Dummy(IsolationProvider):

@@ -1,9 +1,9 @@
 import os
 
 import pytest
-from conversion import errors
 from pytest_mock import MockerFixture
 
+from dangerzone import conversion_errors as errors
 from dangerzone.isolation_provider.base import IsolationProvider
 from dangerzone.isolation_provider.dummy import Dummy
 

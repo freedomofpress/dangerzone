@@ -7,8 +7,6 @@ import zipfile
 from pathlib import Path
 from typing import IO, Callable, Optional
 
-from conversion.common import running_on_qubes
-
 from ..document import Document
 from ..updater.signatures import is_container_tar_bundled
 from .base import IsolationProvider
@@ -113,7 +111,7 @@ class Qubes(IsolationProvider):
 def is_qubes_native_conversion() -> bool:
     """Returns True if the conversion should be run using Qubes OS's diposable
     VMs and False if not."""
-    if running_on_qubes():
+    if os.path.exists("/usr/share/qubes/marker-vm"):
         if getattr(sys, "dangerzone_dev", False):
             return os.environ.get("QUBES_CONVERSION", "0") == "1"
 

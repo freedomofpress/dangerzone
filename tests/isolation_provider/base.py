@@ -2,9 +2,9 @@ import os
 import subprocess
 
 import pytest
-from conversion import errors
 from pytest_mock import MockerFixture
 
+from dangerzone import conversion_errors as errors
 from dangerzone.document import Document
 from dangerzone.isolation_provider import base
 
@@ -27,7 +27,9 @@ class IsolationProviderTest:
         tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
-        mocker.patch("conversion.errors.MAX_PAGES", 1)  # sample_pdf has 4 pages > 1
+        mocker.patch(
+            "dangerzone.conversion_errors.MAX_PAGES", 1
+        )  # sample_pdf has 4 pages > 1
         doc = Document(sample_pdf)
         p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.MaxPagesException):

@@ -11,7 +11,6 @@ on:
 
 permissions:
   actions: read # for detecting the Github Actions environment.
-  packages: read # for pulling container images from GHCR.
 
 env:
   QT_SELECT: "qt6"
@@ -195,9 +194,6 @@ jobs:
       - name: Install mazette
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
       - name: Get the dev environment
         run: |
@@ -307,9 +303,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
       - name: Install mazette tool
         run: |
@@ -448,9 +441,6 @@ jobs:
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
 
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
       - name: Get current date
         id: date
@@ -559,9 +549,6 @@ jobs:
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
 
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
       - name: Use the testing image and key
         run: |-

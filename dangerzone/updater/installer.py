@@ -139,11 +139,7 @@ def get_installation_strategy() -> Strategy:
     # More information about the rationale and design for these installation
     # and upgrade scenarios can be found here:
     # https://github.com/freedomofpress/dangerzone/issues/1156
-    if (
-        not podman_images
-        and not is_container_tar_bundled()
-        and max_log_index == 0
-    ):
+    if not podman_images and not is_container_tar_bundled() and max_log_index == 0:
         # No container image is available locally and no bundled tarball exists.
         # Fall back to pulling from the registry, which will also download and
         # verify signatures.

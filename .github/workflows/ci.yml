@@ -568,18 +568,20 @@ jobs:
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
-      - name: Load the old container image
-        run: |
-          IMAGE=$(cat share/image-name.txt)
-          podman pull ${IMAGE}:old-latest
-          podman tag ${IMAGE}:old-latest ${IMAGE}
-
-      - name: Download and store signatures for the old image
+      - name: Download the old container image as an archive
         env:
           DANGERZONE_DEV: "1"
         run: >-
-          poetry run dangerzone-image store-signatures
+          poetry run dangerzone-image prepare-archive
           --image $(cat share/image-name.txt):old-latest
+          --output /tmp/old-container.tar
+
+      - name: Load the old container image
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image load-archive
+          --force /tmp/old-container.tar
 
       - name: Run a conversion
         run: |

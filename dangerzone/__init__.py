@@ -5,7 +5,7 @@ import sys
 logger = logging.getLogger(__name__)
 
 if os.environ.get("DANGERZONE_DEV") in ("1", "true"):
-    sys.dangerzone_dev = True
+    sys.dangerzone_dev = True  # type: ignore[attr-defined]
 
 basename = os.path.basename(sys.argv[0])
 

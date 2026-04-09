@@ -578,10 +578,6 @@ jobs:
         run: |
           jq '.updater_check_all = true' ~/.config/dangerzone/settings.json > temp.json && mv temp.json ~/.config/dangerzone/settings.json
 
-      - name: Check the digest of the loaded podman image
-        run: |
-          podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
-
       - uses: imjasonh/setup-crane@v0.5
 
       - name: Get the digest of the latest image
@@ -591,10 +587,6 @@ jobs:
       - name: Run another conversion
         run: |
           poetry run dangerzone-cli ./tests/test_docs/sample-pdf.pdf
-
-      - name: Check the digest of the loaded podman image
-        run: |
-          podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
 
       - name: Ensure the container has been upgraded
         run: |

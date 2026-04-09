@@ -4,6 +4,9 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+if os.environ.get("DANGERZONE_DEV") in ("1", "true"):
+    sys.dangerzone_dev = True
+
 basename = os.path.basename(sys.argv[0])
 
 # Patch the stdlib early in the import tree in order to log background calls

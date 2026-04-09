@@ -515,10 +515,11 @@ jobs:
           podman tag ${IMAGE}:old-latest ${IMAGE}
 
       - name: Download and store signatures for the old image
+        env:
+          DANGERZONE_DEV: "1"
         run: |
           IMAGE=$(cat share/image-name.txt)
           poetry run python -c "
-          import sys; sys.dangerzone_dev = True
           from dangerzone.updater import registry, signatures
           image = '${IMAGE}:old-latest'
           digest = registry.get_manifest_digest(image)

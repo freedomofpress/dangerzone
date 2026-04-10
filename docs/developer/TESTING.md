@@ -50,6 +50,20 @@ python tests/fuzz_ipc_standalone.py --iterations 50000
 python tests/fuzz_ipc_standalone.py --seed 42  # reproducible run
 ```
 
+### Fuzzing best practices
+
+The fuzz tests in this repo are lightweight random fuzzers (not
+coverage-guided). For background on fuzzing techniques and tooling:
+
+- [OpenSSF Fuzzing Initiative](https://openssf.org/technical-initiatives/fuzzing/)
+- [Google - Introduction to Fuzzing](https://github.com/google/fuzzing/blob/master/docs/intro-to-fuzzing.md)
+- [The Fuzzing Book](https://www.fuzzingbook.org/) — comprehensive reference on
+  generating software tests, including grammar-based and mutation-based fuzzing
+
+For coverage-guided fuzzing of the IPC protocol, consider
+[Atheris](https://github.com/google/atheris) (Python) or writing a C harness
+for MuPDF's `fz_unpack_stream` with [libFuzzer](https://llvm.org/docs/LibFuzzer.html).
+
 ### Test report generation
 After running the large tests, a report is stored under `tests/test_docs_large/results/junit/` and it is composed of the JUnit XML file describing the pytest run.
 

@@ -59,6 +59,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   into dedicated `xdist_group`s so each group runs on a single worker,
   avoiding contention over the container runtime and the offscreen Qt
   platform.
+- Pin `XDG_DATA_DIRS` in the GUI logic tests that walk it for `.desktop`
+  files, so the tests don't pick up arbitrary entries from the developer's
+  or CI runner's environment.
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

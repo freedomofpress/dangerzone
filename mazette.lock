@@ -292,17 +292,6 @@
         "destination": "share/vendor/cosign",
         "extract": false
       }
-    },
-    "h2orestart": {
-      "all": {
-        "repo": "ebandal/H2Orestart",
-        "download_url": "https://github.com/ebandal/H2Orestart/releases/download/v0.7.10/H2Orestart.oxt",
-        "version": "0.7.10",
-        "checksum": "06509458e7fe116b604a9e70a503f8444afa43daae2f47118629440012f7f720",
-        "executable": false,
-        "destination": "dangerzone/container_helpers/h2orestart.oxt",
-        "extract": false
-      }
     }
   },
   "config_checksum": "2be816481401072f8af972ad616099491205ed28f0848e7f4d50ec8ac2cdf0e3"

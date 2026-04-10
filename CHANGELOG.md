@@ -36,6 +36,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Move the conversion error definitions out of the now-removed `conversion/`
   package and into `dangerzone.conversion_errors`, so the host code keeps a
   single source of truth for the error codes raised inside the sandbox.
+- Split the container image build out into a separate
+  [`freedomofpress/dangerzone-image`](https://github.com/freedomofpress/dangerzone-image)
+  repository. CI now consumes the published image via
+  `dangerzone-image prepare-archive` instead of building it in-tree, and the
+  resulting `container.tar` is cached against the registry digest.
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

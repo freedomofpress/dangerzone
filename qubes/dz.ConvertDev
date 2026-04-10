@@ -30,7 +30,7 @@ def main():
         say("Importing the conversion module")
         sys.path.insert(0, t.name)
 
-        from dangerzone.conversion.doc_to_pixels import main
+        from conversion.doc_to_pixels import main
 
         return asyncio.run(main())
 

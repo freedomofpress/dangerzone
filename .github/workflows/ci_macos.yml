@@ -9,9 +9,6 @@ on:
       arch:
         required: true
         type: string
-      image_uri:
-        required: true
-        type: string
 
 jobs:
   build:
@@ -40,16 +37,27 @@ jobs:
         run: poetry run mazette install
       - name: Check cosign is present
         run: ls share/vendor
-      - name: Restore container image
-        uses: actions/cache/restore@v5
+      - name: Use the testing image and key
+        run: |-
+          cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
+      - uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
+      - name: Get the digest of the latest image
+        id: image-digest
+        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
+      - name: Cache container image archive
+        id: cache-container
+        uses: actions/cache@v4
         with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ inputs.image_uri }}
+          path: share/container.tar
+          key: v1-container-tar-${{ inputs.arch }}-${{ steps.image-digest.outputs.digest }}
+      - name: Download the container image as a tar archive
+        if: steps.cache-container.outputs.cache-hit != 'true'
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --output share/container.tar
       - name: Smoke test
         # Nested virtualization does not work on M1 CPUs.
         continue-on-error: ${{ inputs.arch == 'arm64' }}

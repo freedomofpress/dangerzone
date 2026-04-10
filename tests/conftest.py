@@ -111,11 +111,6 @@ def sanitized_text() -> str:
 
 
 @pytest.fixture
-def sample_doc() -> str:
-    return str(test_docs_dir.joinpath(BASIC_SAMPLE_DOC))
-
-
-@pytest.fixture
 def sample_bad_height() -> str:
     return str(test_docs_dir.joinpath("sample_bad_max_height.pdf"))
 
@@ -127,7 +122,12 @@ def sample_bad_width() -> str:
 
 @pytest.fixture
 def sample_pdf() -> str:
-    return str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
+    return str(test_docs_dir / BASIC_SAMPLE_PDF)
+
+
+@pytest.fixture
+def sample_pdf2() -> str:
+    return str(test_docs_dir / BASIC_SAMPLE_PDF2)
 
 
 @pytest.fixture
@@ -140,9 +140,9 @@ def skip_image_verification(monkeypatch: Any) -> None:
 
 SAMPLE_DIRECTORY = "test_docs"
 BASIC_SAMPLE_PDF = "sample-pdf.pdf"
-BASIC_SAMPLE_DOC = "sample-doc.doc"
+BASIC_SAMPLE_PDF2 = "sample-pdf2.pdf"
 
-test_docs_dir = Path(__file__).parent.joinpath(SAMPLE_DIRECTORY)
+test_docs_dir = Path(__file__).parent / SAMPLE_DIRECTORY
 
 test_docs = [
     p
@@ -158,7 +158,7 @@ for_each_doc = pytest.mark.parametrize(
 
 
 class TestBase:
-    sample_doc = str(test_docs_dir.joinpath(BASIC_SAMPLE_PDF))
+    sample_doc = str(test_docs_dir / BASIC_SAMPLE_PDF)
 
 
 def pytest_configure(config: pytest.Config) -> None:

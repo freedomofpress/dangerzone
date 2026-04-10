@@ -58,6 +58,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Run the GUI tests headless by default via `QT_QPA_PLATFORM=offscreen` and
   drop the `xvfb`/`xvfb-run` setup from CI. A new `--onscreen` pytest flag
   re-enables the on-screen mode for local debugging.
+- Run pytest with `pytest-xdist` and group container-backed and GUI tests
+  into dedicated `xdist_group`s so each group runs on a single worker,
+  avoiding contention over the container runtime and the offscreen Qt
+  platform.
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

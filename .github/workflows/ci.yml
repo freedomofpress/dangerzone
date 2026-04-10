@@ -521,6 +521,8 @@ jobs:
   end-to-end-test:
     name: "Sandbox upgrade E2E test"
     runs-on: ubuntu-latest
+    env:
+      DANGERZONE_DEV: "1"
 
     steps:
       - name: Checkout
@@ -556,16 +558,12 @@ jobs:
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
       - name: Download the old container image as an archive
-        env:
-          DANGERZONE_DEV: "1"
         run: >-
           poetry run dangerzone-image prepare-archive
           --image $(cat share/image-name.txt):old-latest
           --output /tmp/old-container.tar
 
       - name: Load the old container image
-        env:
-          DANGERZONE_DEV: "1"
         run: >-
           poetry run dangerzone-image load-archive
           --force /tmp/old-container.tar

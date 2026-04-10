@@ -149,7 +149,6 @@ tests/test_docs_large/
 install/windows/Dangerzone.wxs
 share/container.tar
 share/container.tar.gz
-share/image-id.txt
 container/container-pip-requirements.txt
 .doit.db.db
 dangerzone/container_helpers/h2orestart.oxt

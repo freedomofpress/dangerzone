@@ -7,7 +7,6 @@ import zipfile
 from pathlib import Path
 from typing import IO, Callable, Optional
 
-from ..conversion.common import running_on_qubes
 from ..document import Document
 from ..updater.signatures import is_container_tar_bundled
 from .base import IsolationProvider
@@ -85,22 +84,19 @@ class Qubes(IsolationProvider):
             p.stdout.close()
 
     def teleport_dz_module(self, wpipe: IO[bytes]) -> None:
-        """Send the dangerzone module to another qube, as a zipfile."""
-        # Grab the absolute file path of the dangerzone module.
-        import dangerzone as _dz
+        """Send the conversion module to another qube, as a zipfile."""
+        # Grab the absolute file path of the conversion module.
+        import conversion as _conv
 
-        _conv_path = Path(_dz.conversion.__file__).parent
-        _src_root = Path(_dz.__file__).parent.parent
+        _conv_path = Path(_conv.__file__).parent
         temp_file = io.BytesIO()
 
         with zipfile.ZipFile(temp_file, "w") as z:
-            z.mkdir("dangerzone/")
-            z.writestr("dangerzone/__init__.py", "")
             for root, _, files in os.walk(_conv_path):
                 for file in files:
                     if file.endswith(".py"):
                         file_path = os.path.join(root, file)
-                        relative_path = os.path.relpath(file_path, _src_root)
+                        relative_path = os.path.relpath(file_path, _conv_path.parent)
                         z.write(file_path, relative_path)
 
         # Send the following data:
@@ -115,7 +111,7 @@ class Qubes(IsolationProvider):
 def is_qubes_native_conversion() -> bool:
     """Returns True if the conversion should be run using Qubes OS's diposable
     VMs and False if not."""
-    if running_on_qubes():
+    if os.path.exists("/usr/share/qubes/marker-vm"):
         if getattr(sys, "dangerzone_dev", False):
             return os.environ.get("QUBES_CONVERSION", "0") == "1"
 

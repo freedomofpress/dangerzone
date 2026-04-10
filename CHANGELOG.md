@@ -41,6 +41,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   repository. CI now consumes the published image via
   `dangerzone-image prepare-archive` instead of building it in-tree, and the
   resulting `container.tar` is cached against the registry digest.
+- Drop the format-specific conversion tests and their sample assets. The
+  remaining tests cover the host-side isolation provider interface only;
+  document-format coverage now lives alongside the container image in
+  `freedomofpress/dangerzone-image`.
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

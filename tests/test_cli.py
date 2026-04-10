@@ -212,6 +212,8 @@ class TestCliBasic(TestCli):
 
 
 class TestCliConversion(TestCliBasic):
+    pytestmark = pytest.mark.xdist_group("container")
+
     def test_invalid_lang(self, sample_pdf: str) -> None:
         result = self.run_cli([sample_pdf, "--ocr-lang", "piglatin"])
         result.assert_failure()

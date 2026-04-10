@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import pytest
 from pytest import MonkeyPatch
@@ -20,6 +20,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 def pytest_configure(config: pytest.Config) -> None:
     if not config.getoption("--onscreen", default=False):
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+
+def pytest_collection_modifyitems(items: List) -> None:
+    for item in items:
+        if Path(item.fspath).is_relative_to(Path(__file__).parent):
+            item.add_marker(pytest.mark.xdist_group("gui"))
 
 
 from dangerzone import util

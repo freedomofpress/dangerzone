@@ -77,28 +77,28 @@ def drag_files_event(mocker: MockerFixture, files: List[str]) -> QtGui.QDropEven
 
 @fixture
 def drag_valid_files_event(
-    mocker: MockerFixture, sample_doc: str, sample_pdf: str
+    mocker: MockerFixture, sample_pdf: str, sample_pdf2: str
 ) -> QtGui.QDropEvent:
-    return drag_files_event(mocker, [sample_doc, sample_pdf])
+    return drag_files_event(mocker, [sample_pdf, sample_pdf2])
 
 
 @fixture
 def drag_1_invalid_file_event(
-    mocker: MockerFixture, sample_doc: str, tmp_path: pathlib.Path
+    mocker: MockerFixture, sample_pdf: str, tmp_path: pathlib.Path
 ) -> QtGui.QDropEvent:
     unsupported_file_path = tmp_path / "file.unsupported"
-    shutil.copy(sample_doc, unsupported_file_path)
+    shutil.copy(sample_pdf, unsupported_file_path)
     return drag_files_event(mocker, [str(unsupported_file_path)])
 
 
 @fixture
 def drag_1_invalid_and_2_valid_files_event(
-    mocker: MockerFixture, tmp_path: pathlib.Path, sample_doc: str, sample_pdf: str
+    mocker: MockerFixture, tmp_path: pathlib.Path, sample_pdf: str, sample_pdf2: str
 ) -> QtGui.QDropEvent:
     unsupported_file_path = tmp_path / "file.unsupported"
-    shutil.copy(sample_doc, unsupported_file_path)
+    shutil.copy(sample_pdf, unsupported_file_path)
     return drag_files_event(
-        mocker, [sample_doc, sample_pdf, str(unsupported_file_path)]
+        mocker, [sample_pdf, sample_pdf2, str(unsupported_file_path)]
     )
 
 
@@ -567,13 +567,13 @@ def test_change_document_button(
     conversion_widget: ConversionWidget,
     qtbot: QtBot,
     mocker: MockerFixture,
+    sample_pdf2: str,
     sample_pdf: str,
-    sample_doc: str,
     tmp_path: pathlib.Path,
 ) -> None:
     # Setup first doc selection
     file_dialog_mock = mocker.MagicMock()
-    file_dialog_mock.selectedFiles.return_value = (sample_pdf,)
+    file_dialog_mock.selectedFiles.return_value = (sample_pdf2,)
     conversion_widget.doc_selection_widget.file_dialog = file_dialog_mock
 
     # Select first file
@@ -585,9 +585,9 @@ def test_change_document_button(
         file_dialog_mock.accept()
 
     # Setup doc change
-    shutil.copy(sample_doc, tmp_path)
-    tmp_sample_doc = tmp_path / os.path.basename(sample_doc)
-    file_dialog_mock.selectedFiles.return_value = (tmp_sample_doc,)
+    shutil.copy(sample_pdf, tmp_path)
+    tmp_sample_pdf = tmp_path / os.path.basename(sample_pdf)
+    file_dialog_mock.selectedFiles.return_value = (tmp_sample_pdf,)
 
     # When clicking on "select docs" button
     with qtbot.waitSignal(conversion_widget.documents_added):
@@ -607,7 +607,7 @@ def test_change_document_button(
         for doc in conversion_widget.dangerzone.get_unconverted_documents()
     ]
     assert len(docs) == 1
-    assert docs[0] == str(tmp_sample_doc)
+    assert docs[0] == str(tmp_sample_pdf)
 
 
 def test_drop_valid_documents(
@@ -1251,11 +1251,11 @@ class TestRestartConversion:
         self,
         conversion_widget: ConversionWidget,
         qtbot: QtBot,
+        sample_pdf2: str,
         sample_pdf: str,
-        sample_doc: str,
     ) -> None:
-        doc1 = Document(sample_pdf)
-        doc2 = Document(sample_doc)
+        doc1 = Document(sample_pdf2)
+        doc2 = Document(sample_pdf)
         conversion_widget.documents_list.docs_list = [doc1, doc2]
 
         doc1.state = Document.STATE_SAFE
@@ -1274,9 +1274,9 @@ class TestRestartConversion:
         self,
         conversion_widget: ConversionWidget,
         qtbot: QtBot,
-        sample_pdf: str,
+        sample_pdf2: str,
     ) -> None:
-        doc = Document(sample_pdf)
+        doc = Document(sample_pdf2)
         conversion_widget.dangerzone.add_document(doc)
         conversion_widget.documents_list.documents_added([doc])
         conversion_widget.conversion_started = True
@@ -1298,13 +1298,13 @@ class TestRestartConversion:
     def test_new_conversion_after_reset(
         self,
         conversion_widget: ConversionWidget,
-        sample_pdf: str,
+        sample_pdf2: str,
     ) -> None:
-        conversion_widget.documents_selected([Document(sample_pdf)])
+        conversion_widget.documents_selected([Document(sample_pdf2)])
         conversion_widget.conversion_started = True
         conversion_widget.reset_for_new_conversion()
 
-        conversion_widget.documents_selected([Document(sample_pdf)])
+        conversion_widget.documents_selected([Document(sample_pdf2)])
 
         assert len(conversion_widget.dangerzone.get_unconverted_documents()) == 1
         assert not conversion_widget.settings_widget.isHidden()

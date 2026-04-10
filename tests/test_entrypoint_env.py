@@ -1,44 +1,11 @@
-"""Tests for the environment variable allowlist in entrypoint.py.
+"""Tests for the environment variable allowlist in entrypoint.py."""
 
-The entrypoint builds an OCI config for gVisor and forwards only allowlisted
-environment variables into the sandbox.  Since entrypoint.py has module-level
-side effects and can't be imported, we parse its AST to extract the allowlist
-and test the filtering logic here.
-"""
-
-import ast
-import pathlib
-
-ENTRYPOINT = pathlib.Path(__file__).parent.parent / (
-    "dangerzone/container_helpers/entrypoint.py"
-)
-
-
-def _read_allowlist() -> set[str]:
-    """Extract the allowed_env set from entrypoint.py via AST."""
-    tree = ast.parse(ENTRYPOINT.read_text())
-    for node in ast.walk(tree):
-        if (
-            isinstance(node, ast.Assign)
-            and len(node.targets) == 1
-            and isinstance(node.targets[0], ast.Name)
-            and node.targets[0].id == "allowed_env"
-            and isinstance(node.value, ast.Set)
-        ):
-            return {
-                elt.value
-                for elt in node.value.elts
-                if isinstance(elt, ast.Constant) and isinstance(elt.value, str)
-            }
-    raise AssertionError("Could not find 'allowed_env = {...}' in entrypoint.py")
-
-
-ALLOWED_ENV = _read_allowlist()
+from dangerzone.container_helpers.entrypoint import allowed_env
 
 
 def _apply(env: dict[str, str]) -> set[str]:
     """Reproduce the allowlist logic — return forwarded key names."""
-    return {k for k in env if k in ALLOWED_ENV}
+    return {k for k in env if k in allowed_env}
 
 
 class TestEnvAllowlist:
@@ -70,4 +37,4 @@ class TestEnvAllowlist:
 
     def test_allowlist_contains_expected_vars(self) -> None:
         """Sanity check: the allowlist has exactly the locale + TZ vars."""
-        assert ALLOWED_ENV == {"LANG", "LC_ALL", "LC_CTYPE", "LANGUAGE", "TZ"}
+        assert allowed_env == {"LANG", "LC_ALL", "LC_CTYPE", "LANGUAGE", "TZ"}

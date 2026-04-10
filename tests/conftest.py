@@ -176,6 +176,14 @@ def pytest_configure(config: pytest.Config) -> None:
         "markers",
         "reference_generator: Used to mark the test cases that regenerate reference documents",
     )
+    # Register the xdist_group marker so it doesn't trigger PytestUnknownMarkWarning
+    # when pytest-xdist isn't installed. The marker is a no-op without xdist, but
+    # unregistered marks generate a warning whose output confuses the Makefile's
+    # `pytest --co -q | grep ...` pipeline.
+    config.addinivalue_line(
+        "markers",
+        "xdist_group(name): group tests to run in the same xdist worker (no-op without pytest-xdist)",
+    )
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:

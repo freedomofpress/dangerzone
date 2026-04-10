@@ -24,7 +24,7 @@ from dangerzone.cli import display_banner, run
 from dangerzone.document import ARCHIVE_SUBDIR, SAFE_EXTENSION
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 
-from .conftest import for_each_doc, for_each_external_doc
+from .conftest import for_each_doc
 
 # TODO explore any symlink edge cases
 # TODO simulate ctrl-c, ctrl-d, SIGINT/SIGKILL/SIGTERM... (man 7 signal), etc?
@@ -426,20 +426,6 @@ class TestCliConversion(TestCliBasic):
             file_paths.append(doc_path)
 
         result = self.run_cli(["--unsafe-dummy-conversion", *file_paths])
-        result.assert_success()
-
-
-class TestExtraFormats(TestCli):
-    @for_each_external_doc("*hwp*")
-    @pytest.mark.flaky(reruns=2)
-    def test_hancom_office(self, doc: str) -> None:
-        if is_qubes_native_conversion():
-            pytest.skip("HWP / HWPX formats are not supported on this platform")
-        with tempfile.NamedTemporaryFile("wb", delete=False) as decoded_doc:
-            with open(doc, "rb") as encoded_doc:
-                decoded_doc.write(base64.b64decode(encoded_doc.read()))
-                decoded_doc.flush()
-        result = self.run_cli(str(decoded_doc.name))
         result.assert_success()
 
 

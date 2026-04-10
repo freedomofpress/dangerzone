@@ -10,9 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  packages: write
   actions: read # for detecting the Github Actions environment.
-  id-token: write # for creating OIDC tokens for signing.
 
 env:
   QT_SELECT: "qt6"
@@ -34,50 +32,17 @@ jobs:
       - name: Install dev. dependencies
         run: |-
           apt-get update
-          apt-get install -y git make python3 python3-poetry --no-install-recommends
-          poetry install
+          apt-get install -y git make python3 pipx --no-install-recommends
+          pipx install poetry
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Install Python dependencies
+        run: poetry install
       - name: Run linters to enforce code style
         run: poetry run make lint
       - name: Check that the QA script is up to date with the docs
         run: "./dev_scripts/qa.py --check-refs"
 
-  # This is already built daily by the "build.yml" file
-  # But we also want to include this in the checks that run on each push.
-  build-container-image:
-    name: Build, push and sign container image
-    uses: ./.github/workflows/build-push-image.yml
-    with:
-      registry: "ghcr.io/${{ github.repository_owner }}"
-      registry_user: ${{ github.repository_owner }}
-      image_name: "dangerzone-testing/v1"
-      reproduce: false
-      sign: true
-      fill_cache: true
-      key_name: "tests/assets/dangerzone-testing"
-    secrets:
-      registry_token: ${{ secrets.GITHUB_TOKEN }}
-
-  # Prepare a second image and upload it to the GHCR
-  # In order to test the upgrade to this new version
-  build-new-container-image:
-    needs: build-container-image
-    name: Build, push and sign a NEWER container image
-    uses: ./.github/workflows/build-push-image.yml
-    with:
-      registry: "ghcr.io/${{ github.repository_owner }}"
-      registry_user: ${{ github.repository_owner }}
-      image_name: "dangerzone-testing/v1"
-      reproduce: false
-      sign: true
-      fill_cache: false
-      trivially_update_container: true
-      key_name: "tests/assets/dangerzone-testing"
-    secrets:
-      registry_token: ${{ secrets.GITHUB_TOKEN }}
-
   windows:
-    needs:
-      - build-container-image
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -120,16 +85,33 @@ jobs:
         run: poetry run mazette install
       - name: Check cosign is present
         run: ls share/vendor
-      - name: Restore container image
-        uses: actions/cache/restore@v5
+      - name: Use the testing image and key
+        run: |-
+          cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
+
+      - uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
+
+      - name: Get the digest of the latest image
+        id: image-digest
+        shell: bash
+        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
+
+      - name: Cache container image archive
+        id: cache-container
+        uses: actions/cache@v5
         with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+          path: share/container.tar
+          key: v1-container-tar-${{ runner.arch }}-${{ steps.image-digest.outputs.digest }}
+
+      - name: Download the container image as a tar archive
+        if: steps.cache-container.outputs.cache-hit != 'true'
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --output share/container.tar
+
       # NOTE: We have noticed that the `windows-2022` runner image has WSL
       # installed, but its kernel is old (plus, the default version is WSL1).
       # This means that `wsl --status` fails, which by extension means that our
@@ -164,28 +146,20 @@ jobs:
 
   # See https://github.com/abiosoft/colima/issues/970
   macOS-arm64:
-    needs:
-      - build-container-image
     uses: ./.github/workflows/ci_macos.yml
     with:
       runner: macos-15
       arch: arm64
-      image_uri: ${{ needs.build-container-image.outputs.image_uri }}
 
   # Run Intel tests only on scheduled/manual runs (they take ~2.5 hours).
   # See https://github.com/freedomofpress/dangerzone/issues/1338
   macOS-intel:
-    needs:
-      - build-container-image
     if: github.event_name != 'pull_request'
     uses: ./.github/workflows/ci_macos.yml
     with:
       runner: macos-15-intel
       arch: x86_64
-      image_uri: ${{ needs.build-container-image.outputs.image_uri }}
   build-deb:
-    needs:
-      - build-container-image
     name: "build-deb (${{ matrix.distro }} ${{ matrix.version }})"
     runs-on: ubuntu-latest
     strategy:
@@ -227,9 +201,6 @@ jobs:
       - name: Install mazette
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
       - name: Get the dev environment
         run: |
@@ -238,20 +209,31 @@ jobs:
               --version ${{ matrix.version }} \
               build-dev --sync
 
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      - name: Use the testing image and key
+        run: |-
+          cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
-      - name: Restore container image
-        uses: actions/cache/restore@v5
+      - uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
+
+      - name: Get the digest of the latest image
+        id: image-digest
+        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
+
+      - name: Cache container image archive
+        id: cache-container
+        uses: actions/cache@v5
         with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+          path: share/container.tar
+          key: v1-container-tar-${{ runner.arch }}-${{ steps.image-digest.outputs.digest }}
+
+      - name: Download the container image as a tar archive
+        if: steps.cache-container.outputs.cache-hit != 'true'
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --output share/container.tar
 
       - name: Build Dangerzone .deb
         run: |
@@ -326,8 +308,6 @@ jobs:
   build-install-rpm:
     name: "build-install-rpm (${{ matrix.distro }} ${{matrix.version}})"
     runs-on: ubuntu-latest
-    needs:
-      - build-container-image
     strategy:
       matrix:
         distro: ["fedora"]
@@ -336,9 +316,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
       - name: Install mazette tool
         run: |
@@ -366,20 +343,31 @@ jobs:
               --version ${{ matrix.version }} \
               build-dev --sync
 
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      - name: Use the testing image and key
+        run: |-
+          cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
-      - name: Restore container image
-        uses: actions/cache/restore@v5
+      - uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
+
+      - name: Get the digest of the latest image
+        id: image-digest
+        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
+
+      - name: Cache container image archive
+        id: cache-container
+        uses: actions/cache@v5
         with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+          path: share/container.tar
+          key: v1-container-tar-${{ runner.arch }}-${{ steps.image-digest.outputs.digest }}
+
+      - name: Download the container image as a tar archive
+        if: steps.cache-container.outputs.cache-hit != 'true'
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --output share/container.tar
 
       - name: Build Dangerzone .rpm
         run: |
@@ -419,8 +407,6 @@ jobs:
   run-tests:
     name: "run tests (${{ matrix.distro }} ${{ matrix.version }})"
     runs-on: ubuntu-latest
-    needs:
-      - build-container-image
     strategy:
       matrix:
         include:
@@ -474,9 +460,6 @@ jobs:
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
 
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
       - name: Get current date
         id: date
@@ -489,16 +472,31 @@ jobs:
               --version ${{ matrix.version }} \
               build-dev --sync
 
-      - name: Restore container image
-        uses: actions/cache/restore@v5
+      - name: Use the testing image and key
+        run: |-
+          cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
+
+      - uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
+
+      - name: Get the digest of the latest image
+        id: image-digest
+        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
+
+      - name: Cache container image archive
+        id: cache-container
+        uses: actions/cache@v5
         with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+          path: share/container.tar
+          key: v1-container-tar-${{ runner.arch }}-${{ steps.image-digest.outputs.digest }}
+
+      - name: Download the container image as a tar archive
+        if: steps.cache-container.outputs.cache-hit != 'true'
+        env:
+          DANGERZONE_DEV: "1"
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --output share/container.tar
 
       - name: Setup xvfb (Linux)
         run: |
@@ -548,9 +546,6 @@ jobs:
   end-to-end-test:
     name: "Sandbox upgrade E2E test"
     runs-on: ubuntu-latest
-    needs:
-      - build-new-container-image
-      - build-container-image
     env:
       DANGERZONE_DEV: "1"
 
@@ -581,20 +576,22 @@ jobs:
         if: steps.cache-mazette.outputs.cache-hit != 'true'
         run: poetry run mazette install
 
-      - name: Login to GHCR
-        run: |
-          echo ${{ github.token }} | podman login ghcr.io -u USERNAME --password-stdin
 
-      - name: Restore container image
-        uses: actions/cache/restore@v5
-        with:
-          path: |-
-            share/container.tar
-            share/freedomofpress-dangerzone.pub
-            share/image-name.txt
-          enableCrossOsArchive: true
-          fail-on-cache-miss: true
-          key: v6-container-${{ needs.build-container-image.outputs.image_uri }}
+      - name: Use the testing image and key
+        run: |-
+          cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
+          echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
+
+      - name: Download the old container image as an archive
+        run: >-
+          poetry run dangerzone-image prepare-archive
+          --image $(cat share/image-name.txt):old-latest
+          --output /tmp/old-container.tar
+
+      - name: Load the old container image
+        run: >-
+          poetry run dangerzone-image load-archive
+          --force /tmp/old-container.tar
 
       - name: Run a conversion
         run: |
@@ -604,28 +601,20 @@ jobs:
         run: |
           jq '.updater_check_all = true' ~/.config/dangerzone/settings.json > temp.json && mv temp.json ~/.config/dangerzone/settings.json
 
-      - name: Check the digest of the loaded podman image
-        run: |
-          podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
+      - uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
 
-      - uses: imjasonh/setup-crane@v0.5
-
-      - name: Tag a new version of the sandbox
-        run: |
-          crane tag ${{ needs.build-new-container-image.outputs.image_uri }} latest
+      - name: Get the digest of the latest image
+        id: latest
+        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
 
       - name: Run another conversion
         run: |
           poetry run dangerzone-cli ./tests/test_docs/sample-pdf.pdf
 
-      - name: Check the digest of the loaded podman image
-        run: |
-          podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}"
-
       - name: Ensure the container has been upgraded
         run: |
           DIGEST=$(podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}")
-          EXPECTED_DIGEST=$(echo "${{ needs.build-new-container-image.outputs.image_uri }}" | grep -Po "@\Ksha256:[a-f0-9]*")
+          EXPECTED_DIGEST=${{ steps.latest.outputs.digest }}
           if [[ $DIGEST != $EXPECTED_DIGEST ]]; then
               exit 1
           fi

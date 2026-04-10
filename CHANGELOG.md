@@ -55,6 +55,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Narrow the isolation provider tests to the host/sandbox interface
   (max-pages and max-dimensions client enforcement, error propagation),
   using a single canonical sample PDF.
+- Run the GUI tests headless by default via `QT_QPA_PLATFORM=offscreen` and
+  drop the `xvfb`/`xvfb-run` setup from CI. A new `--onscreen` pytest flag
+  re-enables the on-screen mode for local debugging.
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -5,6 +6,21 @@ import pytest
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--onscreen",
+        action="store_true",
+        default=False,
+        help="Run GUI tests with the system display instead of offscreen rendering",
+    )
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    if not config.getoption("--onscreen", default=False):
+        os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
 
 from dangerzone import util
 from dangerzone.gui import Application

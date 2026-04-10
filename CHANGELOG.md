@@ -58,6 +58,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Pin `XDG_DATA_DIRS` in the GUI logic tests that walk it for `.desktop`
   files, so the tests don't pick up arbitrary entries from the developer's
   or CI runner's environment.
+- Bump `vfkit` to 0.6.3 (now signed upstream, switching to `vfkit-unsigned`
+  with a relaxed `>=0.6.1` pin) and `cosign` to 2.6.3 in `mazette.lock`,
+  and regenerate `poetry.lock` with Poetry 2.3.
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

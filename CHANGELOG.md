@@ -49,6 +49,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   remaining tests cover the host-side isolation provider interface only;
   document-format coverage now lives alongside the container image in
   `freedomofpress/dangerzone-image`.
+- Narrow the isolation provider tests to the host/sandbox interface
+  (max-pages and max-dimensions client enforcement, error propagation),
+  using a single canonical sample PDF.
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

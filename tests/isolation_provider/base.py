@@ -21,16 +21,16 @@ TIMEOUT_GRACE = 60
 class IsolationProviderTest:
     def test_max_pages_client_enforcement(
         self,
-        sample_doc: str,
+        sample_pdf: str,
         provider: base.IsolationProvider,
         mocker: MockerFixture,
         tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
         mocker.patch(
-            "dangerzone.conversion.errors.MAX_PAGES", 1
-        )  # sample_doc has 4 pages > 1
-        doc = Document(sample_doc)
+            "dangerzone.conversion_errors.MAX_PAGES", 1
+        )  # sample_pdf has 4 pages > 1
+        doc = Document(sample_pdf)
         p = provider.start_doc_to_pixels_proc(doc)
         with pytest.raises(errors.MaxPagesException):
             provider.convert_with_proc(doc, None, p)

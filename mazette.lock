@@ -209,18 +209,18 @@
     "vfkit": {
       "darwin/amd64": {
         "repo": "crc-org/vfkit",
-        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.1/vfkit",
-        "version": "0.6.1",
-        "checksum": "751fb934d8234c0fa0e6558d86010eb36f156a92547f791c5573767af38a2936",
+        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.3/vfkit-unsigned",
+        "version": "0.6.3",
+        "checksum": "c78270d70d6aaa5a16a96a645561229678ca404a2153e1ed4780dc6fea0db1da",
         "executable": true,
         "destination": "share/vendor/podman/vfkit",
         "extract": false
       },
       "darwin/arm64": {
         "repo": "crc-org/vfkit",
-        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.1/vfkit",
-        "version": "0.6.1",
-        "checksum": "751fb934d8234c0fa0e6558d86010eb36f156a92547f791c5573767af38a2936",
+        "download_url": "https://github.com/crc-org/vfkit/releases/download/v0.6.3/vfkit-unsigned",
+        "version": "0.6.3",
+        "checksum": "c78270d70d6aaa5a16a96a645561229678ca404a2153e1ed4780dc6fea0db1da",
         "executable": true,
         "destination": "share/vendor/podman/vfkit",
         "extract": false
@@ -258,41 +258,41 @@
     "cosign": {
       "darwin/amd64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.2/cosign-darwin-amd64",
-        "version": "2.6.2",
-        "checksum": "ad5db28c48faf66984c48733cad66504cea316f8e833bb13ef13060a6dc45b13",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-darwin-amd64",
+        "version": "2.6.3",
+        "checksum": "5715d61dd00a9b6dcb344de14910b434145855b7f82690b94183c553ac1b68be",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       },
       "darwin/arm64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.2/cosign-darwin-arm64",
-        "version": "2.6.2",
-        "checksum": "c01df01bac51714322f17d6416798d8a7b9e903657c6a2f8f09b9aee5ba29f57",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-darwin-arm64",
+        "version": "2.6.3",
+        "checksum": "ff497a698f125f3130b04f000b2cb0dd163bcaf00b5e776ef536035e6d0b3f3e",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       },
       "linux/amd64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.2/cosign-linux-amd64",
-        "version": "2.6.2",
-        "checksum": "d437b8f0d30f5dec169337607fcfa0238de1348503e175f1bb5b94330b1ee409",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-linux-amd64",
+        "version": "2.6.3",
+        "checksum": "7c78a7f2efc00088bd788a758db6e0928e79f3e0eb83eb5d3c499ed98da4c4f4",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       },
       "windows/amd64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.2/cosign-windows-amd64.exe",
-        "version": "2.6.2",
-        "checksum": "dd6c61e510da627bcaed4cd9db844ec11cacd09826d814d89f7f68d40feb07be",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-windows-amd64.exe",
+        "version": "2.6.3",
+        "checksum": "2264ea5867077b9e070161648e8c18544decac351f5f3a7edaea43c233ce2e36",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       }
     }
   },
-  "config_checksum": "2be816481401072f8af972ad616099491205ed28f0848e7f4d50ec8ac2cdf0e3"
+  "config_checksum": "c85f27d754558071e3c14815c186a6ff1b8fb9a8c376ef21b787fa45dda1c125"
 }

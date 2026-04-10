@@ -4,7 +4,7 @@ import subprocess
 import pytest
 from pytest_mock import MockerFixture
 
-from dangerzone.conversion import errors
+from dangerzone import conversion_errors as errors
 from dangerzone.document import Document
 from dangerzone.isolation_provider import base
 

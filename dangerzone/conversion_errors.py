@@ -1,3 +1,10 @@
+"""Conversion error types and constants.
+
+These mirror the error codes used by the container-side conversion process.
+The actual error classes live here (in the client) rather than being shared
+with the container image; only the integer error codes cross the boundary.
+"""
+
 from typing import List, Optional, Type, Union
 
 # XXX: errors start at 128 for conversion-related issues
@@ -5,6 +12,9 @@ ERROR_SHIFT = 128
 MAX_PAGES = 10000
 MAX_PAGE_WIDTH = 10000
 MAX_PAGE_HEIGHT = 10000
+
+DEFAULT_DPI = 150  # Pixels per inch
+INT_BYTES = 2
 
 
 class ConverterProcException(Exception):

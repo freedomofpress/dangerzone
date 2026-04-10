@@ -7,7 +7,7 @@ import pytest
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
-from dangerzone.conversion import errors
+from dangerzone import conversion_errors as errors
 from dangerzone.document import Document
 from dangerzone.isolation_provider.qubes import Qubes, is_qubes_native_conversion
 

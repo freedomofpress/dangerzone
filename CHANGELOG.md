@@ -33,6 +33,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   ([#1338](https://github.com/freedomofpress/dangerzone/issues/1338))
 - Pin Podman to v5.x.x, to support Windows 10 installations for one last release
   ([#1357](https://github.com/freedomofpress/dangerzone/issues/1357))
+- Move the conversion error definitions out of the now-removed `conversion/`
+  package and into `dangerzone.conversion_errors`, so the host code keeps a
+  single source of truth for the error codes raised inside the sandbox.
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

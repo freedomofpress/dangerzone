@@ -1,9 +1,10 @@
 """
-CVE-2026-3308 reproduction test for MuPDF integer overflow in fz_unpack_stream().
+CVE-2026-3308 regression guard for MuPDF integer overflow in fz_unpack_stream().
 
 VULNERABILITY
 =============
-MuPDF 1.27.0 contains an integer overflow in source/fitz/draw-unpack.c:
+MuPDF 1.27.0 contains an integer overflow in source/fitz/draw-unpack.c,
+inside fz_unpack_stream():
 
     // VULNERABLE (MuPDF 1.27.0):
     int src_stride = (w * depth * n + 7) >> 3;
@@ -29,30 +30,32 @@ causing a near-zero allocation followed by heap corruption.
 DANGERZONE IMPACT
 =================
 Dangerzone uses PyMuPDF to convert untrusted documents inside a container.
-If dangerzone shipped PyMuPDF 1.27.0 (which embeds MuPDF 1.27.0), an
+If dangerzone ever shipped a PyMuPDF embedding MuPDF 1.27.0, an
 attacker-crafted PDF could escape the document-to-pixel conversion and
 potentially achieve code execution within the container.
 
 Dangerzone currently pins PyMuPDF 1.26.x which uses MuPDF 1.26.x (NOT
-affected). This test exists to:
-1. Verify the vulnerability is real on affected versions
-2. Confirm dangerzone's pinned version is safe
-3. Catch future upgrades that might introduce the vulnerable range
+affected). This test exists as a regression guard to:
+1. Confirm dangerzone's pinned version is safe
+2. Catch future upgrades that might introduce the vulnerable range
+3. Verify that dangerzone's internal bounds (MAX_PAGE_WIDTH=10000) keep
+   w * depth * n well below INT_MAX even if a vulnerable MuPDF is reached
 
 REFERENCES
 ==========
-- Fix commit: ArtifexSoftware/mupdf@a26f014
+- NVD: https://nvd.nist.gov/vuln/detail/CVE-2026-3308
+- CERT: https://kb.cert.org/vuls/id/951662
+- Fix commit: ArtifexSoftware/mupdf@a26f0142e7d390d4a82c6e5ae0e312e07cc4ec85
 - CVSS 7.8 (High) - local attack, low complexity, no privileges required
-- Affects: MuPDF 1.27.0 (PyMuPDF 1.27.0)
+- Affects: MuPDF 1.27.0 (PyMuPDF 1.27.0 was never released on PyPI;
+  Artifex skipped to 1.27.1+ after the CVE, so the vulnerable range is
+  not reachable via a standard pip/uv install)
 - Fixed in: MuPDF 1.27.1 (PyMuPDF 1.27.1+)
 
 USAGE
 =====
-    # With current dangerzone PyMuPDF (should pass - not vulnerable):
-    uvx --with PyMuPDF pytest tests/isolation_provider/test_cve_2026_3308.py -v --no-header
-
-    # Reproduce on vulnerable version:
-    uvx --with PyMuPDF==1.27.0 pytest tests/isolation_provider/test_cve_2026_3308.py -v --no-header
+    # Run as a regression guard against the pinned PyMuPDF:
+    uv run pytest tests/isolation_provider/test_cve_2026_3308.py -v
 """
 
 from __future__ import annotations

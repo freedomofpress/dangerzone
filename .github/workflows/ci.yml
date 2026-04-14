@@ -11,7 +11,9 @@ on:
 
 permissions:
   packages: write
-  actions: read # for detecting the Github Actions environment.
+  # actions:write is required for actions/cache uploads and BuildKit GHA caches
+  # (cache-from/cache-to type=gha). actions:read alone is not sufficient to create entries.
+  actions: write
   id-token: write # for creating OIDC tokens for signing.
 
 env:
@@ -43,8 +45,12 @@ jobs:
 
   # This is already built daily by the "build.yml" file
   # But we also want to include this in the checks that run on each push.
+  #
+  # Fork PRs use a read-only token that cannot push to the base repo's GHCR
+  # (merge fails with "installation not allowed to Write organization package").
   build-container-image:
     name: Build, push and sign container image
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     uses: ./.github/workflows/build-push-image.yml
     with:
       registry: "ghcr.io/${{ github.repository_owner }}"

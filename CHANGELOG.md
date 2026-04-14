@@ -29,6 +29,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Development changes
 
+- Grant `actions:write` on CI workflows so `actions/cache` and BuildKit
+  `type=gha` caches can be written; skip GHCR image jobs on fork pull requests
+  where the token cannot push to the base org registry
+  ([#1381](https://github.com/freedomofpress/dangerzone/issues/1381))
 - Run macOS Intel CI tests only on scheduled/manual runs to reduce PR CI time
   ([#1338](https://github.com/freedomofpress/dangerzone/issues/1338))
 - Pin Podman to v5.x.x, to support Windows 10 installations for one last release

@@ -153,6 +153,23 @@ ignore:
   # issue.
   - vulnerability: CVE-2025-68973
 
+  # CVE-2026-6100
+  # ==============
+  #
+  # Debian tracker: https://security-tracker.debian.org/tracker/CVE-2026-6100
+  #
+  # A use-after-free can occur in CPython's lzma/bz2/gzip decompressor objects if
+  # a `MemoryError` is raised mid-decompression and the same instance is reused
+  # on a later call. One-shot helpers such as `gzip.decompress()` are not
+  # affected.
+  #
+  # Verdict: Dangerzone is not affected in a practical sense for the conversion
+  # container. There is no Debian security update yet for trixie's python3.13.
+  # Exploitation requires attacker-influenced reuse of decompressor state across
+  # memory-pressure failures, which does not match how the sandbox performs
+  # document conversion.
+  - vulnerability: CVE-2026-6100
+
   # CVE-2025-68972
   # ##############
   #

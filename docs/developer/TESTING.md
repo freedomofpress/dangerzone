@@ -30,24 +30,28 @@ layer that processes untrusted pixel data.
 poetry run make fuzz
 ```
 
-This runs two components:
+Two layers, each with its own test file:
 
-1. **IPC protocol fuzzer** (`tests/fuzz_ipc_standalone.py`): Generates random
-   byte strings and feeds them into the IPC parsing logic that reads pixel
-   streams from the container. Tests truncation, boundary values, and malformed
-   headers. Runs 10,000 iterations by default.
+1. **Layer 1 — IPC protocol fuzzer** (`tests/isolation_provider/fuzz_ipc.py`):
+   Random byte strings fed into the real `read_int` / `read_bytes` from
+   `dangerzone.isolation_provider.base` and the matching
+   `DangerzoneConverter._write_int` encoder used by the `Dummy` provider's
+   `dummy_script`. Tests truncation, boundary values, and malformed headers.
+   10,000 iterations by default.
 
-2. **PyMuPDF boundary tests** (`tests/test_pixmap_fuzzer.py`,
-   `tests/test_cve_2026_3308.py`): Exercises `fitz.Pixmap` with adversarial
-   dimensions and pixel data, and verifies that dangerzone's dimension bounds
-   (MAX_PAGE_WIDTH=10000, MAX_PAGE_HEIGHT=10000) prevent integer overflow in
-   MuPDF's stride calculation (CVE-2026-3308).
+2. **Layer 2 — PyMuPDF boundary tests**
+   (`tests/isolation_provider/test_pixmap_boundaries.py`,
+   `tests/isolation_provider/test_cve_2026_3308.py`): Parametrized
+   regression tests that exercise `fitz.Pixmap` with adversarial dimensions
+   and pixel data, and verify that dangerzone's dimension bounds
+   (`MAX_PAGE_WIDTH=10000`, `MAX_PAGE_HEIGHT=10000`) prevent integer
+   overflow in MuPDF's stride calculation (CVE-2026-3308).
 
-You can run the standalone fuzzer directly with more iterations or a fixed seed:
+You can run the fuzzer directly with more iterations or a fixed seed:
 
 ```bash
-python tests/fuzz_ipc_standalone.py --iterations 50000
-python tests/fuzz_ipc_standalone.py --seed 42  # reproducible run
+python tests/isolation_provider/fuzz_ipc.py --iterations 50000
+python tests/isolation_provider/fuzz_ipc.py --seed 42  # reproducible run
 ```
 
 ### Fuzzing best practices

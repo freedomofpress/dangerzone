@@ -49,10 +49,10 @@ REFERENCES
 USAGE
 =====
     # With current dangerzone PyMuPDF (should pass - not vulnerable):
-    uvx --with PyMuPDF pytest tests/test_cve_2026_3308.py -v --no-header
+    uvx --with PyMuPDF pytest tests/isolation_provider/test_cve_2026_3308.py -v --no-header
 
     # Reproduce on vulnerable version:
-    uvx --with PyMuPDF==1.27.0 pytest tests/test_cve_2026_3308.py -v --no-header
+    uvx --with PyMuPDF==1.27.0 pytest tests/isolation_provider/test_cve_2026_3308.py -v --no-header
 """
 
 from __future__ import annotations

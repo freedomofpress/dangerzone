@@ -1,26 +1,28 @@
-"""
-Boundary fuzzer for fitz.Pixmap — the C attack surface in dangerzone's
-document-to-pixel conversion.
+"""Boundary tests for ``fitz.Pixmap`` — the C attack surface downstream of
+the IPC parser.
 
-Dangerzone converts untrusted documents to pixel data via PyMuPDF's
-fitz.Pixmap (backed by MuPDF's C fz_pixmap). This test exercises the
-Pixmap constructor with adversarial inputs: mismatched buffer sizes,
-boundary dimensions, zero dimensions, and oversized values.
+This exercises **Layer 2** of the doc-to-pixels trust boundary: the PyMuPDF
+``fitz.Pixmap`` constructor (backed by MuPDF's C ``fz_pixmap``) that consumes
+dimensions and pixel buffers after **Layer 1** (``fuzz_ipc.py``) has accepted
+them. These are parametrized unit tests — deterministic regressions for
+known-good boundary properties — not random fuzzing. For random fuzzing of
+the parser itself see ``fuzz_ipc.py``; for a specific MuPDF CVE reproduction
+see ``test_cve_2026_3308.py``.
 
 KEY PROPERTY
 ============
-Dangerzone's parsing bounds (MAX_PAGE_WIDTH=10000, MAX_PAGE_HEIGHT=10000)
-limit dimensions before they reach fitz.Pixmap. This caps w*depth*n well
-below INT_MAX for all standard colorspaces:
+Dangerzone's parsing bounds (``MAX_PAGE_WIDTH=10000``, ``MAX_PAGE_HEIGHT=10000``)
+limit dimensions before they reach ``fitz.Pixmap``. This caps ``w*depth*n``
+well below ``INT_MAX`` for all standard colorspaces::
 
-    RGB 8-bit:  10000 * 8 * 3 = 240,000     (vs INT_MAX = 2,147,483,647)
-    CMYK 16-bit: 10000 * 16 * 4 = 640,000   (still 3 orders of magnitude safe)
+    RGB 8-bit:   10000 * 8 * 3 = 240,000      (vs INT_MAX = 2,147,483,647)
+    CMYK 16-bit: 10000 * 16 * 4 = 640,000     (still 3 orders of magnitude safe)
 
-This test verifies that property AND exercises the C boundary directly.
+These tests pin that property AND exercise the C boundary directly.
 
 USAGE
 =====
-    uvx --with PyMuPDF pytest tests/test_pixmap_fuzzer.py -v --no-header
+    pytest tests/isolation_provider/test_pixmap_boundaries.py -v
 """
 
 from __future__ import annotations

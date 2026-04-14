@@ -24,8 +24,8 @@ test: ## Run the tests
 
 .PHONY: fuzz
 fuzz: ## Run security fuzz tests (IPC protocol + PyMuPDF boundary)
-	python tests/fuzz_ipc_standalone.py
-	pytest -v tests/test_pixmap_fuzzer.py tests/test_cve_2026_3308.py
+	python tests/isolation_provider/fuzz_ipc.py
+	pytest -v tests/isolation_provider/test_pixmap_boundaries.py tests/isolation_provider/test_cve_2026_3308.py
 
 .PHONY: test-large-requirements
 test-large-requirements:

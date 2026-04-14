@@ -1,13 +1,12 @@
-"""
-Standalone random fuzzer for the Dangerzone IPC pixel stream protocol.
+"""Random fuzzer for the Dangerzone IPC pixel-stream protocol.
 
-This is a dependency-free alternative to fuzz_ipc_protocol.py (which uses
-Atheris / libFuzzer). It generates random byte strings and feeds them into
-the same IPC parsing logic. Not coverage-guided, but good enough for CI
-smoke tests or environments where Atheris is unavailable.
+This exercises **Layer 1** of the doc-to-pixels trust boundary: the Python
+byte-stream parser the host uses to read rasterized pages from the sandboxed
+container. For **Layer 2** (the ``fitz.Pixmap`` C constructor that consumes
+the parser's output) see ``test_pixmap_boundaries.py``. For a specific MuPDF
+CVE reproduction see ``test_cve_2026_3308.py``.
 
-The IPC protocol between the container and the host transmits rasterized pages
-over stdout as a binary stream:
+The container writes pages to stdout as a binary stream::
 
     page_count: 2 bytes, big-endian unsigned int
     Per page:
@@ -15,26 +14,35 @@ over stdout as a binary stream:
         height: 2 bytes, big-endian unsigned int
         pixels: width * height * 3 bytes (raw RGB)
 
-Usage:
+The fuzzer feeds random byte strings into the real parser (``read_int`` /
+``read_bytes`` imported from ``dangerzone.isolation_provider.base``) and
+encodes valid seed streams with the same ``int.to_bytes(2, "big")`` framing
+that ``DangerzoneConverter._write_int`` (and the ``Dummy`` isolation
+provider's ``dummy_script``) emits, so the fuzzer and the real container
+agree on byte order and framing by construction.
 
-    make fuzz                                      # default 10000 iterations
-    python tests/fuzz_ipc_standalone.py --iterations 50000
-    python tests/fuzz_ipc_standalone.py --seed 42  # reproducible run
+Any exception that is NOT an expected protocol-violation error is reported
+as a potential bug and causes a non-zero exit.
 
-Any exception that is NOT an expected protocol-violation error is reported as a
-potential bug and causes a non-zero exit.
+Usage::
+
+    make fuzz                                   # default 10000 iterations
+    python tests/isolation_provider/fuzz_ipc.py --iterations 50000
+    python tests/isolation_provider/fuzz_ipc.py --seed 42  # reproducible
+
+Not coverage-guided. See ``docs/developer/TESTING.md`` for the coverage-guided
+alternative (``fuzz_ipc_protocol.py`` / Atheris).
 """
 
 from __future__ import annotations
 
 import argparse
+import io
 import os
 import random
-import struct
 import sys
 import time
-from io import BytesIO
-from typing import IO, List, Tuple
+from typing import List, Tuple
 
 from dangerzone.conversion.common import INT_BYTES
 from dangerzone.conversion.errors import (
@@ -46,6 +54,7 @@ from dangerzone.conversion.errors import (
     MaxPagesException,
     MaxPageWidthException,
 )
+from dangerzone.isolation_provider.base import read_bytes, read_int
 
 EXPECTED_EXCEPTIONS = (
     ConverterProcException,
@@ -55,31 +64,22 @@ EXPECTED_EXCEPTIONS = (
 )
 
 
-# ---------------------------------------------------------------------------
-# Lightweight IPC parsing — mirrors dangerzone.isolation_provider.base but
-# avoids importing base.py (which transitively pulls in PyMuPDF and Qt).
-# ---------------------------------------------------------------------------
+def _encode_int(num: int) -> bytes:
+    """Encode a 2-byte big-endian int the way the container does.
 
-
-def read_bytes(f: IO[bytes], size: int, exact: bool = True) -> bytes:
-    """Read bytes from a file-like object (mirrors base.read_bytes)."""
-    buf = f.read(size)
-    if exact and len(buf) != size:
-        raise ConverterProcException()
-    return buf
-
-
-def read_int(f: IO[bytes]) -> int:
-    """Read 2 bytes big-endian unsigned int (mirrors base.read_int)."""
-    untrusted_int = f.read(INT_BYTES)
-    if len(untrusted_int) != INT_BYTES:
-        raise ConverterProcException()
-    return int.from_bytes(untrusted_int, "big", signed=False)
+    Mirrors ``DangerzoneConverter._write_int`` but returns bytes instead of
+    writing to stdout, so the fuzzer can build streams in memory.
+    """
+    return num.to_bytes(INT_BYTES, "big", signed=False)
 
 
 def parse_ipc_stream(data: bytes) -> None:
-    """Replay host-side IPC parsing against *data*."""
-    f = BytesIO(data)
+    """Replay host-side IPC parsing against *data*.
+
+    Uses the real ``read_int``/``read_bytes`` from the isolation provider,
+    so this function drifts if — and only if — the real parser drifts.
+    """
+    f = io.BytesIO(data)
 
     n_pages = read_int(f)
     if n_pages == 0 or n_pages > MAX_PAGES:
@@ -106,40 +106,38 @@ def parse_ipc_stream(data: bytes) -> None:
 
 def gen_random_bytes(rng: random.Random) -> bytes:
     """Fully random blob, 0-200 bytes."""
-    length = rng.randint(0, 200)
-    return bytes(rng.getrandbits(8) for _ in range(length))
+    return rng.randbytes(rng.randint(0, 200))
 
 
 def gen_short_bytes(rng: random.Random) -> bytes:
     """Very short (0-6 bytes) -- tests truncation paths."""
-    length = rng.randint(0, 6)
-    return bytes(rng.getrandbits(8) for _ in range(length))
+    return rng.randbytes(rng.randint(0, 6))
 
 
 def gen_valid_header_bad_body(rng: random.Random) -> bytes:
     """Valid page count + dimensions but truncated pixel data."""
     n_pages = rng.randint(1, 3)
-    buf = struct.pack(">H", n_pages)
+    buf = _encode_int(n_pages)
     for _ in range(n_pages):
         w = rng.randint(1, 50)
         h = rng.randint(1, 50)
-        buf += struct.pack(">HH", w, h)
+        buf += _encode_int(w) + _encode_int(h)
         # Intentionally short pixel data.
         needed = w * h * 3
         actual = rng.randint(0, needed)
-        buf += bytes(rng.getrandbits(8) for _ in range(actual))
+        buf += rng.randbytes(actual)
     return buf
 
 
 def gen_boundary_values(rng: random.Random) -> bytes:
     """Exercise boundary values for page count, width, height."""
     boundary = rng.choice([0, 1, 9999, 10000, 10001, 65535])
-    buf = struct.pack(">H", boundary)
+    buf = _encode_int(boundary)
     if 1 <= boundary <= 3:
         for _ in range(boundary):
             w = rng.choice([0, 1, 10000, 10001, 65535])
             h = rng.choice([0, 1, 10000, 10001, 65535])
-            buf += struct.pack(">HH", w, h)
+            buf += _encode_int(w) + _encode_int(h)
             if 1 <= w <= 10000 and 1 <= h <= 10000:
                 # Provide exactly the right amount of pixel data (small dims).
                 if w * h * 3 <= 1024:
@@ -151,11 +149,14 @@ def gen_boundary_values(rng: random.Random) -> bytes:
 
 
 def gen_single_valid_page(rng: random.Random) -> bytes:
-    """One fully valid page with small dimensions."""
+    """One fully valid page with small dimensions.
+
+    Equivalent to what ``dummy_script`` emits, but with the dimensions
+    randomized instead of hardcoded to 9x9.
+    """
     w = rng.randint(1, 10)
     h = rng.randint(1, 10)
-    buf = struct.pack(">H", 1)  # 1 page
-    buf += struct.pack(">HH", w, h)
+    buf = _encode_int(1) + _encode_int(w) + _encode_int(h)
     buf += bytes(w * h * 3)
     return buf
 
@@ -163,22 +164,20 @@ def gen_single_valid_page(rng: random.Random) -> bytes:
 def gen_multi_page_valid(rng: random.Random) -> bytes:
     """Multiple valid pages with small dimensions."""
     n = rng.randint(2, 5)
-    buf = struct.pack(">H", n)
+    buf = _encode_int(n)
     for _ in range(n):
         w = rng.randint(1, 8)
         h = rng.randint(1, 8)
-        buf += struct.pack(">HH", w, h)
+        buf += _encode_int(w) + _encode_int(h)
         buf += bytes(w * h * 3)
     return buf
 
 
 def gen_zero_dimension(rng: random.Random) -> bytes:
     """Valid page count but zero width or height."""
-    buf = struct.pack(">H", 1)
     w = rng.choice([0, rng.randint(1, 100)])
     h = rng.choice([0, rng.randint(1, 100)])
-    buf += struct.pack(">HH", w, h)
-    return buf
+    return _encode_int(1) + _encode_int(w) + _encode_int(h)
 
 
 GENERATORS = [

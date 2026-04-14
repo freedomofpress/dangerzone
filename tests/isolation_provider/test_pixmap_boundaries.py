@@ -6,13 +6,13 @@ This exercises **Layer 2** of the doc-to-pixels trust boundary: the PyMuPDF
 dimensions and pixel buffers after **Layer 1** (``fuzz_ipc.py``) has accepted
 them. These are parametrized unit tests — deterministic regressions for
 known-good boundary properties — not random fuzzing. For random fuzzing of
-the parser itself see ``fuzz_ipc.py``; for a specific MuPDF CVE regression
-guard see ``test_cve_2026_3308.py``.
+the parser itself see ``fuzz_ipc.py``; for a specific MuPDF CVE reproduction
+see ``test_cve_2026_3308.py``.
 
 KEY PROPERTY
 ============
 Dangerzone's parsing bounds (``MAX_PAGE_WIDTH=10000``, ``MAX_PAGE_HEIGHT=10000``)
-limit dimensions before they reach ``fitz.Pixmap``. This caps ``w*h*bpc``
+limit dimensions before they reach ``fitz.Pixmap``. This caps ``w*depth*n``
 well below ``INT_MAX`` for all standard colorspaces::
 
     RGB 8-bit:   10000 * 8 * 3 = 240,000      (vs INT_MAX = 2,147,483,647)
@@ -162,10 +162,10 @@ class TestPixmapBufferMismatch:
 
 class TestDangerzoneBoundsProperty:
     """Verify that dangerzone's bounds checks prevent reaching the
-    integer overflow threshold in MuPDF's image dimension validation.
+    integer overflow threshold in MuPDF's stride calculation.
 
     The overflow in CVE-2026-3308 requires:
-        w * h * bpc > INT_MAX
+        w * bits_per_component * channels > INT_MAX
 
     Dangerzone caps width at 10000, making the maximum product:
         10000 * 16 * 4 = 640,000

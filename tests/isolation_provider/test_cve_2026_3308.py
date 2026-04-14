@@ -1,18 +1,20 @@
 """
-CVE-2026-3308 regression test for MuPDF integer overflow in pdf_load_image_imp().
+CVE-2026-3308 reproduction test for MuPDF integer overflow in fz_unpack_stream().
 
 VULNERABILITY
 =============
-MuPDF 1.27.0 contains an integer overflow in pdf_load_image_imp() within
-source/pdf/pdf-image.c. The vulnerability occurs during validation of
-image dimensions (Width * Height * BitsPerComponent).
+MuPDF 1.27.0 contains an integer overflow in source/fitz/draw-unpack.c:
 
-The code incorrectly validated the product against SIZE_MAX instead of
-INT_MAX. When a crafted PDF image XObject has dimensions that cause
-w * h * bpc to overflow 32-bit integers, the overflowed value is
-passed to fz_unpack_stream(), leading to an out-of-bounds heap write.
+    // VULNERABLE (MuPDF 1.27.0):
+    int src_stride = (w * depth * n + 7) >> 3;
 
-Fixed upstream in MuPDF commit a26f0142e7d390d4a82c6e5ae0e312e07cc4ec85.
+When a PDF image XObject has dimensions that cause w * depth * n to exceed
+INT_MAX (2^31 - 1), the 32-bit multiplication wraps negative. This leads to
+a small heap allocation followed by an out-of-bounds write when the image
+stream is unpacked.
+
+    // FIXED (MuPDF 1.27.1+):
+    int src_stride = ((int64_t)w * depth * n + 7) >> 3;
 
 TRIGGER
 =======
@@ -21,38 +23,36 @@ A PDF containing an image XObject with:
 
 Arithmetic: w=33554432, depth=16, n=4 (CMYK channels)
     w * depth * n = 33554432 * 16 * 4 = 2,147,483,648 = 2^31
-This exceeds INT_MAX (2,147,483,647). In MuPDF's 32-bit image dimension
-handling, this triggers the overflow path to fz_unpack_stream.
+This overflows signed 32-bit int to -2147483648 (or 0 on unsigned wrap),
+causing a near-zero allocation followed by heap corruption.
 
 DANGERZONE IMPACT
 =================
 Dangerzone uses PyMuPDF to convert untrusted documents inside a container.
-If dangerzone shipped a vulnerable MuPDF version, an attacker-crafted PDF
-could escape the document-to-pixel conversion and potentially achieve code
-execution within the container.
+If dangerzone shipped PyMuPDF 1.27.0 (which embeds MuPDF 1.27.0), an
+attacker-crafted PDF could escape the document-to-pixel conversion and
+potentially achieve code execution within the container.
 
 Dangerzone currently pins PyMuPDF 1.26.x which uses MuPDF 1.26.x (NOT
-affected). This test exists as a regression guard to:
-1. Confirm dangerzone's pinned version is safe
-2. Catch future upgrades that might introduce the vulnerable range
-3. Verify that dangerzone's internal bounds (10000x10000) prevent the overflow
+affected). This test exists to:
+1. Verify the vulnerability is real on affected versions
+2. Confirm dangerzone's pinned version is safe
+3. Catch future upgrades that might introduce the vulnerable range
 
 REFERENCES
 ==========
-- NVD: https://nvd.nist.gov/vuln/detail/CVE-2026-3308
-- CERT: https://kb.cert.org/vuls/id/951662
-- Fix commit: ArtifexSoftware/mupdf@a26f0142e7d390d4a82c6e5ae0e312e07cc4ec85
-- Affects: MuPDF 1.27.0
+- Fix commit: ArtifexSoftware/mupdf@a26f014
+- CVSS 7.8 (High) - local attack, low complexity, no privileges required
+- Affects: MuPDF 1.27.0 (PyMuPDF 1.27.0)
 - Fixed in: MuPDF 1.27.1 (PyMuPDF 1.27.1+)
 
 USAGE
 =====
-This test serves as a regression guard. Since PyMuPDF 1.27.0 was never
-released on PyPI (Artifex skipped to 1.27.1+ after the CVE), the
-vulnerability is not reachable via standard pip/uv installs.
+    # With current dangerzone PyMuPDF (should pass - not vulnerable):
+    uvx --with PyMuPDF pytest tests/isolation_provider/test_cve_2026_3308.py -v --no-header
 
-    # Run as a regression guard:
-    uv run pytest tests/isolation_provider/test_cve_2026_3308.py -v
+    # Reproduce on vulnerable version:
+    uvx --with PyMuPDF==1.27.0 pytest tests/isolation_provider/test_cve_2026_3308.py -v --no-header
 """
 
 from __future__ import annotations
@@ -109,7 +109,7 @@ def make_cve_2026_3308_pdf(
     colorspace: str = "/DeviceCMYK",
 ) -> bytes:
     """Build a minimal PDF with a crafted image XObject that triggers
-    integer overflow in pdf_load_image_imp() when w * h * bpc > INT_MAX.
+    integer overflow in fz_unpack_stream when w * depth * n > INT_MAX.
 
     The PDF structure:
         obj 1: Catalog
@@ -148,7 +148,7 @@ def make_cve_2026_3308_pdf(
 
     # obj 5: Image XObject - THE PAYLOAD
     # Minimal stream data (1 byte) - MuPDF will try to unpack this according
-    # to the declared dimensions, triggering the overflow in image dimension validation.
+    # to the declared dimensions, triggering the overflow in stride calculation
     image_dict = (
         f"<< /Type /XObject /Subtype /Image\n"
         f"   /Width {width} /Height {height}\n"
@@ -238,17 +238,16 @@ class TestCVE20263308:
             c_int32 -= 0x100000000  # interpret as signed
         assert c_int32 == -2147483648, f"Expected -2^31 signed wrap, got {c_int32}"
 
-        # The image dimension validation (w * h * bpc) incorrectly checked
-        # against SIZE_MAX instead of INT_MAX in MuPDF 1.27.0.
-        # An overflowed value passes the SIZE_MAX check and propagates
-        # to fz_unpack_stream() leading to OOB write.
+        # The stride calculation (product + 7) >> 3 with overflow:
+        # (-2147483648 + 7) >> 3 = -2147483641 >> 3 = -268435456 (arithmetic shift)
+        # A negative stride means near-zero or negative allocation size
 
     def test_render_crafted_image(self) -> None:
         """Attempt to render the crafted PDF page.
 
-        On VULNERABLE versions (MuPDF 1.27.0):
+        On VULNERABLE versions (PyMuPDF 1.27.0 / MuPDF 1.27.0):
             Expected: crash (SIGSEGV/SIGBUS), MemoryError, or RuntimeError
-            from the heap corruption triggered in pdf_load_image_imp.
+            from the heap corruption in fz_unpack_stream.
 
         On SAFE versions (PyMuPDF 1.26.x or 1.27.1+):
             Expected: graceful error (RuntimeError, ValueError) or

@@ -169,3 +169,19 @@ ignore:
   # related to this issue (e.g. we do not trust the text output in a way), and
   # no fixes have been provided by upstream so far.
   - vulnerability: CVE-2025-68972
+
+  # CVE-2026-6100
+  # ==============
+  #
+  # GitHub advisory: https://github.com/advisories/GHSA-pg25-7cx5-cvcm
+  # Debian tracker: https://security-tracker.debian.org/tracker/CVE-2026-6100
+  #
+  # CPython can hit a use-after-free in lzma/bz2/gzip decompressors only when
+  # the same instance is reused after a MemoryError during decompression; the
+  # one-shot helpers (e.g. gzip.decompress()) are not affected.
+  #
+  # Verdict: Dangerzone is not affected because our conversion path does not
+  # rely on reusing those decompressor objects across a MemoryError while
+  # processing documents.
+  - vulnerability: CVE-2026-6100
+  - vulnerability: GHSA-pg25-7cx5-cvcm

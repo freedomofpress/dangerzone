@@ -1,4 +1,4 @@
-name: Scan nightly app and container
+name: Scan nightly app
 on:
   push:
     branches:
@@ -9,54 +9,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  security-scan-container:
-    strategy:
-      matrix:
-        runs-on:
-          - ubuntu-24.04
-          - ubuntu-24.04-arm
-    runs-on: ${{ matrix.runs-on }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Download H2Orestart plugin
-        run: uvx mazette install h2orestart
-
-      - name: Build container image
-        run: |
-          python3 ./install/common/build-image.py \
-            --debian-archive-date $(date "+%Y%m%d") \
-            --runtime docker
-          docker load -i share/container.tar
-      - name: Get image tag
-        id: tag
-        run: echo "tag=$(cat share/image-id.txt)" >> $GITHUB_OUTPUT
-      # NOTE: Scan first without failing, else we won't be able to read the scan
-      # report.
-      - name: Scan container image (no fail)
-        uses: anchore/scan-action@v7
-        id: scan_container
-        with:
-          image: "ghcr.io/freedomofpress/dangerzone/v1:${{ steps.tag.outputs.tag }}"
-          fail-build: false
-          only-fixed: false
-          severity-cutoff: critical
-      - name: Inspect container scan report
-        run: cat ${{ steps.scan_container.outputs.sarif }}
-      - name: Scan container image
-        uses: anchore/scan-action@v7
-        with:
-          image: "ghcr.io/freedomofpress/dangerzone/v1:${{ steps.tag.outputs.tag }}"
-          fail-build: true
-          only-fixed: false
-          severity-cutoff: critical
-
   security-scan-app:
     strategy:
       matrix:

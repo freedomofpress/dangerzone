@@ -3,7 +3,7 @@ import os
 import pytest
 from pytest_mock import MockerFixture
 
-from dangerzone.conversion import errors
+from dangerzone import conversion_errors as errors
 from dangerzone.isolation_provider.base import IsolationProvider
 from dangerzone.isolation_provider.dummy import Dummy
 

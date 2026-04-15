@@ -47,7 +47,6 @@ convert the documents within a secure sandbox.
     url="https://github.com/freedomofpress/dangerzone",
     packages=[
         "dangerzone",
-        "dangerzone.conversion",
         "dangerzone.gui",
         "dangerzone.isolation_provider",
         "dangerzone.podman",

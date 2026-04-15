@@ -37,6 +37,34 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   ([#1338](https://github.com/freedomofpress/dangerzone/issues/1338))
 - Pin Podman to v5.x.x, to support Windows 10 installations for one last release
   ([#1357](https://github.com/freedomofpress/dangerzone/issues/1357))
+- Move the conversion error definitions out of the now-removed `conversion/`
+  package and into `dangerzone.conversion_errors`, so the host code keeps a
+  single source of truth for the error codes raised inside the sandbox.
+- Split the container image build out into a separate
+  [`freedomofpress/dangerzone-image`](https://github.com/freedomofpress/dangerzone-image)
+  repository. CI now consumes the published image via
+  `dangerzone-image prepare-archive` instead of building it in-tree, and the
+  resulting `container.tar` is cached against the registry digest.
+- Drop the format-specific conversion tests and their sample assets. The
+  remaining tests cover the host-side isolation provider interface only;
+  document-format coverage now lives alongside the container image in
+  `freedomofpress/dangerzone-image`.
+- Narrow the isolation provider tests to the host/sandbox interface
+  (max-pages and max-dimensions client enforcement, error propagation),
+  using a single canonical sample PDF.
+- Run the GUI tests headless by default via `QT_QPA_PLATFORM=offscreen` and
+  drop the `xvfb`/`xvfb-run` setup from CI. A new `--onscreen` pytest flag
+  re-enables the on-screen mode for local debugging.
+- Run pytest with `pytest-xdist` and group container-backed and GUI tests
+  into dedicated `xdist_group`s so each group runs on a single worker,
+  avoiding contention over the container runtime and the offscreen Qt
+  platform.
+- Pin `XDG_DATA_DIRS` in the GUI logic tests that walk it for `.desktop`
+  files, so the tests don't pick up arbitrary entries from the developer's
+  or CI runner's environment.
+- Bump `vfkit` to 0.6.3 (now signed upstream, switching to `vfkit-unsigned`
+  with a relaxed `>=0.6.1` pin) and `cosign` to 2.6.3 in `mazette.lock`,
+  and regenerate `poetry.lock` with Poetry 2.3.
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

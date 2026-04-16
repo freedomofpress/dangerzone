@@ -22,6 +22,11 @@ test: ## Run the tests
 	pytest -v --cov --ignore dev_scripts --ignore tests/gui --ignore tests/test_large_set.py
 
 
+.PHONY: fuzz
+fuzz: ## Run security fuzz tests (IPC protocol + PyMuPDF boundary)
+	python tests/isolation_provider/fuzz_ipc.py
+	pytest -v tests/isolation_provider/test_pixmap_boundaries.py tests/isolation_provider/test_cve_2026_3308.py
+
 .PHONY: test-large-requirements
 test-large-requirements:
 	@git-lfs --version || (echo "ERROR: you need to install 'git-lfs'" && false)

@@ -10,6 +10,8 @@ on:
 
 permissions:
   packages: write
+  # Required for actions/cache save (container tarball in build-container-image job).
+  actions: write
 
 env:
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}

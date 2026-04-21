@@ -1,3 +1,0 @@
-[submodule "tests/test_docs_large"]
-	path = tests/test_docs_large
-	url = https://github.com/freedomofpress/dangerzone-test-set

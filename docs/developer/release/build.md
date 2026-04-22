@@ -143,11 +143,15 @@ poetry run dangerzone-image prepare-archive
     --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
 
-# Create a .deb
+# Create both .deb packages (dangerzone slim + dangerzone-full)
 ./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && ./install/linux/build-deb.py"
 ```
 
-Publish the .deb under `./deb_dist` to the
+A single `build-deb.py` invocation produces both `dangerzone_<version>_amd64.deb`
+(slim, no bundled `container.tar`) and `dangerzone-full_<version>_amd64.deb`
+(with the container image bundled) under `./deb_dist`.
+
+Publish both `.deb` files under `./deb_dist` to the
 [`freedomofpress/packages`](https://github.com/freedomofpress/packages)
 repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
@@ -179,8 +183,10 @@ poetry run dangerzone-image prepare-archive
 ./dev_scripts/env.py --distro fedora --version 42 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py --full"
 ```
 
-Publish the .rpms under `./dist` to the
-[`freedomofpress/packages`](https://github.com/freedomofpress/packages) repo, by sending a PR. Follow the instructions in that repo on how to do so.
+Publish both `dangerzone-<version>.fc<NN>.x86_64.rpm` (slim) and
+`dangerzone-full-<version>.fc<NN>.x86_64.rpm` (bundled container) under `./dist`
+to the [`freedomofpress/packages`](https://github.com/freedomofpress/packages)
+repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 #### Qubes
 

@@ -57,7 +57,7 @@ prior to a release (see [Large Document Testing](#large-document-testing)).
   - [ ] Run the Dangerzone tests.
   - [ ] Create a .deb package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Fedora platform (Fedora 41 as of
+- [ ] Create a test build in the most recent Fedora platform (Fedora 44 as of
   writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
   - [ ] Build the container image and ensure the development environment uses
@@ -66,7 +66,7 @@ prior to a release (see [Large Document Testing](#large-document-testing)).
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
   - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 41 as
+- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 44 as
   of writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
   - [ ] Run the Dangerzone tests.

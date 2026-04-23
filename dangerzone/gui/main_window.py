@@ -1013,14 +1013,6 @@ class ConversionWidget(QtWidgets.QWidget):
         QtCore.QTimer.singleShot(3000, self.enqueued_widget.hide)
 
     def documents_selected(self, docs: List[Document]) -> None:
-        if self.conversion_started:
-            self.dialog = Alert(
-                self.dangerzone,
-                message="Dangerzone does not support adding documents after the conversion has started.",
-                has_cancel=False,
-            ).launch()
-            return
-
         # Ensure all files in batch are in the same directory
         dirnames = {os.path.dirname(doc.input_filename) for doc in docs}
         if len(dirnames) > 1:
@@ -1030,6 +1022,24 @@ class ConversionWidget(QtWidgets.QWidget):
                 has_cancel=False,
             ).launch()
             return
+
+        if self.conversion_started and not self._all_conversions_done():
+            # A conversion is in progress: queue the new documents so they
+            # join the ongoing run. Settings chosen before the conversion
+            # started apply to the newly added documents too.
+            for doc in docs:
+                self.dangerzone.add_document(doc)
+                self.settings_widget.configure_document(doc)
+
+            if len(docs) > 0:
+                self.documents_added.emit(docs)
+                self.documents_list.start_conversion()
+            return
+
+        # No conversion is running. If a previous conversion has finished,
+        # reset the UI to start a fresh roundtrip through the settings.
+        if self.conversion_started:
+            self.reset_for_new_conversion()
 
         # Clear previously selected documents
         self.dangerzone.clear_documents()
@@ -1048,6 +1058,12 @@ class ConversionWidget(QtWidgets.QWidget):
 
         if len(docs) > 0:
             self.documents_added.emit(docs)
+
+    def _all_conversions_done(self) -> bool:
+        docs = self.documents_list.docs_list
+        if not docs:
+            return True
+        return all(doc.is_safe() or doc.is_failed() for doc in docs)
 
     def reset_for_new_conversion(self) -> None:
         self.dangerzone.clear_documents()
@@ -1516,22 +1532,20 @@ class SettingsWidget(QtWidgets.QWidget):
                     "output_dir", str(selected_dir), autosave=True
                 )
 
+    def configure_document(self, document: Document) -> None:
+        if self.save_checkbox.isChecked():
+            document.suffix = self.safe_extension.text()
+            if self.radio_move_untrusted.isChecked():
+                document.archive_after_conversion = True
+            elif self.radio_save_to.isChecked():
+                document.set_output_dir(self.dangerzone.output_dir)
+        else:
+            (_, tmp) = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
+            document.output_filename = tmp
+
     def start_button_clicked(self) -> None:
         for document in self.dangerzone.get_unconverted_documents():
-            if self.save_checkbox.isChecked():
-                # If we're saving the document, set the suffix that the user chose. Then
-                # check if we should to store the document in the same directory, and
-                # move the original document to an 'unsafe' subdirectory, or save the
-                # document to another directory.
-                document.suffix = self.safe_extension.text()
-                if self.radio_move_untrusted.isChecked():
-                    document.archive_after_conversion = True
-                elif self.radio_save_to.isChecked():
-                    document.set_output_dir(self.dangerzone.output_dir)
-            else:
-                # If not saving, then save it to a temp file instead
-                (_, tmp) = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
-                document.output_filename = tmp
+            self.configure_document(document)
 
         # Update settings
         self.dangerzone.settings.set(
@@ -1593,6 +1607,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         self.dangerzone = dangerzone
         self.docs_list: List[Document] = []
         self.docs_list_widget_map: dict[Document, DocumentWidget] = {}
+        self.submitted_docs: set[Document] = set()
         self.conversion_pending = False
 
         # Initialize thread_pool only on the first conversion
@@ -1602,6 +1617,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
     def clear(self) -> None:
         self.docs_list = []
         self.docs_list_widget_map = {}
+        self.submitted_docs = set()
         super().clear()
 
     def documents_added(self, docs: List[Document]) -> None:
@@ -1630,6 +1646,9 @@ class DocumentsListWidget(QtWidgets.QListWidget):
             self.thread_pool_initized = True
 
         for doc in self.docs_list:
+            if doc in self.submitted_docs:
+                continue
+            self.submitted_docs.add(doc)
             task = ConvertTask(self.dangerzone, doc, self.get_ocr_lang())
             doc_widget = self.docs_list_widget_map[doc]
             task.update.connect(doc_widget.update_progress)

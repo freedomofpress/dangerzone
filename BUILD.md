@@ -242,29 +242,42 @@ loads the server code dynamically each time it's run, instead of having
 to build and install a server package each time the developer wants to
 test it.
 
-1. Clone the Dangerzone project:
+1. Follow the [Fedora installation instructions](#Fedora) up until
+   `poetry run mazette install`.
 
-   ```
-   git clone https://github.com/freedomofpress/dangerzone
-   cd dangerzone
-   ```
 
-2. Follow the Fedora instructions for setting up the development environment.
-
-3. Build a dangerzone `.rpm` for qubes with the command
+2. Clone the Dangerzone image repo, which holds the server-side conversion
+   component:
 
    ```sh
-   ./install/linux/build-rpm.py --qubes
+   cd ~
+   git clone https://github.com/freedomofpress/dangerzone-image
    ```
 
-4. Copy the produced `.rpm` file into `fedora-42-dz`
+3. Install some extra build dependencies:
+
    ```sh
-   qvm-copy dist/*.x86_64.rpm
+   sudo dnf install -y python3-uv-build python3-pymupdf python3-magic
+   ```
+
+4. Build the Dangerzone RPM packages for Qubes:
+
+   ```sh
+   ./dangerzone/install/linux/build-rpm.py --qubes
+   ./dangerzone-image/qubes/build-rpm.sh
+   ```
+
+5. Copy the produced `.rpm` files into `fedora-42-dz`:
+
+   ```sh
+   qvm-copy ./dangerzone/dist/*.x86_64.rpm \
+       ./dangerzone-image/qubes/dist/*.noarch.rpm
    ```
 
 #### In the `fedora-42-dz` template
 
-1. Install the `.rpm` package you just copied
+1. Install the `.rpm` packages you just copied, in order to get the Dangerzone
+   dependencies:
 
    ```sh
    sudo dnf install ~/QubesIncoming/dz/*.rpm
@@ -279,12 +292,13 @@ are that you need to set the environment variable `QUBES_CONVERSION=1` when
 you wish to test the Qubes conversion, run the following commands on the `dz` development qube:
 
 ```sh
+export DANGERZONE_DEV=1 QUBES_CONVERSION=1
 
 # run the CLI
-QUBES_CONVERSION=1 poetry run dangerzone-cli --help
+poetry run dangerzone-cli --help
 
 # run the GUI
-QUBES_CONVERSION=1 poetry run dangerzone
+poetry run dangerzone
 ```
 
 And when creating a `.rpm` you'll need to enable the `--qubes` flag.
@@ -297,15 +311,22 @@ And when creating a `.rpm` you'll need to enable the `--qubes` flag.
 ./install/linux/build-rpm.py --qubes
 ```
 
-For changes in the server side components, you can simply edit them locally,
-and they will be mirrored to the disposable qube through the `dz.ConvertDev`
-RPC call.
-
-The only reason to build a new Qubes RPM and install it in the `fedora-42-dz`
-template for development is if:
-
-1. The project requires new server-side components.
-2. The code for `qubes/dz.ConvertDev` needs to be updated.
+> [!TIP]
+> For faster changes to the server side components, you can let Dangerzone know
+> about the location of `dangerzone-image` repo:
+>
+> ```sh
+> export DANGERZONE_INSECURE_CONVERTER_PATH=~/dangerzone-image/src
+> ```
+>
+> From there on, you can make changes in the `dangerzone-image` repo, and they
+> will be mirrored to the disposable qube through the `dz.ConvertDev` RPC call.
+>
+> The only reason to build a new Qubes RPM and install it in the `fedora-42-dz`
+> template for development is if:
+>
+> 1. The project requires new server-side components.
+> 2. The code for `qubes/dz.ConvertDev` needs to be updated.
 
 ## macOS
 

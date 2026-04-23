@@ -5,7 +5,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from typing import IO, Callable, Optional
+from typing import IO
 
 from ..document import Document
 from ..updater.signatures import is_container_tar_bundled
@@ -25,7 +25,8 @@ class Qubes(IsolationProvider):
         return 1
 
     def start_doc_to_pixels_proc(self, document: Document) -> subprocess.Popen:
-        dev_mode = getattr(sys, "dangerzone_dev", False) is True
+        conv_mod_path = os.environ.get("DANGERZONE_INSECURE_CONVERTER_PATH", None)
+        dev_mode = getattr(sys, "dangerzone_dev", False) is True and conv_mod_path
         if dev_mode:
             # Use dz.ConvertDev RPC call instead, if we are in development mode.
             # Basically, the change is that we also transfer the necessary Python
@@ -48,8 +49,9 @@ class Qubes(IsolationProvider):
 
         if dev_mode:
             assert p.stdin is not None
+            assert conv_mod_path is not None
             # Send the dangerzone module first.
-            self.teleport_dz_module(p.stdin)
+            self.teleport_dz_module(conv_mod_path, p.stdin)
 
         return p
 
@@ -83,20 +85,18 @@ class Qubes(IsolationProvider):
         if p.stdout:
             p.stdout.close()
 
-    def teleport_dz_module(self, wpipe: IO[bytes]) -> None:
-        """Send the conversion module to another qube, as a zipfile."""
-        # Grab the absolute file path of the conversion module.
-        import conversion as _conv
-
-        _conv_path = Path(_conv.__file__).parent
+    def teleport_dz_module(self, conv_path: str, wpipe: IO[bytes]) -> None:
+        """Send the dangerzone module to another qube, as a zipfile."""
+        # Grab the absolute file path of the dangerzone module.
         temp_file = io.BytesIO()
 
         with zipfile.ZipFile(temp_file, "w") as z:
-            for root, _, files in os.walk(_conv_path):
+            z.mkdir("dangerzone_insecure_converter/")
+            for root, _, files in os.walk(conv_path):
                 for file in files:
                     if file.endswith(".py"):
                         file_path = os.path.join(root, file)
-                        relative_path = os.path.relpath(file_path, _conv_path.parent)
+                        relative_path = os.path.relpath(file_path, conv_path)
                         z.write(file_path, relative_path)
 
         # Send the following data:
@@ -109,7 +109,7 @@ class Qubes(IsolationProvider):
 
 
 def is_qubes_native_conversion() -> bool:
-    """Returns True if the conversion should be run using Qubes OS's diposable
+    """Returns True if the conversion should be run using Qubes OS's disposable
     VMs and False if not."""
     if os.path.exists("/usr/share/qubes/marker-vm"):
         if getattr(sys, "dangerzone_dev", False):

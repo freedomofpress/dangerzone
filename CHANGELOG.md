@@ -71,6 +71,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Update the build instructions for Qubes, in order to work with the new
   `dangerzone-insecure-converter-qubes` RPM package.
   ([#1463](https://github.com/freedomofpress/dangerzone/pull/1463))
+- Drop the `cx_Freeze < 8.5.0` workaround now that the upstream MSI build bug
+  has been fixed
+  ([#1443](https://github.com/freedomofpress/dangerzone/issues/1443))
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

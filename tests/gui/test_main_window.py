@@ -36,6 +36,7 @@ from dangerzone.gui.main_window import (
 )
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.dummy import Dummy
+from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 from dangerzone.updater import (
     LAST_KNOWN_LOG_INDEX,
     EmptyReport,
@@ -811,6 +812,9 @@ def test_close_event(
     handle_task_container_stop_spy.assert_called_once()
 
 
+@pytest.mark.skipif(
+    is_qubes_native_conversion(), reason="Qubes native conversion is enabled"
+)
 def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -> None:
     """Test prompting users to ask them if they want to enable update checks."""
     # First run

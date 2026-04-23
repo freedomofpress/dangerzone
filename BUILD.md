@@ -183,27 +183,27 @@ Overview of the qubes you'll create:
 | ------------ | -------- | ------------------------------------------------------ |
 | dz           | app qube | Dangerzone development                                 |
 | dz-dvm       | app qube | offline disposable template for performing conversions |
-| fedora-42-dz | template | template for the other two qubes                       |
+| fedora-43-dz | template | template for the other two qubes                       |
 
 #### In `dom0`:
 
 The following instructions require typing commands in a terminal in dom0.
 
-1. Create a new Fedora **template** (`fedora-42-dz`) for Dangerzone development:
+1. Create a new Fedora **template** (`fedora-43-dz`) for Dangerzone development:
 
    ```
-   qvm-clone fedora-42 fedora-42-dz
+   qvm-clone fedora-43 fedora-43-dz
    ```
 
    > :bulb: Alternatively, you can use your base Fedora 41 template in the
    > following instructions. In that case, skip this step and replace
-   > `fedora-42-dz` with `fedora-42` in the steps below.
+   > `fedora-43-dz` with `fedora-43` in the steps below.
 
-2. Create an offline disposable template (app qube) called `dz-dvm`, based on the `fedora-42-dz`
+2. Create an offline disposable template (app qube) called `dz-dvm`, based on the `fedora-43-dz`
    template. This will be the qube where the documents will be sanitized:
 
    ```
-   qvm-create --class AppVM --label red --template fedora-42-dz \
+   qvm-create --class AppVM --label red --template fedora-43-dz \
        --prop netvm="" --prop template_for_dispvms=True \
        --prop default_dispvm='' dz-dvm
    ```
@@ -212,7 +212,7 @@ The following instructions require typing commands in a terminal in dom0.
    and initiating the sanitization process:
 
    ```
-   qvm-create --class AppVM --label red --template fedora-42-dz dz
+   qvm-create --class AppVM --label red --template fedora-43-dz dz
    qvm-volume resize dz:private $(numfmt --from=auto 20Gi)
    ```
 
@@ -267,14 +267,14 @@ test it.
    ./dangerzone-image/qubes/build-rpm.sh
    ```
 
-5. Copy the produced `.rpm` files into `fedora-42-dz`:
+5. Copy the produced `.rpm` files into `fedora-43-dz`:
 
    ```sh
    qvm-copy ./dangerzone/dist/*.x86_64.rpm \
        ./dangerzone-image/qubes/dist/*.noarch.rpm
    ```
 
-#### In the `fedora-42-dz` template
+#### In the `fedora-43-dz` template
 
 1. Install the `.rpm` packages you just copied, in order to get the Dangerzone
    dependencies:
@@ -283,7 +283,7 @@ test it.
    sudo dnf install ~/QubesIncoming/dz/*.rpm
    ```
 
-2. Shutdown the `fedora-42-dz` template
+2. Shutdown the `fedora-43-dz` template.
 
 ### Developing Dangerzone
 
@@ -322,7 +322,7 @@ And when creating a `.rpm` you'll need to enable the `--qubes` flag.
 > From there on, you can make changes in the `dangerzone-image` repo, and they
 > will be mirrored to the disposable qube through the `dz.ConvertDev` RPC call.
 >
-> The only reason to build a new Qubes RPM and install it in the `fedora-42-dz`
+> The only reason to build a new Qubes RPM and install it in the `fedora-43-dz`
 > template for development is if:
 >
 > 1. The project requires new server-side components.

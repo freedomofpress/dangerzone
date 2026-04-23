@@ -65,6 +65,9 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Bump `vfkit` to 0.6.3 (now signed upstream, switching to `vfkit-unsigned`
   with a relaxed `>=0.6.1` pin) and `cosign` to 2.6.3 in `mazette.lock`,
   and regenerate `poetry.lock` with Poetry 2.3.
+- Update the build instructions for Qubes, in order to work with the new
+  `dangerzone-insecure-converter-qubes` RPM package.
+  ([#1463](https://github.com/freedomofpress/dangerzone/pull/1463))
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

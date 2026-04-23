@@ -10,9 +10,14 @@ from pytest_subprocess import FakeProcess
 
 from dangerzone import container_utils
 from dangerzone import errors as dz_errors
+from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 from dangerzone.podman import errors
 from dangerzone.podman.machine import PodmanMachineManager
 from dangerzone.util import get_version
+
+# The Podman machine tests do not apply when native conversion is enabled.
+if is_qubes_native_conversion():
+    pytest.skip("Qubes native conversion is enabled", allow_module_level=True)
 
 
 @pytest.fixture

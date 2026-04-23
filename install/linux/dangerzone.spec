@@ -73,6 +73,9 @@ BuildRequires:  python3-devel
 # Qubes-only requirements (server-side)
 Requires:       python3-magic
 Requires:       libreoffice
+
+# Qubes-only dependency, to install a single RPM package in the Fedora template.
+Requires:       dangerzone-insecure-converter-qubes
 %else
 # Container-only requirements
 Requires:       podman
@@ -250,13 +253,6 @@ install -pm 755 -d %{buildroot}/usr/share/dangerzone/vendor/
 install -pm 755 share/vendor/* %{buildroot}/usr/share/dangerzone/vendor
 %endif
 
-# In case we create a package for Qubes, add some extra files under
-# /etc/qubes-rpc.
-%if 0%{?_qubes}
-install -pm 755 -d %{buildroot}/etc/qubes-rpc
-install -pm 755 qubes/* %{buildroot}/etc/qubes-rpc
-%endif
-
 %check
 # Detect if the filesystem has been affecting our file permissions.
 bad_files=$(find %{buildroot} -perm 0600)
@@ -275,11 +271,6 @@ fi
 /usr/share/
 %license LICENSE
 %doc README.md
-
-%if 0%{?_qubes}
-# Include some configuration files for Qubes.
-/etc/qubes-rpc
-%endif
 
 # Remove any stale .egg-info directories, to help users affected by
 # https://github.com/freedomofpress/dangerzone/issues/514

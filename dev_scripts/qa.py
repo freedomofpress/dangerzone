@@ -1004,10 +1004,6 @@ class QAFedora42(QAFedora):
     VERSION = "42"
 
 
-class QAFedora41(QAFedora):
-    VERSION = "41"
-
-
 def parse_args():
     parser = argparse.ArgumentParser(
         prog=sys.argv[0],

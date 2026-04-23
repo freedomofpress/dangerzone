@@ -50,8 +50,6 @@ jobs:
           - distro: debian
             version: forky
           - distro: fedora
-            version: "41"
-          - distro: fedora
             version: "42"
           - distro: fedora
             version: "43"

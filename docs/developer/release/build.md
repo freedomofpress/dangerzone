@@ -155,15 +155,15 @@ repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 > **NOTE**: This procedure will have to be done for every supported Fedora version.
 >
-> In this section, Fedora 41 is used as an example.
+> In this section, Fedora 42 is used as an example.
 
 Create a Fedora development environment. [Follow the
 instructions in the build section](https://github.com/freedomofpress/dangerzone/blob/main/BUILD.md#fedora),
 or create it locally with:
 
 ```bash
-./dev_scripts/env.py --distro fedora --version 41 build-dev
-./dev_scripts/env.py --distro fedora --version 41 run --dev bash
+./dev_scripts/env.py --distro fedora --version 42 build-dev
+./dev_scripts/env.py --distro fedora --version 42 run --dev bash
 
 # Get the vendorized assets
 poetry run mazette install
@@ -174,7 +174,7 @@ poetry run dangerzone-image prepare-archive
     --output share/container.tar
 
 # Create a .rpm:
-./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"
+./dev_scripts/env.py --distro fedora --version 42 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"
 ```
 
 Publish the .rpm under `./dist` to the
@@ -185,7 +185,7 @@ Publish the .rpm under `./dist` to the
 Create a `.rpm` for Qubes:
 
 ```sh
-./dev_scripts/env.py --distro fedora --version 41 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py --qubes"
+./dev_scripts/env.py --distro fedora --version 42 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py --qubes"
 ```
 
 and similarly publish it to the [`freedomofpress/yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod) repo.

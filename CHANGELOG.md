@@ -30,6 +30,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Add a deprecation warning for Windows 10
   ([#1357](https://github.com/freedomofpress/dangerzone/issues/1357))
+- Drop support for Fedora 41 as it has reached end of life
 
 ### Development changes
 

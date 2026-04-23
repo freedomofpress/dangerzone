@@ -50,8 +50,6 @@ jobs:
       matrix:
         include:
           - distro: fedora
-            version: 41
-          - distro: fedora
             version: 42
           - distro: fedora
             version: 43

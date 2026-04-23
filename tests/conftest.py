@@ -167,10 +167,6 @@ for_each_doc = pytest.mark.parametrize(
 )
 
 
-class TestBase:
-    sample_doc = str(test_docs_dir / BASIC_SAMPLE_PDF)
-
-
 def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line(
         "markers",

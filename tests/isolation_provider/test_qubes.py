@@ -58,7 +58,7 @@ class TestQubes(IsolationProviderTest):
         provider: Qubes,
         mocker: MockerFixture,
         monkeypatch: MonkeyPatch,
-        sample_doc: str,
+        sample_pdf: str,
         tmpdir: str,
     ) -> None:
         provider.progress_callback = mocker.MagicMock()
@@ -73,7 +73,7 @@ class TestQubes(IsolationProviderTest):
             shell=True,
         )
         with pytest.raises(errors.ConverterProcException):
-            doc = Document(sample_doc)
+            doc = Document(sample_pdf)
             provider.convert_with_proc(doc, None, proc)
             assert provider.get_proc_exception(proc) == errors.QubesQrexecFailed
 

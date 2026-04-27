@@ -15,7 +15,7 @@ This list is broken down in the following phases:
 
 1. [Pre-release](pre-release.md)
 2. [Prepare build environments](prepare-build-envs.md)
-3. [Sign and release container image](sign-image.md)
+3. [Sign and release container image ↗️](https://github.com/freedomofpress/dangerzone-image/blob/main/docs/sign-image.md)
 4. [Build release artifacts](build.md)
 5. [QA](qa.md)
 6. [Release](release.md)

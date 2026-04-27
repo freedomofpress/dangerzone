@@ -53,8 +53,9 @@ jobs:
             version: 42
           - distro: fedora
             version: 43
-          - distro: fedora
-            version: 44
+          # FIXME: Enable these checks once we have an RPM package out.
+          #- distro: fedora
+          #  version: 44
     steps:
       - name: Add packages.freedom.press to our YUM sources
         run: |

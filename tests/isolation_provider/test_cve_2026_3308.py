@@ -4,15 +4,15 @@ CVE-2026-3308 regression guard for MuPDF integer overflow in fz_unpack_stream().
 VULNERABILITY
 =============
 MuPDF 1.27.0 contains an integer overflow in source/fitz/draw-unpack.c,
-inside fz_unpack_stream():
+inside fz_unpack_stream(). While 1.27.1 added int64_t casts to handle
+negative overflows (2^31), it remains vulnerable to a zero-wrap overflow
+at exactly 2^32.
 
-    // VULNERABLE (MuPDF 1.27.0):
+    // VULNERABLE (MuPDF 1.27.0 - 1.27.2):
     int src_stride = (w * depth * n + 7) >> 3;
 
-When a PDF image XObject has dimensions that cause w * depth * n to exceed
-INT_MAX (2^31 - 1), the 32-bit multiplication wraps negative. This leads to
-a small heap allocation followed by an out-of-bounds write when the image
-stream is unpacked.
+When w * depth * n is a multiple of 2^32, the result wraps to 0, leading
+to a tiny heap allocation followed by an out-of-bounds write.
 
     // FIXED (MuPDF 1.27.1+):
     int src_stride = ((int64_t)w * depth * n + 7) >> 3;
@@ -30,12 +30,11 @@ causing a near-zero allocation followed by heap corruption.
 DANGERZONE IMPACT
 =================
 Dangerzone uses PyMuPDF to convert untrusted documents inside a container.
-If dangerzone ever shipped a PyMuPDF embedding MuPDF 1.27.0, an
-attacker-crafted PDF could escape the document-to-pixel conversion and
-potentially achieve code execution within the container.
+If dangerzone ever shipped a PyMuPDF embedding MuPDF 1.27.0, it
+could be vulnerable to this integer overflow.
 
-Dangerzone currently pins PyMuPDF 1.26.x which uses MuPDF 1.26.x (NOT
-affected). This test exists as a regression guard to:
+Dangerzone currently pins PyMuPDF 1.26.x which uses MuPDF 1.26.x
+(also affected). This test exists as a regression guard to:
 1. Confirm dangerzone's pinned version is safe
 2. Catch future upgrades that might introduce the vulnerable range
 3. Verify that dangerzone's internal bounds (MAX_PAGE_WIDTH=10000) keep
@@ -324,11 +323,12 @@ class TestCVE20263308:
         [
             # Boundary cases that are close to but below overflow
             (16777216, 1, 16, "/DeviceCMYK", "w*16*4 = 2^30 (half of INT_MAX)"),
-            (33554432, 1, 16, "/DeviceCMYK", "w*16*4 = 2^31 (exact overflow)"),
+            (33554432, 1, 16, "/DeviceCMYK", "w*16*4 = 2^31 (exact 32-bit signed overflow)"),
+            (67108864, 1, 16, "/DeviceCMYK", "w*16*4 = 2^32 (exact 32-bit zero-wrap overflow)"),
             (89478485, 1, 8, "/DeviceRGB", "w*8*3 = 2^31-8 (just below overflow)"),
             (1, 1, 8, "/DeviceRGB", "minimal safe image"),
         ],
-        ids=["half-intmax", "exact-overflow", "near-overflow-rgb", "minimal"],
+        ids=["half-intmax", "signed-overflow", "zero-wrap", "near-overflow-rgb", "minimal"],
     )
     def test_crafted_dimensions(  # noqa: ARG002
         self, width: int, height: int, bpc: int, cs: str, desc: str

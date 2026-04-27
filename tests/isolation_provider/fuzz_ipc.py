@@ -278,7 +278,7 @@ def fuzz_pixmap(rng: random.Random, iterations: int = 1000) -> None:
     colorspaces = [fitz.csRGB, fitz.csGRAY, fitz.csCMYK]
     cs_channels = {id(fitz.csRGB): 3, id(fitz.csGRAY): 1, id(fitz.csCMYK): 4}
 
-    boundary_dims = [0, 1, 2, 100, 9999, 10000, 10001, 65535]
+    boundary_dims = [0, 1, 2, 100, 9999, 10000, 10001, 65535, 33554432, 67108864]
     crashes = 0
     graceful_errors = 0
     successes = 0
@@ -288,16 +288,21 @@ def fuzz_pixmap(rng: random.Random, iterations: int = 1000) -> None:
         channels = cs_channels[id(cs)]
 
         # Mix of targeted boundary values and random dimensions.
-        # Cap total allocation at ~50MB to avoid OOM/hangs in fuzzer.
-        if rng.random() < 0.5:
+        if rng.random() < 0.7:
             w = rng.choice(boundary_dims)
             h = rng.choice(boundary_dims)
         else:
-            w = rng.randint(0, 20000)
-            h = rng.randint(0, 20000)
-        # Skip combinations that would allocate >50MB (fuzzer-only guard)
-        if w * h * channels > 50_000_000:
-            h = max(1, 50_000_000 // (max(w, 1) * channels))
+            w = rng.randint(0, 100_000_000)
+            h = rng.randint(0, 10)
+
+        # Skip massive allocations that don't wrap (to avoid OOMing the fuzzer),
+        # but ALLOW dimensions that might wrap to a small value (which is the bug).
+        # w * channels * 2 (16-bit) wrap check:
+        potential_stride = (w * 16 * channels + 7) >> 3
+        if potential_stride > 50_000_000 and (potential_stride % (2**32)) > 1000:
+            h = 1
+            if potential_stride > 200_000_000 and (potential_stride % (2**32)) > 1000:
+                continue # Skip truly massive non-wrapping ones
 
         try:
             pix = fitz.Pixmap(cs, fitz.IRect(0, 0, w, h), False)

@@ -217,6 +217,10 @@ class WSLInstallTask(_NonLinuxTask):
 class ContainerInstallTask(Task):
     name = "Configuring Dangerzone sandbox"
 
+    # Set by UpdateCheckTask after the user consents to the initial download,
+    # so the GUI variant can skip its redundant prompt for this run only.
+    skip_prompt_once = False
+
     def should_skip(self) -> bool:
         return installer.get_installation_strategy() == InstallationStrategy.DO_NOTHING
 
@@ -247,6 +251,9 @@ class UpdateCheckTask(Task):
                 # No container available: blocking prompt, handle response
                 if accepted is True:
                     settings.Settings().set("updater_check_all", True, autosave=True)
+                    # Accepting here is consent for this download, so suppress
+                    # ContainerInstallTask's redundant prompt for this run.
+                    ContainerInstallTask.skip_prompt_once = True
                     # Proceed with update check immediately so the remote
                     # container can be downloaded.
                     return False

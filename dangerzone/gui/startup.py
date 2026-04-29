@@ -123,7 +123,11 @@ class ContainerInstallTask(
             self.load_container.emit()
             return super().run()
         elif strategy == InstallationStrategy.INSTALL_REMOTE_CONTAINER:
-            if Settings().get("updater_ask_before_download"):
+            ask = Settings().get("updater_ask_before_download")
+            if startup.ContainerInstallTask.skip_prompt_once:
+                startup.ContainerInstallTask.skip_prompt_once = False
+                ask = False
+            if ask:
                 resp = self.prompt_user()
                 if resp:
                     self._download_container()

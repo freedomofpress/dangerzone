@@ -487,6 +487,8 @@ class Env:
             f"{dist_state}/.bash_history:/home/user/.bash_history",
             "-v",
             f"{dist_state}/.local/share/dangerzone:/home/user/.local/share/dangerzone",
+            "-v",
+            f"{dist_state}/.config/dangerzone:/home/user/.config/dangerzone",
         ]
 
         run_cmd += ["-u", user]
@@ -521,6 +523,9 @@ class Env:
         (dist_state / "containers").mkdir(exist_ok=True)
 
         (dist_state / ".local" / "share" / "dangerzone").mkdir(
+            parents=True, exist_ok=True
+        )
+        (dist_state / ".config" / "dangerzone").mkdir(
             parents=True, exist_ok=True
         )
         (dist_state / ".bash_history").touch(exist_ok=True)

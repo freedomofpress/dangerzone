@@ -709,10 +709,8 @@ class MainWindow(QtWidgets.QMainWindow):
             QtCore.QTimer.singleShot(0, self._handle_download_declined)
 
     def _handle_download_declined(self) -> None:
-        """Handle shutdown when user declines to download container."""
         log.debug("User declined container download, shutting down")
-        self.startup_thread.wait()
-        self.begin_shutdown(ret=2)
+        self.exit(2)
 
     def handle_needs_user_input_stop_others(self, req: startup.PromptRequest) -> None:
         machine_name = req.req_data["name"]

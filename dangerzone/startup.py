@@ -327,10 +327,16 @@ class Runner:
         for task in self.tasks:
             try:
                 self.run_task(task)
+            except errors.UpdaterDisabledNoContainer:
+                # Declining the initial container download is a user choice,
+                # not a task failure: skip the error-logging path. The CLI
+                # still wants the exception to surface; the GUI passes
+                # raise_on_error=False and just exits the run.
+                if self.raise_on_error:
+                    raise
+                return
             except Exception as e:
                 task.handle_error(e)
-                if isinstance(e, errors.UpdaterDisabledNoContainer):
-                    raise
                 if not task.can_fail:
                     return self.handle_error(task, e)
         self.handle_success()

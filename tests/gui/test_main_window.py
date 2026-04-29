@@ -942,9 +942,8 @@ def test_user_prompts_no_container(
     # Scenario 2: User declines download
     prompt_mock().launch.return_value = False
 
-    # Mock shutdown to prevent actual shutdown
-    mock_begin_shutdown = mocker.patch.object(window, "begin_shutdown")
-    mocker.patch.object(window.startup_thread, "wait")
+    # Mock exit to prevent actually quitting the app
+    mock_exit = mocker.patch.object(window, "exit")
 
     window.startup_thread.start()
     qtbot.waitUntil(handle_download_spy.assert_called_once)
@@ -952,14 +951,14 @@ def test_user_prompts_no_container(
     # Give the QTimer a chance to fire
     qtbot.wait(100)
 
-    # User declined, shutdown should be triggered
-    mock_begin_shutdown.assert_called_once_with(ret=2)
+    # User declined, exit should be triggered
+    mock_exit.assert_called_once_with(2)
 
     # Reset for scenario 3
     window.dangerzone.settings.set("updater_check_all", None)
     window.dangerzone.settings.set("updater_last_check", None)
     handle_download_spy.reset_mock()
-    mock_begin_shutdown.reset_mock()
+    mock_exit.reset_mock()
 
     # Scenario 3: User presses X (dismisses)
     prompt_mock().launch.return_value = None
@@ -971,8 +970,8 @@ def test_user_prompts_no_container(
     # Give the QTimer a chance to fire
     qtbot.wait(100)
 
-    # User dismissed, shutdown should also be triggered
-    mock_begin_shutdown.assert_called_once_with(ret=2)
+    # User dismissed, exit should also be triggered
+    mock_exit.assert_called_once_with(2)
 
 
 def test_machine_stop_others_user_input(

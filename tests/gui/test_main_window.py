@@ -1312,3 +1312,95 @@ class TestRestartConversion:
 
         assert len(conversion_widget.dangerzone.get_unconverted_documents()) == 1
         assert not conversion_widget.settings_widget.isHidden()
+
+
+class TestQueueDuringConversion:
+    @staticmethod
+    def _copy_doc(src: str, dest_dir: pathlib.Path, name: str) -> Document:
+        dest = dest_dir / name
+        shutil.copy(src, dest)
+        return Document(str(dest))
+
+    def _simulate_running_conversion(
+        self,
+        conversion_widget: ConversionWidget,
+        mock_pool: MagicMock,
+        initial_doc: Document,
+    ) -> None:
+        """Put the widget in the state it would be in while doc is being converted."""
+        conversion_widget.documents_selected([initial_doc])
+        conversion_widget.conversion_started = True
+        conversion_widget.settings_widget.hide()
+        conversion_widget.documents_list.show()
+        initial_doc.state = Document.STATE_CONVERTING
+        conversion_widget.documents_list.submitted_docs.add(initial_doc)
+        conversion_widget.documents_list.thread_pool = mock_pool
+        conversion_widget.documents_list.thread_pool_initized = True
+        conversion_widget.dangerzone.is_waiting_finished = True
+
+    def test_queueing_adds_new_doc_to_running_conversion(
+        self,
+        conversion_widget: ConversionWidget,
+        mocker: MockerFixture,
+        sample_pdf: str,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        """Docs passed while a conversion is running are queued and submitted."""
+        doc1 = self._copy_doc(sample_pdf, tmp_path, "doc1.pdf")
+        mock_pool = mocker.MagicMock()
+        self._simulate_running_conversion(conversion_widget, mock_pool, doc1)
+
+        doc2 = self._copy_doc(sample_pdf, tmp_path, "doc2.pdf")
+        conversion_widget.documents_selected([doc2])
+
+        assert doc2 in conversion_widget.documents_list.docs_list
+        assert doc2 in conversion_widget.documents_list.submitted_docs
+        # doc1 is already in submitted_docs and must not be re-queued.
+        assert mock_pool.apply_async.call_count == 1
+        # Conversion view stays: the settings widget should not reappear.
+        assert conversion_widget.settings_widget.isHidden()
+        assert not conversion_widget.documents_list.isHidden()
+
+    def test_queueing_applies_settings_to_new_doc(
+        self,
+        conversion_widget: ConversionWidget,
+        mocker: MockerFixture,
+        sample_pdf: str,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        """Queued docs go through configure_document so chosen settings apply to them."""
+        doc1 = self._copy_doc(sample_pdf, tmp_path, "doc1.pdf")
+        mock_pool = mocker.MagicMock()
+        self._simulate_running_conversion(conversion_widget, mock_pool, doc1)
+
+        spy = mocker.spy(conversion_widget.settings_widget, "configure_document")
+
+        doc2 = self._copy_doc(sample_pdf, tmp_path, "doc2.pdf")
+        conversion_widget.documents_selected([doc2])
+
+        spy.assert_called_once_with(doc2)
+
+    def test_adding_doc_after_all_done_resets_to_settings(
+        self,
+        conversion_widget: ConversionWidget,
+        sample_pdf: str,
+        tmp_path: pathlib.Path,
+    ) -> None:
+        """When every doc has finished, a new selection resets to the settings flow."""
+        doc1 = self._copy_doc(sample_pdf, tmp_path, "doc1.pdf")
+        conversion_widget.documents_selected([doc1])
+        conversion_widget.conversion_started = True
+        conversion_widget.settings_widget.hide()
+        conversion_widget.documents_list.show()
+        conversion_widget.restart_button.show()
+        doc1.state = Document.STATE_SAFE
+
+        doc2 = self._copy_doc(sample_pdf, tmp_path, "doc2.pdf")
+        conversion_widget.documents_selected([doc2])
+
+        assert conversion_widget.conversion_started is False
+        assert not conversion_widget.settings_widget.isHidden()
+        assert conversion_widget.restart_button.isHidden()
+        unconverted = conversion_widget.dangerzone.get_unconverted_documents()
+        assert len(unconverted) == 1
+        assert unconverted[0].input_filename == doc2.input_filename

@@ -969,9 +969,9 @@ class QAUbuntu2404(QADebianBased):
     VERSION = "24.04"
 
 
-class QAUbuntu2504(QADebianBased):
+class QAUbuntu2604(QADebianBased):
     DISTRO = "ubuntu"
-    VERSION = "25.04"
+    VERSION = "26.04"
 
 
 class QAUbuntu2510(QADebianBased):

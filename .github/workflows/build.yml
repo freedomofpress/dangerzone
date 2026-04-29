@@ -37,7 +37,7 @@ jobs:
           - distro: ubuntu
             version: "24.04"
           - distro: ubuntu
-            version: "25.04"
+            version: "26.04"
           - distro: ubuntu
             version: "25.10"
           - distro: debian

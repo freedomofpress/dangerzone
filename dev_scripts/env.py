@@ -574,8 +574,8 @@ class Env:
             elif self.distro == "ubuntu" and self.version in (
                 "24.04",
                 "noble",
-                "25.04",
-                "plucky",
+                "26.04",
+                "resolute",
                 "25.10",
                 "questing",
             ):
@@ -639,8 +639,8 @@ class Env:
             elif self.distro == "ubuntu" and self.version in (
                 "24.04",
                 "noble",
-                "25.04",
-                "plucky",
+                "26.04",
+                "resolute",
                 "25.10",
                 "questing",
             ):

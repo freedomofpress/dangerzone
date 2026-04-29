@@ -28,6 +28,10 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Platform changes
 
+- Add support for Ubuntu 26.04 (Resolute Raccoon)
+  ([#1467](https://github.com/freedomofpress/dangerzone/issues/1467))
+- Drop support for Ubuntu 25.04 as it has reached end of life
+  ([#1468](https://github.com/freedomofpress/dangerzone/issues/1468))
 - Add a deprecation warning for Windows 10
   ([#1357](https://github.com/freedomofpress/dangerzone/issues/1357))
 - Add support for Fedora 44

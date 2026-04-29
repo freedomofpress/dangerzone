@@ -71,7 +71,7 @@ Podman [sets the bottom line](https://github.com/containers/podman/blob/v5.8.1/d
 Dangerzone is available for:
 
 - Ubuntu 25.10 (questing)
-- Ubuntu 25.04 (plucky)
+- Ubuntu 26.04 (resolute)
 - Ubuntu 24.04 (noble)
 - Ubuntu 22.04 (jammy)
 - Debian 14 (forky)

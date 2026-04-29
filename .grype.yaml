@@ -1,0 +1,4 @@
+# This configuration file will be used to track CVEs that we can ignore for the
+# latest release of the Dangerzone application, and offer our analysis.
+
+ignore:

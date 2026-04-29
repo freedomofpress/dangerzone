@@ -38,7 +38,7 @@ MSG_CONFIRM_DOWNLOAD_CONTAINER = """\
     <b>Download conversion sandbox?</b>
 </p>
 
-<p>Dangerzone needs to download the sandbox from the internet to convert documents.</p>
+<p>Welcome to Dangerzone, in order to convert documents, it needs to download a sandbox from the internet.</p>
 
 <p>If you enable this option, Dangerzone will download the sandbox now and
 periodically check for updates.</p>

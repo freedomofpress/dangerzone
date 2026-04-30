@@ -92,11 +92,20 @@ poetry run dangerzone-cli --help
 poetry run dangerzone
 ```
 
-Create a .deb:
+Create .deb packages:
 
 ```sh
 ./install/linux/build-deb.py
 ```
+
+This builds both the `dangerzone` (slim) and `dangerzone-full` packages in a
+single run. The slim package does not contain the `container.tar` image (it
+will be downloaded on the first run), while `dangerzone-full` bundles the
+container image for offline or air-gapped installations.
+
+> **Note**: `container.tar` must be present in `share/` before running this
+> command, as it is required for the `dangerzone-full` package. See the
+> instructions above for how to download or build it.
 
 ## Fedora
 
@@ -162,6 +171,15 @@ Create a .rpm:
 
 ```sh
 ./install/linux/build-rpm.py
+```
+
+This builds the `dangerzone` package, which doesn't contain the `container.tar`
+image (it will be downloaded on the first run).
+
+To build the `dangerzone-full` package with the container bundled:
+
+```sh
+./install/linux/build-rpm.py --full
 ```
 
 ## Qubes OS

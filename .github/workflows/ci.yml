@@ -235,7 +235,7 @@ jobs:
           poetry run dangerzone-image prepare-archive
           --output share/container.tar
 
-      - name: Build Dangerzone .deb
+      - name: Build Dangerzone .deb packages
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
@@ -247,6 +247,15 @@ jobs:
         with:
           name: dangerzone.deb
           path: "deb_dist/dangerzone_*_*.deb"
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Dangerzone-full .deb
+        if: matrix.distro == 'debian' && matrix.version == 'bookworm'
+        uses: actions/upload-artifact@v6
+        with:
+          name: dangerzone-full.deb
+          path: "deb_dist/dangerzone-full_*_*.deb"
           if-no-files-found: error
           compression-level: 0
 
@@ -293,7 +302,57 @@ jobs:
               --version ${{ matrix.version }} \
               build
 
+      - name: Download container image
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone-image upgrade
+
       - name: Run a test command
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
+
+      - name: Check that the Dangerzone GUI imports work
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone --help
+
+
+  install-deb-full:
+    name: "install-deb-full (${{ matrix.distro }} ${{ matrix.version }})"
+    runs-on: ubuntu-latest
+    needs:
+      - build-deb
+    strategy:
+      matrix:
+        include:
+          - distro: debian
+            version: bookworm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Download Dangerzone full .deb
+        uses: actions/download-artifact@v6
+        with:
+          name: dangerzone-full.deb
+          path: "deb_dist/"
+
+      - name: Build end-user environment with full package
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              build --full
+
+      - name: Run a test command (container bundled)
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
@@ -378,7 +437,22 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.rpm
-          path: "dist/dangerzone-*.x86_64.rpm"
+          path: |
+            dist/dangerzone-*.x86_64.rpm
+            !dist/dangerzone-full-*.x86_64.rpm
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Build Dangerzone-full .rpm
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+              run --dev --no-gui ./dangerzone/install/linux/build-rpm.py --full
+
+      - name: Upload Dangerzone-full .rpm
+        uses: actions/upload-artifact@v7
+        with:
+          name: dangerzone-full-${{ matrix.distro }}-${{ matrix.version }}.rpm
+          path: "dist/dangerzone-full-*.x86_64.rpm"
           if-no-files-found: error
           compression-level: 0
 
@@ -394,6 +468,11 @@ jobs:
               --version ${{ matrix.version }} \
               build
 
+      - name: Download container image
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+              run dangerzone-image upgrade
+
       - name: Run a test command
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
@@ -402,6 +481,49 @@ jobs:
       - name: Check that the Dangerzone GUI imports work
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+              run dangerzone --help
+
+  install-rpm-full:
+    name: "install-rpm-full (${{ matrix.distro }} ${{ matrix.version }})"
+    runs-on: ubuntu-latest
+    needs:
+      - build-install-rpm
+    strategy:
+      matrix:
+        include:
+          - distro: fedora
+            version: "43"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Download Dangerzone-full .rpm
+        uses: actions/download-artifact@v8
+        with:
+          name: dangerzone-full-${{ matrix.distro }}-${{ matrix.version }}.rpm
+          path: "dist/"
+
+      - name: Build end-user environment with full package
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              build --full
+
+      - name: Run a test command (container bundled)
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              run dangerzone-cli dangerzone/tests/test_docs/sample-pdf.pdf --ocr-lang eng --debug
+
+      - name: Check that the Dangerzone GUI imports work
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
               run dangerzone --help
 
   run-tests:

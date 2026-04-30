@@ -49,7 +49,7 @@ When confident that the release doesn't need any more changes:
 
 To actually publish the release:
 
-- [ ] Merge the PRs in the [`apt-tools-prod`](https://github.com/freedomofpress/apt-tools-prod/pulls) and [`yum-tools-prod`](https://github.com/freedomofpress/yum-tools-prod/pulls) repos.
+- [ ] Merge the PR(s) in the [`packages`](https://github.com/freedomofpress/packages/pulls) repository.
 - [ ] Make the GitHub draft release public.
 - [ ] Merge the PRs in [`dangerzone.rocks`](https://github.com/freedomofpress/dangerzone.rocks/pulls) and `[dangerzone](https://github.com/freedomofpress/dangerzone/pulls)`.
 - [ ] Toot release announcement on our mastodon account https://social.freedom.press/@dangerzone

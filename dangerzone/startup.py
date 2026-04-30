@@ -2,6 +2,7 @@ import abc
 import logging
 import platform
 import typing
+from collections.abc import Sequence
 from typing import Optional
 
 from . import errors, settings, util
@@ -60,7 +61,17 @@ class Task(abc.ABC):
 #############
 
 
-class MachineInitTask(Task):
+class _NonLinuxTask(Task):
+    """Base class for tasks only relevant on specific platforms (macOS/Windows)."""
+
+    def handle_skip(self) -> None:
+        if platform.system() == "Linux":
+            logger.debug(f"Task '{self.name}' will be skipped")
+        else:
+            super().handle_skip()
+
+
+class MachineInitTask(_NonLinuxTask):
     name = "Initializing Dangerzone VM"
 
     def should_skip(self) -> bool:
@@ -73,7 +84,7 @@ class MachineInitTask(Task):
         PodmanMachineManager().init()
 
 
-class MachineStartTask(Task):
+class MachineStartTask(_NonLinuxTask):
     name = "Starting Dangerzone VM"
 
     def should_skip(self) -> bool:
@@ -86,7 +97,7 @@ class MachineStartTask(Task):
         PodmanMachineManager().start()
 
 
-class MachineStopOthersTask(Task):
+class MachineStopOthersTask(_NonLinuxTask):
     name = "Stopping other Podman VMs"
 
     def fail(self, message: str):  # type: ignore [no-untyped-def]
@@ -162,7 +173,7 @@ class MachineStopOthersTask(Task):
             raise RuntimeError("Failed to stop all other running Podman machines.")
 
 
-class WSLInstallTask(Task):
+class WSLInstallTask(_NonLinuxTask):
     name = "Installing Windows Subsystem for Linux"
 
     def should_skip(self) -> bool:
@@ -206,6 +217,10 @@ class WSLInstallTask(Task):
 class ContainerInstallTask(Task):
     name = "Configuring Dangerzone sandbox"
 
+    # Set by UpdateCheckTask after the user consents to the initial download,
+    # so the GUI variant can skip its redundant prompt for this run only.
+    skip_prompt_once = False
+
     def should_skip(self) -> bool:
         return installer.get_installation_strategy() == InstallationStrategy.DO_NOTHING
 
@@ -228,9 +243,29 @@ class UpdateCheckTask(Task):
 
         try:
             return not releases.should_check_for_updates(settings.Settings())
-        except updater_errors.NeedUserInput:
-            self.prompt_user()
-            return True
+        except updater_errors.NeedUserInput as e:
+            download_required = isinstance(e, updater_errors.NeedUserInputNoContainer)
+            accepted = self.prompt_user(download_required=download_required)
+
+            if download_required:
+                # No container available: blocking prompt, handle response
+                if accepted is True:
+                    settings.Settings().set("updater_check_all", True, autosave=True)
+                    # Accepting here is consent for this download, so suppress
+                    # ContainerInstallTask's redundant prompt for this run.
+                    ContainerInstallTask.skip_prompt_once = True
+                    # Proceed with update check immediately so the remote
+                    # container can be downloaded.
+                    return False
+                elif accepted is False:
+                    # User declined - raise an error to stop startup
+                    raise errors.UpdaterDisabledNoContainer()
+                # User pressed X - treat as decline
+                raise errors.UpdaterDisabledNoContainer()
+            else:
+                # Container available: non-blocking prompt, handler saves setting
+                # Skip update check, user will be prompted again next run if needed
+                return True
 
     def run(self) -> None:
         report = releases.check_for_updates(settings.Settings())
@@ -242,8 +277,16 @@ class UpdateCheckTask(Task):
         elif isinstance(report, ErrorReport):
             raise RuntimeError(report.error)
 
-    def prompt_user(self) -> None:
-        pass
+    def prompt_user(self, download_required: bool = False) -> Optional[bool]:
+        """Prompt the user to enable updates.
+
+        Args:
+            download_required: If True, no container is available and download is required.
+
+        Returns:
+            True if user accepts, False if user declines, None if user dismissed.
+        """
+        return None
 
     def handle_app_update(self, report: ReleaseReport) -> None:
         logger.info(f"Dangerzone {report.version} is out and can be installed")
@@ -253,7 +296,7 @@ class UpdateCheckTask(Task):
 
 
 class Runner:
-    def __init__(self, tasks: list[Task], raise_on_error: bool = True) -> None:
+    def __init__(self, tasks: Sequence[Task], raise_on_error: bool = True) -> None:
         self.tasks = tasks
         self.raise_on_error = raise_on_error
         super().__init__()
@@ -291,6 +334,14 @@ class Runner:
         for task in self.tasks:
             try:
                 self.run_task(task)
+            except errors.UpdaterDisabledNoContainer:
+                # Declining the initial container download is a user choice,
+                # not a task failure: skip the error-logging path. The CLI
+                # still wants the exception to surface; the GUI passes
+                # raise_on_error=False and just exits the run.
+                if self.raise_on_error:
+                    raise
+                return
             except Exception as e:
                 task.handle_error(e)
                 if not task.can_fail:

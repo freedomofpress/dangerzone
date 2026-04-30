@@ -171,39 +171,5 @@ def verify_local(image: str) -> None:
         )
 
 
-@run.command()
-@click.argument("image_name")
-@click.option(
-    "--repository",
-    default=DEFAULT_REPOSITORY,
-    help="The github repository to check the attestation for",
-)
-@click.option(
-    "--workflow",
-    default=".github/workflows/release-container-image.yml",
-    help="The path of the GitHub actions workflow this image was created from",
-)
-def attest_provenance(
-    image_name: str,
-    repository: str,
-    workflow: str,
-) -> None:
-    """
-    Look up the image attestation to see if the image has been built
-    on Github runners, and from a given repository.
-    """
-    # TODO: Parse image and make sure it has a tag. Might even check for a digest.
-    # parsed = registry.parse_image_location(image)
-
-    verified = cosign.verify_attestation(image_name, repository, workflow)
-    if verified:
-        click.echo(
-            f"🎉 Successfully verified image '{image_name}' and its associated claims:"
-        )
-        click.echo(f"- ✅ SLSA Level 3 provenance")
-        click.echo(f"- ✅ GitHub repo: {repository}")
-        click.echo(f"- ✅ GitHub actions workflow: {workflow}")
-
-
 if __name__ == "__main__":
     run()

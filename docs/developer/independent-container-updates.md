@@ -32,10 +32,16 @@ Each night, new images are built and pushed to the container registry, alongside
 with a provenance attestation, enabling anybody to ensure that the image has
 been originally built by Github CI runners, from a defined source repository (in our case `freedomofpress/dangerzone`).
 
-To verify the attestations against our expectations, use the following command:
+To verify the attestations against our expectations, clone the GitHub repo
+responsible for the building of our container images, and use the following
+command:
 
 ```bash
-dangerzone-image attest-provenance ghcr.io/freedomofpress/dangerzone/v1 --repository freedomofpress/dangerzone
+
+git clone https://github.com/freedomofpress/dangerzone-image
+cd dangerzone-image/
+uvx mazette install
+uv run image verify-attestation ghcr.io/freedomofpress/dangerzone/v1@sha256:...
 ```
 
 In case of success, it will report back:
@@ -45,7 +51,7 @@ In case of success, it will report back:
 'ghcr.io/freedomofpress/dangerzone/v1:<tag>@sha256:<digest>'
 and its associated claims:
 - ✅ SLSA Level 3 provenance
-- ✅ GitHub repo: freedomofpress/dangerzone
+- ✅ GitHub repo: freedomofpress/dangerzone-image
 - ✅ GitHub actions workflow: <workflow>
 ```
 

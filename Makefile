@@ -1,7 +1,3 @@
-LARGE_TEST_REPO_DIR:=tests/test_docs_large
-GIT_DESC=$$(git describe)
-JUNIT_FLAGS := --capture=sys -o junit_logging=all
-
 .PHONY: lint
 lint: ## Check the code for linting, formatting, and typing issues with ruff and mypy
 	ruff check
@@ -19,25 +15,7 @@ test: ## Run the tests
 	# shared state.
 	# See more in https://github.com/freedomofpress/dangerzone/issues/493
 	pytest --co -q tests/gui | grep -e '^tests/' | xargs -n 1 pytest -v
-	pytest -v --cov --ignore dev_scripts --ignore tests/gui --ignore tests/test_large_set.py
-
-
-.PHONY: test-large-requirements
-test-large-requirements:
-	@git-lfs --version || (echo "ERROR: you need to install 'git-lfs'" && false)
-	@xmllint --version || (echo "ERROR: you need to install 'xmllint'" && false)
-
-test-large-init: test-large-requirements
-	@echo "initializing 'test_docs_large' submodule"
-	git submodule init $(LARGE_TEST_REPO_DIR)
-	git submodule update $(LARGE_TEST_REPO_DIR)
-	cd $(LARGE_TEST_REPO_DIR) && $(MAKE) clone-docs
-
-TEST_LARGE_RESULTS:=$(LARGE_TEST_REPO_DIR)/results/junit/commit_$(GIT_DESC).junit.xml
-.PHONY: test-large
-test-large: test-large-init  ## Run large test set
-	python -m pytest --tb=no tests/test_large_set.py::TestLargeSet -v $(JUNIT_FLAGS) --junitxml=$(TEST_LARGE_RESULTS)
-	python $(TEST_LARGE_RESULTS)/report.py $(TEST_LARGE_RESULTS)
+	pytest -v --cov --ignore dev_scripts --ignore tests/gui
 
 Dockerfile: Dockerfile.env Dockerfile.in ## Regenerate the Dockerfile from its template
 	poetry run jinja2 Dockerfile.in Dockerfile.env > Dockerfile

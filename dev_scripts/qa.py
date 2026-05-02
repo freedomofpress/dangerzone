@@ -818,9 +818,7 @@ class QAWindows(QABase):
     @QABase.task("Run tests", ref="REF_BUILD", auto=True)
     def run_tests(self):
         # NOTE: Windows does not have Makefile by default.
-        self.run(
-            "poetry", "run", "pytest", "-v", "--ignore", r"tests\test_large_set.py"
-        )
+        self.run("poetry", "run", "pytest", "-v")
 
     @QABase.task("Build Dangerzone .exe", ref="REF_BUILD", auto=True)
     def build_dangerzone_exe(self):

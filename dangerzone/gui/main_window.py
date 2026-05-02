@@ -34,7 +34,7 @@ else:
         from PySide2.QtWidgets import QAction
 
 from .. import errors
-from ..document import SAFE_EXTENSION, Document
+from ..document import SAFE_EXTENSION, SAFE_IMAGE_EXTENSION, Document
 from ..isolation_provider.qubes import is_qubes_native_conversion
 from ..updater import (
     EmptyReport,
@@ -1344,6 +1344,19 @@ class SettingsWidget(QtWidgets.QWidget):
         ocr_layout.addWidget(self.ocr_combobox)
         ocr_layout.addStretch()
 
+        # Output format
+        self.output_format_label = QtWidgets.QLabel("Output format")
+        self.output_format_pdf = QtWidgets.QRadioButton("PDF")
+        self.output_format_png = QtWidgets.QRadioButton("PNG (image only)")
+        self.output_format_pdf.setChecked(True)
+        output_format_layout = QtWidgets.QHBoxLayout()
+        output_format_layout.addWidget(self.output_format_label)
+        output_format_layout.addWidget(self.output_format_pdf)
+        output_format_layout.addWidget(self.output_format_png)
+        output_format_layout.addStretch()
+        # Disable OCR when PNG is selected
+        self.output_format_png.toggled.connect(self._on_output_format_changed)
+
         # Button
         self.start_button = QtWidgets.QPushButton()
         self.start_button.clicked.connect(self.start_button_clicked)
@@ -1370,6 +1383,7 @@ class SettingsWidget(QtWidgets.QWidget):
         layout.addLayout(save_group_box_layout)
         layout.addLayout(open_layout)
         layout.addLayout(ocr_layout)
+        layout.addLayout(output_format_layout)
         font_metrics = self.docs_selected_label.fontMetrics()
         m_width = font_metrics.horizontalAdvance("m")
         layout.addSpacing(m_width)
@@ -1414,6 +1428,21 @@ class SettingsWidget(QtWidgets.QWidget):
             if index != -1:
                 self.open_combobox.setCurrentIndex(index)
 
+        # Load output format setting
+        if self.dangerzone.settings.get("output_format") == "png":
+            self.output_format_png.setChecked(True)
+        else:
+            self.output_format_pdf.setChecked(True)
+
+    def _on_output_format_changed(self) -> None:
+        """Disable OCR when PNG format is selected, enable when PDF is selected."""
+        if self.output_format_png.isChecked():
+            if self.ocr_checkbox.isChecked():
+                self.ocr_checkbox.setChecked(False)
+            self.ocr_checkbox.setDisabled(True)
+        else:
+            self.ocr_checkbox.setDisabled(False)
+
     def check_safe_extension_is_valid(self) -> bool:
         if self.save_checkbox.checkState() == QtCore.Qt.Unchecked:
             # ignore validity if not saving file
@@ -1435,6 +1464,9 @@ class SettingsWidget(QtWidgets.QWidget):
         return True
 
     def check_safe_extension_dot_pdf(self) -> bool:
+        if self.output_format_png.isChecked():
+            # PNG format allows .png extension
+            return True
         self.safe_extension.setValidator(self.dot_pdf_validator)
         if not self.safe_extension.hasAcceptableInput():
             self.set_safe_extension_invalid_label("must end in .pdf")
@@ -1518,6 +1550,10 @@ class SettingsWidget(QtWidgets.QWidget):
 
     def start_button_clicked(self) -> None:
         for document in self.dangerzone.get_unconverted_documents():
+            # Set output format on document
+            output_format = "png" if self.output_format_png.isChecked() else "pdf"
+            document.output_format = output_format
+
             if self.save_checkbox.isChecked():
                 # If we're saving the document, set the suffix that the user chose. Then
                 # check if we should to store the document in the same directory, and
@@ -1530,7 +1566,8 @@ class SettingsWidget(QtWidgets.QWidget):
                     document.set_output_dir(self.dangerzone.output_dir)
             else:
                 # If not saving, then save it to a temp file instead
-                (_, tmp) = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
+                suffix = ".png" if output_format == "png" else ".pdf"
+                (_, tmp) = tempfile.mkstemp(suffix=suffix, prefix="dangerzone_")
                 document.output_filename = tmp
 
         # Update settings
@@ -1548,6 +1585,8 @@ class SettingsWidget(QtWidgets.QWidget):
         )
         if platform.system() == "Linux":
             self.dangerzone.settings.set("open_app", self.open_combobox.currentText())
+        output_format = "png" if self.output_format_png.isChecked() else "pdf"
+        self.dangerzone.settings.set("output_format", output_format)
         self.dangerzone.settings.save()
 
         # Start!
@@ -1643,7 +1682,10 @@ class DocumentsListWidget(QtWidgets.QListWidget):
 
     def get_ocr_lang(self) -> Optional[str]:
         ocr_lang = None
-        if self.dangerzone.settings.get("ocr"):
+        if (
+            self.dangerzone.settings.get("ocr")
+            and self.dangerzone.settings.get("output_format") == "pdf"
+        ):
             ocr_lang = self.dangerzone.ocr_languages[
                 self.dangerzone.settings.get("ocr_language")
             ]

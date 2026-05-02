@@ -29,6 +29,12 @@ def print_header(s: str) -> None:
     callback=args.validate_output_filename,
     help=f"Default is filename ending with {SAFE_EXTENSION}",
 )
+@click.option(
+    "--output-format",
+    type=click.Choice(["pdf", "png"], case_sensitive=False),
+    default="pdf",
+    help="Output format for safe documents (pdf or png)",
+)
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
 @click.option(
     "--archive",
@@ -77,6 +83,7 @@ def print_header(s: str) -> None:
 @errors.handle_document_errors
 def run(
     output_filename: Optional[str],
+    output_format: str,
     ocr_lang: Optional[str],
     filenames: Optional[List[str]],
     archive: bool,
@@ -111,15 +118,21 @@ def run(
         dangerzone = DangerzoneCore(Container(debug=debug))
 
     if len(filenames) == 1 and output_filename:
-        dangerzone.add_document_from_filename(filenames[0], output_filename, archive)
+        dangerzone.add_document_from_filename(
+            filenames[0], output_filename, archive, output_format
+        )
     elif len(filenames) > 1 and output_filename:
         click.echo("--output-filename can only be used with one input file.")
         sys.exit(1)
     else:
         for filename in filenames:
-            dangerzone.add_document_from_filename(filename, archive=archive)
+            dangerzone.add_document_from_filename(filename, archive=archive, output_format=output_format)
 
     # Validate OCR language
+    if ocr_lang and output_format == "png":
+        click.echo("Error: OCR is not supported for PNG output format.")
+        sys.exit(1)
+
     if ocr_lang:
         valid = False
         for lang in dangerzone.ocr_languages:
@@ -145,7 +158,7 @@ def run(
 
     try:
         startup.StartupLogic(tasks=tasks).run()
-        print_header("Converting document(s) to safe PDF")
+        print_header(f"Converting document(s) to safe {output_format.upper()}")
         dangerzone.convert_documents(ocr_lang)
     finally:
         if dangerzone.isolation_provider.requires_install() and not linger:
@@ -158,7 +171,7 @@ def run(
     documents_failed = dangerzone.get_failed_documents()
 
     if documents_safe != []:
-        print_header("Safe PDF(s) created successfully")
+        print_header(f"Safe {output_format.upper()} file(s) created successfully")
         for document in documents_safe:
             click.echo(replace_control_chars(document.output_filename))
 

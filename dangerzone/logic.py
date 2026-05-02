@@ -38,8 +38,9 @@ class DangerzoneCore(object):
         input_filename: str,
         output_filename: Optional[str] = None,
         archive: bool = False,
+        output_format: str = "pdf",
     ) -> None:
-        doc = Document(input_filename, output_filename, archive=archive)
+        doc = Document(input_filename, output_filename, archive=archive, output_format=output_format)
         self.add_document(doc)
 
     def add_document(self, doc: Document) -> None:

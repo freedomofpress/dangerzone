@@ -37,8 +37,9 @@ def appdata_dir() -> Path:
 def is_container_tar_bundled() -> bool:
     """Check if a container.tar file is bundled with this installation.
 
-    Some Dangerzone packages (e.g., dangerzone-slim) may not include a
-    bundled container image, requiring users to download it from the registry.
+    The default dangerzone package does not include a bundled container image,
+    requiring users to download it from the registry. The dangerzone-full
+    package includes the container.
     """
     return get_resource_path("container.tar").exists()
 

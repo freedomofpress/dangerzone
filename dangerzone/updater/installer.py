@@ -101,7 +101,7 @@ def get_installation_strategy() -> Strategy:
     #   It remains the same during the lifetime of a released Dangerzone
     #   version.
     #
-    #   If no container.tar is bundled (e.g., dangerzone-slim), this is
+    #   If no container.tar is bundled (i.e., the dangerzone package), this is
     #   set to 0 so that the installer falls back to remote installation.
     #
     # max_log_index:

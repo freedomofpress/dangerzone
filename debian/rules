@@ -10,6 +10,11 @@ export DH_VERBOSE=1
 
 override_dh_install:
 	dh_install
+	# pybuild stages the dangerzone package and its console_scripts under
+	# debian/python3-dangerzone/. Since python3-dangerzone is not shipped
+	# as a binary package, fold its contents into debian/dangerzone/ so
+	# /usr/bin/dangerzone-* and the Python module land in the slim package.
+	cp -a debian/python3-dangerzone/. debian/dangerzone/
 	# Populate the dangerzone-full staging directory from the slim one.
 	# Both packages are identical except dangerzone-full keeps container.tar.
 	cp -a debian/dangerzone/. debian/dangerzone-full/

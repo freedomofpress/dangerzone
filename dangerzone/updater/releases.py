@@ -18,8 +18,8 @@ from ..settings import Settings
 from . import errors, log
 from .signatures import (
     DEFAULT_PUBKEY_LOCATION,
-    LAST_LOG_INDEX,
     get_remote_digest_and_logindex,
+    is_container_image_installed,
     is_container_tar_bundled,
 )
 
@@ -159,7 +159,7 @@ def should_check_for_updates(settings: Settings) -> bool:
         settings.set("updater_last_check", 0, autosave=True)
         # If no container is bundled and none is installed, prompt the user
         # to enable updates immediately, otherwise Dangerzone won't work.
-        if not is_container_tar_bundled() and not LAST_LOG_INDEX.exists():
+        if not is_container_tar_bundled() and not is_container_image_installed():
             log.debug("No container available, prompting user to enable updates")
             raise errors.NeedUserInputNoContainer()
         return False

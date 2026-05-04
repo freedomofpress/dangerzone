@@ -165,6 +165,10 @@ Type the following commands in a terminal:
 ```sh
 sudo dnf config-manager addrepo --from-repofile=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 sudo dnf install dangerzone
+
+# Alternatively, use dangerzone-slim if you prefer to install dangerzone
+# without its container (it will be downloaded at first use)
+sudo dnf install dangerzone-slim
 ```
 
 ##### Verifying Dangerzone GPG key
@@ -213,6 +217,9 @@ Type the following commands in a terminal:
 curl -o - https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo \
     | sudo tee /etc/yum.repos.d/dangerzone.repo > /dev/null
 rpm-ostree install dangerzone
+# Alternatively, use dangerzone-slim if you prefer to install dangerzone
+# without its container (it will be downloaded at first use)
+rpm-ostree install dangerzone-slim
 ```
 
 After the above command completes, restart your computer to complete the installation.

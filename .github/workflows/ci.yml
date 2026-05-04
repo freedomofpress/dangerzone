@@ -118,8 +118,19 @@ jobs:
       # `dangerzone-cli` command and its WSL detection will fail.
       #
       # For this reason, we prefer to run `wsl --update` before the tests.
+      # Microsoft's WSL update servers occasionally return HTTP 403, so retry
+      # before failing the job.
       - name: Update WSL
-        run: wsl --update
+        shell: pwsh
+        run: |
+          $ok = $false
+          for ($i = 1; $i -le 5; $i++) {
+            wsl --update
+            if ($LASTEXITCODE -eq 0) { $ok = $true; break }
+            Write-Host "wsl --update attempt $i failed (exit $LASTEXITCODE), retrying..."
+            Start-Sleep -Seconds 15
+          }
+          if (-not $ok) { exit 1 }
       - name: Smoke test
         run: poetry run dangerzone-cli .\tests\test_docs\sample-pdf.pdf --ocr-lang eng --debug
       - name: Run CLI tests

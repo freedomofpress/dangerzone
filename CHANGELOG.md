@@ -7,6 +7,12 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.10.0...HEAD)
 
+### Changes
+
+- Linux packages dropped the `container.tar` file, it is expected to be downloaded at the first usage, and then kept up to date. If you prefer to use packages with the `container.tar`, use the `dangerzone-full` variant ([#1069](https://github.com/freedomofpress/dangerzone/issues/1069))
+- **Breaking change (Linux CLI)**: with the slim `dangerzone` package, the CLI no longer auto-downloads the conversion sandbox. New installations must initialize the sandbox once with `dangerzone-image upgrade` (or run the GUI, which prompts for the download) before `dangerzone-cli` can convert documents. Users of the `dangerzone-full` package or who already have an image installed are unaffected.
+
+
 ### Fixed
 
 - Remember user-selected output directory across sessions

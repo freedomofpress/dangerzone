@@ -47,7 +47,7 @@ jobs:
         run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
       - name: Cache container image archive
         id: cache-container
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: share/container.tar
           key: v1-container-tar-${{ inputs.arch }}-${{ steps.image-digest.outputs.digest }}

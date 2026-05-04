@@ -8,7 +8,7 @@ from .podman.machine import PodmanMachineManager
 logger = logging.getLogger(__name__)
 
 
-class MachineStopTask(startup.Task):
+class MachineStopTask(startup._NonLinuxTask):
     can_fail = True
     name = "Stopping Dangerzone VM"
 

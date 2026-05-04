@@ -379,6 +379,19 @@ class Env:
             )
         return matches[0]
 
+    def image_exists_locally(self, image):
+        """Check if an image is available in the local container storage."""
+        try:
+            subprocess.run(
+                self.runtime_cmd + ["image", "inspect", image],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            return True
+        except subprocess.CalledProcessError:
+            return False
+
     def runtime_run(self, *args):
         """Run a command for a specific container runtime.
 
@@ -478,6 +491,8 @@ class Env:
             f"{dist_state}/.bash_history:/home/user/.bash_history",
             "-v",
             f"{dist_state}/.local/share/dangerzone:/home/user/.local/share/dangerzone",
+            "-v",
+            f"{dist_state}/.config/dangerzone:/home/user/.config/dangerzone",
         ]
 
         run_cmd += ["-u", user]
@@ -488,10 +503,14 @@ class Env:
         # Select the proper container image based on whether the user wants to run the
         # command in a dev or end-user environment.
         if dev:
+            image = image_name_build_dev(self.distro, self.version)
+            if not dry and not self.image_exists_locally(image):
+                print(f"Dev image '{image}' not found locally, building it now.")
+                self.build_dev()
             run_cmd += [
                 "--hostname",
                 "dangerzone-dev",
-                image_name_build_dev(self.distro, self.version),
+                image,
             ]
         else:
             run_cmd += [
@@ -514,6 +533,7 @@ class Env:
         (dist_state / ".local" / "share" / "dangerzone").mkdir(
             parents=True, exist_ok=True
         )
+        (dist_state / ".config" / "dangerzone").mkdir(parents=True, exist_ok=True)
         (dist_state / ".bash_history").touch(exist_ok=True)
         self.runtime_run(*run_cmd)
 

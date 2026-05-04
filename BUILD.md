@@ -98,6 +98,15 @@ Create a .deb:
 ./install/linux/build-deb.py
 ```
 
+This builds both the `dangerzone` (slim) and `dangerzone-full` packages in a
+single run. The slim package does not contain the `container.tar` image (it
+will be downloaded on the first run), while `dangerzone-full` bundles the
+container image for offline or air-gapped installations.
+
+> **Note**: `container.tar` must be present in `share/` before running this
+> command, as it is required for the `dangerzone-full` package. See the
+> instructions above for how to download or build it.
+
 ## Fedora
 
 Install dependencies:

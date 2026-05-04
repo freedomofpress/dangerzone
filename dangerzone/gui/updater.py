@@ -33,6 +33,22 @@ documentation ↗️</a>.</p>
 OK_TEXT = "Yes, enable sandbox updates"
 CANCEL_TEXT = "No, disable sandbox updates"
 
+MSG_CONFIRM_DOWNLOAD_CONTAINER = """\
+<p>
+    <b>Download conversion sandbox?</b>
+</p>
+
+<p>Dangerzone needs to download the sandbox from the internet to convert documents.</p>
+
+<p>If you enable this option, Dangerzone will download the sandbox now and
+periodically check for updates.</p>
+<p>This is <b>required</b> for this version of Dangerzone to work.</p>
+
+<p>If you need to run Dangerzone in an air-gapped environment, you can use the dangerzone-full variant (on Linux). See <a href="https://github.com/freedomofpress/dangerzone/blob/main/INSTALL.md#linux">our documentation</a>.</p>
+"""
+OK_TEXT_DOWNLOAD = "Yes, download sandbox"
+CANCEL_TEXT_DOWNLOAD = "Quit Dangerzone"
+
 
 class UpdateCheckPrompt(Question):
     """The prompt that asks the users if they want to enable update checks."""

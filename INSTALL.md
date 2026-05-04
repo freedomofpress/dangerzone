@@ -134,6 +134,10 @@ Install Dangerzone:
 ```sh
 sudo apt update
 sudo apt install -y dangerzone
+
+# Alternatively, use dangerzone-slim if you prefer to install dangerzone
+# without its container (it will be downloaded at first use)
+sudo apt install -y dangerzone-slim
 ```
 
 <table>

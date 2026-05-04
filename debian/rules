@@ -8,7 +8,19 @@ export DH_VERBOSE=1
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
+override_dh_install:
+	dh_install
+	# Populate the dangerzone-full staging directory from the slim one.
+	# Both packages are identical except dangerzone-full keeps container.tar.
+	cp -a debian/dangerzone/. debian/dangerzone-full/
+	# Explicitly install container.tar into dangerzone-full: pybuild does not
+	# include it because it is gitignored and absent from the build environment.
+	install -Dm 644 share/container.tar debian/dangerzone-full/usr/share/dangerzone/container.tar
+	rm -f debian/dangerzone/usr/share/dangerzone/container.tar
+
 override_dh_builddeb:
 	./install/linux/debian-vendor-pymupdf.py --dest debian/dangerzone/usr/lib/python3/dist-packages/dangerzone/vendor/
+	./install/linux/debian-vendor-pymupdf.py --dest debian/dangerzone-full/usr/lib/python3/dist-packages/dangerzone/vendor/
 	rm -f debian/dangerzone/usr/bin/dangerzone-machine
+	rm -f debian/dangerzone-full/usr/bin/dangerzone-machine
 	dh_builddeb $@

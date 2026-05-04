@@ -235,7 +235,7 @@ jobs:
           poetry run dangerzone-image prepare-archive
           --output share/container.tar
 
-      - name: Build Dangerzone .deb
+      - name: Build Dangerzone .deb packages
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
@@ -247,6 +247,15 @@ jobs:
         with:
           name: dangerzone.deb
           path: "deb_dist/dangerzone_*_*.deb"
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Dangerzone-full .deb
+        if: matrix.distro == 'debian' && matrix.version == 'bookworm'
+        uses: actions/upload-artifact@v6
+        with:
+          name: dangerzone-full.deb
+          path: "deb_dist/dangerzone-full_*_*.deb"
           if-no-files-found: error
           compression-level: 0
 

@@ -94,7 +94,7 @@ class StartupThreadMocker(startup.StartupThread):
             side_effect=Exception("Forcing task to fail"),
         )
 
-    def expect_tasks_succeed(self, tasks: list[Task]) -> None:
+    def expect_tasks_succeed(self, tasks: typing.Sequence[Task]) -> None:
         for task in tasks:
             if isinstance(task, (MachineInitTask, MachineStartTask)):
                 self.make_machine_task_succeed()
@@ -115,7 +115,7 @@ class StartupThreadMocker(startup.StartupThread):
             task.handle_error = self.mocker.MagicMock()  # type: ignore [method-assign]
             self.not_expected_funcs.append(task.handle_error)
 
-    def expect_tasks_skip(self, tasks: list[Task]) -> None:
+    def expect_tasks_skip(self, tasks: typing.Sequence[Task]) -> None:
         for task in tasks:
             if isinstance(task, (MachineInitTask, MachineStartTask)):
                 self.make_machine_task_skip()
@@ -136,7 +136,7 @@ class StartupThreadMocker(startup.StartupThread):
             task.handle_error = self.mocker.MagicMock()  # type: ignore [method-assign]
             self.not_expected_funcs.append(task.handle_error)
 
-    def expect_tasks_fail(self, tasks: list[Task]) -> None:
+    def expect_tasks_fail(self, tasks: typing.Sequence[Task]) -> None:
         for task in tasks:
             if isinstance(task, (MachineInitTask, MachineStartTask)):
                 self.make_machine_task_fail()

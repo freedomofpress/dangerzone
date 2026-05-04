@@ -173,10 +173,10 @@ poetry run dangerzone-image prepare-archive
     --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
     --output share/container.tar
 
-# Create the default .rpm:
+# Create the dangerzone .rpm (without container):
 ./dev_scripts/env.py --distro fedora --version 42 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py"
-# Create the slim .rpm:
-./dev_scripts/env.py --distro fedora --version 42 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py --slim"
+# Create the dangerzone-full .rpm (with container bundled):
+./dev_scripts/env.py --distro fedora --version 42 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py --full"
 ```
 
 Publish the .rpms under `./dist` to the

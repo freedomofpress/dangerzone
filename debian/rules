@@ -5,6 +5,16 @@ export PYBUILD_INSTALL_ARGS=--install-lib=/usr/lib/python3/dist-packages
 export PYTHONDONTWRITEBYTECODE=1
 export DH_VERBOSE=1
 
+# Reproducible builds: pin the build epoch to the latest debian/changelog
+# entry (dpkg, debhelper, and dh_builddeb honor SOURCE_DATE_EPOCH for file
+# mtimes and archive metadata), and force a deterministic locale/timezone
+# so that any tool that emits sorted output or timestamps does so
+# identically across machines.
+# https://reproducible-builds.org/docs/source-date-epoch/
+export SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -STimestamp)
+export LC_ALL=C.UTF-8
+export TZ=UTC
+
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
@@ -28,4 +38,10 @@ override_dh_builddeb:
 	./install/linux/debian-vendor-pymupdf.py --dest debian/dangerzone-full/usr/lib/python3/dist-packages/dangerzone/vendor/
 	rm -f debian/dangerzone/usr/bin/dangerzone-machine
 	rm -f debian/dangerzone-full/usr/bin/dangerzone-machine
+	# Clamp file mtimes in the staging trees to SOURCE_DATE_EPOCH so the
+	# resulting data.tar inside each .deb is byte-identical across builds.
+	# `install` and pybuild do not preserve mtimes, so without this step
+	# the .deb embeds the wall-clock time of the build.
+	find debian/dangerzone debian/dangerzone-full -exec \
+		touch --no-dereference --date=@$(SOURCE_DATE_EPOCH) {} +
 	dh_builddeb $@

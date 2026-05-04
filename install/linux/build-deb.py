@@ -16,8 +16,24 @@ with open(root / "share" / "version.txt") as f:
     version = f.read().strip()
 
 
-def run(cmd):
-    subprocess.run(cmd, cwd=root, check=True)
+def run(cmd, env=None):
+    subprocess.run(cmd, cwd=root, check=True, env=env)
+
+
+def source_date_epoch():
+    """Return a deterministic build timestamp from debian/changelog.
+
+    dpkg, debhelper, and the .deb tooling all honor SOURCE_DATE_EPOCH for
+    file mtimes and archive metadata, which is what makes the resulting
+    package byte-identical across builds. The latest changelog entry is
+    the conventional source for this value.
+    """
+    out = subprocess.check_output(
+        ["dpkg-parsechangelog", "--show-field", "Timestamp"],
+        cwd=root,
+        text=True,
+    )
+    return out.strip()
 
 
 def main():
@@ -62,7 +78,14 @@ def main():
     # A single dpkg-buildpackage run produces both the dangerzone (slim) and
     # dangerzone-full packages. The debian/rules file handles stripping
     # container.tar from the slim package's staging directory.
-    run(["dpkg-buildpackage"])
+    #
+    # Pin SOURCE_DATE_EPOCH, locale, and timezone so the build is
+    # reproducible: identical inputs produce byte-identical .deb files.
+    env = os.environ.copy()
+    env.setdefault("SOURCE_DATE_EPOCH", source_date_epoch())
+    env["LC_ALL"] = "C.UTF-8"
+    env["TZ"] = "UTC"
+    run(["dpkg-buildpackage"], env=env)
 
     os.makedirs(deb_dist_path, exist_ok=True)
     print("")

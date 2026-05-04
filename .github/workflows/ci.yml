@@ -309,6 +309,7 @@ jobs:
       matrix:
         distro: ["fedora"]
         version: ["42", "43", "44"]
+        full: [true, false]
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -351,31 +352,48 @@ jobs:
         id: image-digest
         run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
 
-      - name: Cache container image archive
+      - if: matrix.full
+        name: Cache container image archive
         id: cache-container
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: share/container.tar
           key: v1-container-tar-${{ runner.arch }}-${{ steps.image-digest.outputs.digest }}
 
-      - name: Download the container image as a tar archive
-        if: steps.cache-container.outputs.cache-hit != 'true'
+      - if: matrix.full and steps.cache-container.outputs.cache-hit != 'true'
+        name: Download the container image as a tar archive
         env:
           DANGERZONE_DEV: "1"
         run: >-
-          poetry run dangerzone-image prepare-archive
-          --output share/container.tar
+          poetry run dangerzone-image prepare-archive --output share/container.tar
 
-      - name: Build Dangerzone .rpm
+      - if: not matrix.full
+        name: Build dangerzone(slim).rpm
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
               run --dev --no-gui ./dangerzone/install/linux/build-rpm.py
 
-      - name: Upload Dangerzone .rpm
+      - if: matrix.full
+        name: Build dangerzone-full.rpm
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+              run --dev --no-gui ./dangerzone/install/linux/build-rpm.py --full
+
+      - if: not matrix.full
+        name: Upload dangerzone.rpm
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dangerzone-${{ matrix.distro }}-${{ matrix.version }}.rpm
           path: "dist/dangerzone-*.x86_64.rpm"
+          if-no-files-found: error
+          compression-level: 0
+
+      - if: matrix.full
+        name: Upload dangerzone-full.rpm
+        uses: actions/upload-artifact@v7
+        with:
+          name: dangerzone-full-${{ matrix.distro }}-${{ matrix.version }}.rpm
+          path: "dist/dangerzone-full-*.x86_64.rpm"
           if-no-files-found: error
           compression-level: 0
 
@@ -385,11 +403,25 @@ jobs:
       - name: Reclaim some storage space
         run: podman system reset -f
 
-      - name: Build end-user environment
+      - if: not matrix.full
+        name: Build (slim) end-user environment
         run: |
           ./dev_scripts/env.py --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
               build
+
+      - if: matrix.full
+        name: Build (full) end-user environment
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} \
+              --version ${{ matrix.version }} \
+              build --full
+
+      - if: not matrix.full
+        name: Download container image
+        run: |
+          ./dev_scripts/env.py --distro ${{ matrix.distro }} --version ${{ matrix.version }} \
+              run dangerzone-image upgrade
 
       - name: Run a test command
         run: |

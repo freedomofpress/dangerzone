@@ -47,6 +47,27 @@ def is_container_tar_bundled() -> bool:
 DEFAULT_PUBKEY_LOCATION = get_resource_path("freedomofpress-dangerzone.pub")
 SIGNATURES_PATH = appdata_dir() / "signatures"
 LAST_LOG_INDEX = SIGNATURES_PATH / "last_log_index"
+
+
+def is_container_image_installed() -> bool:
+    """Check if a Dangerzone container image is installed locally.
+
+    Both the LAST_LOG_INDEX state file and an actual image in Podman storage
+    must be present. The state file alone is not enough: Podman storage can
+    be wiped independently (e.g. `podman system reset`), leaving the file
+    behind without an image to run.
+    """
+    if not LAST_LOG_INDEX.exists():
+        return False
+    try:
+        return bool(runtime.list_image_digests())
+    except Exception:
+        # If we cannot reach Podman (not installed, machine not running, etc.),
+        # treat the image as missing. The caller will then prompt the user to
+        # download it, which will surface the real Podman issue if any.
+        return False
+
+
 DANGERZONE_MANIFEST = "dangerzone.json"
 
 

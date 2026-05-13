@@ -710,6 +710,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _handle_download_declined(self) -> None:
         log.debug("User declined container download, shutting down")
+        # Shutting down using exit(2) because nothing has been started yet.
         self.exit(2)
 
     def handle_needs_user_input_stop_others(self, req: startup.PromptRequest) -> None:

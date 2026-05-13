@@ -37,14 +37,16 @@ TAMPERED_SIGNATURES_PATH = ASSETS_PATH / "signatures" / "tampered"
 
 @pytest.fixture(autouse=True)
 def isolated_settings(mocker: MockerFixture, tmp_path: Path) -> Settings:
+    # Reset the singleton before constructing a new instance, so each test gets
+    # a fresh Settings tied to its own tmp_path. Without this, Settings() may
+    # return a stale instance from a previous test.
+    Settings._singleton = None
     mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
     return Settings()
 
 
 @pytest.fixture(autouse=True)
 def setup_function() -> Generator[None, None, None]:
-    # Reset the settings singleton between each test.
-    Settings._singleton = None
     container_utils.init_podman_command.cache_clear()
     yield
 

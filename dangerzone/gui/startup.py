@@ -9,10 +9,12 @@ else:
     except ImportError:
         from PySide2 import QtCore, QtWidgets
 
+from .. import container_utils as runtime
 from .. import errors, logging, startup
 from ..settings import Settings
 from ..updater import InstallationStrategy, installer
 from ..updater.releases import EmptyReport, ErrorReport, ReleaseReport
+from ..updater.signatures import is_container_tar_bundled
 
 log = logging.getLogger(__name__)
 
@@ -124,10 +126,13 @@ class ContainerInstallTask(
             return super().run()
         elif strategy == InstallationStrategy.INSTALL_REMOTE_CONTAINER:
             ask = Settings().get("updater_ask_before_download")
-            if startup.ContainerInstallTask.skip_prompt_once:
-                startup.ContainerInstallTask.skip_prompt_once = False
-                ask = False
-            if ask:
+            # If we are asked to install a remote container, only ask the user
+            # if nothing is currently installed. We avoid querying the container
+            # runtime unless we actually intend to prompt.
+            skip_user_request = ask and (
+                is_container_tar_bundled() or runtime.list_image_digests()
+            )
+            if ask and not skip_user_request:
                 resp = self.prompt_user()
                 if resp:
                     self._download_container()

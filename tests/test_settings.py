@@ -60,6 +60,8 @@ def test_corrupt_settings(tmp_path: Path, mocker: MockerFixture) -> None:
         settings_file.write(corrupt_settings_dict)
 
     mocker.patch("dangerzone.settings.get_config_dir", return_value=tmp_path)
+    # Force Settings to load fresh from the corrupt file on disk.
+    Settings._singleton = None
     settings = Settings()
     assert settings.settings_filename.is_file()
 

@@ -80,7 +80,7 @@ class Application(QtWidgets.QApplication):
         self.event = monkeypatch_event  # type: ignore [method-assign]
 
         self.os_color_mode = self.infer_os_color_mode()
-        log.debug(f"Inferred system color scheme as {self.os_color_mode}")
+        log.debug(f"Final inferred system color scheme: {self.os_color_mode}")
 
         if platform.system() == "Linux":
             self._setup_linux_runtime_monitoring()
@@ -97,21 +97,35 @@ class Application(QtWidgets.QApplication):
         # Tier 1: Qt 6.5+ official API.
         # See: https://doc.qt.io/qt-6/qstylehints.html#colorScheme-prop
         # See: https://www.qt.io/blog/dark-mode-on-windows-11-with-qt-6.5
+        log.debug("Tier 1: checking QStyleHints.colorScheme()")
         try:
             color_scheme = self.styleHints().colorScheme()
+            log.debug(f"  QStyleHints.colorScheme() returned: {color_scheme}")
             if color_scheme == QtCore.Qt.ColorScheme.Dark:
+                log.debug("  -> Dark (accepted)")
                 return OSColorMode.DARK
             elif color_scheme == QtCore.Qt.ColorScheme.Light:
-                return OSColorMode.LIGHT
+                # On Linux, Qt's colorScheme() can incorrectly return Light when the
+                # system is actually in Dark mode, because Qt's platform theme plugin
+                # doesn't properly monitor GNOME's color-scheme GSettings key.
+                # Only trust Light on non-Linux platforms; on Linux fall through.
+                # See: https://forum.qt.io/topic/145065/colorschemechanged-under-gnome
+                if platform.system() != "Linux":
+                    log.debug("  -> Light (accepted, non-Linux)")
+                    return OSColorMode.LIGHT
+                log.debug("  -> Light (ignored on Linux, falling through)")
         except AttributeError:
-            # PySide2 / Qt < 6.5: QStyleHints.colorScheme() doesn't exist
-            pass
+            log.debug("  QStyleHints.colorScheme() not available (PySide2/Qt < 6.5)")
 
         if platform.system() == "Linux":
+            log.debug("Tier 2: checking GNOME GSettings")
             mode = self._infer_gnome_color_scheme()
+            log.debug(f"  GNOME GSettings returned: {mode}")
             if mode is not None:
                 return mode
+            log.debug("Tier 3: checking GTK settings files")
             mode = self._infer_gtk_color_scheme()
+            log.debug(f"  GTK settings returned: {mode}")
             if mode is not None:
                 return mode
 
@@ -119,9 +133,13 @@ class Application(QtWidgets.QApplication):
         # Matches the approach used by qBittorrent's UIThemeManager:
         #     QPalette::Base.lightness() < 127  => Dark
         # See: https://github.com/qbittorrent/qBittorrent/blob/master/src/gui/uithememanager.cpp
+        log.debug("Tier 4: palette-based fallback")
         base_color = self.palette().color(QtGui.QPalette.Base)
+        log.debug(f"  QPalette::Base lightness: {base_color.lightness()}")
         if base_color.lightness() < 128:
+            log.debug("  -> Dark (Base < 128)")
             return OSColorMode.DARK
+        log.debug("  -> Light (Base >= 128)")
         return OSColorMode.LIGHT
 
     def _infer_gnome_color_scheme(self) -> typing.Optional[OSColorMode]:
@@ -134,20 +152,31 @@ class Application(QtWidgets.QApplication):
         See: https://forum.qt.io/topic/145065/colorschemechanged-under-gnome
         """
         try:
+            log.debug("  Running: gsettings get org.gnome.desktop.interface color-scheme")
             result = subprocess.run(
                 ["gsettings", "get", "org.gnome.desktop.interface", "color-scheme"],
                 capture_output=True,
                 text=True,
                 timeout=1,
             )
+            log.debug(f"  gsettings returncode: {result.returncode}")
             if result.returncode == 0:
-                scheme = result.stdout.strip().strip("'")
+                raw = result.stdout.strip()
+                log.debug(f"  gsettings raw output: {raw!r}")
+                scheme = raw.strip("'")
+                log.debug(f"  gsettings parsed scheme: {scheme!r}")
                 if scheme == "prefer-dark":
                     return OSColorMode.DARK
                 elif scheme == "prefer-light":
                     return OSColorMode.LIGHT
-        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
-            pass
+            else:
+                log.debug(f"  gsettings stderr: {result.stderr.strip()}")
+        except FileNotFoundError:
+            log.debug("  gsettings command not found")
+        except subprocess.TimeoutExpired:
+            log.debug("  gsettings command timed out")
+        except OSError as e:
+            log.debug(f"  gsettings OS error: {e}")
         return None
 
     def _infer_gtk_color_scheme(self) -> typing.Optional[OSColorMode]:
@@ -167,19 +196,25 @@ class Application(QtWidgets.QApplication):
             Path.home() / ".config" / "gtk-4.0" / "settings.ini",
             Path.home() / ".config" / "gtk-3.0" / "settings.ini",
         ]:
+            log.debug(f"  Checking GTK config: {config_path}")
             try:
                 if not config_path.exists():
+                    log.debug("    -> does not exist")
                     continue
                 content = config_path.read_text()
                 if "gtk-application-prefer-dark-theme=1" in content:
+                    log.debug("    -> found prefer-dark-theme=1")
                     return OSColorMode.DARK
                 for line in content.splitlines():
                     key_value = line.strip()
                     if key_value.lower().startswith("gtk-theme-name"):
                         theme = key_value.split("=", 1)[1].strip().strip('"').strip("'")
+                        log.debug(f"    -> gtk-theme-name: {theme}")
                         if theme.lower().endswith("-dark"):
+                            log.debug("    -> theme ends with -dark")
                             return OSColorMode.DARK
-            except OSError:
+            except OSError as e:
+                log.debug(f"    -> OS error: {e}")
                 pass
         return None
 

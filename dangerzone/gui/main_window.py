@@ -430,6 +430,11 @@ class MainWindow(QtWidgets.QMainWindow):
         # Connect to color scheme changes to update the UI dynamically
         self.dangerzone.app.color_scheme_changed.connect(self._on_color_scheme_changed)
 
+        # Force initial re-polish: widgets need to pick up the current OSColorMode
+        # property. Simply setting the property (above) does not re-evaluate
+        # stylesheet selectors for existing child widgets.
+        self.dangerzone.app.color_scheme_changed.emit()
+
         # Configure logging to the log window
         log_handler = LogHandler()
         log_handler.new_record.connect(self.log_window.append_log)

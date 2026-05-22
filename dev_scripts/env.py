@@ -269,6 +269,7 @@ def get_current_date():
 
 def get_build_dir_sources(distro, version):
     """Return the files needed to build an image."""
+    # Security probe: changing this file changes the build-dev image hash.
     sources = [
         git_root() / "pyproject.toml",
         git_root() / "poetry.lock",

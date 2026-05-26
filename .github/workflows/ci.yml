@@ -512,14 +512,6 @@ jobs:
             run --dev --no-gui --no-network \
             bash -c 'cd dangerzone; poetry run make test'
 
-      - name: Upload PDF diffs
-        uses: actions/upload-artifact@v7
-        with:
-          name: pdf-diffs-${{ matrix.distro }}-${{ matrix.version }}
-          path: tests/test_docs/diffs/*.jpeg
-        # Always run this step to publish test results, even on failures
-        if: ${{ always() }}
-
   end-to-end-test:
     name: "Sandbox upgrade E2E test"
     runs-on: ubuntu-latest

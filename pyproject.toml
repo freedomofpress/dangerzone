@@ -71,7 +71,7 @@ pytest-subprocess = "*"
 pytest-rerunfailures = "*"
 
 [tool.poetry.group.debian.dependencies]
-pymupdf = "^1.24.11"
+pymupdf = "*"
 
 [tool.doit]
 verbosity = 3

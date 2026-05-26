@@ -62,13 +62,13 @@ types-requests = "*"
 
 # Dependencies required for testing the code.
 [tool.poetry.group.test.dependencies]
-pytest = "^7.1.2"
-pytest-mock = "^3.10.0"
-pytest-qt = "^4.2.0"
-pytest-cov = "^5.0.0"
+pytest = "*"
+pytest-mock = "*"
+pytest-qt = "*"
+pytest-cov = "*"
 strip-ansi = "*"
-pytest-subprocess = "^1.5.2"
-pytest-rerunfailures = "^14.0"
+pytest-subprocess = "*"
+pytest-rerunfailures = "*"
 
 [tool.poetry.group.debian.dependencies]
 pymupdf = "^1.24.11"

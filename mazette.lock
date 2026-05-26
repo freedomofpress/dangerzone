@@ -189,18 +189,18 @@
     "gvproxy": {
       "darwin/amd64": {
         "repo": "containers/gvisor-tap-vsock",
-        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.8/gvproxy-darwin",
-        "version": "0.8.8",
-        "checksum": "614d58dd3f8473258fb6ec18f7631000d2e5c9a761ca52748cc714c07d16382f",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.9/gvproxy-darwin",
+        "version": "0.8.9",
+        "checksum": "c6f7b4bc7f21bf810b5cf54e04d979b014c5d96472a03a9e97fe62a00940067c",
         "executable": true,
         "destination": "share/vendor/podman/gvproxy",
         "extract": false
       },
       "darwin/arm64": {
         "repo": "containers/gvisor-tap-vsock",
-        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.8/gvproxy-darwin",
-        "version": "0.8.8",
-        "checksum": "614d58dd3f8473258fb6ec18f7631000d2e5c9a761ca52748cc714c07d16382f",
+        "download_url": "https://github.com/containers/gvisor-tap-vsock/releases/download/v0.8.9/gvproxy-darwin",
+        "version": "0.8.9",
+        "checksum": "c6f7b4bc7f21bf810b5cf54e04d979b014c5d96472a03a9e97fe62a00940067c",
         "executable": true,
         "destination": "share/vendor/podman/gvproxy",
         "extract": false

@@ -413,16 +413,21 @@ def get_local_image_digest(image: Optional[str] = None) -> str:
     podman = init_podman_command()
     res = podman.run(["images", expected_image, "--format", "{{.Digest}}"])
     assert isinstance(res, str)
-    # In some cases, the output can be multiple lines with the same digest
-    # sets are used to reduce them.
     lines = set(res.split("\n"))
-    if len(lines) < 1:
+    line_count = len(lines)
+
+    # `podman images` exits 0 with no output when the image is absent,
+    # at least on some platforms.
+    if not res or line_count < 1:
         raise errors.ImageNotPresentException(
             f"The image {expected_image} does not exist locally"
         )
-    elif len(lines) > 1:
+    # In some cases, the output can be multiple lines with the same digest
+    # sets are used to reduce them.
+
+    if line_count > 1:
         raise errors.MultipleImagesFoundException(
-            f"Expected a single line of output, got {len(lines)} lines: {lines}"
+            f"Expected a single line of output, got {line_count} lines: {lines}"
         )
     image_digest = lines.pop().replace("sha256:", "")
     return image_digest

@@ -37,9 +37,7 @@ def _validate_output_filename(
 ) -> str | None:
     if value is None:
         return None
-    filename = Document.normalize_filename(value)
-    Document.validate_output_filename(filename)
-    return filename
+    return Document.normalize_filename(value)
 
 
 # XXX: Click versions 7.x and below inspect the number of arguments that the

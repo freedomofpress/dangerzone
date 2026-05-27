@@ -49,6 +49,7 @@ class Settings:
             "open": True,
             "open_app": None,
             "safe_extension": SAFE_EXTENSION,
+            "output_format": "pdf",
             "updater_ask_before_download": True,
             "updater_check_all": None,
             "updater_last_check": None,  # last check in UNIX epoch (secs since 1970)

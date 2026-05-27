@@ -179,6 +179,23 @@ class IsolationProvider(ABC):
 
         return fitz.open("pdf", page_pdf_bytes)
 
+    def pixels_to_pixmap(
+        self,
+        untrusted_data: bytes,
+        untrusted_width: int,
+        untrusted_height: int,
+    ) -> fitz.Pixmap:
+        """Convert a byte array of RGB pixels into a pixmap"""
+        pixmap = fitz.Pixmap(
+            fitz.Colorspace(fitz.CS_RGB),
+            untrusted_width,
+            untrusted_height,
+            untrusted_data,
+            False,
+        )
+        pixmap.set_dpi(DEFAULT_DPI, DEFAULT_DPI)
+        return pixmap
+
     def convert_with_proc(
         self,
         document: Document,
@@ -203,6 +220,12 @@ class IsolationProvider(ABC):
                 raise errors.MaxPagesException()
             step = 100 / n_pages
 
+            output_format = document.output_format
+
+            # For PNG output, we skip PDF assembly and OCR
+            if output_format == "png" and ocr_lang:
+                ocr_lang = None
+
             safe_doc = fitz.Document()
 
             # If we are doing OCR, start a pool of workers to do it in parallel
@@ -222,6 +245,9 @@ class IsolationProvider(ABC):
             else:
                 ocr_pool = None
                 tessdata_dir = None
+
+            # For PNG output, collect pixmaps instead of PDF pages
+            png_pixmaps: list = []
 
             def drain_ocr_futures(block_until_below: Optional[int] = None) -> None:
                 """
@@ -293,14 +319,25 @@ class IsolationProvider(ABC):
                         drain_ocr_futures()
                     else:
                         # ... Or process immediately (if no OCR is requested)
-                        page_pdf = self.pixels_to_pdf_page(
-                            untrusted_pixels,
-                            width,
-                            height,
-                        )
-                        safe_doc.insert_pdf(page_pdf)
+                        if output_format == "png":
+                            pixmap = self.pixels_to_pixmap(
+                                untrusted_pixels,
+                                width,
+                                height,
+                            )
+                            png_pixmaps.append(pixmap)
+                        else:
+                            page_pdf = self.pixels_to_pdf_page(
+                                untrusted_pixels,
+                                width,
+                                height,
+                            )
+                            safe_doc.insert_pdf(page_pdf)
                         percentage += step
-                        text = f"Converted page {page}/{n_pages} to PDF"
+                        if output_format == "png":
+                            text = f"Converted page {page}/{n_pages} to PNG"
+                        else:
+                            text = f"Converted page {page}/{n_pages} to PDF"
                         self.print_progress(document, False, text, percentage)
 
                 # Once all pages have been submitted, wait for remaining futures
@@ -314,10 +351,21 @@ class IsolationProvider(ABC):
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()
 
-        # Saving it with a different name first, because PyMuPDF cannot handle
-        # non-Unicode chars.
-        safe_doc.save(document.sanitized_output_filename)
-        os.replace(document.sanitized_output_filename, document.output_filename)
+        # For PNG output, save each page as a separate PNG file
+        if output_format == "png":
+            from pathlib import Path
+            base_path = Path(document.output_filename).with_suffix("")
+            for i, pixmap in enumerate(png_pixmaps, 1):
+                if n_pages == 1:
+                    png_filename = f"{base_path}.png"
+                else:
+                    png_filename = f"{base_path}-page-{i}.png"
+                pixmap.save(str(png_filename))
+        else:
+            # Saving it with a different name first, because PyMuPDF cannot handle
+            # non-Unicode chars.
+            safe_doc.save(document.sanitized_output_filename)
+            os.replace(document.sanitized_output_filename, document.output_filename)
 
         # TODO handle leftover code input
         text = "Successfully converted document"

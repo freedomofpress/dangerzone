@@ -355,9 +355,7 @@ def test_new_release_is_detected(
 
     # FIXME: We should check the content of the dialog here.
 
-    # The spy keeps the parentless dialog alive until after the QApplication is
-    # torn down, which segfaults on PySide6 6.9.x (Debian Bullseye). Delete it
-    # now, while the event loop is still running.
+    # Mark the dialog for deletion, to avoid segfaults
     update_dialog_spy.spy_return.deleteLater()
     qtbot.wait(10)
 
@@ -483,9 +481,7 @@ def test_update_error(
     QtCore.QTimer.singleShot(500, check_dialog)
     error_action.trigger()
 
-    # The spy keeps the parentless dialog alive until after the QApplication is
-    # torn down, which segfaults on PySide6 6.9.x (Debian Bullseye). Delete it
-    # now, while the event loop is still running.
+    # Mark the dialog for deletion, to avoid segfaults
     update_dialog_spy.spy_return.deleteLater()
     qtbot.wait(10)
 

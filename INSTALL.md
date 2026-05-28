@@ -77,7 +77,6 @@ Dangerzone is available for:
 - Debian 14 (forky)
 - Debian 13 (trixie)
 - Debian 12 (bookworm)
-- Debian 11 (bullseye), support will be dropped in future releases.
 - Fedora 44
 - Fedora 43
 - Fedora 42

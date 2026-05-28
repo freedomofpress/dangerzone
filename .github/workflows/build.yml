@@ -41,8 +41,6 @@ jobs:
           - distro: ubuntu
             version: "25.10"
           - distro: debian
-            version: bullseye
-          - distro: debian
             version: bookworm
           - distro: debian
             version: trixie

@@ -82,7 +82,7 @@ def get_tessdata_dir() -> Path:
         Path("/usr/share/tessdata/"),  # on some Debian
         Path("/usr/share/tesseract/tessdata/"),  # on Fedora
         Path("/usr/share/tesseract-ocr/tessdata/"),  # ? (documented)
-        Path("/usr/share/tesseract-ocr/4.00/tessdata/"),  # on Debian Bullseye
+        Path("/usr/share/tesseract-ocr/4.00/tessdata/"),  # on Ubuntu 22.04
         Path("/usr/share/tesseract-ocr/5/tessdata/"),  # on Debian Trixie
     ]
 

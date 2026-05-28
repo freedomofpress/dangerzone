@@ -17,7 +17,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.15"
+python = ">=3.10,<3.15"
 click = "*"
 platformdirs = "*"
 PySide6 = "^6.7.1"
@@ -27,11 +27,7 @@ pyxdg = { version = "*", platform = "linux" }
 requests = "*"
 markdown = "*"
 packaging = "*"
-# FIXME: See https://github.com/freedomofpress/dangerzone/issues/1284#issuecomment-3410520568
-shiboken6 = [
-   { version = "<6.10.0", python = "3.9" }, # remove when we drop Python 3.9 / Debian Bullseye support
-   { version = "*", python = "^3.10" },
-]
+shiboken6 = "*"
 
 [tool.poetry.scripts]
 dangerzone-cli = "dangerzone.cli:run"
@@ -62,7 +58,7 @@ types-requests = "*"
 
 # Dependencies required for testing the code.
 [tool.poetry.group.test.dependencies]
-pytest = "^8.4.2" # The last version to support python 3.9
+pytest = "*"
 pytest-mock = "*"
 pytest-qt = "*"
 pytest-cov = "*"

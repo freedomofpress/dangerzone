@@ -110,13 +110,12 @@ def make_seccomp_json_accessible() -> Union[Path, PurePosixPath]:
         # the "mseal" system call _may_ be denied with ENOPERM, rather than the
         # expected ENOSYS, making the conversions fail [1].
         #
-        # Currently, we are aware that the affected OSes are Debian Bullseye and Ubuntu
-        # Jammy. Since it's not easy to test for every version of the above packages, we
+        # Currently, we are aware that the affected OSes are Ubuntu Jammy.
+        # Since it's not easy to test for every version of the above packages, we
         # choose a simpler heuristic to check if Podman is _potentially_ affected. If
         # the Podman version is >= 4.0, which was released 6 months after these
         # versions, in all likelihood it's not affected. Podman versions prior to 4.0
-        # _may_ be affected, and currently include only Debian Bullseye and Ubuntu
-        # Jammy.
+        # _may_ be affected, and currently include only Ubuntu Jammy.
         #
         # For affected Podman versions, we use a separate seccomp policy to allow
         # unknown syscalls, so that the kernel can fail them with ENOSYS.

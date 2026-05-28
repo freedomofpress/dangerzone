@@ -41,7 +41,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Add support for Fedora 44
   ([#1462](https://github.com/freedomofpress/dangerzone/issues/1462))
 - Drop support for Fedora 41 as it has reached end of life
-
+- Drop support for Debian bullseye
+  ([#1482](https://github.com/freedomofpress/dangerzone/issues/1482))
 ### Development changes
 
 - Run macOS Intel CI tests only on scheduled/manual runs to reduce PR CI time

@@ -937,11 +937,6 @@ class QADebianBased(QALinux):
         self.shell_run("./install/linux/build-deb.py")
 
 
-class QADebianBullseye(QADebianBased):
-    DISTRO = "debian"
-    VERSION = "bullseye"
-
-
 class QADebianBookworm(QADebianBased):
     DISTRO = "debian"
     VERSION = "bookworm"

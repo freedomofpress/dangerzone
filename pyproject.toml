@@ -62,7 +62,7 @@ types-requests = "*"
 
 # Dependencies required for testing the code.
 [tool.poetry.group.test.dependencies]
-pytest = "*"
+pytest = "^8.4.2" # The last version to support python 3.9
 pytest-mock = "*"
 pytest-qt = "*"
 pytest-cov = "*"

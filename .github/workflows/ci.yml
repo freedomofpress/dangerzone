@@ -256,6 +256,7 @@ jobs:
     needs:
       - build-deb
     strategy:
+      fail-fast: false
       matrix:
         include:
           - distro: ubuntu

@@ -22,7 +22,7 @@ setup(
     executables=[
         Executable(
             "install/windows/dangerzone.py",
-            base="Win32GUI",
+            base="gui",
             icon="share/dangerzone.ico",
         ),
         Executable(

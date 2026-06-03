@@ -10,6 +10,7 @@ from typing import Optional
 from . import errors, util
 
 SAFE_EXTENSION = "-safe.pdf"
+SAFE_IMAGE_EXTENSION = "-safe"
 ARCHIVE_SUBDIR = "unsafe"
 
 log = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ class Document:
         output_filename: Optional[str] = None,
         suffix: str = SAFE_EXTENSION,
         archive: bool = False,
+        output_format: str = "pdf",
     ) -> None:
         # NOTE: See https://github.com/freedomofpress/dangerzone/pull/216#discussion_r1015449418
         self.id = secrets.token_urlsafe(6)[0:6]
@@ -42,6 +44,7 @@ class Document:
         self._output_filename: Optional[str] = None
         self._archive = False
         self._suffix = suffix
+        self._output_format = output_format
 
         if input_filename:
             self.input_filename = input_filename
@@ -67,9 +70,13 @@ class Document:
             raise errors.InputFileNotReadableException() from e
 
     @staticmethod
-    def validate_output_filename(filename: str) -> None:
-        if not filename.endswith(".pdf"):
-            raise errors.NonPDFOutputFileException()
+    def validate_output_filename(filename: str, output_format: str = "pdf") -> None:
+        if output_format == "png":
+            if not filename.lower().endswith(".png"):
+                raise errors.NonPDFOutputFileException()
+        else:
+            if not filename.endswith(".pdf"):
+                raise errors.NonPDFOutputFileException()
 
         if platform.system() == "Windows":
             final_filename = PureWindowsPath(filename).name
@@ -120,7 +127,7 @@ class Document:
     @output_filename.setter
     def output_filename(self, filename: str) -> None:
         filename = self.normalize_filename(filename)
-        self.validate_output_filename(filename)
+        self.validate_output_filename(filename, self._output_format)
         self._output_filename = filename
 
     @property
@@ -137,6 +144,14 @@ class Document:
             self._suffix = suf
         else:
             raise errors.SuffixNotApplicableException()
+
+    @property
+    def output_format(self) -> str:
+        return self._output_format
+
+    @output_format.setter
+    def output_format(self, fmt: str) -> None:
+        self._output_format = fmt
 
     @property
     def archive_after_conversion(self) -> bool:
@@ -170,7 +185,10 @@ class Document:
 
     @property
     def default_output_filename(self) -> str:
-        return f"{os.path.splitext(self.input_filename)[0]}{self.suffix}"
+        base = os.path.splitext(self.input_filename)[0]
+        if self._output_format == "png":
+            return f"{base}{SAFE_IMAGE_EXTENSION}.png"
+        return f"{base}{self.suffix}"
 
     def announce_id(self) -> None:
         sanitized_filename = util.replace_control_chars(self.input_filename)

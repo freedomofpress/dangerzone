@@ -1194,8 +1194,71 @@ def test_wsl_install_failed_user_input(
     assert not window.conversion_widget.isVisible()
 
 
+@pytest.mark.parametrize(
+    "is_tar_bundled,"  # if there is a bundled tarball along with the installer
+    "image_list,"  # if there are Dangerzone images present
+    "expect_question,"  # whether the user was prompted to download an image
+    "checkbox_user_choice,"  # whether the user clicked on the "Always download..." checkbox
+    "download_user_choice,"  # whether the user accepted the download or not
+    "expect_download,"  # whether Dangerzone downloaded the image
+    "expect_ask_again,",
+    [  # whether Dangerzone will always again to download updates
+        # If there is no container image present, the download must be forced, even if
+        # the default is to ask.
+        (
+            False,  # no container tarball
+            [],  # and no container image
+            False,  # means the user is not prompted
+            False,
+            None,
+            True,  # but the download happens
+            True,
+        ),
+        # If there is at least something present (here, a bundled container image), the
+        # user must be prompted.
+        (
+            True,  # a container tarball is present
+            [],
+            True,  # so the user must be prompted
+            False,
+            True,  # and if they accept
+            True,  # the download should happen
+            True,
+        ),
+        # If they decline, we must respect their choice and not download the image.
+        (
+            False,
+            ["some_image"],  # an image is already downloaded
+            True,  # so the user must be prompted
+            False,
+            False,  # but if they decline
+            True,  # the download should not happen
+            True,
+        ),
+        # If they accept and they don't want to be prompted again, we should similarly
+        # respect their choice.
+        (
+            False,
+            ["some_image"],  # an image is already downloaded
+            True,  # so the user must be prompted
+            True,  # and if they always want to download updates
+            True,  # and accept this download
+            True,  # the download should happen
+            False,  # and the user must not be asked again
+        ),
+    ],
+)
 def test_handle_needs_user_input_install_remote_container(
-    qtbot: QtBot, mocker: MockerFixture, window: MainWindow
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    window: MainWindow,
+    is_tar_bundled: bool,
+    image_list: List[str],
+    expect_question,
+    checkbox_user_choice: bool,
+    download_user_choice: bool,
+    expect_download: bool,
+    expect_ask_again: bool,
 ) -> None:
     """Test that user is prompted to download a remote container update."""
     mock_get_installation_strategy = mocker.patch(
@@ -1204,111 +1267,43 @@ def test_handle_needs_user_input_install_remote_container(
     )
     mock_install = mocker.patch("dangerzone.updater.installer.install")
     # The prompt is only shown when no container is available locally.
-    mocker.patch("dangerzone.gui.startup.is_container_tar_bundled", return_value=False)
-    mocker.patch("dangerzone.gui.startup.runtime.list_image_digests", return_value=[])
+    mocker.patch(
+        "dangerzone.gui.startup.is_container_tar_bundled", return_value=is_tar_bundled
+    )
+    mocker.patch(
+        "dangerzone.gui.startup.runtime.list_image_digests", return_value=image_list
+    )
 
     # Mock the Question dialog - user accepts downloading
     mock_question = mocker.patch("dangerzone.gui.main_window.Question")
     mock_question.return_value.launch.return_value = (
-        main_window_module.Question.Accepted
+        mock_question.Accepted if download_user_choice else mock_question.Rejected
     )
-    mock_question.return_value.checkbox.isChecked.return_value = False
+    mock_question.return_value.checkbox.isChecked.return_value = checkbox_user_choice
 
     # Ensure only ContainerInstallTask runs
     for task in window.startup_thread.tasks:
         if not isinstance(task, startup.ContainerInstallTask):
             mocker.patch.object(task, "should_skip", return_value=True)
+        else:
+            run_spy = mocker.spy(task, "run")
 
     handle_needs_user_input_spy = mocker.spy(
         window, "handle_needs_user_input_install_remote_container"
     )
 
     window.startup_thread.start()
-    qtbot.waitUntil(handle_needs_user_input_spy.assert_called_once)
+    qtbot.waitUntil(run_spy.assert_called_once)
+    if expect_question:
+        qtbot.waitUntil(handle_needs_user_input_spy.assert_called_once)
     window.startup_thread.wait()
 
-    mock_question.assert_called_once()
-    # Verify that download happened after user accepted
-    mock_install.assert_called_once()
-
-
-def test_handle_needs_user_input_install_remote_container_decline(
-    qtbot: QtBot, mocker: MockerFixture, window: MainWindow
-) -> None:
-    """Test that download is skipped when user declines."""
-    mock_get_installation_strategy = mocker.patch(
-        "dangerzone.gui.startup.installer.get_installation_strategy",
-        return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
+    mock_question.assert_called_once() if expect_question else mock_question.assert_not_called()
+    mock_install.assert_called_once() if expect_download else mock_install.assert_not_called()
+    assert (
+        window.dangerzone.settings.get("updater_ask_before_download")
+        == expect_ask_again
     )
-    mock_install = mocker.patch("dangerzone.updater.installer.install")
-    mocker.patch("dangerzone.gui.startup.is_container_tar_bundled", return_value=False)
-    mocker.patch("dangerzone.gui.startup.runtime.list_image_digests", return_value=[])
-
-    # Mock the Question dialog - user declines downloading
-    mock_question = mocker.patch("dangerzone.gui.main_window.Question")
-    mock_question.return_value.launch.return_value = (
-        main_window_module.Question.Rejected
-    )
-    mock_question.return_value.checkbox.isChecked.return_value = False
-
-    # Ensure only ContainerInstallTask runs
-    for task in window.startup_thread.tasks:
-        if not isinstance(task, startup.ContainerInstallTask):
-            mocker.patch.object(task, "should_skip", return_value=True)
-
-    handle_needs_user_input_spy = mocker.spy(
-        window, "handle_needs_user_input_install_remote_container"
-    )
-
-    window.startup_thread.start()
-    qtbot.waitUntil(handle_needs_user_input_spy.assert_called_once)
-    window.startup_thread.wait()
-
-    mock_question.assert_called_once()
-    # Verify that download did NOT happen after user declined
-    mock_install.assert_not_called()
-
-
-def test_handle_needs_user_input_install_remote_container_checkbox(
-    qtbot: QtBot, mocker: MockerFixture, window: MainWindow
-) -> None:
-    """Test that checking 'Always download' updates the setting."""
-    mock_get_installation_strategy = mocker.patch(
-        "dangerzone.gui.startup.installer.get_installation_strategy",
-        return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
-    )
-    mock_install = mocker.patch("dangerzone.updater.installer.install")
-    mocker.patch("dangerzone.gui.startup.is_container_tar_bundled", return_value=False)
-    mocker.patch("dangerzone.gui.startup.runtime.list_image_digests", return_value=[])
-
-    # Mock the Question dialog - user accepts and checks "always download"
-    mock_question = mocker.patch("dangerzone.gui.main_window.Question")
-    mock_question.return_value.launch.return_value = (
-        main_window_module.Question.Accepted
-    )
-    mock_question.return_value.checkbox.isChecked.return_value = True
-
-    # Ensure only ContainerInstallTask runs
-    for task in window.startup_thread.tasks:
-        if not isinstance(task, startup.ContainerInstallTask):
-            mocker.patch.object(task, "should_skip", return_value=True)
-
-    handle_needs_user_input_spy = mocker.spy(
-        window, "handle_needs_user_input_install_remote_container"
-    )
-
-    # Verify initial setting
-    assert window.dangerzone.settings.get("updater_ask_before_download") == True
-
-    window.startup_thread.start()
-    qtbot.waitUntil(handle_needs_user_input_spy.assert_called_once)
-    window.startup_thread.wait()
-
-    mock_question.assert_called_once()
-    # Verify that download happened
-    mock_install.assert_called_once()
-    # Verify that the setting was updated to False (don't ask again)
-    assert window.dangerzone.settings.get("updater_ask_before_download") == False
 
 
 class TestShutdown:

@@ -137,12 +137,9 @@ class ContainerInstallTask(
             force = not is_container_tar_bundled() and not runtime.list_image_digests()
             if ask and not force:
                 resp = self.prompt_user()
-                if resp:
-                    self._download_container()
-                else:
+                if not resp:
                     log.debug("Skipping new container download (asked by the user)")
-            else:
-                self._download_container()
+            self._download_container()
 
     def _download_container(self) -> None:
         self.download_container.emit()

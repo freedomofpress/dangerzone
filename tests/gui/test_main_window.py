@@ -1246,6 +1246,17 @@ def test_wsl_install_failed_user_input(
             True,  # the download should happen
             False,  # and the user must not be asked again
         ),
+        # If they decline and at the same time click on the "Always download" checkbox,
+        # do not download anything and don't store their decision.
+        (
+            False,
+            ["some_image"],  # an image is already downloaded
+            True,  # so the user must be prompted
+            True,  # and if they choose to always download updates
+            False,  # but do NOT accept this one
+            True,  # the download should NOT happen
+            True,  # and the user MUST be asked again
+        ),
     ],
 )
 def test_handle_needs_user_input_install_remote_container(
@@ -1254,7 +1265,7 @@ def test_handle_needs_user_input_install_remote_container(
     window: MainWindow,
     is_tar_bundled: bool,
     image_list: List[str],
-    expect_question,
+    expect_question: bool,
     checkbox_user_choice: bool,
     download_user_choice: bool,
     expect_download: bool,

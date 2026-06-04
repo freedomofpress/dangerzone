@@ -798,13 +798,13 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         assert question.checkbox is not None
         result = question.launch()
-        if question.checkbox.isChecked():
-            self.dangerzone.settings.set(
-                "updater_ask_before_download",
-                False,
-                autosave=True,
-            )
         if result == Question.Accepted:
+            if question.checkbox.isChecked():
+                self.dangerzone.settings.set(
+                    "updater_ask_before_download",
+                    False,
+                    autosave=True,
+                )
             log.debug("Accepted")
             req.reply(True)
             return

@@ -125,14 +125,17 @@ class ContainerInstallTask(
             self.load_container.emit()
             return super().run()
         elif strategy == InstallationStrategy.INSTALL_REMOTE_CONTAINER:
+            # Always ask the user if they want to install a remote container image,
+            # unless:
+            # 1. The user has strictly specified that they don't want to be prompted
+            #    again.
+            # 2. The Dangerzone installation has no bundled images and no images that
+            #    Podman has downloaded already. In this particular case, they have
+            #    already been prompted by the `UpdateCheckTask`, so they don't need to
+            #    be prompted again.
             ask = Settings().get("updater_ask_before_download")
-            # If we are asked to install a remote container, only ask the user
-            # if nothing is currently installed. We avoid querying the container
-            # runtime unless we actually intend to prompt.
-            skip_user_request = ask and (
-                is_container_tar_bundled() or runtime.list_image_digests()
-            )
-            if ask and not skip_user_request:
+            force = not is_container_tar_bundled() and not runtime.list_image_digests()
+            if ask and not force:
                 resp = self.prompt_user()
                 if resp:
                     self._download_container()

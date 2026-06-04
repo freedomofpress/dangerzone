@@ -727,6 +727,8 @@ def test_installation_strategy_message(
 
     # Disable the user prompt for remote container downloads in this test
     window.dangerzone.settings.set("updater_ask_before_download", False)
+    # Do not make any Podman calls in this test, because we have not set it up.
+    mocker.patch("dangerzone.gui.startup.runtime.list_image_digests", return_value=[])
 
     status_bar_message_spy = mocker.spy(window.status_bar, callback)
     log_window_message_spy = mocker.spy(window.log_window, callback)
@@ -1202,12 +1204,8 @@ def test_handle_needs_user_input_install_remote_container(
     )
     mock_install = mocker.patch("dangerzone.updater.installer.install")
     # The prompt is only shown when no container is available locally.
-    mocker.patch(
-        "dangerzone.gui.startup.is_container_tar_bundled", return_value=False
-    )
-    mocker.patch(
-        "dangerzone.gui.startup.runtime.list_image_digests", return_value=[]
-    )
+    mocker.patch("dangerzone.gui.startup.is_container_tar_bundled", return_value=False)
+    mocker.patch("dangerzone.gui.startup.runtime.list_image_digests", return_value=[])
 
     # Mock the Question dialog - user accepts downloading
     mock_question = mocker.patch("dangerzone.gui.main_window.Question")
@@ -1243,12 +1241,8 @@ def test_handle_needs_user_input_install_remote_container_decline(
         return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
     )
     mock_install = mocker.patch("dangerzone.updater.installer.install")
-    mocker.patch(
-        "dangerzone.gui.startup.is_container_tar_bundled", return_value=False
-    )
-    mocker.patch(
-        "dangerzone.gui.startup.runtime.list_image_digests", return_value=[]
-    )
+    mocker.patch("dangerzone.gui.startup.is_container_tar_bundled", return_value=False)
+    mocker.patch("dangerzone.gui.startup.runtime.list_image_digests", return_value=[])
 
     # Mock the Question dialog - user declines downloading
     mock_question = mocker.patch("dangerzone.gui.main_window.Question")
@@ -1284,12 +1278,8 @@ def test_handle_needs_user_input_install_remote_container_checkbox(
         return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
     )
     mock_install = mocker.patch("dangerzone.updater.installer.install")
-    mocker.patch(
-        "dangerzone.gui.startup.is_container_tar_bundled", return_value=False
-    )
-    mocker.patch(
-        "dangerzone.gui.startup.runtime.list_image_digests", return_value=[]
-    )
+    mocker.patch("dangerzone.gui.startup.is_container_tar_bundled", return_value=False)
+    mocker.patch("dangerzone.gui.startup.runtime.list_image_digests", return_value=[])
 
     # Mock the Question dialog - user accepts and checks "always download"
     mock_question = mocker.patch("dangerzone.gui.main_window.Question")

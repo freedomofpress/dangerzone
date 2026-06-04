@@ -300,7 +300,9 @@ def task_debian_deb():
     for pkg_name in ("dangerzone", "dangerzone-full"):
         deb_name = f"{pkg_name}_{VERSION}-1_amd64.deb"
         targets.append(RELEASE_DIR / deb_name)
-        copy_actions.append(["cp", dz_dir / "deb_dist" / deb_name, RELEASE_DIR / deb_name])
+        copy_actions.append(
+            ["cp", dz_dir / "deb_dist" / deb_name, RELEASE_DIR / deb_name]
+        )
 
     return {
         "actions": [

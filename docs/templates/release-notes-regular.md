@@ -1,4 +1,4 @@
-This release includes various new features, stability improvements, and security fixes **(adjust accordingly)**. If you are on a Mac or PC please also update Docker Desktop to the latest version to get the latest security fixes.
+This release includes various new features, stability improvements, and security fixes **(adjust accordingly)**.
 
 The highlights for this release are:
   - **Important accomplishment**

@@ -6,7 +6,6 @@ RELEASE_DOCS_DIR = pathlib.Path("docs") / "developer" / "release"
 DOCS = [
     "pre-release.md",
     "prepare-build-envs.md",
-    "sign-image.md",
     "build.md",
     "qa.md",
     "release.md",

@@ -90,7 +90,7 @@ jobs:
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
-      - uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
+      - uses: imjasonh/setup-crane@59c71e96a00b28651f10369ba3359a6d730740a0 # v0.6
 
       - name: Get the digest of the latest image
         id: image-digest
@@ -223,7 +223,7 @@ jobs:
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
-      - uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
+      - uses: imjasonh/setup-crane@59c71e96a00b28651f10369ba3359a6d730740a0 # v0.6
 
       - name: Get the digest of the latest image
         id: image-digest
@@ -389,7 +389,7 @@ jobs:
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
       - if: matrix.full
-        uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
+        uses: imjasonh/setup-crane@59c71e96a00b28651f10369ba3359a6d730740a0 # v0.6
 
       - if: matrix.full
         name: Get the digest of the latest image
@@ -523,7 +523,7 @@ jobs:
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
 
-      - uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
+      - uses: imjasonh/setup-crane@59c71e96a00b28651f10369ba3359a6d730740a0 # v0.6
 
       - name: Get the digest of the latest image
         id: image-digest
@@ -616,7 +616,7 @@ jobs:
         run: |
           jq '.updater_check_all = true' ~/.config/dangerzone/settings.json > temp.json && mv temp.json ~/.config/dangerzone/settings.json
 
-      - uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
+      - uses: imjasonh/setup-crane@59c71e96a00b28651f10369ba3359a6d730740a0 # v0.6
 
       - name: Get the digest of the latest image
         id: latest

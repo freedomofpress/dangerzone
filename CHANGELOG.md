@@ -5,13 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.10.0...HEAD)
+
+## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...HEAD)
+
+## [0.11.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.11.0)
 
 ### Changes
 
-- Linux packages dropped the `container.tar` file, it is expected to be downloaded at the first usage, and then kept up to date. If you prefer to use packages with the `container.tar`, use the `dangerzone-full` variant ([#1069](https://github.com/freedomofpress/dangerzone/issues/1069))
+- Linux packages dropped the `container.tar` file. It is expected to be downloaded at the first usage, and then kept up to date. If you prefer to use packages with the `container.tar`, use the `dangerzone-full` variant ([#1069](https://github.com/freedomofpress/dangerzone/issues/1069))
 - **Breaking change (Linux CLI)**: with the slim `dangerzone` package, the CLI no longer auto-downloads the conversion sandbox. New installations must initialize the sandbox once with `dangerzone-image upgrade` (or run the GUI, which prompts for the download) before `dangerzone-cli` can convert documents. Users of the `dangerzone-full` package or who already have an image installed are unaffected.
-
 
 ### Fixed
 
@@ -20,7 +22,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Fix default PDF reader selection on Linux ([#814](https://github.com/freedomofpress/dangerzone/issues/814))
 - Update the theme correctly on dark/light mode changes
   ([#1238](https://github.com/freedomofpress/dangerzone/issues/1238))
-- Update Linux .desktop file with missing MIME types for HWP and ODF formats ([#646](https://github.com/freedomofpress/dangerzone/issues/646))
+- Update Linux `.desktop` file with missing MIME types for HWP and ODF formats ([#646](https://github.com/freedomofpress/dangerzone/issues/646))
 - Elide long filenames in the filename label to prevent UI elements from being pushed off-screen ([#143](https://github.com/freedomofpress/dangerzone/issues/143))
 - Fix macOS app bundle build, which crashed at startup with `module 'dangerzone' has no attribute 'main'` after the CLI parsing refactor ([#1470](https://github.com/freedomofpress/dangerzone/issues/1470))
 

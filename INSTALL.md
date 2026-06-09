@@ -38,8 +38,8 @@ Please, proceed at your own risks, only if you know what you're doing.
 
 ## MacOS
 
-- Download [Dangerzone 0.10.0 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.10.0/Dangerzone-0.10.0-arm64.dmg)
-- Download [Dangerzone 0.10.0 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.10.0/Dangerzone-0.10.0-i686.dmg)
+- Download [Dangerzone 0.11.0 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.11.0/Dangerzone-0.11.0-arm64.dmg)
+- Download [Dangerzone 0.11.0 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.11.0/Dangerzone-0.11.0-i686.dmg)
 
 > [!TIP]
 > We support the releases of macOS that are still within Apple's servicing timeline. Apple usually provides security updates for the latest 3 releases, but this isn't consistently applied and security fixes aren't guaranteed for the non-latest releases.
@@ -48,7 +48,7 @@ You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `bre
 
 ## Windows
 
-- Download [Dangerzone 0.10.0 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.10.0/Dangerzone-0.10.0.msi)
+- Download [Dangerzone 0.11.0 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.11.0/Dangerzone-0.11.0.msi)
 
 > [!TIP]
 > We generally support Windows releases that are still within [Microsoft’s servicing timeline](https://support.microsoft.com/en-us/help/13853/windows-lifecycle-fact-sheet).

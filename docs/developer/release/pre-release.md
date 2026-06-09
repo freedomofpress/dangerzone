@@ -8,13 +8,12 @@ run from the developer's laptop and are not tied to any build environment.
 - [ ] [Add new Linux platforms and remove obsolete ones](#add-new-linux-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock --regenerate`
 - [ ] Bump the GitHub asset dependencies using `poetry run mazette lock`
-- [ ] Check for new [WiX releases](https://github.com/wixtoolset/wix/releases) and update it if needed
+- [ ] Check for new [WiX releases](https://github.com/wixtoolset/wix/releases) and update it if needed (see [#1200](https://github.com/freedomofpress/dangerzone/issues/1200))
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] (optional) Bump image version from `v1` to `v2`, if the API has changed.
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
-- [ ] Bump the dates and versions in the `Dockerfile.env`
 - [ ] Update the download links in our `INSTALL.md` page to point to the new version (the download links will be populated after the release)
 - [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release

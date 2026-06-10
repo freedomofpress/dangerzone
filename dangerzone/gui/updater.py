@@ -10,7 +10,6 @@ else:
     except ImportError:
         from PySide2 import QtCore, QtWidgets
 
-from ..updater import errors, releases
 from .logic import DangerzoneGui, Question
 
 log = logging.getLogger(__name__)

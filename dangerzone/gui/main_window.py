@@ -1,50 +1,35 @@
 import functools
-import io
 import logging
 import os
 import platform
 import tempfile
 import typing
 from multiprocessing.pool import ThreadPool
-from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import List, Optional
 
 from dangerzone.gui import shutdown, startup
 from dangerzone.gui.updater import prompt_for_checks
-from dangerzone.updater.releases import EmptyReport, ErrorReport, ReleaseReport
-
-from ..podman.machine import PodmanMachineManager
+from dangerzone.updater import ReleaseReport
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
-    from PySide2.QtCore import Qt
     from PySide2.QtSvg import QSvgWidget
     from PySide2.QtWidgets import QAction
 else:
     try:
         from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
-        from PySide6.QtCore import Qt
         from PySide6.QtGui import QAction
         from PySide6.QtSvgWidgets import QSvgWidget
     except ImportError:
         from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
-        from PySide2.QtCore import Qt
         from PySide2.QtSvg import QSvgWidget
         from PySide2.QtWidgets import QAction
 
 from .. import errors
 from ..document import SAFE_EXTENSION, Document
 from ..isolation_provider.qubes import is_qubes_native_conversion
-from ..updater import (
-    EmptyReport,
-    ErrorReport,
-    InstallationStrategy,
-    ReleaseReport,
-    apply_installation_strategy,
-    get_installation_strategy,
-)
-from ..util import format_exception, get_resource_path, get_version, linux_system_is
+from ..util import get_resource_path, get_version
 from .log_window import LogHandler, LogWindow
 from .logic import Alert, CollapsibleBox, DangerzoneGui, Dialog, Question, UpdateDialog
 from .widgets import TracebackWidget
@@ -223,10 +208,8 @@ class StatusBar(QtWidgets.QStatusBar):
 
         if self.dangerzone.app.os_color_mode.value == "dark":
             spinner_svg = "spinner-dark.svg"
-            info_svg = "info-circle-dark.svg"
         else:
             spinner_svg = "spinner.svg"
-            info_svg = "info-circle.svg"
 
         self.spinner = animate_svg_image(spinner_svg, width=15, height=15)
         self.message = QLabelClickable("")
@@ -565,7 +548,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.shutdown_thread.start()
 
     def finish_shutdown(self, ret: int) -> None:
-        log.debug(f"Finalizing Dangerzone shutdown")
+        log.debug("Finalizing Dangerzone shutdown")
         self.shutdown_thread.wait()
         self.exit(ret)
 
@@ -681,7 +664,7 @@ class MainWindow(QtWidgets.QMainWindow):
         hamburger_menu.insertAction(sep, success_action)
 
     def handle_container_update_available(self, report: ReleaseReport) -> None:
-        log.debug(f"New container image is available")
+        log.debug("New container image is available")
 
     def handle_update_check_completed(self) -> None:
         self.dangerzone.settings.set("updater_errors", 0)

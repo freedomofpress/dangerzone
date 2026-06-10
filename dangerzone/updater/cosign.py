@@ -1,7 +1,6 @@
 import os
 import subprocess
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 
 from ..util import (
     get_resource_path,
@@ -110,5 +109,5 @@ def save(arch_image: str, destination: Path) -> None:
             ["save", arch_image, "--dir", str(destination.absolute())],
             disable_auth=True,
         )
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         raise errors.AirgappedImageDownloadError()

@@ -1,12 +1,8 @@
 import logging
 from enum import Enum
-from logging import Handler, LogRecord
-from typing import Callable, Optional
 
 from .. import container_utils as runtime
 from ..settings import Settings
-from . import log as updater_log
-from . import registry, signatures
 from .log_index import LAST_KNOWN_LOG_INDEX
 from .signatures import (
     LAST_LOG_INDEX,
@@ -15,7 +11,6 @@ from .signatures import (
     install_local_container_tar,
     is_container_tar_bundled,
     upgrade_container_image,
-    verify_local_image,
 )
 
 log = logging.getLogger(__name__)
@@ -113,7 +108,6 @@ def get_installation_strategy() -> Strategy:
 
     podman_images = runtime.list_image_digests()
     settings = Settings()
-    container_name = runtime.expected_image_name()
 
     # Compute the local log index
     if not podman_images or not LAST_LOG_INDEX.exists():

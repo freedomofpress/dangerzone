@@ -1,9 +1,8 @@
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import pytest
-from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
 
@@ -28,10 +27,7 @@ def pytest_collection_modifyitems(items: List) -> None:
             item.add_marker(pytest.mark.xdist_group("gui"))
 
 
-from dangerzone import util
-from dangerzone.gui import Application
 from dangerzone.gui.logic import DangerzoneGui
-from dangerzone.gui.main_window import MainWindow
 from dangerzone.isolation_provider.dummy import Dummy
 
 

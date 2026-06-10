@@ -1,20 +1,17 @@
 import platform
-import shutil
 import sys
 import typing
-import zipfile
 from pathlib import Path
-from typing import Any, Callable, Generator, List
+from typing import Any, Generator, List
 from unittest.mock import MagicMock
 
 import pytest
 from pytest_mock import MockerFixture
 
-from dangerzone import container_utils, startup
+from dangerzone import container_utils
 from dangerzone.document import SAFE_EXTENSION
 from dangerzone.gui import Application
 from dangerzone.isolation_provider import container
-from dangerzone.podman.machine import PodmanMachineManager
 from dangerzone.settings import Settings
 
 sys.dangerzone_dev = True  # type: ignore[attr-defined]

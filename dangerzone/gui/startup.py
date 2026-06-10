@@ -2,18 +2,18 @@ import typing
 from typing import Optional
 
 if typing.TYPE_CHECKING:
-    from PySide2 import QtCore, QtWidgets
+    from PySide2 import QtCore
 else:
     try:
-        from PySide6 import QtCore, QtWidgets
+        from PySide6 import QtCore
     except ImportError:
-        from PySide2 import QtCore, QtWidgets
+        from PySide2 import QtCore
 
 from .. import container_utils as runtime
-from .. import errors, logging, startup
+from .. import logging, startup
 from ..settings import Settings
 from ..updater import InstallationStrategy, installer
-from ..updater.releases import EmptyReport, ErrorReport, ReleaseReport
+from ..updater.releases import ReleaseReport
 from ..updater.signatures import is_container_tar_bundled
 
 log = logging.getLogger(__name__)

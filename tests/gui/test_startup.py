@@ -10,7 +10,7 @@ if typing.TYPE_CHECKING:
 from dangerzone.gui import startup
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 from dangerzone.startup import MachineInitTask, MachineStartTask, Task
-from dangerzone.updater import ErrorReport, InstallationStrategy, ReleaseReport
+from dangerzone.updater import InstallationStrategy, ReleaseReport
 from dangerzone.updater import errors as update_errors
 
 # It doesn't make sense to test the startup logic in a Qubes platform, since

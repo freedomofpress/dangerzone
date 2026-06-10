@@ -1,2 +1,2 @@
-from .command import PodmanCommand
-from .machine import PodmanMachineManager
+from .command import PodmanCommand as PodmanCommand
+from .machine import PodmanMachineManager as PodmanMachineManager

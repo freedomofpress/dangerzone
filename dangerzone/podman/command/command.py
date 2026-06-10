@@ -1,7 +1,6 @@
 import contextlib
 import platform
 import subprocess
-import time
 from pathlib import Path
 from typing import Optional, Union
 
@@ -147,47 +146,49 @@ class PodmanCommand:
         self.proc_service = None
         return ret
 
-    def wait_for_service(
-        self,
-        uri: str,
-        timeout: Optional[int] = None,
-        check_interval: float = 0.1,
-    ):
-        """Wait for the Podman system service to be operational.
+    # See the import comment at the top of this file for more info.
+    #
+    # def wait_for_service(
+    #     self,
+    #     uri: str,
+    #     timeout: Optional[int] = None,
+    #     check_interval: float = 0.1,
+    # ):
+    #     """Wait for the Podman system service to be operational.
 
-        This method checks two things; if the system service is still running,
-        and if we can ping it successfully.
+    #     This method checks two things; if the system service is still running,
+    #     and if we can ping it successfully.
 
-        Args:
-            uri (str): The URI for the service.
-            proc (subprocess.Popen): The process handle for Podman's system service.
-            timeout (int, optional): How long to wait until the service is operational
-            check_interval (float): The interval between health checks
+    #     Args:
+    #         uri (str): The URI for the service.
+    #         proc (subprocess.Popen): The process handle for Podman's system service.
+    #         timeout (int, optional): How long to wait until the service is operational
+    #         check_interval (float): The interval between health checks
 
-        Returns:
-            int: The exit code of the service process.
-        """
-        if self.proc_service is None:
-            raise errors.PodmanError(
-                "The Podman service has not started yet, so there's nothing to wait"
-            )
+    #     Returns:
+    #         int: The exit code of the service process.
+    #     """
+    #     if self.proc_service is None:
+    #         raise errors.PodmanError(
+    #             "The Podman service has not started yet, so there's nothing to wait"
+    #         )
 
-        start = time.monotonic()
-        with client.PodmanClient(base_url=uri) as c:
-            while True:
-                if timeout and time.monotonic() - start > timeout:
-                    raise errors.ServiceTimeout(timeout)
+    #     start = time.monotonic()
+    #     with client.PodmanClient(base_url=uri) as c:
+    #         while True:
+    #             if timeout and time.monotonic() - start > timeout:
+    #                 raise errors.ServiceTimeout(timeout)
 
-                ret = self.proc_service.poll()
-                if ret is not None:
-                    raise errors.ServiceTerminated(ret)
+    #             ret = self.proc_service.poll()
+    #             if ret is not None:
+    #                 raise errors.ServiceTerminated(ret)
 
-                try:
-                    if c.ping():
-                        break
-                except errors.APIError:
-                    pass
-                time.sleep(check_interval)
+    #             try:
+    #                 if c.ping():
+    #                     break
+    #             except errors.APIError:
+    #                 pass
+    #             time.sleep(check_interval)
 
     @contextlib.contextmanager
     def service(

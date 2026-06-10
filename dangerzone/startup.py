@@ -1,7 +1,6 @@
 import abc
 import logging
 import platform
-import typing
 from collections.abc import Sequence
 from typing import Optional
 
@@ -239,14 +238,14 @@ class UpdateCheckTask(Task):
 
         try:
             return not releases.should_check_for_updates(settings.Settings())
-        except updater_errors.NeedUserInputNoContainer as e:
+        except updater_errors.NeedUserInputNoContainer:
             if self.prompt_user(download_required=True):
                 settings.Settings().set("updater_check_all", True, autosave=True)
                 return False
             else:
                 # User declined or pressed X raise an error to stop startup
                 raise errors.UpdaterDisabledNoContainer()
-        except updater_errors.NeedUserInput as e:
+        except updater_errors.NeedUserInput:
             self.prompt_user()
             return True
 
@@ -275,7 +274,7 @@ class UpdateCheckTask(Task):
         logger.info(f"Dangerzone {report.version} is out and can be installed")
 
     def handle_container_update(self, report: ReleaseReport) -> None:
-        logger.info(f"There is an update for the Dangerzone sandbox")
+        logger.info("There is an update for the Dangerzone sandbox")
 
 
 class Runner:

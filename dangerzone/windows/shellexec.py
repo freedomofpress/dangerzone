@@ -2,7 +2,7 @@ import ctypes
 import logging
 import shlex
 from ctypes import wintypes
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from .. import errors
 
@@ -87,7 +87,7 @@ def _shellexec(
         raise errors.WinShellExecStartFailure
     if not sei.hProcess:
         raise errors.WinShellExecNoHandle
-    WAIT_OBJECT_0 = 0
+    WAIT_OBJECT_0 = 0  # NOQA
     WAIT_TIMEOUT = 0x00000102
     res = windll.kernel32.WaitForSingleObject(sei.hProcess, timeout_ms)
     if res == WAIT_TIMEOUT:
@@ -110,7 +110,7 @@ def run(cmd: List, check: bool = False) -> int:
     else:
         args = None
 
-    win_ret = _shellexec(cmd[0], args)
+    win_ret = _shellexec(prog, args)
 
     ret = ctypes.c_int32(win_ret).value
     if check and ret != 0:

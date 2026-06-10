@@ -2,13 +2,10 @@ import hashlib
 from typing import Any
 
 import pytest
-import requests
 from pytest_mock import MockerFixture
 
 from dangerzone.updater.registry import (
     Image,
-    _get_auth_header,
-    _url,
     get_manifest,
     get_manifest_digest,
     parse_image_location,

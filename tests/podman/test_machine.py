@@ -1,6 +1,5 @@
 import json
 import platform
-from pathlib import Path
 from typing import Callable
 from unittest.mock import MagicMock
 
@@ -8,7 +7,6 @@ import pytest
 from pytest_mock import MockerFixture
 from pytest_subprocess import FakeProcess
 
-from dangerzone import container_utils
 from dangerzone import errors as dz_errors
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 from dangerzone.podman import errors

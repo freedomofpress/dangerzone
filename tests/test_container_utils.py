@@ -1,9 +1,7 @@
 import pathlib
 import subprocess
 from typing import Any
-from unittest.mock import MagicMock
 
-import pytest
 from pytest_mock import MockerFixture
 
 from dangerzone import container_utils, settings

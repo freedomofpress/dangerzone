@@ -1,10 +1,9 @@
 import json
 import logging
 import os
-import platform
 import shutil
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict
+from typing import Any, Dict
 
 from packaging import version
 

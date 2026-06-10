@@ -1,7 +1,6 @@
 import logging
 import subprocess
 import sys
-from typing import Callable, Optional
 
 from ..conversion_errors import INT_BYTES
 from ..document import Document

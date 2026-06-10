@@ -1,23 +1,16 @@
 import logging
-import os
 import platform
-import shlex
 import subprocess
-import sys
-from typing import Callable, List, Optional, Tuple
+from typing import List
 
-from .. import container_utils, errors
+from .. import container_utils
 from ..container_utils import make_seccomp_json_accessible
 from ..document import Document
 from ..podman.errors import CommandError
-from ..settings import Settings
 from ..updater import (
-    DEFAULT_PUBKEY_LOCATION,
-    UpdaterError,
     bypass_signature_checks,
     verify_local_image,
 )
-from ..util import get_resource_path, subprocess_run
 from .base import IsolationProvider, terminate_process_group
 
 # Define startupinfo for subprocesses

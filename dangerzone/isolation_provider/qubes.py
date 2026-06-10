@@ -4,7 +4,6 @@ import os
 import subprocess
 import sys
 import zipfile
-from pathlib import Path
 from typing import IO
 
 from ..document import Document

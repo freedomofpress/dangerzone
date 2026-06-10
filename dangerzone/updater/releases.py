@@ -2,7 +2,6 @@ import json
 import platform
 import sys
 import time
-from abc import ABC
 from dataclasses import dataclass
 
 # The "|" syntax for type unions was introduced with Python 3.10
@@ -17,7 +16,6 @@ from .. import container_utils, util
 from ..settings import Settings
 from . import errors, log
 from .signatures import (
-    DEFAULT_PUBKEY_LOCATION,
     get_remote_digest_and_logindex,
     is_container_image_installed,
     is_container_tar_bundled,

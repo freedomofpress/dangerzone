@@ -23,7 +23,8 @@ __all__ = [
     "NotFoundError",
     "PodmanError",
     "PodmanNotInstalled",
-    "ServiceTerminatedServiceTimeout",
+    "ServiceTerminated",
+    "ServiceTimeout",
     "StreamParseError",
 ]
 

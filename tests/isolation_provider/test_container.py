@@ -3,16 +3,12 @@ import platform
 from typing import Generator
 
 import pytest
-from pytest_mock import MockerFixture
-from pytest_subprocess import FakeProcess
 
 from dangerzone import container_utils, errors
 from dangerzone.container_utils import expected_image_name, init_podman_command
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 from dangerzone.podman import machine
-from dangerzone.updater import SignatureError, UpdaterError
-from dangerzone.util import get_resource_path
 
 from .base import IsolationProviderTermination, IsolationProviderTest
 

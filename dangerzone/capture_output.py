@@ -1,10 +1,9 @@
-import io
 import logging
 import shlex
 import subprocess
 import threading
 from io import IOBase
-from typing import Any, Union
+from typing import Union
 
 # This module provides patching utilities to redirect the standard output and
 # standard errors to a log that can be displayed inside the application.
@@ -35,7 +34,6 @@ class PatchedPopen(original_subprocess_popen):
         """
         stdout = kwargs.get("stdout")
         stderr = kwargs.get("stderr")
-        encoding = kwargs.get("encoding")
         log.info(f"Running: {shlex.join(args[0])}")
         if stdout is not None or stderr is not None:
             super().__init__(*args, **kwargs)

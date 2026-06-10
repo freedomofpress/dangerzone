@@ -1,8 +1,6 @@
 import json
 import logging
 import os
-import platform
-import re
 import subprocess
 import sys
 import tarfile
@@ -10,15 +8,13 @@ from base64 import b64decode, b64encode
 from dataclasses import dataclass
 from functools import reduce
 from hashlib import sha256
-from io import BytesIO
 from pathlib import Path, PurePath
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from .. import container_utils as runtime
-from .. import errors as dzerrors
-from ..util import get_resource_path, subprocess_run
-from . import cosign, errors, log, registry
+from ..util import get_resource_path
+from . import cosign, errors, registry
 from .log_index import LAST_KNOWN_LOG_INDEX
 
 try:
@@ -379,7 +375,6 @@ def convert_oci_images_signatures(
     """
 
     def _to_cosign_signature(layer: Dict) -> Dict:
-        signature = layer["annotations"]["dev.cosignproject.cosign/signature"]
         bundle = json.loads(layer["annotations"]["dev.sigstore.cosign/bundle"])
         payload_body = json.loads(b64decode(bundle["Payload"]["body"]))
 

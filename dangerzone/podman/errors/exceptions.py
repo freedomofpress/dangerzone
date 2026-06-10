@@ -153,7 +153,7 @@ class StreamParseError(RuntimeError):
 
 class PodmanNotInstalled(PodmanError):
     def __init__(self) -> None:
-        msg = f"The Podman command is not installed in the system"
+        msg = "The Podman command is not installed in the system"
         super().__init__(msg)
 
 

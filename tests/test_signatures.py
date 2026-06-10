@@ -1,5 +1,4 @@
 import json
-import unittest
 from operator import attrgetter
 from pathlib import Path
 from typing import Any, Callable, Dict
@@ -8,20 +7,16 @@ from unittest.mock import patch
 import pytest
 from pytest_subprocess import FakeProcess
 
-from dangerzone import errors as dzerrors
 from dangerzone.updater import errors
 from dangerzone.updater.cosign import _COSIGN_BINARY
 from dangerzone.updater.signatures import (
     Signature,
-    get_last_log_index,
     get_log_index_from_signatures,
     get_remote_digest_and_logindex,
     get_remote_signatures,
     load_and_verify_signatures,
-    prepare_airgapped_archive,
     store_signatures,
     upgrade_container_image,
-    verify_local_image,
     verify_signature,
     verify_signatures,
 )

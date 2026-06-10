@@ -3,24 +3,22 @@ import platform
 import sys
 import time
 import typing
-from pathlib import Path
 from typing import Any, Dict, Union
 
 import pytest
-from pytest import MonkeyPatch, fixture
+from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
-from pytestqt.qtbot import QtBot
 
 if typing.TYPE_CHECKING:
-    from PySide2 import QtCore, QtGui, QtWidgets
+    from PySide2 import QtCore, QtWidgets
 else:
     try:
-        from PySide6 import QtCore, QtGui, QtWidgets
+        from PySide6 import QtCore, QtWidgets
     except ImportError:
-        from PySide2 import QtCore, QtGui, QtWidgets
+        from PySide2 import QtCore, QtWidgets
 
 from dangerzone import settings
-from dangerzone.gui.logic import Alert, DangerzoneGui
+from dangerzone.gui.logic import DangerzoneGui
 from dangerzone.gui.updater import CANCEL_TEXT, OK_TEXT, prompt_for_checks
 from dangerzone.updater import errors, releases
 from dangerzone.updater.releases import (

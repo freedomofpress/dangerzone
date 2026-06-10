@@ -90,6 +90,7 @@ preview = true
 select = [
     "I", # isort
     "RUF027", # missing-f-string-syntax
+    "F",
 ]
 
 [build-system]

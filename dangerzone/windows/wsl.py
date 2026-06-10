@@ -1,8 +1,7 @@
 import functools
 import logging
-import platform
 import subprocess
-from typing import Callable, Optional, Tuple
+from typing import Callable, Tuple
 
 from .. import errors
 from ..util import subprocess_run
@@ -51,7 +50,7 @@ def is_installed() -> bool:
     try:
         status()
         return True
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         return False
 
 

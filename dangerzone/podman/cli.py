@@ -3,8 +3,6 @@
 
 import functools
 import logging
-import os
-import sys
 from typing import Any, Callable
 
 import click
@@ -147,7 +145,7 @@ def raw(ctx) -> None:  # type: ignore [no-untyped-def]
     """Run a raw Podman command."""
     try:
         manager = PodmanMachineManager()
-        output = manager.run_raw_podman_command(ctx.args)
+        manager.run_raw_podman_command(ctx.args)
     except PodmanError as e:
         click.echo(f"❌ {e}")
         raise click.Abort()

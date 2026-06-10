@@ -1,5 +1,4 @@
 import logging
-import platform
 import sys
 from typing import List, Optional
 
@@ -12,9 +11,7 @@ from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
 from .logic import DangerzoneCore
-from .podman.machine import PodmanMachineManager
 from .settings import Settings
-from .updater import install
 from .util import get_version, replace_control_chars
 
 

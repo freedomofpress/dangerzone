@@ -24,7 +24,6 @@ else:
 from dangerzone import container_utils, errors, settings, startup
 from dangerzone.document import Document
 from dangerzone.gui import main_window as main_window_module
-from dangerzone.gui import updater as updater_module
 from dangerzone.gui.logic import DangerzoneGui
 
 # import Pyside related objects from here to avoid duplicating import logic.
@@ -38,7 +37,6 @@ from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.dummy import Dummy
 from dangerzone.isolation_provider.qubes import is_qubes_native_conversion
 from dangerzone.updater import (
-    LAST_KNOWN_LOG_INDEX,
     EmptyReport,
     InstallationStrategy,
     ReleaseReport,
@@ -385,7 +383,6 @@ def test_update_error(
     load_svg_spy = mocker.spy(main_window_module, "load_svg_image")
 
     menu_actions_before = window.hamburger_button.menu().actions()
-    check_for_updates_spy = mocker.spy(releases, "check_for_updates")
     window.startup_thread.start()
     window.startup_thread.wait()
 
@@ -714,7 +711,7 @@ def test_installation_strategy_message(
     """Ensures that we send discreet signals when loading or downloading container
     images.
     """
-    mock_installer = mocker.patch("dangerzone.updater.installer.install")
+    mocker.patch("dangerzone.updater.installer.install")
 
     for task in window.startup_thread.tasks:
         should_skip = not isinstance(task, startup.ContainerInstallTask)
@@ -750,7 +747,7 @@ def test_installation_failure_exception(
         "dangerzone.updater.installer.install",
         side_effect=RuntimeError("Error during install"),
     )
-    mock_strategy = mocker.patch(
+    mocker.patch(
         "dangerzone.updater.installer.get_installation_strategy",
         return_value=InstallationStrategy.INSTALL_LOCAL_CONTAINER,
     )
@@ -1119,13 +1116,13 @@ def test_wsl_needs_reboot_user_input(
     mocker.patch("platform.system", return_value="Windows")
     mocker.patch("dangerzone.gui.startup.WSLInstallTask.prompt_install")
     mocker.patch("dangerzone.windows.wsl.is_installed", return_value=False)
-    mock_wsl_install_task_run = mocker.patch(
+    mocker.patch(
         "dangerzone.windows.wsl.install_and_check_reboot",
         side_effect=errors.WSLInstallNeedsReboot,
     )
     mocker.patch("dangerzone.shutdown.PodmanMachineManager")
     mock_question = mocker.patch("dangerzone.gui.main_window.Question")
-    mock_install_failed = mocker.patch.object(window, "handle_wsl_install_failed")
+    mocker.patch.object(window, "handle_wsl_install_failed")
     mock_shutdown_cmd = mocker.patch("dangerzone.util.subprocess_run")
 
     handle_wsl_needs_reboot_spy = mocker.spy(window, "handle_wsl_needs_reboot")
@@ -1171,12 +1168,12 @@ def test_wsl_install_failed_user_input(
     mocker.patch("platform.system", return_value="Windows")
     mocker.patch("dangerzone.gui.startup.WSLInstallTask.prompt_install")
     mocker.patch("dangerzone.windows.wsl.is_installed", return_value=False)
-    mock_wsl_install_task_run = mocker.patch(
+    mocker.patch(
         "dangerzone.windows.wsl.install_and_check_reboot",
         side_effect=errors.WSLInstallFailed,
     )
     mock_wsl_error_widget_show = mocker.spy(window.wsl_error_widget, "show")
-    mock_begin_shutdown = mocker.spy(window, "begin_shutdown")
+    mocker.spy(window, "begin_shutdown")
     handle_wsl_install_failed_spy = mocker.spy(window, "handle_wsl_install_failed")
 
     # Ensure only WSLInstallTask runs
@@ -1272,7 +1269,7 @@ def test_handle_needs_user_input_install_remote_container(
     expect_ask_again: bool,
 ) -> None:
     """Test that user is prompted to download a remote container update."""
-    mock_get_installation_strategy = mocker.patch(
+    mocker.patch(
         "dangerzone.gui.startup.installer.get_installation_strategy",
         return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
     )

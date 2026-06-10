@@ -1,11 +1,8 @@
-import platform
-from typing import Optional
 
 import pytest
 from pytest_mock import MockerFixture
 
 from dangerzone import errors, startup
-from dangerzone.windows import wsl
 
 
 class StartupSpy:

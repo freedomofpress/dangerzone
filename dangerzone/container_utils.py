@@ -7,12 +7,11 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path, PurePosixPath
-from typing import IO, Callable, Iterable, List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 from dangerzone.podman.errors.exceptions import PodmanNotInstalled
 
 from . import errors
-from .capture_output import original_subprocess_popen as Popen
 from .podman.command import PodmanCommand
 from .podman.errors import CommandError
 from .settings import Settings
@@ -22,7 +21,6 @@ from .util import (
     get_tails_socks_proxy,
     get_version,
     linux_system_is,
-    subprocess_run,
 )
 
 # Keep the name of the old container here to be able to get rid of it later

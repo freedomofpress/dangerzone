@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 from typing import Any, Dict
-from unittest.mock import PropertyMock
 
 import pytest
 from pytest_mock import MockerFixture

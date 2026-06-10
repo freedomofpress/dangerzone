@@ -1,19 +1,15 @@
-import contextlib
 import functools
 import json
 import logging
-import os
 import platform
 import subprocess
-import tempfile
-import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from .. import container_utils, util
 from ..errors import OtherMachineRunningError
 from .command import PodmanCommand
-from .errors import CommandError, PodmanError, PodmanNotInstalled
+from .errors import CommandError
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +104,7 @@ class PodmanMachineManager:
         try:
             self.podman.machine.start(name=name, capture_output=False)
             logger.info(f"Podman machine '{name}' started successfully.")
-        except CommandError as e:
+        except CommandError:
             for m in self._get_existing_dangerzone_machines():
                 if m.get("Name") == self.name and m.get("Running"):
                     logger.info(f"Podman machine '{name}' is already running")

@@ -1,10 +1,8 @@
-from typing import Any
-from unittest.mock import MagicMock
 
 import pytest
 from pytest_mock import MockerFixture
 
-from dangerzone.updater import SignatureError, UpdaterError
+from dangerzone.updater import UpdaterError
 from dangerzone.updater.installer import (
     Strategy,
     apply_installation_strategy,
@@ -38,7 +36,7 @@ def test_user_installs_dangerzone_for_the_first_time(mocker: MockerFixture) -> N
     mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
         "updater_check_all": False
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 10)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
@@ -65,7 +63,7 @@ def test_upgrades_disabled_detect_wrong_container_upgrade(
     mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
         "updater_check_all": False
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=100)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -99,7 +97,7 @@ def test_building_dangerzone_from_source_first_time(mocker: MockerFixture) -> No
     mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
         "updater_check_all": False
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 10)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
@@ -120,7 +118,7 @@ def test_building_dangerzone_from_source_nth_time(mocker: MockerFixture) -> None
     mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
         "updater_check_all": False
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -146,7 +144,7 @@ def test_enable_updates_after_some_time(mocker: MockerFixture) -> None:
         "updater_check_all": True,
         "updater_remote_log_index": 300,
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -190,7 +188,7 @@ def test_enable_updates_no_new_image_available(mocker: MockerFixture) -> None:
         "updater_check_all": True,
         "updater_remote_log_index": 200,
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -212,7 +210,7 @@ def test_downgrade_dangerzone_application(mocker: MockerFixture) -> None:
     mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
         "updater_check_all": False
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=300)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -234,7 +232,7 @@ def test_disable_updates(mocker: MockerFixture) -> None:
     mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
         "updater_check_all": False
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=300)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -254,7 +252,7 @@ def test_podman_state_reset_updates_enabled(mocker: MockerFixture) -> None:
         "updater_check_all": True,
         "updater_remote_log_index": 300,
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
@@ -272,7 +270,7 @@ def test_podman_state_reset_updates_disabled(mocker: MockerFixture) -> None:
     mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
         "updater_check_all": False
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
 
@@ -294,7 +292,7 @@ def test_upgrade_to_latest_container_via_cli(mocker: MockerFixture) -> None:
         "updater_check_all": True,
         "updater_remote_log_index": 200,
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -317,7 +315,7 @@ def test_install_new_dangerzone_version_updates_enabled(mocker: MockerFixture) -
         "updater_check_all": True,
         "updater_remote_log_index": 300,
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -339,7 +337,7 @@ def test_airgapped_installation_container_tarball(mocker: MockerFixture) -> None
     mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
         "updater_check_all": False
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=True)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 300)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -363,7 +361,7 @@ def test_no_bundled_container_tar_first_install(mocker: MockerFixture) -> None:
         "updater_check_all": True,
         "updater_remote_log_index": 300,
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     # No container.tar bundled, so is_container_tar_bundled returns False
     # making bundled_log_index effectively 0
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=False)
@@ -389,7 +387,7 @@ def test_no_bundled_container_tar_updates_disabled(mocker: MockerFixture) -> Non
     mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
         "updater_check_all": False,
     }.get(key)
-    mocker.patch(f"dangerzone.updater.signatures.Path.exists", return_value=False)
+    mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     # No container.tar bundled, so is_container_tar_bundled returns False
     # making bundled_log_index effectively 0
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=False)

@@ -1,5 +1,4 @@
 import typing
-from typing import Optional
 
 if typing.TYPE_CHECKING:
     from PySide2 import QtWidgets

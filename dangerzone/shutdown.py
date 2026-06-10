@@ -1,6 +1,5 @@
 import logging
 import platform
-import typing
 
 from . import container_utils, settings, startup
 from .podman.machine import PodmanMachineManager

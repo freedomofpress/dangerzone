@@ -1,9 +1,7 @@
 """Tests for the updater releases module."""
 
-import platform
 import sys
 from typing import Any
-from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 from pytest_mock import MockerFixture

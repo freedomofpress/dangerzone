@@ -1,18 +1,15 @@
 from __future__ import annotations
 
-import base64
 import copy
 import os
 import platform
 import shutil
 import sys
 import tempfile
-import time
 import traceback
 from pathlib import Path
 from typing import Optional, Sequence
 
-import fitz
 import pytest
 from click.testing import CliRunner, Result
 from pytest_mock import MockerFixture
@@ -224,7 +221,6 @@ class TestCliConversion(TestCliBasic):
         tmp_path_factory: pytest.TempPathFactory,
         skip_image_verification: pytest.FixtureRequest,
     ) -> None:
-        reference = (doc.parent / "reference" / doc.stem).with_suffix(".pdf")
         destination = tmp_path_factory.mktemp(doc.stem).with_suffix(".pdf")
 
         result = self.run_cli([str(doc), "--output-filename", str(destination)])

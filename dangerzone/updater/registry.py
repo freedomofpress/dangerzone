@@ -1,13 +1,10 @@
-import os
 import re
-from collections import namedtuple
 from dataclasses import dataclass
 from hashlib import sha256
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import requests
 
-from .. import errors as dzerrors
 from .. import util
 from . import errors, log
 

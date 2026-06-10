@@ -5,7 +5,7 @@ from typing import Callable, List, Optional
 
 import colorama
 
-from . import errors, util
+from . import errors
 from .document import Document
 from .isolation_provider.base import IsolationProvider
 from .settings import Settings

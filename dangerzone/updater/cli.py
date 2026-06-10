@@ -2,7 +2,6 @@
 
 import functools
 import logging
-import platform
 from pathlib import Path
 from typing import Any, Callable
 
@@ -10,9 +9,8 @@ import click
 
 from .. import shutdown, startup
 from ..container_utils import expected_image_name
-from ..podman.machine import PodmanMachineManager
 from ..util import get_architecture
-from . import cosign, errors, log, registry, signatures
+from . import errors, registry, signatures
 from .signatures import DEFAULT_PUBKEY_LOCATION
 
 DEFAULT_REPOSITORY = "freedomofpress/dangerzone"
@@ -66,9 +64,9 @@ def upgrade() -> None:
         signatures.upgrade_container_image(manifest_digest, DEFAULT_IMAGE_NAME)
         click.echo(f"✅ The local image {DEFAULT_IMAGE_NAME} has been upgraded")
         click.echo(f"✅ The image has been signed with {DEFAULT_PUBKEY_LOCATION}")
-        click.echo(f"✅ Signatures have been verified and stored locally")
+        click.echo("✅ Signatures have been verified and stored locally")
 
-    except errors.ImageAlreadyUpToDate as e:
+    except errors.ImageAlreadyUpToDate:
         click.echo(
             f"✅ The local image {DEFAULT_IMAGE_NAME}@{manifest_digest} is already up to date"
         )
@@ -88,7 +86,7 @@ def store_signatures(image: str) -> None:
     sigs = signatures.get_remote_signatures(image, manifest_digest)
     signatures.verify_signatures(sigs, manifest_digest)
     signatures.store_signatures(sigs, manifest_digest, update_logindex=False)
-    click.echo(f"✅ Signatures have been verified and stored locally")
+    click.echo("✅ Signatures have been verified and stored locally")
 
 
 @run.command()
@@ -111,11 +109,11 @@ def load_archive(archive_filename: Path, force: bool) -> None:
         )
     except errors.ImageAlreadyUpToDate as e:
         click.echo(f"✅ {e}")
-    except errors.InvalidLogIndex as e:
+    except errors.InvalidLogIndex:
         click.echo("❌ Trying to install image older that the currently installed one")
         raise click.Abort()
-    except errors.SignatureError as e:
-        click.echo(f"❌ Failed to verify the signatures.")
+    except errors.SignatureError:
+        click.echo("❌ Failed to verify the signatures.")
         raise click.Abort()
 
 

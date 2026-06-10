@@ -3,7 +3,6 @@ import shlex
 import subprocess
 import threading
 from io import IOBase
-from typing import Union
 
 # This module provides patching utilities to redirect the standard output and
 # standard errors to a log that can be displayed inside the application.
@@ -15,7 +14,7 @@ original_subprocess_run = subprocess.run
 original_subprocess_popen = subprocess.Popen
 
 
-def _decode_if_needed(input: Union[bytes, str]) -> str:
+def _decode_if_needed(input: bytes | str) -> str:
     if type(input) == bytes:
         return input.decode()
     else:

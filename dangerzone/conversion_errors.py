@@ -5,7 +5,6 @@ The actual error classes live here (in the client) rather than being shared
 with the container image; only the integer error codes cross the boundary.
 """
 
-from typing import List, Optional, Type, Union
 
 # XXX: errors start at 128 for conversion-related issues
 ERROR_SHIFT = 128
@@ -28,13 +27,13 @@ class ConversionException(Exception):
     error_message = "Unspecified error"
     error_code = ERROR_SHIFT
 
-    def __init__(self, error_message: Optional[str] = None) -> None:
+    def __init__(self, error_message: str | None = None) -> None:
         if error_message:
             self.error_message = error_message
         super().__init__(self.error_message)
 
     @classmethod
-    def get_subclasses(cls) -> List[Type["ConversionException"]]:
+    def get_subclasses(cls) -> list[type["ConversionException"]]:
         subclasses = [cls]
         for subclass in cls.__subclasses__():
             subclasses += subclass.get_subclasses()
@@ -110,7 +109,7 @@ class UnexpectedConversionError(ConversionException):
 
 def exception_from_error_code(
     error_code: int,
-) -> Union[ConversionException, ValueError]:
+) -> ConversionException | ValueError:
     """returns the conversion exception corresponding to the error code"""
     for cls in ConversionException.get_subclasses():
         if cls.error_code == error_code:

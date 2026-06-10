@@ -1,6 +1,5 @@
 import logging
 import sys
-from typing import List, Optional
 
 import click
 from colorama import Back, Fore, Style
@@ -73,13 +72,13 @@ def print_header(s: str) -> None:
 @click.version_option(version=get_version(), message="%(version)s")
 @errors.handle_document_errors
 def run(
-    output_filename: Optional[str],
-    ocr_lang: Optional[str],
-    filenames: Optional[List[str]],
+    output_filename: str | None,
+    ocr_lang: str | None,
+    filenames: list[str] | None,
     archive: bool,
     dummy_conversion: bool,
     debug: bool,
-    set_container_runtime: Optional[str] = None,
+    set_container_runtime: str | None = None,
     linger: bool = False,
 ) -> None:
     setup_logging()

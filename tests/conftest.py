@@ -1,8 +1,8 @@
 import platform
 import sys
-import typing
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator, List
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -17,7 +17,7 @@ from dangerzone.settings import Settings
 sys.dangerzone_dev = True  # type: ignore[attr-defined]
 
 
-def _add_xdist_groups(items: List) -> None:
+def _add_xdist_groups(items: list) -> None:
     for item in items:
         if not item.get_closest_marker("xdist_group"):
             # Group ungrouped tests by file so they never land on a dedicated
@@ -51,7 +51,7 @@ def setup_function() -> Generator[None, None, None]:
 # Use this fixture to make `pytest-qt` invoke our custom QApplication.
 # See https://pytest-qt.readthedocs.io/en/latest/qapplication.html#testing-custom-qapplications
 @pytest.fixture(scope="session")
-def qapp_cls() -> typing.Type[Application]:
+def qapp_cls() -> type[Application]:
     return Application
 
 
@@ -191,7 +191,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config, items: List[pytest.Item]
+    config: pytest.Config, items: list[pytest.Item]
 ) -> None:
     _add_xdist_groups(items)
     if not config.getoption("--generate-reference-pdfs"):

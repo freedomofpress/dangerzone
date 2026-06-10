@@ -1,10 +1,10 @@
+import builtins
 import functools
 import json
 import logging
 import platform
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 from .. import container_utils, util
 from ..errors import OtherMachineRunningError
@@ -31,7 +31,7 @@ class PodmanMachineManager:
         """Get the path to the machine image."""
         return util.get_resource_path("machine.tar")
 
-    def _get_existing_dangerzone_machines(self) -> List[Dict]:
+    def _get_existing_dangerzone_machines(self) -> list[dict]:
         """Get a list of existing Dangerzone machines."""
         try:
             machines = self.podman.machine.list()
@@ -39,7 +39,7 @@ class PodmanMachineManager:
         except (CommandError, json.JSONDecodeError):
             return []
 
-    def _remove_stale_machines(self, existing_machines: List[Dict]) -> None:
+    def _remove_stale_machines(self, existing_machines: list[dict]) -> None:
         """Remove stale Dangerzone machines."""
         for machine in existing_machines:
             name = machine.get("Name")
@@ -50,7 +50,7 @@ class PodmanMachineManager:
                 except CommandError as e:
                     logger.warning(f"Failed to remove stale machine {name}: {e}")
 
-    def list_other_running_machines(self) -> List[str]:
+    def list_other_running_machines(self) -> list[str]:
         """List other running Podman machines, excluding the expected one."""
         other_running_machines = []
         try:
@@ -65,8 +65,8 @@ class PodmanMachineManager:
 
     def init(
         self,
-        cpus: Optional[int] = None,
-        memory: Optional[int] = None,
+        cpus: int | None = None,
+        memory: int | None = None,
         timezone: str = "Etc/UTC",  # Do not leak local timezone
     ) -> None:
         """Initialize a new Podman machine."""
@@ -88,7 +88,7 @@ class PodmanMachineManager:
         )
         logger.info(f"Podman machine '{self.name}' initialized successfully.")
 
-    def start(self, name: Optional[str] = None) -> None:
+    def start(self, name: str | None = None) -> None:
         """Start a Podman machine."""
         if name is None:
             name = self.name
@@ -113,7 +113,7 @@ class PodmanMachineManager:
 
     def stop(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         wait: bool = True,
     ) -> None:
         """Stop a Podman machine."""
@@ -124,7 +124,7 @@ class PodmanMachineManager:
         if wait:
             logger.info(f"Podman machine '{name}' stopped successfully.")
 
-    def remove(self, name: Optional[str] = None) -> None:
+    def remove(self, name: str | None = None) -> None:
         """Remove a Podman machine."""
         if name is None:
             name = self.name
@@ -138,10 +138,10 @@ class PodmanMachineManager:
         self.podman.machine.reset()
         logger.info("Podman machines reset successfully.")
 
-    def list(self) -> List[Dict]:
+    def list(self) -> list[dict]:
         """List all Dangerzone machines."""
         return self._get_existing_dangerzone_machines()
 
-    def run_raw_podman_command(self, args: List[str]) -> Union[str, subprocess.Popen]:
+    def run_raw_podman_command(self, args: builtins.list[str]) -> str | subprocess.Popen:
         """Run a raw Podman command."""
         return self.podman.run(args, stdin=None, capture_output=False)

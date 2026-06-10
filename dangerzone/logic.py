@@ -1,7 +1,7 @@
 import concurrent.futures
 import json
 import logging
-from typing import Callable, List, Optional
+from collections.abc import Callable
 
 import colorama
 
@@ -14,7 +14,7 @@ from .util import get_resource_path
 log = logging.getLogger(__name__)
 
 
-class DangerzoneCore(object):
+class DangerzoneCore:
     """
     Singleton of shared state / functionality throughout the app
     """
@@ -30,13 +30,13 @@ class DangerzoneCore(object):
 
         # Load settings
         self.settings = Settings()
-        self.documents: List[Document] = []
+        self.documents: list[Document] = []
         self.isolation_provider = isolation_provider
 
     def add_document_from_filename(
         self,
         input_filename: str,
-        output_filename: Optional[str] = None,
+        output_filename: str | None = None,
         archive: bool = False,
     ) -> None:
         doc = Document(input_filename, output_filename, archive=archive)
@@ -59,7 +59,7 @@ class DangerzoneCore(object):
         self.documents = []
 
     def convert_documents(
-        self, ocr_lang: Optional[str], stdout_callback: Optional[Callable] = None
+        self, ocr_lang: str | None, stdout_callback: Callable | None = None
     ) -> None:
         def convert_doc(document: Document) -> None:
             try:
@@ -79,14 +79,14 @@ class DangerzoneCore(object):
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_jobs) as executor:
             executor.map(convert_doc, self.documents)
 
-    def get_unconverted_documents(self) -> List[Document]:
+    def get_unconverted_documents(self) -> list[Document]:
         return [doc for doc in self.documents if doc.is_unconverted()]
 
-    def get_safe_documents(self) -> List[Document]:
+    def get_safe_documents(self) -> list[Document]:
         return [doc for doc in self.documents if doc.is_safe()]
 
-    def get_failed_documents(self) -> List[Document]:
+    def get_failed_documents(self) -> list[Document]:
         return [doc for doc in self.documents if doc.is_failed()]
 
-    def get_converting_documents(self) -> List[Document]:
+    def get_converting_documents(self) -> list[Document]:
         return [doc for doc in self.documents if doc.is_converting()]

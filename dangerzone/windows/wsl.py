@@ -1,7 +1,7 @@
 import functools
 import logging
 import subprocess
-from typing import Callable, Tuple
+from collections.abc import Callable
 
 from .. import errors
 from ..util import subprocess_run
@@ -68,7 +68,7 @@ def install_and_check_reboot() -> None:
     # 3. On the windows-2022 GitHub runner, which is based on Windows 10, it seems that
     #    only `wsl --update` works, in the sense that it updates the outdated WSL kernel
     #    that it has.
-    methods: list[Tuple[Callable, str]] = [
+    methods: list[tuple[Callable, str]] = [
         (update, "wsl --update"),
         (
             functools.partial(install, no_distribution=True),

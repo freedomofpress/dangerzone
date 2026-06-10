@@ -5,7 +5,6 @@ import shlex
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Optional, Union
 
 from .. import errors
 
@@ -45,32 +44,32 @@ class GlobalOptions:
         volumepath: Volume directory where builtin volume information is stored
     """
 
-    cdi_spec_dir: Union[str, Path, list[str], list[Path], None] = None
-    cgroup_manager: Union[str, None] = None
-    config: Union[str, Path, None] = None
-    conmon: Union[str, Path, None] = None
-    connection: Union[str, None] = None
-    events_backend: Union[str, None] = None
-    hooks_dir: Union[str, Path, list[str], list[Path], None] = None
-    identity: Union[str, Path, None] = None
-    imagestore: Union[str, None] = None
-    log_level: Union[str, None] = None
-    module: Union[str, None] = None
-    network_cmd_path: Union[str, Path, None] = None
-    network_config_dir: Union[str, Path, None] = None
-    remote: Union[bool, None] = None
-    root: Union[str, Path, None] = None
-    runroot: Union[str, Path, None] = None
-    runtime: Union[str, Path, None] = None
-    runtime_flag: Union[str, list[str], None] = None
-    ssh: Union[str, None] = None
-    storage_driver: Union[str, None] = None
-    storage_opt: Union[str, list[str], None] = None
-    syslog: Union[bool, None] = None
-    tmpdir: Union[str, Path, None] = None
-    transient_store: Union[bool, None] = False
-    url: Union[str, None] = None
-    volumepath: Union[str, Path, None] = None
+    cdi_spec_dir: str | Path | list[str] | list[Path] | None = None
+    cgroup_manager: str | None = None
+    config: str | Path | None = None
+    conmon: str | Path | None = None
+    connection: str | None = None
+    events_backend: str | None = None
+    hooks_dir: str | Path | list[str] | list[Path] | None = None
+    identity: str | Path | None = None
+    imagestore: str | None = None
+    log_level: str | None = None
+    module: str | None = None
+    network_cmd_path: str | Path | None = None
+    network_config_dir: str | Path | None = None
+    remote: bool | None = None
+    root: str | Path | None = None
+    runroot: str | Path | None = None
+    runtime: str | Path | None = None
+    runtime_flag: str | list[str] | None = None
+    ssh: str | None = None
+    storage_driver: str | None = None
+    storage_opt: str | list[str] | None = None
+    syslog: bool | None = None
+    tmpdir: str | Path | None = None
+    transient_store: bool | None = False
+    url: str | None = None
+    volumepath: str | Path | None = None
 
 
 def get_subprocess_startupinfo():
@@ -94,10 +93,10 @@ class Runner:
 
     def __init__(
         self,
-        path: Optional[Path] = None,
+        path: Path | None = None,
         privileged: bool = False,
-        options: Optional[GlobalOptions] = None,
-        env: Optional[dict] = None,
+        options: GlobalOptions | None = None,
+        env: dict | None = None,
     ):
         """Initialize the Runner.
 
@@ -195,7 +194,7 @@ class Runner:
         capture_output=True,
         wait=True,
         **skwargs,
-    ) -> Union[str, subprocess.Popen, None]:
+    ) -> str | subprocess.Popen | None:
         """Run the specified Podman command.
 
         Args:
@@ -226,7 +225,7 @@ class Runner:
         stdin=subprocess.DEVNULL,
         wait=True,
         **skwargs,
-    ) -> Union[str, subprocess.Popen, None]:
+    ) -> str | subprocess.Popen | None:
         """Run the command without additional construction. Mostly for internal use.
 
         Args:

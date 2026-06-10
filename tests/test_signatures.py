@@ -1,7 +1,8 @@
 import json
+from collections.abc import Callable
 from operator import attrgetter
 from pathlib import Path
-from typing import Any, Callable, Dict
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -31,7 +32,7 @@ RANDOM_DIGEST = "aacc9b586648bbe3040f2822153b1d5ead2779af45ff750fd6f04daf4a9f64b
 
 
 @pytest.fixture
-def valid_signature() -> Dict[str, Any]:
+def valid_signature() -> dict[str, Any]:
     # Use next() as we don't really care which signature we get.
     signature_file_path = next(VALID_SIGNATURES_PATH.glob("**/*.json"))
     with open(signature_file_path, "r") as signature_file:
@@ -40,7 +41,7 @@ def valid_signature() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def tampered_signature() -> Dict[str, Any]:
+def tampered_signature() -> dict[str, Any]:
     signature_file_path = next(TAMPERED_SIGNATURES_PATH.glob("**/*.json"))
     with open(signature_file_path, "r") as signature_file:
         signatures = json.load(signature_file)
@@ -48,7 +49,7 @@ def tampered_signature() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def signature_other_digest(valid_signature: Dict[str, Any]) -> Dict[str, Any]:
+def signature_other_digest(valid_signature: dict[str, Any]) -> dict[str, Any]:
     signature = valid_signature.copy()
     signature["Bundle"]["Payload"]["digest"] = "sha256:123456"
     return signature
@@ -97,17 +98,17 @@ def test_get_log_index_from_signatures() -> None:
 
 
 def test_get_log_index_from_signatures_empty() -> None:
-    signatures: list[Dict[str, Any]] = []
+    signatures: list[dict[str, Any]] = []
     assert get_log_index_from_signatures(signatures) == 0
 
 
 def test_get_log_index_from_malformed_signatures() -> None:
-    signatures: list[Dict[str, Any]] = [{"Bundle": {"Payload": {"logIndex": "foo"}}}]
+    signatures: list[dict[str, Any]] = [{"Bundle": {"Payload": {"logIndex": "foo"}}}]
     assert get_log_index_from_signatures(signatures) == 0
 
 
 def test_get_log_index_from_missing_log_index() -> None:
-    signatures: list[Dict[str, Any]] = [{"Bundle": {"Payload": {}}}]
+    signatures: list[dict[str, Any]] = [{"Bundle": {"Payload": {}}}]
     assert get_log_index_from_signatures(signatures) == 0
 
 
@@ -185,8 +186,8 @@ def test_get_remote_signatures_cosign_error(mocker: Any, fp: FakeProcess) -> Non
 
 
 def test_store_signatures_with_different_digests(
-    valid_signature: Dict[str, Any],
-    signature_other_digest: Dict[str, Any],
+    valid_signature: dict[str, Any],
+    signature_other_digest: dict[str, Any],
     mocker: Any,
     tmp_path: Any,
 ) -> None:
@@ -223,7 +224,7 @@ def test_store_signatures_with_different_digests(
 
 
 def test_stores_signatures_updates_last_log_index(
-    valid_signature: Dict[str, Any], mocker: Any, tmp_path: Any
+    valid_signature: dict[str, Any], mocker: Any, tmp_path: Any
 ) -> None:
     """Test that store_signatures updates the last log index file."""
     signatures = [valid_signature]
@@ -255,7 +256,7 @@ def test_stores_signatures_updates_last_log_index(
 
 
 def test_get_remote_digest_and_logindex_when_remote_image_available(
-    mocker: Any, valid_signature: Dict[str, Any]
+    mocker: Any, valid_signature: dict[str, Any]
 ) -> None:
     """
     Test that is_update_available returns True when a new image is available
@@ -283,7 +284,7 @@ def test_get_remote_digest_and_logindex_when_remote_image_available(
     assert log_index == signature.log_index
 
 
-def test_verify_signature(valid_signature: Dict[str, Any]) -> None:
+def test_verify_signature(valid_signature: dict[str, Any]) -> None:
     """Test that verify_signature raises an error when the payload digest doesn't match."""
     verify_signature(
         valid_signature,
@@ -292,7 +293,7 @@ def test_verify_signature(valid_signature: Dict[str, Any]) -> None:
     )
 
 
-def test_verify_signature_tampered(tampered_signature: Dict[str, Any]) -> None:
+def test_verify_signature_tampered(tampered_signature: dict[str, Any]) -> None:
     """Test that verify_signature raises an error when the payload digest doesn't match."""
     # Call verify_signature and expect an error
     with pytest.raises(errors.SignatureError):

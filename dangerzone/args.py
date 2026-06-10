@@ -1,7 +1,6 @@
 import functools
 import os
 import sys
-from typing import List, Optional, Tuple
 
 import click
 
@@ -11,8 +10,8 @@ from .document import Document
 
 @errors.handle_document_errors
 def _validate_input_filename(
-    ctx: click.Context, param: str, value: Optional[str]
-) -> Optional[str]:
+    ctx: click.Context, param: str, value: str | None
+) -> str | None:
     if value is None:
         return None
     filename = Document.normalize_filename(value)
@@ -22,8 +21,8 @@ def _validate_input_filename(
 
 @errors.handle_document_errors
 def _validate_input_filenames(
-    ctx: click.Context, param: List[str], value: Tuple[str]
-) -> List[str]:
+    ctx: click.Context, param: list[str], value: tuple[str]
+) -> list[str]:
     normalized_filenames = []
     for filename in value:
         filename = Document.normalize_filename(filename)
@@ -34,8 +33,8 @@ def _validate_input_filenames(
 
 @errors.handle_document_errors
 def _validate_output_filename(
-    ctx: click.Context, param: str, value: Optional[str]
-) -> Optional[str]:
+    ctx: click.Context, param: str, value: str | None
+) -> str | None:
     if value is None:
         return None
     filename = Document.normalize_filename(value)
@@ -52,24 +51,24 @@ def _validate_output_filename(
 #
 # [1]: https://github.com/freedomofpress/dangerzone/issues/206#issuecomment-1297336863
 def validate_input_filename(
-    ctx: click.Context, param: str, value: Optional[str]
-) -> Optional[str]:
+    ctx: click.Context, param: str, value: str | None
+) -> str | None:
     return _validate_input_filename(ctx, param, value)
 
 
 def validate_input_filenames(
-    ctx: click.Context, param: List[str], value: Tuple[str]
-) -> List[str]:
+    ctx: click.Context, param: list[str], value: tuple[str]
+) -> list[str]:
     return _validate_input_filenames(ctx, param, value)
 
 
 def validate_output_filename(
-    ctx: click.Context, param: str, value: Optional[str]
-) -> Optional[str]:
+    ctx: click.Context, param: str, value: str | None
+) -> str | None:
     return _validate_output_filename(ctx, param, value)
 
 
-def check_suspicious_options(args: List[str]) -> None:
+def check_suspicious_options(args: list[str]) -> None:
     options = set([arg for arg in args if arg.startswith("-")])
     try:
         files = set(os.listdir())
@@ -102,7 +101,7 @@ def override_parser_and_check_suspicious_options(click_main: click.Command) -> N
     orig_parse_fn = click_main.parse_args
 
     @functools.wraps(orig_parse_fn)
-    def custom_parse_fn(ctx: click.Context, args: List[str]) -> List[str]:
+    def custom_parse_fn(ctx: click.Context, args: list[str]) -> list[str]:
         check_suspicious_options(args)
         return orig_parse_fn(ctx, args)
 

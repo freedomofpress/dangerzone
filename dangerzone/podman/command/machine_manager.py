@@ -2,7 +2,6 @@ import builtins
 import json
 import subprocess
 from pathlib import Path
-from typing import Optional, Union
 
 from . import cli_runner
 
@@ -39,22 +38,22 @@ class MachineManager:
 
     def init(
         self,
-        name: Optional[str] = None,
-        cpus: Optional[int] = None,
-        disk_size: Optional[int] = None,
-        ignition_path: Optional[Path] = None,
-        image: Union[str, Path, None] = None,
-        memory: Optional[int] = None,
+        name: str | None = None,
+        cpus: int | None = None,
+        disk_size: int | None = None,
+        ignition_path: Path | None = None,
+        image: str | Path | None = None,
+        memory: int | None = None,
         now: bool = False,
-        playbook: Optional[str] = None,
-        rootful: Optional[bool] = False,
-        timezone: Optional[str] = None,
-        usb: Optional[str] = None,
+        playbook: str | None = None,
+        rootful: bool | None = False,
+        timezone: str | None = None,
+        usb: str | None = None,
         user_mode_networking: bool = False,
-        username: Optional[str] = None,
-        volume: Union[str, builtins.list[str], None] = None,
+        username: str | None = None,
+        volume: str | builtins.list[str] | None = None,
         **skwargs,
-    ) -> Union[str, subprocess.Popen]:
+    ) -> str | subprocess.Popen:
         """Initialize a new machine.
 
         Args:
@@ -98,7 +97,7 @@ class MachineManager:
         )
         return self.runner.run_raw(cmd, **skwargs)
 
-    def start(self, name: Optional[str] = None, **skwargs) -> None:
+    def start(self, name: str | None = None, **skwargs) -> None:
         """Start a machine.
 
         Args:
@@ -107,7 +106,7 @@ class MachineManager:
         cmd = self.runner.construct("machine", "start", name)
         self.runner.run_raw(cmd, **skwargs)
 
-    def stop(self, name: Optional[str] = None, **skwargs) -> None:
+    def stop(self, name: str | None = None, **skwargs) -> None:
         """Stop a machine.
 
         Args:
@@ -118,7 +117,7 @@ class MachineManager:
 
     def remove(
         self,
-        name: Optional[str] = None,
+        name: str | None = None,
         save_image: bool = False,
         save_ignition: bool = False,
         **skwargs,

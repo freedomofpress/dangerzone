@@ -3,7 +3,7 @@ import logging
 import os
 import shutil
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from packaging import version
 
@@ -17,7 +17,7 @@ SETTINGS_FILENAME: str = "settings.json"
 
 
 class Settings:
-    settings: Dict[str, Any]
+    settings: dict[str, Any]
 
     # This settings class is a singleton, meaning that all instances of it
     # will point to the actual same object.
@@ -27,19 +27,19 @@ class Settings:
 
     def __new__(cls, *args: list, **kwargs: dict) -> "Settings":
         if cls._singleton is None:
-            cls._singleton = super(Settings, cls).__new__(cls)
+            cls._singleton = super().__new__(cls)
         return cls._singleton
 
     def __init__(self, debug: bool = False) -> None:
         self.debug = debug
         self.settings_filename = get_config_dir() / SETTINGS_FILENAME
-        self.default_settings: Dict[str, Any] = self.generate_default_settings()
+        self.default_settings: dict[str, Any] = self.generate_default_settings()
         # Singletons call multiple times the __init__ method
         if not hasattr(self, "settings"):
             self.load()
 
     @classmethod
-    def generate_default_settings(cls) -> Dict[str, Any]:
+    def generate_default_settings(cls) -> dict[str, Any]:
         return {
             "save": True,
             "archive": True,
@@ -96,7 +96,7 @@ class Settings:
         if autosave and val != old_val:
             self.save()
 
-    def get_updater_settings(self) -> Dict[str, Any]:
+    def get_updater_settings(self) -> dict[str, Any]:
         return {
             key: val for key, val in self.settings.items() if key.startswith("updater_")
         }

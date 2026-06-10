@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import List
 
 import pytest
 from pytest_mock import MockerFixture
@@ -21,7 +20,7 @@ def pytest_configure(config: pytest.Config) -> None:
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 
-def pytest_collection_modifyitems(items: List) -> None:
+def pytest_collection_modifyitems(items: list) -> None:
     for item in items:
         if Path(item.fspath).is_relative_to(Path(__file__).parent):
             item.add_marker(pytest.mark.xdist_group("gui"))

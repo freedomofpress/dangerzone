@@ -13,8 +13,8 @@ from http.client import HTTPException
 # isort: unique-list
 __all__ = [
     "APIError",
-    "CommandError",
     "BuildError",
+    "CommandError",
     "ContainerError",
     "DockerException",
     "ImageNotFound",

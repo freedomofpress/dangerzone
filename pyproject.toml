@@ -84,13 +84,17 @@ exclude = [
 	"dangerzone/podman/errors/",
 ]
 
+[tool.ruff]
+
+target-version = "py39"
+
 [tool.ruff.lint]
 # Enable preview rules, so that we can pick RUF027
+
 preview = true
-select = [
+extend-select = [
     "I", # isort
     "RUF027", # missing-f-string-syntax
-    "F",
 ]
 
 [build-system]

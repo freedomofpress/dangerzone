@@ -9,9 +9,10 @@ import sys
 import threading
 from abc import ABC, abstractmethod
 from collections import deque
+from collections.abc import Callable, Iterator
 from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
-from typing import IO, Callable, Iterator, Optional
+from typing import IO
 
 import fitz
 from colorama import Fore, Style
@@ -136,8 +137,8 @@ class IsolationProvider(ABC):
     def convert(
         self,
         document: Document,
-        ocr_lang: Optional[str],
-        progress_callback: Optional[Callable] = None,
+        ocr_lang: str | None,
+        progress_callback: Callable | None = None,
     ) -> None:
         self.progress_callback = progress_callback
         document.mark_as_converting()
@@ -182,7 +183,7 @@ class IsolationProvider(ABC):
     def convert_with_proc(
         self,
         document: Document,
-        ocr_lang: Optional[str],
+        ocr_lang: str | None,
         p: subprocess.Popen,
     ) -> None:
         percentage = 0.0
@@ -223,7 +224,7 @@ class IsolationProvider(ABC):
                 ocr_pool = None
                 tessdata_dir = None
 
-            def drain_ocr_futures(block_until_below: Optional[int] = None) -> None:
+            def drain_ocr_futures(block_until_below: int | None = None) -> None:
                 """
                 Collect completed OCR pages (from the front of the queue)
                 and append them to the resulting safe_doc.
@@ -360,7 +361,6 @@ class IsolationProvider(ABC):
     @abstractmethod
     def requires_install(self) -> bool:
         """Whether this isolation provider needs an installation step"""
-        pass
 
     @abstractmethod
     def get_max_parallel_conversions(self) -> int:
@@ -375,7 +375,6 @@ class IsolationProvider(ABC):
         self, document: Document, p: subprocess.Popen
     ) -> None:
         """Terminate gracefully the process started for the doc-to-pixels phase."""
-        pass
 
     def ensure_stop_doc_to_pixels_proc(
         self,
@@ -464,14 +463,14 @@ class IsolationProvider(ABC):
 
     def start_stderr_thread(
         self, process: subprocess.Popen, stderr: IO[bytes]
-    ) -> Optional[threading.Thread]:
+    ) -> threading.Thread | None:
         """Start a thread to read stderr from the process"""
 
         def _stream_stderr(process_stderr: IO[bytes]) -> None:
             try:
                 for line in process_stderr:
                     stderr.write(line)
-            except (ValueError, IOError) as e:
+            except (OSError, ValueError) as e:
                 log.debug(f"Stderr stream closed: {e}")
 
         if process.stderr:

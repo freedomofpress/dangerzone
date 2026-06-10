@@ -6,8 +6,8 @@ import platform
 import shutil
 import subprocess
 import sys
+from collections.abc import Iterable
 from pathlib import Path, PurePosixPath
-from typing import Iterable, List, Optional, Tuple, Union
 
 from dangerzone.podman.errors.exceptions import PodmanNotInstalled
 
@@ -35,7 +35,7 @@ TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
 log = logging.getLogger(__name__)
 
 
-def get_runtime_version() -> Tuple[int, int]:
+def get_runtime_version() -> tuple[int, int]:
     """Get the major/minor parts of the Docker/Podman version.
 
     Some of the operations we perform in this module rely on some Podman features
@@ -68,7 +68,7 @@ def get_runtime_version() -> Tuple[int, int]:
         raise RuntimeError(msg)
 
 
-def get_podman_path() -> Optional[Path]:
+def get_podman_path() -> Path | None:
     podman_bin = "podman"
     if platform.system() == "Linux":
         return None  # Use default Podman location
@@ -77,7 +77,7 @@ def get_podman_path() -> Optional[Path]:
     return get_resource_path("vendor") / "podman" / podman_bin
 
 
-def make_seccomp_json_accessible() -> Union[Path, PurePosixPath]:
+def make_seccomp_json_accessible() -> Path | PurePosixPath:
     """Ensure that the bundled seccomp profile is accessible by the runtime.
 
     On Linux platforms, this method is basically a no-op since there's no VM
@@ -191,7 +191,7 @@ rosetta=false
 
 @functools.cache
 def init_podman_command() -> PodmanCommand:
-    podman_path: Optional[Path]
+    podman_path: Path | None
     settings = Settings()
 
     if settings.custom_runtime_specified():
@@ -233,7 +233,7 @@ def init_podman_command() -> PodmanCommand:
             )
 
 
-def list_image_digests() -> List[str]:
+def list_image_digests() -> list[str]:
     """Get the digests of all loaded Dangerzone images."""
     podman = init_podman_command()
     return (
@@ -251,7 +251,7 @@ def list_image_digests() -> List[str]:
     )
 
 
-def list_containers() -> List[str]:
+def list_containers() -> list[str]:
     """Get all the Dangerzone containers."""
     podman = init_podman_command()
     containers = (
@@ -286,7 +286,7 @@ def kill_container(name: str) -> None:
         log.warning(f"Could not kill container '{name}' within {TIMEOUT_KILL} seconds")
     except Exception as e:
         log.exception(
-            f"Unexpected error occurred while killing container '{name}': {str(e)}"
+            f"Unexpected error occurred while killing container '{name}': {e!s}"
         )
 
 
@@ -300,7 +300,7 @@ def add_image_tag(image_id: str, new_tag: str) -> None:
 
 
 def delete_image_digests(
-    digests: Iterable[str], container_name: Optional[str] = None
+    digests: Iterable[str], container_name: str | None = None
 ) -> None:
     """Delete a Dangerzone image by its id."""
     container_name = container_name or expected_image_name()
@@ -329,7 +329,7 @@ def clear_old_images(digest_to_keep: str) -> None:
     delete_image_digests(to_remove)
 
 
-def load_image_tarball(tarball_path: Optional[Path] = None) -> str:
+def load_image_tarball(tarball_path: Path | None = None) -> str:
     """Load the image tarball, and return its digest."""
     log.info("Installing Dangerzone container image...")
     podman = init_podman_command()
@@ -397,7 +397,7 @@ def container_pull(image: str, manifest_digest: str) -> None:
         raise errors.ContainerPullException("Could not pull the container image")
 
 
-def get_local_image_digest(image: Optional[str] = None) -> str:
+def get_local_image_digest(image: str | None = None) -> str:
     """
     Returns a image hash from a local image name
     """

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 import os
 import platform
@@ -8,17 +6,17 @@ import subprocess
 import typing
 from collections import OrderedDict
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from colorama import Fore
 
 from ..util import subprocess_run
+from . import Application
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtGui, QtWidgets
 
-    from . import Application
 else:
     try:
         from PySide6 import QtCore, QtGui, QtWidgets
@@ -41,7 +39,7 @@ class DangerzoneGui(DangerzoneCore):
     """
 
     def __init__(
-        self, app: "Application", isolation_provider: IsolationProvider
+        self, app: Application, isolation_provider: IsolationProvider
     ) -> None:
         super().__init__(isolation_provider)
 
@@ -179,8 +177,8 @@ class Dialog(QtWidgets.QDialog):
         ok_text: str = "Ok",
         has_cancel: bool = True,
         cancel_text: str = "Cancel",
-        extra_button_text: Optional[str] = None,
-        checkbox_text: Optional[str] = None,
+        extra_button_text: str | None = None,
+        checkbox_text: str | None = None,
     ) -> None:
         super().__init__()
         self.dangerzone = dangerzone
@@ -204,17 +202,17 @@ class Dialog(QtWidgets.QDialog):
         self.ok_button = QtWidgets.QPushButton(ok_text)
         self.ok_button.clicked.connect(self.clicked_ok)
 
-        self.extra_button: Optional[QtWidgets.QPushButton] = None
+        self.extra_button: QtWidgets.QPushButton | None = None
         if extra_button_text:
             self.extra_button = QtWidgets.QPushButton(extra_button_text)
             self.extra_button.clicked.connect(self.clicked_extra)
 
-        self.cancel_button: Optional[QtWidgets.QPushButton] = None
+        self.cancel_button: QtWidgets.QPushButton | None = None
         if has_cancel:
             self.cancel_button = QtWidgets.QPushButton(cancel_text)
             self.cancel_button.clicked.connect(self.clicked_cancel)
 
-        self.checkbox: Optional[QtWidgets.QCheckBox] = None
+        self.checkbox: QtWidgets.QCheckBox | None = None
         if checkbox_text:
             self.checkbox = QtWidgets.QCheckBox(checkbox_text)
 
@@ -300,9 +298,9 @@ class UpdateDialog(Dialog):
     def __init__(  # type: ignore [no-untyped-def]
         self,
         *args,
-        intro_msg: Optional[str] = None,
-        middle_widget: Optional[QtWidgets.QWidget] = None,
-        epilogue_msg: Optional[str] = None,
+        intro_msg: str | None = None,
+        middle_widget: QtWidgets.QWidget | None = None,
+        epilogue_msg: str | None = None,
         **kwargs,
     ) -> None:
         self.intro_msg = intro_msg
@@ -350,8 +348,8 @@ class CollapsibleBox(QtWidgets.QWidget):
     3. Add type hints.
     """
 
-    def __init__(self, title: str, parent: Optional[QtWidgets.QWidget] = None):
-        super(CollapsibleBox, self).__init__(parent)
+    def __init__(self, title: str, parent: QtWidgets.QWidget | None = None):
+        super().__init__(parent)
         self.toggle_button = QtWidgets.QToolButton(
             text=title,
             checkable=True,

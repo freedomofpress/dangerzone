@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import argparse
 import os
@@ -88,7 +87,7 @@ def main():
     run(["dpkg-buildpackage"], env=env)
 
     os.makedirs(deb_dist_path, exist_ok=True)
-    print("")
+    print()
     print("* To install run:")
 
     # dpkg-buildpackage produces .deb files in the parent folder

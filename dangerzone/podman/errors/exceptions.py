@@ -2,15 +2,15 @@
 
 import subprocess
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Union
 
 from requests import Response
 from requests.exceptions import HTTPError
 
 # Break circular import
 if TYPE_CHECKING:
-    from podman.api.client import APIResponse
-    from podman.domain.containers import Container
+    from podman.api.client import APIResponse  # noqa: TC004
+    from podman.domain.containers import Container  # noqa: TC004
 
 
 class APIError(HTTPError):
@@ -20,7 +20,7 @@ class APIError(HTTPError):
         self,
         message: str,
         response: Union[Response, "APIResponse", None] = None,
-        explanation: Optional[str] = None,
+        explanation: str | None = None,
     ):
         """Initialize APIError.
 
@@ -114,9 +114,9 @@ class ContainerError(PodmanError):
         self,
         container: "Container",
         exit_status: int,
-        command: Union[str, list[str]],
+        command: str | list[str],
         image: str,
-        stderr: Optional[Iterable[str]] = None,
+        stderr: Iterable[str] | None = None,
     ):  # pylint: disable=too-many-positional-arguments
         """Initialize ContainerError.
 

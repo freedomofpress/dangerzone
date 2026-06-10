@@ -1,7 +1,6 @@
 import logging
 import platform
 import subprocess
-from typing import List
 
 from .. import container_utils
 from ..container_utils import make_seccomp_json_accessible
@@ -26,7 +25,7 @@ log = logging.getLogger(__name__)
 
 class Container(IsolationProvider):
     @staticmethod
-    def get_runtime_security_args() -> List[str]:
+    def get_runtime_security_args() -> list[str]:
         """Security options applicable to the outer Dangerzone container.
 
         Our security precautions for the outer Dangerzone container are the following:
@@ -83,7 +82,7 @@ class Container(IsolationProvider):
 
     def exec_container(
         self,
-        command: List[str],
+        command: list[str],
         name: str,
     ) -> subprocess.Popen:
         container_name = container_utils.expected_image_name()
@@ -171,7 +170,7 @@ class Container(IsolationProvider):
             # probably due to a bug. For more info, see
             # https://github.com/freedomofpress/dangerzone/issues/1294
             log.warning(
-                f"Could not list containers because 'podman ps -a' failed with: {str(e)}"
+                f"Could not list containers because 'podman ps -a' failed with: {e!s}"
                 f"\nContainer '{name}' may still be running..."
             )
             return

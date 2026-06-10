@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import copy
 import os
 import platform
@@ -7,8 +5,8 @@ import shutil
 import sys
 import tempfile
 import traceback
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
 
 import pytest
 from click.testing import CliRunner, Result
@@ -43,7 +41,7 @@ class CLIResult(Result):
     """
 
     @classmethod
-    def reclass_click_result(cls, result: Result, args: Sequence[str]) -> CLIResult:
+    def reclass_click_result(cls, result: Result, args: Sequence[str]) -> "CLIResult":
         result.__class__ = cls
         result.args = copy.deepcopy(args)  # type: ignore[attr-defined]
         return result  # type: ignore[return-value]
@@ -58,7 +56,7 @@ class CLIResult(Result):
             raise
 
     def assert_failure(
-        self, exit_code: Optional[int] = None, message: Optional[str] = None
+        self, exit_code: int | None = None, message: str | None = None
     ) -> None:
         """Assert that the command failed.
 
@@ -116,7 +114,7 @@ class TestCli:
     def run_cli(
         self,
         args: Sequence[str] | str = (),
-        tmp_path: Optional[Path] = None,
+        tmp_path: Path | None = None,
         linger: bool = True,
     ) -> CLIResult:
         """Run the CLI with the provided arguments.

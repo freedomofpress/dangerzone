@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 from pytest_mock import MockerFixture
@@ -8,7 +8,7 @@ from pytest_mock import MockerFixture
 from dangerzone.settings import SETTINGS_FILENAME, Settings
 
 
-def default_settings_0_4_1() -> Dict[str, Any]:
+def default_settings_0_4_1() -> dict[str, Any]:
     """Get the default settings for the 0.4.1 Dangerzone release."""
     return {
         "save": True,
@@ -21,7 +21,7 @@ def default_settings_0_4_1() -> Dict[str, Any]:
     }
 
 
-def save_settings(tmp_path: Path, settings: Dict[str, Any]) -> None:
+def save_settings(tmp_path: Path, settings: dict[str, Any]) -> None:
     """Mimic the way Settings save a dictionary to a settings.json file."""
     settings_filename = tmp_path / "settings.json"
     with open(settings_filename, "w") as settings_file:

@@ -5,7 +5,6 @@ import platform
 import tempfile
 import typing
 from multiprocessing.pool import ThreadPool
-from typing import List, Optional
 
 from dangerzone.gui import shutdown, startup
 from dangerzone.gui.updater import prompt_for_checks
@@ -162,7 +161,7 @@ def animate_svg_image(
     return svg_widget
 
 
-def get_supported_extensions() -> List[str]:
+def get_supported_extensions() -> list[str]:
     supported_ext = [
         ".pdf",
         ".docx",
@@ -203,7 +202,7 @@ def get_supported_extensions() -> List[str]:
 
 class StatusBar(QtWidgets.QStatusBar):
     def __init__(self, dangerzone: DangerzoneGui) -> None:
-        super(StatusBar, self).__init__()
+        super().__init__()
         self.dangerzone = dangerzone
 
         if self.dangerzone.app.os_color_mode.value == "dark":
@@ -302,13 +301,13 @@ class StatusBar(QtWidgets.QStatusBar):
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, dangerzone: DangerzoneGui) -> None:
-        super(MainWindow, self).__init__()
+        super().__init__()
         self.dangerzone = dangerzone
-        self.updater_error: Optional[str] = None
+        self.updater_error: str | None = None
 
         self.setWindowTitle("Dangerzone")
         self.setWindowIcon(self.dangerzone.get_window_icon())
-        self.dialog: Optional[Dialog] = None
+        self.dialog: Dialog | None = None
 
         self.setMinimumWidth(600)
         if platform.system() == "Darwin":
@@ -916,7 +915,7 @@ class ConversionWidget(QtWidgets.QWidget):
     documents_added = QtCore.Signal(list)
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
-        super(ConversionWidget, self).__init__()
+        super().__init__()
         self.dangerzone = dangerzone
         self.conversion_started = False
 
@@ -1019,7 +1018,7 @@ class ConversionWidget(QtWidgets.QWidget):
         self.documents_list.start_conversion()
         QtCore.QTimer.singleShot(3000, self.enqueued_widget.hide)
 
-    def documents_selected(self, docs: List[Document]) -> None:
+    def documents_selected(self, docs: list[Document]) -> None:
         # Ensure all files in batch are in the same directory
         dirnames = {os.path.dirname(doc.input_filename) for doc in docs}
         if len(dirnames) > 1:
@@ -1093,7 +1092,7 @@ class DocSelectionWidget(QtWidgets.QWidget):
     documents_selected = QtCore.Signal(list)
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
-        super(DocSelectionWidget, self).__init__()
+        super().__init__()
         self.dangerzone = dangerzone
 
         # Dangerous document selection
@@ -1246,7 +1245,7 @@ class SettingsWidget(QtWidgets.QWidget):
     change_docs_clicked = QtCore.Signal()
 
     def __init__(self, dangerzone: DangerzoneGui) -> None:
-        super(SettingsWidget, self).__init__()
+        super().__init__()
         self.dangerzone = dangerzone
 
         # Num Docs Selected
@@ -1475,7 +1474,7 @@ class SettingsWidget(QtWidgets.QWidget):
             or self.open_checkbox.checkState() == QtCore.Qt.Checked
         )
 
-    def check_writeable_archive_dir(self, docs: List[Document]) -> None:
+    def check_writeable_archive_dir(self, docs: list[Document]) -> None:
         # assumed all documents are in the same directory
         first_doc = docs[0]
         try:
@@ -1499,7 +1498,7 @@ class SettingsWidget(QtWidgets.QWidget):
         else:
             self.start_button.setDisabled(True)
 
-    def documents_added(self, docs: List[Document]) -> None:
+    def documents_added(self, docs: list[Document]) -> None:
         self.save_location.setText(os.path.basename(self.dangerzone.output_dir))
         self.update_doc_n_labels()
 
@@ -1583,9 +1582,9 @@ class ConvertTask(QtCore.QObject):
         self,
         dangerzone: DangerzoneGui,
         document: Document,
-        ocr_lang: Optional[str] = None,
+        ocr_lang: str | None = None,
     ) -> None:
-        super(ConvertTask, self).__init__()
+        super().__init__()
         self.document = document
         self.ocr_lang = ocr_lang
         self.error = False
@@ -1612,7 +1611,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
     def __init__(self, dangerzone: DangerzoneGui) -> None:
         super().__init__()
         self.dangerzone = dangerzone
-        self.docs_list: List[Document] = []
+        self.docs_list: list[Document] = []
         self.docs_list_widget_map: dict[Document, DocumentWidget] = {}
         self.submitted_docs: set[Document] = set()
         self.conversion_pending = False
@@ -1627,7 +1626,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         self.submitted_docs = set()
         super().clear()
 
-    def documents_added(self, docs: List[Document]) -> None:
+    def documents_added(self, docs: list[Document]) -> None:
         for document in docs:
             item = QtWidgets.QListWidgetItem()
             item.setSizeHint(QtCore.QSize(500, 50))
@@ -1667,7 +1666,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         if all(doc.is_safe() or doc.is_failed() for doc in self.docs_list):
             self.all_conversions_finished.emit()
 
-    def get_ocr_lang(self) -> Optional[str]:
+    def get_ocr_lang(self) -> str | None:
         ocr_lang = None
         if self.dangerzone.settings.get("ocr"):
             ocr_lang = self.dangerzone.ocr_languages[

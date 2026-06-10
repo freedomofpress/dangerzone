@@ -3,7 +3,7 @@ import platform
 import sys
 import time
 import typing
-from typing import Any, Dict, Union
+from typing import Any
 
 import pytest
 from pytest import MonkeyPatch
@@ -31,7 +31,7 @@ from dangerzone.util import get_version
 from ..test_settings import default_settings_0_4_1, save_settings
 
 
-def default_updater_settings() -> Dict[str, Any]:
+def default_updater_settings() -> dict[str, Any]:
     """Get the default updater settings for the current Dangerzone release.
 
     This function acquires the settings strictly from code, and does not initialize
@@ -45,8 +45,8 @@ def default_updater_settings() -> Dict[str, Any]:
 
 
 def assert_report_equal(
-    report1: Union[ReleaseReport, EmptyReport, ErrorReport],
-    report2: Union[ReleaseReport, EmptyReport, ErrorReport],
+    report1: ReleaseReport | EmptyReport | ErrorReport,
+    report2: ReleaseReport | EmptyReport | ErrorReport,
 ) -> None:
     assert isinstance(report1, (ReleaseReport, EmptyReport, ErrorReport))
     assert isinstance(report2, (ReleaseReport, EmptyReport, ErrorReport))

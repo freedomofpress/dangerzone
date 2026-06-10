@@ -1,6 +1,5 @@
 import logging
 import typing
-from typing import Optional
 
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtWidgets
@@ -45,7 +44,7 @@ class LogWindow(QtWidgets.QDialog):
     * Status of startup tasks
     """
 
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Dangerzone Logs")
         self.setMinimumSize(600, 400)

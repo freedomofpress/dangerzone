@@ -2,7 +2,6 @@ import contextlib
 import platform
 import subprocess
 from pathlib import Path
-from typing import Optional, Union
 
 # FIXME: We are commenting out the following import, because it requires the Python
 # Podman client, which Dangerzone does not have as a dependency yet.
@@ -27,10 +26,10 @@ class PodmanCommand:
 
     def __init__(
         self,
-        path: Optional[Path] = None,
+        path: Path | None = None,
         privileged: bool = False,
-        options: Optional[cli_runner.GlobalOptions] = None,
-        env: Optional[dict] = None,
+        options: cli_runner.GlobalOptions | None = None,
+        env: dict | None = None,
     ):
         """Initialize the PodmanCommand.
 
@@ -49,7 +48,7 @@ class PodmanCommand:
             env=env,
         )
         self.machine = machine_manager.MachineManager(self.runner)
-        self.proc_service: Optional[subprocess.Popen] = None
+        self.proc_service: subprocess.Popen | None = None
 
     def run(
         self,
@@ -59,7 +58,7 @@ class PodmanCommand:
         capture_output=True,
         wait=True,
         **skwargs,
-    ) -> Union[str, subprocess.Popen]:
+    ) -> str | subprocess.Popen:
         """Run the specified Podman command.
 
         Args:
@@ -87,9 +86,9 @@ class PodmanCommand:
 
     def start_service(
         self,
-        uri: Optional[str] = None,
-        time: Optional[int] = None,
-        cors: Optional[str] = None,
+        uri: str | None = None,
+        time: int | None = None,
+        cors: str | None = None,
         **skwargs,
     ) -> None:
         """Start the Podman system service.
@@ -119,7 +118,7 @@ class PodmanCommand:
 
     def stop_service(
         self,
-        timeout: Optional[int] = None,
+        timeout: int | None = None,
     ) -> int:
         """Stop the Podman system service.
 
@@ -194,9 +193,9 @@ class PodmanCommand:
     def service(
         self,
         uri: str,
-        cors: Optional[str] = None,
-        ping_timeout: Optional[int] = None,
-        stop_timeout: Optional[int] = None,
+        cors: str | None = None,
+        ping_timeout: int | None = None,
+        stop_timeout: int | None = None,
         **skwargs,
     ):
         """Manage the Podman system service.

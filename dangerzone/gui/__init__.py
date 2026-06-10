@@ -35,7 +35,7 @@ class Application(QtWidgets.QApplication):
     color_scheme_changed = QtCore.Signal()
 
     def __init__(self, *args: typing.Any, **kwargs: typing.Any) -> None:
-        super(Application, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setQuitOnLastWindowClosed(False)
         with get_resource_path("dangerzone.css").open("r") as f:
             style = f.read()

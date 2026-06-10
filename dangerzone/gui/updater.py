@@ -1,6 +1,5 @@
 import logging
 import typing
-from typing import Optional
 
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore, QtWidgets
@@ -77,7 +76,7 @@ class UpdateCheckPrompt(Question):
 
 def prompt_for_checks(
     dangerzone: DangerzoneGui, download_required: bool = False
-) -> Optional[bool]:
+) -> bool | None:
     """Prompt the user to enable update checks.
 
     Args:

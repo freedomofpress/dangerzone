@@ -2,7 +2,6 @@ import ctypes
 import logging
 import shlex
 from ctypes import wintypes
-from typing import List, Optional
 
 from .. import errors
 
@@ -36,9 +35,9 @@ class SHELLEXECUTEINFOW(ctypes.Structure):
 
 def _shellexec(
     file: str,
-    params: Optional[str] = None,
+    params: str | None = None,
     verb: str = "open",
-    cwd: Optional[str] = None,
+    cwd: str | None = None,
     show: int = 1,
     timeout_ms: int = TIMEOUT_INFINITE,
 ) -> int:
@@ -98,7 +97,7 @@ def _shellexec(
     return exit_code.value
 
 
-def run(cmd: List, check: bool = False) -> int:
+def run(cmd: list, check: bool = False) -> int:
     """Convenience wrapper around ShellExecuteEx.
 
     This function simulates the subprocess.run API, and currently supports passing a

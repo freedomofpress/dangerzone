@@ -4,7 +4,8 @@ import platform
 import shutil
 import time
 import typing
-from typing import Any, Generator, List
+from collections.abc import Generator
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -64,7 +65,7 @@ def conversion_widget(qtbot: QtBot, mocker: MockerFixture) -> ConversionWidget:
     return w
 
 
-def drag_files_event(mocker: MockerFixture, files: List[str]) -> QtGui.QDropEvent:
+def drag_files_event(mocker: MockerFixture, files: list[str]) -> QtGui.QDropEvent:
     ev = mocker.MagicMock(spec=QtGui.QDropEvent)
     ev.accept.return_value = True
 
@@ -1261,7 +1262,7 @@ def test_handle_needs_user_input_install_remote_container(
     mocker: MockerFixture,
     window: MainWindow,
     is_tar_bundled: bool,
-    image_list: List[str],
+    image_list: list[str],
     expect_question: bool,
     checkbox_user_choice: bool,
     download_user_choice: bool,

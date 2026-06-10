@@ -2,7 +2,6 @@ import abc
 import logging
 import platform
 from collections.abc import Sequence
-from typing import Optional
 
 from . import errors, settings, util
 from .isolation_provider import qubes
@@ -44,11 +43,10 @@ class Task(abc.ABC):
         Do not raise an exception here, so that the error handler of StartupLogic can
         run.
         """
-        logger.error(f"Task '{self.name}' failed with error: {str(e)}", exc_info=e)
+        logger.error(f"Task '{self.name}' failed with error: {e!s}", exc_info=e)
 
     def handle_success(self) -> None:
         logger.info(f"Task '{self.name}' completed successfully!")
-        pass
 
     @abc.abstractmethod
     def run(self) -> None:
@@ -222,7 +220,7 @@ class ContainerInstallTask(Task):
     def run(self) -> None:
         installer.install()
 
-    def prompt_user(self) -> Optional[bool]:
+    def prompt_user(self) -> bool | None:
         pass
 
 
@@ -259,7 +257,7 @@ class UpdateCheckTask(Task):
         elif isinstance(report, ErrorReport):
             raise RuntimeError(report.error)
 
-    def prompt_user(self, download_required: bool = False) -> Optional[bool]:
+    def prompt_user(self, download_required: bool = False) -> bool | None:
         """Prompt the user to enable updates.
 
         Args:

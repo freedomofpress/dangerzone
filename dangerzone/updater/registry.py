@@ -1,7 +1,6 @@
 import re
 from dataclasses import dataclass
 from hashlib import sha256
-from typing import Dict, Optional
 
 import requests
 
@@ -38,8 +37,8 @@ class Image:
     registry: str
     namespace: str
     image_name: str
-    tag: Optional[str] = None
-    digest: Optional[str] = None
+    tag: str | None = None
+    digest: str | None = None
 
     def to_str(self) -> str:
         string = f"{self.registry}/{self.namespace}/{self.image_name}"
@@ -85,7 +84,7 @@ def replace_image_digest(image_str: str, digest: str, remove_tag: bool = True) -
     return image.to_str()
 
 
-def _get_auth_header(image: Image) -> Dict[str, str]:
+def _get_auth_header(image: Image) -> dict[str, str]:
     log.info("Logging to the remote registry")
     auth_url = f"https://{image.registry}/token"
     response = requests.get(
@@ -155,19 +154,10 @@ def get_blob(image: Image, digest: str) -> requests.Response:
 
 
 def get_manifest_digest(
-    image_str: str, tag_manifest_content: Optional[bytes] = None
+    image_str: str, tag_manifest_content: bytes | None = None
 ) -> str:
     """Get the manifest for the specified image and return its digest."""
     if not tag_manifest_content:
         tag_manifest_content = get_manifest(image_str).content
 
     return sha256(tag_manifest_content).hexdigest()
-
-
-def get_signature_manifest(image_str: str) -> Dict:
-    """Returns the content of a signature for the given image"""
-    digest = get_manifest_digest(image_str)
-    image = parse_image_location(image_str)
-    image.tag = f"sha256-{digest}.sig"
-    resp = get_manifest(image.to_str())
-    return resp.json()

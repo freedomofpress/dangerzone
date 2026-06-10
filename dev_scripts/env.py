@@ -615,9 +615,8 @@ class Env:
 
         self.runtime_run("build", "-t", image, build_dir)
 
-        if sync:
-            if not self.push_image_to_registry(image):
-                print("An error occured while trying to push to the container registry")
+        if sync and not self.push_image_to_registry(image):
+            print("An error occured while trying to push to the container registry")
 
     def build(
         self,

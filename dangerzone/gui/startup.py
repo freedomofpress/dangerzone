@@ -1,5 +1,4 @@
 import typing
-from typing import Optional
 
 if typing.TYPE_CHECKING:
     from PySide2 import QtCore
@@ -145,7 +144,7 @@ class ContainerInstallTask(
         self.download_container.emit()
         super().run()
 
-    def prompt_user(self) -> Optional[bool]:
+    def prompt_user(self) -> bool | None:
         return PromptRequest().ask(self.needs_user_input)
 
 
@@ -157,7 +156,7 @@ class UpdateCheckTask(
     app_update_available = QtCore.Signal(object)
     container_update_available = QtCore.Signal(object)
 
-    def prompt_user(self, download_required: bool = False) -> Optional[bool]:
+    def prompt_user(self, download_required: bool = False) -> bool | None:
         """Prompt user to enable updates.
 
         When download is required (no container available), this blocks until the user

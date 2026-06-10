@@ -2,8 +2,9 @@
 
 import functools
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import click
 
@@ -160,12 +161,12 @@ def verify_local(image: str) -> None:
     """
     if signatures.verify_local_image(image):
         click.echo(
-            (
+            
                 f"Verifying the local image:\n\n"
                 f"pubkey: {DEFAULT_PUBKEY_LOCATION}\n"
                 f"image: {image}\n\n"
                 f"✅ The local image {image} has been signed with the public key"
-            )
+            
         )
 
 

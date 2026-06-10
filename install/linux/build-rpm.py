@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import argparse
 import contextlib
 import os
@@ -146,7 +145,7 @@ def build(build_dir, qubes=False, full=False):
         ]
     subprocess.run(cmd, check=True)
 
-    print("")
+    print()
     print("The following files have been created:")
     print("\n".join([str(p) for p in dist_path.iterdir()]))
 

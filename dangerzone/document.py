@@ -5,7 +5,6 @@ import platform
 import re
 import secrets
 from pathlib import Path, PurePosixPath, PureWindowsPath
-from typing import Optional
 
 from . import errors, util
 
@@ -30,16 +29,16 @@ class Document:
 
     def __init__(
         self,
-        input_filename: Optional[str] = None,
-        output_filename: Optional[str] = None,
+        input_filename: str | None = None,
+        output_filename: str | None = None,
         suffix: str = SAFE_EXTENSION,
         archive: bool = False,
     ) -> None:
         # NOTE: See https://github.com/freedomofpress/dangerzone/pull/216#discussion_r1015449418
         self.id = secrets.token_urlsafe(6)[0:6]
 
-        self._input_filename: Optional[str] = None
-        self._output_filename: Optional[str] = None
+        self._input_filename: str | None = None
+        self._output_filename: str | None = None
         self._archive = False
         self._suffix = suffix
 

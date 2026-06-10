@@ -23,7 +23,7 @@ class TracebackWidget(QtWidgets.QTextEdit):
     """
 
     def __init__(self) -> None:
-        super(TracebackWidget, self).__init__()
+        super().__init__()
         # Error
         self.setReadOnly(True)
         self.setVisible(False)

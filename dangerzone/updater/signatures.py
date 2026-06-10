@@ -10,7 +10,6 @@ from functools import reduce
 from hashlib import sha256
 from pathlib import Path, PurePath
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import Dict, List, Optional, Tuple
 
 from .. import container_utils as runtime
 from ..util import get_resource_path
@@ -71,10 +70,10 @@ DANGERZONE_MANIFEST = "dangerzone.json"
 class Signature:
     """Utility class to interact with signatures"""
 
-    signature: Dict
+    signature: dict
 
     @property
-    def payload(self) -> Dict:
+    def payload(self) -> dict:
         return json.loads(self.payload_bytes)
 
     @property
@@ -91,14 +90,14 @@ class Signature:
         return self.signature["Bundle"]["Payload"]["logIndex"]
 
     @property
-    def bundle(self) -> Dict:
+    def bundle(self) -> dict:
         return self.signature["Bundle"]
 
     @property
-    def bundle_payload(self) -> Dict:
+    def bundle_payload(self) -> dict:
         return self.bundle["Payload"]
 
-    def to_bundle(self) -> Dict:
+    def to_bundle(self) -> dict:
         """Convert a cosign-download signature to the format expected by cosign bundle."""
 
         bundle = self.bundle
@@ -179,7 +178,7 @@ def check_signatures_and_logindex(
     image_str: str,
     remote_digest: str,
     pubkey: Path,
-    signatures: List[Dict],
+    signatures: list[dict],
 ) -> tuple[int, int]:
     """Check the validity of the signatures and ensure the log indexes are only going upwards"""
     verify_signatures(signatures, remote_digest, pubkey)
@@ -196,7 +195,7 @@ def check_signatures_and_logindex(
 
 
 def verify_signatures(
-    signatures: List[Dict],
+    signatures: list[dict],
     image_digest: str,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
 ) -> None:
@@ -217,10 +216,10 @@ def get_last_log_index() -> int:
         return int(f.read())
 
 
-def get_log_index_from_signatures(signatures: List[Dict]) -> int:
+def get_log_index_from_signatures(signatures: list[dict]) -> int:
     """Get the max log index from a list of signatures."""
 
-    def _reducer(accumulator: int, signature: Dict) -> int:
+    def _reducer(accumulator: int, signature: dict) -> int:
         try:
             logIndex = int(signature["Bundle"]["Payload"]["logIndex"])
         except (KeyError, ValueError):
@@ -254,7 +253,7 @@ def _get_blob(digest: str) -> PurePath:
     return PurePath() / "blobs" / "sha256" / digest.replace("sha256:", "")
 
 
-def _get_signature_filename(input: Dict) -> PurePath:
+def _get_signature_filename(input: dict) -> PurePath:
     for manifest in input["manifests"]:
         if manifest["annotations"].get("kind") == "dev.cosignproject.cosign/sigs":
             return _get_blob(manifest["digest"])
@@ -265,7 +264,7 @@ def upgrade_container_image_airgapped(
     container_tar: Path,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
     bypass_logindex: bool = False,
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """
     Verify the given archive against its self-contained signatures, then
     upgrade the image and retag it to the expected tag.
@@ -367,14 +366,14 @@ def get_blob_from_archive(
 
 
 def convert_oci_images_signatures(
-    signatures_manifest: Dict, archive: tarfile.TarFile, tmp_path: Path
-) -> Tuple[str, List[Dict]]:
+    signatures_manifest: dict, archive: tarfile.TarFile, tmp_path: Path
+) -> tuple[str, list[dict]]:
     """
     Convert OCI images signatures (from the registry) to
     cosign-compatible signatures.
     """
 
-    def _to_cosign_signature(layer: Dict) -> Dict:
+    def _to_cosign_signature(layer: dict) -> dict:
         bundle = json.loads(layer["annotations"]["dev.sigstore.cosign/bundle"])
         payload_body = json.loads(b64decode(bundle["Payload"]["body"]))
 
@@ -406,15 +405,6 @@ def convert_oci_images_signatures(
     return image_name, signatures
 
 
-def get_remote_log_index(image_str: str) -> int:
-    """Check the registry to find the remote log index for the given image"""
-    try:
-        signature_manifest = registry.get_signature_manifest(image_str)
-        return get_log_index_from_oci_signatures(signature_manifest)
-    except:
-        return 0
-
-
 def get_log_index_from_oci_signatures(signature_manifest: dict) -> int:
     """
     Extracts the log index from OCI signatures without having
@@ -424,14 +414,11 @@ def get_log_index_from_oci_signatures(signature_manifest: dict) -> int:
     for layer in signature_manifest["layers"]:
         bundle = json.loads(layer["annotations"]["dev.sigstore.cosign/bundle"])
         log_index = bundle["Payload"]["logIndex"]
-        if log_index > remote_log_index:
-            remote_log_index = log_index
+        remote_log_index = max(remote_log_index, log_index)
     return remote_log_index
 
 
-def get_file_digest(
-    path: Optional[Path] = None, content: Optional[bytes] = None
-) -> str:
+def get_file_digest(path: Path | None = None, content: bytes | None = None) -> str:
     """Get the sha256 digest of a file or content"""
     if not path and not content:
         raise errors.UpdaterError("No file or content provided")
@@ -447,8 +434,8 @@ def load_and_verify_signatures(
     image_digest: str,
     pubkey: Path,
     bypass_verification: bool = False,
-    signatures_path: Optional[Path] = None,
-) -> List[Dict]:
+    signatures_path: Path | None = None,
+) -> list[dict]:
     """
     Load signatures from the local filesystem
 
@@ -485,7 +472,7 @@ def load_and_verify_signatures(
 
 
 def store_signatures(
-    signatures: list[Dict],
+    signatures: list[dict],
     image_digest: str,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
     update_logindex: bool = True,
@@ -511,7 +498,7 @@ def store_signatures(
     This function must be used only if the provided signatures have been verified.
     """
 
-    def _get_digest(sig: Dict) -> str:
+    def _get_digest(sig: dict) -> str:
         payload = json.loads(b64decode(sig["Payload"]))
         return payload["critical"]["image"]["docker-manifest-digest"]
 
@@ -539,9 +526,9 @@ def store_signatures(
 
 
 def verify_local_image(
-    image: Optional[str] = None,
+    image: str | None = None,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
-    image_digest: Optional[str] = None,
+    image_digest: str | None = None,
 ) -> bool:
     """
     Verifies that a local image has a valid signature
@@ -560,7 +547,7 @@ def verify_local_image(
     return True
 
 
-def get_remote_signatures(image: str, digest: str) -> List[Dict]:
+def get_remote_signatures(image: str, digest: str) -> list[dict]:
     """Retrieve the signatures from the registry, via `cosign download signatures`."""
     signatures_raw = cosign.download_signature(image, digest)
     signatures = list(filter(bool, map(json.loads, signatures_raw)))
@@ -598,7 +585,7 @@ def prepare_airgapped_archive(
         tmp_path = Path(tmpdir)
         msg = f"Downloading image {arch_image}. \nIt might take a while."
         log.info(msg)
-        log.debug(f"Downloading to temporary directory {str(tmpdir)}")
+        log.debug(f"Downloading to temporary directory {tmpdir!s}")
 
         cosign.save(arch_image, tmp_path)
         cosign.verify_local_image(tmp_path, pubkey)
@@ -624,7 +611,7 @@ def prepare_airgapped_archive(
 
 def get_remote_digest_and_logindex(
     image_str: str, pubkey: Path = DEFAULT_PUBKEY_LOCATION
-) -> Tuple[str, int, List[Dict]]:
+) -> tuple[str, int, list[dict]]:
     """
     Check the remote container registry for updates, downloads and verify
     the signatures and extract log index from them.
@@ -647,9 +634,9 @@ def get_remote_digest_and_logindex(
 
 def upgrade_container_image(
     remote_digest: str,
-    image_str: Optional[str] = None,
+    image_str: str | None = None,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
-    signatures: Optional[List[Dict]] = None,
+    signatures: list[dict] | None = None,
 ) -> None:
     """Verify and upgrade the image to the latest, if signed."""
     image_str = image_str or runtime.expected_image_name()

@@ -6,8 +6,6 @@ from dataclasses import dataclass
 
 # The "|" syntax for type unions was introduced with Python 3.10
 # So we use Union instead as we still require Python 3.9
-from typing import Optional, Tuple, Union
-
 import markdown
 import requests
 from packaging import version
@@ -36,8 +34,8 @@ class ReleaseReport:
     A new Github Release, a new sandbox image (or both) have been detected
     """
 
-    version: Optional[str] = None
-    changelog: Optional[str] = None
+    version: str | None = None
+    changelog: str | None = None
     container_image_bump: bool = False
 
     @property
@@ -57,7 +55,6 @@ class ReleaseReport:
 class EmptyReport:
     """Empty report, when there is nothing to report"""
 
-    pass
 
 
 @dataclass
@@ -101,7 +98,7 @@ def ensure_sane_update(cur_version: str, latest_version: str) -> bool:
         return True
 
 
-def fetch_github_release_info() -> Tuple[str, str]:
+def fetch_github_release_info() -> tuple[str, str]:
     """Get the latest release info from GitHub.
 
     Also, render the changelog from Markdown format to HTML, so that we can show it
@@ -179,7 +176,7 @@ def should_check_for_updates(settings: Settings) -> bool:
 
 def check_for_updates(
     settings: Settings,
-) -> Union[ReleaseReport, EmptyReport, ErrorReport]:
+) -> ReleaseReport | EmptyReport | ErrorReport:
     """
     Check for updates and return a report with the findings.
 

@@ -85,9 +85,11 @@ exclude = [
 ]
 
 [tool.ruff.lint]
+# Enable preview rules, so that we can pick RUF027
+preview = true
 select = [
-    # isort
-    "I",
+    "I", # isort
+    "RUF027", # missing-f-string-syntax
 ]
 
 [build-system]

@@ -17,9 +17,6 @@ test: ## Run the tests
 	pytest --co -q tests/gui | grep -e '^tests/' | xargs -n 1 pytest -v
 	pytest -v --cov --ignore dev_scripts --ignore tests/gui
 
-Dockerfile: Dockerfile.env Dockerfile.in ## Regenerate the Dockerfile from its template
-	poetry run jinja2 Dockerfile.in Dockerfile.env > Dockerfile
-
 .PHONY: poetry-install
 poetry-install: ## Install project dependencies
 	poetry install

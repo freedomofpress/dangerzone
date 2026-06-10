@@ -42,7 +42,6 @@ cx_freeze = { version = "*", platform = "win32" }
 pywin32 = { version = "*", platform = "win32" }
 pyinstaller = { version = "*", platform = "darwin" }
 doit = "*"
-jinja2-cli = "*"
 mazette = "*"
 
 # Dependencies required for linting the code.

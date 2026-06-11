@@ -81,8 +81,18 @@ warn_unused_ignores = true
 exclude = [
 	"dangerzone/podman/command/",
 	"dangerzone/podman/errors/",
-	"dangerzone/podman/errors/",
 ]
+
+# `exclude` does not seem to apply to imported files.
+# so we enforce the ignore once more.
+[[tool.mypy.overrides]]
+module = [
+	"dangerzone.podman.command",
+	"dangerzone.podman.command.*",
+	"dangerzone.podman.errors",
+	"dangerzone.podman.errors.*",
+]
+ignore_errors = true
 
 [tool.ruff]
 

@@ -406,19 +406,6 @@ def convert_oci_images_signatures(
     return image_name, signatures
 
 
-def get_log_index_from_oci_signatures(signature_manifest: dict) -> int:
-    """
-    Extracts the log index from OCI signatures without having
-    to parse and verify the whole signature.
-    """
-    remote_log_index = 0
-    for layer in signature_manifest["layers"]:
-        bundle = json.loads(layer["annotations"]["dev.sigstore.cosign/bundle"])
-        log_index = bundle["Payload"]["logIndex"]
-        remote_log_index = max(remote_log_index, log_index)
-    return remote_log_index
-
-
 def get_file_digest(path: Path | None = None, content: bytes | None = None) -> str:
     """Get the sha256 digest of a file or content"""
     if not path and not content:

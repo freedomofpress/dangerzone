@@ -23,8 +23,6 @@ from .util import (
     linux_system_is,
 )
 
-# Keep the name of the old container here to be able to get rid of it later
-OLD_CONTAINER_NAME = "dangerzone.rocks/dangerzone"
 CONTAINER_PREFIX = "dangerzone-"
 CONTAINERS_CONF_PATH = get_cache_dir() / "containers.conf"
 SECCOMP_PATH = get_cache_dir() / "shared" / "seccomp.gvisor.json"
@@ -286,15 +284,6 @@ def kill_container(name: str) -> None:
         log.warning(f"Could not kill container '{name}' within {TIMEOUT_KILL} seconds")
     except Exception:
         log.exception(f"Unexpected error occurred while killing container '{name}'")
-
-
-def add_image_tag(image_id: str, new_tag: str) -> None:
-    """Add a tag to the Dangerzone image."""
-    podman = init_podman_command()
-    log.debug(f"Adding tag '{new_tag}' to image '{image_id}'")
-    podman.run(
-        ["tag", image_id, new_tag],
-    )
 
 
 def delete_image_digests(

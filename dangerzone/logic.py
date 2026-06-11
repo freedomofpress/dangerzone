@@ -47,13 +47,6 @@ class DangerzoneCore:
             raise errors.AddedDuplicateDocumentException()
         self.documents.append(doc)
 
-    def remove_document(self, doc: Document) -> None:
-        if doc not in self.documents:
-            # Sanity check: should not have reached
-            return
-        log.debug(f"Removing document {doc.input_filename}")
-        self.documents.remove(doc)
-
     def clear_documents(self) -> None:
         log.debug("Removing all documents")
         self.documents = []

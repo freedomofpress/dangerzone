@@ -10,7 +10,6 @@ from . import errors, log
 # This client interacts with container registries as defined by:
 # https://github.com/opencontainers/distribution-spec/blob/main/spec.md#endpoints
 
-SIGSTORE_BUNDLE = "application/vnd.dev.sigstore.bundle.v0.3+json"
 IMAGE_INDEX_MEDIA_TYPE = "application/vnd.oci.image.index.v1+json"
 IMAGE_LIST_MEDIA_TYPE = "application/vnd.docker.distribution.manifest.list.v2+json"
 ACCEPT_MANIFESTS_HEADER = ",".join(  # noqa: FLY002
@@ -137,20 +136,6 @@ def get_digest_for_arch(image_str: str, architecture: str) -> str:
     if not arch_manifests:
         raise errors.ArchitectureNotFound()
     return arch_manifests[0]
-
-
-def list_manifests(image_str: str) -> list:
-    return get_manifest(image_str).json().get("manifests")
-
-
-def get_blob(image: Image, digest: str) -> requests.Response:
-    response = requests.get(
-        f"{_url(image)}/blobs/{digest}",
-        headers=_get_auth_header(image),
-        proxies=get_proxies(),
-    )
-    response.raise_for_status()
-    return response
 
 
 def get_manifest_digest(

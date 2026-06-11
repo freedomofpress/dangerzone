@@ -142,7 +142,7 @@
     "podman": {
       "windows/amd64": {
         "repo": "containers/podman",
-        "download_url": "https://github.com/containers/podman/releases/download/v5.8.2/podman-remote-release-windows_amd64.zip",
+        "download_url": "https://github.com/podman-container-tools/podman/releases/download/v5.8.2/podman-remote-release-windows_amd64.zip",
         "version": "5.8.2",
         "checksum": "1b60aae4bd4879c3932c283d2070bb87116ec1f0ab3a4a98eff7e65f318f9e4e",
         "executable": true,
@@ -157,7 +157,7 @@
       },
       "darwin/amd64": {
         "repo": "containers/podman",
-        "download_url": "https://github.com/containers/podman/releases/download/v5.8.2/podman-remote-release-darwin_amd64.zip",
+        "download_url": "https://github.com/podman-container-tools/podman/releases/download/v5.8.2/podman-remote-release-darwin_amd64.zip",
         "version": "5.8.2",
         "checksum": "8c54f845651fd606512debd509a273f7a8d20e6ab0adb372a46863608275aa78",
         "executable": true,
@@ -172,7 +172,7 @@
       },
       "darwin/arm64": {
         "repo": "containers/podman",
-        "download_url": "https://github.com/containers/podman/releases/download/v5.8.2/podman-remote-release-darwin_arm64.zip",
+        "download_url": "https://github.com/podman-container-tools/podman/releases/download/v5.8.2/podman-remote-release-darwin_arm64.zip",
         "version": "5.8.2",
         "checksum": "2379bcb0bf320df5deccf84115337109d3f9051f7d017948ee68a92ce932e798",
         "executable": true,
@@ -229,7 +229,7 @@
     "machine-os": {
       "darwin/amd64": {
         "repo": "containers/podman-machine-os",
-        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.8.2/podman-machine.x86_64.applehv.raw.zst",
+        "download_url": "https://github.com/podman-container-tools/podman-machine-os/releases/download/v5.8.2/podman-machine.x86_64.applehv.raw.zst",
         "version": "5.8.2",
         "checksum": "5efcf56a599919c786136faf8e4f48b25bf3865b5e8ea3302f6d705ba750afec",
         "executable": false,
@@ -238,7 +238,7 @@
       },
       "darwin/arm64": {
         "repo": "containers/podman-machine-os",
-        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.8.2/podman-machine.aarch64.applehv.raw.zst",
+        "download_url": "https://github.com/podman-container-tools/podman-machine-os/releases/download/v5.8.2/podman-machine.aarch64.applehv.raw.zst",
         "version": "5.8.2",
         "checksum": "2c0878ba6eaad525f7333b8013378d97468533ed8dd960215812d7c37db5aa61",
         "executable": false,
@@ -247,7 +247,7 @@
       },
       "windows/amd64": {
         "repo": "containers/podman-machine-os",
-        "download_url": "https://github.com/containers/podman-machine-os/releases/download/v5.8.2/podman-machine.x86_64.wsl.tar.zst",
+        "download_url": "https://github.com/podman-container-tools/podman-machine-os/releases/download/v5.8.2/podman-machine.x86_64.wsl.tar.zst",
         "version": "5.8.2",
         "checksum": "e2b6cbcadd8b41b708fecb58a246a20d737dee0ef26872a3f75b575f77eba968",
         "executable": false,
@@ -258,41 +258,41 @@
     "cosign": {
       "darwin/amd64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-darwin-amd64",
-        "version": "2.6.3",
-        "checksum": "5715d61dd00a9b6dcb344de14910b434145855b7f82690b94183c553ac1b68be",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v3.1.1/cosign-darwin-amd64",
+        "version": "3.1.1",
+        "checksum": "14d2678dfbfde18798151e86fbd91ebdadbb7424b18412a42a155dd8a2df4c7a",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       },
       "darwin/arm64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-darwin-arm64",
-        "version": "2.6.3",
-        "checksum": "ff497a698f125f3130b04f000b2cb0dd163bcaf00b5e776ef536035e6d0b3f3e",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v3.1.1/cosign-darwin-arm64",
+        "version": "3.1.1",
+        "checksum": "94b42a9e697be95675f6160ab031a9a5f1ec1e646d6f648d7b2f5cd59ececbc5",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       },
       "linux/amd64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-linux-amd64",
-        "version": "2.6.3",
-        "checksum": "7c78a7f2efc00088bd788a758db6e0928e79f3e0eb83eb5d3c499ed98da4c4f4",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v3.1.1/cosign-linux-amd64",
+        "version": "3.1.1",
+        "checksum": "ae1ecd212663f3693ad9edf8b1a183900c9a52d3155ba6e354237f9a0f6463fc",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       },
       "windows/amd64": {
         "repo": "sigstore/cosign",
-        "download_url": "https://github.com/sigstore/cosign/releases/download/v2.6.3/cosign-windows-amd64.exe",
-        "version": "2.6.3",
-        "checksum": "2264ea5867077b9e070161648e8c18544decac351f5f3a7edaea43c233ce2e36",
+        "download_url": "https://github.com/sigstore/cosign/releases/download/v3.1.1/cosign-windows-amd64.exe",
+        "version": "3.1.1",
+        "checksum": "9d2c026e667bfd979fa7ba1cab8c4b24d2e73f336ec2d57f7fc72c7e73e5b4b6",
         "executable": true,
         "destination": "share/vendor/cosign",
         "extract": false
       }
     }
   },
-  "config_checksum": "f43afd7f885fce65c10a266033e6b118874bcc9bdfc41ce09b441ecd4cf0ab3e"
+  "config_checksum": "9fea8241dfdf19ade64438616bd6a03eaf988da76502a611ea8fd2b9648bd6bc"
 }

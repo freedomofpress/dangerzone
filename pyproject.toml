@@ -276,7 +276,7 @@ destination = "share/machine.tar"
 
 [tool.mazette.asset.cosign]
 repo = "sigstore/cosign"
-version = "<3.0.0"
+version = "<4.0.0"
 platform."darwin/amd64" = "cosign-darwin-amd64"
 platform."darwin/arm64" = "cosign-darwin-arm64"
 platform."linux/amd64" = "cosign-linux-amd64"

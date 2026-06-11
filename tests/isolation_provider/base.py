@@ -15,7 +15,7 @@ TIMEOUT_GRACE = 60
 
 
 @pytest.mark.skipif(
-    os.environ.get("DUMMY_CONVERSION", False),
+    os.environ.get("DUMMY_CONVERSION"),
     reason="dummy conversions not supported",
 )
 class IsolationProviderTest:
@@ -187,15 +187,17 @@ class IsolationProviderTermination:
         terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
         popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
 
-        with pytest.raises(errors.DocFormatUnsupported):
-            with provider.doc_to_pixels_proc(doc, timeout_exception=0) as proc:
-                assert proc.stdin
-                # Sending an invalid file to the conversion process should report it as
-                # an unsupported format.
-                proc.stdin.write(b"A" * 9)
-                proc.stdin.close()
-                proc.wait(TIMEOUT_STARTUP)
-                raise errors.ConverterProcException
+        with (
+            pytest.raises(errors.DocFormatUnsupported),
+            provider.doc_to_pixels_proc(doc, timeout_exception=0) as proc,
+        ):
+            assert proc.stdin
+            # Sending an invalid file to the conversion process should report it as
+            # an unsupported format.
+            proc.stdin.write(b"A" * 9)
+            proc.stdin.close()
+            proc.wait(TIMEOUT_STARTUP)
+            raise errors.ConverterProcException
 
         get_proc_exception_spy.assert_called()
         assert isinstance(
@@ -218,9 +220,11 @@ class IsolationProviderTermination:
         terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
         popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
 
-        with pytest.raises(errors.UnexpectedConversionError):
-            with provider.doc_to_pixels_proc(doc, timeout_exception=0) as proc:
-                raise errors.ConverterProcException
+        with (
+            pytest.raises(errors.UnexpectedConversionError),
+            provider.doc_to_pixels_proc(doc, timeout_exception=0) as proc,
+        ):
+            raise errors.ConverterProcException
 
         get_proc_exception_spy.assert_called()
         assert isinstance(

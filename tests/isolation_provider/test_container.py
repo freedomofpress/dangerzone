@@ -17,7 +17,7 @@ pytestmark = pytest.mark.xdist_group("container")
 # Run the tests in this module only if we can spawn containers.
 if is_qubes_native_conversion():
     pytest.skip("Qubes native conversion is enabled", allow_module_level=True)
-elif os.environ.get("DUMMY_CONVERSION", False):
+elif os.environ.get("DUMMY_CONVERSION"):
     pytest.skip("Dummy conversion is enabled", allow_module_level=True)
 
 

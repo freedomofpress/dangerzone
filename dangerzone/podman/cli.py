@@ -139,7 +139,9 @@ def reset(force: bool) -> None:
         raise click.Abort()
 
 
-@main.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
+@main.command(
+    context_settings={"ignore_unknown_options": True, "allow_extra_args": True}
+)
 @click.pass_context
 def raw(ctx) -> None:  # type: ignore [no-untyped-def]
     """Run a raw Podman command."""

@@ -60,7 +60,7 @@ def get_runtime_version() -> tuple[int, int]:
     try:
         major, minor, _ = version.split(".", 3)
         return (int(major), int(minor))
-    except Exception as e:
+    except ValueError as e:
         msg = (
             f"Could not parse the version of Podman (found: '{version}') due to the"
             f" following error: {e}"
@@ -284,10 +284,8 @@ def kill_container(name: str) -> None:
         podman.run(["kill", name], check=False, timeout=TIMEOUT_KILL)
     except subprocess.TimeoutExpired:
         log.warning(f"Could not kill container '{name}' within {TIMEOUT_KILL} seconds")
-    except Exception as e:
-        log.exception(
-            f"Unexpected error occurred while killing container '{name}': {e!s}"
-        )
+    except Exception:
+        log.exception(f"Unexpected error occurred while killing container '{name}'")
 
 
 def add_image_tag(image_id: str, new_tag: str) -> None:
@@ -312,7 +310,7 @@ def delete_image_digests(
     log.warning(f"Deleting container images: {' '.join(full_digests)}")
     try:
         podman.run(["rmi", "--force", *full_digests])
-    except Exception as e:
+    except CommandError as e:
         log.warning(
             f"Couldn't delete container images '{' '.join(full_digests)}', so leaving it there."
             f" Original error: {e}"

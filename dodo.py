@@ -1,12 +1,13 @@
 import os
 import platform
 import shutil
+import sys
 from pathlib import Path
 
 from doit.action import CmdAction
 
 ARCH = "arm64" if platform.machine() == "arm64" else "i686"
-VERSION = open("share/version.txt").read().strip()
+VERSION = Path("share/version.txt").read_text().strip()
 FEDORA_VERSIONS = ["42", "43", "44"]
 
 ### Global parameters
@@ -34,7 +35,7 @@ PARAM_APPLE_ID = {
 def list_files(path, recursive=False):
     """List files in a directory, and optionally traverse into subdirectories."""
     glob_fn = Path(path).rglob if recursive else Path(path).glob
-    return [f for f in glob_fn("*") if f.is_file() and not f.suffix == ".pyc"]
+    return [f for f in glob_fn("*") if f.is_file() and f.suffix != ".pyc"]
 
 
 ASSETS_DEPS = ["mazette.lock"]
@@ -427,7 +428,7 @@ Are you sure you want to clean everything (y/N): \
         return
     else:
         print("Exiting...")
-        exit(1)
+        sys.exit(1)
 
 
 def task_clean_prompt():

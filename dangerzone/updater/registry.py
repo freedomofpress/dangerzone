@@ -13,7 +13,7 @@ from . import errors, log
 SIGSTORE_BUNDLE = "application/vnd.dev.sigstore.bundle.v0.3+json"
 IMAGE_INDEX_MEDIA_TYPE = "application/vnd.oci.image.index.v1+json"
 IMAGE_LIST_MEDIA_TYPE = "application/vnd.docker.distribution.manifest.list.v2+json"
-ACCEPT_MANIFESTS_HEADER = ",".join(
+ACCEPT_MANIFESTS_HEADER = ",".join(  # noqa: FLY002
     [
         "application/vnd.docker.distribution.manifest.v1+json",
         "application/vnd.docker.distribution.manifest.v1+prettyjws",

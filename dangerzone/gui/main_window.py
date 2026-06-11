@@ -1054,7 +1054,7 @@ class ConversionWidget(QtWidgets.QWidget):
         if saved_output_dir and os.path.isdir(saved_output_dir):
             self.dangerzone.output_dir = saved_output_dir
         else:
-            self.dangerzone.output_dir = list(dirnames)[0]
+            self.dangerzone.output_dir = next(iter(dirnames))
 
         for doc in docs:
             self.dangerzone.add_document(doc)
@@ -1213,9 +1213,10 @@ class DocSelectionDropFrame(QtWidgets.QFrame):
             return
 
         # Confirm with user when _some_ docs were ignored
-        if num_unsupported_docs > 0:
-            if not self.prompt_continue_without(num_unsupported_docs):
-                return
+        if num_unsupported_docs > 0 and not self.prompt_continue_without(
+            num_unsupported_docs
+        ):
+            return
         self.documents_selected.emit(documents)
 
     def prompt_continue_without(self, num_unsupported_docs: int) -> int:

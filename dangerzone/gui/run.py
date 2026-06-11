@@ -62,7 +62,9 @@ def run(dummy_conversion: bool, filenames: list[str] | None) -> bool | None:
     # Allow Ctrl-C to smoothly quit the program instead of throwing an exception
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    def open_files(filenames: list[str] = []) -> None:
+    def open_files(filenames: list[str] | None = None) -> None:
+        if filenames is None:
+            filenames = []
         documents = [Document(filename) for filename in filenames]
         window.conversion_widget.doc_selection_widget.documents_selected.emit(documents)
 

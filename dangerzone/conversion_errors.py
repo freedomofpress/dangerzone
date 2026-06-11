@@ -5,7 +5,6 @@ The actual error classes live here (in the client) rather than being shared
 with the container image; only the integer error codes cross the boundary.
 """
 
-
 # XXX: errors start at 128 for conversion-related issues
 ERROR_SHIFT = 128
 MAX_PAGES = 10000

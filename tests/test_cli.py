@@ -135,7 +135,7 @@ class TestCli:
         # time.
         if linger:
             args = ("--linger", *args)
-        if os.environ.get("DUMMY_CONVERSION", False):
+        if os.environ.get("DUMMY_CONVERSION"):
             args = ("--unsafe-dummy-conversion", *args)
 
         # TODO: Replace this with `contextlib.chdir()` [1], which was added in
@@ -172,7 +172,7 @@ class TestCliBasic(TestCli):
 
     def test_display_banner(self, capfd) -> None:  # type: ignore[no-untyped-def]
         display_banner()  # call the test subject
-        (out, err) = capfd.readouterr()
+        (out, _err) = capfd.readouterr()
         plain_lines = [strip_ansi(line) for line in out.splitlines()]
         assert "╭──────────────────────────╮" in plain_lines, "missing top border"
         assert "╰──────────────────────────╯" in plain_lines, "missing bottom border"
@@ -190,8 +190,7 @@ class TestCliBasic(TestCli):
             assert version in result.stdout
 
     @pytest.mark.skipif(
-        os.environ.get("DUMMY_CONVERSION", False)
-        or os.environ.get("QUBES_CONVERSION", False),
+        os.environ.get("DUMMY_CONVERSION") or os.environ.get("QUBES_CONVERSION"),
         reason="Test requires a container-based isolation provider",
     )
     def test_other_machine_running_error(
@@ -266,7 +265,7 @@ class TestCliConversion(TestCliBasic):
         result.assert_failure()
 
     @pytest.mark.skipif(
-        os.environ.get("DUMMY_CONVERSION", False),
+        os.environ.get("DUMMY_CONVERSION"),
         reason="real conversion required to test conversion failure",
     )
     def test_failure_filename_uncommon(
@@ -398,10 +397,7 @@ class TestCliShutdown(TestCli):
         )
 
         def assert_mocks() -> None:
-            if (
-                os.environ.get("DUMMY_CONVERSION", False)
-                or is_qubes_native_conversion()
-            ):
+            if os.environ.get("DUMMY_CONVERSION") or is_qubes_native_conversion():
                 mock_container_stop.assert_not_called()
                 mock_machine_stop.assert_not_called()
                 return

@@ -208,9 +208,7 @@ COPY storage.conf /home/user/.config/containers
 
 def run(*args):
     """Simple function that runs a command, validates it, and returns the output"""
-    return subprocess.run(
-        args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    ).stdout
+    return subprocess.run(args, check=True, capture_output=True).stdout
 
 
 def git_root():
@@ -255,7 +253,8 @@ def distro_build(distro, version):
 
 
 def get_current_date():
-    return date.today().strftime("%Y-%m-%d")
+    # The local date is good enough for stamping build files.
+    return date.today().strftime("%Y-%m-%d")  # noqa: DTZ011
 
 
 def get_build_dir_sources(distro, version):

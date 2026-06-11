@@ -10,7 +10,7 @@ from dangerzone.isolation_provider.dummy import Dummy
 from .base import IsolationProviderTermination
 
 # Run the tests in this module only if dummy conversion is enabled.
-if not os.environ.get("DUMMY_CONVERSION", False):
+if not os.environ.get("DUMMY_CONVERSION"):
     pytest.skip("Dummy conversion is not enabled", allow_module_level=True)
 
 

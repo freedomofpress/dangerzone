@@ -4,6 +4,7 @@ import sys
 
 from ..conversion_errors import INT_BYTES
 from ..document import Document
+from ..errors import UnsafeIsolationProvider
 from .base import IsolationProvider, terminate_process_group
 
 log = logging.getLogger(__name__)
@@ -30,10 +31,7 @@ class Dummy(IsolationProvider):
     def __init__(self) -> None:
         # Sanity check
         if not getattr(sys, "dangerzone_dev", False):
-            raise Exception(
-                "Dummy isolation provider is UNSAFE and should never be "
-                + "called in a non-testing system."
-            )
+            raise UnsafeIsolationProvider()
         super().__init__()
 
     @staticmethod

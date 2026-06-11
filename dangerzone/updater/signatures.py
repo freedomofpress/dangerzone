@@ -56,7 +56,7 @@ def is_container_image_installed() -> bool:
         return False
     try:
         return bool(runtime.list_image_digests())
-    except Exception:
+    except Exception:  # noqa: BLE001
         # If we cannot reach Podman (not installed, machine not running, etc.),
         # treat the image as missing. The caller will then prompt the user to
         # download it, which will surface the real Podman issue if any.
@@ -136,7 +136,8 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
     sig_obj = Signature(signature)
     try:
         payload_digest = sig_obj.manifest_digest
-    except Exception as e:
+    # Catch any error here, so that we can report it as a verification error.
+    except Exception as e:  # noqa: BLE001
         raise errors.SignatureVerificationError(
             f"Unable to extract the payload digest from the signature: {e}"
         )
@@ -345,10 +346,10 @@ def upgrade_container_image_airgapped(
     try:
         verify_signatures(signatures, image_digest)
         store_signatures(signatures, image_digest, pubkey)
-    except errors.SignatureError as e:
+    except errors.SignatureError:
         log.info("Unable to verify the signatures, unload the image")
         runtime.delete_image_digests([f"sha256:{image_digest}"], image_name)
-        raise e
+        raise
 
     return (image_name, image_digest)
 
@@ -675,15 +676,13 @@ def install_local_container_tar(
     if bypass_signature_checks():
         return runtime.load_image_tarball(tarball_path)
     else:
-        image_name, image_digest = upgrade_container_image_airgapped(
-            tarball_path, pubkey
-        )
+        _, image_digest = upgrade_container_image_airgapped(tarball_path, pubkey)
         return image_digest
 
 
 def bypass_signature_checks() -> bool:
     if getattr(sys, "dangerzone_dev", False) and os.environ.get(
-        "DANGERZONE_BYPASS_SIG_CHECKS", False
+        "DANGERZONE_BYPASS_SIG_CHECKS"
     ) in ("1", "true"):
         log.warning(
             "Bypassing signature checks because dev mode is detected and the"

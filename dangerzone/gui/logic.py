@@ -38,9 +38,7 @@ class DangerzoneGui(DangerzoneCore):
     Singleton of shared state / functionality for the GUI and core app logic
     """
 
-    def __init__(
-        self, app: Application, isolation_provider: IsolationProvider
-    ) -> None:
+    def __init__(self, app: Application, isolation_provider: IsolationProvider) -> None:
         super().__init__(isolation_provider)
 
         # Qt app

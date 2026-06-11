@@ -2,7 +2,7 @@
 
 import subprocess
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from requests import Response
 from requests.exceptions import HTTPError
@@ -19,7 +19,7 @@ class APIError(HTTPError):
     def __init__(
         self,
         message: str,
-        response: Union[Response, "APIResponse", None] = None,
+        response: Response | APIResponse | None = None,
         explanation: str | None = None,
     ):
         """Initialize APIError.
@@ -112,7 +112,7 @@ class ContainerError(PodmanError):
 
     def __init__(
         self,
-        container: "Container",
+        container: Container,
         exit_status: int,
         command: str | list[str],
         image: str,

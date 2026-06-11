@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import functools
 import logging
 from collections.abc import Callable
@@ -71,7 +69,7 @@ def upgrade() -> None:
         click.echo(
             f"✅ The local image {DEFAULT_IMAGE_NAME}@{manifest_digest} is already up to date"
         )
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         click.echo(f"❌ {e}")
         raise click.Abort()
 
@@ -161,12 +159,10 @@ def verify_local(image: str) -> None:
     """
     if signatures.verify_local_image(image):
         click.echo(
-            
-                f"Verifying the local image:\n\n"
-                f"pubkey: {DEFAULT_PUBKEY_LOCATION}\n"
-                f"image: {image}\n\n"
-                f"✅ The local image {image} has been signed with the public key"
-            
+            f"Verifying the local image:\n\n"
+            f"pubkey: {DEFAULT_PUBKEY_LOCATION}\n"
+            f"image: {image}\n\n"
+            f"✅ The local image {image} has been signed with the public key"
         )
 
 

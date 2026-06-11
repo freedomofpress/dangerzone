@@ -274,7 +274,7 @@ def test_get_remote_digest_and_logindex_when_remote_image_available(
     )
 
     # Call is_update_available
-    digest, log_index, signatures = get_remote_digest_and_logindex(
+    digest, log_index, _ = get_remote_digest_and_logindex(
         "ghcr.io/freedomofpress/dangerzone",
         TEST_PUBKEY_PATH,
     )

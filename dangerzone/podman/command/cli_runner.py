@@ -256,7 +256,7 @@ class Runner:
             skwargs.setdefault("check", check)
             skwargs.setdefault("capture_output", capture_output)
             skwargs.setdefault("stdin", stdin)
-            ret = subprocess.run(
+            ret = subprocess.run(  # NOQA -- we explicitely hand off the check=True/False to the caller
                 cmd,
                 env=self.env,
                 **skwargs,

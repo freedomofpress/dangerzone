@@ -210,3 +210,14 @@ class UpdaterDisabledNoContainer(Exception):
             "No container image is available. "
             "Updates must be enabled to download the container and use Dangerzone."
         )
+
+
+class UnsafeIsolationProvider(Exception):
+    def __init__(self) -> None:
+        super().__init__(
+            "This isolation provider is UNSAFE and should never be called in a non-testing system."
+        )
+
+
+class StartupException(Exception):
+    pass

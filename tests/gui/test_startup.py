@@ -103,7 +103,7 @@ class StartupThreadMocker(startup.StartupThread):
             elif isinstance(task, startup.ContainerInstallTask):
                 self.make_install_task_succeed()
             else:
-                raise RuntimeError(f"Unexpected task: {task}")
+                raise TypeError(f"Unexpected task: {task}")
 
             names = ["starting", "succeeded", "completed"]
             for name in names:
@@ -124,7 +124,7 @@ class StartupThreadMocker(startup.StartupThread):
             elif isinstance(task, startup.ContainerInstallTask):
                 self.make_install_task_skip()
             else:
-                raise RuntimeError(f"Unexpected task: {task}")
+                raise TypeError(f"Unexpected task: {task}")
 
             names = ["skipped", "completed"]
             for name in names:
@@ -145,7 +145,7 @@ class StartupThreadMocker(startup.StartupThread):
             elif isinstance(task, startup.ContainerInstallTask):
                 self.make_install_task_fail()
             else:
-                raise RuntimeError(f"Unexpected task: {task}")
+                raise TypeError(f"Unexpected task: {task}")
 
             names = ["starting", "failed"]
             for name in names:

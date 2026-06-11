@@ -22,7 +22,9 @@ def subprocess_run(*args: Any, **kwargs: Any) -> subprocess.CompletedProcess:
         startupinfo = subprocess.STARTUPINFO()  # type: ignore [attr-defined]
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW  # type: ignore [attr-defined]
         kwargs.setdefault("startupinfo", startupinfo)
-    return subprocess.run(*args, **kwargs)
+    # This wrapper forwards kwargs verbatim, so callers decide whether to pass
+    # `check`.
+    return subprocess.run(*args, **kwargs)  # noqa: PLW1510
 
 
 def get_architecture() -> str:
@@ -126,9 +128,7 @@ def replace_control_chars(untrusted_str: str, keep_newlines: bool = False) -> st
         * Zp - U+2029 PARAGRAPH SEPARATOR only
         """
         categ = unicodedata.category(chr)
-        if categ.startswith("C") or categ in ("Zl", "Zp"):
-            return False
-        return True
+        return not (categ.startswith("C") or categ in ("Zl", "Zp"))
 
     sanitized_str = ""
     for char in untrusted_str:
@@ -141,10 +141,7 @@ def replace_control_chars(untrusted_str: str, keep_newlines: bool = False) -> st
 
 def format_exception(e: Exception) -> str:
     # The signature of traceback.format_exception has changed in python 3.10
-    if sys.version_info < (3, 10):
-        output = traceback.format_exception(*sys.exc_info())
-    else:
-        output = traceback.format_exception(e)
+    output = traceback.format_exception(e)
 
     return "".join(output)
 
@@ -156,7 +153,7 @@ def linux_system_is(*names: str) -> bool:
         os_release_path = Path("/etc/os-release")
         if os_release_path.exists():
             os_release = os_release_path.read_text()
-            return any([name in os_release for name in names])
+            return any(name in os_release for name in names)
     return False
 
 

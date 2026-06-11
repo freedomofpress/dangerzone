@@ -65,7 +65,8 @@ def test_corrupt_settings(tmp_path: Path, mocker: MockerFixture) -> None:
     assert settings.settings_filename.is_file()
 
     # Check if settings file was reset to the default
-    new_settings_dict = json.load(open(settings.settings_filename))
+    with open(settings.settings_filename) as f:
+        new_settings_dict = json.load(f)
     assert new_settings_dict != corrupt_settings_dict
     assert sorted(new_settings_dict.items()) == sorted(
         settings.generate_default_settings().items()

@@ -113,7 +113,7 @@ def _ocr_page_worker(
             language=ocr_lang,
             tessdata=tessdata_dir,
         )
-    except Exception as e:
+    except Exception as e:  # NOQA -- Catch all exceptions here.
         # Re-raise with a picklable exception to avoid multiprocessing errors
         # when the original exception contains unpicklable SWIG objects
         raise RuntimeError(str(e)) from None
@@ -244,7 +244,7 @@ class IsolationProvider(ABC):
                         if block_until_below is None:
                             break  # non-blocking: stop at first incomplete
                         future.result()  # blocking: wait for the future to complete
-                    page, future = ocr_futures.popleft()
+                    _page, future = ocr_futures.popleft()
                     page_pdf_bytes = future.result()
                     page_doc = fitz.open("pdf", page_pdf_bytes)
                     safe_doc.insert_pdf(page_doc)
@@ -351,7 +351,7 @@ class IsolationProvider(ABC):
                 f" but the conversion process is still running after {timeout} seconds"
                 f" (PID: {p.pid})"
             )
-        except Exception:
+        except subprocess.SubprocessError:
             return errors.UnexpectedConversionError(
                 "Encountered an I/O error during document to pixels conversion,"
                 f" but the status of the conversion process is unknown (PID: {p.pid})"

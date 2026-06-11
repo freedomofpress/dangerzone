@@ -148,7 +148,7 @@ class MachineStopOthersTask(_NonLinuxTask):
             else:
                 return False
 
-        raise Exception(
+        raise errors.StartupException(
             "BUG: Dangerzone cannot decide how to handle running Podman machine"
         )
 
@@ -187,7 +187,7 @@ class WSLInstallTask(_NonLinuxTask):
                 util.subprocess_run(["shutdown", "/r", "/t", "0"])
                 # The OS is about to reboot, so there's no need to continue with the
                 # rest of the startup steps.
-                raise Exception("We are about to reboot..")
+                raise errors.StartupException("We are about to reboot..")
             else:
                 raise errors.WSLInstallNeedsReboot(
                     "User chose to quit instead of rebooting"
@@ -255,7 +255,7 @@ class UpdateCheckTask(Task):
             if report.container_image_bump:
                 self.handle_container_update(report)
         elif isinstance(report, ErrorReport):
-            raise RuntimeError(report.error)
+            raise RuntimeError(report.error)  # noqa: TRY004
 
     def prompt_user(self, download_required: bool = False) -> bool | None:
         """Prompt the user to enable updates.
@@ -322,7 +322,7 @@ class Runner:
                 if self.raise_on_error:
                     raise
                 return
-            except Exception as e:
+            except Exception as e:  # NOQA -- Actually catch all exceptions here
                 task.handle_error(e)
                 if not task.can_fail:
                     return self.handle_error(task, e)

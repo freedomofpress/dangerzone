@@ -69,10 +69,10 @@ def validate_output_filename(
 
 
 def check_suspicious_options(args: list[str]) -> None:
-    options = set([arg for arg in args if arg.startswith("-")])
+    options = {arg for arg in args if arg.startswith("-")}
     try:
         files = set(os.listdir())
-    except Exception:
+    except OSError:
         # If we can list files in the current working directory, this means that
         # we're probably in an unlinked directory. Dangerzone should still work in
         # this case, so we should return here.

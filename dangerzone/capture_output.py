@@ -90,8 +90,8 @@ def patched_subprocess_run(  # type: ignore[no-untyped-def]
             *args,
             **kwargs,
         )
-    except subprocess.CalledProcessError as e:
-        log.exception(e)
+    except subprocess.CalledProcessError:
+        log.exception()
         raise
 
     # process.std{out,err} is set to `None` by the patched Popen when reading the

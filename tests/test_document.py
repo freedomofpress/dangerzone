@@ -28,7 +28,7 @@ def test_input_file_none() -> None:
     """
     d = Document()
     with pytest.raises(errors.NotSetInputFilenameException):
-        d.input_filename
+        _ = d.input_filename
 
 
 def test_input_file_non_existing() -> None:
@@ -66,7 +66,7 @@ def test_output_file_none() -> None:
     """
     d = Document()
     with pytest.raises(errors.NotSetOutputFilenameException):
-        d.output_filename
+        _ = d.output_filename
 
 
 def test_output_file_not_pdf(tmp_path: Path) -> None:

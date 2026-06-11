@@ -10,6 +10,7 @@ import selectors
 import subprocess
 import sys
 import urllib.request
+from typing import ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -434,7 +435,7 @@ class Reference:
     """
 
     REPO_URL = "https://github.com/freedomofpress/dangerzone"
-    instances = []
+    instances: ClassVar[list] = []
 
     def __init__(self, md_path, content):
         """Initialize the class using the path for the docs and the cached section."""
@@ -464,7 +465,7 @@ class Reference:
 
         # Check if there have been any changes from the cached section stored in this
         # file.
-        if not self.content == current_section_text:
+        if self.content != current_section_text:
             logger.error(
                 f"The contents of section '{self.heading_title}' in file"
                 f" '{self.md_path}' have changed since this file was last updated!"
@@ -529,7 +530,7 @@ class Reference:
 class QABase(abc.ABC):
     """Base class for the QA tasks."""
 
-    platforms = {}
+    platforms: ClassVar[dict] = {}
 
     REF_QA = Reference("docs/developer/release/qa.md", content=CONTENT_QA)
     REF_QA_SCENARIOS = Reference(
@@ -558,6 +559,7 @@ class QABase(abc.ABC):
                     "--show-toplevel",
                 ],
                 stdout=subprocess.PIPE,
+                check=True,
             )
             .stdout.decode()
             .strip("\n")
@@ -698,7 +700,7 @@ class QABase(abc.ABC):
             if choices is None:
                 prompt = "Press Enter once you completed this step to continue: "
             else:
-                prompt = "Valid choices are %s: " % ", ".join(choices)
+                prompt = "Valid choices are {}: ".format(", ".join(choices))
 
         if self.skip_manual:
             logger.info("Skipping manual tasks, as instructed")
@@ -794,7 +796,7 @@ class QAWindows(QABase):
         logger.info("Getting latest Python release")
         try:
             latest_version = self.get_latest_python_release()
-        except Exception:
+        except Exception:  # noqa: BLE001
             logger.error("Could not verify that the latest Python version is installed")
 
         cur_version = list(sys.version_info[:3])

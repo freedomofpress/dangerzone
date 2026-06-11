@@ -16,7 +16,7 @@ from .base import IsolationProviderTermination, IsolationProviderTest
 # Run the tests in this module only if we can spawn disposable qubes.
 if not is_qubes_native_conversion():
     pytest.skip("Qubes native conversion is not enabled", allow_module_level=True)
-elif os.environ.get("DUMMY_CONVERSION", False):
+elif os.environ.get("DUMMY_CONVERSION"):
     pytest.skip("Dummy conversion is enabled", allow_module_level=True)
 
 

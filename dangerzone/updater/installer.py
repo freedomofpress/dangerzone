@@ -46,9 +46,7 @@ def apply_installation_strategy(strategy: Strategy) -> None:
         log.debug("Download and install a remote container image")
         container_name = runtime.expected_image_name()
 
-        remote_digest, remote_log_index, signatures = get_remote_digest_and_logindex(
-            container_name
-        )
+        remote_digest, _, signatures = get_remote_digest_and_logindex(container_name)
         upgrade_container_image(remote_digest, signatures=signatures)
         image_digest = remote_digest
 

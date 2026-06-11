@@ -56,7 +56,6 @@ class EmptyReport:
     """Empty report, when there is nothing to report"""
 
 
-
 @dataclass
 class ErrorReport:
     """An error has been encountered when fetching updates"""
@@ -105,18 +104,9 @@ def fetch_github_release_info() -> tuple[str, str]:
     to the users.
     """
     log.debug("Checking the latest GitHub release")
-    try:
-        res = requests.get(GH_RELEASE_URL, timeout=REQ_TIMEOUT)
-    except Exception as e:
-        raise RuntimeError(
-            f"Encountered an exception while checking {GH_RELEASE_URL}: {e}"
-        )
 
-    if res.status_code != 200:
-        raise RuntimeError(
-            f"Encountered an HTTP {res.status_code} error while checking"
-            f" {GH_RELEASE_URL}"
-        )
+    res = requests.get(GH_RELEASE_URL, timeout=REQ_TIMEOUT)
+    res.raise_for_status()
 
     try:
         info = res.json()
@@ -242,6 +232,7 @@ def check_for_updates(
             return EmptyReport()
         return report
 
-    except Exception as e:
+    # Catch any error here, so that we can report it to the caller.
+    except Exception as e:  # noqa: BLE001
         log.exception("Encountered an error while checking for upgrades")
         return ErrorReport(error=str(e))

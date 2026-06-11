@@ -142,6 +142,8 @@ class PodmanMachineManager:
         """List all Dangerzone machines."""
         return self._get_existing_dangerzone_machines()
 
-    def run_raw_podman_command(self, args: builtins.list[str]) -> str | subprocess.Popen:
+    def run_raw_podman_command(
+        self, args: builtins.list[str]
+    ) -> str | subprocess.Popen:
         """Run a raw Podman command."""
         return self.podman.run(args, stdin=None, capture_output=False)

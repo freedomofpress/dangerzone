@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from packaging import version
+from typing_extensions import Self
 
 from . import errors
 from .document import SAFE_EXTENSION
@@ -25,7 +26,7 @@ class Settings:
     # setting `Settings._singleton = None` will force a new instance
     _singleton = None
 
-    def __new__(cls, *args: list, **kwargs: dict) -> "Settings":
+    def __new__(cls, *args: list, **kwargs: dict) -> Self:
         if cls._singleton is None:
             cls._singleton = super().__new__(cls)
         return cls._singleton
@@ -114,11 +115,12 @@ class Settings:
                 for key in self.default_settings:
                     if key not in self.settings:
                         self.settings[key] = self.default_settings[key]
-                    elif key == "updater_latest_version":
-                        if version.parse(get_version()) > version.parse(self.get(key)):
-                            self.set(key, get_version())
+                    elif key == "updater_latest_version" and version.parse(
+                        get_version()
+                    ) > version.parse(self.get(key)):
+                        self.set(key, get_version())
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 log.error(f"Error loading settings, falling back to default {e}")
                 self.settings = self.default_settings
 

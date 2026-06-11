@@ -59,7 +59,8 @@ class Document:
     @staticmethod
     def validate_input_filename(filename: str) -> None:
         try:
-            open(filename, "rb")
+            with open(filename, "rb") as _file:
+                pass  # Just ensure the file is possible to open
         except FileNotFoundError as e:
             raise errors.InputFileNotFoundException() from e
         except PermissionError as e:

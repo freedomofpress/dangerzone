@@ -15,7 +15,7 @@ TIMEOUT_GRACE = 60
 
 
 @pytest.mark.skipif(
-    os.environ.get("DUMMY_CONVERSION"),
+    bool(os.environ.get("DUMMY_CONVERSION")),
     reason="dummy conversions not supported",
 )
 class IsolationProviderTest:

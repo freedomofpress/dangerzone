@@ -9,8 +9,8 @@ from requests.exceptions import HTTPError
 
 # Break circular import
 if TYPE_CHECKING:
-    from podman.api.client import APIResponse  # noqa: TC004
-    from podman.domain.containers import Container  # noqa: TC004
+    from podman.api.client import APIResponse
+    from podman.domain.containers import Container
 
 
 class APIError(HTTPError):
@@ -19,7 +19,7 @@ class APIError(HTTPError):
     def __init__(
         self,
         message: str,
-        response: Response | APIResponse | None = None,
+        response: "Response | APIResponse | None" = None,
         explanation: str | None = None,
     ):
         """Initialize APIError.
@@ -112,7 +112,7 @@ class ContainerError(PodmanError):
 
     def __init__(
         self,
-        container: Container,
+        container: "Container",
         exit_status: int,
         command: str | list[str],
         image: str,

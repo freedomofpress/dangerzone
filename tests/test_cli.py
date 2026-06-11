@@ -190,7 +190,7 @@ class TestCliBasic(TestCli):
             assert version in result.stdout
 
     @pytest.mark.skipif(
-        os.environ.get("DUMMY_CONVERSION") or os.environ.get("QUBES_CONVERSION"),
+        bool(os.environ.get("DUMMY_CONVERSION") or os.environ.get("QUBES_CONVERSION")),
         reason="Test requires a container-based isolation provider",
     )
     def test_other_machine_running_error(
@@ -265,7 +265,7 @@ class TestCliConversion(TestCliBasic):
         result.assert_failure()
 
     @pytest.mark.skipif(
-        os.environ.get("DUMMY_CONVERSION"),
+        bool(os.environ.get("DUMMY_CONVERSION")),
         reason="real conversion required to test conversion failure",
     )
     def test_failure_filename_uncommon(

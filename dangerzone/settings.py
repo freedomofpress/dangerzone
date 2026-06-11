@@ -3,10 +3,9 @@ import logging
 import os
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar, Optional
 
 from packaging import version
-from typing_extensions import Self
 
 from . import errors
 from .document import SAFE_EXTENSION
@@ -24,9 +23,11 @@ class Settings:
     # will point to the actual same object.
     # In case there is a need to disable this behavior (e.g. in the tests)
     # setting `Settings._singleton = None` will force a new instance
-    _singleton = None
+    _singleton: ClassVar[Optional["Settings"]] = None
 
-    def __new__(cls, *args: list, **kwargs: dict) -> Self:
+    # Returning "Settings" instead of "Self" on purpose, since typing.Self
+    # requires Python 3.11+ and typing_extensions is not always available.
+    def __new__(cls, *args: list, **kwargs: dict) -> "Settings":  # noqa: PYI034
         if cls._singleton is None:
             cls._singleton = super().__new__(cls)
         return cls._singleton

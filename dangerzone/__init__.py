@@ -31,4 +31,4 @@ except ImportError:
     pass
 
 if os.environ.get("DANGERZONE_DEV", "0") == "1":
-    sys.dangerzone_dev = True
+    sys.dangerzone_dev = True  # type: ignore[attr-defined]

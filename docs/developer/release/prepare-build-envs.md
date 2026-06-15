@@ -17,10 +17,11 @@
     If they key isn't found, add it to the Keychain by running:
 
     ```bash
-    xcrun notarytool store-credentials dz-notarytool-release-key --apple-id <email> --team-id <team ID>
+    xcrun notarytool store-credentials dz-notarytool-release-key --apple-id <email> --team-id 94ZZGGGJ3W
     ```
 
-    with the respective `email` and `team ID` (the latter can be obtained [here](https://developer.apple.com/help/account/manage-your-team/locate-your-team-id))
+    with the respective `email`. The team ID is retrieved from
+    https://developer.apple.com -> Account -> Membership details -> Team ID.
 
 ### On each release
 
@@ -47,5 +48,4 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
 ### On each release
 
 - [ ] Update WiX, if necessary
-- [ ] Update Python to the latest supported version from https://python.org.
 - [ ] Update Python to the latest supported version, following our [instructions](../python.md)

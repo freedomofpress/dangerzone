@@ -105,8 +105,18 @@ def fetch_github_release_info() -> tuple[str, str]:
     """
     log.debug("Checking the latest GitHub release")
 
-    res = requests.get(GH_RELEASE_URL, timeout=REQ_TIMEOUT)
-    res.raise_for_status()
+    try:
+        res = requests.get(GH_RELEASE_URL, timeout=REQ_TIMEOUT)
+    except Exception as e:  # noqa: BLE001
+        raise RuntimeError(
+            f"Encountered an exception while checking {GH_RELEASE_URL}: {e}"
+        )
+
+    if res.status_code != 200:
+        raise RuntimeError(
+            f"Encountered an HTTP {res.status_code} error while checking"
+            f" {GH_RELEASE_URL}"
+        )
 
     try:
         info = res.json()

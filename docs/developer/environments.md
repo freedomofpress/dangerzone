@@ -10,13 +10,18 @@ It supports two types of environments:
    Dangerzone, baked in. Also, it mounts the Dangerzone source under
    `/home/user/dangerzone` in the container. The developer can then run
    Dangerzone from source, with `poetry run dangerzone`.
-2. End-user environment. This environment has only Dangerzone installed in it,
-   from the .deb/.rpm package that we have created. For convenience, it also has
-   the Dangerzone source mounted under `/home/user/dangerzone`, but it lacks
-   Poetry and other build tools. The developer can run Dangerzone there with
-   `dangerzone`. This environment is the most vanilla Dangerzone environment,
-   and should be closer to the end user's environment, than the development
-   environment.
+2. End-user environment. This environment has only Dangerzone installed in it
+   from one of the following sources:
+
+   - _(default)_: from the .deb/.rpm package that we have created
+   - `--qa`: from https://packages-qa.freedom.press
+   - `--prod`: from https://packages.freedom.press
+
+   For convenience, it also has the Dangerzone source mounted under
+   `/home/user/dangerzone`, but it lacks Poetry and other build tools. The
+   developer can run Dangerzone there with `dangerzone`. This environment is the
+   most vanilla Dangerzone environment, and should be closer to the end user's
+   environment, than the development environment.
 
 Each environment corresponds to a Dockerfile, which is generated on the fly. The
 developer can see this Dockerfile by passing `--show-dockerfile`.
@@ -25,7 +30,7 @@ For usage information, run `./dev_scripts/env.py --help`.
 
 ## Nested containerization
 
-As Dangerzone environments are containers, the isolation sandbox that Dangerzone create is a nested container. 
+As Dangerzone environments are containers, the isolation sandbox that Dangerzone create is a nested container.
 This brings the following challenges:
 
 1. Containers typically only have a subset of syscalls allowed, and sometimes

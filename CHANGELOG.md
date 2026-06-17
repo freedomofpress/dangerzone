@@ -51,6 +51,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Drop support for Fedora 41 and Fedora 42 as they have reached end of life
 - Drop support for Debian bullseye
   ([#1482](https://github.com/freedomofpress/dangerzone/issues/1482))
+
 ### Development changes
 
 - Run macOS Intel CI tests only on scheduled/manual runs to reduce PR CI time
@@ -91,6 +92,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Drop the `cx_Freeze < 8.5.0` workaround now that the upstream MSI build bug
   has been fixed
   ([#1443](https://github.com/freedomofpress/dangerzone/issues/1443))
+- Extend `dev_scripts/env.py` to create end-user Dangerzone environments from
+  our APT/YUM repos, with the `--qa` / `--prod` flags
 
 ## [0.10.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.10.0) - 2025-12-02
 

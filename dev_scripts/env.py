@@ -180,6 +180,28 @@ RUN {install_cmd} /tmp/{package}
 RUN rm /tmp/{package}
 """
 
+DOCKERFILE_BUILD_FEDORA_REPO_DZ = r"""
+RUN dnf install -y 'dnf-command(config-manager)'
+RUN dnf config-manager addrepo --from-repofile=https://packages{qa}.freedom.press/yum-tools-prod/dangerzone/dangerzone{qa}.repo
+RUN dnf install -y dangerzone{full}
+"""
+
+DOCKERFILE_BUILD_DEBIAN_REPO_DZ = r"""
+RUN apt-get update && apt-get install -y gpg ca-certificates
+RUN mkdir -p /etc/apt/keyrings
+RUN gpg --keyserver hkps://keys.openpgp.org \
+    --no-default-keyring --no-permission-warning --homedir $(mktemp -d) \
+    --keyring gnupg-ring:/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg \
+    --recv-keys DE28AB241FA48260FAC9B8BAA7C9B38522604281
+RUN chmod +r /etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg
+RUN . /etc/os-release && echo "deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
+    https://packages-qa.freedom.press/apt-tools-prod ${{VERSION_CODENAME?}} main" \
+    | tee /etc/apt/sources.list.d/fpf-apt-tools.list
+
+RUN apt-get update
+RUN apt-get install -y dangerzone{full}
+"""
+
 # The Dockerfile for building an environment with Dangerzone installed in it. Parts of
 # the Dockerfile will be populated during runtime.
 #
@@ -621,29 +643,39 @@ class Env:
         if sync and not self.push_image_to_registry(image):
             print("An error occured while trying to push to the container registry")
 
-    def determine_dz_installation_command(self, full=False):
-        pkg_name = "dangerzone-full" if full else "dangerzone"
-        version = dz_version()
-        build_dir = distro_build(self.distro, self.version)
-        os.makedirs(build_dir, exist_ok=True)
+    def determine_dz_installation_command(self, qa=False, prod=False, full=False):
+        if not qa and not prod:
+            pkg_name = "dangerzone-full" if full else "dangerzone"
+            version = dz_version()
+            build_dir = distro_build(self.distro, self.version)
+            os.makedirs(build_dir, exist_ok=True)
 
-        if self.distro == "fedora":
-            package_pattern = f"{pkg_name}-{version}-*.fc{self.version}.x86_64.rpm"
-            package_src = self.find_dz_package(git_root() / "dist", package_pattern)
-            package = package_src.name
-            package_dst = build_dir / package
-            install_cmd = "dnf install -y"
+            if self.distro == "fedora":
+                package_pattern = f"{pkg_name}-{version}-*.fc{self.version}.x86_64.rpm"
+                package_src = self.find_dz_package(git_root() / "dist", package_pattern)
+                package = package_src.name
+                package_dst = build_dir / package
+                install_cmd = "dnf install -y"
+            else:
+                package_pattern = f"{pkg_name}_{version}*_*.deb"
+                package_src = self.find_dz_package(
+                    git_root() / "deb_dist", package_pattern
+                )
+                package = package_src.name
+                package_dst = build_dir / package
+                install_cmd = "apt-get update && apt-get install -y"
+
+            shutil.copy(package_src, package_dst)
+            return DOCKERFILE_BUILD_INSTALL_LOCAL_DZ.format(
+                package=package, install_cmd=install_cmd
+            )
         else:
-            package_pattern = f"{pkg_name}_{version}*_*.deb"
-            package_src = self.find_dz_package(git_root() / "deb_dist", package_pattern)
-            package = package_src.name
-            package_dst = build_dir / package
-            install_cmd = "apt-get update && apt-get install -y"
-
-        shutil.copy(package_src, package_dst)
-        return DOCKERFILE_BUILD_INSTALL_LOCAL_DZ.format(
-            package=package, install_cmd=install_cmd
-        )
+            qa = "-qa" if qa else ""
+            full = "-full" if full else ""
+            if self.distro == "fedora":
+                return DOCKERFILE_BUILD_FEDORA_REPO_DZ.format(qa=qa, full=full)
+            else:
+                return DOCKERFILE_BUILD_DEBIAN_REPO_DZ.format(qa=qa, full=full)
 
     def build(self, dz_install_cmd, show_dockerfile=DEFAULT_SHOW_DOCKERFILE):
         """Build a Linux environment and install Dangerzone in it."""
@@ -710,8 +742,13 @@ def env_build_dev(args):
 
 def env_build(args):
     """Invoke the 'build' command based on the CLI args."""
+    if args.qa and args.prod:
+        raise ValueError("You cannot pass both --qa and --prod flags")
+
     env = Env.from_args(args)
-    dz_install_cmd = env.determine_dz_installation_command(full=args.full)
+    dz_install_cmd = env.determine_dz_installation_command(
+        qa=args.qa, prod=args.prod, full=args.full
+    )
     return env.build(
         dz_install_cmd,
         show_dockerfile=args.show_dockerfile,
@@ -822,6 +859,18 @@ def parse_args():
         default=False,
         action="store_true",
         help="Install dangerzone-full package (with bundled container) instead of dangerzone",
+    )
+    parser_build.add_argument(
+        "--qa",
+        default=False,
+        action="store_true",
+        help="Install Dangerzone from the QA repo (https://packages-qa.freedom.press)",
+    )
+    parser_build.add_argument(
+        "--prod",
+        default=False,
+        action="store_true",
+        help="Install Dangerzone from the main repo (https://packages.freedom.press)",
     )
 
     return parser.parse_args()

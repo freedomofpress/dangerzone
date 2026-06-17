@@ -174,6 +174,12 @@ RUN dnf install -y mupdf thunar && dnf clean all
 RUN rpm --restore shadow-utils
 """
 
+DOCKERFILE_BUILD_INSTALL_LOCAL_DZ = r"""
+COPY {package} /tmp/{package}
+RUN {install_cmd} /tmp/{package}
+RUN rm /tmp/{package}
+"""
+
 # The Dockerfile for building an environment with Dangerzone installed in it. Parts of
 # the Dockerfile will be populated during runtime.
 #
@@ -183,9 +189,7 @@ DOCKERFILE_BUILD = r"""FROM {distro}:{version}
 
 {install_deps}
 
-COPY {package} /tmp/{package}
-RUN {install_cmd} /tmp/{package}
-RUN rm /tmp/{package}
+{install_dangerzone}
 
 #########################################
 # Create a non-root user to run Dangerzone
@@ -617,23 +621,36 @@ class Env:
         if sync and not self.push_image_to_registry(image):
             print("An error occured while trying to push to the container registry")
 
-    def build(
-        self,
-        show_dockerfile=DEFAULT_SHOW_DOCKERFILE,
-        full=False,
-    ):
-        """Build a Linux environment and install Dangerzone in it."""
+    def determine_dz_installation_command(self, full=False):
+        pkg_name = "dangerzone-full" if full else "dangerzone"
+        version = dz_version()
         build_dir = distro_build(self.distro, self.version)
         os.makedirs(build_dir, exist_ok=True)
-        version = dz_version()
-        pkg_name = "dangerzone-full" if full else "dangerzone"
+
         if self.distro == "fedora":
-            install_deps = DOCKERFILE_BUILD_FEDORA_DEPS
             package_pattern = f"{pkg_name}-{version}-*.fc{self.version}.x86_64.rpm"
             package_src = self.find_dz_package(git_root() / "dist", package_pattern)
             package = package_src.name
             package_dst = build_dir / package
             install_cmd = "dnf install -y"
+        else:
+            package_pattern = f"{pkg_name}_{version}*_*.deb"
+            package_src = self.find_dz_package(git_root() / "deb_dist", package_pattern)
+            package = package_src.name
+            package_dst = build_dir / package
+            install_cmd = "apt-get update && apt-get install -y"
+
+        shutil.copy(package_src, package_dst)
+        return DOCKERFILE_BUILD_INSTALL_LOCAL_DZ.format(
+            package=package, install_cmd=install_cmd
+        )
+
+    def build(self, dz_install_cmd, show_dockerfile=DEFAULT_SHOW_DOCKERFILE):
+        """Build a Linux environment and install Dangerzone in it."""
+        build_dir = distro_build(self.distro, self.version)
+        os.makedirs(build_dir, exist_ok=True)
+        if self.distro == "fedora":
+            install_deps = DOCKERFILE_BUILD_FEDORA_DEPS
         else:
             install_deps = DOCKERFILE_BUILD_DEBIAN_DEPS
             if self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
@@ -642,25 +659,18 @@ class Env:
                 install_deps = DOCKERFILE_CONMON_UPDATE + DOCKERFILE_BUILD_DEBIAN_DEPS
             elif self.distro == "ubuntu" and self.version not in ("22.04", "jammy"):
                 install_deps = DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS
-            package_pattern = f"{pkg_name}_{version}*_*.deb"
-            package_src = self.find_dz_package(git_root() / "deb_dist", package_pattern)
-            package = package_src.name
-            package_dst = build_dir / package
-            install_cmd = "apt-get update && apt-get install -y"
 
         dockerfile = DOCKERFILE_BUILD.format(
             distro=self.distro,
             version=self.version,
-            install_cmd=install_cmd,
-            package=package,
             install_deps=install_deps,
+            install_dangerzone=dz_install_cmd,
         )
         if show_dockerfile:
             print(dockerfile)
             return
 
         # Populate the build context.
-        shutil.copy(package_src, package_dst)
         shutil.copy(git_root() / "dev_scripts" / "storage.conf", build_dir)
         shutil.copy(git_root() / "dev_scripts" / "containers.conf", build_dir)
         if self.distro == "ubuntu" and self.version in ("22.04", "jammy"):
@@ -701,9 +711,10 @@ def env_build_dev(args):
 def env_build(args):
     """Invoke the 'build' command based on the CLI args."""
     env = Env.from_args(args)
+    dz_install_cmd = env.determine_dz_installation_command(full=args.full)
     return env.build(
+        dz_install_cmd,
         show_dockerfile=args.show_dockerfile,
-        full=args.full,
     )
 
 

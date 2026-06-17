@@ -165,6 +165,7 @@ sudo apt install -y dangerzone-full
 Type the following commands in a terminal:
 
 ```sh
+sudo dnf install 'dnf-command(config-manager)'
 sudo dnf config-manager addrepo --from-repofile=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 sudo dnf install dangerzone
 
@@ -276,6 +277,7 @@ dz.Convert         *       @anyvm       @dispvm:dz-dvm  allow
 Install Dangerzone:
 
 ```sh
+sudo dnf install 'dnf-command(config-manager)'
 sudo dnf config-manager addrepo --from-repofile=https://packages.freedom.press/yum-tools-prod/dangerzone/dangerzone.repo
 sudo dnf install dangerzone-qubes
 ```

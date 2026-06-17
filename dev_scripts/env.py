@@ -640,14 +640,7 @@ class Env:
                 # Ubuntu Jammy requires a more up-to-date conmon
                 # package (see https://github.com/freedomofpress/dangerzone/issues/685)
                 install_deps = DOCKERFILE_CONMON_UPDATE + DOCKERFILE_BUILD_DEBIAN_DEPS
-            elif self.distro == "ubuntu" and self.version in (
-                "24.04",
-                "noble",
-                "26.04",
-                "resolute",
-                "25.10",
-                "questing",
-            ):
+            elif self.distro == "ubuntu" and self.version not in ("22.04", "jammy"):
                 install_deps = DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEBIAN_DEPS
             package_pattern = f"{pkg_name}_{version}*_*.deb"
             package_src = self.find_dz_package(git_root() / "deb_dist", package_pattern)

@@ -269,7 +269,7 @@ def task_macos_build_dmg():
             "poetry_install",
             "download_image",
         ],
-        "targets": [dmg_src, dmg_dst],
+        "targets": [dmg_dst],
         "clean": True,
     }
 

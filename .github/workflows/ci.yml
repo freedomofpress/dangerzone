@@ -261,7 +261,7 @@ jobs:
 
       - name: Upload Dangerzone-full .deb
         if: matrix.distro == 'debian' && matrix.version == 'bookworm'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dangerzone-full.deb
           path: "deb_dist/dangerzone-full_*_*.deb"

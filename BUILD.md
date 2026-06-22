@@ -378,6 +378,12 @@ command:
 poetry run mazette install
 ```
 
+Make sure you the `DANGERZONE_DEV` for development:
+
+```sh
+export DANGERZONE_DEV=1
+```
+
 Run the following command to download the latest container image, or
 [build it locally](#building-a-local-container-image):
 

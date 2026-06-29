@@ -36,7 +36,7 @@ jobs:
           only-fixed: false
           severity-cutoff: critical
       - name: Upload application scan report
-        uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4
+        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
         with:
           sarif_file: ${{ steps.scan_app.outputs.sarif }}
           category: app

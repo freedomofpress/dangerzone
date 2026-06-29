@@ -282,9 +282,10 @@ poetry run mazette install
 ```
 
 Run the following command to download the latest container image, or
-[build it locally](#building-a-local-container-image):
+[use a local one](#using-a-local-container-image):
 
 ```sh
+export DANGERZONE_DEV=1
 poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
@@ -345,9 +346,10 @@ poetry run mazette install
 ```
 
 Run the following command to download the latest container image, or
-[build it locally](#building-a-local-container-image):
+[use a local one](#using-a-local-container-image):
 
 ```sh
+export DANGERZONE_DEV=1
 poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
@@ -406,10 +408,11 @@ poetry run mazette install
 ```
 
 Run the following command to download the latest container image, or
-[build it locally](#building-a-local-container-image):
+[use a local one](#using-a-local-container-image):
 
 ```sh
-poetry run dangerzone-image prepare-archive --output share/container.tar
+set DANGERZONE_DEV=1
+poetry run dangerzone-image prepare-archive --output share\container.tar
 ```
 
 After that you can launch dangerzone during development with:

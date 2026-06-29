@@ -76,9 +76,10 @@ poetry run mazette install
 ```
 
 Run the following command to download the latest container image, or
-[build it locally](#building-a-local-container-image):
+[use a local one](#using-a-local-container-image):
 
 ```sh
+export DANGERZONE_DEV=1
 poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
@@ -147,9 +148,10 @@ poetry run mazette install
 ```
 
 Run the following command to download the latest container image, or
-[build it locally](#building-a-local-container-image):
+[use a local one](#using-a-local-container-image):
 
 ```sh
+export DANGERZONE_DEV=1
 poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
@@ -369,7 +371,7 @@ export DANGERZONE_DEV=1
 ```
 
 Run the following command to download the latest container image, or
-[build it locally](#building-a-local-container-image):
+[use a local one](#using-a-local-container-image):
 
 ```sh
 poetry run dangerzone-image prepare-archive --output share/container.tar
@@ -433,10 +435,11 @@ poetry run mazette install
 ```
 
 Run the following command to download the latest container image, or
-[build it locally](#building-a-local-container-image):
+[use a local one](#using-a-local-container-image):
 
 ```sh
-poetry run dangerzone-image prepare-archive --output share/container.tar
+set DANGERZONE_DEV=1
+poetry run dangerzone-image prepare-archive --output share\container.tar
 ```
 
 After that you can launch dangerzone during development with:
@@ -492,19 +495,15 @@ poetry run .\install\windows\build-app.bat
 
 When you're done you will have `dist\Dangerzone.msi`.
 
-## Reproducing the container image
+## Using a local container image
 
-The Dangezone container image is bit-for-bit reproducible, meaning that anybody can ensure that the distributed images match the expected ones, avoiding supply-chain attacks. Read more on how to reproduce the images at `docs/developer/reproducibility.md`.
-
-## Building a local container image
-
-It is possible to build the image locally for testing, without verifying its
-signatures against Sigstore:
+It is possible to use a local image for testing, provided you store it under
+`share/container.tar`. If the local image is not signed, you can bypass
+signature checks with:
 
 ```bash
-python3 ./install/common/build-image.py
 export DANGERZONE_BYPASS_SIG_CHECKS=1  # On Linux and macOS
-set DANGERZONE_BYPASS_SIG_CHECKS 1  # On Windows
+set DANGERZONE_BYPASS_SIG_CHECKS=1  # On Windows
 ```
 
 To switch back to the original behavior, remove the environment variable:

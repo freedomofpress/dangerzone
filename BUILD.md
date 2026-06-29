@@ -378,7 +378,7 @@ command:
 poetry run mazette install
 ```
 
-Make sure you the `DANGERZONE_DEV` for development:
+Make sure to set the `DANGERZONE_DEV` env variable for development:
 
 ```sh
 export DANGERZONE_DEV=1

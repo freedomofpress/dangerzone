@@ -107,9 +107,13 @@ RUN apt-get update \
 """
 
 # FIXME: Install Poetry on Fedora via package manager.
+# The pyproject-rpm-macros / python3-uv-build / python3-pymupdf / python3-magic
+# packages are needed for building the dangerzone-insecure-converter-qubes RPM
+# from the dangerzone-image repo (https://github.com/freedomofpress/dangerzone-image).
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
 RUN dnf install -y git rpm-build podman python3 python3-devel python3-poetry-core \
-    pipx make qt6-qtbase-gui gcc gcc-c++\
+    pipx make qt6-qtbase-gui gcc gcc-c++ \
+    pyproject-rpm-macros python3-uv-build python3-pymupdf python3-magic \
     && dnf clean all
 
 # FIXME: Drop this fix after it's resolved upstream.

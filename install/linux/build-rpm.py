@@ -4,6 +4,7 @@ import contextlib
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 root = Path(__file__).parent.parent.parent
@@ -33,6 +34,39 @@ def exclude_paths(paths):
         for path, backup in zip(paths, backup_paths):
             if backup.exists():
                 backup.rename(path)
+
+
+def build_insecure_converter_rpm(dist_path):
+    print("* Building dangerzone-insecure-converter-qubes package")
+    with tempfile.TemporaryDirectory(prefix="dangerzone-image.") as tmpdir:
+        clone_dir = Path(tmpdir) / "dangerzone-image"
+
+        subprocess.run(
+            [
+                "git",
+                "clone",
+                "--depth",
+                "1",
+                "https://github.com/freedomofpress/dangerzone-image.git",
+                str(clone_dir),
+            ],
+            check=True,
+            capture_output=True,
+        )
+
+        subprocess.run(
+            ["./qubes/build-rpm.sh"],
+            check=True,
+            cwd=clone_dir,
+        )
+
+        converter_dist = clone_dir / "qubes" / "dist"
+        for p in converter_dist.iterdir():
+            shutil.copy2(p, dist_path)
+
+        print("* dangerzone-insecure-converter-qubes package(s) copied to dist/")
+        for p in converter_dist.iterdir():
+            print(f"  {p.name}")
 
 
 def build(build_dir, qubes=False, full=False):
@@ -144,6 +178,9 @@ def build(build_dir, qubes=False, full=False):
             "_full 1",
         ]
     subprocess.run(cmd, check=True)
+
+    if qubes:
+        build_insecure_converter_rpm(dist_path)
 
     print()
     print("The following files have been created:")

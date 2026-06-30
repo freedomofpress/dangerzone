@@ -264,32 +264,16 @@ test it.
    `poetry run mazette install`.
 
 
-2. Clone the Dangerzone image repo, which holds the server-side conversion
-   component:
+2. Build the Dangerzone RPM packages for Qubes:
 
    ```sh
-   cd ~
-   git clone https://github.com/freedomofpress/dangerzone-image
+   ./install/linux/build-rpm.py --qubes
    ```
 
-3. Install some extra build dependencies:
+3. Copy the produced `.rpm` files into `fedora-43-dz`:
 
    ```sh
-   sudo dnf install -y python3-uv-build python3-pymupdf python3-magic
-   ```
-
-4. Build the Dangerzone RPM packages for Qubes:
-
-   ```sh
-   ./dangerzone/install/linux/build-rpm.py --qubes
-   ./dangerzone-image/qubes/build-rpm.sh
-   ```
-
-5. Copy the produced `.rpm` files into `fedora-43-dz`:
-
-   ```sh
-   qvm-copy ./dangerzone/dist/*.x86_64.rpm \
-       ./dangerzone-image/qubes/dist/*.noarch.rpm
+   qvm-copy ./dist/*.rpm
    ```
 
 #### In the `fedora-43-dz` template

@@ -452,6 +452,10 @@ Run the following command to download the latest container image, or
 [build it locally](#building-a-local-container-image):
 
 ```sh
+set DANGERZONE_DEV=1
+```
+
+```sh
 poetry run dangerzone-image prepare-archive --output share/container.tar
 ```
 
@@ -520,7 +524,7 @@ signatures against Sigstore:
 ```bash
 python3 ./install/common/build-image.py
 export DANGERZONE_BYPASS_SIG_CHECKS=1  # On Linux and macOS
-set DANGERZONE_BYPASS_SIG_CHECKS 1  # On Windows
+set DANGERZONE_BYPASS_SIG_CHECKS=1  # On Windows
 ```
 
 To switch back to the original behavior, remove the environment variable:

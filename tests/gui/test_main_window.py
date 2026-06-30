@@ -903,6 +903,9 @@ def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -
         releases.should_check_for_updates(window.dangerzone.settings)
 
 
+@pytest.mark.skipif(
+    is_qubes_native_conversion(), reason="Qubes native conversion is enabled"
+)
 def test_user_prompts_no_container(
     qtbot: QtBot, window: MainWindow, mocker: MockerFixture
 ) -> None:
@@ -1257,7 +1260,7 @@ def test_wsl_install_failed_user_input(
         ),
     ],
 )
-def test_handle_needs_user_input_install_remote_container(
+def test_install_task_handle_user_input(
     qtbot: QtBot,
     mocker: MockerFixture,
     window: MainWindow,

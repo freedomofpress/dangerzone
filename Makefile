@@ -23,19 +23,19 @@ poetry-install: ## Install project dependencies
 
 .PHONY: build-clean
 build-clean:
-	poetry run doit clean
+	DANGERZONE_DEV=1 poetry run doit clean
 
 .PHONY: build-macos-intel
 build-macos-intel: build-clean poetry-install ## Build macOS intel package (.dmg)
-	poetry run doit -n 8
+	DANGERZONE_DEV=1 poetry run doit -n 8
 
 .PHONY: build-macos-arm
 build-macos-arm: build-clean poetry-install ## Build macOS Apple Silicon package (.dmg)
-	poetry run doit -n 8 macos_build_dmg
+	DANGERZONE_DEV=1 poetry run doit -n 8 macos_build_dmg
 
 .PHONY: build-linux
 build-linux: build-clean poetry-install ## Build linux packages (.rpm and .deb)
-	poetry run doit -n 8 fedora_rpm debian_deb
+	DANGERZONE_DEV=1 poetry run doit -n 8 fedora_rpm debian_deb
 
 .PHONY: regenerate-reference-pdfs
 regenerate-reference-pdfs: ## Regenerate the reference PDFs

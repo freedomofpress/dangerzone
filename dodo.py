@@ -251,7 +251,7 @@ def task_macos_build_dmg():
 
     return {
         "actions": [
-            *prepare_dz_dir(dz_dir),
+            *prepare_dz_dir(dz_dir, full=True),
             f"cd {dz_dir} && poetry run install/macos/build-app.py --with-codesign",
             (
                 "xcrun notarytool submit --wait --apple-id %(apple_id)s"

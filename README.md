@@ -15,7 +15,7 @@ _Read more about Dangerzone in the [official site](https://dangerzone.rocks/abou
 Follow the instructions for each platform:
 
 * [macOS](https://github.com/freedomofpress/dangerzone/blob/v0.11.0/INSTALL.md#macos)
-* [Windows](https://github.com/freedomofpress/dangerzone/blob/v0.11.0/INSTALL.md#windows)
+* [Windows](https://github.com/freedomofpress/dangerzone/blob/v0.10.0/INSTALL.md#windows)
 * [Ubuntu Linux](https://github.com/freedomofpress/dangerzone/blob/v0.11.0/INSTALL.md#ubuntu-debian)
 * [Debian Linux](https://github.com/freedomofpress/dangerzone/blob/v0.11.0/INSTALL.md#ubuntu-debian)
 * [Fedora Linux](https://github.com/freedomofpress/dangerzone/blob/v0.11.0/INSTALL.md#fedora)

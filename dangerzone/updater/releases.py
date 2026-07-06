@@ -138,34 +138,33 @@ def fetch_github_release_info() -> tuple[str, str]:
 def should_check_for_updates(settings: Settings) -> bool:
     """Determine if we can check for release updates based on settings and user prefs.
 
-    Note that this method only checks if the user has expressed an interest for
-    learning about new updates, and not whether we should actually make an update
-    check. Those two things are distinct, actually. For example:
+    This method checks if the user has expressed an interest for learning about new
+    updates, or if updates are mandatory. Then, it either returns:
+    * True: if the user has explicitly requested to check for updates
+    * False: if the user has explicitly requested to **not** check for updates (or if
+      it's the first time that Dangerzone runs)
+    * raise errors.NeedUserInputNoContainer: if the user **must** enable updates
+      (e.g., because there is no bundled container image).
+    * raise errors.NeedUserInput: if the user has not been asked before to enable
+      updates.
 
-    * A user may have expressed that they want to learn about new updates.
-    * A previous update check may have found out that there's a new version out.
-    * Thus we will always show to the user the cached info about the new version,
-      and won't make a new update check.
+    This method is advisory and does not perform the underlying update check.
     """
-    check = settings.get("updater_check_all")
+
+    if not is_container_tar_bundled() and not is_container_image_installed():
+        # Updates are required if there is neither a downloaded Dangerzone image on the
+        # host, nor a container image bundled in the installer.
+        log.debug("No container available, prompting user to enable updates")
+        raise errors.NeedUserInputNoContainer()
 
     if settings.get("updater_last_check") is None:
         log.debug("Dangerzone is running for the first time, updates are stalled")
         settings.set("updater_last_check", 0, autosave=True)
-        # If no container is bundled and none is installed, prompt the user
-        # to enable updates immediately, otherwise Dangerzone won't work.
-        if not is_container_tar_bundled() and not is_container_image_installed():
-            log.debug("No container available, prompting user to enable updates")
-            raise errors.NeedUserInputNoContainer()
         return False
 
-    if check is False or check is None:
-        if check is None:
-            log.debug("User has not been asked yet for update checks")
-
-        if not is_container_tar_bundled() and not is_container_image_installed():
-            log.debug("No container available, prompting user to enable updates")
-            raise errors.NeedUserInputNoContainer()
+    check = settings.get("updater_check_all")
+    if check is None:
+        log.debug("User has not been asked yet for update checks")
         raise errors.NeedUserInput()
     elif not check:
         log.debug("User has expressed that they don't want to check for updates")

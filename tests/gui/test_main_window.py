@@ -891,16 +891,12 @@ def test_user_prompts(qtbot: QtBot, window: MainWindow, mocker: MockerFixture) -
 
     # Third run
     #
-    # If the user enabled update checks, they are not prompted again. If they
-    # disabled them, we still nudge them on every run by raising NeedUserInput.
-    from dangerzone.updater import errors as updater_errors
-
-    window.dangerzone.settings.set("updater_check_all", True)
-    assert releases.should_check_for_updates(window.dangerzone.settings) is True
-
-    window.dangerzone.settings.set("updater_check_all", False)
-    with pytest.raises(updater_errors.NeedUserInput):
-        releases.should_check_for_updates(window.dangerzone.settings)
+    # From the third run onwards, users should never be prompted for enabling update
+    # checks.
+    prompt_mock().side_effect = RuntimeError("Should not be called")
+    for check in [True, False]:
+        window.dangerzone.settings.set("updater_check_all", check)
+        assert releases.should_check_for_updates(window.dangerzone.settings) == check
 
 
 @pytest.mark.skipif(

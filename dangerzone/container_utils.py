@@ -33,6 +33,159 @@ TIMEOUT_KILL = 5  # Timeout in seconds until the kill command returns.
 log = logging.getLogger(__name__)
 
 
+class Image:
+    """A Pythonic representation of a container image.
+
+    This class represents some main pieces of information for container images that
+    Dangerzone is interested in:
+    * Digests
+    * Names (tags)
+    * Image ID
+
+    This representation is by no means complete, but that's not the end goal here. It's
+    actually supposed to be broad, because we list all images that exist in a user's
+    machine, and we don't have control over them.
+
+    Finally, this info is sourced by `podman images --format json [image]`. This class
+    parses the output of this command and adds its own logic, especially for Dangerzone
+    images.
+    """
+
+    def __init__(self, image_info: dict):
+        """Initialize this class from a dict representation of a container image.
+
+        The `image_info` argument should be the result of `podman images --format json`
+        for a **single** container image, loaded as a dict.
+        """
+        self.id = image_info["Id"]
+        self.names = image_info["Names"]
+        self._local_digest = image_info["Digest"]
+
+        # Normally, the RepoDigests field is a list with the following format:
+        #
+        #   "RepoDigests": [
+        #       "name1@sha256:hash1",
+        #       "name2@sha256:hash1",
+        #   ],
+        #
+        # In this class, we want to keep only the digest part.
+        self._repo_digests = [
+            digest.split("@")[1] for digest in image_info["RepoDigests"]
+        ]
+
+        # Add all digests in a single list.
+        self.digests = list(set([self._local_digest] + self._repo_digests))
+
+    @classmethod
+    def list(cls, image_filter: str | None = None):
+        """Create a list of local images, optionally with a filter.
+
+        Run `podman images --format json [image_filter]`, and return back a list of
+        Image instances.
+        """
+        podman = init_podman_command()
+        cmd = ["images", "--format", "json"]
+        if image_filter:
+            cmd.append(image_filter)
+
+        res = podman.run(cmd)
+        images = json.loads(res)
+        return [cls(image_info) for image_info in images]
+
+    @classmethod
+    def list_dangerzone_images(cls):
+        """Create a list of local Dangerzone images.
+
+        List Dangerzone images by filtering with the expected image name. If we get no
+        result back, raise `ImageNotPresentException`.
+        """
+        name = expected_image_name()
+        images = cls.list(name)
+        if not images:
+            raise errors.ImageNotPresentException(
+                f"The image {name} does not exist locally"
+            )
+        return images
+
+    @classmethod
+    def get_dangerzone_image(cls) -> "Image":
+        """Get a single Dangerzone image.
+
+        List Dangerzone images and expect that only one exists locally. If not, raise
+        `MultipleImagesFoundException`.
+        """
+        images = cls.list_dangerzone_images()
+        if len(images) > 1:
+            raise errors.MultipleImagesFoundException(
+                f"Expected a single Dangerzone image got {len(images)}: {images}"
+            )
+        return images[0]
+
+    @classmethod
+    def from_digest(cls, digest: str) -> "Image":
+        """List all local images and return back one that matches a provided digest.
+
+        If not found, raise `ImageNotPresentException`.
+        """
+        digest = normalize_digest(digest)
+        images = [image for image in cls.list() if digest in image.digests]
+        if not images:
+            raise errors.ImageNotPresentException(
+                f"Unable to find an image with digest {digest}"
+            )
+        # NOTE: Usually duplicate entries occur due to multiple names for the same
+        # image. Still, we've seen that the image info is identical for both entries, so
+        # we can return just the first result.
+        return images[0]
+
+    @property
+    def is_dangerzone_image(self) -> bool:
+        """Check if a container image matches the expected Dangerzone image name."""
+        expected_name = expected_image_name()
+        return any(name.startswith(expected_name) for name in self.names)
+
+    # @property
+    # def is_multi_arch(self) -> bool:
+    #     """Check if a local container image is actually pulled from a multi-arch manifest.
+
+    #     In Podman, the only way we can detect it
+    #     """
+    #     return len(self._repo_digests) > 1
+
+    @property
+    def platform_digest(self) -> bool:
+        """Return the image digest for the platform of the user's machine.
+
+        Attempt to return the digest that matches the platform of the user's machine,
+        using some heuristics:
+        * If a single digest is reported, then assume that this is the platform one.
+        * If multiple digests are reported, then we make an assumption that works for
+          Dangerzone images: the main digest is probably the multi-platform one, so the
+          other repo digest is the platform one.
+
+        NOTE: This is a bet, that works for now, but may stop working later, and
+        definitely will not work for non-Dangerzone images.
+        """
+        if not self.is_dangerzone_image:
+            raise RuntimeError("Expected a Dangerzone image")
+
+        if len(self._repo_digests) > 2:
+            raise RuntimeError("Too many digests")
+
+        if len(self._repo_digests) == 2:
+            platform_digest = set(self._repo_digests) - {self._local_digest}
+            return next(iter(platform_digest))
+        else:
+            return self._local_digest
+
+    def __repr__(self) -> str:
+        return f"Image(id={self.id}, names={self.names}, digests={self.digests})"
+
+
+def normalize_digest(digest: str) -> str:
+    return digest if digest.startswith("sha256:") else "sha256:" + digest
+
+
 def get_runtime_version() -> tuple[int, int]:
     """Get the major/minor parts of the Docker/Podman version.
 
@@ -231,24 +384,6 @@ def init_podman_command() -> PodmanCommand:
             )
 
 
-def list_image_digests() -> list[str]:
-    """Get the digests of all loaded Dangerzone images."""
-    podman = init_podman_command()
-    return (
-        podman.run(
-            [
-                "image",
-                "list",
-                "--format",
-                "{{ .Digest }}",
-                expected_image_name(),
-            ],
-        )
-        .strip()  # type: ignore [union-attr]
-        .split()
-    )
-
-
 def list_containers() -> list[str]:
     """Get all the Dangerzone containers."""
     podman = init_podman_command()
@@ -307,13 +442,17 @@ def delete_image_digests(
 
 
 def clear_old_images(digest_to_keep: str) -> None:
+    digest_to_keep = normalize_digest(digest_to_keep)
     log.debug(f"Digest to keep: {digest_to_keep}")
-    digests = list_image_digests()
-    log.debug(f"Digests installed: {digests}")
-    if not digest_to_keep.startswith("sha256:"):
-        digest_to_keep = f"sha256:{digest_to_keep}"
-    to_remove = filter(lambda x: x != digest_to_keep, digests)
-    delete_image_digests(to_remove)
+
+    images = Image.list_dangerzone_images()
+    digests_to_remove = set()
+    for image in images:
+        if digest_to_keep not in image.digests:
+            digests_to_remove += set(image.digests)
+    log.debug(f"Digests to remove: {digests_to_remove}")
+
+    delete_image_digests(digests_to_remove)
 
 
 def load_image_tarball(tarball_path: Path | None = None) -> str:
@@ -339,35 +478,15 @@ def load_image_tarball(tarball_path: Path | None = None) -> str:
 
 
 def tag_image_by_digest(digest: str, tag: str) -> None:
-    """Tag a container image by digest.
-    The sha256: prefix should be omitted from the digest.
-    """
+    """Tag a container image by digest."""
     podman = init_podman_command()
-    image_id = get_image_id_by_digest(digest)
-    podman.run(["tag", image_id, tag])
+    image = Image.from_digest(digest)
+    podman.run(["tag", image.id, tag])
 
 
 def get_image_id_by_digest(digest: str) -> str:
-    """Get an image ID from a digest.
-    The sha256: prefix should be omitted from the digest.
-    """
-    # There is a "digest" filter that you can use with
-    # "podman images -f digest:<digest>", but it's only available
-    # for podman >=4.4 (and bookworm ships 4.3)
-    # So, fallback on the json format instead
-    podman = init_podman_command()
-    res = podman.run(["images", "--format", "json"])
-    assert isinstance(res, str)
-    images = json.loads(res)
-    filtered_images = [
-        image["Id"] for image in images if image["Digest"] == f"sha256:{digest}"
-    ]
-
-    if not filtered_images:
-        raise errors.ImageNotPresentException(
-            f"Unable to find an image with digest {digest}"
-        )
-    return filtered_images[0]
+    """Get an image ID from a digest."""
+    return Image.from_digest(digest).id
 
 
 def expected_image_name() -> str:
@@ -377,41 +496,22 @@ def expected_image_name() -> str:
 
 def container_pull(image: str, manifest_digest: str) -> None:
     """Pull a container image from a registry."""
+    manifest_digest = normalize_digest(manifest_digest)
     podman = init_podman_command()
     try:
-        podman.run(["pull", f"{image}@sha256:{manifest_digest}"], capture_output=False)
+        podman.run(["pull", f"{image}@{manifest_digest}"], capture_output=False)
     except CommandError:
         raise errors.ContainerPullException("Could not pull the container image")
 
 
+def list_image_digests() -> list[str]:
+    images = Image.list_dangerzone_images()
+    return list({digest for image in images for digest in image.digests})
+
+
 def get_local_image_digest(image: str | None = None) -> str:
-    """
-    Returns a image hash from a local image name
-    """
-    expected_image = image or expected_image_name()
-    # `podman images` returns the digest of the multi-architecture image,
-    # which should match the downloaded signatures on a typical over-the-air
-    # update scenario.
-    # `podman inspect` is avoided here as it returns the digest of the
-    # architecture-bound image.
-    podman = init_podman_command()
-    res = podman.run(["images", expected_image, "--format", "{{.Digest}}"])
-    assert isinstance(res, str)
-    lines = set(res.split("\n"))
-    line_count = len(lines)
+    """Return an image hash from a local image name.
 
-    # `podman images` exits 0 with no output when the image is absent,
-    # at least on some platforms.
-    if not res or line_count < 1:
-        raise errors.ImageNotPresentException(
-            f"The image {expected_image} does not exist locally"
-        )
-    # In some cases, the output can be multiple lines with the same digest
-    # sets are used to reduce them.
-
-    if line_count > 1:
-        raise errors.MultipleImagesFoundException(
-            f"Expected a single line of output, got {line_count} lines: {lines}"
-        )
-    image_digest = lines.pop().replace("sha256:", "")
-    return image_digest
+    NOTE: This function returns just the hash, without the sha256: prefix.
+    """
+    return Image.get_dangerzone_image().platform_digest.removeprefix("sha256:")

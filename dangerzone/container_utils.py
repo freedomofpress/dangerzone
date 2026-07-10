@@ -449,7 +449,7 @@ def clear_old_images(digest_to_keep: str) -> None:
     digests_to_remove = set()
     for image in images:
         if digest_to_keep not in image.digests:
-            digests_to_remove += set(image.digests)
+            digests_to_remove |= set(image.digests)
     log.debug(f"Digests to remove: {digests_to_remove}")
 
     delete_image_digests(digests_to_remove)

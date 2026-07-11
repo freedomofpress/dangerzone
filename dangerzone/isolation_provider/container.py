@@ -86,9 +86,11 @@ class Container(IsolationProvider):
         name: str,
     ) -> subprocess.Popen:
         container_name = container_utils.expected_image_name()
-        image_digest = container_utils.get_local_image_digest()
+        image_digests = container_utils.get_local_image_digests()
         if not bypass_signature_checks():
-            verify_local_image(image_digest=image_digest)
+            image_digest = verify_local_image(image_digests=image_digests)
+        else:
+            image_digest = image_digests[0]
         security_args = self.get_runtime_security_args()
         debug_args = []
         if self.debug:
@@ -97,7 +99,7 @@ class Container(IsolationProvider):
         enable_stdin = ["-i"]
         set_name = ["--name", name]
         prevent_leakage_args = ["--rm"]
-        image_name = [container_name + "@sha256:" + image_digest]
+        image_name = [container_name + "@" + image_digest]
         args = (
             ["run"]
             + security_args

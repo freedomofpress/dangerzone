@@ -519,9 +519,6 @@ def list_image_digests() -> list[str]:
     return list({digest for image in images for digest in image.digests})
 
 
-def get_local_image_digest(image: str | None = None) -> str:
-    """Return an image hash from a local image name.
-
-    NOTE: This function returns just the hash, without the sha256: prefix.
-    """
-    return Image.get_dangerzone_image().platform_digest.removeprefix("sha256:")
+def get_local_image_digests(image: str | None = None) -> str:
+    """Return all known digests for a local image name."""
+    return Image.get_dangerzone_image().digests

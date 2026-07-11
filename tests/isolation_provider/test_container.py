@@ -32,7 +32,7 @@ def ensure_container_image() -> Generator[None, None, None]:
 
     image_name = expected_image_name()
     try:
-        container_utils.get_local_image_digest()
+        container_utils.get_local_image_digests()
     except errors.ImageNotPresentException:
         image_id = container_utils.load_image_tarball()
         init_podman_command().run(["tag", image_id, image_name])

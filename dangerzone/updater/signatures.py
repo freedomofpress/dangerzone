@@ -122,6 +122,52 @@ class Signature:
         }
 
 
+class SignaturePath(Path):
+    @classmethod
+    def list(
+        cls, pubkey: Path, signatures_path: Path | None = None
+    ) -> list["SignaturePath"]:
+        sig_dir = cls.from_pubkey(pubkey, check=True, signatures_path=signatures_path)
+        return [cls(p) for p in sig_dir.iterdir() if p.suffix == ".json"]
+
+    @classmethod
+    def from_pubkey(
+        cls, pubkey: Path, check: bool = True, signatures_path: Path | None = None
+    ) -> "SignaturePath":
+        if signatures_path is None:
+            signatures_path = SIGNATURES_PATH
+        dir_path = signatures_path / get_file_digest(pubkey)
+        if check and not dir_path.exists():
+            msg = (
+                f"Cannot find a '{dir_path}' folder. "
+                "You might need to download the image signatures first."
+            )
+            raise errors.SignaturesFolderDoesNotExist(msg)
+        return cls(dir_path)
+
+    @classmethod
+    def from_digest(
+        cls,
+        pubkey: Path,
+        digest: str,
+        check: bool = True,
+        signatures_path: Path | None = None,
+    ) -> "SignaturePath":
+        sig_dir = cls.from_pubkey(pubkey, check=check, signatures_path=signatures_path)
+        sig_file = sig_dir / f"{digest.removeprefix('sha256:')}.json"
+        if check and not sig_file.exists():
+            msg = (
+                f"Cannot find a '{sig_file}' file. "
+                "You might need to download the image signatures first."
+            )
+            raise errors.LocalSignatureNotFound(msg)
+        return cls(sig_file)
+
+    @property
+    def digest(self) -> str:
+        return f"sha256:{self.stem}"
+
+
 def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
     """
     Ensure that the given signature matches the public key and image digest
@@ -141,7 +187,7 @@ def verify_signature(signature: dict, image_digest: str, pubkey: Path) -> None:
         raise errors.SignatureVerificationError(
             f"Unable to extract the payload digest from the signature: {e}"
         )
-    if payload_digest != image_digest:
+    if payload_digest != image_digest.removeprefix("sha256:"):
         raise errors.SignatureMismatch(
             "The given signature does not match the expected image digest "
             f"({payload_digest}, {image_digest})"
@@ -429,25 +475,9 @@ def load_and_verify_signatures(
 
     See store_signatures() for the expected format.
     """
-    if not signatures_path:
-        signatures_path = SIGNATURES_PATH
-
-    pubkey_signatures = signatures_path / get_file_digest(pubkey)
-    if not pubkey_signatures.exists():
-        msg = (
-            f"Cannot find a '{pubkey_signatures}' folder. "
-            "You might need to download the image signatures first."
-        )
-        raise errors.SignaturesFolderDoesNotExist(msg)
-
-    signatures_file = pubkey_signatures / f"{image_digest}.json"
-
-    if not signatures_file.exists():
-        msg = (
-            f"Cannot find a '{signatures_file}' file. "
-            "You might need to download the image signatures first."
-        )
-        raise errors.LocalSignatureNotFound(msg)
+    signatures_file = SignaturePath.from_digest(
+        pubkey, image_digest, signatures_path=signatures_path
+    )
 
     with open(signatures_file) as f:
         log.debug("Loading signatures from %s", f.name)
@@ -466,7 +496,7 @@ def store_signatures(
     update_logindex: bool = True,
 ) -> None:
     """
-    Store signatures locally in the SIGNATURE_PATH folder, like this:
+    Store signatures locally in the SIGNATURES_PATH folder, like this:
 
     ~/.local/share/dangerzone/signatures/
     ├── <pubkey-digest>
@@ -500,13 +530,11 @@ def store_signatures(
             f"Signatures do not match the given image digest (sha256:{image_digest}, {digests[0]})"
         )
 
-    pubkey_signatures = SIGNATURES_PATH / get_file_digest(pubkey)
-    pubkey_signatures.mkdir(parents=True, exist_ok=True)
+    sig = SignaturePath.from_digest(pubkey, image_digest, check=False)
+    sig.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(pubkey_signatures / f"{image_digest}.json", "w") as f:
-        log.info(
-            f"Storing signatures for {image_digest} in {pubkey_signatures}/{image_digest}.json"
-        )
+    with open(sig, "w") as f:
+        log.info(f"Storing signatures for {image_digest} in {sig}")
         json.dump(signatures, f)
 
     if update_logindex:
@@ -516,23 +544,29 @@ def store_signatures(
 def verify_local_image(
     image: str | None = None,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
-    image_digest: str | None = None,
-) -> bool:
+    image_digests: list[str] | None = None,
+) -> str:
     """
     Verifies that a local image has a valid signature
     """
-    if not image_digest:
+    if not image_digests:
         if image is None:
             image = runtime.expected_image_name()
         log.info(f"Verifying local image {image} against pubkey {pubkey}")
         try:
-            image_digest = runtime.get_local_image_digest(image)
+            image_digests = runtime.get_local_image_digests(image)
         except subprocess.CalledProcessError:
             raise errors.ImageNotFound(f"The image {image} does not exist locally")
 
-    log.debug(f"Image digest: {image_digest}")
-    load_and_verify_signatures(image_digest, pubkey)
-    return True
+    log.debug(f"Image digests: {image_digests}")
+    for digest in image_digests:
+        if SignaturePath.from_digest(pubkey, digest).exists():
+            load_and_verify_signatures(digest, pubkey)
+            return digest
+
+    raise errors.RuntimeError(
+        f"No local signature found for the following digests: {image_digests}"
+    )
 
 
 def get_remote_signatures(image: str, digest: str) -> list[dict]:

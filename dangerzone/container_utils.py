@@ -249,6 +249,24 @@ def list_image_digests() -> list[str]:
     )
 
 
+def list_image_ids() -> list[str]:
+    """Get the IDs of all loaded Dangerzone images."""
+    podman = init_podman_command()
+    return (
+        podman.run(
+            [
+                "image",
+                "list",
+                "--format",
+                "{{ .Id }}",
+                expected_image_name(),
+            ],
+        )
+        .strip()  # type: ignore [union-attr]
+        .split()
+    )
+
+
 def list_containers() -> list[str]:
     """Get all the Dangerzone containers."""
     podman = init_podman_command()
@@ -306,14 +324,30 @@ def delete_image_digests(
         )
 
 
+def delete_image_ids(ids: Iterable[str]) -> None:
+    """Delete Dangerzone images by their id."""
+    podman = init_podman_command()
+    log.warning(f"Deleting container images: {' '.join(ids)}")
+    try:
+        podman.run(["rmi", "--force", *ids])
+    except CommandError as e:
+        log.warning(
+            f"Couldn't delete container images '{' '.join(ids)}', so leaving it there."
+            f" Original error: {e}"
+        )
+
+
 def clear_old_images(digest_to_keep: str) -> None:
     log.debug(f"Digest to keep: {digest_to_keep}")
-    digests = list_image_digests()
-    log.debug(f"Digests installed: {digests}")
-    if not digest_to_keep.startswith("sha256:"):
-        digest_to_keep = f"sha256:{digest_to_keep}"
-    to_remove = filter(lambda x: x != digest_to_keep, digests)
-    delete_image_digests(to_remove)
+    image_id_to_keep = get_image_id_by_digest(digest_to_keep)
+    log.debug(f"Image ID to keep: {image_id_to_keep}")
+    image_ids = list_image_ids()
+    log.debug(f"Image IDs installed: {image_ids}")
+    image_ids_to_remove = [id for id in image_ids if id != image_id_to_keep]
+    if not image_ids_to_remove:
+        log.debug("No old images found")
+    else:
+        delete_image_ids(image_ids_to_remove)
 
 
 def load_image_tarball(tarball_path: Path | None = None) -> str:
@@ -360,7 +394,10 @@ def get_image_id_by_digest(digest: str) -> str:
     assert isinstance(res, str)
     images = json.loads(res)
     filtered_images = [
-        image["Id"] for image in images if image["Digest"] == f"sha256:{digest}"
+        image["Id"]
+        for image in images
+        if image["Digest"] == f"sha256:{digest}"
+        or f"{expected_image_name()}@sha256:{digest}" in image["RepoDigests"]
     ]
 
     if not filtered_images:
@@ -368,6 +405,12 @@ def get_image_id_by_digest(digest: str) -> str:
             f"Unable to find an image with digest {digest}"
         )
     return filtered_images[0]
+
+
+def tag_image_from_ref(ref: str, tag: str) -> None:
+    """Tag a container image by its name:tag reference."""
+    podman = init_podman_command()
+    podman.run(["tag", ref, tag])
 
 
 def expected_image_name() -> str:

@@ -338,10 +338,10 @@ def upgrade_container_image_airgapped(
         expected_manifest["manifests"][0].get("digest").replace("sha256:", "")
     )
 
-    runtime.load_image_tarball(container_tar)
+    image_ref = runtime.load_image_tarball(container_tar)
     # Apply the tag manually here, since images downloaded with `cosign download`
     # do not come with the tags attached.
-    runtime.tag_image_by_digest(image_digest, image_name)
+    runtime.tag_image_from_ref(image_ref.removeprefix("sha256:"), image_name)
 
     try:
         verify_signatures(signatures, image_digest)

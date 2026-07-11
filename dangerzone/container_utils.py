@@ -51,6 +51,16 @@ class Image:
     images.
     """
 
+    @staticmethod
+    def extract_digest(digest: str):
+        if "@" in digest:
+            digest = digest.split("@")[1]
+
+        if digest.startswith("sha256:"):
+            return digest
+
+        raise ValueError(f"Malformed image digest: {digest}")
+
     def __init__(self, image_info: dict):
         """Initialize this class from a dict representation of a container image.
 
@@ -70,7 +80,7 @@ class Image:
         #
         # In this class, we want to keep only the digest part.
         self._repo_digests = [
-            digest.split("@")[1] for digest in image_info["RepoDigests"]
+            self.extract_digest(digest) for digest in image_info["RepoDigests"]
         ]
 
         # Add all digests in a single list.

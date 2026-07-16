@@ -4,7 +4,9 @@ import os
 import platform
 import re
 import secrets
+from io import BytesIO
 from pathlib import Path, PurePosixPath, PureWindowsPath
+from typing import BinaryIO
 
 from . import errors, util
 
@@ -33,18 +35,27 @@ class Document:
         output_filename: str | None = None,
         suffix: str = SAFE_EXTENSION,
         archive: bool = False,
+        data: bytes | None = None,
     ) -> None:
         # NOTE: See https://github.com/freedomofpress/dangerzone/pull/216#discussion_r1015449418
         self.id = secrets.token_urlsafe(6)[0:6]
 
         self._input_filename: str | None = None
         self._output_filename: str | None = None
+        self._data: bytes | None = None
         self._archive = False
         self._suffix = suffix
 
+        if input_filename and data:
+            raise ValueError("Cannot provide both input_filename and data")
+
         if input_filename:
             self.input_filename = input_filename
-
+            if output_filename:
+                self.output_filename = output_filename
+        elif data:
+            self._data = data
+            self.announce_id()
             if output_filename:
                 self.output_filename = output_filename
 
@@ -173,8 +184,20 @@ class Document:
         return f"{os.path.splitext(self.input_filename)[0]}{self.suffix}"
 
     def announce_id(self) -> None:
-        sanitized_filename = util.replace_control_chars(self.input_filename)
-        log.info(f"Assigning ID '{self.id}' to doc '{sanitized_filename}'")
+        if self._input_filename is not None:
+            sanitized_filename = util.replace_control_chars(self.input_filename)
+            log.info(f"Assigning ID '{self.id}' to doc '{sanitized_filename}'")
+        else:
+            log.info(f"Assigning ID '{self.id}' to doc '<stdin>'")
+
+    def open(self) -> BinaryIO:
+        """Return a readable binary stream for this document's content."""
+        if self._input_filename is not None:
+            return open(self._input_filename, "rb")
+        elif self._data is not None:
+            return BytesIO(self._data)
+        else:
+            raise errors.NotSetInputFilenameException()
 
     def set_output_dir(self, path: str) -> None:
         # keep the same name
@@ -217,13 +240,19 @@ class Document:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Document):
             return False
-        return (
-            Path(self.input_filename).absolute()
-            == Path(other.input_filename).absolute()
-        )
+        if self._input_filename is not None and other._input_filename is not None:
+            return (
+                Path(self.input_filename).absolute()
+                == Path(other.input_filename).absolute()
+            )
+        return self.id == other.id
 
     def __hash__(self) -> int:
-        return hash(str(Path(self.input_filename).absolute()))
+        if self._input_filename is not None:
+            return hash(str(Path(self.input_filename).absolute()))
+        return hash(self.id)
 
     def __str__(self) -> str:
-        return self.input_filename
+        if self._input_filename is not None:
+            return self.input_filename
+        return "<stdin>"

@@ -25,6 +25,9 @@ def _validate_input_filenames(
 ) -> list[str]:
     normalized_filenames = []
     for filename in value:
+        if filename == "-":
+            normalized_filenames.append(filename)
+            continue
         filename = Document.normalize_filename(filename)
         Document.validate_input_filename(filename)
         normalized_filenames.append(filename)

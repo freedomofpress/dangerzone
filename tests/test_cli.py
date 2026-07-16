@@ -443,3 +443,142 @@ class TestCliShutdown(TestCli):
         result.assert_failure()
         mock_container_stop.assert_not_called()
         mock_machine_stop.assert_not_called()
+
+
+class TestCliIO(TestCli):
+    """Tests for stdin/stdout I/O support."""
+
+    def test_no_args_no_stdin(self) -> None:
+        """No args and empty stdin -> error (enters stdin mode, no data)."""
+        runner = CliRunner()
+        result = runner.invoke(run, [], catch_exceptions=False)
+        assert result.exit_code != 0
+
+    def test_stdin_implicit_no_filenames(self, sample_pdf: str) -> None:
+        """No filenames, stdin is not a TTY -> enters stdin mode."""
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        runner = CliRunner()
+        result = runner.invoke(
+            run,
+            ["--unsafe-dummy-conversion"],
+            input=pdf_bytes,
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0
+
+    def test_stdin_dash_explicit(self, sample_pdf: str) -> None:
+        """Explicit '-' filename enters stdin mode."""
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        runner = CliRunner()
+        result = runner.invoke(
+            run,
+            ["-", "--unsafe-dummy-conversion"],
+            input=pdf_bytes,
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0
+
+    def test_stdin_empty_input(self) -> None:
+        """'-' with empty stdin -> 'No data received' error."""
+        runner = CliRunner()
+        result = runner.invoke(
+            run,
+            ["-", "--unsafe-dummy-conversion"],
+            input=b"",
+            catch_exceptions=False,
+        )
+        assert result.exit_code != 0
+        assert "No data received from stdin" in result.output
+
+    def test_stdin_archive_rejected(self, sample_pdf: str) -> None:
+        """'--archive' with stdin -> error."""
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        runner = CliRunner()
+        result = runner.invoke(
+            run,
+            ["-", "--archive", "--unsafe-dummy-conversion"],
+            input=pdf_bytes,
+            catch_exceptions=False,
+        )
+        assert result.exit_code != 0
+        assert "--archive cannot be used with stdin" in result.output
+
+    def test_stdin_output_filename(
+        self, sample_pdf: str, tmp_path: Path, mocker: MockerFixture
+    ) -> None:
+        """'-' with --output-filename writes safe PDF to that file."""
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        output = str(tmp_path / "safe.pdf")
+        mocker.patch(
+            "dangerzone.isolation_provider.base.IsolationProvider.convert"
+        )
+        runner = CliRunner()
+        result = runner.invoke(
+            run,
+            ["-", "--output-filename", output, "--unsafe-dummy-conversion"],
+            input=pdf_bytes,
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0
+
+    def test_stdin_to_stdout(
+        self, sample_pdf: str, mocker: MockerFixture
+    ) -> None:
+        """'-' without --output-filename, stdout is not a TTY -> PDF on stdout."""
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        runner = CliRunner()
+        result = runner.invoke(
+            run,
+            ["-", "--unsafe-dummy-conversion"],
+            input=pdf_bytes,
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0
+        # display_banner() prints to stdout via raw print(), so the PDF
+        # magic bytes appear after the banner text.
+        assert b"%PDF-" in result.output_bytes
+
+    def test_stdin_dash_with_file_rejected(self, tmp_path: Path) -> None:
+        """'-' as a real filename on disk should be treated as stdin, not a file."""
+        runner = CliRunner()
+        result = runner.invoke(
+            run,
+            ["-", "--unsafe-dummy-conversion"],
+            input=b"",
+            catch_exceptions=False,
+        )
+        assert result.exit_code != 0
+        assert "No data received from stdin" in result.output
+
+    def test_helpers_validate_stdin_options_archive(self) -> None:
+        """_validate_stdin_options rejects --archive."""
+        from dangerzone.cli import _validate_stdin_options
+
+        with pytest.raises(Exception, match="--archive cannot be used"):
+            _validate_stdin_options(archive=True, output_filename=None)
+
+    def test_helpers_get_stdin_output_mode_file(self) -> None:
+        """_get_stdin_output_mode returns 'file' when output_filename is set."""
+        from dangerzone.cli import _get_stdin_output_mode
+
+        assert _get_stdin_output_mode("out.pdf") == "file"
+
+    def test_helpers_get_stdin_output_mode_stdout(self, mocker: MockerFixture) -> None:
+        """_get_stdin_output_mode returns 'stdout' when stdout is not a TTY."""
+        from dangerzone.cli import _get_stdin_output_mode
+
+        mocker.patch("dangerzone.cli.sys.stdout.isatty", return_value=False)
+        assert _get_stdin_output_mode(None) == "stdout"
+
+    def test_helpers_get_stdin_output_mode_tty(self, mocker: MockerFixture) -> None:
+        """_get_stdin_output_mode raises when stdout is a TTY."""
+        from dangerzone.cli import _get_stdin_output_mode
+
+        mocker.patch("dangerzone.cli.sys.stdout.isatty", return_value=True)
+        with pytest.raises(Exception, match="Cowardly refusing"):
+            _get_stdin_output_mode(None)

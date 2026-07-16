@@ -15,11 +15,53 @@ from .util import get_version, replace_control_chars
 
 
 def print_header(s: str) -> None:
-    click.echo("")
-    click.echo(Style.BRIGHT + s)
+    click.echo("", err=True)
+    click.echo(Style.BRIGHT + s, err=True)
 
 
-@click.command()
+def _read_stdin() -> bytes:
+    """Read all bytes from stdin."""
+    return sys.stdin.buffer.read()
+
+
+def _validate_stdin_options(
+    archive: bool,
+    output_filename: str | None,
+) -> None:
+    """Validate that options are compatible with stdin input."""
+    if archive:
+        raise click.UsageError("--archive cannot be used with stdin input")
+    # --output-filename is always allowed with stdin (single doc in flight)
+
+
+def _get_stdin_output_mode(output_filename: str | None) -> str:
+    """Determine output destination for stdin mode.
+
+    Returns:
+        "file" if --output-filename was given (caller uses output_filename).
+        "stdout" if stdout is not a TTY (safe PDF goes to stdout).
+        Raises UsageError if stdout is a TTY (cowardly refusal).
+    """
+    if output_filename:
+        return "file"
+    if not sys.stdout.isatty():
+        return "stdout"
+    raise click.UsageError(
+        "Cowardly refusing to write to a terminal.\n"
+        "Use --output-filename to specify an output file, or redirect "
+        "stdout to a file/pipe."
+    )
+
+
+@click.command(
+    help=(
+        "Convert potentially dangerous documents to safe PDFs.\n\n"
+        "Accepts file paths as arguments, or reads from stdin when no\n"
+        "files are given (or when '-' is passed as a filename). When\n"
+        "reading from stdin, the safe PDF is written to stdout unless\n"
+        "--output-filename is specified. All status output goes to stderr."
+    )
+)
 @click.option(
     "--output-filename",
     callback=args.validate_output_filename,
@@ -88,16 +130,29 @@ def run(
         if set_container_runtime == "default":
             settings.unset_custom_runtime()
             click.echo(
-                "Instructed Dangerzone to use the default container runtime for this OS"
+                "Instructed Dangerzone to use the default container runtime for this OS",
+                err=True,
             )
         else:
             container_runtime = settings.set_custom_runtime(
                 set_container_runtime, autosave=True
             )
-            click.echo(f"Set the settings container_runtime to {container_runtime}")
+            click.echo(
+                f"Set the settings container_runtime to {container_runtime}", err=True
+            )
         sys.exit(0)
-    elif not filenames:
-        raise click.UsageError("Missing argument 'FILENAMES...'")
+
+    stdin_mode = False
+    if not filenames:
+        if not sys.stdin.isatty():
+            stdin_mode = True
+            filenames = ["-"]
+        else:
+            raise click.UsageError("Missing argument 'FILENAMES...'")
+    elif len(filenames) == 1 and filenames[0] == "-":
+        stdin_mode = True
+
+    assert filenames is not None
 
     if getattr(sys, "dangerzone_dev", False) and dummy_conversion:
         dangerzone = DangerzoneCore(Dummy())
@@ -106,14 +161,32 @@ def run(
     else:
         dangerzone = DangerzoneCore(Container(debug=debug))
 
-    if len(filenames) == 1 and output_filename:
-        dangerzone.add_document_from_filename(filenames[0], output_filename, archive)
-    elif len(filenames) > 1 and output_filename:
-        click.echo("--output-filename can only be used with one input file.")
-        sys.exit(1)
+    if stdin_mode:
+        _validate_stdin_options(archive, output_filename)
+        output_mode = _get_stdin_output_mode(output_filename)
+        data = _read_stdin()
+        if not data:
+            raise click.UsageError("No data received from stdin")
+
+        if output_mode == "file":
+            dangerzone.add_document_from_data(data, output_filename)
+        else:
+            # output_mode == "stdout": no output_filename on the Document;
+            # the isolation provider will write to stdout directly.
+            dangerzone.add_document_from_data(data)
     else:
-        for filename in filenames:
-            dangerzone.add_document_from_filename(filename, archive=archive)
+        if len(filenames) == 1 and output_filename:
+            dangerzone.add_document_from_filename(
+                filenames[0], output_filename, archive
+            )
+        elif len(filenames) > 1 and output_filename:
+            click.echo(
+                "--output-filename can only be used with one input file.", err=True
+            )
+            sys.exit(1)
+        else:
+            for filename in filenames:
+                dangerzone.add_document_from_filename(filename, archive=archive)
 
     # Validate OCR language
     if ocr_lang:
@@ -123,9 +196,9 @@ def run(
                 valid = True
                 break
         if not valid:
-            click.echo("Invalid OCR language code. Valid language codes:")
+            click.echo("Invalid OCR language code. Valid language codes:", err=True)
             for lang in dangerzone.ocr_languages:
-                click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}")
+                click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}", err=True)
             sys.exit(1)
 
     tasks = []
@@ -150,7 +223,8 @@ def run(
                 + "No container image found."
                 + Style.RESET_ALL
                 + " Please initialize Dangerzone by running:\n\n"
-                "    dangerzone-image upgrade\n"
+                "    dangerzone-image upgrade\n",
+                err=True,
             )
             sys.exit(1)
         print_header("Converting document(s) to safe PDF")
@@ -168,7 +242,10 @@ def run(
     if documents_safe != []:
         print_header("Safe PDF(s) created successfully")
         for document in documents_safe:
-            click.echo(replace_control_chars(document.output_filename))
+            # When writing to stdout (data-based doc, no output filename),
+            # skip printing the filename — the PDF is already on stdout.
+            if document._data is None or document._output_filename is not None:
+                click.echo(replace_control_chars(document.output_filename), err=True)
 
         if archive:
             print_header(
@@ -178,7 +255,7 @@ def run(
     if documents_failed != []:
         print_header("Failed to convert document(s)")
         for document in documents_failed:
-            click.echo(replace_control_chars(document.input_filename))
+            click.echo(replace_control_chars(str(document)), err=True)
         sys.exit(1)
     sys.exit(0)
 

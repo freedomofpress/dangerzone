@@ -154,6 +154,16 @@ def run(
 
     assert filenames is not None
 
+    # Validate stdin options before creating DangerzoneCore — this
+    # avoids unnecessary initialization when we know the call will fail.
+    stdin_data: bytes | None = None
+    if stdin_mode:
+        _validate_stdin_options(archive, output_filename)
+        output_mode = _get_stdin_output_mode(output_filename)
+        stdin_data = _read_stdin()
+        if not stdin_data:
+            raise click.UsageError("No data received from stdin")
+
     if getattr(sys, "dangerzone_dev", False) and dummy_conversion:
         dangerzone = DangerzoneCore(Dummy())
     elif is_qubes_native_conversion():
@@ -162,18 +172,14 @@ def run(
         dangerzone = DangerzoneCore(Container(debug=debug))
 
     if stdin_mode:
-        _validate_stdin_options(archive, output_filename)
-        output_mode = _get_stdin_output_mode(output_filename)
-        data = _read_stdin()
-        if not data:
-            raise click.UsageError("No data received from stdin")
-
+        assert stdin_data is not None
+        assert output_mode is not None
         if output_mode == "file":
-            dangerzone.add_document_from_data(data, output_filename)
+            dangerzone.add_document_from_data(stdin_data, output_filename)
         else:
             # output_mode == "stdout": no output_filename on the Document;
             # the isolation provider will write to stdout directly.
-            dangerzone.add_document_from_data(data)
+            dangerzone.add_document_from_data(stdin_data)
     else:
         if len(filenames) == 1 and output_filename:
             dangerzone.add_document_from_filename(

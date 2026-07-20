@@ -24,33 +24,41 @@ def _read_stdin() -> bytes:
     return sys.stdin.buffer.read()
 
 
-def _validate_stdin_options(
+def _initialize_documents(
+    dangerzone: DangerzoneCore,
+    filenames: list[str] | None,
     archive: bool,
     output_filename: str | None,
 ) -> None:
     """Validate that options are compatible with stdin input."""
-    if archive:
-        raise click.UsageError("--archive cannot be used with stdin input")
-    # --output-filename is always allowed with stdin (single doc in flight)
+    if len(filenames) > 1:
+        if "-" in filenames:
+            raise click.BadArgumentUsage(
+                "Cannot mix input from stdin with other documents"
+            )
+        if output_filename:
+            raise click.BadOptionUsage(
+                "--output-filename can only be used with one input file"
+            )
 
+    if output_filename is None and sys.stdout.isatty():
+        raise click.UsageError(
+            "Cowardly refusing to write to a terminal.\n"
+            "Use --output-filename to specify an output file, or redirect "
+            "stdout to a file/pipe."
+        )
 
-def _get_stdin_output_mode(output_filename: str | None) -> str:
-    """Determine output destination for stdin mode.
+    if filenames == ["-"] or not filenames:
+        # We are reading a single document from stdin.
+        if archive:
+            raise click.UsageError("--archive cannot be used with input from stdin")
+        if sys.stdin.isatty():
+            raise click.UsageError("No files were provided and cannot read from stdin")
+        dangerzone.add_document_from_stdin(output_filename)
+        return
 
-    Returns:
-        "file" if --output-filename was given (caller uses output_filename).
-        "stdout" if stdout is not a TTY (safe PDF goes to stdout).
-        Raises UsageError if stdout is a TTY (cowardly refusal).
-    """
-    if output_filename:
-        return "file"
-    if not sys.stdout.isatty():
-        return "stdout"
-    raise click.UsageError(
-        "Cowardly refusing to write to a terminal.\n"
-        "Use --output-filename to specify an output file, or redirect "
-        "stdout to a file/pipe."
-    )
+    for filename in filenames:
+        dangerzone.add_document_from_filename(filename, output_filename, archive)
 
 
 @click.command(
@@ -142,28 +150,6 @@ def run(
             )
         sys.exit(0)
 
-    stdin_mode = False
-    if not filenames:
-        if not sys.stdin.isatty():
-            stdin_mode = True
-            filenames = ["-"]
-        else:
-            raise click.UsageError("Missing argument 'FILENAMES...'")
-    elif len(filenames) == 1 and filenames[0] == "-":
-        stdin_mode = True
-
-    assert filenames is not None
-
-    # Validate stdin options before creating DangerzoneCore — this
-    # avoids unnecessary initialization when we know the call will fail.
-    stdin_data: bytes | None = None
-    if stdin_mode:
-        _validate_stdin_options(archive, output_filename)
-        output_mode = _get_stdin_output_mode(output_filename)
-        stdin_data = _read_stdin()
-        if not stdin_data:
-            raise click.UsageError("No data received from stdin")
-
     if getattr(sys, "dangerzone_dev", False) and dummy_conversion:
         dangerzone = DangerzoneCore(Dummy())
     elif is_qubes_native_conversion():
@@ -171,28 +157,7 @@ def run(
     else:
         dangerzone = DangerzoneCore(Container(debug=debug))
 
-    if stdin_mode:
-        assert stdin_data is not None
-        assert output_mode is not None
-        if output_mode == "file":
-            dangerzone.add_document_from_data(stdin_data, output_filename)
-        else:
-            # output_mode == "stdout": no output_filename on the Document;
-            # the isolation provider will write to stdout directly.
-            dangerzone.add_document_from_data(stdin_data)
-    else:
-        if len(filenames) == 1 and output_filename:
-            dangerzone.add_document_from_filename(
-                filenames[0], output_filename, archive
-            )
-        elif len(filenames) > 1 and output_filename:
-            click.echo(
-                "--output-filename can only be used with one input file.", err=True
-            )
-            sys.exit(1)
-        else:
-            for filename in filenames:
-                dangerzone.add_document_from_filename(filename, archive=archive)
+    _initialize_documents(dangerzone, filenames, archive, output_filename)
 
     # Validate OCR language
     if ocr_lang:

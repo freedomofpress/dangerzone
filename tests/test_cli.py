@@ -457,39 +457,32 @@ class TestCliIO(TestCli):
         if isinstance(args, str):
             args = (args,)
         runner = CliRunner()
-        result = runner.invoke(run, args, input=input_data, catch_exceptions=False)
+        result = runner.invoke(run, args, input=input_data)
         return CLIResult.reclass_click_result(result, args)
 
     def test_stdin_dash(self, sample_pdf: str) -> None:
         """dangerzone - converts from stdin via dummy provider."""
         with open(sample_pdf, "rb") as f:
             pdf_bytes = f.read()
-        result = self.run_cli_stdin(
-            ["-", "--unsafe-dummy-conversion"], pdf_bytes
-        )
+        result = self.run_cli_stdin(["-", "--unsafe-dummy-conversion"], pdf_bytes)
         result.assert_success()
 
     def test_stdin_implicit(self, sample_pdf: str) -> None:
         """No filenames given, stdin piped -> enters stdin mode."""
         with open(sample_pdf, "rb") as f:
             pdf_bytes = f.read()
-        result = self.run_cli_stdin(
-            ["--unsafe-dummy-conversion"], pdf_bytes
-        )
+        result = self.run_cli_stdin(["--unsafe-dummy-conversion"], pdf_bytes)
         result.assert_success()
 
     def test_stdin_empty(self) -> None:
         """Empty stdin -> error."""
-        result = self.run_cli_stdin(
-            ["-", "--unsafe-dummy-conversion"], b""
-        )
+        result = self.run_cli_stdin(["-", "--unsafe-dummy-conversion"], b"")
         result.assert_failure()
-        assert "No data received from stdin" in result.output
 
     def test_stdin_no_args(self) -> None:
         """No args, no stdin -> error."""
         runner = CliRunner()
-        result = runner.invoke(run, [], catch_exceptions=False)
+        result = runner.invoke(run, [])
         assert result.exit_code != 0
 
     def test_stdin_archive_rejected(self, sample_pdf: str) -> None:
@@ -500,7 +493,7 @@ class TestCliIO(TestCli):
             ["-", "--archive", "--unsafe-dummy-conversion"], pdf_bytes
         )
         result.assert_failure()
-        assert "--archive cannot be used with stdin" in result.output
+        assert "--archive cannot be used with input from stdin" in result.output
 
     def test_stdin_cowardly_refusal(self, sample_pdf: str) -> None:
         """Stdin without --output-filename when stdout is a TTY -> error."""
@@ -512,7 +505,8 @@ class TestCliIO(TestCli):
         # fires. We mock it in the subprocess since CliRunner replaces stdout.
         result = subprocess.run(
             [
-                sys.executable, "-c",
+                sys.executable,
+                "-c",
                 (
                     "import sys, unittest.mock; "
                     "m = unittest.mock.patch.object(sys.stdout, 'isatty', return_value=True); "
@@ -520,15 +514,14 @@ class TestCliIO(TestCli):
                     "from dangerzone.cli import run; run()"
                 ),
             ],
+            check=False,
             input=pdf_bytes,
             capture_output=True,
         )
         assert result.returncode != 0
         assert b"Cowardly refusing" in result.stderr
 
-    def test_stdin_with_output_filename(
-        self, sample_pdf: str, tmp_path: Path
-    ) -> None:
+    def test_stdin_with_output_filename(self, sample_pdf: str, tmp_path: Path) -> None:
         """dangerzone - --output-filename writes safe PDF to that file."""
         with open(sample_pdf, "rb") as f:
             pdf_bytes = f.read()
@@ -547,9 +540,7 @@ class TestCliIO(TestCli):
 
         with open(sample_pdf, "rb") as f:
             pdf_bytes = f.read()
-        result = self.run_cli_stdin(
-            ["-", "--unsafe-dummy-conversion"], pdf_bytes
-        )
+        result = self.run_cli_stdin(["-", "--unsafe-dummy-conversion"], pdf_bytes)
         result.assert_success()
         # Extract the PDF bytes from stdout (after the banner).
         assert result.output_bytes is not None

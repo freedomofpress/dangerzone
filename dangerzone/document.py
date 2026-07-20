@@ -4,6 +4,7 @@ import os
 import platform
 import re
 import secrets
+import sys
 from io import BytesIO
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import BinaryIO
@@ -66,7 +67,10 @@ class Document:
 
     @classmethod
     def from_stdin(cls, output_filename: str | None = None) -> "Document":
-        with open()
+        data = sys.stdin.buffer.read()
+        if not data:
+            raise ValueError("No data received from stdin")
+        return cls(input_filename=None, output_filename=output_filename, data=data)
 
     @staticmethod
     def normalize_filename(filename: str) -> str:

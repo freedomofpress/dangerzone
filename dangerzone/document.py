@@ -64,6 +64,10 @@ class Document:
 
         self.archive_after_conversion = archive
 
+    @classmethod
+    def from_stdin(cls, output_filename: str | None = None) -> "Document":
+        with open()
+
     @staticmethod
     def normalize_filename(filename: str) -> str:
         if filename == STDIO_DESCRIPTOR:

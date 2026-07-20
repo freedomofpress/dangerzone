@@ -443,3 +443,120 @@ class TestCliShutdown(TestCli):
         result.assert_failure()
         mock_container_stop.assert_not_called()
         mock_machine_stop.assert_not_called()
+
+
+class TestCliIO(TestCli):
+    """Tests for stdin/stdout I/O support."""
+
+    def run_cli_stdin(
+        self,
+        args: Sequence[str],
+        input_data: bytes,
+    ) -> CLIResult:
+        """Run the CLI with the given args and feed input_data to stdin."""
+        if isinstance(args, str):
+            args = (args,)
+        runner = CliRunner()
+        result = runner.invoke(run, args, input=input_data, catch_exceptions=False)
+        return CLIResult.reclass_click_result(result, args)
+
+    def test_stdin_dash(self, sample_pdf: str) -> None:
+        """dangerzone - converts from stdin via dummy provider."""
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        result = self.run_cli_stdin(
+            ["-", "--unsafe-dummy-conversion"], pdf_bytes
+        )
+        result.assert_success()
+
+    def test_stdin_implicit(self, sample_pdf: str) -> None:
+        """No filenames given, stdin piped -> enters stdin mode."""
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        result = self.run_cli_stdin(
+            ["--unsafe-dummy-conversion"], pdf_bytes
+        )
+        result.assert_success()
+
+    def test_stdin_empty(self) -> None:
+        """Empty stdin -> error."""
+        result = self.run_cli_stdin(
+            ["-", "--unsafe-dummy-conversion"], b""
+        )
+        result.assert_failure()
+        assert "No data received from stdin" in result.output
+
+    def test_stdin_no_args(self) -> None:
+        """No args, no stdin -> error."""
+        runner = CliRunner()
+        result = runner.invoke(run, [], catch_exceptions=False)
+        assert result.exit_code != 0
+
+    def test_stdin_archive_rejected(self, sample_pdf: str) -> None:
+        """--archive with stdin -> error."""
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        result = self.run_cli_stdin(
+            ["-", "--archive", "--unsafe-dummy-conversion"], pdf_bytes
+        )
+        result.assert_failure()
+        assert "--archive cannot be used with stdin" in result.output
+
+    def test_stdin_cowardly_refusal(self, sample_pdf: str) -> None:
+        """Stdin without --output-filename when stdout is a TTY -> error."""
+        import subprocess
+
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        # We need sys.stdout.isatty() to return True so the cowardly refusal
+        # fires. We mock it in the subprocess since CliRunner replaces stdout.
+        result = subprocess.run(
+            [
+                sys.executable, "-c",
+                (
+                    "import sys, unittest.mock; "
+                    "m = unittest.mock.patch.object(sys.stdout, 'isatty', return_value=True); "
+                    "m.start(); "
+                    "from dangerzone.cli import run; run()"
+                ),
+            ],
+            input=pdf_bytes,
+            capture_output=True,
+        )
+        assert result.returncode != 0
+        assert b"Cowardly refusing" in result.stderr
+
+    def test_stdin_with_output_filename(
+        self, sample_pdf: str, tmp_path: Path
+    ) -> None:
+        """dangerzone - --output-filename writes safe PDF to that file."""
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        output = str(tmp_path / "safe.pdf")
+        result = self.run_cli_stdin(
+            ["-", "--output-filename", output, "--unsafe-dummy-conversion"],
+            pdf_bytes,
+        )
+        result.assert_success()
+        assert os.path.exists(output)
+        assert os.path.getsize(output) > 0
+
+    def test_stdin_to_stdout_valid_pdf(self, sample_pdf: str) -> None:
+        """dangerzone - writes a valid, non-corrupted PDF to stdout."""
+        import fitz
+
+        with open(sample_pdf, "rb") as f:
+            pdf_bytes = f.read()
+        result = self.run_cli_stdin(
+            ["-", "--unsafe-dummy-conversion"], pdf_bytes
+        )
+        result.assert_success()
+        # Extract the PDF bytes from stdout (after the banner).
+        assert result.output_bytes is not None
+        pdf_start = result.output_bytes.find(b"%PDF-")
+        assert pdf_start != -1, "No PDF magic bytes found in stdout"
+        pdf_data = result.output_bytes[pdf_start:]
+        # Validate the PDF is not corrupted by opening it with PyMuPDF.
+        doc = fitz.open("pdf", pdf_data)
+        assert doc.page_count > 0
+        doc.close()

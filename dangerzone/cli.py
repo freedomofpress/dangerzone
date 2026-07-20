@@ -15,8 +15,8 @@ from .util import get_version, replace_control_chars
 
 
 def print_header(s: str) -> None:
-    click.echo("")
-    click.echo(Style.BRIGHT + s)
+    click.echo("", err=True)
+    click.echo(Style.BRIGHT + s, err=True)
 
 
 @click.command()
@@ -88,13 +88,16 @@ def run(
         if set_container_runtime == "default":
             settings.unset_custom_runtime()
             click.echo(
-                "Instructed Dangerzone to use the default container runtime for this OS"
+                "Instructed Dangerzone to use the default container runtime for this OS",
+                err=True,
             )
         else:
             container_runtime = settings.set_custom_runtime(
                 set_container_runtime, autosave=True
             )
-            click.echo(f"Set the settings container_runtime to {container_runtime}")
+            click.echo(
+                f"Set the settings container_runtime to {container_runtime}", err=True
+            )
         sys.exit(0)
     elif not filenames:
         raise click.UsageError("Missing argument 'FILENAMES...'")
@@ -109,7 +112,7 @@ def run(
     if len(filenames) == 1 and output_filename:
         dangerzone.add_document_from_filename(filenames[0], output_filename, archive)
     elif len(filenames) > 1 and output_filename:
-        click.echo("--output-filename can only be used with one input file.")
+        click.echo("--output-filename can only be used with one input file.", err=True)
         sys.exit(1)
     else:
         for filename in filenames:
@@ -123,9 +126,9 @@ def run(
                 valid = True
                 break
         if not valid:
-            click.echo("Invalid OCR language code. Valid language codes:")
+            click.echo("Invalid OCR language code. Valid language codes:", err=True)
             for lang in dangerzone.ocr_languages:
-                click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}")
+                click.echo(f"{dangerzone.ocr_languages[lang]}: {lang}", err=True)
             sys.exit(1)
 
     tasks = []
@@ -150,7 +153,8 @@ def run(
                 + "No container image found."
                 + Style.RESET_ALL
                 + " Please initialize Dangerzone by running:\n\n"
-                "    dangerzone-image upgrade\n"
+                "    dangerzone-image upgrade\n",
+                err=True,
             )
             sys.exit(1)
         print_header("Converting document(s) to safe PDF")
@@ -168,7 +172,7 @@ def run(
     if documents_safe != []:
         print_header("Safe PDF(s) created successfully")
         for document in documents_safe:
-            click.echo(replace_control_chars(document.output_filename))
+            click.echo(replace_control_chars(document.output_filename), err=True)
 
         if archive:
             print_header(
@@ -178,7 +182,7 @@ def run(
     if documents_failed != []:
         print_header("Failed to convert document(s)")
         for document in documents_failed:
-            click.echo(replace_control_chars(document.input_filename))
+            click.echo(replace_control_chars(str(document)), err=True)
         sys.exit(1)
     sys.exit(0)
 

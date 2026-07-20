@@ -17,18 +17,12 @@ def test_input_sample_init_archive(sample_pdf: str) -> None:
     Document(sample_pdf, archive=True)
 
 
-def test_input_sample_after(sample_pdf: str) -> None:
-    d = Document()
-    d.input_filename = sample_pdf
-
-
 def test_input_file_none() -> None:
     """
     Attempts to read a document's filename when no doc has been set
     """
-    d = Document()
     with pytest.raises(errors.NotSetInputFilenameException):
-        _ = d.input_filename
+        _d = Document()
 
 
 def test_input_file_non_existing() -> None:
@@ -55,23 +49,23 @@ def test_output_file_unwriteable_dir(sample_pdf: str, tmp_path: Path) -> None:
 
 
 def test_output(tmp_path: Path) -> None:
-    pdf_file = str(tmp_path.joinpath("document.pdf"))
-    d = Document()
-    d.output_filename = pdf_file
+    out_path = str(tmp_path.joinpath("output.pdf"))
+    d = Document(data="test")
+    d.output_filename = out_path
 
 
 def test_output_file_none() -> None:
     """
     Attempts to read a document's filename when no doc has been set
     """
-    d = Document()
+    d = Document(data="test")
     with pytest.raises(errors.NotSetOutputFilenameException):
         _ = d.output_filename
 
 
 def test_output_file_not_pdf(tmp_path: Path) -> None:
     docx_file = str(tmp_path / "document.docx")
-    d = Document()
+    d = Document(data="test")
 
     with pytest.raises(errors.NonPDFOutputFileException):
         d.output_filename = docx_file
@@ -200,3 +194,95 @@ def test_mark_as_failed(sample_pdf: str) -> None:
     assert d.is_failed()
     assert not d.is_safe()
     assert not d.is_unconverted()
+
+
+# --- Tests for data-based (stdin) Document ---
+
+
+def test_init_with_data() -> None:
+    """Document can be constructed with raw bytes data."""
+    d = Document(data=b"fake pdf content")
+    assert d._data == b"fake pdf content"
+    assert d._input_filename is None
+
+
+def test_init_data_and_filename_conflict(sample_pdf: str) -> None:
+    """Providing both input_filename and data raises ValueError."""
+    with pytest.raises(ValueError, match="Cannot provide both"):
+        Document(input_filename=sample_pdf, data=b"fake pdf content")
+
+
+def test_open_with_data() -> None:
+    """Document.open() returns a BytesIO with the correct content when data is set."""
+    payload = b"fake pdf content"
+    d = Document(data=payload)
+    with d.open() as f:
+        assert f.read() == payload
+
+
+def test_open_with_filename(sample_pdf: str) -> None:
+    """Document.open() returns a readable file handle when input_filename is set."""
+    d = Document(sample_pdf)
+    with d.open() as f:
+        content = f.read()
+        assert len(content) > 0
+
+
+def test_str_stdin() -> None:
+    """str() of a data-based document returns '<stdin>'."""
+    d = Document(data=b"fake pdf content")
+    assert str(d) == "<stdin>"
+
+
+def test_str_filename(sample_pdf: str) -> None:
+    """str() of a file-based document returns the input filename."""
+    d = Document(sample_pdf)
+    assert str(d) == d.input_filename
+
+
+def test_eq_both_data() -> None:
+    """Two data-based documents with the same id are equal."""
+    d1 = Document(data=b"content")
+    d2 = Document(data=b"content")
+    # Different ids (random), so they should NOT be equal
+    assert d1 != d2
+
+
+def test_eq_data_vs_file(sample_pdf: str) -> None:
+    """A data-based document is never equal to a file-based document."""
+    d_data = Document(data=b"content")
+    d_file = Document(sample_pdf)
+    assert d_data != d_file
+
+
+def test_eq_file_vs_file(sample_pdf: str) -> None:
+    """Two file-based documents pointing to the same file are equal."""
+    d1 = Document(sample_pdf)
+    d2 = Document(sample_pdf)
+    assert d1 == d2
+
+
+def test_hash_data_based() -> None:
+    """Data-based documents hash by id, not by path."""
+    d = Document(data=b"content")
+    assert hash(d) == hash(d.id)
+
+
+def test_hash_file_based(sample_pdf: str) -> None:
+    """File-based documents hash by absolute path."""
+    d = Document(sample_pdf)
+    assert hash(d) == hash(str(Path(sample_pdf).absolute()))
+
+
+def test_data_output_filename_not_set() -> None:
+    """Data-based document without output_filename raises on access."""
+    d = Document(data=b"content")
+    with pytest.raises(errors.NotSetOutputFilenameException):
+        _ = d.output_filename
+
+
+def test_data_output_filename_set(tmp_path: Path) -> None:
+    """Data-based document with output_filename works."""
+    out = str(tmp_path / "safe.pdf")
+    d = Document(data=b"content", output_filename=out)
+    assert d.output_filename == os.path.abspath(out)

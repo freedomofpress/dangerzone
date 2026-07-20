@@ -9,18 +9,7 @@ from .document import Document
 
 
 @errors.handle_document_errors
-def _validate_input_filename(
-    ctx: click.Context, param: str, value: str | None
-) -> str | None:
-    if value is None:
-        return None
-    filename = Document.normalize_filename(value)
-    Document.validate_input_filename(filename)
-    return filename
-
-
-@errors.handle_document_errors
-def _validate_input_filenames(
+def validate_input_filenames(
     ctx: click.Context, param: list[str], value: tuple[str]
 ) -> list[str]:
     normalized_filenames = []
@@ -32,7 +21,7 @@ def _validate_input_filenames(
 
 
 @errors.handle_document_errors
-def _validate_output_filename(
+def validate_output_filename(
     ctx: click.Context, param: str, value: str | None
 ) -> str | None:
     if value is None:
@@ -40,32 +29,6 @@ def _validate_output_filename(
     filename = Document.normalize_filename(value)
     Document.validate_output_filename(filename)
     return filename
-
-
-# XXX: Click versions 7.x and below inspect the number of arguments that the
-# callback handler supports. Unfortunately, common Python decorators (such as
-# `handle_document_errors()`) mask this number, so we need to reinstate it
-# somehow [1]. The simplest way to do so is using a wrapper function.
-#
-# Once we stop supporting Click 7.x, we can remove the wrappers below.
-#
-# [1]: https://github.com/freedomofpress/dangerzone/issues/206#issuecomment-1297336863
-def validate_input_filename(
-    ctx: click.Context, param: str, value: str | None
-) -> str | None:
-    return _validate_input_filename(ctx, param, value)
-
-
-def validate_input_filenames(
-    ctx: click.Context, param: list[str], value: tuple[str]
-) -> list[str]:
-    return _validate_input_filenames(ctx, param, value)
-
-
-def validate_output_filename(
-    ctx: click.Context, param: str, value: str | None
-) -> str | None:
-    return _validate_output_filename(ctx, param, value)
 
 
 def check_suspicious_options(args: list[str]) -> None:

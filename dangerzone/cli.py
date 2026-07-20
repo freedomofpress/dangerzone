@@ -19,11 +19,6 @@ def print_header(s: str) -> None:
     click.echo(Style.BRIGHT + s, err=True)
 
 
-def _read_stdin() -> bytes:
-    """Read all bytes from stdin."""
-    return sys.stdin.buffer.read()
-
-
 def _initialize_documents(
     dangerzone: DangerzoneCore,
     filenames: list[str] | None,
@@ -31,22 +26,15 @@ def _initialize_documents(
     output_filename: str | None,
 ) -> None:
     """Validate that options are compatible with stdin input."""
-    if len(filenames) > 1:
+    if filenames is not None and len(filenames) > 1:
         if "-" in filenames:
             raise click.BadArgumentUsage(
                 "Cannot mix input from stdin with other documents"
             )
         if output_filename:
             raise click.BadOptionUsage(
-                "--output-filename can only be used with one input file"
+                message="--output-filename can only be used with one input file"
             )
-
-    if output_filename is None and sys.stdout.isatty():
-        raise click.UsageError(
-            "Cowardly refusing to write to a terminal.\n"
-            "Use --output-filename to specify an output file, or redirect "
-            "stdout to a file/pipe."
-        )
 
     if filenames == ["-"] or not filenames:
         # We are reading a single document from stdin.
@@ -54,6 +42,12 @@ def _initialize_documents(
             raise click.UsageError("--archive cannot be used with input from stdin")
         if sys.stdin.isatty():
             raise click.UsageError("No files were provided and cannot read from stdin")
+        if output_filename is None and sys.stdout.isatty():
+            raise click.UsageError(
+                "Cowardly refusing to write to a terminal.\n"
+                "Use --output-filename to specify an output file, or redirect "
+                "stdout to a file/pipe."
+            )
         dangerzone.add_document_from_stdin(output_filename)
         return
 
@@ -279,7 +273,7 @@ def display_banner() -> None:
     ╰──────────────────────────╯
     """
 
-    print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
+    print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮", file=sys.stderr)
     print(
         Back.BLACK
         + Fore.YELLOW
@@ -290,7 +284,8 @@ def display_banner() -> None:
         + "           ▄██▄           "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -302,7 +297,8 @@ def display_banner() -> None:
         + "          ██████          "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -314,7 +310,8 @@ def display_banner() -> None:
         + "         ███▀▀▀██         "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -326,7 +323,8 @@ def display_banner() -> None:
         + "        ███   ████        "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -338,7 +336,8 @@ def display_banner() -> None:
         + "       ███   ██████       "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -350,7 +349,8 @@ def display_banner() -> None:
         + "      ███   ▀▀▀▀████      "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -362,7 +362,8 @@ def display_banner() -> None:
         + "     ███████  ▄██████     "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -374,7 +375,8 @@ def display_banner() -> None:
         + "    ███████ ▄█████████    "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -386,7 +388,8 @@ def display_banner() -> None:
         + "   ████████████████████   "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -398,9 +401,10 @@ def display_banner() -> None:
         + "    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
-    print(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │")
+    print(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │", file=sys.stderr)
     left_spaces = (15 - len(get_version()) - 1) // 2
     right_spaces = left_spaces
     if left_spaces + len(get_version()) + 1 + right_spaces < 15:
@@ -417,7 +421,8 @@ def display_banner() -> None:
         + f"{' ' * left_spaces}Dangerzone v{get_version()}{' ' * right_spaces}"
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -430,12 +435,14 @@ def display_banner() -> None:
         + " https://dangerzone.rocks "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
         + Fore.YELLOW
         + Style.DIM
         + "╰──────────────────────────╯"
-        + Style.RESET_ALL
+        + Style.RESET_ALL,
+        file=sys.stderr,
     )

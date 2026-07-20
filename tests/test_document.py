@@ -50,7 +50,7 @@ def test_output_file_unwriteable_dir(sample_pdf: str, tmp_path: Path) -> None:
 
 def test_output(tmp_path: Path) -> None:
     out_path = str(tmp_path.joinpath("output.pdf"))
-    d = Document(data="test")
+    d = Document(data=b"test")
     d.output_filename = out_path
 
 
@@ -58,14 +58,14 @@ def test_output_file_none() -> None:
     """
     Attempts to read a document's filename when no doc has been set
     """
-    d = Document(data="test")
+    d = Document(data=b"test")
     with pytest.raises(errors.NotSetOutputFilenameException):
         _ = d.output_filename
 
 
 def test_output_file_not_pdf(tmp_path: Path) -> None:
     docx_file = str(tmp_path / "document.docx")
-    d = Document(data="test")
+    d = Document(data=b"test")
 
     with pytest.raises(errors.NonPDFOutputFileException):
         d.output_filename = docx_file

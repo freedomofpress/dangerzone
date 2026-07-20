@@ -58,11 +58,8 @@ class Document:
         else:
             raise errors.NotSetInputFilenameException()
 
-        if output_filename:
-            self.output_filename = output_filename
-
+        self.output_filename = output_filename
         self.state = Document.STATE_UNCONVERTED
-
         self.archive_after_conversion = archive
 
     @classmethod
@@ -122,10 +119,7 @@ class Document:
 
     @property
     def input_filename(self) -> str:
-        if self._input_filename is None:
-            raise errors.NotSetInputFilenameException()
-        else:
-            return self._input_filename
+        return self._input_filename
 
     @input_filename.setter
     def input_filename(self, filename: str) -> None:
@@ -136,17 +130,15 @@ class Document:
 
     @property
     def output_filename(self) -> str:
-        if self._output_filename is None:
-            if self._input_filename is not None:
-                return self.default_output_filename
-            else:
-                raise errors.NotSetOutputFilenameException()
-        else:
-            return self._output_filename
+        return self._output_filename
 
     @output_filename.setter
-    def output_filename(self, filename: str) -> None:
-        filename = self.normalize_filename(filename)
+    def output_filename(self, filename: str | None) -> None:
+        if not self._input_filename and filename is None:
+            self._output_filename = None
+            return
+
+        filename = self.normalize_filename(filename or self.default_output_filename)
         self.validate_output_filename(filename)
         self._output_filename = filename
 
@@ -219,6 +211,18 @@ class Document:
             return BytesIO(self._data)
         else:
             raise errors.NotSetInputFilenameException()
+
+    def write(self, pdf_data: bytes) -> None:
+        """Write the safe PDF data to the proper destination.
+
+        For data-based documents (from stdin) with no output filename,
+        write to stdout. Otherwise, write to the output filename.
+        """
+        if self.output_filename is None:
+            sys.stdout.buffer.write(pdf_data)
+        else:
+            with open(self.output_filename, "wb") as f:
+                f.write(pdf_data)
 
     def set_output_dir(self, path: str) -> None:
         # keep the same name

@@ -315,16 +315,8 @@ class IsolationProvider(ABC):
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()
 
-        # If the document came from stdin with no explicit output filename,
-        # write the safe PDF to stdout.
-        # Assumption: the caller (CLI) has already verified that stdout is not a TTY.
-        if document._data is not None and document._output_filename is None:
-            sys.stdout.buffer.write(safe_doc.tobytes())
-        else:
-            # Saving it with a different name first, because PyMuPDF cannot handle
-            # non-Unicode chars.
-            safe_doc.save(document.sanitized_output_filename)
-            os.replace(document.sanitized_output_filename, document.output_filename)
+        # Write the safe PDF to the document's destination.
+        document.write(safe_doc.tobytes())
 
         # TODO handle leftover code input
         text = "Successfully converted document"

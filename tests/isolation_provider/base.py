@@ -75,7 +75,7 @@ class IsolationProviderTermination:
     ) -> None:
         # Check that we don't need to terminate any process, if the conversion completes
         # successfully.
-        doc = Document(data="test")
+        doc = Document(data=b"test")
         provider.progress_callback = mocker.MagicMock()
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
         terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
@@ -98,7 +98,7 @@ class IsolationProviderTermination:
     ) -> None:
         # Check that successful conversions that linger for a little while are
         # terminated gracefully.
-        doc = Document(data="test")
+        doc = Document(data=b"test")
         provider.progress_callback = mocker.MagicMock()
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
         terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
@@ -120,7 +120,7 @@ class IsolationProviderTermination:
     ) -> None:
         # Check that successful conversions that cannot be terminated gracefully, are
         # killed forcefully.
-        doc = Document(data="test")
+        doc = Document(data=b"test")
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
         # We mock the terminate_doc_to_pixels_proc() method, so that the process must be
         # killed.
@@ -144,7 +144,7 @@ class IsolationProviderTermination:
     ) -> None:
         # Check that if a conversion process cannot be killed, at least it will not
         # block the operation.
-        doc = Document(data="test")
+        doc = Document(data=b"test")
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
         # We mock both the terminate_doc_to_pixels_proc() method, and our kill
         # invocation, so that the process will seem as unkillable.
@@ -181,7 +181,7 @@ class IsolationProviderTermination:
     ) -> None:
         # Check that we don't need to terminate any process, if the conversion fails.
         # However, we should be able to get the return code.
-        doc = Document(data="test")
+        doc = Document(data=b"test")
         provider.progress_callback = mocker.MagicMock()
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
         terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
@@ -214,7 +214,7 @@ class IsolationProviderTermination:
     ) -> None:
         # Check that if the failed process has not exited, the error code that will be
         # returned is UnexpectedExceptionError.
-        doc = Document(data="test")
+        doc = Document(data=b"test")
         provider.progress_callback = mocker.MagicMock()
         get_proc_exception_spy = mocker.spy(provider, "get_proc_exception")
         terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")

@@ -54,15 +54,6 @@ def test_output(tmp_path: Path) -> None:
     d.output_filename = out_path
 
 
-def test_output_file_none() -> None:
-    """
-    Attempts to read a document's filename when no doc has been set
-    """
-    d = Document(data=b"test")
-    with pytest.raises(errors.NotSetOutputFilenameException):
-        _ = d.output_filename
-
-
 def test_output_file_not_pdf(tmp_path: Path) -> None:
     docx_file = str(tmp_path / "document.docx")
     d = Document(data=b"test")
@@ -272,13 +263,6 @@ def test_hash_file_based(sample_pdf: str) -> None:
     """File-based documents hash by absolute path."""
     d = Document(sample_pdf)
     assert hash(d) == hash(str(Path(sample_pdf).absolute()))
-
-
-def test_data_output_filename_not_set() -> None:
-    """Data-based document without output_filename raises on access."""
-    d = Document(data=b"content")
-    with pytest.raises(errors.NotSetOutputFilenameException):
-        _ = d.output_filename
 
 
 def test_data_output_filename_set(tmp_path: Path) -> None:

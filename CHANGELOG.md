@@ -8,6 +8,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...HEAD)
 
+### Added
+
+- Accept documents from stdin, and write safe PDFs to stdout, by passing `-` as the input filename and `--output-filename -` for the output, enabling standard Unix pipe workflows like `cat file.pdf | dangerzone-cli - -o - > safe.pdf`
+  ([#1522](https://github.com/freedomofpress/dangerzone/issues/1522))
+
 ### Fixed
 
 - Accept OCI image indexes as multi-arch container images, in addition to Docker manifest lists. BuildKit 0.31.0 and later pushes OCI image indexes by default, which made `dangerzone-image prepare-archive` fail with `InvalidMutliArchImage` against newly published images ([#1534](https://github.com/freedomofpress/dangerzone/pulls/1534)).

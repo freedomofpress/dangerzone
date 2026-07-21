@@ -443,3 +443,54 @@ class TestCliShutdown(TestCli):
         result.assert_failure()
         mock_container_stop.assert_not_called()
         mock_machine_stop.assert_not_called()
+
+
+class TestCliIO(TestCli):
+    """Tests for stdin/stdout I/O support."""
+
+    def run_cli_stdin(
+        self,
+        args: list[str],
+        input: bytes = b"test data to trigger read from stdin",
+    ) -> CLIResult:
+        """Run the CLI with the given args and feed input_data to stdin."""
+        args.append("--unsafe-dummy-conversion")
+        runner = CliRunner()
+        result = runner.invoke(run, args, input=input)
+        return CLIResult.reclass_click_result(result, args)
+
+    def test_stdin_dash(self) -> None:
+        """dangerzone - -o - converts from stdin via dummy provider."""
+        result = self.run_cli_stdin(["-", "-o", "-"])
+        result.assert_success()
+
+    def test_stdin_dash_no_output(self) -> None:
+        """'-' without an output filename -> error, asks for an output."""
+        result = self.run_cli_stdin(["-"])
+        result.assert_failure(message="No output file specified")
+
+    def test_stdin_empty(self) -> None:
+        """Empty stdin -> error."""
+        result = self.run_cli_stdin(["-", "-o", "-"], input=b"")
+        result.assert_failure()
+        assert "No data received from stdin" == str(result.exception)
+
+    def test_stdin_archive_rejected(self) -> None:
+        """--archive with stdin -> error."""
+        result = self.run_cli_stdin(["-", "--archive"])
+        result.assert_failure(message="--archive cannot be used with input from stdin")
+
+    def test_stdin_output(self, tmp_path: Path) -> None:
+        """dangerzone - --output-filename writes safe PDF to that file."""
+        output_filename = tmp_path / "safe-from-stdin.pdf"
+        assert not output_filename.exists()
+        result = self.run_cli_stdin(["-", "--output-filename", str(output_filename)])
+        result.assert_success()
+        with output_filename.open("rb") as f:
+            data = f.read()
+
+        # Try again with stdout as output
+        result = self.run_cli_stdin(["-", "-o", "-"])
+        result.assert_success()
+        assert len(data) == len(result.stdout_bytes)
+        assert data[:-100] == result.stdout_bytes[:-100]

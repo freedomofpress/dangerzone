@@ -172,8 +172,8 @@ class TestCliBasic(TestCli):
 
     def test_display_banner(self, capfd) -> None:  # type: ignore[no-untyped-def]
         display_banner()  # call the test subject
-        (out, _err) = capfd.readouterr()
-        plain_lines = [strip_ansi(line) for line in out.splitlines()]
+        (_out, err) = capfd.readouterr()
+        plain_lines = [strip_ansi(line) for line in err.splitlines()]
         assert "╭──────────────────────────╮" in plain_lines, "missing top border"
         assert "╰──────────────────────────╯" in plain_lines, "missing bottom border"
 

@@ -113,6 +113,8 @@ class Document:
 
     @property
     def input_filename(self) -> str:
+        if self._input_filename is None:
+            raise errors.NotSetInputFilenameException()
         return self._input_filename
 
     @input_filename.setter
@@ -124,12 +126,14 @@ class Document:
 
     @property
     def output_filename(self) -> str:
-        if self._output_filename is None and self._input_filename is not None:
-            return self.default_output_filename
+        if self._output_filename is None:
+            if self._input_filename is not None:
+                return self.default_output_filename
+            raise errors.NotSetOutputFilenameException()
         return self._output_filename
 
     @output_filename.setter
-    def output_filename(self, filename: str | None) -> None:
+    def output_filename(self, filename: str) -> None:
         filename = self.normalize_filename(filename)
         self.validate_output_filename(filename)
         self._output_filename = filename
@@ -210,7 +214,7 @@ class Document:
         For data-based documents (from stdin) with no output filename,
         write to stdout. Otherwise, write to the output filename.
         """
-        if self.output_filename is None:
+        if self._data is not None and self._output_filename is None:
             sys.stdout.buffer.write(pdf_data)
         else:
             with open(self.output_filename, "wb") as f:

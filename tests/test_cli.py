@@ -450,13 +450,12 @@ class TestCliIO(TestCli):
     """Tests for stdin/stdout I/O support."""
 
     def run_cli_stdin(
-        self, args: Sequence[str], input="test data to trigger read from stdin"
+        self,
+        args: list[str],
+        input: bytes = b"test data to trigger read from stdin",
     ) -> CLIResult:
         """Run the CLI with the given args and feed input_data to stdin."""
-        if isinstance(args, str):
-            args = [args]
         args.append("--unsafe-dummy-conversion")
-
         runner = CliRunner()
         result = runner.invoke(run, args, input=input)
         return CLIResult.reclass_click_result(result, args)
@@ -473,7 +472,7 @@ class TestCliIO(TestCli):
 
     def test_stdin_empty(self) -> None:
         """Empty stdin -> error."""
-        result = self.run_cli_stdin(["-"], b"")
+        result = self.run_cli_stdin(["-"], input=b"")
         result.assert_failure()
         assert "No data received from stdin" == str(result.exception)
 

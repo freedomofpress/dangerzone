@@ -66,20 +66,16 @@ def test_output_file_not_pdf(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(platform.system() != "Windows", reason="Windows-specific")
 def test_illegal_output_filename_windows(tmp_path: Path) -> None:
-    d = Document()
-
     for char in '"*:<>?':
         with pytest.raises(errors.IllegalOutputFilenameException):
-            d.output_filename = str(tmp_path / f"illegal{char}name.pdf")
+            Document(output_filename=str(tmp_path / f"illegal{char}name.pdf"))
 
 
 @pytest.mark.skipif(platform.system() != "Darwin", reason="MacOS-specific")
 def test_illegal_output_filename_macos(tmp_path: Path) -> None:
     illegal_name = str(tmp_path / "illegal\\name.pdf")
-    d = Document()
-
     with pytest.raises(errors.IllegalOutputFilenameException):
-        d.output_filename = illegal_name
+        Document(output_filename=illegal_name)
 
 
 @pytest.mark.skipif(platform.system() == "Windows", reason="Unix-specific")
@@ -191,8 +187,10 @@ def test_init_with_data(sample_pdf: str) -> None:
     """Document can be constructed with raw bytes of data."""
     d = Document(data=b"fake pdf content")
     assert d._data == b"fake pdf content"
-    assert d.input_filename is None
-    assert d.output_filename is None
+    with pytest.raises(errors.NotSetInputFilenameException):
+        _ = d.input_filename
+    with pytest.raises(errors.NotSetOutputFilenameException):
+        _ = d.output_filename
 
     # Providing both input_filename and data raises ValueError.
     with pytest.raises(ValueError, match="Cannot provide both"):

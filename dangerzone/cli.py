@@ -33,7 +33,8 @@ def _initialize_documents(
             )
         if output_filename:
             raise click.BadOptionUsage(
-                message="--output-filename can only be used with one input file"
+                option_name="--output-filename",
+                message="--output-filename can only be used with one input file",
             )
 
     if filenames == [args.STDIO_DESCRIPTOR] or not filenames:

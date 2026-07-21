@@ -19,7 +19,52 @@ def print_header(s: str) -> None:
     click.echo(Style.BRIGHT + s, err=True)
 
 
-@click.command()
+def _initialize_documents(
+    dangerzone: DangerzoneCore,
+    filenames: list[str] | None,
+    archive: bool,
+    output_filename: str | None,
+) -> None:
+    """Validate that options are compatible with stdin input."""
+    if filenames is not None and len(filenames) > 1:
+        if args.STDIO_DESCRIPTOR in filenames:
+            raise click.BadArgumentUsage(
+                "Cannot mix input from stdin with other documents"
+            )
+        if output_filename:
+            raise click.BadOptionUsage(
+                option_name="--output-filename",
+                message="--output-filename can only be used with one input file",
+            )
+
+    if filenames == [args.STDIO_DESCRIPTOR] or not filenames:
+        # We are reading a single document from stdin.
+        if archive:
+            raise click.UsageError("--archive cannot be used with input from stdin")
+        if sys.stdin.isatty():
+            raise click.UsageError("No files were provided and cannot read from stdin")
+        if output_filename is None and sys.stdout.isatty():
+            raise click.UsageError(
+                "Cowardly refusing to write to a terminal.\n"
+                "Use --output-filename to specify an output file, or redirect "
+                "stdout to a file/pipe."
+            )
+        dangerzone.add_document_from_stdin(output_filename)
+        return
+
+    for filename in filenames:
+        dangerzone.add_document_from_filename(filename, output_filename, archive)
+
+
+@click.command(
+    help=(
+        "Convert potentially dangerous documents to safe PDFs.\n\n"
+        "Accepts file paths as arguments, or reads from stdin when no\n"
+        "files are given (or when '{args.STDIO_DESCRIPTOR}' is passed as a filename).\n"
+        "When reading from stdin, the safe PDF is written to stdout unless\n"
+        "--output-filename is specified. All status output goes to stderr."
+    )
+)
 @click.option(
     "--output-filename",
     callback=args.validate_output_filename,
@@ -99,8 +144,6 @@ def run(
                 f"Set the settings container_runtime to {container_runtime}", err=True
             )
         sys.exit(0)
-    elif not filenames:
-        raise click.UsageError("Missing argument 'FILENAMES...'")
 
     if getattr(sys, "dangerzone_dev", False) and dummy_conversion:
         dangerzone = DangerzoneCore(Dummy())
@@ -109,14 +152,7 @@ def run(
     else:
         dangerzone = DangerzoneCore(Container(debug=debug))
 
-    if len(filenames) == 1 and output_filename:
-        dangerzone.add_document_from_filename(filenames[0], output_filename, archive)
-    elif len(filenames) > 1 and output_filename:
-        click.echo("--output-filename can only be used with one input file.")
-        sys.exit(1)
-    else:
-        for filename in filenames:
-            dangerzone.add_document_from_filename(filename, archive=archive)
+    _initialize_documents(dangerzone, filenames, archive, output_filename)
 
     # Validate OCR language
     if ocr_lang:
@@ -172,7 +208,10 @@ def run(
     if documents_safe != []:
         print_header("Safe PDF(s) created successfully")
         for document in documents_safe:
-            click.echo(replace_control_chars(document.output_filename))
+            # When writing to stdout (data-based doc, no output filename),
+            # skip printing the filename — the PDF is already on stdout.
+            if document._data is None or document._output_filename is not None:
+                click.echo(replace_control_chars(document.output_filename), err=True)
 
         if archive:
             print_header(

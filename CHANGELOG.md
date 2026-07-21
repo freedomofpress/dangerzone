@@ -8,6 +8,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...HEAD)
 
+### Added
+
+- Accept documents from stdin via `-` or implicit piping, and write safe PDFs to stdout, enabling standard Unix pipe workflows like `cat file.pdf | dangerzone > safe.pdf`
+  ([#1522](https://github.com/freedomofpress/dangerzone/issues/1522))
+
 ## [0.11.0](https://github.com/freedomofpress/dangerzone/releases/tag/v0.11.0)
 
 ### Changes

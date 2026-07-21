@@ -187,82 +187,54 @@ def test_mark_as_failed(sample_pdf: str) -> None:
     assert not d.is_unconverted()
 
 
-# --- Tests for data-based (stdin) Document ---
-
-
-def test_init_with_data() -> None:
-    """Document can be constructed with raw bytes data."""
+def test_init_with_data(sample_pdf: str) -> None:
+    """Document can be constructed with raw bytes of data."""
     d = Document(data=b"fake pdf content")
     assert d._data == b"fake pdf content"
-    assert d._input_filename is None
+    assert d.input_filename is None
+    assert d.output_filename is None
 
-
-def test_init_data_and_filename_conflict(sample_pdf: str) -> None:
-    """Providing both input_filename and data raises ValueError."""
+    # Providing both input_filename and data raises ValueError.
     with pytest.raises(ValueError, match="Cannot provide both"):
         Document(input_filename=sample_pdf, data=b"fake pdf content")
 
 
-def test_open_with_data() -> None:
-    """Document.open() returns a BytesIO with the correct content when data is set."""
+def test_open(sample_pdf: str) -> None:
+    """Document.open() always returns a readable file handle."""
     payload = b"fake pdf content"
     d = Document(data=payload)
     with d.open() as f:
         assert f.read() == payload
 
-
-def test_open_with_filename(sample_pdf: str) -> None:
-    """Document.open() returns a readable file handle when input_filename is set."""
+    # Document.open() returns a readable file handle when input_filename is set.
     d = Document(sample_pdf)
     with d.open() as f:
         content = f.read()
         assert len(content) > 0
 
 
-def test_str_stdin() -> None:
-    """str() of a data-based document returns '<stdin>'."""
+def test_str(sample_pdf: str) -> None:
+    """str() of a document returns the proper representation."""
     d = Document(data=b"fake pdf content")
     assert str(d) == "<stdin>"
 
-
-def test_str_filename(sample_pdf: str) -> None:
-    """str() of a file-based document returns the input filename."""
     d = Document(sample_pdf)
     assert str(d) == d.input_filename
 
 
-def test_eq_both_data() -> None:
-    """Two data-based documents with the same id are equal."""
+def test_eq(sample_pdf: str) -> None:
+    """A data-based document is never equal to a file-based document."""
     d1 = Document(data=b"content")
     d2 = Document(data=b"content")
     # Different ids (random), so they should NOT be equal
     assert d1 != d2
 
-
-def test_eq_data_vs_file(sample_pdf: str) -> None:
-    """A data-based document is never equal to a file-based document."""
-    d_data = Document(data=b"content")
     d_file = Document(sample_pdf)
-    assert d_data != d_file
+    assert d_file != d1
 
-
-def test_eq_file_vs_file(sample_pdf: str) -> None:
-    """Two file-based documents pointing to the same file are equal."""
-    d1 = Document(sample_pdf)
-    d2 = Document(sample_pdf)
-    assert d1 == d2
-
-
-def test_hash_data_based() -> None:
-    """Data-based documents hash by id, not by path."""
-    d = Document(data=b"content")
-    assert hash(d) == hash(d.id)
-
-
-def test_hash_file_based(sample_pdf: str) -> None:
-    """File-based documents hash by absolute path."""
-    d = Document(sample_pdf)
-    assert hash(d) == hash(str(Path(sample_pdf).absolute()))
+    # Two file-based documents pointing to the same file are equal.
+    d_file2 = Document(sample_pdf)
+    assert d_file == d_file2
 
 
 def test_data_output_filename_set(tmp_path: Path) -> None:

@@ -13,7 +13,6 @@ from . import errors, util
 
 SAFE_EXTENSION = "-safe.pdf"
 ARCHIVE_SUBDIR = "unsafe"
-STDIO_DESCRIPTOR = "-"
 
 log = logging.getLogger(__name__)
 
@@ -58,7 +57,9 @@ class Document:
         else:
             raise errors.NotSetInputFilenameException()
 
-        self.output_filename = output_filename
+        if output_filename is not None:
+            self.output_filename = output_filename
+
         self.state = Document.STATE_UNCONVERTED
         self.archive_after_conversion = archive
 
@@ -71,14 +72,10 @@ class Document:
 
     @staticmethod
     def normalize_filename(filename: str) -> str:
-        if filename == STDIO_DESCRIPTOR:
-            return filename
         return os.path.abspath(filename)
 
     @staticmethod
     def validate_input_filename(filename: str) -> None:
-        if filename == STDIO_DESCRIPTOR:
-            return
         try:
             with open(filename, "rb") as _file:
                 pass  # Just ensure the file is possible to open
@@ -89,9 +86,6 @@ class Document:
 
     @staticmethod
     def validate_output_filename(filename: str) -> None:
-        if filename == STDIO_DESCRIPTOR:
-            return
-
         if not filename.endswith(".pdf"):
             raise errors.NonPDFOutputFileException()
 
@@ -130,15 +124,13 @@ class Document:
 
     @property
     def output_filename(self) -> str:
+        if self._output_filename is None and self._input_filename is not None:
+            return self.default_output_filename
         return self._output_filename
 
     @output_filename.setter
     def output_filename(self, filename: str | None) -> None:
-        if not self._input_filename and filename is None:
-            self._output_filename = None
-            return
-
-        filename = self.normalize_filename(filename or self.default_output_filename)
+        filename = self.normalize_filename(filename)
         self.validate_output_filename(filename)
         self._output_filename = filename
 

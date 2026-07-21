@@ -27,7 +27,7 @@ def _initialize_documents(
 ) -> None:
     """Validate that options are compatible with stdin input."""
     if filenames is not None and len(filenames) > 1:
-        if "-" in filenames:
+        if args.STDIO_DESCRIPTOR in filenames:
             raise click.BadArgumentUsage(
                 "Cannot mix input from stdin with other documents"
             )
@@ -36,7 +36,7 @@ def _initialize_documents(
                 message="--output-filename can only be used with one input file"
             )
 
-    if filenames == ["-"] or not filenames:
+    if filenames == [args.STDIO_DESCRIPTOR] or not filenames:
         # We are reading a single document from stdin.
         if archive:
             raise click.UsageError("--archive cannot be used with input from stdin")
@@ -59,8 +59,8 @@ def _initialize_documents(
     help=(
         "Convert potentially dangerous documents to safe PDFs.\n\n"
         "Accepts file paths as arguments, or reads from stdin when no\n"
-        "files are given (or when '-' is passed as a filename). When\n"
-        "reading from stdin, the safe PDF is written to stdout unless\n"
+        "files are given (or when '{args.STDIO_DESCRIPTOR}' is passed as a filename).\n"
+        "When reading from stdin, the safe PDF is written to stdout unless\n"
         "--output-filename is specified. All status output goes to stderr."
     )
 )
@@ -273,7 +273,10 @@ def display_banner() -> None:
     ╰──────────────────────────╯
     """
 
-    print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮", file=sys.stderr)
+    print(
+        Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮",
+        file=sys.stderr,
+    )
     print(
         Back.BLACK
         + Fore.YELLOW
@@ -404,7 +407,10 @@ def display_banner() -> None:
         + "│",
         file=sys.stderr,
     )
-    print(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │", file=sys.stderr)
+    print(
+        Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │",
+        file=sys.stderr,
+    )
     left_spaces = (15 - len(get_version()) - 1) // 2
     right_spaces = left_spaces
     if left_spaces + len(get_version()) + 1 + right_spaces < 15:

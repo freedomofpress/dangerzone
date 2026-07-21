@@ -7,6 +7,8 @@ import click
 from . import errors
 from .document import Document
 
+STDIO_DESCRIPTOR = "-"
+
 
 @errors.handle_document_errors
 def validate_input_filenames(
@@ -14,8 +16,9 @@ def validate_input_filenames(
 ) -> list[str]:
     normalized_filenames = []
     for filename in value:
-        filename = Document.normalize_filename(filename)
-        Document.validate_input_filename(filename)
+        if filename != STDIO_DESCRIPTOR:
+            filename = Document.normalize_filename(filename)
+            Document.validate_input_filename(filename)
         normalized_filenames.append(filename)
     return normalized_filenames
 

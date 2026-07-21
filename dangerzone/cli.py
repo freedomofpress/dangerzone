@@ -231,7 +231,10 @@ def display_banner() -> None:
     ╰──────────────────────────╯
     """
 
-    print(Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮")
+    print(
+        Back.BLACK + Fore.YELLOW + Style.DIM + "╭──────────────────────────╮",
+        file=sys.stderr,
+    )
     print(
         Back.BLACK
         + Fore.YELLOW
@@ -242,7 +245,8 @@ def display_banner() -> None:
         + "           ▄██▄           "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -254,7 +258,8 @@ def display_banner() -> None:
         + "          ██████          "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -266,7 +271,8 @@ def display_banner() -> None:
         + "         ███▀▀▀██         "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -278,7 +284,8 @@ def display_banner() -> None:
         + "        ███   ████        "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -290,7 +297,8 @@ def display_banner() -> None:
         + "       ███   ██████       "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -302,7 +310,8 @@ def display_banner() -> None:
         + "      ███   ▀▀▀▀████      "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -314,7 +323,8 @@ def display_banner() -> None:
         + "     ███████  ▄██████     "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -326,7 +336,8 @@ def display_banner() -> None:
         + "    ███████ ▄█████████    "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -338,7 +349,8 @@ def display_banner() -> None:
         + "   ████████████████████   "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -350,9 +362,13 @@ def display_banner() -> None:
         + "    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀    "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
-    print(Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │")
+    print(
+        Back.BLACK + Fore.YELLOW + Style.DIM + "│                          │",
+        file=sys.stderr,
+    )
     left_spaces = (15 - len(get_version()) - 1) // 2
     right_spaces = left_spaces
     if left_spaces + len(get_version()) + 1 + right_spaces < 15:
@@ -369,7 +385,8 @@ def display_banner() -> None:
         + f"{' ' * left_spaces}Dangerzone v{get_version()}{' ' * right_spaces}"
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
@@ -382,12 +399,14 @@ def display_banner() -> None:
         + " https://dangerzone.rocks "
         + Fore.YELLOW
         + Style.DIM
-        + "│"
+        + "│",
+        file=sys.stderr,
     )
     print(
         Back.BLACK
         + Fore.YELLOW
         + Style.DIM
         + "╰──────────────────────────╯"
-        + Style.RESET_ALL
+        + Style.RESET_ALL,
+        file=sys.stderr,
     )

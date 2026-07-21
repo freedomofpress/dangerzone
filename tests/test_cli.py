@@ -229,20 +229,6 @@ class TestCliConversion(TestCliBasic):
         output_filename = str(Path(temp_dir) / "safe.pdf")
         result = self.run_cli([sample_pdf, "--output-filename", output_filename])
         result.assert_success()
-        with open(output_filename, "rb") as f:
-            safe_data = f.read()
-
-        runner = CliRunner()
-        with open(sample_pdf, "rb") as f:
-            result = runner.invoke(run, input=f.read())
-            result = CLIResult.reclass_click_result(result, [])
-
-        # The files cannot be exactly the same due to some random elements in PDFs,
-        # specifically in R/ID field, at the end of the file. However, what we care
-        # about is if there's a stray command that prints to stdout, so the length is
-        # more important to us.
-        assert len(safe_data) == len(result.stdout_bytes)
-        assert safe_data[:-100] == result.stdout_bytes[:-100]
 
     def test_output_filename_uncommon(
         self, sample_pdf: str, uncommon_filename: str
@@ -464,9 +450,7 @@ class TestCliIO(TestCli):
     """Tests for stdin/stdout I/O support."""
 
     def run_cli_stdin(
-        self,
-        args: Sequence[str],
-        input_data: bytes,
+        self, args: Sequence[str], input="test data to trigger read from stdin"
     ) -> CLIResult:
         """Run the CLI with the given args and feed input_data to stdin."""
         if isinstance(args, str):
@@ -474,27 +458,24 @@ class TestCliIO(TestCli):
         args.append("--unsafe-dummy-conversion")
 
         runner = CliRunner()
-        result = runner.invoke(run, args, input=input_data)
+        result = runner.invoke(run, args, input=input)
         return CLIResult.reclass_click_result(result, args)
 
-    def test_stdin_dash(self, sample_pdf: str) -> None:
+    def test_stdin_dash(self) -> None:
         """dangerzone - converts from stdin via dummy provider."""
-        with open(sample_pdf, "rb") as f:
-            pdf_bytes = f.read()
-        result = self.run_cli_stdin(["-"], pdf_bytes)
+        result = self.run_cli_stdin(["-"])
         result.assert_success()
 
-    def test_stdin_implicit(self, sample_pdf: str) -> None:
+    def test_stdin_implicit(self) -> None:
         """No filenames given, stdin piped -> enters stdin mode."""
-        with open(sample_pdf, "rb") as f:
-            pdf_bytes = f.read()
-        result = self.run_cli_stdin([], pdf_bytes)
+        result = self.run_cli_stdin([])
         result.assert_success()
 
     def test_stdin_empty(self) -> None:
         """Empty stdin -> error."""
         result = self.run_cli_stdin(["-"], b"")
         result.assert_failure()
+        assert "No data received from stdin" == str(result.exception)
 
     def test_stdin_no_args(self) -> None:
         """No args, no stdin -> error."""
@@ -503,49 +484,41 @@ class TestCliIO(TestCli):
         # We patch dangerzone.cli.sys so the CLI code sees our mock.
         mock_sys = mock.MagicMock(wraps=sys)
         mock_sys.stdin.isatty.return_value = True
-        mock_sys.exit.side_effect = SystemExit(1)
         with mock.patch("dangerzone.cli.sys", mock_sys):
             result = runner.invoke(run, [])
         assert result.exit_code != 0
-        # breakpoint()
         assert "No files were provided and cannot read from stdin" in result.output
 
-    def test_stdin_archive_rejected(self, sample_pdf: str) -> None:
+    def test_stdin_archive_rejected(self) -> None:
         """--archive with stdin -> error."""
-        with open(sample_pdf, "rb") as f:
-            pdf_bytes = f.read()
-        result = self.run_cli_stdin(["-", "--archive"], pdf_bytes)
-        result.assert_failure()
-        assert "--archive cannot be used with input from stdin" in result.output
+        result = self.run_cli_stdin(["-", "--archive"])
+        result.assert_failure(message="--archive cannot be used with input from stdin")
 
-    def test_stdin_cowardly_refusal(self, sample_pdf: str) -> None:
+    def test_stdin_cowardly_refusal(self) -> None:
         """Stdin without --output-filename when stdout is a TTY -> error."""
-        with open(sample_pdf, "rb") as f:
-            pdf_bytes = f.read()
-        runner = CliRunner()
+        # runner = CliRunner()
         # Mock sys.stdout.isatty to return True so the cowardly refusal fires.
         # We patch dangerzone.cli.sys so the CLI code sees our mock.
         mock_sys = mock.MagicMock(wraps=sys)
-        mock_stdout = mock.MagicMock()
-        mock_stdout.isatty.return_value = True
-        mock_sys.stdout = mock_stdout
-        mock_sys.stdin.isatty.return_value = False
-        mock_sys.exit.side_effect = SystemExit(1)
+        mock_sys.stdout.isatty.return_value = True
         with mock.patch("dangerzone.cli.sys", mock_sys):
-            result = runner.invoke(run, ["-"], input=pdf_bytes)
-        assert result.exit_code != 0
-        assert "Cowardly refusing" in result.output
+            result = self.run_cli_stdin(["-"])
+        result.assert_failure(message="Cowardly refusing")
 
-    def test_stdin_with_output_filename(
-        self, sample_pdf: str, tmp_path: Path, mocker: MockerFixture
-    ) -> None:
+    def test_stdin_output(self, tmp_path: Path, mocker: MockerFixture) -> None:
         """dangerzone - --output-filename writes safe PDF to that file."""
-        pdf_bytes = b"%PDF-1.4 fake pdf content"
-        mock_convert = mocker.patch(
-            "dangerzone.isolation_provider.base.IsolationProvider.convert",
-            side_effect=lambda doc, ocr_lang, progress_cb: doc.mark_as_safe(),
-        )
-        output = str(tmp_path / "safe.pdf")
-        result = self.run_cli_stdin(["-", "--output-filename", output], pdf_bytes)
+        output_filename = tmp_path / "safe-from-stdin.pdf"
+        assert not output_filename.exists()
+        result = self.run_cli_stdin(["-", "--output-filename", str(output_filename)])
         result.assert_success()
-        mock_convert.assert_called_once()
+        with output_filename.open("rb") as f:
+            data = f.read()
+
+        # Try again with stdout as output
+        output_filename_2 = tmp_path / "safe-from-stdin-2.pdf"
+        assert not output_filename_2.exists()
+        result = self.run_cli_stdin(["-"])
+        result.assert_success()
+        with output_filename.open() as f:
+            assert len(data) == len(result.stdout_bytes)
+            assert data[:-100] == result.stdout_bytes[:-100]

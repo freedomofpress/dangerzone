@@ -17,18 +17,12 @@ def test_input_sample_init_archive(sample_pdf: str) -> None:
     Document(sample_pdf, archive=True)
 
 
-def test_input_sample_after(sample_pdf: str) -> None:
-    d = Document()
-    d.input_filename = sample_pdf
-
-
 def test_input_file_none() -> None:
     """
     Attempts to read a document's filename when no doc has been set
     """
-    d = Document()
     with pytest.raises(errors.NotSetInputFilenameException):
-        _ = d.input_filename
+        _d = Document()
 
 
 def test_input_file_non_existing() -> None:
@@ -55,23 +49,14 @@ def test_output_file_unwriteable_dir(sample_pdf: str, tmp_path: Path) -> None:
 
 
 def test_output(tmp_path: Path) -> None:
-    pdf_file = str(tmp_path.joinpath("document.pdf"))
-    d = Document()
-    d.output_filename = pdf_file
-
-
-def test_output_file_none() -> None:
-    """
-    Attempts to read a document's filename when no doc has been set
-    """
-    d = Document()
-    with pytest.raises(errors.NotSetOutputFilenameException):
-        _ = d.output_filename
+    out_path = str(tmp_path.joinpath("output.pdf"))
+    d = Document(data=b"test")
+    d.output_filename = out_path
 
 
 def test_output_file_not_pdf(tmp_path: Path) -> None:
     docx_file = str(tmp_path / "document.docx")
-    d = Document()
+    d = Document(data=b"test")
 
     with pytest.raises(errors.NonPDFOutputFileException):
         d.output_filename = docx_file
@@ -81,20 +66,18 @@ def test_output_file_not_pdf(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(platform.system() != "Windows", reason="Windows-specific")
 def test_illegal_output_filename_windows(tmp_path: Path) -> None:
-    d = Document()
-
     for char in '"*:<>?':
         with pytest.raises(errors.IllegalOutputFilenameException):
-            d.output_filename = str(tmp_path / f"illegal{char}name.pdf")
+            Document(
+                data=b"test", output_filename=str(tmp_path / f"illegal{char}name.pdf")
+            )
 
 
 @pytest.mark.skipif(platform.system() != "Darwin", reason="MacOS-specific")
 def test_illegal_output_filename_macos(tmp_path: Path) -> None:
     illegal_name = str(tmp_path / "illegal\\name.pdf")
-    d = Document()
-
     with pytest.raises(errors.IllegalOutputFilenameException):
-        d.output_filename = illegal_name
+        Document(data=b"test", output_filename=illegal_name)
 
 
 @pytest.mark.skipif(platform.system() == "Windows", reason="Unix-specific")
@@ -200,3 +183,62 @@ def test_mark_as_failed(sample_pdf: str) -> None:
     assert d.is_failed()
     assert not d.is_safe()
     assert not d.is_unconverted()
+
+
+def test_init_with_data(sample_pdf: str) -> None:
+    """Document can be constructed with raw bytes of data."""
+    d = Document(data=b"fake pdf content")
+    assert d._data == b"fake pdf content"
+    with pytest.raises(errors.NotSetInputFilenameException):
+        _ = d.input_filename
+    with pytest.raises(errors.NotSetOutputFilenameException):
+        _ = d.output_filename
+
+    # Providing both input_filename and data raises ValueError.
+    with pytest.raises(ValueError, match="Cannot provide both"):
+        Document(input_filename=sample_pdf, data=b"fake pdf content")
+
+
+def test_open(sample_pdf: str) -> None:
+    """Document.open() always returns a readable file handle."""
+    payload = b"fake pdf content"
+    d = Document(data=payload)
+    with d.open() as f:
+        assert f.read() == payload
+
+    # Document.open() returns a readable file handle when input_filename is set.
+    d = Document(sample_pdf)
+    with d.open() as f:
+        content = f.read()
+        assert len(content) > 0
+
+
+def test_str(sample_pdf: str) -> None:
+    """str() of a document returns the proper representation."""
+    d = Document(data=b"fake pdf content")
+    assert str(d) == "<stdin>"
+
+    d = Document(sample_pdf)
+    assert str(d) == d.input_filename
+
+
+def test_eq(sample_pdf: str) -> None:
+    """A data-based document is never equal to a file-based document."""
+    d1 = Document(data=b"content")
+    d2 = Document(data=b"content")
+    # Different ids (random), so they should NOT be equal
+    assert d1 != d2
+
+    d_file = Document(sample_pdf)
+    assert d_file != d1
+
+    # Two file-based documents pointing to the same file are equal.
+    d_file2 = Document(sample_pdf)
+    assert d_file == d_file2
+
+
+def test_data_output_filename_set(tmp_path: Path) -> None:
+    """Data-based document with output_filename works."""
+    out = str(tmp_path / "safe.pdf")
+    d = Document(data=b"content", output_filename=out)
+    assert d.output_filename == os.path.abspath(out)

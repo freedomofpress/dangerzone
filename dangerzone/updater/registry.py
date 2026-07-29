@@ -124,8 +124,8 @@ def get_digest_for_arch(image_str: str, architecture: str) -> str:
     """Return the digest of the matching architecture, for the specified image, without the sha256: prefix"""
     manifest = get_manifest(image_str).json()
 
-    if manifest.get("mediaType") != IMAGE_LIST_MEDIA_TYPE:
-        raise errors.InvalidMutliArchImage()
+    if manifest.get("mediaType") not in (IMAGE_LIST_MEDIA_TYPE, IMAGE_INDEX_MEDIA_TYPE):
+        raise errors.InvalidMultiArchImage()
 
     arch_manifests = [
         m["digest"].replace("sha256:", "")

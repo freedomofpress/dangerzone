@@ -28,7 +28,7 @@ class RegistryError(UpdaterError):
     """(Base class) An error was found while interacting with the Container Registry"""
 
 
-class InvalidMutliArchImage(RegistryError):
+class InvalidMultiArchImage(RegistryError):
     """The queried image is not a multi-arch image"""
 
 

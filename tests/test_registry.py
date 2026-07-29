@@ -4,8 +4,12 @@ from typing import Any
 import pytest
 from pytest_mock import MockerFixture
 
+from dangerzone.updater import errors
 from dangerzone.updater.registry import (
+    IMAGE_INDEX_MEDIA_TYPE,
+    IMAGE_LIST_MEDIA_TYPE,
     Image,
+    get_digest_for_arch,
     get_manifest,
     get_manifest_digest,
     parse_image_location,
@@ -137,6 +141,66 @@ def test_get_manifest(mocker: MockerFixture) -> None:
     # Verify the result
     assert response.status_code == 200
     assert response.json() == manifest_content
+
+
+def _mock_multiarch_manifest(mocker: MockerFixture, media_type: str) -> None:
+    manifest = {
+        "schemaVersion": 2,
+        "mediaType": media_type,
+        "manifests": [
+            {
+                "mediaType": "application/vnd.oci.image.manifest.v1+json",
+                "digest": "sha256:amd64digest",
+                "platform": {"architecture": "amd64", "os": "linux"},
+            },
+            {
+                "mediaType": "application/vnd.oci.image.manifest.v1+json",
+                "digest": "sha256:arm64digest",
+                "platform": {"architecture": "arm64", "os": "linux"},
+            },
+        ],
+    }
+    mock_response = mocker.Mock()
+    mock_response.json.return_value = manifest
+    mocker.patch("dangerzone.updater.registry.get_manifest", return_value=mock_response)
+
+
+@pytest.mark.parametrize("media_type", [IMAGE_LIST_MEDIA_TYPE, IMAGE_INDEX_MEDIA_TYPE])
+def test_get_digest_for_arch(mocker: MockerFixture, media_type: str) -> None:
+    """Both Docker manifest lists and OCI image indexes are valid multi-arch images.
+
+    BuildKit >= 0.31.0 pushes OCI image indexes by default, so we must accept
+    them alongside the legacy Docker manifest list media type.
+    """
+    _mock_multiarch_manifest(mocker, media_type)
+
+    assert get_digest_for_arch("ghcr.io/freedomofpress/dangerzone/v1", "amd64") == (
+        "amd64digest"
+    )
+    assert get_digest_for_arch("ghcr.io/freedomofpress/dangerzone/v1", "arm64") == (
+        "arm64digest"
+    )
+
+
+def test_get_digest_for_arch_not_multiarch(mocker: MockerFixture) -> None:
+    """A single-arch image manifest is not a valid multi-arch image."""
+    manifest = {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    }
+    mock_response = mocker.Mock()
+    mock_response.json.return_value = manifest
+    mocker.patch("dangerzone.updater.registry.get_manifest", return_value=mock_response)
+
+    with pytest.raises(errors.InvalidMultiArchImage):
+        get_digest_for_arch("ghcr.io/freedomofpress/dangerzone/v1", "amd64")
+
+
+def test_get_digest_for_arch_missing_arch(mocker: MockerFixture) -> None:
+    _mock_multiarch_manifest(mocker, IMAGE_INDEX_MEDIA_TYPE)
+
+    with pytest.raises(errors.ArchitectureNotFound):
+        get_digest_for_arch("ghcr.io/freedomofpress/dangerzone/v1", "riscv64")
 
 
 def test_get_manifest_digest() -> None:

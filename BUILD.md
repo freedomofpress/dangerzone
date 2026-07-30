@@ -407,13 +407,17 @@ Install the latest version of Python 3.13 (64-bit) [from python.org](https://www
 
 Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build Tools"](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and make sure to select "Desktop development with C++" when installing.
 
-Install [poetry](https://python-poetry.org/). Open PowerShell, and run:
+Install git from [here](https://git-scm.com/download/win).
+
+Install [poetry](https://python-poetry.org/).
+
+Open Windows "Terminal" application and run all remaining commands there.
 
 ```
 python -m pip install poetry
 ```
 
-Install git from [here](https://git-scm.com/download/win), open a Windows terminal (`cmd.exe`) and clone this repository:
+Clone this repository:
 
 ```
 git clone https://github.com/freedomofpress/dangerzone/
@@ -437,8 +441,8 @@ poetry run mazette install
 Run the following command to download the latest container image, or
 [use a local one](#using-a-local-container-image):
 
-```sh
-set DANGERZONE_DEV=1
+```powershell
+$Env:DANGERZONE_DEV = 1
 poetry run dangerzone-image prepare-archive --output share\container.tar
 ```
 
@@ -446,10 +450,10 @@ After that you can launch dangerzone during development with:
 
 ```
 # run the CLI
-poetry run dangerzone-cli --help
+$Env:DANGERZONE_DEV = 1; poetry run dangerzone-cli --help
 
 # run the GUI
-poetry run dangerzone
+$Env:DANGERZONE_DEV = 1; poetry run dangerzone
 ```
 
 ### If you want to build the Windows installer

@@ -189,7 +189,7 @@ class IsolationProvider(ABC):
         percentage = 0.0
         # Write the content of the to-be-converted document to the stdin of
         # the conversion process.
-        with open(document.input_filename, "rb") as f:
+        with document.open() as f:
             try:
                 assert p.stdin is not None
                 p.stdin.write(f.read())
@@ -315,10 +315,8 @@ class IsolationProvider(ABC):
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()
 
-        # Saving it with a different name first, because PyMuPDF cannot handle
-        # non-Unicode chars.
-        safe_doc.save(document.sanitized_output_filename)
-        os.replace(document.sanitized_output_filename, document.output_filename)
+        # Write the safe PDF to the document's destination.
+        document.write(safe_doc.tobytes())
 
         # TODO handle leftover code input
         text = "Successfully converted document"

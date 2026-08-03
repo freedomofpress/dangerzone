@@ -9,7 +9,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from . import errors, util
 
 SAFE_EXTENSION = "-safe.pdf"
-SAFE_IMAGE_EXTENSION = "-safe"
+SAFE_IMAGE_EXTENSION = "-safe.png"
 ARCHIVE_SUBDIR = "unsafe"
 
 log = logging.getLogger(__name__)
@@ -42,6 +42,8 @@ class Document:
         self._input_filename: str | None = None
         self._output_filename: str | None = None
         self._archive = False
+        if output_format == "png" and suffix == SAFE_EXTENSION:
+            suffix = SAFE_IMAGE_EXTENSION
         self._suffix = suffix
         self._output_format = output_format
 
@@ -73,10 +75,10 @@ class Document:
     def validate_output_filename(filename: str, output_format: str = "pdf") -> None:
         if output_format == "png":
             if not filename.lower().endswith(".png"):
-                raise errors.NonPDFOutputFileException()
+                raise errors.NonPDFOutputFileException(".png")
         else:
             if not filename.endswith(".pdf"):
-                raise errors.NonPDFOutputFileException()
+                raise errors.NonPDFOutputFileException(".pdf")
 
         if platform.system() == "Windows":
             final_filename = PureWindowsPath(filename).name
@@ -185,10 +187,12 @@ class Document:
 
     @property
     def default_output_filename(self) -> str:
-        base = os.path.splitext(self.input_filename)[0]
-        if self._output_format == "png":
-            return f"{base}{SAFE_IMAGE_EXTENSION}.png"
-        return f"{base}{self.suffix}"
+        return f"{os.path.splitext(self.input_filename)[0]}{self.suffix}"
+
+    def output_page_filename(self, page: int) -> str:
+        """Filename for a single page, when a conversion outputs multiple images."""
+        base, ext = os.path.splitext(self.output_filename)
+        return f"{base}-page-{page}{ext}"
 
     def announce_id(self) -> None:
         sanitized_filename = util.replace_control_chars(self.input_filename)

@@ -352,17 +352,20 @@ class IsolationProvider(ABC):
         # Ensure nothing else is read after all bitmaps are obtained
         p.stdout.close()
 
-        # For PNG output, save each page as a separate PNG file
+        # For PNG output, save each page as a separate PNG file. Single-page
+        # documents keep the output filename as-is, while multi-page documents
+        # get a "-page-<N>" suffix for each page.
         if output_format == "png":
-            from pathlib import Path
-
-            base_path = Path(document.output_filename).with_suffix("")
             for i, pixmap in enumerate(png_pixmaps, 1):
                 if n_pages == 1:
-                    png_filename = f"{base_path}.png"
+                    png_filename = document.output_filename
                 else:
-                    png_filename = f"{base_path}-page-{i}.png"
-                pixmap.save(str(png_filename))
+                    png_filename = document.output_page_filename(i)
+                # Saving it with a different name first, because PyMuPDF cannot
+                # handle non-Unicode chars.
+                sanitized_filename = replace_control_chars(png_filename)
+                pixmap.save(sanitized_filename)
+                os.replace(sanitized_filename, png_filename)
         else:
             # Saving it with a different name first, because PyMuPDF cannot handle
             # non-Unicode chars.

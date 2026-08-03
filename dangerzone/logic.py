@@ -38,7 +38,7 @@ class DangerzoneCore:
         input_filename: str,
         output_filename: str | None = None,
         archive: bool = False,
-        output_format: str = "pdf",
+        output_format: str = "auto",
     ) -> None:
         doc = Document(
             input_filename,

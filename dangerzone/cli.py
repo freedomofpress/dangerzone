@@ -27,9 +27,13 @@ def print_header(s: str) -> None:
 )
 @click.option(
     "--output-format",
-    type=click.Choice(["pdf", "png"], case_sensitive=False),
-    default="pdf",
-    help="Output format for safe documents (pdf or png)",
+    type=click.Choice(["auto", "pdf", "png"], case_sensitive=False),
+    default="auto",
+    help=(
+        "Output format for the safe documents: 'pdf' or 'png' converts"
+        " everything to that format, while 'auto' (the default) converts"
+        " documents to PDFs, and images to PNG images"
+    ),
 )
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
 @click.option(
@@ -90,6 +94,7 @@ def run(
 ) -> None:
     setup_logging()
     display_banner()
+    output_format = output_format.lower()
     settings = Settings(debug=debug)
     if set_container_runtime:
         if set_container_runtime == "default":
@@ -128,7 +133,7 @@ def run(
 
     # Validate OCR language
     if ocr_lang and output_format == "png":
-        click.echo("Error: OCR is not supported for PNG output format.")
+        click.echo("Error: OCR is not supported for the PNG output format.")
         sys.exit(1)
 
     if ocr_lang:
@@ -154,6 +159,8 @@ def run(
             startup.ContainerInstallTask(),
         ]
 
+    format_label = {"pdf": "PDF", "png": "PNG"}.get(output_format, "PDF/PNG")
+
     try:
         try:
             startup.StartupLogic(tasks=tasks).run()
@@ -168,7 +175,7 @@ def run(
                 "    dangerzone-image upgrade\n"
             )
             sys.exit(1)
-        print_header(f"Converting document(s) to safe {output_format.upper()}")
+        print_header(f"Converting document(s) to safe {format_label}")
         dangerzone.convert_documents(ocr_lang)
     finally:
         if dangerzone.isolation_provider.requires_install() and not linger:
@@ -181,7 +188,7 @@ def run(
     documents_failed = dangerzone.get_failed_documents()
 
     if documents_safe != []:
-        print_header(f"Safe {output_format.upper()} file(s) created successfully")
+        print_header(f"Safe {format_label} file(s) created successfully")
         for document in documents_safe:
             click.echo(replace_control_chars(document.output_filename))
 

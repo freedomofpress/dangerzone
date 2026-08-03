@@ -12,6 +12,22 @@ SAFE_EXTENSION = "-safe.pdf"
 SAFE_IMAGE_EXTENSION = "-safe.png"
 ARCHIVE_SUBDIR = "unsafe"
 
+# Input file extensions that are considered images, when automatically
+# detecting the output format
+IMAGE_EXTENSIONS = (
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".png",
+    ".tif",
+    ".tiff",
+    ".bmp",
+    ".pnm",
+    ".pbm",
+    ".ppm",
+    ".svg",
+)
+
 log = logging.getLogger(__name__)
 
 
@@ -34,7 +50,7 @@ class Document:
         output_filename: str | None = None,
         suffix: str = SAFE_EXTENSION,
         archive: bool = False,
-        output_format: str = "pdf",
+        output_format: str = "auto",
     ) -> None:
         # NOTE: See https://github.com/freedomofpress/dangerzone/pull/216#discussion_r1015449418
         self.id = secrets.token_urlsafe(6)[0:6]
@@ -42,13 +58,14 @@ class Document:
         self._input_filename: str | None = None
         self._output_filename: str | None = None
         self._archive = False
-        if output_format == "png" and suffix == SAFE_EXTENSION:
-            suffix = SAFE_IMAGE_EXTENSION
+        self._requested_output_format = output_format
         self._suffix = suffix
-        self._output_format = output_format
 
         if input_filename:
             self.input_filename = input_filename
+
+            if suffix == SAFE_EXTENSION and self.output_format == "png":
+                self._suffix = SAFE_IMAGE_EXTENSION
 
             if output_filename:
                 self.output_filename = output_filename
@@ -129,7 +146,13 @@ class Document:
     @output_filename.setter
     def output_filename(self, filename: str) -> None:
         filename = self.normalize_filename(filename)
-        self.validate_output_filename(filename, self._output_format)
+        if self._requested_output_format == "auto":
+            # An explicit output filename decides the format for this document
+            if filename.lower().endswith(".png"):
+                self._requested_output_format = "png"
+            else:
+                self._requested_output_format = "pdf"
+        self.validate_output_filename(filename, self.output_format)
         self._output_filename = filename
 
     @property
@@ -149,11 +172,24 @@ class Document:
 
     @property
     def output_format(self) -> str:
-        return self._output_format
+        """The effective output format of this document: "pdf" or "png".
+
+        When automatic detection ("auto") was requested, images are converted
+        to images, and any other document to a PDF.
+        """
+        fmt = self._requested_output_format
+        if fmt == "auto":
+            if (
+                self._input_filename is not None
+                and Path(self._input_filename).suffix.lower() in IMAGE_EXTENSIONS
+            ):
+                return "png"
+            return "pdf"
+        return fmt
 
     @output_format.setter
     def output_format(self, fmt: str) -> None:
-        self._output_format = fmt
+        self._requested_output_format = fmt
 
     @property
     def archive_after_conversion(self) -> bool:

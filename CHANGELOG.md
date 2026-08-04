@@ -8,6 +8,13 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...HEAD)
 
+### Changes
+
+- We no longer render the Github release notes from Markdown to HTML within the
+  Dangerzone application. This unfortunately makes release notes less readable,
+  but most importantly, it reduces our application's attack surface.
+  ([1542](https://github.com/freedomofpress/dangerzone/pull/1542))
+
 ### Added
 
 - Accept documents from stdin, and write safe PDFs to stdout, by passing `-` as the input filename and `--output-filename -` for the output, enabling standard Unix pipe workflows like `cat file.pdf | dangerzone-cli - -o - > safe.pdf`

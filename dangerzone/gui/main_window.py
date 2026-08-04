@@ -559,8 +559,7 @@ class MainWindow(QtWidgets.QMainWindow):
         changelog_widget = CollapsibleBox("What's New?")
         changelog_layout = QtWidgets.QVBoxLayout()
         changelog_text_box = QtWidgets.QTextBrowser()
-        changelog_text_box.setHtml(changelog)
-        changelog_text_box.setOpenExternalLinks(True)
+        changelog_text_box.setPlainText(changelog)
         changelog_layout.addWidget(changelog_text_box)
         changelog_widget.setContentLayout(changelog_layout)
 

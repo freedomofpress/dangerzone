@@ -25,7 +25,6 @@ PyMuPDF = "^1.25.3" # The version in Fedora 42
 colorama = "*"
 pyxdg = { version = "*", platform = "linux" }
 requests = "*"
-markdown = "*"
 packaging = "*"
 shiboken6 = "*"
 
@@ -51,7 +50,6 @@ mypy = "*"
 ruff = "*"
 types-colorama = "*"
 types-PySide2 = "*"
-types-Markdown = "*"
 types-pygments = "*"
 types-requests = "*"
 

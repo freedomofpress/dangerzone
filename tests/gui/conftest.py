@@ -5,6 +5,9 @@ import pytest
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
 
+from dangerzone.gui.logic import DangerzoneGui
+from dangerzone.isolation_provider.dummy import Dummy
+
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption(
@@ -24,10 +27,6 @@ def pytest_collection_modifyitems(items: list) -> None:
     for item in items:
         if Path(item.fspath).is_relative_to(Path(__file__).parent):
             item.add_marker(pytest.mark.xdist_group("gui"))
-
-
-from dangerzone.gui.logic import DangerzoneGui
-from dangerzone.isolation_provider.dummy import Dummy
 
 
 @pytest.fixture

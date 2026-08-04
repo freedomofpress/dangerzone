@@ -190,11 +190,11 @@ def test_startup_skips_podman_tasks_if_custom_runtime_is_specified(
     runner.run()
 
     init_run_spy.assert_not_called()
-    assert init_skip_spy.spy_return == True
+    assert init_skip_spy.spy_return is True
     start_run_spy.assert_not_called()
-    assert start_skip_spy.spy_return == True
+    assert start_skip_spy.spy_return is True
     stop_others_run_spy.assert_not_called()
-    assert stop_others_skip_spy.spy_return == True
+    assert stop_others_skip_spy.spy_return is True
 
 
 def test_wsl_install_task(mocker: MockerFixture) -> None:

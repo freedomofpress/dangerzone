@@ -6,7 +6,6 @@ from dataclasses import dataclass
 
 # The "|" syntax for type unions was introduced with Python 3.10
 # So we use Union instead as we still require Python 3.9
-import markdown
 import requests
 from packaging import version
 
@@ -99,9 +98,6 @@ def ensure_sane_update(cur_version: str, latest_version: str) -> bool:
 
 def fetch_github_release_info() -> tuple[str, str]:
     """Get the latest release info from GitHub.
-
-    Also, render the changelog from Markdown format to HTML, so that we can show it
-    to the users.
     """
     log.debug("Checking the latest GitHub release")
 
@@ -125,7 +121,7 @@ def fetch_github_release_info() -> tuple[str, str]:
 
     try:
         version = info["tag_name"].lstrip("v")
-        changelog = markdown.markdown(info["body"])
+        changelog = info["body"]
     except KeyError:
         raise ValueError(
             f"Missing required fields in JSON response from {GH_RELEASE_URL}"

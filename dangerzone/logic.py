@@ -33,19 +33,6 @@ class DangerzoneCore:
         self.documents: list[Document] = []
         self.isolation_provider = isolation_provider
 
-    def add_document_from_filename(
-        self,
-        input_filename: str,
-        output_filename: str | None = None,
-        archive: bool = False,
-    ) -> None:
-        doc = Document(input_filename, output_filename, archive=archive)
-        self.add_document(doc)
-
-    def add_document_from_stdin(self, output_filename: str | None = None) -> None:
-        doc = Document.from_stdin(output_filename=output_filename)
-        self.add_document(doc)
-
     def add_document(self, doc: Document) -> None:
         if doc in self.documents:
             raise errors.AddedDuplicateDocumentException()

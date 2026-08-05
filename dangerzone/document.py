@@ -192,12 +192,7 @@ class Document:
         return f"{os.path.splitext(self.input_filename)[0]}{self.suffix}"
 
     def announce_id(self) -> None:
-        if self._input_filename is not None:
-            log.info(
-                f"Assigning ID '{self.id}' to doc '{self.sanitized_input_filename}'"
-            )
-        else:
-            log.info(f"Assigning ID '{self.id}' to doc from '<stdin>'")
+        log.info(f"Assigning ID '{self.id}' to doc '{self!s}'")
 
     def open(self) -> BinaryIO:
         """Return a readable binary stream for this document's content."""

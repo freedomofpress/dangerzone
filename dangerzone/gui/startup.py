@@ -138,6 +138,7 @@ class ContainerInstallTask(
                 resp = self.prompt_user()
                 if not resp:
                     log.debug("Skipping new container download (asked by the user)")
+                    return
             self._download_container()
 
     def _download_container(self) -> None:

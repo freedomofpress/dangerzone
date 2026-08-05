@@ -5,7 +5,7 @@ import click
 from colorama import Back, Fore, Style
 
 from . import args, errors, shutdown, startup
-from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION
+from .document import ARCHIVE_SUBDIR, SAFE_EXTENSION, Document
 from .isolation_provider.container import Container
 from .isolation_provider.dummy import Dummy
 from .isolation_provider.qubes import Qubes, is_qubes_native_conversion
@@ -25,8 +25,11 @@ def _initialize_documents(
     archive: bool,
     output_filename: str | None,
 ) -> None:
-    """Validate that options are compatible with stdin input."""
-    if filenames is not None and len(filenames) > 1:
+    """Create the Document objects based on the provided CLI arguments."""
+    if not filenames:
+        raise click.UsageError("Missing argument 'FILENAMES...'")
+
+    if len(filenames) > 1:
         if args.STDIO_DESCRIPTOR in filenames:
             raise click.BadArgumentUsage(
                 "Cannot mix input from stdin with other documents"
@@ -37,38 +40,49 @@ def _initialize_documents(
                 message="--output-filename can only be used with one input file",
             )
 
-    if filenames == [args.STDIO_DESCRIPTOR] or not filenames:
+    if filenames == [args.STDIO_DESCRIPTOR]:
         # We are reading a single document from stdin.
         if archive:
             raise click.UsageError("--archive cannot be used with input from stdin")
-        if sys.stdin.isatty():
-            raise click.UsageError("No files were provided and cannot read from stdin")
-        if output_filename is None and sys.stdout.isatty():
+        if output_filename is None:
             raise click.UsageError(
-                "Cowardly refusing to write to a terminal.\n"
-                "Use --output-filename to specify an output file, or redirect "
-                "stdout to a file/pipe."
+                "No output file specified for the input from stdin.\n"
+                "Use --output-filename <file> to write to a file, or "
+                "--output-filename - to write to stdout."
             )
-        dangerzone.add_document_from_stdin(output_filename)
+        # A data-based document with no output filename is written to stdout,
+        # so treat '-' as "no output filename".
+        if output_filename == args.STDIO_DESCRIPTOR:
+            output_filename = None
+        dangerzone.add_document(Document.from_stdin(output_filename))
         return
 
     for filename in filenames:
-        dangerzone.add_document_from_filename(filename, output_filename, archive)
+        dangerzone.add_document(Document(filename, output_filename, archive=archive))
 
 
 @click.command(
     help=(
         "Convert potentially dangerous documents to safe PDFs.\n\n"
-        "Accepts file paths as arguments, or reads from stdin when no\n"
-        "files are given (or when '{args.STDIO_DESCRIPTOR}' is passed as a filename).\n"
-        "When reading from stdin, the safe PDF is written to stdout unless\n"
-        "--output-filename is specified. All status output goes to stderr."
+        "Documents are converted inside a sandbox, so that any embedded threats\n"
+        "are neutralized. You can also use OCR to add a searchable text layer\n"
+        "to the safe PDF, via the --ocr-lang option.\n\n"
+        f"Pass one or more file paths as arguments, or use '{args.STDIO_DESCRIPTOR}'\n"
+        f"to read a document from standard input. When reading from stdin, write\n"
+        f"the safe PDF to a file with --output-filename, or to standard output\n"
+        f"with --output-filename {args.STDIO_DESCRIPTOR}. All status messages are\n"
+        "printed to standard error."
     )
 )
 @click.option(
     "--output-filename",
+    "-o",
     callback=args.validate_output_filename,
-    help=f"Default is filename ending with {SAFE_EXTENSION}",
+    help=(
+        f"Output filename for the safe PDF. Default is the input filename with"
+        f" '{SAFE_EXTENSION}' appended. Alternatively, use '{args.STDIO_DESCRIPTOR}' to"
+        " write the safe PDF to standard output."
+    ),
 )
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
 @click.option(
@@ -206,11 +220,11 @@ def run(
     documents_failed = dangerzone.get_failed_documents()
 
     if documents_safe != []:
-        print_header("Safe PDF(s) created successfully")
-        for document in documents_safe:
-            # When writing to stdout (data-based doc, no output filename),
-            # skip printing the filename — the PDF is already on stdout.
-            if document._data is None or document._output_filename is not None:
+        if len(documents_safe) == 1 and documents_safe[0]._output_filename is None:
+            print_header("Safe PDF written successfully to stdout")
+        else:
+            print_header("Safe PDF(s) created successfully")
+            for document in documents_safe:
                 click.echo(replace_control_chars(document.output_filename), err=True)
 
         if archive:

@@ -1229,7 +1229,7 @@ def test_wsl_install_failed_user_input(
             True,  # so the user must be prompted
             False,
             False,  # but if they decline
-            True,  # the download should not happen
+            False,  # the download should not happen
             True,
         ),
         # If they accept and they don't want to be prompted again, we should similarly
@@ -1251,7 +1251,7 @@ def test_wsl_install_failed_user_input(
             True,  # so the user must be prompted
             True,  # and if they choose to always download updates
             False,  # but do NOT accept this one
-            True,  # the download should NOT happen
+            False,  # the download should NOT happen
             True,  # and the user MUST be asked again
         ),
     ],

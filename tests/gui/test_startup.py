@@ -309,6 +309,65 @@ def test_startup_update_check_container_update(
     startup_thread.check_run()
 
 
+def _setup_download_prompt(
+    startup_thread: StartupThreadMocker, mocker: MockerFixture, accepts: bool
+) -> typing.Any:
+    """Set up a remote container install, where the user is asked before downloading."""
+    mocker.patch(
+        "dangerzone.updater.installer.get_installation_strategy",
+        return_value=InstallationStrategy.INSTALL_REMOTE_CONTAINER,
+    )
+    install_mock = mocker.patch("dangerzone.updater.installer.install")
+    # Make `updater_ask_before_download` return True, and pretend that a container
+    # image is bundled, so that the user gets prompted before the download.
+    settings_mock = mocker.patch("dangerzone.gui.startup.Settings")
+    settings_mock.return_value.get.return_value = True
+    mocker.patch("dangerzone.gui.startup.is_container_tar_bundled", return_value=True)
+    mocker.patch.object(
+        startup_thread.task_container_install, "prompt_user", return_value=accepts
+    )
+    return install_mock
+
+
+def test_startup_container_install_remote_declined(
+    qtbot: QtBot, mocker: MockerFixture
+) -> None:
+    """When the user asks to skip a container update, it must not be downloaded.
+
+    Regression test for https://github.com/freedomofpress/dangerzone/issues/1543
+    """
+    startup_thread = StartupThreadMocker(qtbot, mocker)
+    startup_thread.expect_tasks_succeed(startup_thread.tasks)
+    startup_thread.expect_startup_succeed()
+
+    install_mock = _setup_download_prompt(startup_thread, mocker, accepts=False)
+    download_mock = mocker.MagicMock()
+    startup_thread.task_container_install.download_container.connect(download_mock)
+
+    startup_thread.check_run()
+    install_mock.assert_not_called()
+    download_mock.assert_not_called()
+
+
+def test_startup_container_install_remote_accepted(
+    qtbot: QtBot, mocker: MockerFixture
+) -> None:
+    startup_thread = StartupThreadMocker(qtbot, mocker)
+    startup_thread.expect_tasks_succeed(startup_thread.tasks)
+    startup_thread.expect_startup_succeed()
+
+    install_mock = _setup_download_prompt(startup_thread, mocker, accepts=True)
+    startup_thread.expected_signals.append(
+        (
+            startup_thread.task_container_install.download_container,
+            "ContainerInstallTask.download_container",
+        )
+    )
+
+    startup_thread.check_run()
+    install_mock.assert_called_once()
+
+
 def test_startup_container_install_fail(qtbot: QtBot, mocker: MockerFixture) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)
     startup_thread.expect_tasks_succeed(

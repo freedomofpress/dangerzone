@@ -29,6 +29,10 @@ def validate_output_filename(
 ) -> str | None:
     if value is None:
         return None
+    if value == STDIO_DESCRIPTOR:
+        # Writing the safe PDF to stdout. There is no filename to normalize or
+        # validate in this case.
+        return value
     filename = Document.normalize_filename(value)
     Document.validate_output_filename(filename)
     return filename

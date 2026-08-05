@@ -68,10 +68,19 @@ def _initialize_documents(
         "are neutralized. You can also use OCR to add a searchable text layer\n"
         "to the safe PDF, via the --ocr-lang option.\n\n"
         f"Pass one or more file paths as arguments, or use '{args.STDIO_DESCRIPTOR}'\n"
-        f"to read a document from standard input. When reading from stdin, write\n"
-        f"the safe PDF to a file with --output-filename, or to standard output\n"
-        f"with --output-filename {args.STDIO_DESCRIPTOR}. All status messages are\n"
-        "printed to standard error."
+        "to read a document from standard input. For single-document conversions, you\n"
+        "can write the safe PDF to a file with -o <file>, or to standard output\n"
+        f"with -o {args.STDIO_DESCRIPTOR}.\n\n"
+        "Examples:\n\n"
+        "\b\n"
+        "    dangerzone-cli evidence.odt                      # create evidence-safe.pdf\n"
+        "    dangerzone-cli doc1.pdf doc2.docx                # create doc1-safe.pdf and doc2-safe.pdf\n"
+        "    dangerzone-cli --archive report.docx             # create report-safe.pdf and move the original under 'unsafe/'\n"
+        "    dangerzone-cli --ocr-lang eng scan.pdf           # add a searchable text layer\n"
+        "    dangerzone-cli -o safe.pdf evidence.odt          # create safe.pdf\n"
+        f"    dangerzone-cli -o {args.STDIO_DESCRIPTOR} evidence.odt > safe.pdf      # write the safe PDF to stdout\n"
+        f"    cat evidence.pdf | dangerzone-cli {args.STDIO_DESCRIPTOR} -o safe.pdf  # read from stdin and write to safe.pdf\n"
+        f"    cat in.pdf | dangerzone-cli {args.STDIO_DESCRIPTOR} -o {args.STDIO_DESCRIPTOR} > out.pdf     # read from stdin to write to stdout\n"
     )
 )
 @click.option(

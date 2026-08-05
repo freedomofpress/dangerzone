@@ -160,11 +160,11 @@ def test_update_checks(
     assert_report_equal(report, EmptyReport())
 
     # Test 2 - Check that a newer version triggers updates, and that the changelog is
-    # rendered from Markdown to HTML.
+    # passed through as plain text (no Markdown rendering).
     mock_upstream_info["tag_name"] = "v99.9.9"
     report = releases.check_for_updates(settings)
     assert_report_equal(
-        report, ReleaseReport(version="99.9.9", changelog="<p>changelog</p>")
+        report, ReleaseReport(version="99.9.9", changelog="changelog")
     )
 
     # Test 3 - Check that HTTP errors are converted to error reports.
@@ -177,11 +177,11 @@ def test_update_checks(
 
     # Test 4 - Check that cached version/changelog info do not trigger an update check.
     settings.set("updater_latest_version", "99.9.9")
-    settings.set("updater_latest_changelog", "<p>changelog</p>")
+    settings.set("updater_latest_changelog", "changelog")
 
     report = releases.check_for_updates(settings)
     assert_report_equal(
-        report, ReleaseReport(version="99.9.9", changelog="<p>changelog</p>")
+        report, ReleaseReport(version="99.9.9", changelog="changelog")
     )
 
 
@@ -221,7 +221,7 @@ def test_update_checks_cooldown(
     report = releases.check_for_updates(settings)
     assert cooldown_spy.spy_return is False
     assert settings.get("updater_last_check") == curtime
-    assert_report_equal(report, ReleaseReport("99.9.9", "<p>changelog</p>"))
+    assert_report_equal(report, ReleaseReport("99.9.9", "changelog"))
 
     # Test 2: Advance the current time by 1 second, and ensure that no update will take
     # place, due to the cooldown period. The last check timestamp should remain the
@@ -246,7 +246,7 @@ def test_update_checks_cooldown(
     report = releases.check_for_updates(settings)
     assert cooldown_spy.spy_return is False
     assert settings.get("updater_last_check") == curtime
-    assert_report_equal(report, ReleaseReport("99.9.9", "<p>changelog</p>"))
+    assert_report_equal(report, ReleaseReport("99.9.9", "changelog"))
 
     # Test 4: Make Dangerzone check for updates again, but this time, it should
     # encounter an error while doing so. In that case, the last check timestamp
@@ -342,17 +342,15 @@ def test_update_errors(
     assert report.error is not None
     assert "Invalid version" in report.error
 
-    # Test 6 - Check invalid markdown is reported
-    class MockResponseBadMarkdown:
+    class MockResponseNonStringBody:
         status_code = 200
 
         def json(self) -> dict:
             return {"tag_name": "v99.9.9", "body": ["bad", "markdown"]}
 
-    requests_mock.return_value = MockResponseBadMarkdown()
+    requests_mock.return_value = MockResponseNonStringBody()
     report = releases.check_for_updates(settings)
-    assert type(report) == ErrorReport
-    assert report.error is not None
+    assert_report_equal(report, ReleaseReport("99.9.9", ["bad", "markdown"]))
 
     # Test 7 - Check that a valid response passes.
     class MockResponseValid:
@@ -363,7 +361,7 @@ def test_update_errors(
 
     requests_mock.return_value = MockResponseValid()
     report = releases.check_for_updates(settings)
-    assert_report_equal(report, ReleaseReport("99.9.9", "<p>changelog</p>"))
+    assert_report_equal(report, ReleaseReport("99.9.9", "changelog"))
 
 
 def test_update_check_prompt(

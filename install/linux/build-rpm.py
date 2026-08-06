@@ -11,6 +11,8 @@ root = Path(__file__).parent.parent.parent
 
 with open(os.path.join(root, "share", "version.txt")) as f:
     version = f.read().strip()
+with open(os.path.join(root, "share", "version_insecure_converter.txt")) as f:
+    version_insecure_converter = f.read().strip()
 
 
 def remove_contents(d):
@@ -47,6 +49,8 @@ def build_insecure_converter_rpm(dist_path):
                 "clone",
                 "--depth",
                 "1",
+                "--branch",
+                version_insecure_converter,
                 "https://github.com/freedomofpress/dangerzone-image.git",
                 str(clone_dir),
             ],

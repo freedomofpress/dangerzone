@@ -11,6 +11,7 @@ run from the developer's laptop and are not tied to any build environment.
 - [ ] Check for new [WiX releases](https://github.com/wixtoolset/wix/releases) and update it if needed (see [#1200](https://github.com/freedomofpress/dangerzone/issues/1200))
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
+- [ ] Bump the version in the `freedomofpress/dangerzone-image` repo (.spec file, .pyproject.toml and Git tag) and update `share/version_insecure_converter.txt` accordingly.
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] (optional) Bump image version from `v1` to `v2`, if the API has changed.
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`

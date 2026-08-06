@@ -14,7 +14,15 @@ test: ## Run the tests
 	# Make each GUI test run as a separate process, to avoid segfaults due to
 	# shared state.
 	# See more in https://github.com/freedomofpress/dangerzone/issues/493
-	pytest --co -q tests/gui | grep -e '^tests/' | xargs -n 1 pytest -v
+	#
+	# Turn any failure into exit code 255, which is the only status that makes
+	# xargs stop at the first failing test. Else, xargs runs every remaining
+	# test and reports a bare 123 at the end, which tells us neither which test
+	# process failed, nor with what exit code (a crash during interpreter
+	# shutdown looks exactly like a failed assertion).
+	# See more in https://stackoverflow.com/a/26485626
+	pytest --co -q tests/gui | grep -e '^tests/' | xargs -n 1 sh -c \
+		'pytest -v "$$1" || { echo "GUI test process exited with code $$?: $$1" >&2; exit 255; }' _
 	pytest -v --cov --ignore dev_scripts --ignore tests/gui
 
 .PHONY: poetry-install

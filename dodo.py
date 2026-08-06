@@ -8,6 +8,9 @@ from doit.action import CmdAction
 
 ARCH = "arm64" if platform.machine() == "arm64" else "i686"
 VERSION = Path("share/version.txt").read_text().strip()
+VERSION_INSECURE_CONVERTER = (
+    Path("share/version_insecure_converter.txt").read_text().strip()
+)
 FEDORA_VERSIONS = ["42", "43", "44"]
 
 ### Global parameters
@@ -363,6 +366,11 @@ def task_fedora_rpm():
                 f"dangerzone{variant_ident}-{VERSION}-1.fc{version}.x86_64.rpm",
                 f"dangerzone{variant_ident}-{VERSION}-1.fc{version}.src.rpm",
             ]
+            if qubes:
+                rpm_names += [
+                    f"dangerzone-insecure-converter-qubes-{VERSION_INSECURE_CONVERTER}-1.fc{version}.noarch.rpm",
+                    f"dangerzone-insecure-converter-qubes-{VERSION_INSECURE_CONVERTER}-1.fc{version}.src.rpm",
+                ]
             rpm_src = [dz_dir / "dist" / rpm_name for rpm_name in rpm_names]
             rpm_dst = [RELEASE_DIR / rpm_name for rpm_name in rpm_names]
 

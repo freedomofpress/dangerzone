@@ -26,6 +26,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Respect's user choice to disable or skip update checks ([#1517](https://github.com/freedomofpress/dangerzone/issues/1517), [#1543](https://github.com/freedomofpress/dangerzone/issues/1543))
 - Alert users when a file can't be processed due to a permission error
   ([#1513](https://github.com/freedomofpress/dangerzone/issues/1513))
+- Build Qubes packages from tagged released of the https://github.com/freedomofpress/dangerzone-image repo
+  ([#1545](https://github.com/freedomofpress/dangerzone/issues/1517))
 
 ### Development changes
 

@@ -21,9 +21,10 @@ test: ## Run the tests
 	# process failed, nor with what exit code (a crash during interpreter
 	# shutdown looks exactly like a failed assertion).
 	# See more in https://stackoverflow.com/a/26485626
-	pytest --co -q tests/gui | grep -e '^tests/' | xargs -n 1 sh -c \
-		'pytest -v "$$1" || { echo "GUI test process exited with code $$?: $$1" >&2; exit 255; }' _
-	pytest -v --cov --ignore dev_scripts --ignore tests/gui
+	#pytest --co -q tests/gui | grep -e '^tests/' | xargs -n 1 sh -c \
+	#    'pytest -v "$$1" || { echo "GUI test process exited with code $$?: $$1" >&2; exit 255; }' _
+	#pytest -v --cov --ignore dev_scripts --ignore tests/gui
+	pytest -v --cov --ignore dev_scripts
 
 .PHONY: poetry-install
 poetry-install: ## Install project dependencies

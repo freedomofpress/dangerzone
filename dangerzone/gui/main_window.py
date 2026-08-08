@@ -26,7 +26,7 @@ else:
         from PySide2.QtWidgets import QAction
 
 from .. import errors
-from ..document import SAFE_EXTENSION, Document
+from ..document import IMAGE_EXTENSIONS, SAFE_EXTENSION, Document
 from ..isolation_provider.qubes import is_qubes_native_conversion
 from ..util import get_resource_path, get_version
 from .log_window import LogHandler, LogWindow
@@ -176,17 +176,7 @@ def get_supported_extensions() -> list[str]:
         ".odp",
         ".ods",
         ".epub",
-        ".jpg",
-        ".jpeg",
-        ".gif",
-        ".png",
-        ".tif",
-        ".tiff",
-        ".bmp",
-        ".pnm",
-        ".pbm",
-        ".ppm",
-        ".svg",
+        *IMAGE_EXTENSIONS,
     ]
 
     # XXX: We disable loading HWP/HWPX files on Qubes, because H2ORestart does not work there.
@@ -1278,6 +1268,12 @@ class SettingsWidget(QtWidgets.QWidget):
         self.dot_pdf_validator = QtGui.QRegularExpressionValidator(
             QtCore.QRegularExpression(r".*\.[Pp][Dd][Ff]")
         )
+        self.dot_png_validator = QtGui.QRegularExpressionValidator(
+            QtCore.QRegularExpression(r".*\.[Pp][Nn][Gg]")
+        )
+        self.dot_pdf_or_png_validator = QtGui.QRegularExpressionValidator(
+            QtCore.QRegularExpression(r".*\.([Pp][Dd][Ff]|[Pp][Nn][Gg])")
+        )
         if platform.system() == "Linux":
             illegal_chars_regex = r"[/]"
         elif platform.system() == "Darwin":
@@ -1291,6 +1287,11 @@ class SettingsWidget(QtWidgets.QWidget):
         self.safe_extension_layout.addLayout(self.safe_extension_name_layout)
         self.safe_extension_layout.addWidget(self.safe_extension_invalid)
         self.safe_extension_layout.addStretch()
+
+        # Explain how the selected output format affects the saved filenames
+        self.output_format_hint = QtWidgets.QLabel()
+        self.output_format_hint.setProperty("style", "safe_extension_filename")
+        self.output_format_hint.hide()
 
         # Save safe to...
         self.save_label = QLabelClickable("Save safe PDFs to")
@@ -1367,6 +1368,23 @@ class SettingsWidget(QtWidgets.QWidget):
         ocr_layout.addWidget(self.ocr_combobox)
         ocr_layout.addStretch()
 
+        # Output format
+        self.output_format_label = QtWidgets.QLabel("Output format")
+        self.output_format_combobox = QtWidgets.QComboBox()
+        self.output_format_combobox.addItem(
+            "Automatic detection (documents to PDF, images to PNG)", "auto"
+        )
+        self.output_format_combobox.addItem("Convert to PDF", "pdf")
+        self.output_format_combobox.addItem("Convert to images (PNG)", "png")
+        output_format_layout = QtWidgets.QHBoxLayout()
+        output_format_layout.addWidget(self.output_format_label)
+        output_format_layout.addWidget(self.output_format_combobox)
+        output_format_layout.addStretch()
+        # Adapt the rest of the settings when the output format changes
+        self.output_format_combobox.currentIndexChanged.connect(
+            self._on_output_format_changed
+        )
+
         # Button
         self.start_button = QtWidgets.QPushButton()
         self.start_button.clicked.connect(self.start_button_clicked)
@@ -1390,9 +1408,11 @@ class SettingsWidget(QtWidgets.QWidget):
         m_width = font_metrics.horizontalAdvance("m")
         layout.addSpacing(m_width)
         layout.addLayout(self.safe_extension_layout)
+        layout.addWidget(self.output_format_hint)
         layout.addLayout(save_group_box_layout)
         layout.addLayout(open_layout)
         layout.addLayout(ocr_layout)
+        layout.addLayout(output_format_layout)
         font_metrics = self.docs_selected_label.fontMetrics()
         m_width = font_metrics.horizontalAdvance("m")
         layout.addSpacing(m_width)
@@ -1437,6 +1457,67 @@ class SettingsWidget(QtWidgets.QWidget):
             if index != -1:
                 self.open_combobox.setCurrentIndex(index)
 
+        # Load output format setting
+        index = self.output_format_combobox.findData(
+            self.dangerzone.settings.get("output_format")
+        )
+        if index != -1:
+            self.output_format_combobox.setCurrentIndex(index)
+        # Make sure the format-dependent widgets match the loaded format, even
+        # if the index did not change
+        self._on_output_format_changed()
+
+    def _on_output_format_changed(self) -> None:
+        """Adapt the rest of the settings to the newly selected output format."""
+        fmt = self.get_output_format()
+
+        # OCR is only possible when PDFs can be produced
+        self.ocr_checkbox.setDisabled(fmt == "png")
+        self.ocr_combobox.setDisabled(fmt == "png")
+
+        # Swap the extension of the "Save as" suffix. With automatic
+        # detection, the extension is adapted per document, so keep whatever
+        # the user typed.
+        suffix = self.safe_extension.text()
+        if fmt == "png" and suffix.lower().endswith(".pdf"):
+            self.safe_extension.setText(suffix[: -len(".pdf")] + ".png")
+        elif fmt == "pdf" and suffix.lower().endswith(".png"):
+            self.safe_extension.setText(suffix[: -len(".png")] + ".pdf")
+
+        if fmt == "png":
+            self.output_format_hint.setText(
+                "Multi-page documents will be saved as one PNG per page,"
+                ' ending in "-page-1.png", "-page-2.png", etc.'
+            )
+        elif fmt == "auto":
+            self.output_format_hint.setText(
+                'Images will be saved with a ".png" extension'
+            )
+        self.output_format_hint.setVisible(fmt in ("png", "auto"))
+
+        # Offer applications that can actually open the produced files
+        if platform.system() == "Linux":
+            viewers: dict[str, str]
+            if fmt == "png":
+                viewers = self.dangerzone.image_viewers
+            elif fmt == "pdf":
+                viewers = self.dangerzone.pdf_viewers
+            else:
+                viewers = {
+                    **self.dangerzone.pdf_viewers,
+                    **self.dangerzone.image_viewers,
+                }
+            self.open_combobox.clear()
+            for k in viewers:
+                self.open_combobox.addItem(k, viewers[k])
+            index = self.open_combobox.findText(
+                self.dangerzone.settings.get("open_app")
+            )
+            if index != -1:
+                self.open_combobox.setCurrentIndex(index)
+
+        self.update_ui()
+
     def check_safe_extension_is_valid(self) -> bool:
         if self.save_checkbox.checkState() == QtCore.Qt.Unchecked:
             # ignore validity if not saving file
@@ -1458,9 +1539,16 @@ class SettingsWidget(QtWidgets.QWidget):
         return True
 
     def check_safe_extension_dot_pdf(self) -> bool:
-        self.safe_extension.setValidator(self.dot_pdf_validator)
+        fmt = self.get_output_format()
+        if fmt == "png":
+            validator, extension = self.dot_png_validator, ".png"
+        elif fmt == "pdf":
+            validator, extension = self.dot_pdf_validator, ".pdf"
+        else:
+            validator, extension = self.dot_pdf_or_png_validator, ".pdf or .png"
+        self.safe_extension.setValidator(validator)
         if not self.safe_extension.hasAcceptableInput():
-            self.set_safe_extension_invalid_label("must end in .pdf")
+            self.set_safe_extension_invalid_label(f"must end in {extension}")
             return False
         self.safe_extension_invalid.hide()
         return True
@@ -1539,15 +1627,28 @@ class SettingsWidget(QtWidgets.QWidget):
                     "output_dir", str(selected_dir), autosave=True
                 )
 
+    def get_output_format(self) -> str:
+        return str(self.output_format_combobox.currentData())
+
     def configure_document(self, document: Document) -> None:
+        # The output format must be set before the output filename or suffix,
+        # since they are validated against it. With automatic detection, the
+        # format then depends on the type of this document.
+        document.output_format = self.get_output_format()
+        extension = ".png" if document.output_format == "png" else ".pdf"
         if self.save_checkbox.isChecked():
-            document.suffix = self.safe_extension.text()
+            # Adapt the extension of the suffix to the format of this document
+            suffix_root, suffix_ext = os.path.splitext(self.safe_extension.text())
+            if suffix_ext.lower() != extension:
+                document.suffix = suffix_root + extension
+            else:
+                document.suffix = self.safe_extension.text()
             if self.radio_move_untrusted.isChecked():
                 document.archive_after_conversion = True
             elif self.radio_save_to.isChecked():
                 document.set_output_dir(self.dangerzone.output_dir)
         else:
-            (_, tmp) = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
+            (_, tmp) = tempfile.mkstemp(suffix=extension, prefix="dangerzone_")
             document.output_filename = tmp
 
     def start_button_clicked(self) -> None:
@@ -1569,6 +1670,7 @@ class SettingsWidget(QtWidgets.QWidget):
         )
         if platform.system() == "Linux":
             self.dangerzone.settings.set("open_app", self.open_combobox.currentText())
+        self.dangerzone.settings.set("output_format", self.get_output_format())
         self.dangerzone.settings.save()
 
         # Start!
@@ -1669,7 +1771,11 @@ class DocumentsListWidget(QtWidgets.QListWidget):
 
     def get_ocr_lang(self) -> str | None:
         ocr_lang = None
-        if self.dangerzone.settings.get("ocr"):
+        # OCR only applies to documents that are converted to PDF
+        if (
+            self.dangerzone.settings.get("ocr")
+            and self.dangerzone.settings.get("output_format") != "png"
+        ):
             ocr_lang = self.dangerzone.ocr_languages[
                 self.dangerzone.settings.get("ocr_language")
             ]
@@ -1767,7 +1873,12 @@ class DocumentWidget(QtWidgets.QWidget):
 
         # Open
         if self.dangerzone.settings.get("open"):
-            self.dangerzone.open_pdf_viewer(self.document.output_filename)
+            filename = self.document.output_filename
+            if not os.path.exists(filename):
+                # Multi-page PNG conversions save one file per page, so open
+                # the first page instead
+                filename = self.document.output_page_filename(1)
+            self.dangerzone.open_pdf_viewer(filename)
 
 
 class QLabelClickable(QtWidgets.QLabel):

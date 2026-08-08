@@ -9,7 +9,24 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from . import errors, util
 
 SAFE_EXTENSION = "-safe.pdf"
+SAFE_IMAGE_EXTENSION = "-safe.png"
 ARCHIVE_SUBDIR = "unsafe"
+
+# Input file extensions that are considered images, when automatically
+# detecting the output format
+IMAGE_EXTENSIONS = (
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".png",
+    ".tif",
+    ".tiff",
+    ".bmp",
+    ".pnm",
+    ".pbm",
+    ".ppm",
+    ".svg",
+)
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +50,7 @@ class Document:
         output_filename: str | None = None,
         suffix: str = SAFE_EXTENSION,
         archive: bool = False,
+        output_format: str = "auto",
     ) -> None:
         # NOTE: See https://github.com/freedomofpress/dangerzone/pull/216#discussion_r1015449418
         self.id = secrets.token_urlsafe(6)[0:6]
@@ -40,10 +58,14 @@ class Document:
         self._input_filename: str | None = None
         self._output_filename: str | None = None
         self._archive = False
+        self._requested_output_format = output_format
         self._suffix = suffix
 
         if input_filename:
             self.input_filename = input_filename
+
+            if suffix == SAFE_EXTENSION and self.output_format == "png":
+                self._suffix = SAFE_IMAGE_EXTENSION
 
             if output_filename:
                 self.output_filename = output_filename
@@ -67,9 +89,13 @@ class Document:
             raise errors.InputFileNotReadableException() from e
 
     @staticmethod
-    def validate_output_filename(filename: str) -> None:
-        if not filename.endswith(".pdf"):
-            raise errors.NonPDFOutputFileException()
+    def validate_output_filename(filename: str, output_format: str = "pdf") -> None:
+        if output_format == "png":
+            if not filename.lower().endswith(".png"):
+                raise errors.NonPDFOutputFileException(".png")
+        else:
+            if not filename.endswith(".pdf"):
+                raise errors.NonPDFOutputFileException(".pdf")
 
         if platform.system() == "Windows":
             final_filename = PureWindowsPath(filename).name
@@ -120,7 +146,13 @@ class Document:
     @output_filename.setter
     def output_filename(self, filename: str) -> None:
         filename = self.normalize_filename(filename)
-        self.validate_output_filename(filename)
+        if self._requested_output_format == "auto":
+            # An explicit output filename decides the format for this document
+            if filename.lower().endswith(".png"):
+                self._requested_output_format = "png"
+            else:
+                self._requested_output_format = "pdf"
+        self.validate_output_filename(filename, self.output_format)
         self._output_filename = filename
 
     @property
@@ -137,6 +169,27 @@ class Document:
             self._suffix = suf
         else:
             raise errors.SuffixNotApplicableException()
+
+    @property
+    def output_format(self) -> str:
+        """The effective output format of this document: "pdf" or "png".
+
+        When automatic detection ("auto") was requested, images are converted
+        to images, and any other document to a PDF.
+        """
+        fmt = self._requested_output_format
+        if fmt == "auto":
+            if (
+                self._input_filename is not None
+                and Path(self._input_filename).suffix.lower() in IMAGE_EXTENSIONS
+            ):
+                return "png"
+            return "pdf"
+        return fmt
+
+    @output_format.setter
+    def output_format(self, fmt: str) -> None:
+        self._requested_output_format = fmt
 
     @property
     def archive_after_conversion(self) -> bool:
@@ -171,6 +224,11 @@ class Document:
     @property
     def default_output_filename(self) -> str:
         return f"{os.path.splitext(self.input_filename)[0]}{self.suffix}"
+
+    def output_page_filename(self, page: int) -> str:
+        """Filename for a single page, when a conversion outputs multiple images."""
+        base, ext = os.path.splitext(self.output_filename)
+        return f"{base}-page-{page}{ext}"
 
     def announce_id(self) -> None:
         sanitized_filename = util.replace_control_chars(self.input_filename)

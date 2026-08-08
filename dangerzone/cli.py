@@ -25,6 +25,16 @@ def print_header(s: str) -> None:
     callback=args.validate_output_filename,
     help=f"Default is filename ending with {SAFE_EXTENSION}",
 )
+@click.option(
+    "--output-format",
+    type=click.Choice(["auto", "pdf", "png"], case_sensitive=False),
+    default="auto",
+    help=(
+        "Output format for the safe documents: 'pdf' or 'png' converts"
+        " everything to that format, while 'auto' (the default) converts"
+        " documents to PDFs, and images to PNG images"
+    ),
+)
 @click.option("--ocr-lang", help="Language to OCR, defaults to none")
 @click.option(
     "--archive",
@@ -73,6 +83,7 @@ def print_header(s: str) -> None:
 @errors.handle_document_errors
 def run(
     output_filename: str | None,
+    output_format: str,
     ocr_lang: str | None,
     filenames: list[str] | None,
     archive: bool,
@@ -83,6 +94,7 @@ def run(
 ) -> None:
     setup_logging()
     display_banner()
+    output_format = output_format.lower()
     settings = Settings(debug=debug)
     if set_container_runtime:
         if set_container_runtime == "default":
@@ -107,15 +119,23 @@ def run(
         dangerzone = DangerzoneCore(Container(debug=debug))
 
     if len(filenames) == 1 and output_filename:
-        dangerzone.add_document_from_filename(filenames[0], output_filename, archive)
+        dangerzone.add_document_from_filename(
+            filenames[0], output_filename, archive, output_format
+        )
     elif len(filenames) > 1 and output_filename:
         click.echo("--output-filename can only be used with one input file.")
         sys.exit(1)
     else:
         for filename in filenames:
-            dangerzone.add_document_from_filename(filename, archive=archive)
+            dangerzone.add_document_from_filename(
+                filename, archive=archive, output_format=output_format
+            )
 
     # Validate OCR language
+    if ocr_lang and output_format == "png":
+        click.echo("Error: OCR is not supported for the PNG output format.")
+        sys.exit(1)
+
     if ocr_lang:
         valid = False
         for lang in dangerzone.ocr_languages:
@@ -139,6 +159,8 @@ def run(
             startup.ContainerInstallTask(),
         ]
 
+    format_label = {"pdf": "PDF", "png": "PNG"}.get(output_format, "PDF/PNG")
+
     try:
         try:
             startup.StartupLogic(tasks=tasks).run()
@@ -153,7 +175,7 @@ def run(
                 "    dangerzone-image upgrade\n"
             )
             sys.exit(1)
-        print_header("Converting document(s) to safe PDF")
+        print_header(f"Converting document(s) to safe {format_label}")
         dangerzone.convert_documents(ocr_lang)
     finally:
         if dangerzone.isolation_provider.requires_install() and not linger:
@@ -166,7 +188,7 @@ def run(
     documents_failed = dangerzone.get_failed_documents()
 
     if documents_safe != []:
-        print_header("Safe PDF(s) created successfully")
+        print_header(f"Safe {format_label} file(s) created successfully")
         for document in documents_safe:
             click.echo(replace_control_chars(document.output_filename))
 

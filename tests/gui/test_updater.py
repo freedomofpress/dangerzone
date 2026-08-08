@@ -50,7 +50,7 @@ def assert_report_equal(
 ) -> None:
     assert isinstance(report1, (ReleaseReport, EmptyReport, ErrorReport))
     assert isinstance(report2, (ReleaseReport, EmptyReport, ErrorReport))
-    assert type(report1) == type(report2)
+    assert type(report1) is type(report2)
     # Python dataclasses give us the __eq__ comparison for free
     assert report1 == report2
 
@@ -287,7 +287,7 @@ def test_update_errors(
     # Test 1 - Check that request exceptions are being detected as errors.
     requests_mock.side_effect = Exception("bad url")
     report = releases.check_for_updates(settings)
-    assert type(report) == ErrorReport
+    assert type(report) is ErrorReport
     assert report.error is not None
     assert "bad url" in report.error
     assert "Encountered an exception" in report.error
@@ -299,7 +299,7 @@ def test_update_errors(
     requests_mock.return_value = MockResponse500()
     requests_mock.side_effect = None
     report = releases.check_for_updates(settings)
-    assert type(report) == ErrorReport
+    assert type(report) is ErrorReport
     assert report.error is not None
     assert "Encountered an HTTP 500 error" in report.error
 
@@ -312,7 +312,7 @@ def test_update_errors(
 
     requests_mock.return_value = MockResponseBadJSON()
     report = releases.check_for_updates(settings)
-    assert type(report) == ErrorReport
+    assert type(report) is ErrorReport
     assert report.error is not None
     assert "Received a non-JSON response" in report.error
 
@@ -325,7 +325,7 @@ def test_update_errors(
 
     requests_mock.return_value = MockResponseEmpty()
     report = releases.check_for_updates(settings)
-    assert type(report) == ErrorReport
+    assert type(report) is ErrorReport
     assert report.error is not None
     assert "Missing required fields in JSON" in report.error
 
@@ -338,7 +338,7 @@ def test_update_errors(
 
     requests_mock.return_value = MockResponseBadVersion()
     report = releases.check_for_updates(settings)
-    assert type(report) == ErrorReport
+    assert type(report) is ErrorReport
     assert report.error is not None
     assert "Invalid version" in report.error
 
@@ -351,7 +351,7 @@ def test_update_errors(
 
     requests_mock.return_value = MockResponseBadMarkdown()
     report = releases.check_for_updates(settings)
-    assert type(report) == ErrorReport
+    assert type(report) is ErrorReport
     assert report.error is not None
 
     # Test 7 - Check that a valid response passes.

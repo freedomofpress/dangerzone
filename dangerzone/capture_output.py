@@ -15,7 +15,7 @@ original_subprocess_popen = subprocess.Popen
 
 
 def _decode_if_needed(input: bytes | str) -> str:
-    if type(input) == bytes:
+    if isinstance(input, bytes):
         return input.decode()
     else:
         return str(input)

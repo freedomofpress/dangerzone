@@ -7,6 +7,7 @@
 # NOTE: Because the commands run as root, the use of sudo is not necessary.
 name: Test official instructions for installing Dangerzone
 on:
+  pull_request:  # REMOVE ME
   schedule:
     - cron: '0 0 * * *' # Run every day at 00:00 UTC.
   workflow_dispatch:

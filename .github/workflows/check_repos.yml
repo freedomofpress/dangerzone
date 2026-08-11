@@ -12,11 +12,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  install-from-prod-repo:
-    name: "Install Dangerzone on ${{ matrix.distro}} ${{ matrix.version }}"
+  install-linux:
+    name: "Install Dangerzone on ${{ matrix.distro}} ${{ matrix.version }} from ${{ matrix.repo }} repo"
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        repo: ["qa", "prod"]
         include:
           - distro: ubuntu
             version: "25.10"  # questing
@@ -36,6 +37,7 @@ jobs:
             version: 43
           - distro: fedora
             version: 44
+
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Check installation instructions in a container
@@ -44,4 +46,28 @@ jobs:
               --distro ${{ matrix.distro }} \
               --version ${{ matrix.version }} \
               build \
-              --prod
+              --${{ matrix.repo }}
+
+  install-qubes:
+    name: "Install dangerzone-qubes on ${{ matrix.distro}} ${{ matrix.version }} from ${{ matrix.repo }} repo"
+    runs-on: ubuntu-latest
+    container:
+      image: "${{ matrix.distro}}:${{ matrix.version }}"
+    strategy:
+      matrix:
+        repo: ["qa", "prod"]
+        include:
+          - distro: fedora
+            version: 43
+          - distro: fedora
+            version: 44
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Check installation instructions in a container
+        env:
+          REPO: ${{ matrix.repo == 'qa' && '-qa' || '' }}
+        run: |
+          sudo dnf install 'dnf-command(config-manager)'
+          sudo dnf config-manager addrepo --from-repofile=https://packages${{ env.BUILD_FLAG }}.freedom.press/yum-tools-prod/dangerzone/dangerzone${{ env.BUILD_FLAG }}.repo
+          sudo dnf install dangerzone-qubes

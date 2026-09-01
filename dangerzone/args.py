@@ -73,7 +73,7 @@ def check_suspicious_options(args: list[str]) -> None:
     try:
         files = set(os.listdir())
     except OSError:
-        # If we can list files in the current working directory, this means that
+        # If we cannot list files in the current working directory, this means that
         # we're probably in an unlinked directory. Dangerzone should still work in
         # this case, so we should return here.
         return

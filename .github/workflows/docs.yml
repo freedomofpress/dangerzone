@@ -1,0 +1,77 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "zensical.toml"
+      - "CHANGELOG.md"
+      - "SECURITY.md"
+      - "THIRD_PARTY_NOTICE.md"
+      - "LICENSE"
+      - "dev_scripts/templates/**"
+      - "dev_scripts/docs_cog.py"
+      - "dangerzone/cli.py"
+      - "dangerzone/updater/cli.py"
+      - "dangerzone/podman/cli.py"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "zensical.toml"
+      - "CHANGELOG.md"
+      - "SECURITY.md"
+      - "THIRD_PARTY_NOTICE.md"
+      - "LICENSE"
+      - "dev_scripts/templates/**"
+      - "dev_scripts/docs_cog.py"
+      - "dangerzone/cli.py"
+      - "dangerzone/updater/cli.py"
+      - "dangerzone/podman/cli.py"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the documentation site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+      - name: Install Poetry and the docs dependencies
+        run: |
+          pipx install poetry
+          poetry install --only main,docs
+      - name: Check that the CLI help embedded in the docs is up to date
+        run: make docs-cog-check
+      - name: Build with Zensical (strict mode fails on broken links)
+        run: poetry run zensical build --strict
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site
+
+  # Publishes to https://docs.dangerzone.rocks. The repository must have Pages
+  # enabled with "GitHub Actions" as the source and the custom domain set
+  # (Settings -> Pages) for this job to succeed. docs/CNAME carries the domain.
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request' && github.repository == 'freedomofpress/dangerzone'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+        id: deployment

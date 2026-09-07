@@ -37,6 +37,26 @@ build-macos-arm: build-clean poetry-install ## Build macOS Apple Silicon package
 build-linux: build-clean poetry-install ## Build linux packages (.rpm and .deb)
 	DANGERZONE_DEV=1 poetry run doit -n 8 fedora_rpm debian_deb
 
+# The documentation needs the `docs` Poetry group: `poetry install --with docs`.
+COG = DANGERZONE_DEV=1 poetry run cog -I dev_scripts
+COG_FILES = docs/reference/cli/*.md
+
+.PHONY: docs-cog
+docs-cog: ## Regenerate the CLI help output embedded in the docs (via cog)
+	$(COG) -r $(COG_FILES)
+
+.PHONY: docs-cog-check
+docs-cog-check: ## Check that the embedded CLI help output is up to date
+	$(COG) --check $(COG_FILES)
+
+.PHONY: docs
+docs: docs-cog ## Build the documentation site into site/
+	poetry run zensical build --strict
+
+.PHONY: docs-serve
+docs-serve: docs-cog ## Serve the documentation site locally with live reload
+	poetry run zensical serve
+
 .PHONY: regenerate-reference-pdfs
 regenerate-reference-pdfs: ## Regenerate the reference PDFs
 	pytest tests/test_cli.py -k regenerate --generate-reference-pdfs

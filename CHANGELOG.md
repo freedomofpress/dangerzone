@@ -15,6 +15,14 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ### Development changes
 
+- Add a documentation website built with [Zensical](https://zensical.org/),
+  organised following the [Diátaxis](https://diataxis.fr/) framework, under
+  `docs/`, to be published at https://docs.dangerzone.rocks. `INSTALL.md`,
+  `BUILD.md`, and the developer docs moved into it, `docs/templates/` moved to
+  `dev_scripts/templates/`, the CLI reference embeds the `--help` output of
+  the tools via [cog](https://cog.readthedocs.io/), and `make docs` /
+  `make docs-serve` build and preview the site
+  ([#903](https://github.com/freedomofpress/dangerzone/issues/903))
 - Add a security policy for our project
   ([#1278](https://github.com/freedomofpress/dangerzone/issues/1278))
 - Set the severity cutoff of our code scans from Critical to High, on a

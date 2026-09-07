@@ -1,0 +1,196 @@
+# The dangerzone documentation uses Zensical
+#
+# Preview locally with `make docs-serve`, build with `make docs`. Both need
+# the `docs` Poetry group (`poetry install --with docs`) and regenerate the CLI
+# help output embedded with cog first. The output lands in `site/`.
+#
+# The content is organised following the Diátaxis framework
+# (https://diataxis.fr/): tutorials, how-to guides, reference, explanation.
+
+[project]
+site_name = "Dangerzone"
+site_url = "https://docs.dangerzone.rocks/"
+site_description = "Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF."
+site_author = "Freedom of the Press Foundation"
+copyright = "Copyright &copy; 2022&ndash;2026 Freedom of the Press Foundation and Dangerzone contributors. Licensed under the AGPLv3."
+
+extra_css = ["stylesheets/extra.css"]
+extra_javascript = ["javascripts/checklists.js"]
+
+repo_url = "https://github.com/freedomofpress/dangerzone"
+repo_name = "freedomofpress/dangerzone"
+edit_uri = "edit/main/docs/"
+
+nav = [
+  { "Home" = "index.md" },
+  { "Tutorials" = [
+    { "Overview" = "tutorials/index.md" },
+    { "Convert your first document" = "tutorials/convert-your-first-document.md" },
+    { "Convert documents from the command line" = "tutorials/convert-from-the-command-line.md" },
+  ] },
+  { "How-to guides" = [
+    { "Overview" = "how-to/index.md" },
+    { "Install and update" = [
+      { "Installation" = "how-to/install/install.md" },
+      { "Verifying PGP signatures" = "how-to/install/verify-pgp-signatures.md" },
+      { "Update Dangerzone" = "how-to/install/update-dangerzone.md" },
+      { "Independent Container Updates" = "how-to/install/update-the-sandbox.md" },
+      { "Using Podman Desktop" = "how-to/install/use-podman-desktop.md" },
+    ] },
+    { "Contribute" = [
+      { "Report an issue" = "how-to/report-an-issue.md" },
+      { "Contribute to Dangerzone" = "how-to/contribute.md" },
+      { "Development environment" = "how-to/build-from-source.md" },
+      { "Dangerzone Testing" = "how-to/run-the-tests.md" },
+      { "Use the containerized dev environments" = "how-to/dev-environments.md" },
+      { "Debug the sandbox" = "how-to/debug-the-sandbox.md" },
+    ] },
+    { "Release" = [
+      { "Overview" = "how-to/release/index.md" },
+      { "Pre-release" = "how-to/release/pre-release.md" },
+      { "Prepare build environments" = "how-to/release/prepare-build-envs.md" },
+      { "Build release artifacts" = "how-to/release/build.md" },
+      { "QA" = "how-to/release/qa.md" },
+      { "Release" = "how-to/release/release.md" },
+      { "Release notes templates" = "how-to/release/release-notes-templates.md" },
+      { "Managing Python installations" = "how-to/manage-python-installations.md" },
+      { "Using the Doit Automation Tool" = "how-to/build-with-doit.md" },
+    ] },
+  ] },
+  { "Reference" = [
+    { "Overview" = "reference/index.md" },
+    { "Operating System support" = "reference/supported-platforms.md" },
+    { "Supported document formats" = "reference/supported-formats.md" },
+    { "Command-line tools" = [
+      { "dangerzone-cli" = "reference/cli/dangerzone-cli.md" },
+      { "dangerzone-image" = "reference/cli/dangerzone-image.md" },
+      { "dangerzone-machine" = "reference/cli/dangerzone-machine.md" },
+    ] },
+    { "Sandbox protocol" = "reference/sandbox-protocol.md" },
+    { "Settings" = "reference/settings.md" },
+    { "Environment variables" = "reference/environment-variables.md" },
+    { "Signing keys" = "reference/signing-keys.md" },
+    { "Security policy" = "reference/security-policy.md" },
+    { "Security advisories" = [
+      { "Overview" = "advisories/index.md" },
+      { "2024-12-24" = "advisories/2024-12-24.md" },
+      { "2023-12-07" = "advisories/2023-12-07.md" },
+      { "2023-10-25" = "advisories/2023-10-25.md" },
+    ] },
+    { "Changelog" = "reference/changelog.md" },
+    { "Third-party notice" = "reference/third-party-notice.md" },
+    { "License" = "reference/license.md" },
+    { "Roadmap" = "reference/roadmap.md" },
+  ] },
+  { "Explanation" = [
+    { "Overview" = "explanation/index.md" },
+    { "What is Dangerzone?" = "explanation/what-is-dangerzone.md" },
+    { "When should I use Dangerzone?" = "explanation/when-to-use-dangerzone.md" },
+    { "Frequently Asked Questions" = "explanation/faq.md" },
+    { "How Dangerzone works" = "explanation/how-dangerzone-works.md" },
+    { "Security model" = "explanation/security-model.md" },
+    { "Independent sandbox updates" = "explanation/sandbox-updates.md" },
+    { "Update notifications" = "explanation/update-notifications.md" },
+    { "Reproducible builds" = "explanation/reproducible-builds.md" },
+    { "Qubes OS integration" = "explanation/qubes-integration.md" },
+    { "Code architecture" = "explanation/architecture.md" },
+    { "Create Dangerzone environments" = "explanation/development-environments.md" },
+    { "The Dangerzone repositories" = "explanation/project-repositories.md" },
+  ] },
+]
+
+[project.theme]
+language = "en"
+logo = "assets/logo.png"
+favicon = "assets/logo.png"
+features = [
+  "announce.dismiss",
+  "content.action.edit",
+  "content.action.view",
+  "content.code.annotate",
+  "content.code.copy",
+  "content.code.select",
+  "content.footnote.tooltips",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.path",
+  "navigation.tabs",
+  "navigation.tabs.sticky",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "search.suggest",
+  "toc.follow",
+]
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "black"
+accent = "red"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "black"
+accent = "red"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/freedomofpress/dangerzone"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/mastodon"
+link = "https://social.freedom.press/@dangerzone"
+
+[[project.extra.social]]
+icon = "fontawesome/solid/globe"
+link = "https://dangerzone.rocks"
+
+[project.markdown_extensions]
+abbr = {}
+admonition = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+tables = {}
+toc.permalink = true
+pymdownx.betterem = {}
+pymdownx.caret = {}
+pymdownx.details = {}
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.line_spans = "__span"
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.keys = {}
+pymdownx.magiclink = {}
+pymdownx.mark = {}
+pymdownx.smartsymbols = {}
+# Snippets are resolved from the repository root, so pages can embed files
+# such as CHANGELOG.md or SECURITY.md without duplicating them.
+pymdownx.snippets.base_path = ["."]
+pymdownx.snippets.check_paths = true
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tabbed.alternate_style = true
+pymdownx.tabbed.combine_header_slug = true
+pymdownx.tasklist.custom_checkbox = true
+pymdownx.tasklist.clickable_checkbox = true
+pymdownx.tilde = {}

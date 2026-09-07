@@ -1,0 +1,28 @@
+/* Mermaid diagrams: neutral node colors instead of the theme's red accent. */
+:root > * {
+  --md-mermaid-node-bg-color: var(--md-code-bg-color);
+  --md-mermaid-node-fg-color: var(--md-default-fg-color--light);
+  --md-mermaid-edge-color: var(--md-default-fg-color--light);
+  --md-mermaid-label-bg-color: var(--md-default-bg-color);
+  --md-mermaid-label-fg-color: var(--md-default-fg-color);
+}
+
+/* Linked nodes: show that they are clickable. */
+.mermaid a:hover .nodeLabel,
+.mermaid a:hover .label {
+  text-decoration: underline;
+}
+
+/* Clickable task lists (release checklists). */
+.md-typeset .task-list-item input[type="checkbox"]:not(:disabled) {
+  cursor: pointer;
+}
+.md-typeset .checklist-reset {
+  font-size: 0.7rem;
+  color: var(--md-default-fg-color--light);
+}
+.md-typeset .checklist-reset .md-button--small {
+  padding: 0.2em 0.8em;
+  font-size: 0.7rem;
+  margin-right: 0.5em;
+}

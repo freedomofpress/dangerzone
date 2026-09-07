@@ -68,6 +68,11 @@ pytest-rerunfailures = "*"
 [tool.poetry.group.debian.dependencies]
 pymupdf = "*"
 
+# Dependencies required for building the documentation site.
+[tool.poetry.group.docs.dependencies]
+cogapp = "*"
+zensical = "*"
+
 [tool.doit]
 verbosity = 3
 

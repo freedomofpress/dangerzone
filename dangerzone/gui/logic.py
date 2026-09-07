@@ -50,8 +50,10 @@ class DangerzoneGui(DangerzoneCore):
         # Preload font
         self.fixed_font = QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont)
 
-        # Preload ordered list of PDF viewers on computer, starting with default
-        self.pdf_viewers = self._find_pdf_viewers()
+        # Preload ordered lists of PDF and image viewers on computer, starting
+        # with the default application for each MIME type
+        self.pdf_viewers = self._find_viewers("application/pdf")
+        self.image_viewers = self._find_viewers("image/png")
 
         # Are we done waiting (for Docker Desktop to be installed, or for container to install)
         self.is_waiting_finished = False
@@ -77,8 +79,14 @@ class DangerzoneGui(DangerzoneCore):
             os.startfile(Path(filename))  # type: ignore [attr-defined]
 
         elif platform.system() == "Linux":
-            # Get the PDF reader command
-            args = shlex.split(self.pdf_viewers[self.settings.get("open_app")])
+            # Get the viewer command. The selected application may come from
+            # either list, depending on the chosen output format.
+            open_app = self.settings.get("open_app")
+            command = self.pdf_viewers.get(open_app) or self.image_viewers.get(open_app)
+            if command is None:
+                log.error(f"Cannot find application '{open_app}' to open the document")
+                return
+            args = shlex.split(command)
             # %f, %F, %u, and %U are filenames or URLS -- so replace with the file to open
             for i in range(len(args)):
                 if (
@@ -94,23 +102,22 @@ class DangerzoneGui(DangerzoneCore):
             log.info(Fore.YELLOW + "> " + Fore.CYAN + args_str)
             subprocess.Popen(args)
 
-    def _find_pdf_viewers(self) -> OrderedDict[str, str]:
-        pdf_viewers: OrderedDict[str, str] = OrderedDict()
+    def _find_viewers(self, mimetype: str) -> OrderedDict[str, str]:
+        viewers: OrderedDict[str, str] = OrderedDict()
         if platform.system() == "Linux":
-            # Opportunistically query for default pdf handler
-            default_pdf_viewer = None
+            # Opportunistically query for the default handler
+            default_viewer = None
             try:
-                default_pdf_viewer = (
-                    subprocess.check_output(
-                        ["xdg-mime", "query", "default", "application/pdf"]
-                    )
+                default_viewer = (
+                    subprocess.check_output(["xdg-mime", "query", "default", mimetype])
                     .decode()
                     .strip()
                 )  # remove trailing "\n"
             except (FileNotFoundError, subprocess.CalledProcessError) as e:
                 # Log it and continue
                 log.info(
-                    "xdg-mime query failed, default PDF handler could not be found."
+                    f"xdg-mime query failed, default {mimetype} handler could not"
+                    " be found."
                 )
                 log.debug(f"xdg-mime query failed: {e}")
 
@@ -129,7 +136,7 @@ class DangerzoneGui(DangerzoneCore):
                     for filename in os.listdir(search_path):
                         full_filename = os.path.join(search_path, filename)
                         if os.path.splitext(filename)[1] == ".desktop":
-                            # See which ones can open PDFs
+                            # See which ones can open this MIME type
                             try:
                                 desktop_entry = DesktopEntry(full_filename)
                             except ParsingError:
@@ -143,17 +150,17 @@ class DangerzoneGui(DangerzoneCore):
                             else:
                                 desktop_entry_name = desktop_entry.getName()
                                 if (
-                                    "application/pdf" in desktop_entry.getMimeTypes()
+                                    mimetype in desktop_entry.getMimeTypes()
                                     and "dangerzone" not in desktop_entry_name.lower()
                                 ):
-                                    pdf_viewers[desktop_entry_name] = (
+                                    viewers[desktop_entry_name] = (
                                         desktop_entry.getExec()
                                     )
 
                                     # Put the default entry first
-                                    if filename == default_pdf_viewer:
+                                    if filename == default_viewer:
                                         try:
-                                            pdf_viewers.move_to_end(
+                                            viewers.move_to_end(
                                                 desktop_entry_name, last=False
                                             )
                                         except KeyError as e:
@@ -164,7 +171,7 @@ class DangerzoneGui(DangerzoneCore):
                 except FileNotFoundError:
                     pass
 
-        return pdf_viewers
+        return viewers
 
 
 class Dialog(QtWidgets.QDialog):

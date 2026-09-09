@@ -24,6 +24,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Accept OCI image indexes as multi-arch container images, in addition to Docker manifest lists. BuildKit 0.31.0 and later pushes OCI image indexes by default, which made `dangerzone-image prepare-archive` fail with `InvalidMutliArchImage` against newly published images ([#1534](https://github.com/freedomofpress/dangerzone/pulls/1534)).
 - Respect's user choice to disable or skip update checks ([#1517](https://github.com/freedomofpress/dangerzone/issues/1517), [#1543](https://github.com/freedomofpress/dangerzone/issues/1543))
+- Alert users when a file can't be processed due to a permission error
+  ([#1513](https://github.com/freedomofpress/dangerzone/issues/1513))
 
 ### Development changes
 

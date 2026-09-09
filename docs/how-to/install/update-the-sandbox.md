@@ -1,6 +1,6 @@
-# Independent Container Updates
+# Update the sandbox
 
-Since version 0.10.0, Dangerzone has a mechanism to auto-update the secure sandbox that is used for document conversion.
+Dangerzone has a mechanism to auto-update the secure sandbox used for document conversion.
 
 This mechanism allows us to fix security fixes without having to do a full-blown release, shortening the time between security patches are out and the time they are used.
 
@@ -28,13 +28,9 @@ The public key used to verify the container signatures is shipped in `share/free
 
 ## Checking attestations
 
-Each night, new images are built and pushed to the container registry, alongside
-with a provenance attestation, enabling anybody to ensure that the image has
-been originally built by Github CI runners, from a defined source repository (in our case `freedomofpress/dangerzone`).
+Each night, new images are built and pushed to the container registry, alongside with a provenance attestation, enabling anybody to ensure that the image has been originally built by Github CI runners, from a defined source repository (in our case `freedomofpress/dangerzone`).
 
-To verify the attestations against our expectations, clone the GitHub repo
-responsible for the building of our container images, and use the following
-command:
+To verify the attestations against our expectations, clone the GitHub repo responsible for the building of our container images, and use the following command:
 
 ```bash
 
@@ -79,13 +75,9 @@ dangerzone-image load-archive dangerzone-amd64.tar
 
 ## Configuring the verification material
 
-Dangerzone [bundles and pins](https://github.com/freedomofpress/dangerzone/issues/1280#issuecomment-3422977474)
-the public key of the [Rekor](https://docs.sigstore.dev/logging/overview/)
-service, which powers the transparency log of Sigstore signatures.
+Dangerzone [bundles and pins](https://github.com/freedomofpress/dangerzone/issues/1280#issuecomment-3422977474) the public key of the [Rekor](https://docs.sigstore.dev/logging/overview/) service, which powers the transparency log of Sigstore signatures.
 
-If Sigstore maintainers decide to rotate this key, a new Dangerzone version will
-be released, bundled with the new key. Power users can specify an updated key in
-the meantime, by fetching the latest Rekor public key with:
+If Sigstore maintainers decide to rotate this key, a new Dangerzone version will be released, bundled with the new key. Power users can specify an updated key in the meantime, by fetching the latest Rekor public key with:
 
 ```bash
 cosign initialize

@@ -1,14 +1,8 @@
 # dangerzone-machine
 
-`dangerzone-machine` manages the Podman machine that Dangerzone uses on macOS
-and Windows. A Podman machine is a small Linux virtual machine in which the
-sandbox containers run. Dangerzone creates and starts its own machine
-automatically, so this tool is mostly useful for troubleshooting, for
-resetting a broken installation, and together with `dangerzone-cli --linger`.
+`dangerzone-machine` manages the Podman machine that Dangerzone uses on macOS and Windows. A Podman machine is a small Linux virtual machine in which the sandbox containers run. Dangerzone creates and starts its own machine automatically, so this tool is mostly useful for troubleshooting or resetting a broken installation.
 
-On Linux, Podman runs natively and no machine is involved. The commands still
-exist and `raw` still works, but `init`, `start`, and `stop` have nothing to
-do.
+On Linux, Podman runs natively and no virtual machine is involved.
 
 ## Location
 
@@ -16,13 +10,11 @@ do.
 | -------- | ------- |
 | macOS | `/Applications/Dangerzone.app/Contents/MacOS/dangerzone-machine` |
 | Windows | `C:\Program Files\Dangerzone\dangerzone-machine.exe` |
-| Linux | `dangerzone-machine` |
 | Source tree | `poetry run dangerzone-machine` |
 
 ## Usage
 
-The output below is generated from the code at the time the documentation
-was built, so it matches the installed version of the same release.
+The output below is generated from the code at the time the documentation was built, so it matches the installed version of the same release.
 
 <!-- [[[cog
 from docs_cog import cli_help
@@ -153,19 +145,13 @@ Options:
 
 Notes on individual commands:
 
-* `init`, `start`, and `stop` require the Windows Subsystem for Linux on
-  Windows. Use `stop` after running `dangerzone-cli --linger`.
-* `reset` runs `podman machine reset`. This is a destructive action: it
-  removes every Podman machine on the system, including the Dangerzone one and
-  the sandbox image stored in it, so Dangerzone installs both again on next
-  start.
-* `raw` runs a Podman command with the Podman binary and connection that
-  Dangerzone uses. Everything after `raw` is passed to Podman untouched.
+* `init`, `start`, and `stop` require the Windows Subsystem for Linux on Windows. Use `stop` after running `dangerzone-cli --linger`.
+* `reset` runs `podman machine reset`. This is a destructive action: it removes every Podman machine on the system, including the Dangerzone one and the sandbox image stored in it, so Dangerzone installs both again on next start.
+* `raw` runs a Podman command with the Podman binary and connection that Dangerzone uses. Everything after `raw` is passed to Podman untouched.
 
 ## Exit status
 
-`0` on success. On a Podman error, the tool prints a ❌ line and aborts with a
-non-zero status. Declining a confirmation prompt also aborts.
+`0` on success. On a Podman error, the tool prints a ❌ line and aborts with a non-zero status. Declining a confirmation prompt also aborts.
 
 ## Examples
 

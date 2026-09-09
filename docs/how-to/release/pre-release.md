@@ -1,10 +1,8 @@
 # Pre-release
 
-Here is a list of tasks that should be done before issuing the release. They can
-run from the developer's laptop and are not tied to any build environment.
+Here is a list of tasks that should be done before issuing the release. They can run from the developer's laptop and are not tied to any build environment.
 
-- [ ] Create a new issue named **QA and Release for version \<VERSION\>**, to track the general progress.
-      You can generate its content with the `poetry run ./dev_scripts/generate-release-tasks.py` command.
+- [ ] Create a new issue named **QA and Release for version \<VERSION\>**, to track the general progress. You can generate its content with the `poetry run ./dev_scripts/generate-release-tasks.py` command.
 - [ ] [Add new Linux platforms and remove obsolete ones](#add-new-linux-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock --regenerate`
 - [ ] Bump the GitHub asset dependencies using `poetry run mazette lock`
@@ -14,7 +12,7 @@ run from the developer's laptop and are not tied to any build environment.
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] (optional) Bump image version from `v1` to `v2`, if the API has changed.
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
-- [ ] Update the download links in our `docs/how-to/install.md` page to point to the new version (the download links will be populated after the release)
+- [ ] Run `make docs-cog` to refresh the generated parts of the docs, including the download links in `docs/how-to/install/index.md` (the links will start working once the release assets are published)
 - [ ] Update screenshot in `README.md`, if necessary
 - [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
 - [ ] A draft release should be created. Copy the release notes text from the [release notes templates](release-notes-templates.md)
@@ -23,28 +21,19 @@ run from the developer's laptop and are not tied to any build environment.
 
 ## Add new Linux platforms and remove obsolete ones
 
-Currently supported Linux OSes are Debian, Ubuntu and Fedora (we treat Qubes OS
-as a special case of Fedora, release-wise). For each of these platforms, check
-if a new version has been added, or if an existing one is now EOL
-(https://endoflife.date/ is handy for this purpose).
+Currently supported Linux OSes are Debian, Ubuntu and Fedora (we treat Qubes OS as a special case of Fedora, release-wise). For each of these platforms, check if a new version has been added, or if an existing one is now EOL (https://endoflife.date/ is handy for this purpose).
 
 In case of a new version (beta, RC, or official release):
 
 1. Add it in our CI workflows, to test if that version works.
-   - See `.circleci/config.yml` and `.github/workflows/ci.yml`, as well as
-     `dev_scripts/env.py` and `dev_scripts/qa.py`.
-2. Do a test of this version locally with `dev_scripts/qa.py`. Focus on the
-   GUI part, since the basic functionality is already tested by our CI
-   workflows.
-3. Add the new version in our `docs/how-to/install.md` and
-   `docs/reference/supported-platforms.md` documents, and drop a line in our
-   `CHANGELOG.md`.
-4. If that version is a new stable release, update the `docs/how-to/release/`
-   and `docs/how-to/build-from-source.md` files where necessary.
+    - See `.circleci/config.yml` and `.github/workflows/ci.yml`, as well as `dev_scripts/env.py` and `dev_scripts/qa.py`.
+2. Do a test of this version locally with `dev_scripts/qa.py`. Focus on the GUI part, since the basic functionality is already tested by our CI workflows.
+3. Add the new version in our `docs/how-to/install/index.md` and `docs/reference/supported-platforms.md` documents, and drop a line in our `CHANGELOG.md`.
+4. If that version is a new stable release, update the `docs/how-to/release/` and `docs/how-to/contribute/build-from-source.md` files where necessary.
 5. Send a PR with the above changes.
 
 In case of the removal of a version:
 
 1. Remove any mention to this version from our repo.
-   - Consult the previous paragraph, but also `grep` your way around.
+    - Consult the previous paragraph, but also `grep` your way around.
 2. Add a notice in our `CHANGELOG.md` about the version removal.

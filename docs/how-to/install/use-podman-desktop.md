@@ -36,8 +36,7 @@ C:\"Program Files"\Dangerzone\dangerzone-cli.exe --set-container-runtime podman
 
 ### I've encountered the following error: `Error: nomap is only supported in rootless mode`
 
-This means that Podman does not run in rootless mode. You can switch to rootless
-mode with these steps:
+This means that Podman does not run in rootless mode. You can switch to rootless mode with these steps:
 
 ```
 podman machine stop

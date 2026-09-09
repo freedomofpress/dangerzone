@@ -15,7 +15,7 @@ site_author = "Freedom of the Press Foundation"
 copyright = "Copyright &copy; 2022&ndash;2026 Freedom of the Press Foundation and Dangerzone contributors. Licensed under the AGPLv3."
 
 extra_css = ["stylesheets/extra.css"]
-extra_javascript = ["javascripts/checklists.js"]
+extra_javascript = ["javascripts/checklists.js", "javascripts/tabs.js", "javascripts/nav.js"]
 
 repo_url = "https://github.com/freedomofpress/dangerzone"
 repo_name = "freedomofpress/dangerzone"
@@ -24,26 +24,25 @@ edit_uri = "edit/main/docs/"
 nav = [
   { "Home" = "index.md" },
   { "Tutorials" = [
-    { "Overview" = "tutorials/index.md" },
     { "Convert your first document" = "tutorials/convert-your-first-document.md" },
     { "Convert documents from the command line" = "tutorials/convert-from-the-command-line.md" },
+    { "Run dangerzone from source" = "tutorials/run-dangerzone-from-source.md" },
+
   ] },
   { "How-to guides" = [
-    { "Overview" = "how-to/index.md" },
     { "Install and update" = [
-      { "Installation" = "how-to/install/install.md" },
+      { "Install Dangerzone" = "how-to/install/index.md" },
       { "Verifying PGP signatures" = "how-to/install/verify-pgp-signatures.md" },
       { "Update Dangerzone" = "how-to/install/update-dangerzone.md" },
-      { "Independent Container Updates" = "how-to/install/update-the-sandbox.md" },
+      { "Update the sandbox" = "how-to/install/update-the-sandbox.md" },
       { "Using Podman Desktop" = "how-to/install/use-podman-desktop.md" },
     ] },
     { "Contribute" = [
-      { "Report an issue" = "how-to/report-an-issue.md" },
-      { "Contribute to Dangerzone" = "how-to/contribute.md" },
-      { "Development environment" = "how-to/build-from-source.md" },
-      { "Dangerzone Testing" = "how-to/run-the-tests.md" },
-      { "Use the containerized dev environments" = "how-to/dev-environments.md" },
-      { "Debug the sandbox" = "how-to/debug-the-sandbox.md" },
+      { "Report an issue" = "how-to/contribute/report-an-issue.md" },
+      { "Development environment" = "how-to/contribute/build-from-source.md" },
+      { "Dangerzone Testing" = "how-to/contribute/run-the-tests.md" },
+      { "Containerized environments" = "how-to/contribute/dev-environments.md" },
+      { "Debug the sandbox" = "how-to/contribute/debug-the-sandbox.md" },
     ] },
     { "Release" = [
       { "Overview" = "how-to/release/index.md" },
@@ -53,14 +52,13 @@ nav = [
       { "QA" = "how-to/release/qa.md" },
       { "Release" = "how-to/release/release.md" },
       { "Release notes templates" = "how-to/release/release-notes-templates.md" },
-      { "Managing Python installations" = "how-to/manage-python-installations.md" },
-      { "Using the Doit Automation Tool" = "how-to/build-with-doit.md" },
+      { "Managing Python installations" = "how-to/release/manage-python-installations.md" },
+      { "Using the Doit Automation Tool" = "how-to/release/build-with-doit.md" },
     ] },
   ] },
   { "Reference" = [
-    { "Overview" = "reference/index.md" },
-    { "Operating System support" = "reference/supported-platforms.md" },
     { "Supported document formats" = "reference/supported-formats.md" },
+    { "Operating System support" = "reference/supported-platforms.md" },
     { "Command-line tools" = [
       { "dangerzone-cli" = "reference/cli/dangerzone-cli.md" },
       { "dangerzone-image" = "reference/cli/dangerzone-image.md" },
@@ -83,12 +81,10 @@ nav = [
     { "Roadmap" = "reference/roadmap.md" },
   ] },
   { "Explanation" = [
-    { "Overview" = "explanation/index.md" },
-    { "What is Dangerzone?" = "explanation/what-is-dangerzone.md" },
     { "When should I use Dangerzone?" = "explanation/when-to-use-dangerzone.md" },
     { "Frequently Asked Questions" = "explanation/faq.md" },
     { "How Dangerzone works" = "explanation/how-dangerzone-works.md" },
-    { "Security model" = "explanation/security-model.md" },
+    { "Our Security model" = "explanation/security-model.md" },
     { "Independent sandbox updates" = "explanation/sandbox-updates.md" },
     { "Update notifications" = "explanation/update-notifications.md" },
     { "Reproducible builds" = "explanation/reproducible-builds.md" },
@@ -114,7 +110,6 @@ features = [
   "content.tabs.link",
   "content.tooltips",
   "navigation.footer",
-  "navigation.indexes",
   "navigation.instant",
   "navigation.instant.prefetch",
   "navigation.path",

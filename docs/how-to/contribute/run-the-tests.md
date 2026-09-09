@@ -14,8 +14,7 @@ poetry run make test
 
 ## Run a subset
 
-The `test` target wraps `pytest`, so you can call it directly with the usual
-selectors:
+The `test` target wraps `pytest`, so you can call it directly with the usual selectors:
 
 ```bash
 poetry run pytest tests/test_cli.py
@@ -38,6 +37,4 @@ poetry run make fix
 
 ## Test on another Linux distribution
 
-To run the tests inside a clean container for any supported Debian, Ubuntu,
-or Fedora release, see
-[Use the containerized dev environments](dev-environments.md).
+To run the tests inside a clean container for any supported Debian, Ubuntu, or Fedora release, see [Use the containerized dev environments](dev-environments.md).

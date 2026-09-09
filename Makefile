@@ -39,7 +39,7 @@ build-linux: build-clean poetry-install ## Build linux packages (.rpm and .deb)
 
 # The documentation needs the `docs` Poetry group: `poetry install --with docs`.
 COG = DANGERZONE_DEV=1 poetry run cog -I dev_scripts
-COG_FILES = docs/reference/cli/*.md
+COG_FILES = docs/reference/cli/*.md docs/how-to/install/index.md
 
 .PHONY: docs-cog
 docs-cog: ## Regenerate the CLI help output embedded in the docs (via cog)

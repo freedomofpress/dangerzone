@@ -1,15 +1,8 @@
 # Security advisories
 
-When necessary, we issue security advisories to our users, in addition to
-[CVEs](https://github.com/freedomofpress/dangerzone/security/advisories) on
-GitHub. Advisories are published here and linked from the release notes of
-the release that addresses them.
+When necessary, we issue security advisories to our users, in addition to [CVEs](https://github.com/freedomofpress/dangerzone/security/advisories) on GitHub. Advisories are published here and linked from the release notes of the release that addresses them.
 
-Vulnerabilities in the tools inside the sandbox are expected. On their own
-they do not compromise Dangerzone, since the sandbox contains them. We still
-publish advisories and updated sandbox images for them, so that a second
-vulnerability (a sandbox escape) can't be combined with a known one. See
-[Security model](../explanation/security-model.md).
+Vulnerabilities in the tools inside the sandbox are expected. On their own they do not compromise Dangerzone, since the sandbox contains them. We still publish advisories and updated sandbox images for them, so that a second vulnerability (a sandbox escape) can't be combined with a known one. See [Security model](../explanation/security-model.md).
 
 | Date | Summary | Fixed in |
 | ---- | ------- | -------- |

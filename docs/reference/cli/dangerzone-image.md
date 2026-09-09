@@ -1,10 +1,6 @@
 # dangerzone-image
 
-`dangerzone-image` manages the sandbox container image that Dangerzone uses to
-convert documents: it fetches updates, verifies signatures, and prepares or
-loads archives for air-gapped machines. For step-by-step usage, see
-[Independent Container Updates](../../how-to/update-the-sandbox.md). For the design,
-see [Independent sandbox updates](../../explanation/sandbox-updates.md).
+`dangerzone-image` manages the sandbox container image that Dangerzone uses to convert documents: it fetches updates, verifies signatures, and prepares or loads archives for air-gapped machines. For step-by-step usage, see [Independent Container Updates](../../how-to/install/update-the-sandbox.md). For the design, see [Independent sandbox updates](../../explanation/sandbox-updates.md).
 
 ## Location
 
@@ -17,8 +13,7 @@ see [Independent sandbox updates](../../explanation/sandbox-updates.md).
 
 ## Usage
 
-The output below is generated from the code at the time the documentation
-was built, so it matches the installed version of the same release.
+The output below is generated from the code at the time the documentation was built, so it matches the installed version of the same release.
 
 <!-- [[[cog
 from docs_cog import cli_help
@@ -63,10 +58,7 @@ Options:
 ```
 <!-- [[[end]]] -->
 
-The tool resolves the digest of the default image in the registry, downloads
-it, verifies its Cosign signatures against the bundled public key, and stores
-the signatures locally. If the local image is already up to date, it says so
-and exits successfully. Requires a working container runtime.
+The tool resolves the digest of the default image in the registry, downloads it, verifies its Cosign signatures against the bundled public key, and stores the signatures locally. If the local image is already up to date, it says so and exits successfully. Requires a working container runtime.
 
 ### `verify-local`
 
@@ -114,10 +106,7 @@ Options:
 ```
 <!-- [[[end]]] -->
 
-The archive contains the image, its signatures, and a `dangerzone.json`
-manifest, so that the receiving machine can verify it without network access.
-A digest can be pinned with `--image name@sha256:...`. `--arch` accepts
-`amd64` or `arm64`. This command does not need a container runtime.
+The archive contains the image, its signatures, and a `dangerzone.json` manifest, so that the receiving machine can verify it without network access. A digest can be pinned with `--image name@sha256:...`. `--arch` accepts `amd64` or `arm64`. This command does not need a container runtime.
 
 ### `load-archive`
 
@@ -137,9 +126,7 @@ Options:
 ```
 <!-- [[[end]]] -->
 
-The signatures in the archive are verified before the image is loaded, and
-the tool refuses to install an image older than the currently installed one
-unless `--force` is given. Requires a working container runtime.
+The signatures in the archive are verified before the image is loaded, and the tool refuses to install an image older than the currently installed one unless `--force` is given. Requires a working container runtime.
 
 ### `store-signatures`
 
@@ -163,15 +150,11 @@ Fetches and stores the signatures without pulling the image itself.
 
 ## Exit status
 
-Commands print a ✅ line on success and exit with `0`. On failure they print a
-❌ line and abort with a non-zero status. Typical failures are signature
-verification errors and an archive older than the installed image.
+Commands print a ✅ line on success and exit with `0`. On failure they print a ❌ line and abort with a non-zero status. Typical failures are signature verification errors and an archive older than the installed image.
 
 ## Environment
 
-`SIGSTORE_REKOR_PUBLIC_KEY` overrides the bundled Rekor public key, and
-`DANGERZONE_BYPASS_SIG_CHECKS` disables signature verification for local
-testing. See [environment variables](../environment-variables.md).
+`SIGSTORE_REKOR_PUBLIC_KEY` overrides the bundled Rekor public key, and `DANGERZONE_BYPASS_SIG_CHECKS` disables signature verification for local testing. See [environment variables](../environment-variables.md).
 
 ## Examples
 

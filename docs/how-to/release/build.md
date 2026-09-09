@@ -1,10 +1,8 @@
 # Build release artifacts
 
-Follow the sections below, depending on the OS you want to build artifacts for.
-Linux artifacts can be built on macOS, via the use of containers.
+Follow the sections below, depending on the OS you want to build artifacts for. Linux artifacts can be built on macOS, via the use of containers.
 
-Automated instructions help build things quicker. For an explanation of what
-they do under the hood, read [Build release artifacts with Doit](../build-with-doit.md).
+Automated instructions help build things quicker. For an explanation of what they do under the hood, read [Build release artifacts with Doit](build-with-doit.md).
 
 ## macOS
 
@@ -20,91 +18,90 @@ From your macOS terminal app:
 
 1. Checkout the dependencies, and clean your local copy:
 
-   ```bash
-   # Replace with the actual version
-   export DZ_VERSION=$(cat share/version.txt)
+    ```bash
+    # Replace with the actual version
+    export DZ_VERSION=$(cat share/version.txt)
 
-   # Verify and checkout the git tag for this release:
-   git checkout -f v$VERSION
+    # Verify and checkout the git tag for this release:
+    git checkout -f v$VERSION
 
-   # Clean the git repository
-   git clean -df
+    # Clean the git repository
+    git clean -df
 
-   # Clean up the environment
-   poetry env remove --all
+    # Clean up the environment
+    poetry env remove --all
 
-   # Install the dependencies
-   poetry sync
-   ```
+    # Install the dependencies
+    poetry sync
+    ```
 
 2. Retrieve the container image and download the necessary assets:
 
-   ```bash
-   poetry run dangerzone-image prepare-archive
-    --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
-    --output share/container.tar
+    ```bash
+    poetry run dangerzone-image prepare-archive
+     --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
+     --output share/container.tar
 
-   poetry run mazette install
+    poetry run mazette install
 
-   # Copy the container image to the assets folder
-   cp share/container.tar ~dz/release-assets/$VERSION/dangerzone-$VERSION-arm64.tar
-   ```
+    # Copy the container image to the assets folder
+    cp share/container.tar ~dz/release-assets/$VERSION/dangerzone-$VERSION-arm64.tar
+    ```
 
 3. Build the app bundle
 
-   ```bash
-   poetry run ./install/macos/build-app.py
-   ```
+    ```bash
+    poetry run ./install/macos/build-app.py
+    ```
 
 4. Sign the application bundle, and notarize it
 
-   This command needs to run from an account with access to the code-signing certificate.
+    This command needs to run from an account with access to the code-signing certificate.
 
-   This command assumes the Apple Developer ID application password is stored in the Keychain
-   and used specifically for `notarytool`.
+    This command assumes the Apple Developer ID application password is stored in the Keychain and used specifically for `notarytool`.
 
-   ```bash
-   # Sign the .App and make it a .dmg
-   poetry run ./install/macos/build-app.py --only-codesign
+    ```bash
+    # Sign the .App and make it a .dmg
+    poetry run ./install/macos/build-app.py --only-codesign
 
-   # Notarize it. This command must run from the MacOS UI,
-   # inside a terminal application.
-   xcrun notarytool submit ./dist/Dangerzone.dmg --apple-id $APPLE_ID --keychain-profile "dz-notarytool-release-key" --wait && xcrun stapler staple dist/Dangerzone.dmg
+    # Notarize it. This command must run from the MacOS UI,
+    # inside a terminal application.
+    xcrun notarytool submit ./dist/Dangerzone.dmg --apple-id $APPLE_ID --keychain-profile "dz-notarytool-release-key" --wait && xcrun stapler staple dist/Dangerzone.dmg
 
-   # Copy the .dmg to the assets folder
-   ARCH=$(uname -m)
-   if [ "$ARCH" = "x86_64" ]; then
-       ARCH="i686"
-   fi
-   cp dist/Dangerzone.dmg ~dz/release-assets/$VERSION/Dangerzone-$VERSION-$ARCH.dmg
-   ```
+    # Copy the .dmg to the assets folder
+    ARCH=$(uname -m)
+    if [ "$ARCH" = "x86_64" ]; then
+        ARCH="i686"
+    fi
+    cp dist/Dangerzone.dmg ~dz/release-assets/$VERSION/Dangerzone-$VERSION-$ARCH.dmg
+    ```
 
 ## Windows
 
 - [ ] Checkout the dependencies, and clean the local copy:
 
-  ```bash
-  # Replace with the actual version
-  export DZ_VERSION=$(cat share/version.txt)
+    ```bash
+    # Replace with the actual version
+    export DZ_VERSION=$(cat share/version.txt)
 
-  # Verify and checkout the git tag for this release:
-  git checkout -f v$VERSION
+    # Verify and checkout the git tag for this release:
+    git checkout -f v$VERSION
 
-  # Clean the git repository
-  git clean -df
+    # Clean the git repository
+    git clean -df
 
-  # Clean up the environment
-  poetry env remove --all
+    # Clean up the environment
+    poetry env remove --all
 
-  # Install the dependencies
-  poetry sync
-  ```
+    # Install the dependencies
+    poetry sync
+    ```
 - [ ] Download the container image with signatures:
-  ```bash
-  poetry run dangerzone-image prepare-archive
-    --image ghcr.io/ofpress/dangerzone/v1@sha256:${DIGEST}
-    --output share/container.tar
-  ```
+    ```bash
+    poetry run dangerzone-image prepare-archive
+      --image ghcr.io/ofpress/dangerzone/v1@sha256:${DIGEST}
+      --output share/container.tar
+    ```
 - [ ] Download the necessary assets with `poetry run mazette install`
 - [ ] Run `poetry run .\install\windows\build-app.bat`
 - After completion, the installer will be available at `dist\Dangerzone.msi`
@@ -122,13 +119,9 @@ Below we explain how we build packages for each Linux distribution we support.
 
 #### Debian/Ubuntu
 
-Because the Debian packages do not contain compiled Python code for a specific
-Python version, a single Debian package can be used for all of our
-Debian-based distros.
+Because the Debian packages do not contain compiled Python code for a specific Python version, a single Debian package can be used for all of our Debian-based distros.
 
-Create a Debian Bookworm development environment. [Follow the
-instructions in the build section](../build-from-source.md#debianubuntu),
-or create it locally with:
+Create a Debian Bookworm development environment. [Follow the instructions in the build section](../contribute/build-from-source.md#debianubuntu), or create it locally with:
 
 ```bash
 # Create and run debian bookworm development environment
@@ -147,24 +140,17 @@ poetry run dangerzone-image prepare-archive
 ./dev_scripts/env.py --distro debian --version bookworm run --dev bash -c "cd dangerzone && ./install/linux/build-deb.py"
 ```
 
-A single `build-deb.py` invocation produces both `dangerzone_<version>_amd64.deb`
-(slim, no bundled `container.tar`) and `dangerzone-full_<version>_amd64.deb`
-(with the container image bundled) under `./deb_dist`.
+A single `build-deb.py` invocation produces both `dangerzone_<version>_amd64.deb` (slim, no bundled `container.tar`) and `dangerzone-full_<version>_amd64.deb` (with the container image bundled) under `./deb_dist`.
 
-Publish both `.deb` files under `./deb_dist` to the
-[`freedomofpress/packages`](https://github.com/freedomofpress/packages)
-repo, by sending a PR. Follow the instructions in that repo on how to do so.
+Publish both `.deb` files under `./deb_dist` to the [`freedomofpress/packages`](https://github.com/freedomofpress/packages) repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 #### Fedora
 
 !!! note
 
-    This procedure will have to be done for every supported Fedora version.
-    In this section, Fedora 42 is used as an example.
+    This procedure will have to be done for every supported Fedora version. In this section, Fedora 42 is used as an example.
 
-Create a Fedora development environment. [Follow the
-instructions in the build section](../build-from-source.md#fedora),
-or create it locally with:
+Create a Fedora development environment. [Follow the instructions in the build section](../contribute/build-from-source.md#fedora), or create it locally with:
 
 ```bash
 ./dev_scripts/env.py --distro fedora --version 42 build-dev
@@ -184,10 +170,7 @@ poetry run dangerzone-image prepare-archive
 ./dev_scripts/env.py --distro fedora --version 42 run --dev bash -c "cd dangerzone && ./install/linux/build-rpm.py --full"
 ```
 
-Publish both `dangerzone-<version>.fc<NN>.x86_64.rpm` (slim) and
-`dangerzone-full-<version>.fc<NN>.x86_64.rpm` (bundled container) under `./dist`
-to the [`freedomofpress/packages`](https://github.com/freedomofpress/packages)
-repo, by sending a PR. Follow the instructions in that repo on how to do so.
+Publish both `dangerzone-<version>.fc<NN>.x86_64.rpm` (slim) and `dangerzone-full-<version>.fc<NN>.x86_64.rpm` (bundled container) under `./dist` to the [`freedomofpress/packages`](https://github.com/freedomofpress/packages) repo, by sending a PR. Follow the instructions in that repo on how to do so.
 
 #### Qubes
 

@@ -1,9 +1,6 @@
 # dangerzone-cli
 
-`dangerzone-cli` converts one or more documents into safe PDFs from a terminal.
-It uses the same conversion pipeline and the same sandbox as the graphical
-application. For a guided introduction, see
-[Convert documents from the command line](../../tutorials/convert-from-the-command-line.md).
+`dangerzone-cli` converts one or more documents into safe PDFs from a terminal. It uses the same conversion pipeline and the same sandbox as the graphical application. For a guided introduction, see [Convert documents from the command line](../../tutorials/convert-from-the-command-line.md).
 
 ## Location
 
@@ -16,8 +13,7 @@ application. For a guided introduction, see
 
 ## Usage
 
-The output below is generated from the code at the time the documentation
-was built, so it matches the installed version of the same release.
+The output below is generated from the code at the time the documentation was built, so it matches the installed version of the same release.
 
 <!-- [[[cog
 from docs_cog import cli_help
@@ -53,31 +49,19 @@ Options:
 ```
 <!-- [[[end]]] -->
 
-`FILENAMES...` are the documents to convert. Every file must exist and must
-have one of the [supported formats](../supported-formats.md). Conversions
-run sequentially, in the given order. `--output-filename` is only valid with a
-single input file, and the name must end with `.pdf`. `--set-container-runtime`
-stores the choice in the [settings file](../settings.md) and exits without
-converting anything, see
-[Using Podman Desktop](../../how-to/use-podman-desktop.md).
+`FILENAMES...` are the documents to convert. Every file must exist and must have one of the [supported formats](../supported-formats.md). Conversions run sequentially, in the given order. `--output-filename` is only valid with a single input file, and the name must end with `.pdf`. `--set-container-runtime` stores the choice in the [settings file](../settings.md) and exits without converting anything, see [Using Podman Desktop](../../how-to/install/use-podman-desktop.md).
 
 ## Behaviour
 
-On start, the tool prints a banner and then, when needed, installs the
-Windows Subsystem for Linux, stops other Podman machines, initializes and
-starts the Dangerzone Podman machine, checks for updates, and installs the
-sandbox image. On Linux, none of the machine steps apply. On Qubes OS with the
-native integration, conversions run in disposable qubes.
+On start, the tool prints a banner and then, when needed, installs the Windows Subsystem for Linux, stops other Podman machines, initializes and starts the Dangerzone Podman machine, checks for updates, and installs the sandbox image. On Linux, none of the machine steps apply. On Qubes OS with the native integration, conversions run in disposable qubes.
 
 !!! note "Slim Linux packages"
 
-    With the slim `dangerzone` package on Linux, the CLI does not download the
-    sandbox on its own. Initialize it once with `dangerzone-image upgrade`,
-    or start the graphical application and accept the download. The
-    `dangerzone-full` package bundles the sandbox.
+    On Linux, the `dangerzone` package doesn't come with the sandbox bundled, and so the CLI does not download the sandbox on its own.
+   
+    Initialize it with `dangerzone-image upgrade`, or start the graphical application and accept the download. Alternatively, the `dangerzone-full` package bundles the sandbox.
 
-Progress for each stage of each document is printed to the terminal. A
-failed conversion reports the error and moves on to the next document.
+Progress for each stage of each document is printed to the terminal. A failed conversion reports the error and moves on to the next document.
 
 ## Exit status
 
@@ -91,9 +75,7 @@ failed conversion reports the error and moves on to the next document.
 
 ## Environment
 
-`DANGERZONE_DEV`, `DANGERZONE_BYPASS_SIG_CHECKS`, `QUBES_CONVERSION` and the
-other variables listed in [environment variables](../environment-variables.md)
-affect this tool.
+`DANGERZONE_DEV`, `DANGERZONE_BYPASS_SIG_CHECKS`, `QUBES_CONVERSION` and the other variables listed in [environment variables](../environment-variables.md) affect this tool.
 
 ## Examples
 

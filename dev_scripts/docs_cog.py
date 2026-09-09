@@ -1,9 +1,11 @@
-"""Helpers for embedding live CLI help output in the documentation.
+"""Helpers for embedding generated content in the documentation.
 
 The reference pages under docs/reference/cli/ contain cog blocks that call the
 functions below, so that the documented ``--help`` output is always the one
-produced by the code. Regenerate with ``make docs-cog`` and check that the
-pages are up to date with ``make docs-cog-check``.
+produced by the code. The installation instructions embed download links that
+follow the version in share/version.txt the same way. Regenerate with
+``make docs-cog`` and check that the pages are up to date with
+``make docs-cog-check``.
 
 See https://cog.readthedocs.io/ for how cog blocks work.
 """
@@ -13,6 +15,7 @@ import click
 from dangerzone.cli import run as dangerzone_cli
 from dangerzone.podman.cli import main as dangerzone_machine
 from dangerzone.updater.cli import run as dangerzone_image
+from dangerzone.util import get_version
 
 WIDTH = 80
 
@@ -72,3 +75,31 @@ def cli_help(tool: str, subcommand: str | None = None) -> None:
     cog.outl(f"$ {invocation} --help")
     cog.outl(help_text(tool, subcommand).rstrip("\n"))
     cog.outl("```")
+
+
+def download_links(*platform_assets: tuple[str, str], indent: int = 0) -> None:
+    """Emit a list of download bullets for the current version of Dangerzone.
+
+    Each argument is a ``(platform, asset_template)`` pair, where the asset
+    template is the release asset filename with ``{version}`` substituted by
+    the version in share/version.txt, e.g. ``Dangerzone-{version}.msi``.
+    ``indent`` prefixes the bullets with that many spaces, for blocks nested
+    in tabs or admonitions.
+
+    A blank line is emitted before the list: without it, Markdown glues the
+    bullets to the cog marker comment, treats the whole chunk as raw HTML,
+    and the links disappear from the rendered page.
+    """
+    import cog  # Only available while cog runs the block.
+
+    version = get_version()
+    cog.outl("")
+    for platform, asset_template in platform_assets:
+        asset = asset_template.format(version=version)
+        url = (
+            "https://github.com/freedomofpress/dangerzone/releases/download"
+            f"/v{version}/{asset}"
+        )
+        cog.outl(
+            f"{' ' * indent}- Download [Dangerzone {version} for {platform}]({url})"
+        )

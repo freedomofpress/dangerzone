@@ -8,6 +8,13 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...HEAD)
 
+### Changes
+
+- We no longer render the Github release notes from Markdown to HTML within the
+  Dangerzone application. This unfortunately makes release notes less readable,
+  but most importantly, it reduces our application's attack surface.
+  ([1542](https://github.com/freedomofpress/dangerzone/pull/1542))
+
 ### Fixed
 
 - Accept OCI image indexes as multi-arch container images, in addition to Docker manifest lists. BuildKit 0.31.0 and later pushes OCI image indexes by default, which made `dangerzone-image prepare-archive` fail with `InvalidMutliArchImage` against newly published images ([#1534](https://github.com/freedomofpress/dangerzone/pulls/1534)).

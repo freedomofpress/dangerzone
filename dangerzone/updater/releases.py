@@ -97,8 +97,7 @@ def ensure_sane_update(cur_version: str, latest_version: str) -> bool:
 
 
 def fetch_github_release_info() -> tuple[str, str]:
-    """Get the latest release info from GitHub.
-    """
+    """Get the latest release info from GitHub."""
     log.debug("Checking the latest GitHub release")
 
     try:

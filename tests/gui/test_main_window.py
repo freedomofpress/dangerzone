@@ -276,7 +276,7 @@ def test_new_release_is_detected(
     # Check that the callback function gets an update report.
     assert_report_equal(
         check_for_updates_spy.spy_return,
-        ReleaseReport("99.9.9", "<p>changelog</p>", container_image_bump=True),
+        ReleaseReport("99.9.9", "changelog", container_image_bump=True),
     )
 
     # Check that the settings have been updated properly.
@@ -286,7 +286,7 @@ def test_new_release_is_detected(
         "updater_last_check"
     )
     expected_settings["updater_latest_version"] = "99.9.9"
-    expected_settings["updater_latest_changelog"] = "<p>changelog</p>"
+    expected_settings["updater_latest_changelog"] = "changelog"
     expected_settings["updater_errors"] = 0
     expected_settings["updater_remote_log_index"] = 1000000000000000000
     assert window.dangerzone.settings.get_updater_settings() == expected_settings

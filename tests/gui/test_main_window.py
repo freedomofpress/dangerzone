@@ -1526,3 +1526,64 @@ class TestQueueDuringConversion:
         unconverted = conversion_widget.dangerzone.get_unconverted_documents()
         assert len(unconverted) == 1
         assert unconverted[0].input_filename == doc2.input_filename
+
+
+def test_unreadable_document_selection_shows_alert(
+    conversion_widget: ConversionWidget,
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    sample_pdf: str,
+) -> None:
+    """Unreadable files selected in the picker must produce a visible error."""
+    selection = conversion_widget.doc_selection_widget
+    mocker.patch.object(selection.file_dialog, "exec", return_value=True)
+    mocker.patch.object(
+        selection.file_dialog, "selectedFiles", return_value=[sample_pdf]
+    )
+    mocker.patch.object(
+        Document,
+        "validate_input_filename",
+        side_effect=errors.InputFileNotReadableException(),
+    )
+    mock_alert = mocker.patch("dangerzone.gui.main_window.Alert")
+
+    with qtbot.assertNotEmitted(selection.documents_selected):
+        selection.dangerous_doc_button_clicked()
+
+    mock_alert.assert_called_once_with(
+        conversion_widget.dangerzone,
+        message="You don't have permission to open the input file.",
+        has_cancel=False,
+    )
+    mock_alert.return_value.launch.assert_called_once()
+
+
+def test_unreadable_document_is_rechecked_before_conversion(
+    conversion_widget: ConversionWidget,
+    qtbot: QtBot,
+    mocker: MockerFixture,
+    sample_pdf: str,
+) -> None:
+    """A permission change after selection must block conversion with an alert."""
+    document = Document(sample_pdf)
+    conversion_widget.documents_selected([document])
+    settings_widget = conversion_widget.settings_widget
+
+    mocker.patch.object(
+        Document,
+        "validate_input_filename",
+        side_effect=errors.InputFileNotReadableException(),
+    )
+    mock_alert = mocker.patch("dangerzone.gui.main_window.Alert")
+
+    with qtbot.assertNotEmitted(settings_widget.start_clicked):
+        settings_widget.start_button_clicked()
+
+    assert document.is_unconverted()
+    assert conversion_widget.conversion_started is False
+    mock_alert.assert_called_once_with(
+        conversion_widget.dangerzone,
+        message="You don't have permission to open the input file.",
+        has_cancel=False,
+    )
+    mock_alert.return_value.launch.assert_called_once()

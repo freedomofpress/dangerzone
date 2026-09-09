@@ -1134,9 +1134,19 @@ class DocSelectionWidget(QtWidgets.QWidget):
             self.file_dialog.setDirectory(first_doc_dir)
 
         if self.file_dialog.exec():
-            documents = [
-                Document(filename) for filename in self.file_dialog.selectedFiles()
-            ]
+            try:
+                documents = [
+                    Document(filename) for filename in self.file_dialog.selectedFiles()
+                ]
+            except errors.DocumentFilenameException as e:
+                log.warning("Could not add selected document: %s", e)
+                self.dialog = Alert(
+                    self.dangerzone,
+                    message=str(e),
+                    has_cancel=False,
+                ).launch()
+                return
+
             self.documents_selected.emit(documents)
         else:
             # No files selected
@@ -1550,7 +1560,25 @@ class SettingsWidget(QtWidgets.QWidget):
             (_, tmp) = tempfile.mkstemp(suffix=".pdf", prefix="dangerzone_")
             document.output_filename = tmp
 
+    def validate_selected_documents(self) -> bool:
+        for document in self.dangerzone.get_unconverted_documents():
+            try:
+                Document.validate_input_filename(document.input_filename)
+            except errors.DocumentFilenameException as e:
+                log.warning("Could not validate selected document: %s", e)
+                self.dialog = Alert(
+                    self.dangerzone,
+                    message=str(e),
+                    has_cancel=False,
+                ).launch()
+                return False
+
+        return True
+
     def start_button_clicked(self) -> None:
+        if not self.validate_selected_documents():
+            return
+
         for document in self.dangerzone.get_unconverted_documents():
             self.configure_document(document)
 

@@ -89,7 +89,6 @@ nav = [
     { "Update notifications" = "explanation/update-notifications.md" },
     { "Reproducible builds" = "explanation/reproducible-builds.md" },
     { "Qubes OS integration" = "explanation/qubes-integration.md" },
-    { "Code architecture" = "explanation/architecture.md" },
     { "Create Dangerzone environments" = "explanation/development-environments.md" },
     { "The Dangerzone repositories" = "explanation/project-repositories.md" },
   ] },

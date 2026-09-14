@@ -37,10 +37,10 @@ class InputFileNotReadableException(DocumentFilenameException):
 
 
 class NonPDFOutputFileException(DocumentFilenameException):
-    """Exception for when the output file is not a PDF."""
+    """Exception for when the output file does not match the output format."""
 
-    def __init__(self) -> None:
-        super().__init__("Safe PDF filename must end in '.pdf'")
+    def __init__(self, extension: str = ".pdf") -> None:
+        super().__init__(f"Safe document filename must end in '{extension}'")
 
 
 class IllegalOutputFilenameException(DocumentFilenameException):

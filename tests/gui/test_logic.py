@@ -27,7 +27,9 @@ def test_order_mime_handers() -> None:
         "/usr/local/bin/madeup-mupdf",
         "/usr/local/bin/madeup-libredraw",
     ]
-    mock_desktop.getName.side_effect = [
+    # The desktop entries are scanned twice: once for PDF viewers, and once
+    # for image viewers
+    mock_desktop.getName.side_effect = 2 * [
         "Evince",
         "MuPDF",
         "LibreOffice",
@@ -39,7 +41,8 @@ def test_order_mime_handers() -> None:
         ) as mock_default_mime_hander,
         mock.patch(
             "os.listdir",
-            side_effect=[
+            side_effect=2
+            * [
                 ["org.gnome.Evince.desktop"],
                 ["org.pwmt.zathura-pdf-mupdf.desktop"],
                 ["libreoffice-draw.desktop"],
@@ -50,12 +53,16 @@ def test_order_mime_handers() -> None:
     ):
         dz = DangerzoneGui(mock_app, dummy)
 
-        mock_default_mime_hander.assert_called_once_with(
+        mock_default_mime_hander.assert_any_call(
             ["xdg-mime", "query", "default", "application/pdf"]
+        )
+        mock_default_mime_hander.assert_any_call(
+            ["xdg-mime", "query", "default", "image/png"]
         )
         mock_list.assert_called()
         assert len(dz.pdf_viewers) == 3
         assert dz.pdf_viewers.popitem(last=False)[0] == "LibreOffice"
+        assert len(dz.image_viewers) == 0
 
 
 @pytest.mark.skipif(platform.system() != "Linux", reason="Linux-only test")
@@ -74,7 +81,9 @@ def test_mime_handers_succeeds_no_default_found() -> None:
         "/usr/local/bin/madeup-mupdf",
         "/usr/local/bin/madeup-libredraw",
     ]
-    mock_desktop.getName.side_effect = [
+    # The desktop entries are scanned twice: once for PDF viewers, and once
+    # for image viewers
+    mock_desktop.getName.side_effect = 2 * [
         "Evince",
         "MuPDF",
         "LibreOffice",
@@ -87,7 +96,8 @@ def test_mime_handers_succeeds_no_default_found() -> None:
         ) as mock_default_mime_hander,
         mock.patch(
             "os.listdir",
-            side_effect=[
+            side_effect=2
+            * [
                 ["org.gnome.Evince.desktop"],
                 ["org.pwmt.zathura-pdf-mupdf.desktop"],
                 ["libreoffice-draw.desktop"],
@@ -98,7 +108,7 @@ def test_mime_handers_succeeds_no_default_found() -> None:
     ):
         dz = DangerzoneGui(mock_app, dummy)
 
-        mock_default_mime_hander.assert_called_once_with(
+        mock_default_mime_hander.assert_any_call(
             ["xdg-mime", "query", "default", "application/pdf"]
         )
         mock_list.assert_called()
@@ -119,7 +129,8 @@ def test_malformed_desktop_entry_is_catched() -> None:
         mock.patch("dangerzone.gui.logic.DesktopEntry") as mock_desktop,
         mock.patch(
             "os.listdir",
-            side_effect=[
+            side_effect=2
+            * [
                 ["malformed.desktop", "another.desktop"],
                 [],
                 [],

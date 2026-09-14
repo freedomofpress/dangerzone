@@ -200,3 +200,50 @@ def test_mark_as_failed(sample_pdf: str) -> None:
     assert d.is_failed()
     assert not d.is_safe()
     assert not d.is_unconverted()
+
+
+def test_output_format_auto_detection(tmp_path: Path) -> None:
+    image = tmp_path / "photo.JPG"
+    image.touch()
+    d = Document(str(image))
+    assert d.output_format == "png"
+    assert d.output_filename == str(tmp_path / "photo-safe.png")
+
+    pdf = tmp_path / "document.pdf"
+    pdf.touch()
+    d = Document(str(pdf))
+    assert d.output_format == "pdf"
+    assert d.output_filename == str(tmp_path / "document-safe.pdf")
+
+
+def test_output_format_explicit(tmp_path: Path) -> None:
+    image = tmp_path / "photo.jpg"
+    image.touch()
+    d = Document(str(image), output_format="pdf")
+    assert d.output_format == "pdf"
+    assert d.output_filename == str(tmp_path / "photo-safe.pdf")
+
+    pdf = tmp_path / "document.pdf"
+    pdf.touch()
+    d = Document(str(pdf), output_format="png")
+    assert d.output_format == "png"
+    assert d.output_filename == str(tmp_path / "document-safe.png")
+
+
+def test_output_filename_pins_auto_format(tmp_path: Path) -> None:
+    image = tmp_path / "photo.jpg"
+    image.touch()
+    d = Document(str(image), str(tmp_path / "out.pdf"))
+    assert d.output_format == "pdf"
+
+    pdf = tmp_path / "document.pdf"
+    pdf.touch()
+    d = Document(str(pdf), str(tmp_path / "out.png"))
+    assert d.output_format == "png"
+
+
+def test_output_page_filename(tmp_path: Path) -> None:
+    image = tmp_path / "photo.png"
+    image.touch()
+    d = Document(str(image))
+    assert d.output_page_filename(2) == str(tmp_path / "photo-safe-page-2.png")

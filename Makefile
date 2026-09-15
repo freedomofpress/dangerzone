@@ -11,11 +11,7 @@ fix: ## apply all the suggestions from ruff
 
 .PHONY: test
 test: ## Run the tests
-	# Make each GUI test run as a separate process, to avoid segfaults due to
-	# shared state.
-	# See more in https://github.com/freedomofpress/dangerzone/issues/493
-	pytest --co -q tests/gui | grep -e '^tests/' | xargs -n 1 pytest -v
-	pytest -v --cov --ignore dev_scripts --ignore tests/gui
+	pytest -v --cov --ignore dev_scripts
 
 .PHONY: poetry-install
 poetry-install: ## Install project dependencies

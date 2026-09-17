@@ -63,6 +63,10 @@ docs: docs-cog docs-vendor ## Build the documentation site into site/
 docs-serve: docs-cog docs-vendor ## Serve the documentation site locally with live reload
 	poetry run zensical serve
 
+.PHONY: docs-pdf
+docs-pdf: docs ## Render the whole documentation into site/dangerzone-docs.pdf
+	poetry run python dev_scripts/docs_pdf.py
+
 .PHONY: regenerate-reference-pdfs
 regenerate-reference-pdfs: ## Regenerate the reference PDFs
 	pytest tests/test_cli.py -k regenerate --generate-reference-pdfs

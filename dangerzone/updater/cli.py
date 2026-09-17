@@ -133,6 +133,7 @@ def load_archive(archive_filename: Path, force: bool) -> None:
 @click.option(
     "--arch",
     default=get_architecture(),
+    show_default="the architecture of the current machine",
     help="The architecture to prepare the archive for.",
 )
 def prepare_archive(image: str, output: str, arch: str) -> None:

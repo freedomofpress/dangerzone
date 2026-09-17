@@ -25,8 +25,32 @@ cog.out(f"""```console
 ```console
 Usage: dangerzone-cli [OPTIONS] [FILENAMES]...
 
+  Convert potentially dangerous documents to safe PDFs.
+
+  Documents are converted inside a sandbox, so that any embedded threats are
+  neutralized. You can also use OCR to add a searchable text layer to the safe
+  PDF, via the --ocr-lang option.
+
+  Pass one or more file paths as arguments, or use '-' to read a document from
+  standard input. For single-document conversions, you can write the safe PDF
+  to a file with '-o <file>', or to standard output with '-o -'.
+
+  Examples:
+
+      dangerzone-cli evidence.odt                  # convert to 'evidence-safe.pdf'
+      dangerzone-cli doc1.pdf doc2.docx            # convert to 'doc1-safe.pdf' and 'doc2-safe.pdf'
+      dangerzone-cli --archive report.docx         # convert to 'report-safe.pdf' and move the original under './unsafe/'
+      dangerzone-cli --ocr-lang eng scan.pdf       # add a searchable text layer in English
+      dangerzone-cli -o out.pdf in.pdf             # write to 'out.pdf'
+      dangerzone-cli -o - in.pdf > out.pdf         # write to stdout and pipe to 'out.pdf'
+      dangerzone-cli - -o out.pdf < in.pdf         # read from stdin and write to 'out.pdf'
+      dangerzone-cli - -o - < in.pdf > out.pdf     # read from stdin, write to stdout and pipe to 'out.pdf'
+
 Options:
-  --output-filename TEXT        Default is filename ending with -safe.pdf
+  -o, --output-filename TEXT    Output filename for the safe PDF. Default is
+                                the input filename with '-safe.pdf' appended.
+                                Alternatively, use '-' to write the safe PDF
+                                to standard output.
   --ocr-lang TEXT               Language to OCR, defaults to none
   --archive                     Archives the unsafe version in a subdirectory
                                 named 'unsafe'

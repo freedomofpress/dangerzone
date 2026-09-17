@@ -35,6 +35,9 @@ You can read more about ["How Dangerzone works"](./explanation/how-dangerzone-wo
 
 ---
 
+> !!! NOTE "Download this documentation for offline use"
+> If you prefer, you can also download this documentation as a [PDF](dangerzone-docs.pdf).
+
 This documentation is organized in the following sections. Pick the one that matches what you are trying to do.
 
 <div class="grid cards" markdown>

@@ -66,6 +66,14 @@ pytest-rerunfailures = "*"
 [tool.poetry.group.debian.dependencies]
 pymupdf = "*"
 
+# Dependencies required for building the documentation site.
+[tool.poetry.group.docs.dependencies]
+cogapp = "*"
+zensical = "*"
+mike = {git = "https://github.com/squidfunk/mike.git"}
+weasyprint = ">=70.0"
+beautifulsoup4 = "^4.15.0"
+
 [tool.doit]
 verbosity = 3
 

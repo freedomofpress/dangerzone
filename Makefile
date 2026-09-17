@@ -37,6 +37,15 @@ build-macos-arm: build-clean poetry-install ## Build macOS Apple Silicon package
 build-linux: build-clean poetry-install ## Build linux packages (.rpm and .deb)
 	DANGERZONE_DEV=1 poetry run doit -n 8 fedora_rpm debian_deb
 
+# The documentation needs the `docs` Poetry group: `poetry install --with docs`.
+.PHONY: docs
+docs: ## Build the documentation site into site/
+	poetry run zensical build --strict
+
+.PHONY: docs-serve
+docs-serve: ## Serve the documentation site locally with live reload
+	poetry run zensical serve
+
 .PHONY: regenerate-reference-pdfs
 regenerate-reference-pdfs: ## Regenerate the reference PDFs
 	pytest tests/test_cli.py -k regenerate --generate-reference-pdfs

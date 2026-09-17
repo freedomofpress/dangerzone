@@ -14,6 +14,7 @@ SITE = REPO / "site"
 OUTPUT = SITE / "dangerzone-docs.pdf"
 CONFIG = tomllib.loads((REPO / "zensical.toml").read_text())["project"]
 VERSION = (REPO / "share" / "version.txt").read_text().strip()
+SITE_URL = urljoin(CONFIG["site_url"], VERSION + "/")
 
 EXCLUDED_PAGES = {
     "reference/license.md",
@@ -93,7 +94,7 @@ def extract_article(url: str, slug: str, url_slugs: dict) -> BeautifulSoup:
             fragment = f"--{parsed.fragment}" if parsed.fragment else ""
             a["href"] = f"#{url_slugs[target]}{fragment}"
         else:  # a file download or an unknown page: point at the live site
-            a["href"] = urljoin(CONFIG["site_url"] + url, a["href"])
+            a["href"] = urljoin(SITE_URL + url, a["href"])
 
     # Point images at the local files so WeasyPrint can embed them.
     for img in article.find_all("img", src=True):

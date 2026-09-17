@@ -48,7 +48,7 @@ prior to a release (see [Large Document Testing](#large-document-testing)).
   - [ ] Download the necessary assets using `poetry run mazette install`
   - [ ] Run the Dangerzone tests.
   - [ ] Build and run the Dangerzone .exe
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+  - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
 - [ ] Create a test build in macOS (Intel CPU) and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.
@@ -57,7 +57,7 @@ prior to a release (see [Large Document Testing](#large-document-testing)).
   - [ ] Download the necessary assets using `poetry run mazette install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create and run an app bundle.
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+  - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
 - [ ] Create a test build in macOS (M1/2 CPU) and make sure it works:
   - [ ] Check if the suggested Python version is still supported.
   - [ ] Create a new development environment with Poetry.
@@ -66,7 +66,7 @@ prior to a release (see [Large Document Testing](#large-document-testing)).
   - [ ] Download the necessary assets using `poetry run mazette install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create and run an app bundle.
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+  - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
 - [ ] Create a test build in the most recent Ubuntu LTS platform (Ubuntu 24.04
   as of writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
@@ -75,7 +75,7 @@ prior to a release (see [Large Document Testing](#large-document-testing)).
   - [ ] Download the necessary assets using `poetry run mazette install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create a .deb package and install it system-wide.
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+  - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
 - [ ] Create a test build in the most recent Fedora platform (Fedora 44 as of
   writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
@@ -84,7 +84,7 @@ prior to a release (see [Large Document Testing](#large-document-testing)).
   - [ ] Download the necessary assets using `poetry run mazette install`
   - [ ] Run the Dangerzone tests.
   - [ ] Create an .rpm package and install it system-wide.
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+  - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
 - [ ] Create a test build in the most recent Qubes Fedora template (Fedora 44 as
   of writing this) and make sure it works:
   - [ ] Create a new development environment with Poetry.
@@ -92,7 +92,7 @@ prior to a release (see [Large Document Testing](#large-document-testing)).
   - [ ] Create a Qubes .rpm package and install it system-wide.
   - [ ] Ensure that the Dangerzone application appears in the "Applications"
     tab.
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below) and make sure
+  - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below) and make sure
     they spawn disposable qubes.
 """
 
@@ -172,9 +172,10 @@ Run Dangerzone against a list of documents, and tick all options. Ensure that:
 Run Dangerzone against a set of documents that you drag-n-drop. Files should be
 added and conversion should run without issue.
 
-> [!TIP]
-> On our end-user container environments for Linux, we can start a file manager
-> with `thunar &`.
+!!! tip
+
+    On our end-user container environments for Linux, we can start a file
+    manager with `thunar &`.
 
 ### 7. Dangerzone CLI succeeds in converting multiple documents
 
@@ -210,34 +211,24 @@ CONTENT_BUILD_DEBIAN_UBUNTU = r"""## Debian/Ubuntu
 
 Install dependencies:
 
-<table>
-  <tr>
-      <td>
-<details>
-  <summary><i>:memo: Expand this section if you are on Ubuntu 22.04 (Jammy).</i></summary>
-  </br>
+??? note "Expand this section if you are on Ubuntu 22.04 (Jammy)."
 
-The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug
-that gets triggered by Dangerzone
-(more details in https://github.com/freedomofpress/dangerzone/issues/685).
-If you want to run Dangerzone from source, you are advised to install a
-patched `conmon` version. A simple way to do so is to enable our
-apt-tools-prod repo, just for the `conmon` package:
+    The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug
+    that gets triggered by Dangerzone
+    (more details in https://github.com/freedomofpress/dangerzone/issues/685).
+    If you want to run Dangerzone from source, you are advised to install a
+    patched `conmon` version. A simple way to do so is to enable our
+    apt-tools-prod repo, just for the `conmon` package:
 
-```bash
-sudo cp ./dev_scripts/apt-tools-prod.sources /etc/apt/sources.list.d/
-sudo cp ./dev_scripts/apt-tools-prod.pref /etc/apt/preferences.d/
-```
+    ```bash
+    sudo cp ./dev_scripts/apt-tools-prod.sources /etc/apt/sources.list.d/
+    sudo cp ./dev_scripts/apt-tools-prod.pref /etc/apt/preferences.d/
+    ```
 
-The `conmon` package provided in the above repo was built with the
-following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
-Alternatively, you can install a `conmon` version higher than `v2.0.25` from
-any repo you prefer.
-
-</details>
-    </td>
-  </tr>
-</table>
+    The `conmon` package provided in the above repo was built with the
+    following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
+    Alternatively, you can install a `conmon` version higher than `v2.0.25` from
+    any repo you prefer.
 
 ```sh
 sudo apt install -y podman dh-python build-essential make libqt6gui6 \
@@ -363,9 +354,10 @@ poetry run dangerzone-cli --help
 poetry run dangerzone
 ```
 
-> [!NOTE]
-> Prefer running the following command in a Fedora development environment,
-> created by `./dev_script/env.py`.
+!!! note
+
+    Prefer running the following command in a Fedora development environment,
+    created by `./dev_script/env.py`.
 
 Create a .rpm:
 
@@ -539,9 +531,9 @@ class QABase(abc.ABC):
 
     platforms: ClassVar[dict] = {}
 
-    REF_QA = Reference("docs/developer/release/qa.md", content=CONTENT_QA)
+    REF_QA = Reference("docs/how-to/release/qa.md", content=CONTENT_QA)
     REF_QA_SCENARIOS = Reference(
-        "docs/developer/release/qa.md", content=CONTENT_QA_SCENARIOS
+        "docs/how-to/release/qa.md", content=CONTENT_QA_SCENARIOS
     )
 
     # The following class method is available since Python 3.6. For more details, see:
@@ -772,7 +764,9 @@ class QABase(abc.ABC):
 class QAWindows(QABase):
     """Class for the Windows QA tasks."""
 
-    REF_BUILD = Reference("BUILD.md", content=CONTENT_BUILD_WINDOWS)
+    REF_BUILD = Reference(
+        "docs/how-to/build-from-source.md", content=CONTENT_BUILD_WINDOWS
+    )
 
     def _consume_stdin(self):
         # NOTE: We can't use select() on Windows. See:
@@ -938,7 +932,9 @@ class QADebianBased(QALinux):
     package.
     """
 
-    REF_BUILD = Reference("BUILD.md", content=CONTENT_BUILD_DEBIAN_UBUNTU)
+    REF_BUILD = Reference(
+        "docs/how-to/build-from-source.md", content=CONTENT_BUILD_DEBIAN_UBUNTU
+    )
 
     @QABase.task("Build .deb", ref=REF_BUILD, auto=True)
     def build_package(self):
@@ -988,7 +984,9 @@ class QAFedora(QALinux):
     """
 
     DISTRO = "fedora"
-    REF_BUILD = Reference("BUILD.md", content=CONTENT_BUILD_FEDORA)
+    REF_BUILD = Reference(
+        "docs/how-to/build-from-source.md", content=CONTENT_BUILD_FEDORA
+    )
 
     @QABase.task("Build .rpm", ref=REF_BUILD, auto=True)
     def build_package(self):

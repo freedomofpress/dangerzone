@@ -1,7 +1,7 @@
 # Test official instructions for installing Dangerzone
 # ====================================================
 #
-# The installation instructions have been copied from our INSTALL.md file.
+# The installation instructions have been copied from our docs/how-to/install.md file.
 # NOTE: When you change either place, please make sure to keep the two files in
 # sync.
 # NOTE: Because the commands run as root, the use of sudo is not necessary.

@@ -2,7 +2,7 @@
 import pathlib
 import subprocess
 
-RELEASE_DOCS_DIR = pathlib.Path("docs") / "developer" / "release"
+RELEASE_DOCS_DIR = pathlib.Path("docs") / "how-to" / "release"
 DOCS = [
     "pre-release.md",
     "prepare-build-envs.md",

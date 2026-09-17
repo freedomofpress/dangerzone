@@ -10,6 +10,7 @@ reporting vulnerabilities to us, what we expect, what you can expect from us.
 **Please do not report security vulnerabilities through public GitHub issues.**
 
 Our preferred communication channels are:
+
 * **Signal:** Not yet publicly available. Please contact us via email and we
   will provide you with Signal contact details for secure communication.
 * **Email:** support@dangerzone.rocks.
@@ -27,6 +28,7 @@ fix is ready, we will work with you on messaging and timing.
 ## What's in scope
 
 Dangerzone has two main security goals:
+
 * Malicious documents should not infect the user's device, or communicate with
   other machines.
 * All metadata should be destroyed after the conversion process.

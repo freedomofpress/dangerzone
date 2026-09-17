@@ -9,6 +9,8 @@ When confident that the release doesn't need any more changes:
     git push origin v0.1.0
     ```
 
+    Pushing the tag publishes the documentation for this version on [docs.dangerzone.rocks](https://docs.dangerzone.rocks) and points the `latest` alias (the site default) to it. Between releases, pushes to `main` only update the `dev` version of the site.
+
 - [ ] Create an archive of the Dangerzone source in `tar.gz` format:
 
     ```bash

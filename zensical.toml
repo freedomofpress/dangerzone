@@ -145,6 +145,15 @@ accent = "red"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to system preference"
 
+# Docs versioning is handled by mike (the Zensical-compatible fork at
+# https://github.com/squidfunk/mike): `mike deploy <version> [alias]` builds
+# the site and publishes it under /<version>/ on the gh-pages branch, together
+# with the versions.json the version selector below reads. CI deploys
+# `share/version.txt` as `latest` on every push to main; older versions stay
+# frozen on gh-pages.
+[project.extra.version]
+provider = "mike"
+
 [[project.extra.social]]
 icon = "fontawesome/brands/github"
 link = "https://github.com/freedomofpress/dangerzone"

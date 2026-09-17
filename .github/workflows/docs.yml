@@ -12,6 +12,8 @@ on:
       - "THIRD_PARTY_NOTICE.md"
       - "LICENSE"
       - "dev_scripts/templates/**"
+      - "package.json"
+      - "yarn.lock"
       - "share/version.txt"
       - "dangerzone/cli.py"
       - "dangerzone/updater/cli.py"
@@ -26,6 +28,8 @@ on:
       - "THIRD_PARTY_NOTICE.md"
       - "LICENSE"
       - "dev_scripts/templates/**"
+      - "package.json"
+      - "yarn.lock"
       - "share/version.txt"
       - "dangerzone/cli.py"
       - "dangerzone/updater/cli.py"
@@ -49,6 +53,8 @@ jobs:
         run: |
           pipx install poetry
           poetry install --only main,docs
+      - name: Fetch the JS dependencies served by the site
+        run: make docs-vendor
       - name: Check that the CLI help embedded in the docs is up to date
         run: make docs-cog-check
       - name: Build with Zensical (strict mode fails on broken links)

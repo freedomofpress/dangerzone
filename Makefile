@@ -41,6 +41,12 @@ build-linux: build-clean poetry-install ## Build linux packages (.rpm and .deb)
 COG = DANGERZONE_DEV=1 poetry run cog
 COG_FILES = docs/reference/cli/*.md docs/how-to/install/index.md
 
+.PHONY: docs-vendor
+docs-vendor: ## Copy the JS dependencies (yarn) served by the docs site
+	yarn install --frozen-lockfile --silent
+	install -D -m 644 node_modules/mermaid/dist/mermaid.min.js \
+		docs/javascripts/vendor/mermaid.min.js
+
 .PHONY: docs-cog
 docs-cog: ## Regenerate the CLI help output embedded in the docs (via cog)
 	$(COG) -r $(COG_FILES)
@@ -50,11 +56,11 @@ docs-cog-check: ## Check that the embedded CLI help output is up to date
 	$(COG) --check $(COG_FILES)
 
 .PHONY: docs
-docs: docs-cog ## Build the documentation site into site/
+docs: docs-cog docs-vendor ## Build the documentation site into site/
 	poetry run zensical build --strict
 
 .PHONY: docs-serve
-docs-serve: docs-cog ## Serve the documentation site locally with live reload
+docs-serve: docs-cog docs-vendor ## Serve the documentation site locally with live reload
 	poetry run zensical serve
 
 .PHONY: regenerate-reference-pdfs

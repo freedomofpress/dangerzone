@@ -153,3 +153,7 @@ share/container.tar.gz
 container/container-pip-requirements.txt
 .doit.db.db
 dangerzone/container_helpers/h2orestart.oxt
+
+# Docs site JS dependencies (make docs-vendor)
+node_modules/
+docs/javascripts/vendor/

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{#- Serve mermaid from the site itself (pulled by `make docs-vendor`), loaded
+    before the theme bundle so that the theme finds the global and never
+    fetches it from a CDN: no request leaves the reader's machine. -#}
+{% block extrahead %}
+  <script src="{{ 'javascripts/vendor/mermaid.min.js' | url }}"></script>
+{% endblock %}

@@ -95,7 +95,11 @@ nav = [
 ]
 
 [project.theme]
+custom_dir = "overrides"
 language = "en"
+# Do not load fonts from Google Fonts; use the system font stack instead, so
+# that visitors never talk to a third-party CDN.
+font = false
 logo = "assets/logo.png"
 favicon = "assets/logo.png"
 features = [

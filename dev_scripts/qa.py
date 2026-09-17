@@ -19,14 +19,11 @@ EOL_PYTHON_URL = "https://endoflife.date/api/python.json"
 
 CONTENT_QA = r"""# QA
 
-To ensure that new releases do not introduce regressions, and support existing
-and newer platforms, the produced packages are tested.
+To ensure that new releases do not introduce regressions, and support existing and newer platforms, the produced packages are tested.
 
-Here is a list of checks. Some of them manual, and the release
-manager needs to follow them across several OSes.
+Here is a list of checks. Some of them manual, and the release manager needs to follow them across several OSes.
 
-Because some of the checks are repetitive, a script automates some of the QA
-(see [Scripted QA](#scripted-qa)). It runs the tasks, prompting you when it needs manual intervention.
+Because some of the checks are repetitive, a script automates some of the QA (see [Scripted QA](#scripted-qa)). It runs the tasks, prompting you when it needs manual intervention.
 
 It can be run with:
 
@@ -34,66 +31,56 @@ It can be run with:
 poetry run ./dev_scripts/qa.py {distro}-{version}
 ```
 
-A large collection of documents is also available, that can be tested against the `main` branch
-prior to a release (see [Large Document Testing](#large-document-testing)).
+A large collection of documents is also available, that can be tested against the `main` branch prior to a release (see [Large Document Testing](#large-document-testing)).
 
 ## The checklist
 
 - [ ] Make sure that the tip of the `main` branch passes the CI tests.
 - [ ] Create a test build in Windows and make sure it works:
-  - [ ] Check if the suggested Python version is still supported.
-  - [ ] Create a new development environment with Poetry.
-  - [ ] Build the container image and ensure the development environment uses
-    the new image.
-  - [ ] Download the necessary assets using `poetry run mazette install`
-  - [ ] Run the Dangerzone tests.
-  - [ ] Build and run the Dangerzone .exe
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+    - [ ] Check if the suggested Python version is still supported.
+    - [ ] Create a new development environment with Poetry.
+    - [ ] Build the container image and ensure the development environment uses the new image.
+    - [ ] Download the necessary assets using `poetry run mazette install`
+    - [ ] Run the Dangerzone tests.
+    - [ ] Build and run the Dangerzone .exe
+    - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
 - [ ] Create a test build in macOS (Intel CPU) and make sure it works:
-  - [ ] Check if the suggested Python version is still supported.
-  - [ ] Create a new development environment with Poetry.
-  - [ ] Build the container image and ensure the development environment uses
-    the new image.
-  - [ ] Download the necessary assets using `poetry run mazette install`
-  - [ ] Run the Dangerzone tests.
-  - [ ] Create and run an app bundle.
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
+    - [ ] Check if the suggested Python version is still supported.
+    - [ ] Create a new development environment with Poetry.
+    - [ ] Build the container image and ensure the development environment uses the new image.
+    - [ ] Download the necessary assets using `poetry run mazette install`
+    - [ ] Run the Dangerzone tests.
+    - [ ] Create and run an app bundle.
+    - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
 - [ ] Create a test build in macOS (M1/2 CPU) and make sure it works:
-  - [ ] Check if the suggested Python version is still supported.
-  - [ ] Create a new development environment with Poetry.
-  - [ ] Build the container image and ensure the development environment uses
-    the new image.
-  - [ ] Download the necessary assets using `poetry run mazette install`
-  - [ ] Run the Dangerzone tests.
-  - [ ] Create and run an app bundle.
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Ubuntu LTS platform (Ubuntu 24.04
-  as of writing this) and make sure it works:
-  - [ ] Create a new development environment with Poetry.
-  - [ ] Build the container image and ensure the development environment uses
-    the new image.
-  - [ ] Download the necessary assets using `poetry run mazette install`
-  - [ ] Run the Dangerzone tests.
-  - [ ] Create a .deb package and install it system-wide.
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Fedora platform (Fedora 44 as of
-  writing this) and make sure it works:
-  - [ ] Create a new development environment with Poetry.
-  - [ ] Build the container image and ensure the development environment uses
-    the new image.
-  - [ ] Download the necessary assets using `poetry run mazette install`
-  - [ ] Run the Dangerzone tests.
-  - [ ] Create an .rpm package and install it system-wide.
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below).
-- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 44 as
-  of writing this) and make sure it works:
-  - [ ] Create a new development environment with Poetry.
-  - [ ] Run the Dangerzone tests.
-  - [ ] Create a Qubes .rpm package and install it system-wide.
-  - [ ] Ensure that the Dangerzone application appears in the "Applications"
-    tab.
-  - [ ] Test some QA scenarios (see [Scenarios](#Scenarios) below) and make sure
-    they spawn disposable qubes.
+    - [ ] Check if the suggested Python version is still supported.
+    - [ ] Create a new development environment with Poetry.
+    - [ ] Build the container image and ensure the development environment uses the new image.
+    - [ ] Download the necessary assets using `poetry run mazette install`
+    - [ ] Run the Dangerzone tests.
+    - [ ] Create and run an app bundle.
+    - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
+- [ ] Create a test build in the most recent Ubuntu LTS platform (Ubuntu 24.04 as of writing this) and make sure it works:
+    - [ ] Create a new development environment with Poetry.
+    - [ ] Build the container image and ensure the development environment uses the new image.
+    - [ ] Download the necessary assets using `poetry run mazette install`
+    - [ ] Run the Dangerzone tests.
+    - [ ] Create a .deb package and install it system-wide.
+    - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
+- [ ] Create a test build in the most recent Fedora platform (Fedora 44 as of writing this) and make sure it works:
+    - [ ] Create a new development environment with Poetry.
+    - [ ] Build the container image and ensure the development environment uses the new image.
+    - [ ] Download the necessary assets using `poetry run mazette install`
+    - [ ] Run the Dangerzone tests.
+    - [ ] Create an .rpm package and install it system-wide.
+    - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
+- [ ] Create a test build in the most recent Qubes Fedora template (Fedora 44 as of writing this) and make sure it works:
+    - [ ] Create a new development environment with Poetry.
+    - [ ] Run the Dangerzone tests.
+    - [ ] Create a Qubes .rpm package and install it system-wide.
+    - [ ] Ensure that the Dangerzone application appears in the "Applications" tab.
+    - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below) and make sure they spawn disposable qubes.
+
 """
 
 CONTENT_QA_SCENARIOS = r"""## Scenarios
@@ -104,11 +91,9 @@ _(Applies to Windows/MacOS)_
 
 Install the previous version of Dangerzone, downloaded from the website.
 
-Open the Dangerzone application and enable some non-default settings.
-**If there are new settings, make sure to change those as well**.
+Open the Dangerzone application and enable some non-default settings. **If there are new settings, make sure to change those as well**.
 
-Close the Dangerzone application and get the container image for that
-version. For example:
+Close the Dangerzone application and get the container image for that version. For example:
 
 ```bash
 $ dangerzone-machine raw images ghcr.io/freedomofpress/dangerzone/v1
@@ -118,8 +103,7 @@ ghcr.io/freedomofpress/dangerzone/v1  <tag>       <image ID>    <date>        <s
 
 Then run the version under QA and ensure that the settings remain changed.
 
-Afterwards check that new docker image was installed by running the same command
-and seeing the following differences:
+Afterwards check that new docker image was installed by running the same command and seeing the following differences:
 
 ```bash
 $ dangerzone-machine raw images ghcr.io/freedomofpress/dangerzone/v1
@@ -141,293 +125,319 @@ Then run Dangerzone. Dangerzone should install the podman machine and container 
 
 ### 3. Dangerzone retains the settings of previous runs
 
-Run Dangerzone and make some changes in the settings (e.g., change the OCR
-language, toggle whether to open the document after conversion, etc.). Restart
-Dangerzone. Dangerzone should show the settings that the user chose.
+Run Dangerzone and make some changes in the settings (e.g., change the OCR language, toggle whether to open the document after conversion, etc.). Restart Dangerzone. Dangerzone should show the settings that the user chose.
 
 ### 4. Dangerzone reports failed conversions
 
-Run Dangerzone and convert the `tests/test_docs/sample_bad_pdf.pdf` document.
-Dangerzone should fail gracefully, by reporting that the operation failed, and
-showing the following error message:
+Run Dangerzone and convert the `tests/test_docs/sample_bad_pdf.pdf` document. Dangerzone should fail gracefully, by reporting that the operation failed, and showing the following error message:
 
 > The document format is not supported
 
 ### 5. Dangerzone succeeds in converting multiple documents
 
 Run Dangerzone against a list of documents, and tick all options. Ensure that:
+
 * Conversions take place sequentially.
-* Attempting to close the window while converting asks the user if they want to
-  abort the conversions.
+* Attempting to close the window while converting asks the user if they want to abort the conversions.
 * Conversions are completed successfully.
 * Conversions show individual progress in real-time (double-check for Qubes).
 * _(Only for Linux)_ The resulting files open with the PDF viewer of our choice.
 * OCR seems to have detected characters in the PDF files.
-* The resulting files have been saved with the proper suffix, in the proper
-  location.
+* The resulting files have been saved with the proper suffix, in the proper location.
 * The original files have been saved in the `unsafe/` directory.
 
 ### 6. Dangerzone is able to handle drag-n-drop
 
-Run Dangerzone against a set of documents that you drag-n-drop. Files should be
-added and conversion should run without issue.
+Run Dangerzone against a set of documents that you drag-n-drop. Files should be added and conversion should run without issue.
 
-> [!TIP]
-> On our end-user container environments for Linux, we can start a file manager
-> with `thunar &`.
+!!! tip
+
+    On our end-user container environments for Linux, we can start a file manager with `thunar &`.
 
 ### 7. Dangerzone CLI succeeds in converting multiple documents
 
 _(Only for Windows and Linux)_
 
-Run Dangerzone CLI against a list of documents. Ensure that conversions happen
-sequentially, are completed successfully, and we see their progress.
+Run Dangerzone CLI against a list of documents. Ensure that conversions happen sequentially, are completed successfully, and we see their progress.
 
 ### 8. Dangerzone can open a document for conversion via right-click -> "Open With"
 
 _(Only for Windows, MacOS and Qubes)_
 
-Go to a directory with office documents, right-click on one, and click on "Open
-With". We should be able to open the file with Dangerzone, and then convert it.
+Go to a directory with office documents, right-click on one, and click on "Open With". We should be able to open the file with Dangerzone, and then convert it.
 
 ### 9. Dangerzone shows helpful errors for setup issues on Qubes
 
 _(Only for Qubes)_
 
-Check what errors does Dangerzone throw in the following scenarios. The errors
-should point the user to the Qubes notifications in the top-right corner:
+Check what errors does Dangerzone throw in the following scenarios. The errors should point the user to the Qubes notifications in the top-right corner:
 
-1. The `dz-dvm` template does not exist. We can trigger this scenario by
-   temporarily renaming this template.
-2. The Dangerzone RPC policy does not exist. We can trigger this scenario by
-   temporarily renaming the `dz.Convert` policy.
-3. The `dz-dvm` disposable Qube cannot start due to insufficient resources. We
-   can trigger this scenario by temporarily increasing the minimum required RAM
-   of the `dz-dvm` template to more than the available amount.
+1. The `dz-dvm` template does not exist. We can trigger this scenario by temporarily renaming this template.
+2. The Dangerzone RPC policy does not exist. We can trigger this scenario by temporarily renaming the `dz.Convert` policy.
+3. The `dz-dvm` disposable Qube cannot start due to insufficient resources. We can trigger this scenario by temporarily increasing the minimum required RAM of the `dz-dvm` template to more than the available amount.
+
 """
 
-CONTENT_BUILD_DEBIAN_UBUNTU = r"""## Debian/Ubuntu
+CONTENT_BUILD_DEBIAN_UBUNTU = r"""=== "Debian/Ubuntu"
 
-Install dependencies:
+    <span id="debianubuntu"></span>
 
-<table>
-  <tr>
-      <td>
-<details>
-  <summary><i>:memo: Expand this section if you are on Ubuntu 22.04 (Jammy).</i></summary>
-  </br>
+    Install dependencies:
 
-The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug
-that gets triggered by Dangerzone
-(more details in https://github.com/freedomofpress/dangerzone/issues/685).
-If you want to run Dangerzone from source, you are advised to install a
-patched `conmon` version. A simple way to do so is to enable our
-apt-tools-prod repo, just for the `conmon` package:
+    ??? note "Expand this section if you are on Ubuntu 22.04 (Jammy)."
 
-```bash
-sudo cp ./dev_scripts/apt-tools-prod.sources /etc/apt/sources.list.d/
-sudo cp ./dev_scripts/apt-tools-prod.pref /etc/apt/preferences.d/
-```
+        The `conmon` version that Podman uses and Ubuntu Jammy ships, has a bug that gets triggered by Dangerzone (more details in https://github.com/freedomofpress/dangerzone/issues/685). If you want to run Dangerzone from source, you are advised to install a patched `conmon` version. A simple way to do so is to enable our apt-tools-prod repo, just for the `conmon` package:
 
-The `conmon` package provided in the above repo was built with the
-following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf).
-Alternatively, you can install a `conmon` version higher than `v2.0.25` from
-any repo you prefer.
+        ```bash
+        sudo cp ./dev_scripts/apt-tools-prod.sources /etc/apt/sources.list.d/
+        sudo cp ./dev_scripts/apt-tools-prod.pref /etc/apt/preferences.d/
+        ```
 
-</details>
-    </td>
-  </tr>
-</table>
+        The `conmon` package provided in the above repo was built with the following [instructions](https://github.com/freedomofpress/maint-dangerzone-conmon/tree/ubuntu/jammy/fpf). Alternatively, you can install a `conmon` version higher than `v2.0.25` from any repo you prefer.
 
-```sh
-sudo apt install -y podman dh-python build-essential make libqt6gui6 \
-    pipx python3 python3-dev
-```
+    ```sh
+    sudo apt install -y podman dh-python build-essential make libqt6gui6 \
+        pipx python3 python3-dev
+    ```
 
-Install Poetry using `pipx` (recommended) and add it to your `$PATH`:
+    Install Poetry using `pipx` (recommended) and add it to your `$PATH`:
 
-_(See also a list of [alternative installation
-methods](https://python-poetry.org/docs/#installation))_
+    _(See also a list of [alternative installation methods](https://python-poetry.org/docs/#installation))_
 
-```sh
-pipx ensurepath
-pipx install poetry
-pipx inject poetry poetry-plugin-export
-```
+    ```sh
+    pipx ensurepath
+    pipx install poetry
+    pipx inject poetry poetry-plugin-export
+    ```
 
-After this, restart the terminal window, for the `poetry` command to be in your
-`$PATH`.
+    After this, restart the terminal window, for the `poetry` command to be in your `$PATH`.
 
-Clone this repository:
+    Clone this repository:
 
-```
-git clone https://github.com/freedomofpress/dangerzone/
-```
+    ```
+    git clone https://github.com/freedomofpress/dangerzone/
+    ```
 
-Change to the `dangerzone` folder, and install the poetry dependencies:
+    Change to the `dangerzone` folder, and install the poetry dependencies:
 
-> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
+    > **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
 
-```
-cd dangerzone
-poetry install
-```
+    ```
+    cd dangerzone
+    poetry install
+    ```
 
-Dangerzone depends on some assets that should be downloaded in order to run
-(think binaries and others resources). This can be done with the following
-command:
+    Dangerzone depends on some assets that should be downloaded in order to run (think binaries and others resources). This can be done with the following command:
 
-```sh
-poetry run mazette install
-```
+    ```sh
+    poetry run mazette install
+    ```
 
-Run the following command to download the latest container image, or
-[use a local one](#using-a-local-container-image):
+    Run the following command to download the latest container image, or [use a local one](#using-a-local-container-image):
 
-```sh
-export DANGERZONE_DEV=1
-poetry run dangerzone-image prepare-archive --output share/container.tar
-```
+    ```sh
+    export DANGERZONE_DEV=1
+    poetry run dangerzone-image prepare-archive --output share/container.tar
+    ```
 
-Run from source tree:
+    Run from source tree:
 
-```sh
-# run the CLI
-poetry run dangerzone-cli --help
+    ```sh
+    # run the CLI
+    poetry run dangerzone-cli --help
 
-# run the GUI
-poetry run dangerzone
-```
+    # run the GUI
+    poetry run dangerzone
+    ```
 
-Create a .deb:
+    Create a .deb:
 
-```sh
-./install/linux/build-deb.py
-```
+    ```sh
+    ./install/linux/build-deb.py
+    ```
+
+    This builds both the `dangerzone` (slim) and `dangerzone-full` packages in a single run. The slim package does not contain the `container.tar` image (it will be downloaded on the first run), while `dangerzone-full` bundles the container image for offline or air-gapped installations.
+
+    > **Note**: `container.tar` must be present in `share/` before running this
+    > command, as it is required for the `dangerzone-full` package. See the
+    > instructions above for how to download or build it.
+
 """
 
-CONTENT_BUILD_FEDORA = r"""## Fedora
+CONTENT_BUILD_FEDORA = r"""=== "Fedora"
 
-Install dependencies:
+    <span id="fedora"></span>
 
-```sh
-sudo dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
-    pipx qt6-qtbase-gui
-```
+    Install dependencies:
 
-Install Poetry using `pipx`:
+    ```sh
+    sudo dnf install -y rpm-build podman python3 python3-devel python3-poetry-core \
+        pipx qt6-qtbase-gui
+    ```
 
-```sh
-pipx install poetry
-pipx inject poetry
-```
+    Install Poetry using `pipx`:
 
-Clone this repository:
+    ```sh
+    pipx install poetry
+    pipx inject poetry
+    ```
 
-```
-git clone https://github.com/freedomofpress/dangerzone/
-```
+    Clone this repository:
 
-Change to the `dangerzone` folder, and install the poetry dependencies:
+    ```
+    git clone https://github.com/freedomofpress/dangerzone/
+    ```
 
-> **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
+    Change to the `dangerzone` folder, and install the poetry dependencies:
 
-```
-cd dangerzone
-poetry install
-```
+    > **Note**: due to an issue with [poetry](https://github.com/python-poetry/poetry/issues/1917), if it prompts for your keyring, disable the keyring with `keyring --disable` and run the command again.
 
-Dangerzone depends on some assets that should be downloaded in order to run
-(think binaries and others resources). This can be done with the following
-command:
+    ```
+    cd dangerzone
+    poetry install
+    ```
 
-```sh
-poetry run mazette install
-```
+    Dangerzone depends on some assets that should be downloaded in order to run (think binaries and others resources). This can be done with the following command:
 
-Run the following command to download the latest container image, or
-[use a local one](#using-a-local-container-image):
+    ```sh
+    poetry run mazette install
+    ```
 
-```sh
-export DANGERZONE_DEV=1
-poetry run dangerzone-image prepare-archive --output share/container.tar
-```
+    Run the following command to download the latest container image, or [use a local one](#using-a-local-container-image):
 
-Run from source tree:
+    ```sh
+    export DANGERZONE_DEV=1
+    poetry run dangerzone-image prepare-archive --output share/container.tar
+    ```
 
-```sh
-# run the CLI
-poetry run dangerzone-cli --help
+    Run from source tree:
 
-# run the GUI
-poetry run dangerzone
-```
+    ```sh
+    # run the CLI
+    poetry run dangerzone-cli --help
 
-> [!NOTE]
-> Prefer running the following command in a Fedora development environment,
-> created by `./dev_script/env.py`.
+    # run the GUI
+    poetry run dangerzone
+    ```
 
-Create a .rpm:
+    !!! note
 
-```sh
-./install/linux/build-rpm.py
-```
+        Prefer running the following command in a Fedora development environment, created by `./dev_script/env.py`.
+
+    Create a .rpm:
+
+    ```sh
+    ./install/linux/build-rpm.py
+    ```
+
+    This builds the `dangerzone` package, which doesn't contain the `container.tar` image (it will be downloaded on the first run).
+
+    To build the `dangerzone-full` package with the container bundled:
+
+    ```sh
+    ./install/linux/build-rpm.py --full
+    ```
+
 """
 
-CONTENT_BUILD_WINDOWS = r"""## Windows
+CONTENT_BUILD_WINDOWS = r"""=== "Windows"
 
-Install the latest version of Python 3.13 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.13 to PATH" checkbox on the first page of the installer.
+    <span id="windows"></span>
 
-Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build Tools"](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and make sure to select "Desktop development with C++" when installing.
+    Install the latest version of Python 3.13 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.13 to PATH" checkbox on the first page of the installer.
 
-Install git from [here](https://git-scm.com/download/win).
+    Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build Tools"](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and make sure to select "Desktop development with C++" when installing.
 
-Install [poetry](https://python-poetry.org/).
+    Install git from [here](https://git-scm.com/download/win).
 
-Open Windows "Terminal" application and run all remaining commands there.
+    Install [poetry](https://python-poetry.org/).
 
-```
-python -m pip install poetry
-```
+    Open Windows "Terminal" application and run all remaining commands there.
 
-Clone this repository:
+    ```
+    python -m pip install poetry
+    ```
 
-```
-git clone https://github.com/freedomofpress/dangerzone/
-```
+    Clone this repository:
 
-Change to the `dangerzone` folder, and install the poetry dependencies:
+    ```
+    git clone https://github.com/freedomofpress/dangerzone/
+    ```
 
-```
-cd dangerzone
-poetry install
-```
+    Change to the `dangerzone` folder, and install the poetry dependencies:
 
-Dangerzone depends on some assets that should be downloaded in order to run
-(think binaries and others resources). This can be done with the following
-command:
+    ```
+    cd dangerzone
+    poetry install
+    ```
 
-```sh
-poetry run mazette install
-```
+    Dangerzone depends on some assets that should be downloaded in order to run (think binaries and others resources). This can be done with the following command:
 
-Run the following command to download the latest container image, or
-[use a local one](#using-a-local-container-image):
+    ```sh
+    poetry run mazette install
+    ```
 
-```powershell
-$Env:DANGERZONE_DEV = 1
-poetry run dangerzone-image prepare-archive --output share\container.tar
-```
+    Run the following command to download the latest container image, or [use a local one](#using-a-local-container-image):
 
-After that you can launch dangerzone during development with:
+    ```powershell
+    $Env:DANGERZONE_DEV = 1
+    poetry run dangerzone-image prepare-archive --output share\container.tar
+    ```
 
-```
-# run the CLI
-$Env:DANGERZONE_DEV = 1; poetry run dangerzone-cli --help
+    After that you can launch dangerzone during development with:
 
-# run the GUI
-$Env:DANGERZONE_DEV = 1; poetry run dangerzone
-```
+    ```
+    # run the CLI
+    $Env:DANGERZONE_DEV = 1; poetry run dangerzone-cli --help
+
+    # run the GUI
+    $Env:DANGERZONE_DEV = 1; poetry run dangerzone
+    ```
+
+    ### If you want to build the Windows installer
+
+    Install [.NET SDK](https://dotnet.microsoft.com/en-us/download) version 6 or later. Then, open a terminal and install the latest version of [WiX Toolset .NET tool](https://wixtoolset.org/) **v5** with:
+
+    ```sh
+    dotnet tool install --global wix --version 5.0.2
+    ```
+
+    Install the WiX UI extension. You may need to open a new terminal in order to use the newly installed `wix` .NET tool:
+
+    ```sh
+    wix extension add --global WixToolset.UI.wixext/5.0.2
+    ```
+
+    !!! important
+
+        To avoid compatibility issues, ensure the WiX UI extension version matches the version of the WiX Toolset.
+
+        Run `wix --version` to check the version of WiX Toolset you have installed and replace `5.x.y` with the full version number without the Git revision.
+
+    ### If you want to sign binaries with Authenticode
+
+    You'll need a code signing certificate.
+
+    ### To make a .exe
+
+    Open a command prompt, cd into the dangerzone directory, and run:
+
+    ```
+    poetry run python .\setup-windows.py build
+    ```
+
+    In `build\exe.win32-3.13\` you will find `dangerzone.exe`, `dangerzone-cli.exe`, and all supporting files.
+
+    ### To build the installer
+
+    Note that you must have a codesigning certificate installed in order to use the `install\windows\build-app.bat` script, because it codesigns `dangerzone.exe`, `dangerzone-cli.exe` and `Dangerzone.msi`.
+
+    ```
+    poetry run .\install\windows\build-app.bat
+    ```
+
+    When you're done you will have `dist\Dangerzone.msi`.
+
 """
 
 
@@ -499,9 +509,9 @@ class Reference:
         end = len(cur_lines) + i
 
         # Ensure that no extra content has been added in that section, until a new
-        # heading begins.
+        # heading or content tab begins.
         for i, line in enumerate(orig_lines[end:]):
-            if orig_lines[i] and orig_lines[i][0] == "#":
+            if line and (line[0] == "#" or line.startswith('=== "')):
                 break
 
         end += i
@@ -539,9 +549,9 @@ class QABase(abc.ABC):
 
     platforms: ClassVar[dict] = {}
 
-    REF_QA = Reference("docs/developer/release/qa.md", content=CONTENT_QA)
+    REF_QA = Reference("docs/how-to/release/qa.md", content=CONTENT_QA)
     REF_QA_SCENARIOS = Reference(
-        "docs/developer/release/qa.md", content=CONTENT_QA_SCENARIOS
+        "docs/how-to/release/qa.md", content=CONTENT_QA_SCENARIOS
     )
 
     # The following class method is available since Python 3.6. For more details, see:
@@ -772,7 +782,9 @@ class QABase(abc.ABC):
 class QAWindows(QABase):
     """Class for the Windows QA tasks."""
 
-    REF_BUILD = Reference("BUILD.md", content=CONTENT_BUILD_WINDOWS)
+    REF_BUILD = Reference(
+        "docs/how-to/contribute/build-from-source.md", content=CONTENT_BUILD_WINDOWS
+    )
 
     def _consume_stdin(self):
         # NOTE: We can't use select() on Windows. See:
@@ -938,7 +950,10 @@ class QADebianBased(QALinux):
     package.
     """
 
-    REF_BUILD = Reference("BUILD.md", content=CONTENT_BUILD_DEBIAN_UBUNTU)
+    REF_BUILD = Reference(
+        "docs/how-to/contribute/build-from-source.md",
+        content=CONTENT_BUILD_DEBIAN_UBUNTU,
+    )
 
     @QABase.task("Build .deb", ref=REF_BUILD, auto=True)
     def build_package(self):
@@ -988,7 +1003,9 @@ class QAFedora(QALinux):
     """
 
     DISTRO = "fedora"
-    REF_BUILD = Reference("BUILD.md", content=CONTENT_BUILD_FEDORA)
+    REF_BUILD = Reference(
+        "docs/how-to/contribute/build-from-source.md", content=CONTENT_BUILD_FEDORA
+    )
 
     @QABase.task("Build .rpm", ref=REF_BUILD, auto=True)
     def build_package(self):

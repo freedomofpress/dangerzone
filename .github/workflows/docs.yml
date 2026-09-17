@@ -1,0 +1,123 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+      - "!v*-rc*"
+    # Path filters do not apply to tag pushes.
+    paths:
+      - "docs/**"
+      - "zensical.toml"
+      - "CHANGELOG.md"
+      - "SECURITY.md"
+      - "THIRD_PARTY_NOTICE.md"
+      - "LICENSE"
+      - "dev_scripts/templates/**"
+      - "package.json"
+      - "yarn.lock"
+      - "share/version.txt"
+      - "dangerzone/cli.py"
+      - "dangerzone/updater/cli.py"
+      - "dangerzone/podman/cli.py"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "zensical.toml"
+      - "CHANGELOG.md"
+      - "SECURITY.md"
+      - "THIRD_PARTY_NOTICE.md"
+      - "LICENSE"
+      - "dev_scripts/templates/**"
+      - "package.json"
+      - "yarn.lock"
+      - "share/version.txt"
+      - "dangerzone/cli.py"
+      - "dangerzone/updater/cli.py"
+      - "dangerzone/podman/cli.py"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the documentation site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+      - name: Install Poetry and the docs dependencies
+        run: |
+          pipx install poetry
+          poetry install --only main,docs
+      - name: Fetch the JS dependencies served by the site
+        run: make docs-vendor
+      - name: Check that the CLI help embedded in the docs is up to date
+        run: make docs-cog-check
+      - name: Build with Zensical (strict mode fails on broken links)
+        run: poetry run zensical build --strict
+
+  # Pushes to main publish the in-progress docs under the `dev` version.
+  version:
+    name: Record the version on the gh-pages branch
+    if: github.event_name != 'pull_request' && github.repository == 'freedomofpress/dangerzone'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: docs-gh-pages
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+      - name: Install Poetry and the docs dependencies
+        run: |
+          pipx install poetry
+          poetry install --only main,docs
+      - name: Fetch the JS dependencies served by the site
+        run: make docs-vendor
+      - name: Regenerate the CLI help embedded in the docs
+        run: make docs-cog
+      - name: Fetch the previously published versions
+        run: git fetch origin gh-pages --depth=1 || true
+      - name: Publish with mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            poetry run mike deploy --push --update-aliases "$(cat share/version.txt)" latest
+            poetry run mike set-default --push latest
+          else
+            poetry run mike deploy --push dev
+          fi
+
+  # Publishes to https://docs.dangerzone.rocks.
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: version
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: gh-pages
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: .
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+        id: deployment

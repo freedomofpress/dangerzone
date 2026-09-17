@@ -1,0 +1,9 @@
+{
+  "name": "dangerzone-docs-assets",
+  "private": true,
+  "description": "JavaScript dependencies served by the documentation site (no CDN)",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "mermaid": "11.17.2"
+  }
+}

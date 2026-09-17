@@ -37,6 +37,36 @@ build-macos-arm: build-clean poetry-install ## Build macOS Apple Silicon package
 build-linux: build-clean poetry-install ## Build linux packages (.rpm and .deb)
 	DANGERZONE_DEV=1 poetry run doit -n 8 fedora_rpm debian_deb
 
+# The documentation needs the `docs` Poetry group: `poetry install --with docs`.
+COG = DANGERZONE_DEV=1 poetry run cog
+COG_FILES = docs/reference/cli/*.md docs/how-to/install/index.md
+
+.PHONY: docs-vendor
+docs-vendor: ## Copy the JS dependencies (yarn) served by the docs site
+	yarn install --frozen-lockfile --silent
+	install -D -m 644 node_modules/mermaid/dist/mermaid.min.js \
+		docs/javascripts/vendor/mermaid.min.js
+
+.PHONY: docs-cog
+docs-cog: ## Regenerate the CLI help output embedded in the docs (via cog)
+	$(COG) -r $(COG_FILES)
+
+.PHONY: docs-cog-check
+docs-cog-check: ## Check that the embedded CLI help output is up to date
+	$(COG) --check $(COG_FILES)
+
+.PHONY: docs
+docs: docs-cog docs-vendor ## Build the documentation site into site/
+	poetry run zensical build --strict
+
+.PHONY: docs-serve
+docs-serve: docs-cog docs-vendor ## Serve the documentation site locally with live reload
+	poetry run zensical serve
+
+.PHONY: docs-pdf
+docs-pdf: docs ## Render the whole documentation into site/dangerzone-docs.pdf
+	poetry run python dev_scripts/docs_pdf.py
+
 .PHONY: regenerate-reference-pdfs
 regenerate-reference-pdfs: ## Regenerate the reference PDFs
 	pytest tests/test_cli.py -k regenerate --generate-reference-pdfs

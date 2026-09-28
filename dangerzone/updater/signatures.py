@@ -363,7 +363,7 @@ def upgrade_container_image_airgapped(
     runtime.tag_image_by_digest(image_digest, image_name)
 
     try:
-        verify_signatures(signatures, image_digest)
+        verify_signatures(signatures, image_digest, pubkey)
         store_signatures(signatures, image_digest, pubkey)
     except errors.SignatureError:
         log.info("Unable to verify the signatures, unload the image")

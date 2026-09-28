@@ -280,6 +280,29 @@ def get_member_from_archive(archive: tarfile.TarFile, name: str) -> bytes:
         return f.read()
 
 
+ALLOWED_ARCHIVE_DIRS = {".", "./blobs", "./blobs/sha256"}
+ALLOWED_ARCHIVE_FILES = {f"./{DANGERZONE_MANIFEST}", "./index.json", "./oci-layout"}
+ARCHIVE_BLOB_RE = re.compile(r"^\./blobs/sha256/[0-9a-f]{64}$")
+
+
+def validate_archive_members(archive: tarfile.TarFile) -> None:
+    """Ensure that the archive contains only an OCI layout."""
+    seen = set()
+    for member in archive.getmembers():
+        name = replace_control_chars(member.name)
+        if name in seen:
+            raise errors.InvalidImageArchive(f"Duplicate archive member: {name}")
+        seen.add(name)
+
+        if member.isdir() and name in ALLOWED_ARCHIVE_DIRS:
+            continue
+        if member.isfile() and (
+            name in ALLOWED_ARCHIVE_FILES or ARCHIVE_BLOB_RE.fullmatch(name)
+        ):
+            continue
+        raise errors.InvalidImageArchive(f"Unexpected archive member: {name}")
+
+
 def _get_signature_filename(input: dict) -> PurePath:
     for manifest in input["manifests"]:
         if manifest["annotations"].get("kind") == "dev.cosignproject.cosign/sigs":
@@ -310,6 +333,8 @@ def upgrade_container_image_airgapped(
     """
 
     with tarfile.open(container_tar, "r") as archive:
+        validate_archive_members(archive)
+
         # First, check the archive type
         files = archive.getnames()
 

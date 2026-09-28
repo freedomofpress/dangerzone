@@ -115,6 +115,7 @@ preview = true
 extend-select = [
     "I", # isort
     "RUF027", # missing-f-string-syntax
+    "S202",  # tarfile-unsafe-members
 ]
 
 [build-system]

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 import tarfile
@@ -13,7 +14,7 @@ from pathlib import Path, PurePath
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 from .. import container_utils as runtime
-from ..util import get_resource_path
+from ..util import get_resource_path, replace_control_chars
 from . import cosign, errors, registry
 from .log_index import LAST_KNOWN_LOG_INDEX
 
@@ -251,14 +252,38 @@ def _get_images_only_manifest(input: dict) -> dict:
     return output
 
 
-def _get_blob(digest: str) -> PurePath:
+OCI_DIGEST_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+
+
+def validate_digest(digest: str) -> None:
+    """Ensure that the digest is properly formatted."""
+    if not OCI_DIGEST_RE.fullmatch(digest.removeprefix("sha256:")):
+        digest_safe = replace_control_chars(digest)
+        raise errors.InvalidImageArchive(f"Invalid blob digest: {digest_safe}")
+
+
+def _get_blob_path(digest: str) -> PurePath:
+    """Return the in-archive path of the blob with the given digest."""
+    validate_digest(digest)
     return PurePath() / "blobs" / "sha256" / digest.replace("sha256:", "")
+
+
+def get_member_from_archive(archive: tarfile.TarFile, name: str) -> bytes:
+    """Read a single member of a tarball into memory."""
+    try:
+        fileobj = archive.extractfile(f"./{name}")
+    except KeyError as e:
+        raise errors.InvalidImageArchive(f"Missing file in archive: {name}") from e
+    if fileobj is None:
+        raise errors.InvalidImageArchive(f"Not a regular file in archive: {name}")
+    with fileobj as f:
+        return f.read()
 
 
 def _get_signature_filename(input: dict) -> PurePath:
     for manifest in input["manifests"]:
         if manifest["annotations"].get("kind") == "dev.cosignproject.cosign/sigs":
-            return _get_blob(manifest["digest"])
+            return _get_blob_path(manifest["digest"])
     raise errors.SignatureExtractionError()
 
 
@@ -284,10 +309,9 @@ def upgrade_container_image_airgapped(
     :return: A two-member tuple with the loaded image name and digest
     """
 
-    with TemporaryDirectory() as _tempdir, tarfile.open(container_tar, "r") as archive:
+    with tarfile.open(container_tar, "r") as archive:
         # First, check the archive type
         files = archive.getnames()
-        tmp_path = Path(_tempdir)
 
         has_dangerzone_manifest = f"./{DANGERZONE_MANIFEST}" in files
         if not has_dangerzone_manifest:
@@ -298,27 +322,21 @@ def upgrade_container_image_airgapped(
         # This is to avoid situations where signatures are checked but the
         # index.json differs, in which case the validity of the signatures
         # wouldn't mean anything.
-        archive.extract(f"./{DANGERZONE_MANIFEST}", tmp_path)
-        archive.extract("./index.json", tmp_path)
-
-        with (
-            (tmp_path / DANGERZONE_MANIFEST).open() as manifest_file,
-            (tmp_path / "index.json").open() as index_file,
-        ):
-            dz_manifest = json.load(manifest_file)
-            index_manifest = json.load(index_file)
+        manifest = get_member_from_archive(archive, DANGERZONE_MANIFEST)
+        index = get_member_from_archive(archive, "index.json")
+        dz_manifest = json.loads(manifest)
+        index_manifest = json.loads(index)
 
         expected_manifest = _get_images_only_manifest(dz_manifest)
         if expected_manifest != index_manifest:
             raise errors.InvalidDangerzoneManifest()
 
         signature_filename = _get_signature_filename(dz_manifest)
-        archive.extract(f"./{signature_filename.as_posix()}", tmp_path)
 
-        with (tmp_path / signature_filename).open() as f:
-            image_name, signatures = convert_oci_images_signatures(
-                json.load(f), archive, tmp_path
-            )
+        sigs = get_member_from_archive(archive, signature_filename.as_posix())
+        image_name, signatures = convert_oci_images_signatures(
+            json.loads(sigs), archive
+        )
         log.info(f"Found image name: {image_name}")
 
     if not bypass_logindex:
@@ -355,20 +373,14 @@ def upgrade_container_image_airgapped(
     return (image_name, image_digest)
 
 
-def get_blob_from_archive(
-    digest: str, tmp_path: Path, archive: tarfile.TarFile
-) -> Path:
-    """
-    Extracts the blob from the given archive, place it in the given path and
-    return its Path.
-    """
-    relpath = _get_blob(digest)
-    archive.extract(f"./{relpath.as_posix()}", tmp_path)
-    return tmp_path / relpath
+def get_blob_from_archive(digest: str, archive: tarfile.TarFile) -> bytes:
+    """Read the blob with the given digest from the given archive and return its content."""
+    relpath = _get_blob_path(digest)
+    return get_member_from_archive(archive, relpath.as_posix())
 
 
 def convert_oci_images_signatures(
-    signatures_manifest: dict, archive: tarfile.TarFile, tmp_path: Path
+    signatures_manifest: dict, archive: tarfile.TarFile
 ) -> tuple[str, list[dict]]:
     """
     Convert OCI images signatures (from the registry) to
@@ -379,10 +391,8 @@ def convert_oci_images_signatures(
         bundle = json.loads(layer["annotations"]["dev.sigstore.cosign/bundle"])
         payload_body = json.loads(b64decode(bundle["Payload"]["body"]))
 
-        payload_path = get_blob_from_archive(layer["digest"], tmp_path, archive)
-
-        with (payload_path).open("rb") as f:
-            payload_b64 = b64encode(f.read()).decode()
+        payload_blob = get_blob_from_archive(layer["digest"], archive)
+        payload_b64 = b64encode(payload_blob).decode()
 
         return {
             "Base64Signature": payload_body["spec"]["signature"]["content"],
@@ -399,10 +409,8 @@ def convert_oci_images_signatures(
     if not signatures:
         raise errors.SignatureExtractionError()
 
-    payload_location = get_blob_from_archive(layers[0]["digest"], tmp_path, archive)
-    with open(payload_location, "r") as f:
-        payload = json.load(f)
-        image_name = payload["critical"]["identity"]["docker-reference"]
+    payload = json.loads(get_blob_from_archive(layers[0]["digest"], archive))
+    image_name = payload["critical"]["identity"]["docker-reference"]
 
     return image_name, signatures
 

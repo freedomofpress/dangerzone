@@ -149,7 +149,8 @@ toggle.name = "Switch to system preference"
 # the site and publishes it under /<version>/ on the gh-pages branch, together
 # with the versions.json the version selector below reads. CI deploys
 # `share/version.txt` as `latest` on every push to main; older versions stay
-# frozen on gh-pages.
+# frozen on gh-pages. Cloudflare Pages deploys that branch every time it is
+# pushed.
 [project.extra.version]
 provider = "mike"
 

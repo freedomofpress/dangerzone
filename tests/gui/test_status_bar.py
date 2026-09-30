@@ -49,6 +49,20 @@ def test_set_status_error(status_bar: StatusBar) -> None:
     assert status_bar.property("style") == "status-error"
 
 
+def test_download_progress(status_bar: StatusBar) -> None:
+    assert status_bar.progress.isHidden()
+
+    status_bar.handle_task_container_install_remote()
+    assert status_bar.progress.isHidden()
+
+    status_bar.handle_task_container_download_progress(42)
+    assert not status_bar.progress.isHidden()
+    assert status_bar.progress.value() == 42
+
+    status_bar.handle_startup_success()
+    assert status_bar.progress.isHidden()
+
+
 def test_status_bar_dark_mode_svgs(qtbot: QtBot, mocker: MockerFixture) -> None:
     animate_svg_image_mock = mocker.patch(
         "dangerzone.gui.main_window.animate_svg_image"

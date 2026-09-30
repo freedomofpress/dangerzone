@@ -117,6 +117,7 @@ class ContainerInstallTask(
     needs_user_input = QtCore.Signal(object)
     load_container = QtCore.Signal()
     download_container = QtCore.Signal()
+    download_progress = QtCore.Signal(int)  # percentage
 
     def run(self) -> None:
         strategy = installer.get_installation_strategy()
@@ -143,7 +144,10 @@ class ContainerInstallTask(
 
     def _download_container(self) -> None:
         self.download_container.emit()
-        super().run()
+        installer.install(progress_callback=self._report_download_progress)
+
+    def _report_download_progress(self, current: int, total: int) -> None:
+        self.download_progress.emit(current * 100 // total)
 
     def prompt_user(self) -> bool | None:
         return PromptRequest().ask(self.needs_user_input)

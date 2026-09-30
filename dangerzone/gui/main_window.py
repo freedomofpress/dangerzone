@@ -212,9 +212,14 @@ class StatusBar(QtWidgets.QStatusBar):
 
         self.spinner = animate_svg_image(spinner_svg, width=15, height=15)
         self.message = QLabelClickable("")
+        self.progress = QtWidgets.QProgressBar()
+        self.progress.setRange(0, 100)
+        self.progress.setFixedWidth(120)
+        self.progress.hide()
 
         self.addPermanentWidget(self.spinner)
         self.addPermanentWidget(self.message)
+        self.addPermanentWidget(self.progress)
         self.addPermanentWidget(QtWidgets.QLabel(""))
         self.setSizeGripEnabled(False)
 
@@ -240,6 +245,7 @@ class StatusBar(QtWidgets.QStatusBar):
 
     def set_status_ok(self, message: str) -> None:
         self.spinner.hide()
+        self.progress.hide()
         self.setProperty("style", "status-success")
         self.message.setProperty("style", "status-success")
         self._update_style()
@@ -247,6 +253,7 @@ class StatusBar(QtWidgets.QStatusBar):
 
     def set_status_working(self, message: str) -> None:
         self.spinner.show()
+        self.progress.hide()
         self.setProperty("style", "status-info")
         self.message.setProperty("style", "status-info")
         self._update_style()
@@ -254,6 +261,7 @@ class StatusBar(QtWidgets.QStatusBar):
 
     def set_status_error(self, message: str) -> None:
         self.spinner.hide()
+        self.progress.hide()
         self.setProperty("style", "status-error")
         self.message.setProperty("style", "status-error")
         self._update_style()
@@ -288,6 +296,10 @@ class StatusBar(QtWidgets.QStatusBar):
 
     def handle_task_container_install_remote(self) -> None:
         self.set_status_working("Downloading Dangerzone sandbox (from trusted remote)")
+
+    def handle_task_container_download_progress(self, percentage: int) -> None:
+        self.progress.setValue(percentage)
+        self.progress.show()
 
     def handle_task_container_stop(self) -> None:
         self.set_status_working("Stopping Dangerzone sandbox (clearing jobs)")
@@ -508,6 +520,9 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         task_container_install.download_container.connect(
             self.log_window.handle_task_container_install_remote
+        )
+        task_container_install.download_progress.connect(
+            self.status_bar.handle_task_container_download_progress
         )
         task_container_install.failed.connect(
             self.log_window.handle_task_container_install_failed

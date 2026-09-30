@@ -78,7 +78,7 @@ From your macOS terminal app:
 
 ## Windows
 
-- [ ] Checkout the dependencies, and clean the local copy:
+- [ ] Checkout the dependencies, and clean the local copy:
 
     ```bash
     # Replace with the actual version
@@ -96,15 +96,16 @@ From your macOS terminal app:
     # Install the dependencies
     poetry sync
     ```
+
 - [ ] Download the container image with signatures:
     ```bash
     poetry run dangerzone-image prepare-archive
       --image ghcr.io/ofpress/dangerzone/v1@sha256:${DIGEST}
       --output share/container.tar
     ```
+
 - [ ] Download the necessary assets with `poetry run mazette install`
-- [ ] Run `poetry run .\install\windows\build-app.bat`
-- After completion, the installer will be available at `dist\Dangerzone.msi`
+- [ ] Run `poetry run .\install\windows\build-app.bat`. After completion, the installer will be available at `dist\Dangerzone.msi`
 - [ ] Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
 
 ## Linux

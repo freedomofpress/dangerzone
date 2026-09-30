@@ -10,14 +10,14 @@ Dangerzone works like this: You give it a document that you don't know if you ca
 
 _Read more about Dangerzone in the [official site](https://dangerzone.rocks/about/)._
 
-## Documentation
+## Getting started
 
 The documentation lives at [docs.dangerzone.rocks](https://docs.dangerzone.rocks/).
 Its source is under [`docs/`](docs/) in this repository:
 
-* [Installation](docs/how-to/install.md) for macOS, Windows, Ubuntu, Debian, Fedora, Qubes OS, and Tails, and the [supported platforms](docs/reference/supported-platforms.md)
-* [Tutorials](docs/tutorials/index.md) to get started
-* [Development environment](docs/how-to/build-from-source.md) to build from source, and [how to contribute](docs/how-to/contribute.md)
+* [Installation](https://docs.dangerzone.rocks/how-to/install/) for macOS, Windows, Ubuntu, Debian, Fedora, Qubes OS, and Tails, and the [supported platforms](https://docs.dangerzone.rocks/reference/supported-platforms/)
+* [Tutorials](https://docs.dangerzone.rocks/tutorials/convert-your-first-document/) to get started
+* [Development environment](https://docs.dangerzone.rocks/tutorials/run-dangerzone-from-source/) to build from source, and [how to contribute](https://docs.dangerzone.rocks/reference/changelog/)
 * [Security policy](SECURITY.md) and [changelog](CHANGELOG.md)
 
 Preview the site locally with `poetry install --with docs` followed by `make docs-serve`.

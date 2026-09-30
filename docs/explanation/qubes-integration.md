@@ -15,9 +15,9 @@ It is also possible to select the Qubes converter by setting the `QUBES_CONVERSI
 
 Because `dz-dvm` has no network (`netvm=""`) and cannot spawn further disposables (`default_dispvm=''`), a compromised converter is stuck in a qube that disappears. The second setting is the one the [2023-10-25 advisory](../advisories/2023-10-25.md) added.
 
-## What the package contains
+## What the packages contain
 
-The `dangerzone-qubes` RPM is built from the same source with `./install/linux/build-rpm.py --qubes`. Compared with the regular package it ships the RPC services under `/etc/qubes-rpc/` and depends on the server-side conversion package (`dangerzone-insecure-converter-qubes`) and LibreOffice, so that the template has everything the disposable qube needs.
+The `dangerzone-qubes` RPM drives the conversion from the host's side. It is built from the `freedomofpress/dangerzone` repo with `./install/linux/build-rpm.py --qubes` and has slightly different dependencies than the regular Dangerzone package. Most importantly, it depends on `dangerzone-insecure-converter-qubes`, which drives the conversion from within the disposable qubes. It is built from the [`freedomofpress/dangerzone-image`](project-repositories.md#freedomofpressdangerzone-image) repo with `./qubes/build-rpm.sh`. It installs an RPC service for Dangerzone under `/etc/qubes-rpc` and dependencies like LibreOffice, so that the template has everything the disposable qube needs.
 
 ## Development: `dz.ConvertDev`
 
@@ -27,4 +27,4 @@ Rebuilding and installing the RPM in the template for every change to the conver
 
 * Hancom HWP files are [not supported on Qubes OS](https://github.com/freedomofpress/dangerzone/issues/494).
 * Support is manual QA only on the latest Fedora template, see [Operating System support](../reference/supported-platforms.md).
-* The startup errors Dangerzone shows for a missing `dz-dvm`, a missing policy, or a qube that can't start are part of the [QA scenarios](../how-to/release/qa.md#9-dangerzone-shows-helpful-errors-for-setup-issues-on-qubes).
+* The user must manually enable the respective Dangerzone policy in dom0, as part of the installation instructions.

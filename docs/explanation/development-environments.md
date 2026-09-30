@@ -1,6 +1,6 @@
 # Create Dangerzone environments
 
-The `dev_scripts/env.py` script creates environments where a user can run Dangerzone, allows the user to run arbitrary commands in these environments, as well as run Dangerzone (nested containerization). Because Dangerzone supports a large number of Linux distributions, this is a helper to help test Dangerzone in these various setups.
+The `dev_scripts/env.py` script creates environments where a user can run Dangerzone, allows the user to run arbitrary commands in these environments, as well as run Dangerzone (nested containerization). Because Dangerzone supports a large number of Linux distributions, this is a helper to test Dangerzone in these various setups.
 
 It supports two types of environments:
 

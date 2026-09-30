@@ -21,7 +21,6 @@ Our [GitHub Releases page](https://github.com/freedomofpress/dangerzone/releases
 * Windows installer (`Dangerzone-<version>.msi`)
 * macOS archives (`Dangerzone-<version>-<arch>.dmg`)
 * Container images (`container-<version>-<arch>.tar`)
-* Source package (`dangerzone-<version>.tar.gz`)
 
 All these files are accompanied by signatures (as `.asc` files). We'll explain how to verify them below, using `0.6.1` as an example.
 

@@ -9,7 +9,7 @@ A PDF that Dangerzone rebuilt from pictures of each page of the original. It con
 
 ## Can Dangerzone tell me whether a file is malicious?
 
-No. Unfortunately, dangerzone can't tell you if a file is safe, it just creates a copy that is.
+No. Unfortunately, Dangerzone can't tell you if a file is safe, it just creates a copy that is.
 
 ## What is OCR, and why does Dangerzone ask for a language?
 
@@ -21,7 +21,7 @@ It depends on where the information lives.
 
 * **Metadata** (author, software, file creation dates, camera model, GPS coordinates, editing history) is removed as part of the process.
 * **Hidden document structure** (comments, embedded files, scripts, links) is also removed.
-* **Anything visible on the page** will not be removed. And so, visible watermarks, printer tracking dots, unusual spacing, unique wording, or steganography hidden in the image will not be removed. If you are a source, treat this as a separate risk that Dangerzone does not address. See [When should I use Dangerzone?](explanation/when-to-use-dangerzone.md).
+* **Anything visible on the page** will not be removed. For example, visible watermarks, printer tracking dots, unusual spacing, unique wording, or steganography hidden in the image will not be removed. If you are a source, treat this as a separate risk that Dangerzone does not address. See [When should I use Dangerzone?](explanation/when-to-use-dangerzone.md).
 
 ## Is there a command-line version?
 
@@ -33,7 +33,7 @@ Browser viewers such as `PDF.js` render the PDF inside the browser's sandbox, wh
 
 ## Isn't this overkill for everyday use?
 
-For files you trust, yes. Dangerzone is aimed at people who regularly open files from strangers, such as journalists, lawyers and researchers (or anyone handling one specific suspicious file, really). Converting takes seconds for a short PDF and the result is heavier and less editable than the original. Use it where the risk is, and see [When should I use Dangerzone?](explanation/when-to-use-dangerzone.md) for the cases where it isn't the right tool.
+For files you trust, yes. Dangerzone is aimed at people who regularly open files from strangers, such as journalists, lawyers and researchers (or anyone handling one specific suspicious file, really). Converting takes seconds for a short PDF and the result is heavier and less editable than the original. Use it when you feel a file is suspicious, and see [When should I use Dangerzone?](explanation/when-to-use-dangerzone.md) for the cases where it isn't the right tool.
 
 ## Why would I convert a JPG or PNG? They are just pictures.
 
@@ -57,7 +57,7 @@ On Windows and macOS, Dangerzone embeds Podman, so there is no need to.
 
 To use a different podman version, such as Podman Desktop, [follow our documentation](how-to/install/use-podman-desktop.md).
 
-## "I'm experiencing an issue while using Dangerzone."
+## I'm experiencing an issue while using Dangerzone
 
 First, [make sure you use the latest version of Dangerzone](how-to/install/update-dangerzone.md).
 
@@ -70,3 +70,15 @@ The sandbox is a container image of a few hundred megabytes. On macOS and Window
 ## Which platforms and document formats are supported?
 
 See [Supported platforms](reference/supported-platforms.md) and [Supported document formats](reference/supported-formats.md).
+
+See [Supported platforms](reference/supported-platforms.md) and [Supported document formats](reference/supported-formats.md).
+
+## Where can I report security issues?
+
+Please check our [security policy](reference/security-policy.md) for preferred communication methods, and for what's in scope for security issues.
+
+## How can I become involved?
+
+We welcome contributors to the project, regardless of their level of expertise. We don't have a place where we hang out at the moment, but you can reach out to us either via a GitHub issue or `support <at> dangerzone.rocks`!
+
+If you are a programmer, feel free to pick up an issue labelled [good first issue](https://github.com/freedomofpress/dangerzone/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) and set up a [development environment](../how-to/contribute/build-from-source.md).

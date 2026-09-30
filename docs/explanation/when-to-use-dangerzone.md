@@ -4,28 +4,29 @@ Dangerzone is the right tool for some situations and the wrong tool for others. 
 
 !!! tip "Rule of thumb"
 
-    Always use Dangerzone on text or image files you received from an external source. Exceptions are for video or audio file (they are not supported at the moment), or if you need to keep editing the document, as passing it to Dangerzone will transform them to PDFs.
+    Always use Dangerzone on text or image files you received from an external source. Exceptions are for video or audio files (they are not supported at the moment), or if you need to edit a document, as passing it to Dangerzone will transform it to PDF.
 
 ## Decision guide
 
 ```mermaid
 flowchart TD
-    A["What do you want to do with the file?"] --> B["Open a file you received"]
-    A --> C["Send a file to someone"]
-    A --> D["Continue editing a file you received"]
+    A["What do you want to do with the file?"] --> B["Open it"]
+    A --> C["Share it anonymously²"]
+    A --> D["Edit it"]
 
-    B --> B1{"Is it video or audio?"}
+    B --> B1{"Is it audio/video?"}
     B1 -->|"Yes"| B2["Dangerzone can't help.<br/>Open it with caution¹."]
     B1 -->|"No, it's text or image"| B3["Use Dangerzone"]
 
-    C --> C1{"Is it video or audio?"}
+    C --> C1{"Is it audio/video?"}
     C1 -->|"Yes"| C2["Use Metadata Cleaner or mat2"]
     C1 -->|"No, it's text or image"| C3["Use Dangerzone"]
 
     D --> D2["Dangerzone can't help.<br/>Open it with caution¹."]
 ```
 
-¹ Using Tails, or an equivalent system like Qubes could help when handling un-trusted files.
+¹ Using [Tails](https://tails.net/), or an equivalent system like [Qubes](https://www.qubes-os.org/) is strongly recommended when handling untrusted files.
+² [Removing de-anonymization vectors](https://archive.fosdem.org/2026/schedule/event/JZ3F8W-dz-bleach/) from files is surprisingly difficult, and sometimes downright impossible, so proceed with **extra caution**.
 
 ## Use Dangerzone when...
 

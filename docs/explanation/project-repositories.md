@@ -1,14 +1,14 @@
 # The Dangerzone repositories
 
-Dangerzone is more than one repository. The application, the sandbox image it runs, the packages users install, and the signatures that tie them together each live in their own place. This page gives contributors the bird's-eye view: what each repository or site is for, and how they fit together.
+Dangerzone is more than one repository. The application, the sandbox image it runs, the packages users install and the signatures that tie them together, each live in their own place. This page gives contributors the bird's-eye view: what each repository or site is for, and how they fit together.
 
 ## The big picture
 
 ```mermaid
 flowchart TB
     REPRO["repro-build<br/><i>reproducible builds</i>"] --> IMG
-    IMG["dangerzone-image<br/><i>sandbox image</i>"] -- "monthly and nightly builds" --> GHCR
-    SIGNER["ghcr-signer<br/><i>Cosign signatures</i>"] -- "attaches signatures" --> GHCR
+    IMG["dangerzone-image<br/><i>sandbox image</i>"] -- "nightly builds<br/>(images and attestations)" --> GHCR
+    SIGNER["ghcr-signer<br/><i>Cosign signatures</i>"] -- "monthly releases<br/>(tags and signatures)" --> GHCR
     IMG -- "nightly CVE scans" --> CVES["cves.dangerzone.rocks"]
     GHCR[("ghcr.io<br/>signed sandbox image")] -- "bundled in installers,<br/>or downloaded and verified" --> DZ
     DZ["dangerzone<br/><i>application and docs</i>"] -- ".deb and .rpm" --> PKG["packages.freedom.press"]
@@ -30,15 +30,15 @@ The main repository: the desktop application (in Qt), the CLI tools, the packagi
 
 ### [freedomofpress/dangerzone-image](https://github.com/freedomofpress/dangerzone-image)
 
-The sandbox: the container image that performs the document-to-pixels conversion, and the Python package that runs inside it. The image is published on a monthly basis to `ghcr.io/freedomofpress/dangerzone/v1`, with nightly builds under a testing namespace. Its CI builds the image reproducibly, attaches provenance attestations, runs the daily CVE scans, and publishes the security dashboard. Problems with a document format, a bundled tool, or a CVE inside the sandbox belong here. The interface between the application and the image is described in [Sandbox protocol](../reference/sandbox-protocol.md), and the update mechanism in [Independent sandbox updates](sandbox-updates.md).
+The sandbox: the container image that performs the document-to-pixels conversion, and the Python package that runs inside it. Images built from the `main` branch are published nightly to `ghcr.io/freedomofpress/dangerzone/v1` (but are not tagged as `latest`), whereas images from feature branches are published under a testing namespace, `ghcr.io/freedomofpress/dangerzone-testing/v1`. The CI of this repo builds the image reproducibly, attaches provenance attestations, runs the daily CVE scans, and publishes the security dashboard. Problems with a document format, a bundled tool, or a CVE inside the sandbox belong here. The interface between the application and the image is described in [Sandbox protocol](../reference/sandbox-protocol.md), and the update mechanism in [Independent sandbox updates](sandbox-updates.md).
 
 ### [freedomofpress/packages](https://github.com/freedomofpress/packages)
 
-Storage for the `.deb` and `.rpm` packages, served on [packages.freedom.press](https://packages.freedom.press) (and on `packages-qa.freedom.press` for release candidates).
+Repository for the `.deb` and `.rpm` packages, served on https://packages.freedom.press (and on https://packages-qa.freedom.press for release candidates).
 
 ### [freedomofpress/ghcr-signer](https://github.com/freedomofpress/ghcr-signer)
 
-Utilities to publish Cosign signatures for the sandbox image to the GitHub Container Registry without GitHub Personal Access Tokens. Signatures are prepared offline with the signing key, submitted as a pull request, verified by CI, and attached to the image by a workflow once merged. The blog post [The GHCR Signer](https://dangerzone.rocks/news/2026-05-26-ghcr-signer/) explains why this is needed and how it works. This is the step that lets Dangerzone [trust a downloaded sandbox image](sandbox-updates.md#why-you-can-trust-a-downloaded-image).
+Utilities to publish our official container images on a monthly cadence. Candidate images from our nightly builds are signed privately with a hardware key and the signatures are submitted as a pull request. The CI verifies the signatures and once the pull request is merged, it pushes them to the GitHub Container Registry and tags the image as `latest`. The blog post [The GHCR Signer](https://dangerzone.rocks/news/2026-05-26-ghcr-signer/) explains why this is needed and how it works. This is the step that lets Dangerzone [trust a downloaded sandbox image](sandbox-updates.md#why-you-can-trust-a-downloaded-image).
 
 ### [freedomofpress/repro-build](https://github.com/freedomofpress/repro-build)
 

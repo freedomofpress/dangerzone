@@ -15,10 +15,10 @@ _We detect it's the first time Dangerzone runs because the `settings["updater_la
 Add the following keys in our `settings.json` file.
 
 * `"updater_check_all": True`: Whether or not to check and apply independent container updates and check for new releases.
-* `"updater_last_check": None`: The last time we checked for updates (in seconds from Unix epoch). None means that we haven't checked yet.
+* `"updater_last_check": None`: The last time we checked for updates (in seconds from Unix epoch). `None` means that we haven't checked yet.
 * `"updater_latest_version": "0.4.2"`: The latest version that the Dangerzone updater has detected. By default it's the current version.
 * `"updater_latest_changelog": ""`: The latest changelog that the Dangerzone updater has detected. By default it's empty.
-* `"updater_errors: 0`: The number of update check errors that we have encountered in a row.
+* `"updater_errors": 0`: The number of update check errors that we have encountered in a row.
 
 Previously, `"updater_check"` was used to determine if we should check for new releases, and has been replaced by `"updater_check_all"` when adding support for independent container updates.
 
@@ -46,7 +46,7 @@ _We perform the following only if `settings["updater_check_all"] == True`._
 
          > A new Dangerzone version been released. Please visit our [downloads page](https://dangerzone.rocks#downloads) to install this update.
          >
-         > (Show changelog rendered from Markdown in a collapsible text box)
+         > (Show unrendered changelog in Markdown format in a collapsible text box)
 
     * Buttons:
         - OK: Return

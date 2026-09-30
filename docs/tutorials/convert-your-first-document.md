@@ -26,7 +26,7 @@ The first time it starts, Dangerzone needs a *sandbox*: that's where the actual 
 
 If the sandbox was bundled, Dangerzone asks the same question on the second start instead, with a dialog titled **Enable automatic sandbox updates?**. Click **Yes, enable sandbox updates** so that Dangerzone keeps the sandbox up to date and tells you when a new Dangerzone release is out. You can change your mind later from the hamburger menu in the top-right corner. See [update notifications](../explanation/update-notifications.md) for what this setting does and does not do.
 
-Wait until the status bar at the bottom of the window stops reporting startup work. The main window then shows a large **Select suspicious documents ...** button.
+The main window then shows a large **Select suspicious documents ...** button. On the first run, there is a status bar at the bottom of the window that shows the startup tasks that Dangerzone is performing, mainly starting a VM on Windows/macOS systems and installing the container image. You can proceed with selecting a document while the startup tasks run on the background.
 
 ## 3. Choose the document
 

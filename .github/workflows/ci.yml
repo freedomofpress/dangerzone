@@ -39,8 +39,6 @@ jobs:
         run: poetry install
       - name: Run linters to enforce code style
         run: poetry run make lint
-      - name: Check that the QA script is up to date with the docs
-        run: "./dev_scripts/qa.py --check-refs"
 
   windows:
     runs-on: ${{ matrix.runner }}

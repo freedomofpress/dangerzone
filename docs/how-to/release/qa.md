@@ -4,14 +4,6 @@ The produced packages are tested to make sure that new releases do not introduce
 
 Here is a list of checks. Some of them are manual, and the release manager needs to follow them across several OSes.
 
-Because some of the checks are repetitive, a script automates some of the QA (see [Scripted QA](#scripted-qa)). It runs the tasks, prompting you when it needs manual intervention.
-
-It can be run with:
-
-```bash
-poetry run ./dev_scripts/qa.py {distro}-{version}
-```
-
 There is also a large collection of documents that can be tested against the `main` branch prior to a release (see [Large Document Testing](#large-document-testing)).
 
 ## The checklist
@@ -160,11 +152,3 @@ Check what errors Dangerzone throws in the following scenarios. The errors shoul
 Parallel to the QA process, the release candidate should be put through the large document tests. This can be done by rebasing [the currently open Pull Request](https://github.com/freedomofpress/dangerzone/pull/1098).
 
 These tests will identify any regressions or improvements in document coverage.
-
-## Scripted QA
-
-The `dev_scripts/qa.py` script runs the above QA steps for a supported platform, in order to make sure that the dev does not skip something.
-
-The idea behind this script is that it will present each step to the user and ask them to perform it manually and specify it passes, in order to continue to the next one. For specific steps, it allows the user to run them automatically. In steps that require a Dangerzone dev environment, this script uses the `env.py` script to create one.
-
-Including all the supported platforms in this script is still a work in progress.

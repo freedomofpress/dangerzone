@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Callable
 from enum import Enum
 
 from .. import container_utils as runtime
@@ -22,7 +23,7 @@ class Strategy(Enum):
     INSTALL_REMOTE_CONTAINER = 3
 
 
-def install() -> None:
+def install(progress_callback: Callable[[int, int], None] | None = None) -> None:
     """
     Determine the installation strategy and apply it.
 
@@ -30,10 +31,13 @@ def install() -> None:
     to act upon the to-be-applied installation strategy.
     """
     strategy = get_installation_strategy()
-    apply_installation_strategy(strategy)
+    apply_installation_strategy(strategy, progress_callback)
 
 
-def apply_installation_strategy(strategy: Strategy) -> None:
+def apply_installation_strategy(
+    strategy: Strategy,
+    progress_callback: Callable[[int, int], None] | None = None,
+) -> None:
     """
     Install or upgrade a container registry, based on previous computations.
     """
@@ -47,7 +51,9 @@ def apply_installation_strategy(strategy: Strategy) -> None:
         container_name = runtime.expected_image_name()
 
         remote_digest, _, signatures = get_remote_digest_and_logindex(container_name)
-        upgrade_container_image(remote_digest, signatures=signatures)
+        upgrade_container_image(
+            remote_digest, signatures=signatures, progress_callback=progress_callback
+        )
         image_digest = remote_digest
 
     # Always clear old images, since we expect only one to exist at a time.

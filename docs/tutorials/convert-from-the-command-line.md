@@ -55,7 +55,7 @@ $ dangerzone-cli invoice.pdf
 
 Dangerzone prints a banner, starts the sandbox, and shows the progress of each stage. On macOS and Windows, the first run also starts the Podman machine, a small virtual machine that runs the sandbox, which takes a little longer.
 
-When it finishes, `invoice-safe.pdf` sits next to `invoice.pdf`. The original is untouched: unlike the graphical application, the CLI does not move originals unless you ask it to (see "archive" below)
+When it finishes, `invoice-safe.pdf` sits next to `invoice.pdf`. The original is untouched: unlike the graphical application, the CLI does not move originals unless you ask it to (see "archive" below).
 
 ## 3. Choose the output name
 

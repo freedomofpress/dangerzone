@@ -21,7 +21,6 @@ Our [GitHub Releases page](https://github.com/freedomofpress/dangerzone/releases
 * Windows installer (`Dangerzone-<version>.msi`)
 * macOS archives (`Dangerzone-<version>-<arch>.dmg`)
 * Container images (`container-<version>-<arch>.tar`)
-* Source package (`dangerzone-<version>.tar.gz`)
 
 All these files are accompanied by signatures (as `.asc` files). We'll explain how to verify them below, using `0.6.1` as an example.
 
@@ -74,6 +73,6 @@ Primary key fingerprint: DE28 AB24 1FA4 8260 FAC9  B8BA A7C9 B385 2260 4281
 
 If you don't see `Good signature from`, there might be a problem with the integrity of the file (malicious or otherwise), and you should not install the package.
 
-The `WARNING:` shown above, is not a problem with the package, it only means you haven't defined a level of "trust" for Dangerzone's PGP key.
+The `WARNING:` shown above is not a problem with the package. It only means you haven't defined a level of "trust" for Dangerzone's PGP key.
 
 If you want to learn more about verifying PGP signatures, the guides for [Qubes OS](https://www.qubes-os.org/security/verifying-signatures/) and the [Tor Project](https://support.torproject.org/tbb/how-to-verify-signature/) may be useful.

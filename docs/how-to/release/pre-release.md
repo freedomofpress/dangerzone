@@ -29,13 +29,13 @@ In case of a new version (beta, RC, or official release):
 
 1. Add it in our CI workflows, to test if that version works.
     - See `.circleci/config.yml` and `.github/workflows/ci.yml`, as well as `dev_scripts/env.py` and `dev_scripts/qa.py`.
-2. Do a test of this version locally with `dev_scripts/qa.py`. Focus on the GUI part, since the basic functionality is already tested by our CI workflows.
+2. Test this version locally with `dev_scripts/qa.py`. Focus on the GUI part, since the basic functionality is already tested by our CI workflows.
 3. Add the new version in our `docs/how-to/install/index.md` and `docs/reference/supported-platforms.md` documents, and drop a line in our `CHANGELOG.md`.
 4. If that version is a new stable release, update the `docs/how-to/release/` and `docs/how-to/contribute/build-from-source.md` files where necessary.
 5. Send a PR with the above changes.
 
 In case of the removal of a version:
 
-1. Remove any mention to this version from our repo.
+1. Remove any mention of this version from our repo.
     - Consult the previous paragraph, but also `grep` your way around.
 2. Add a notice in our `CHANGELOG.md` about the version removal.

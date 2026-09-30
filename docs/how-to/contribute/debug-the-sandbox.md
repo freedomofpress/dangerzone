@@ -34,7 +34,7 @@ The image contains a shell, so you can inspect it as root, outside of gVisor:
 
     See the [dangerzone-machine reference](../../reference/cli/dangerzone-machine.md#location) for the full path of the command.
 
-Inside, the conversion code lives in the `dangerzone.conversion` Python package, and a conversion is what Dangerzone runs as `/usr/bin/python3 -m dangerzone.conversion.doc_to_pixels` with the document on standard input. See [Sandbox protocol](../../reference/sandbox-protocol.md) for what it reads and writes.
+Inside, the conversion code lives in the `dangerzone.conversion` Python package, and Dangerzone runs a conversion as `/usr/bin/python3 -m dangerzone.conversion.doc_to_pixels`, with the document on standard input. See [Sandbox protocol](../../reference/sandbox-protocol.md) for what it reads and writes.
 
 !!! note
 

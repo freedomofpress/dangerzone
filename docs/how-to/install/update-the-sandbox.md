@@ -2,7 +2,7 @@
 
 Dangerzone has a mechanism to auto-update the secure sandbox used for document conversion.
 
-This mechanism allows us to fix security fixes without having to do a full-blown release, shortening the time between security patches are out and the time they are used.
+This mechanism allows us to ship security fixes without having to do a full-blown release, shortening the time between when security patches are out and when they are used.
 
 This increases the security of the conversion process dramatically, making it harder for an attacker to rely on known and patched exploits in our stack.
 
@@ -28,9 +28,9 @@ The public key used to verify the container signatures is shipped in `share/free
 
 ## Checking attestations
 
-Each night, new images are built and pushed to the container registry, alongside with a provenance attestation, enabling anybody to ensure that the image has been originally built by Github CI runners, from a defined source repository (in our case `freedomofpress/dangerzone`).
+Each night, new images are built and pushed to the container registry, alongside a provenance attestation. This lets anybody check that the image was originally built by GitHub CI runners, from a defined source repository (in our case `freedomofpress/dangerzone`).
 
-To verify the attestations against our expectations, clone the GitHub repo responsible for the building of our container images, and use the following command:
+To verify the attestations against our expectations, clone the GitHub repo that builds our container images, and use the following command:
 
 ```bash
 
@@ -59,7 +59,7 @@ To install a container image to an environment without a network connection, thr
 2. Transfer the archive to the air-gapped system
 3. Install the archive on the air-gapped system
 
-This archive will contain all the needed material to ensure the new container image has been signed and is valid.
+This archive will contain all the needed material to verify that the new container image has been signed and is valid.
 
 On the machine on which you prepare the packages (of course, adapt to the architecture you want to target):
 

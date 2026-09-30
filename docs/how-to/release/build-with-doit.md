@@ -8,7 +8,7 @@ We picked Doit out of the various tools out there for the following reasons:
 
 * **Pythonic:** The configuration file and tasks can be written in Python. Where applicable, it's easy to issue shell commands as well.
 * **File targets:** Doit borrows the file target concept from Makefiles. Tasks can have file dependencies, and targets they build. This makes it easy to define a dependency graph for tasks.
-* **Hash-based caching:** Unlike Makefiles, doit does not look at the modification timestamp of source/target files, to figure out if it needs to run them.  Instead, it hashes those files, and will run a task only if the hash of a file dependency has changed.
+* **Hash-based caching:** Unlike Makefiles, doit does not look at the modification timestamps of source/target files to figure out if it needs to run a task. Instead, it hashes those files, and will run a task only if the hash of a file dependency has changed.
 * **Parallelization:** Tasks can be run in parallel with the `-n` argument, which is similar to `make`'s `-j` argument.
 
 ## How to Doit?

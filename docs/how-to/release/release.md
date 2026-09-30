@@ -1,6 +1,6 @@
 # Release
 
-When confident that the release doesn't need any more changes:
+Once you are confident that the release doesn't need any more changes:
 
 - [ ] Create a PGP-signed git tag for the version, e.g., for dangerzone `v0.1.0`:
 
@@ -42,7 +42,7 @@ When confident that the release doesn't need any more changes:
 
 - [ ] Send a PR to update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers.
 
-- [ ] Send a PR that updates the Dangerzone version and the links to our [installation instructions](https://docs.dangerzone.rocks/how-to/install/) in `README.md`.
+- [ ] Send a PR that updates the Dangerzone version and the links to our [installation instructions](../install/index.md) in `README.md`.
 
 ## 📣 Publish the release!
 
@@ -50,7 +50,7 @@ To actually publish the release:
 
 - [ ] Merge the PR(s) in the [`packages`](https://github.com/freedomofpress/packages/pulls) repository.
 - [ ] Make the GitHub draft release public.
-- [ ] Merge the PRs in [`dangerzone.rocks`](https://github.com/freedomofpress/dangerzone.rocks/pulls) and `[dangerzone](https://github.com/freedomofpress/dangerzone/pulls)`.
+- [ ] Merge the PRs in [`dangerzone.rocks`](https://github.com/freedomofpress/dangerzone.rocks/pulls) and [`dangerzone`](https://github.com/freedomofpress/dangerzone/pulls).
 - [ ] Toot release announcement on our mastodon account https://social.freedom.press/@dangerzone
 - [ ] Extend the `check_repos.yml` CI test for the newly added platforms, if necessary
 - [ ] Manually trigger the `check_repos.yml` CI test and ensure it passes.

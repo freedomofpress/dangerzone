@@ -5,7 +5,7 @@
 - [ ] Verify and install the latest supported Python version from [python.org](https://www.python.org/downloads/macos/)
 
     > 🚨 Do not use the one from Homebrew as it is known to
-    > [cause issues](https://github.com/freedomofpress/dangerzone/issues/471))
+    > [cause issues](https://github.com/freedomofpress/dangerzone/issues/471)
 
 - [ ] Ensure the `~/.zprofile` of all accounts contains the following lines, and remove any older ones, if they exist:
 

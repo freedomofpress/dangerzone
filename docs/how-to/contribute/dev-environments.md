@@ -1,6 +1,6 @@
 # Use the containerized dev environments
 
-The `dev_scripts/env.py` script creates environments in which  Dangerzone can run. It's additionally possible to run arbitrary commands there. In practice, it's useful to generate packages for Linux OSes other than the one installed on your machine. For the design and the caveats behind these environments, see [Development environments](../../explanation/development-environments.md).
+The `dev_scripts/env.py` script creates environments in which Dangerzone can run. You can also run arbitrary commands in them. In practice, it's useful for generating packages for Linux OSes other than the one installed on your machine. For the design and the caveats behind these environments, see [Development environments](../../explanation/development-environments.md).
 
 For the full usage information, run `./dev_scripts/env.py --help`.
 

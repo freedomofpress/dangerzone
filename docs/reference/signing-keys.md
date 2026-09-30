@@ -27,6 +27,6 @@ Signatures are recorded in the Sigstore transparency log ([Rekor](https://docs.s
 ## Platform code signing
 
 * **macOS**: the application bundle and `.dmg` are signed with the `Developer ID Application: Freedom of the Press Foundation (94ZZGGGJ3W)` certificate and notarized by Apple.
-* **Windows**: `dangerzone.exe`, `dangerzone-cli.exe`, and the `.msi` installer are signed with an Authenticode certificate owned by Freedom of the Press Foundation.
+* **Windows**: `dangerzone.exe`, `dangerzone-cli.exe`, and the `.msi` installer are signed with a code-signing certificate owned by Freedom of the Press Foundation and provided by Azure Trusted Signing.
 
 These signatures are checked by the operating system. The PGP signatures provide an independent, second check.

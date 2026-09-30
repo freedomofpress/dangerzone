@@ -12,7 +12,7 @@ Our build artifacts consist of:
 
 As of writing this, the following artifacts are reproducible:
 
-- Container images (see [#1047](https://github.com/freedomofpress/dangerzone/issues/1047)). You can find a detailed documentation on reproducible containers in the [dangerzone-image repository](https://github.com/freedomofpress/dangerzone-image).
+- Container images (see [#1047](https://github.com/freedomofpress/dangerzone/issues/1047)). You can find detailed documentation on reproducible containers in the [dangerzone-image repository](https://github.com/freedomofpress/dangerzone-image).
 - Debian packages (`dangerzone` and `dangerzone-full`).
 
 ## Debian packages
@@ -47,4 +47,4 @@ sha256sum deb_dist.first/*.deb deb_dist/*.deb
 #   diffoscope deb_dist.first/dangerzone_<ver>_amd64.deb deb_dist/dangerzone_<ver>_amd64.deb
 ```
 
-The two sets of `.deb` files should have matching SHA-256 sums. If they don't, `diffoscope` will show what diverged — common culprits are unpinned timestamps, locale-dependent sort order, or files generated outside the staging trees.
+The two sets of `.deb` files should have matching SHA-256 sums. If they don't, `diffoscope` will show what diverged. Common culprits are unpinned timestamps, locale-dependent sort order, or files generated outside the staging trees.

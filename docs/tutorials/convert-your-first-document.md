@@ -2,7 +2,7 @@
 
 In this tutorial you will install Dangerzone, open a document you don't fully trust, and turn it into a safe PDF. By the end, you will know what the application looks like, where the safe file ends up, and what happens to the original.
 
-You need a computer running macOS, Windows, or a supported Linux distribution, an internet connection for the installation, and a document to convert. Any PDF, office document, or image works. If you have nothing at hand, a PDF you downloaded from the web is a fine candidate.
+You need a computer running macOS, Windows, or a supported Linux distribution, an internet connection for the installation, and a document to convert. Any PDF, office document, or image works. Dangerzone retains the original and processes it without network connection. If you have nothing at hand, a PDF you downloaded from the web is a fine candidate.
 
 ## 1. Install Dangerzone
 
@@ -26,7 +26,7 @@ The first time it starts, Dangerzone needs a *sandbox*: that's where the actual 
 
 If the sandbox was bundled, Dangerzone asks the same question on the second start instead, with a dialog titled **Enable automatic sandbox updates?**. Click **Yes, enable sandbox updates** so that Dangerzone keeps the sandbox up to date and tells you when a new Dangerzone release is out. You can change your mind later from the hamburger menu in the top-right corner. See [update notifications](../explanation/update-notifications.md) for what this setting does and does not do.
 
-Wait until the status bar at the bottom of the window stops reporting startup work. The main window then shows a large **Select suspicious documents ...** button.
+The main window then shows a large **Select suspicious documents ...** button. On the first run, a status bar at the bottom of the window shows the startup tasks that Dangerzone is performing, mainly starting a VM on Windows/macOS systems and installing the container image. You can proceed with selecting a document while the startup tasks run in the background.
 
 ## 3. Choose the document
 

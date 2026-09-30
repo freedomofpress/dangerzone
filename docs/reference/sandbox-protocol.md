@@ -28,7 +28,7 @@ The container is started with these flags, in addition to the image digest pinne
 | `-i` | Keep standard input open |
 | `-e RUNSC_DEBUG=1` | Only with `--debug`: make gVisor log verbosely |
 
-Inside the container, the conversion runs under gVisor (`runsc`).
+Inside the container, the conversion runs under gVisor (`runsc`), which in turn spawns an inner container, with no capabilities and privileges. You can read more about it in the [gVisor integration docs](https://github.com/freedomofpress/dangerzone-image/blob/main/docs/gvisor.md).
 
 ## Input
 
@@ -46,7 +46,7 @@ repeat n_pages times:
     pixels                   width * height * 3 bytes, RGB, row-major
 ```
 
-Pages are rendered at `DEFAULT_DPI = 150` pixels per inch.
+Pages are rendered with a DPI (dots per inch) of 150, which strikes the best balance between OCR accuracy, document size, and readability.
 
 The host validates every value before using it:
 
@@ -56,11 +56,11 @@ The host validates every value before using it:
 | `width` | `1` to `MAX_PAGE_WIDTH` (`10000`) | `MaxPageWidthException` |
 | `height` | `1` to `MAX_PAGE_HEIGHT` (`10000`) | `MaxPageHeightException` |
 
-A short read (fewer bytes than announced) raises `ConverterProcException`. After the last page, the host closes standard output and ignores anything else. Each page's pixels are turned into a PDF page on the host (with OCR if requested) as soon as they arrive, so memory use does not grow with the document size.
+A short read (fewer bytes than announced) raises `ConverterProcException`. After the last page, the host closes standard output and ignores anything else. Each page's pixels are compressed and turned into a PDF page on the host (with OCR if requested) as soon as they arrive, so memory use grows slowly with the document size.
 
 ## Standard error
 
-Standard error carries the sandbox's own diagnostics. It is only shown with `--debug`, after sanitization of control characters.
+Standard error carries the sandbox's own diagnostics. It can be enriched with debug information from gVisor and Podman by passing the `--debug` flag. Since it's untrusted, it is sanitized as well and any control characters are stripped before writing to the terminal.
 
 ## Exit codes
 

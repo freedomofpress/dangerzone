@@ -37,7 +37,7 @@ Pick your platform to set up a development environment:
     pipx inject poetry poetry-plugin-export
     ```
 
-    After this, restart the terminal window, for the `poetry` command to be in your `$PATH`.
+    After this, restart the terminal window so that the `poetry` command is in your `$PATH`.
 
     Clone this repository:
 
@@ -54,7 +54,7 @@ Pick your platform to set up a development environment:
     poetry install
     ```
 
-    Dangerzone depends on some assets that should be downloaded in order to run (think binaries and others resources). This can be done with the following command:
+    Dangerzone depends on some assets (think binaries and other resources) that should be downloaded in order to run. This can be done with the following command:
 
     ```sh
     poetry run mazette install
@@ -120,7 +120,7 @@ Pick your platform to set up a development environment:
     poetry install
     ```
 
-    Dangerzone depends on some assets that should be downloaded in order to run (think binaries and others resources). This can be done with the following command:
+    Dangerzone depends on some assets (think binaries and other resources) that should be downloaded in order to run. This can be done with the following command:
 
     ```sh
     poetry run mazette install
@@ -191,7 +191,7 @@ Pick your platform to set up a development environment:
         qvm-clone fedora-43 fedora-43-dz
         ```
 
-        > 💡 Alternatively, you can use your base Fedora 42 template in the
+        > 💡 Alternatively, you can use your base Fedora 43 template in the
         > following instructions. In that case, skip this step and replace
         > `fedora-43-dz` with `fedora-43` in the steps below.
 
@@ -228,7 +228,7 @@ Pick your platform to set up a development environment:
 
     #### In the `dz` app qube
 
-    In the following steps you'll setup the development environment and install a dangerzone build. This will make the development faster since it loads the server code dynamically each time it's run, instead of having to build and install a server package each time the developer wants to test it.
+    In the following steps you'll setup the development environment and install a dangerzone build. This will make development faster, since the server code is loaded dynamically on each run, instead of having to build and install a server package every time you want to test it.
 
     1. Follow the [Fedora installation instructions](#fedora) up until `poetry run mazette install`.
 
@@ -257,7 +257,7 @@ Pick your platform to set up a development environment:
 
     ### Developing Dangerzone
 
-    From here on, developing Dangerzone is similar to Fedora. The only differences are that you need to set the environment variable `QUBES_CONVERSION=1` when you wish to test the Qubes conversion, run the following commands on the `dz` development qube:
+    From here on, developing Dangerzone is similar to Fedora. The only differences are that you need to set the environment variable `QUBES_CONVERSION=1` when you wish to test the Qubes conversion. Run the following commands on the `dz` development qube:
 
     ```sh
     export DANGERZONE_DEV=1 QUBES_CONVERSION=1
@@ -318,7 +318,7 @@ Pick your platform to set up a development environment:
     brew install create-dmg
     ```
 
-    Dangerzone depends on some assets that should be downloaded in order to run (think binaries and others resources). This can be done with the following command:
+    Dangerzone depends on some assets (think binaries and other resources) that should be downloaded in order to run. This can be done with the following command:
 
     ```sh
     poetry run mazette install
@@ -346,7 +346,7 @@ Pick your platform to set up a development environment:
     poetry run dangerzone
     ```
 
-    To create an app bundle, use the `build_app.py` script:
+    To create an app bundle, use the `build-app.py` script:
 
     ```sh
     poetry run ./install/macos/build-app.py
@@ -389,7 +389,7 @@ Pick your platform to set up a development environment:
     poetry install
     ```
 
-    Dangerzone depends on some assets that should be downloaded in order to run (think binaries and others resources). This can be done with the following command:
+    Dangerzone depends on some assets (think binaries and other resources) that should be downloaded in order to run. This can be done with the following command:
 
     ```sh
     poetry run mazette install

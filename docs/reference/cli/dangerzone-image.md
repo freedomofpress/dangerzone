@@ -83,7 +83,7 @@ Options:
 ```
 <!-- [[[end]]] -->
 
-Requires a working container runtime.
+Verifies the image that is installed locally. Requires a working container runtime.
 
 ### `prepare-archive`
 
@@ -111,7 +111,7 @@ Options:
 ```
 <!-- [[[end]]] -->
 
-The archive contains the image, its signatures, and a `dangerzone.json` manifest, so that the receiving machine can verify it without network access. A digest can be pinned with `--image name@sha256:...`. `--arch` accepts `amd64` or `arm64`. This command does not need a container runtime.
+Download the target container image as a `.tar` archive, and prepare it so that it can be loaded by Dangerzone. The archive contains the image, its signatures, and a `dangerzone.json` manifest, so that the receiving machine can verify it without network access. A digest can be pinned with `--image name@sha256:...`. `--arch` accepts `amd64` or `arm64`. This command does not need a container runtime.
 
 ### `load-archive`
 
@@ -132,7 +132,7 @@ Options:
 ```
 <!-- [[[end]]] -->
 
-The signatures in the archive are verified before the image is loaded, and the tool refuses to install an image older than the currently installed one unless `--force` is given. Requires a working container runtime.
+Install a `.tar` archive. The signatures in the archive are verified before the image is loaded, and the tool refuses to install an image older than the currently installed one unless `--force` is given. Requires a working container runtime.
 
 ### `store-signatures`
 

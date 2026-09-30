@@ -2,7 +2,7 @@
 
 This page describes what Dangerzone promises, what it assumes, and how its defenses are layered. It is the reasoning behind the [security policy](../reference/security-policy.md), which states what we consider a reportable vulnerability.
 
-## Two goals
+## Goals
 
 Dangerzone has two main security goals:
 
@@ -11,13 +11,15 @@ Dangerzone has two main security goals:
 
 Any vulnerability that undermines these two goals is considered critical. Everything else about Dangerzone (its usability, the quality of the output, its performance) matters, but is not a security property.
 
-## The assumption: the parsers are compromised
+## Assumptions
 
-Dangerzone uses several third-party tools to sanitize documents, such as [LibreOffice](https://www.libreoffice.org/) and [PyMuPDF](https://pymupdf.io/). Because these tools have a large attack surface, Dangerzone operates under the assumption that a 0-day vulnerability probably exists for them. In other words, the design does not rely on the document parsers being correct. It expects that, sooner or later, a document will take control of the process that opens it.
+Dangerzone uses several third-party tools to sanitize documents, such as [LibreOffice](https://www.libreoffice.org/) and [PyMuPDF](https://pymupdf.io/). Because these tools have a large attack surface, Dangerzone operates under the assumption that a 0-day vulnerability probably exists for them. In other words, the design does not rely on the document parsers being correct. It expects that, sooner or later, a document will take control of the process that opens it. That's why the untrusted document is only ever opened in a secure sandbox, where taking control of the process gains the attacker nothing.
 
-Everything follows from that assumption: the untrusted document is only ever opened in a place where taking control of the process gains the attacker nothing.
+Dangerzone does not use antivirus software to ensure that a file can be opened, nor does it disarm the file by removing just the "unsafe" components. First, antivirus software relies on previously seeing the same exploit in the wild, which is usually not the case for 0-days. Second, content disarm software assumes that file formats have "safe" and "unsafe" parts, and that if you snip the latter, file viewers won't have a problem with parsing the former. Our experience is that file parsers can have implementation bugs even on relatively simple parts of a specification, and that it's possible to break the readability of a file this way, leading to users opening the original.
 
-## Layers of defense
+So where does this leave us? Dangerzone's main assumption is that, at least for viewing purposes, documents and images can be reduced to their simplest possible representation: an RGB pixel stream per page. Reconstructing a safe PDF from such a pixel stream should then be the safest way to view this file.
+
+## Defense in depth
 
 **Isolation.** The parsers run inside an unprivileged, networkless container. Inside the container, they run under [gVisor](https://gvisor.dev/), an application kernel that reimplements the Linux system call interface in Go and forwards only a small, hardened set of calls to the real kernel. To reach the host, an attacker needs a working exploit for the parser, then a gVisor escape, then a container escape. Read more in [our blog](https://dangerzone.rocks/news/2024-09-23-gvisor/). On Qubes OS, the container is replaced by an offline disposable qube, which is destroyed after the conversion.
 
@@ -25,7 +27,7 @@ Everything follows from that assumption: the untrusted document is only ever ope
 
 **No network.** The sandbox has no network access, so a compromised parser cannot exfiltrate the document or fetch a second stage.
 
-**Metadata destruction.** Rebuilding the PDF from pixels drops the original metadata as a matter of course. The safe PDF only carries what Dangerzone puts in it.
+**Metadata destruction.** Rebuilding the PDF from pixels drops the original metadata as a matter of course, thus the safe PDF has no metadata in it.
 
 **Keeping the sandbox patched.** Isolation is the primary defense, but a sandbox full of known vulnerabilities makes an attacker's job easier. Our second line of defense is to make sure our container image is not affected by known vulnerabilities, i.e., CVEs. We have nightly security scans for Critical CVEs, and biweekly security scans for High CVEs. You can see the results of our security scans in https://cves.dangerzone.rocks. We aim for a 4 week update cadence of our container image, or earlier, if a security finding necessitates it. Since 0.10.0, the sandbox image updates independently from Dangerzone releases, so a fix reaches users within days. See [Independent sandbox updates](sandbox-updates.md).
 

@@ -154,7 +154,7 @@ Pick your operating system to see how to install Dangerzone:
 
     !!! warning
 
-        This distribution is [not officially supported](../../reference/supported-platforms.md#note-on-unsupported-linux-distros) by the Dangerzone team. Please, proceed at your own risks, only if you know what you're doing.
+        This distribution is [not officially supported](../../reference/supported-platforms.md#note-on-unsupported-linux-distros) by the Dangerzone team. Please proceed at your own risk, and only if you know what you're doing.
 
     Type the following commands in a terminal:
 
@@ -217,7 +217,7 @@ Pick your operating system to see how to install Dangerzone:
 
     While Dangerzone gets installed, you will be prompted to accept a signing key. Expand the instructions in the [Verifying Dangerzone GPG key](#verifying-dangerzone-gpg-key) section to verify the key.
 
-    Finally, shutdown the template and restart the qubes where you want to use Dangerzone in. Go to "Qube Settings" -> choose the "Applications" tab, click on "Refresh applications", and then move "Dangerzone" from the "Available" column to "Selected".
+    Finally, shut down the template and restart the qubes where you want to use Dangerzone. Go to "Qube Settings" -> choose the "Applications" tab, click on "Refresh applications", and then move "Dangerzone" from the "Available" column to "Selected".
 
     You can now launch Dangerzone from the list of applications for your qube, and pass it a file to sanitize.
 

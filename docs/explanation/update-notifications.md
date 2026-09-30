@@ -1,6 +1,6 @@
 # Update notifications
 
-This design document explains how the notification mechanism for Dangerzone updates works, what are its benefits and limitations, and what other alternatives we have considered. It has been adapted by discussions on GitHub issue [#189](https://github.com/freedomofpress/dangerzone/issues/189), and has been updated to reflect the current design.
+This design document explains how the notification mechanism for Dangerzone updates works, what its benefits and limitations are, and what other alternatives we have considered. It has been adapted from discussions on GitHub issue [#189](https://github.com/freedomofpress/dangerzone/issues/189), and has been updated to reflect the current design.
 
 A user-facing document on how update notifications work can be found in https://github.com/freedomofpress/dangerzone/wiki/Updates. The keys mentioned below are documented in the [settings reference](../reference/settings.md), and the independent sandbox update mechanism that this design was later extended with is described in [Independent sandbox updates](sandbox-updates.md).
 
@@ -15,10 +15,10 @@ _We detect it's the first time Dangerzone runs because the `settings["updater_la
 Add the following keys in our `settings.json` file.
 
 * `"updater_check_all": True`: Whether or not to check and apply independent container updates and check for new releases.
-* `"updater_last_check": None`: The last time we checked for updates (in seconds from Unix epoch). None means that we haven't checked yet.
+* `"updater_last_check": None`: The last time we checked for updates (in seconds from Unix epoch). `None` means that we haven't checked yet.
 * `"updater_latest_version": "0.4.2"`: The latest version that the Dangerzone updater has detected. By default it's the current version.
 * `"updater_latest_changelog": ""`: The latest changelog that the Dangerzone updater has detected. By default it's empty.
-* `"updater_errors: 0`: The number of update check errors that we have encountered in a row.
+* `"updater_errors": 0`: The number of update check errors that we have encountered in a row.
 
 Previously, `"updater_check"` was used to determine if we should check for new releases, and has been replaced by `"updater_check_all"` when adding support for independent container updates.
 
@@ -44,9 +44,9 @@ _We perform the following only if `settings["updater_check_all"] == True`._
     * Title: "Dangerzone v0.5.0 has been released"
     * Body:
 
-         > A new Dangerzone version been released. Please visit our [downloads page](https://dangerzone.rocks#downloads) to install this update.
+         > A new Dangerzone version has been released. Please visit our [downloads page](https://dangerzone.rocks#downloads) to install this update.
          >
-         > (Show changelog rendered from Markdown in a collapsible text box)
+         > (Show unrendered changelog in Markdown format in a collapsible text box)
 
     * Buttons:
         - OK: Return
@@ -78,12 +78,12 @@ _We trigger error handling when the updater thread encounters an error (either d
 ## Key Benefits
 
 1. The above approach future-proofs Dangerzone against API changes or bugs in the update check process, by asking users to manually visit https://dangerzone.rocks.
-2. If we want to draw the attention of users to immediately install a release, we can do so in the release body, which we will show in a pop-up window.
+2. If we want users to install a release immediately, we can say so in the release body, which we will show in a pop-up window.
 3. If we are aware of issues that prevent updates, we can add them in the wiki page that we show in the error popup. Wiki pages are not versioned, so we can add useful info even after a release.
 
 ## Security Considerations
 
-Because this approach does not download binaries / auto-updates, it **does not add any more security issues** than the existing, manual way of installing updates. These issues have to do with a compromised/malicous GitHub service, and are the following:
+Because this approach does not download binaries / auto-updates, it **does not add any more security issues** than the existing, manual way of installing updates. These issues have to do with a compromised/malicious GitHub service, and are the following:
 
 1. GitHub pages can alter the contents of our main site (https://dangerzone.rocks)
 2. GitHub releases can serve an older, vulnerable version of Dangerzone, instead of a new update.
@@ -100,7 +100,7 @@ A good update framework would probably defend against 1,2,3. This is not to say 
 
 ## Alternatives
 
-We researched a bit on this subject and found out that there are update frameworks that do this job for us. While working on this issue, we decided that integrating with one framework will certainly take a bit of work, especially given that we target both Windows and MacOS systems. In the meantime though, we didn't want to have releases out without including at least a notification channel, since staying behind on updates has a huge negative impact on the users' safety.
+We did some research on this subject and found that there are update frameworks that do this job for us. While working on this issue, we decided that integrating with one framework will certainly take a bit of work, especially given that we target both Windows and MacOS systems. In the meantime though, we didn't want to ship releases without at least a notification channel, since staying behind on updates has a huge negative impact on the users' safety.
 
 The update frameworks that we learned about are:
 
@@ -127,6 +127,6 @@ Regardless of whether we use it, knowing about the [threat vectors](https://theu
 ### Other Projects
 
 * Qt has some updater framework as well: https://doc.qt.io/qtinstallerframework/ifw-updates.html
-* Google Chrome has it's own updater framework: https://chromium.googlesource.com/chromium/src.git/+/master/docs/updater/protocol_3_1.md
-* Keepass rolls out its own way to update: https://github.com/keepassxreboot/keepassxc/blob/develop/src/updatecheck/UpdateChecker.cpp
+* Google Chrome has its own updater framework: https://chromium.googlesource.com/chromium/src.git/+/master/docs/updater/protocol_3_1.md
+* Keepass rolls its own update mechanism: https://github.com/keepassxreboot/keepassxc/blob/develop/src/updatecheck/UpdateChecker.cpp
 * [PyUpdater](https://github.com/Digital-Sapphire/PyUpdater) was another popular updater project for Python, but is now archived.

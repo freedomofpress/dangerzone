@@ -1,6 +1,6 @@
 # Operating System support
 
-Dangerzone can run on various Operating Systems (OS), and has automated tests for most of them. This section explains which OS we support, how long we support each version, and how do we test Dangerzone against these.
+Dangerzone can run on various Operating Systems (OS), and has automated tests for most of them. This section explains which OS we support, how long we support each version, and how we test Dangerzone against these.
 
 You can find general support information in this table, and more details in the following sections.
 
@@ -27,6 +27,6 @@ Notes:
 
 ## Note on unsupported Linux distros
 
-`.deb` and `.rpm` packages are provided for supported distributions. Users of **other** Debian-based or Fedora-based distros — that are not listed above — may be able to install Dangerzone through these packages. Unfortunately, Dangerzone is not tested against these distros, and might fail to install, update, run, or be broken in subtle ways.
+`.deb` and `.rpm` packages are provided for supported distributions. Users of **other** Debian-based or Fedora-based distros that are not listed above may be able to install Dangerzone through these packages. Unfortunately, Dangerzone is not tested against these distros, and might fail to install, update, run, or be broken in subtle ways.
 
-Please, proceed at your own risks, only if you know what you're doing.
+Please, proceed at your own risk, only if you know what you're doing.

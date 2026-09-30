@@ -20,7 +20,7 @@ From your macOS terminal app:
 
     ```bash
     # Replace with the actual version
-    export DZ_VERSION=$(cat share/version.txt)
+    export VERSION=$(cat share/version.txt)
 
     # Verify and checkout the git tag for this release:
     git checkout -f v$VERSION
@@ -38,8 +38,8 @@ From your macOS terminal app:
 2. Retrieve the container image and download the necessary assets:
 
     ```bash
-    poetry run dangerzone-image prepare-archive
-     --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
+    poetry run dangerzone-image prepare-archive \
+     --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST} \
      --output share/container.tar
 
     poetry run mazette install
@@ -78,11 +78,11 @@ From your macOS terminal app:
 
 ## Windows
 
-- [ ] Checkout the dependencies, and clean the local copy:
+- [ ] Checkout the dependencies, and clean the local copy:
 
     ```bash
     # Replace with the actual version
-    export DZ_VERSION=$(cat share/version.txt)
+    export VERSION=$(cat share/version.txt)
 
     # Verify and checkout the git tag for this release:
     git checkout -f v$VERSION
@@ -96,15 +96,14 @@ From your macOS terminal app:
     # Install the dependencies
     poetry sync
     ```
+
 - [ ] Download the container image with signatures:
     ```bash
-    poetry run dangerzone-image prepare-archive
-      --image ghcr.io/ofpress/dangerzone/v1@sha256:${DIGEST}
-      --output share/container.tar
+    poetry run dangerzone-image prepare-archive --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST} --output share/container.tar
     ```
+
 - [ ] Download the necessary assets with `poetry run mazette install`
-- [ ] Run `poetry run .\install\windows\build-app.bat`
-- After completion, the installer will be available at `dist\Dangerzone.msi`
+- [ ] Run `poetry run .\install\windows\build-app.bat`. After completion, the installer will be available at `dist\Dangerzone.msi`
 - [ ] Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
 
 ## Linux
@@ -132,8 +131,8 @@ Create a Debian Bookworm development environment. [Follow the instructions in th
 poetry run mazette install
 
 # Retrieve the latest container
-poetry run dangerzone-image prepare-archive
-    --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
+poetry run dangerzone-image prepare-archive \
+    --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST} \
     --output share/container.tar
 
 # Create both .deb packages (dangerzone slim + dangerzone-full)
@@ -160,8 +159,8 @@ Create a Fedora development environment. [Follow the instructions in the build s
 poetry run mazette install
 
 # Retrieve the latest container
-poetry run dangerzone-image prepare-archive
-    --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST}
+poetry run dangerzone-image prepare-archive \
+    --image ghcr.io/freedomofpress/dangerzone/v1@sha256:${DIGEST} \
     --output share/container.tar
 
 # Create the dangerzone .rpm (without container):

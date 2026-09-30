@@ -8,7 +8,7 @@ A document format like PDF or DOCX is a small program as much as it is a picture
 
 Dangerzone sidesteps this problem entirely. In a secure sandbox, the document will be converted to raw pixel data: a huge list of RGB color values for each page. Then, outside of the sandbox, Dangerzone takes this pixel data and converts it back into a PDF.
 
-Converting to pixel data renders any embedded script ineffective: whatever the original document was hiding doesn't survive this step. Then, the safe PDF is rebuilt from those bitmaps by trusted code on your side of the fence, and so we can be sure it doesn't contain any script at all.
+Converting to pixel data renders any embedded script ineffective: whatever the original document was hiding doesn't survive this step. Then, the safe PDF is rebuilt from those bitmaps by trusted code on your side of the fence, and so we can be sure it doesn't contain any scripts at all.
 
 ![](../assets/how-dangerzone-works.png)
 
@@ -27,7 +27,7 @@ The image is signed with Cosign and updated independently from Dangerzone, so th
 
 ## What's lost
 
-Because the safe PDF is rebuilt from pixels, some information is lost to the process:
+Because the safe PDF is rebuilt from pixels, some information is lost in the process:
 
 * Links, forms, bookmarks and embedded files are gone.
 * Text is only searchable and selectable if you enable OCR, and unfortunately OCR is never perfect.

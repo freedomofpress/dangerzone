@@ -13,7 +13,7 @@
         xcrun notarytool history --apple-id "<email>" --keychain-profile "dz-notarytool-release-key"
         ```
 
-        If they key isn't found, add it to the Keychain by running:
+        If the key isn't found, add it to the Keychain by running:
 
         ```bash
         xcrun notarytool store-credentials dz-notarytool-release-key --apple-id <email> --team-id 94ZZGGGJ3W
@@ -23,7 +23,7 @@
 
 ### On each release
 
-- [ ] Agree to any new terms and conditions in https://developer.apple.com, once you login with FPF's Apple ID.
+- [ ] Agree to any new terms and conditions in https://developer.apple.com, once you log in with FPF's Apple ID.
 - [ ] Upgrade "Command Line Tools" from "System Settings -> Software Update", from an account with admin privileges.
 - [ ] Upgrade Xcode from the App Store, from an account with admin privileges.
 - [ ] Update Docker Desktop and Podman Desktop to the latest versions.

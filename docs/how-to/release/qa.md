@@ -1,8 +1,8 @@
 # QA
 
-To ensure that new releases do not introduce regressions, and support existing and newer platforms, the produced packages are tested.
+The produced packages are tested to make sure that new releases do not introduce regressions, and that they support existing and newer platforms.
 
-Here is a list of checks. Some of them manual, and the release manager needs to follow them across several OSes.
+Here is a list of checks. Some of them are manual, and the release manager needs to follow them across several OSes.
 
 Because some of the checks are repetitive, a script automates some of the QA (see [Scripted QA](#scripted-qa)). It runs the tasks, prompting you when it needs manual intervention.
 
@@ -12,7 +12,7 @@ It can be run with:
 poetry run ./dev_scripts/qa.py {distro}-{version}
 ```
 
-A large collection of documents is also available, that can be tested against the `main` branch prior to a release (see [Large Document Testing](#large-document-testing)).
+There is also a large collection of documents that can be tested against the `main` branch prior to a release (see [Large Document Testing](#large-document-testing)).
 
 ## The checklist
 
@@ -82,7 +82,7 @@ ghcr.io/freedomofpress/dangerzone/v1  <tag>       <image ID>    <date>        <s
 
 Then run the version under QA and ensure that the settings remain changed.
 
-Afterwards check that new docker image was installed by running the same command and seeing the following differences:
+Afterwards, check that a new docker image was installed by running the same command and looking for the following differences:
 
 ```bash
 $ dangerzone-machine raw images ghcr.io/freedomofpress/dangerzone/v1
@@ -149,7 +149,7 @@ Go to a directory with office documents, right-click on one, and click on "Open 
 
 _(Only for Qubes)_
 
-Check what errors does Dangerzone throw in the following scenarios. The errors should point the user to the Qubes notifications in the top-right corner:
+Check what errors Dangerzone throws in the following scenarios. The errors should point the user to the Qubes notifications in the top-right corner:
 
 1. The `dz-dvm` template does not exist. We can trigger this scenario by temporarily renaming this template.
 2. The Dangerzone RPC policy does not exist. We can trigger this scenario by temporarily renaming the `dz.Convert` policy.
@@ -159,7 +159,7 @@ Check what errors does Dangerzone throw in the following scenarios. The errors s
 
 Parallel to the QA process, the release candidate should be put through the large document tests. This can be done by rebasing [the currently open Pull Request](https://github.com/freedomofpress/dangerzone/pull/1098).
 
-These tests will identify any regressions or progression in terms of document coverage.
+These tests will identify any regressions or improvements in document coverage.
 
 ## Scripted QA
 

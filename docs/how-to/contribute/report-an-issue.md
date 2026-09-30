@@ -8,7 +8,7 @@ This guide explains where and how to report a problem with Dangerzone.
 
 ## Check the obvious first
 
-1. Make sure you run the latest version. Many reports are fixed by updating, see [Update Dangerzone](../install/update-dangerzone.md).
+1. Make sure you run the latest version. Many issues are fixed by updating. See [Update Dangerzone](../install/update-dangerzone.md).
 2. Search the [existing issues](https://github.com/freedomofpress/dangerzone/issues?q=is%3Aissue) for the error message you see. Add a comment to an existing issue rather than opening a duplicate.
 3. Skim the [FAQ](../../faq.md).
 
@@ -19,11 +19,11 @@ A useful report contains:
 * The Dangerzone version (shown next to the logo in the application, or with `dangerzone-cli --version`).
 * Your operating system and version, and how you installed Dangerzone (installer, Homebrew, Winget, `.deb`, `.rpm`, Qubes, Tails).
 * What you did, what you expected, and what happened instead.
-* The exact error message. The graphical application shows a log window on failures, that's what we need.
+* The exact error message. The graphical application shows a log window on failures, and its contents are what we need.
 
 ### Details about the sandbox
 
-Oftentimes, issues are related to Podman (the tool we use to run the converrsion sandbox). In these cases, it's very useful to have a lot of details about it.
+Oftentimes, issues are related to Podman (the tool we use to run the conversion sandbox). In these cases, it's very useful to have a lot of details about it.
 
 === "Windows"
 
@@ -40,7 +40,7 @@ Oftentimes, issues are related to Podman (the tool we use to run the converrsion
     Additionally, if you tried to do a conversion, paste the output of this command:
 
     ```sh
-    'C:\Program Files\Dangerzone\dangerzonecli.exe' --debug the-document.pdf
+    'C:\Program Files\Dangerzone\dangerzone-cli.exe' --debug the-document.pdf
     ```
   
 === "macOS"
@@ -72,7 +72,7 @@ Oftentimes, issues are related to Podman (the tool we use to run the converrsion
     podman run hello-world
     ```
   
-    Additionally, if you tried to do a conversion, propose the output of this command:
+    Additionally, if you tried to do a conversion, paste the output of this command:
 
     ```sh
     dangerzone-cli --debug the-document.pdf

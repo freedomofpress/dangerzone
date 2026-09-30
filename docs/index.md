@@ -7,11 +7,13 @@ hide:
 
 # What is Dangerzone, and why should I use it?
 
-Dangerzone is an application that helps you sanitize documents into safe PDFs. This is useful in many cases, and has been thought at first for journalists and activists, who may be targetted by law enforcement and bad actors.
+Dangerzone is a desktop application that helps you sanitize untrusted documents into safe PDFs. It supports more than 20 file types, including PDFs, all major office-suite formats, and the most common image types.
 
-The project is currently maintained by the [Freedom of the Press Foundation](https://freedom.press).
+This is especially useful for journalists and activists, who may be targeted by law enforcement and bad actors.
 
-It works like this:
+It is a free and open source project, maintained by [Freedom of the Press Foundation](https://freedom.press/) (FPF), a nonprofit organization that protects and defends press freedom.
+
+You can read more about ["How Dangerzone works"](./explanation/how-dangerzone-works.md), but the quick summary is this:
 
 1. You give it a document you don't know if you can trust (for example, an email attachment)
 2. Inside of a sandbox, it converts it to raw pixel data (a huge list of RGB color values for each page)
@@ -25,15 +27,15 @@ It works like this:
 
 </div>
 
-## Some features
+## Features
 
 - Sandboxes don't have network access, so if a malicious document can compromise one, it can't phone home
-- Dangerzone can optionally do character recognition on the safe PDFs it creates, so they are searcheable
+- Dangerzone can optionally do character recognition on the safe PDFs it creates, so they are searchable
 - Dangerzone can convert [many types of documents](reference/supported-formats.md) into safe PDFs.
 
 ---
 
-This documentation is organised in four sections. Pick the one that matches what you are trying to do.
+This documentation is organized in the following sections. Pick the one that matches what you are trying to do.
 
 <div class="grid cards" markdown>
 
@@ -53,7 +55,7 @@ This documentation is organised in four sections. Pick the one that matches what
 
     ---
 
-    Step by step guides to install on your platform, do more technical things like verifying signatures, updating the sandbox, build packages… or cut a release.
+    Step by step guides to install on your platform, do more technical things like verifying signatures, updating the sandbox, building packages… or cutting a release.
 
     [:octicons-arrow-right-24: How-to guides](how-to/install/index.md)
 

@@ -20,7 +20,7 @@ The directory is the per-user configuration directory returned by [platformdirs]
 :   Boolean. Default `true`. Only used by the GUI. Whether to save the safe PDF to disk. When set to `false`, the safe PDF will be output in a temporary directory instead.
 
 `archive`
-:   Boolean. Default `true`. Move the original document into an `unsafe/`
+:   Boolean. Default `true`. Only used by the GUI.  Move the original document into an `unsafe/`
     subdirectory after a successful conversion. Corresponds to the "Move original documents to 'unsafe' subdirectory" choice in the GUI.
 
 `safe_extension`
@@ -32,7 +32,7 @@ The directory is the per-user configuration directory returned by [platformdirs]
     "Save safe PDFs to" is selected. `null` means next to the original.
 
 `ocr`
-:   Boolean. Default `true`. Run OCR on the safe PDF.
+:   Boolean. Default `true`. Only used by the GUI. Run OCR on the safe PDF.
 
 `ocr_language`
 :   String. Default `"English"`. Display name of the OCR language, as listed
@@ -58,8 +58,7 @@ The directory is the per-user configuration directory returned by [platformdirs]
 ### Updates
 
 `updater_check_all`
-:   Boolean or `null`. Default `null`. Whether to check for and apply
-    independent sandbox updates and to check for new releases. `null` means the user has not been asked yet. Replaces the older `updater_check` key.
+:   Boolean or `null`. Default `null`. Whether to check for container updates and new releases. `null` means the user has not been asked yet. Replaces the older `updater_check` key.
 
 `updater_ask_before_download`
 :   Boolean. Default `true`. Ask before downloading a new sandbox image when

@@ -1,8 +1,8 @@
 # Using Podman Desktop
 
-Dangerzone uses the system-installed Podman on Linux, and embeds Podman on Windows on macOS.
+Dangerzone uses the system-installed Podman on Linux, and embeds Podman on Windows and macOS.
 
-If you wish to use a Podman Desktop with a specific configuration, follow these steps. These instructions might work for other custom runtimes, but bear in mind that only Podman is currently supported.
+If you wish to use Podman Desktop with a specific configuration, follow these steps. These instructions might work for other custom runtimes, but bear in mind that only Podman is currently supported.
 
 ## On macOS
 

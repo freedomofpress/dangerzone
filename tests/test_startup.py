@@ -1,7 +1,11 @@
+import time
+
 import pytest
 from pytest_mock import MockerFixture
 
 from dangerzone import errors, startup
+from dangerzone.settings import Settings
+from dangerzone.util import get_version
 
 
 class StartupSpy:
@@ -217,3 +221,37 @@ def test_wsl_install_task(mocker: MockerFixture) -> None:
     with pytest.raises(Exception, match="We are about to reboot.."):
         task.run()
     mock_subprocess_run.assert_called_once_with(["shutdown", "/r", "/t", "0"])
+
+
+def test_update_check_ignores_cooldown_if_no_container(
+    mocker: MockerFixture, isolated_settings: Settings
+) -> None:
+    """A mandatory sandbox download must not be postponed by a recent update check."""
+    mocker.patch(
+        "dangerzone.startup.qubes.is_qubes_native_conversion", return_value=False
+    )
+    mocker.patch(
+        "dangerzone.updater.releases.is_container_tar_bundled", return_value=False
+    )
+    mocker.patch(
+        "dangerzone.updater.releases.is_container_image_installed", return_value=False
+    )
+    mocker.patch(
+        "dangerzone.updater.releases.fetch_github_release_info",
+        return_value=(get_version(), ""),
+    )
+    mock_remote_check = mocker.patch(
+        "dangerzone.updater.releases.get_remote_digest_and_logindex",
+        return_value=("digest", 100, []),
+    )
+    isolated_settings.set("updater_check_all", True)
+    isolated_settings.set("updater_last_check", int(time.time()))
+
+    task = startup.UpdateCheckTask()
+    mocker.patch.object(task, "prompt_user", return_value=True)
+
+    assert task.should_skip() is False
+    task.run()
+
+    mock_remote_check.assert_called_once()
+    assert isolated_settings.get("updater_remote_log_index") == 100

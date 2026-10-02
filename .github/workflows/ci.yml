@@ -345,7 +345,7 @@ jobs:
     strategy:
       matrix:
         distro: ["fedora"]
-        version: ["43", "44"]
+        version: ["43", "44", "45"]
         full: [true, false]
     env:
       RPM_PREFIX: dangerzone${{ matrix.full && '-full' || '' }}
@@ -474,6 +474,8 @@ jobs:
             version: "43"
           - distro: fedora
             version: "44"
+          - distro: fedora
+            version: "45"
 
     steps:
       - name: Checkout

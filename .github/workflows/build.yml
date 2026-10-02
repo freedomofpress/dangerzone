@@ -50,6 +50,8 @@ jobs:
             version: "43"
           - distro: fedora
             version: "44"
+          - distro: fedora
+            version: "45"
 
     steps:
       - name: Checkout

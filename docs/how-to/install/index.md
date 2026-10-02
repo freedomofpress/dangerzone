@@ -109,6 +109,7 @@ Pick your operating system to see how to install Dangerzone:
     ??? info "See the list of supported Fedora versions"
         Dangerzone is available for:
     
+        - Fedora 45
         - Fedora 44
         - Fedora 43
 

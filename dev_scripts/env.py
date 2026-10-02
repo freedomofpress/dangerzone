@@ -123,6 +123,20 @@ RUN rpm --restore shadow-utils
 RUN dnf install -y mupdf thunar && dnf clean all
 """
 
+# NOTE: Fedora 45 comes with Python 3.15 installed. Our Python project is not compatible
+# yet with Python 3.15, because PySide6 from PyPI cannot work with this Python version.
+# To sidestep this, install Python 3.14 *only* in dev environments.
+DOCKERFILE_BUILD_DEV_FEDORA_45_DEPS = r"""
+# Install Python 3.14 since our project is not compatible yet with Python 3.15.
+RUN dnf install -y python3.14 && dnf clean all
+"""
+
+# Poetry does not pick Python 3.14 on its own in Fedora 45, so we need to point it there
+# explicitly, before installing the project's dependencies.
+DOCKERFILE_BUILD_DEV_FEDORA_45_POETRY_ENV = r"""
+RUN cd /home/user/dangerzone && poetry env use python3.14
+"""
+
 # The Dockerfile for building a development environment for Dangerzone. Parts of the
 # Dockerfile will be populated during runtime.
 DOCKERFILE_BUILD_DEV = r"""FROM {distro}:{version}
@@ -160,6 +174,7 @@ RUN pipx install poetry
 RUN pipx inject poetry poetry-plugin-export
 
 COPY pyproject.toml poetry.lock /home/user/dangerzone/
+{poetry_env}
 RUN cd /home/user/dangerzone && poetry --no-ansi install
 """
 
@@ -593,8 +608,12 @@ class Env:
         elif sync:
             print("Image label not in registry, building it")
 
+        poetry_env = ""
         if self.distro == "fedora":
             install_deps = DOCKERFILE_BUILD_DEV_FEDORA_DEPS
+            if self.version == "45":
+                install_deps += DOCKERFILE_BUILD_DEV_FEDORA_45_DEPS
+                poetry_env = DOCKERFILE_BUILD_DEV_FEDORA_45_POETRY_ENV
         else:
             # Use Qt6 in all of our Linux dev environments, and add a missing
             # libxcb-cursor0 dependency
@@ -626,7 +645,10 @@ class Env:
             install_deps = install_deps.format(qt_deps=qt_deps)
 
         dockerfile = DOCKERFILE_BUILD_DEV.format(
-            distro=self.distro, version=self.version, install_deps=install_deps
+            distro=self.distro,
+            version=self.version,
+            install_deps=install_deps,
+            poetry_env=poetry_env,
         )
         if show_dockerfile:
             print(dockerfile)

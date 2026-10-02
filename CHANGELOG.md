@@ -29,6 +29,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 - Build Qubes packages from tagged released of the https://github.com/freedomofpress/dangerzone-image repo
   ([#1545](https://github.com/freedomofpress/dangerzone/issues/1517))
 
+### Platform changes
+
+- Add support for Fedora 45
+  ([#1568](https://github.com/freedomofpress/dangerzone/issues/1568))
+
 ### Development changes
 
 - The documentation is now published at [https://docs.dangerzone.rocks](https://docs.dangerzone.rocks) ([#903](https://github.com/freedomofpress/dangerzone/issues/903))

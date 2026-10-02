@@ -169,7 +169,9 @@ def test_enable_updates_after_some_time(mocker: MockerFixture) -> None:
     apply_installation_strategy(strategy)
 
     mock_get_remote_digest.assert_called_once_with("some_image_name")
-    mock_upgrade.assert_called_once_with("remote_digest", signatures=[{}])
+    mock_upgrade.assert_called_once_with(
+        "remote_digest", signatures=[{}], progress_callback=None
+    )
     mock_clear_old_images.assert_called_once_with(digest_to_keep="remote_digest")
 
 

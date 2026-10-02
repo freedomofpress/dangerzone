@@ -367,6 +367,14 @@ def test_startup_container_install_remote_accepted(
     startup_thread.check_run()
     install_mock.assert_called_once()
 
+    # The progress of the download must be reported as a percentage.
+    progress_callback = install_mock.call_args.kwargs["progress_callback"]
+    with qtbot.waitSignal(
+        startup_thread.task_container_install.download_progress
+    ) as blocker:
+        progress_callback(250, 1000)
+    assert blocker.args == [25]
+
 
 def test_startup_container_install_fail(qtbot: QtBot, mocker: MockerFixture) -> None:
     startup_thread = StartupThreadMocker(qtbot, mocker)

@@ -2,9 +2,11 @@ import pathlib
 import subprocess
 from typing import Any
 
+import pytest
 from pytest_mock import MockerFixture
 
-from dangerzone import container_utils, settings
+from dangerzone import container_utils, errors, settings
+from dangerzone.podman.errors import PodmanError, ServiceTerminated
 
 
 def test_get_podman_path(mocker: MockerFixture) -> None:
@@ -197,3 +199,93 @@ def test_clear_old_images_deletes_digests(mocker: MockerFixture) -> None:
 
     # Check that we removed the old images
     mock_podman.return_value.run.assert_any_call(["rmi", "--force", *old_digests_full])
+
+
+def test_container_pull(mocker: MockerFixture) -> None:
+    """Test that pulls go through the Podman CLI by default."""
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_api = mocker.patch("dangerzone.container_utils.api")
+
+    container_utils.container_pull("ghcr.io/image", "1234")
+
+    mock_api.service.assert_not_called()
+    mock_podman.return_value.run.assert_called_once_with(
+        ["pull", "ghcr.io/image@sha256:1234"], capture_output=False
+    )
+
+
+def test_container_pull_with_progress(mocker: MockerFixture) -> None:
+    """Test that pulls report their progress via the Podman API on Linux."""
+    mocker.patch("platform.system", return_value="Linux")
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_api = mocker.patch("dangerzone.container_utils.api")
+    socket_path = mock_api.service.return_value.__enter__.return_value
+    callback = mocker.MagicMock()
+
+    container_utils.container_pull("ghcr.io/image", "1234", callback)
+
+    mock_api.service.assert_called_once_with(mock_podman.return_value)
+    mock_api.pull.assert_called_once_with(
+        socket_path, "ghcr.io/image@sha256:1234", callback
+    )
+    mock_podman.return_value.run.assert_not_called()
+
+
+@pytest.mark.parametrize("system", ["Darwin", "Windows"])
+def test_container_pull_with_progress_non_linux(
+    mocker: MockerFixture, system: str
+) -> None:
+    """Test that the progress callback does not affect pulls on Windows/macOS."""
+    mocker.patch("platform.system", return_value=system)
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_api = mocker.patch("dangerzone.container_utils.api")
+
+    container_utils.container_pull("ghcr.io/image", "1234", mocker.MagicMock())
+
+    mock_api.service.assert_not_called()
+    mock_podman.return_value.run.assert_called_once_with(
+        ["pull", "ghcr.io/image@sha256:1234"], capture_output=False
+    )
+
+
+def test_container_pull_with_progress_custom_runtime(mocker: MockerFixture) -> None:
+    """Test that the progress callback is ignored for custom container runtimes."""
+    mocker.patch("platform.system", return_value="Linux")
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_api = mocker.patch("dangerzone.container_utils.api")
+    mocker.patch.object(
+        settings.Settings, "custom_runtime_specified", return_value=True
+    )
+
+    container_utils.container_pull("ghcr.io/image", "1234", mocker.MagicMock())
+
+    mock_api.service.assert_not_called()
+    mock_podman.return_value.run.assert_called_once()
+
+
+def test_container_pull_falls_back_to_cli(mocker: MockerFixture) -> None:
+    """Test that pulls use the Podman CLI if the Podman service cannot start."""
+    mocker.patch("platform.system", return_value="Linux")
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_api = mocker.patch("dangerzone.container_utils.api")
+    mock_api.service.return_value.__enter__.side_effect = ServiceTerminated(125)
+
+    container_utils.container_pull("ghcr.io/image", "1234", mocker.MagicMock())
+
+    mock_api.pull.assert_not_called()
+    mock_podman.return_value.run.assert_called_once_with(
+        ["pull", "ghcr.io/image@sha256:1234"], capture_output=False
+    )
+
+
+def test_container_pull_api_error(mocker: MockerFixture) -> None:
+    """Test that a failed pull via the Podman API is not retried with the CLI."""
+    mocker.patch("platform.system", return_value="Linux")
+    mock_podman = mocker.patch("dangerzone.container_utils.init_podman_command")
+    mock_api = mocker.patch("dangerzone.container_utils.api")
+    mock_api.pull.side_effect = PodmanError("manifest unknown")
+
+    with pytest.raises(errors.ContainerPullException, match="manifest unknown"):
+        container_utils.container_pull("ghcr.io/image", "1234", mocker.MagicMock())
+
+    mock_podman.return_value.run.assert_not_called()

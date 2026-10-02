@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tarfile
 from base64 import b64decode, b64encode
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import reduce
 from hashlib import sha256
@@ -625,6 +626,7 @@ def upgrade_container_image(
     image_str: str | None = None,
     pubkey: Path = DEFAULT_PUBKEY_LOCATION,
     signatures: list[dict] | None = None,
+    progress_callback: Callable[[int, int], None] | None = None,
 ) -> None:
     """Verify and upgrade the image to the latest, if signed."""
     image_str = image_str or runtime.expected_image_name()
@@ -645,7 +647,7 @@ def upgrade_container_image(
     if remote_log_index == local_log_index and runtime.list_image_digests():
         raise errors.ImageAlreadyUpToDate()
 
-    runtime.container_pull(image_str, remote_digest)
+    runtime.container_pull(image_str, remote_digest, progress_callback)
 
     # Now that they are verified, store the signatures
     store_signatures(signatures, remote_digest, pubkey)

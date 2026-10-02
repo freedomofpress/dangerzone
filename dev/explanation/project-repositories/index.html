@@ -1,0 +1,2905 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Take potentially dangerous PDFs, office documents, or images and convert them to a safe PDF.">
+      
+      
+        <meta name="author" content="Freedom of the Press Foundation">
+      
+      
+        <link rel="canonical" href="https://docs.dangerzone.rocks/dev/explanation/project-repositories/">
+      
+      
+        <link rel="prev" href="../development-environments/">
+      
+      
+        <link rel="next" href="../../faq/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/logo.png">
+      <meta name="generator" content="zensical-0.0.60">
+    
+    
+      
+        <title>The Dangerzone repositories - Dangerzone</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.ce62732f.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.812a03bb.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#the-dangerzone-repositories" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Dangerzone" class="md-header__button md-logo" aria-label="Dangerzone" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="Dangerzone">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Dangerzone
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              The Dangerzone repositories
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun-moon" viewBox="0 0 24 24"><path d="M12 2v2M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715M16 12a4 4 0 0 0-4-4M19 5l-1.256 1.256M20 12h2"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/freedomofpress/dangerzone" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    freedomofpress/dangerzone
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../when-to-use-dangerzone/" class="md-tabs__link">
+          
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+    
+    
+    
+      
+  
+  
+  
+  
+    
+      
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../how-to/install/" class="md-tabs__link">
+          
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/supported-formats/" class="md-tabs__link">
+          
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+      
+    
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../how-dangerzone-works/" class="md-tabs__link">
+          
+  
+  Explanation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../faq/" class="md-tabs__link">
+        
+  
+  FAQ
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Dangerzone" class="md-nav__button md-logo" aria-label="Dangerzone" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="Dangerzone">
+
+    </a>
+    Dangerzone
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/freedomofpress/dangerzone" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    freedomofpress/dangerzone
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Home
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Get started
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Get started
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../when-to-use-dangerzone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  When should I use Dangerzone?
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/convert-your-first-document/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Convert your first document
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/convert-from-the-command-line/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Convert documents from the command line
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/run-dangerzone-from-source/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Run dangerzone from source
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Guides
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Guides
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Install and update
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Install and update
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Install Dangerzone
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/install/verify-pgp-signatures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Verifying PGP signatures
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/install/update-dangerzone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Update Dangerzone
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/install/update-the-sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Update the sandbox
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/install/use-podman-desktop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Using Podman Desktop
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Contribute
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Contribute
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/contribute/report-an-issue/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Report an issue
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/contribute/build-from-source/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Development environment
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/contribute/run-the-tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Dangerzone Testing
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/contribute/dev-environments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Containerized environments
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/contribute/debug-the-sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Debug the sandbox
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Release
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Release
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Overview
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/release/pre-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Pre-release
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/release/prepare-build-envs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Prepare build environments
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/release/build/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Build release artifacts
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/release/qa/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  QA
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/release/release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Release
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/release/release-notes-templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Release notes templates
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/release/manage-python-installations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Managing Python installations
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/release/build-with-doit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Using the Doit Automation Tool
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Reference
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Reference
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/supported-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Supported document formats
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/supported-platforms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Operating System support
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Command-line tools
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Command-line tools
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/dangerzone-cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  dangerzone-cli
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/dangerzone-image/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  dangerzone-image
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/dangerzone-machine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  dangerzone-machine
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/sandbox-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Sandbox protocol
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Settings
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/environment-variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Environment variables
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/signing-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Signing keys
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/security-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Security policy
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Security advisories
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Security advisories
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advisories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Overview
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advisories/2024-12-24/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  2024-12-24
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advisories/2023-12-07/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  2023-12-07
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advisories/2023-10-25/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  2023-10-25
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Changelog
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/third-party-notice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Third-party notice
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Roadmap
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Explanation
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Explanation
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-dangerzone-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  How Dangerzone works
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Our Security model
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sandbox-updates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Independent sandbox updates
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../update-notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Update notifications
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reproducible-builds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Reproducible builds
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../qubes-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Qubes OS integration
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development-environments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Create Dangerzone environments
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Dangerzone repositories
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Dangerzone repositories
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The big picture
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-repositories" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The repositories
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The repositories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpressdangerzone" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/dangerzone
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpressdangerzone-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/dangerzone-image
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpresspackages" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/packages
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpressghcr-signer" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/ghcr-signer
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpressrepro-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/repro-build
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpressdangerzone-rs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/dangerzone-rs
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#websites" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Websites
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Websites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#statsdangerzonerocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        stats.dangerzone.rocks
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cvesdangerzonerocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        cves.dangerzone.rocks
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dangerzonerocks-and-this-site" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        dangerzone.rocks and this site
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  FAQ
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The big picture
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-repositories" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The repositories
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The repositories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpressdangerzone" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/dangerzone
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpressdangerzone-image" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/dangerzone-image
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpresspackages" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/packages
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpressghcr-signer" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/ghcr-signer
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpressrepro-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/repro-build
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freedomofpressdangerzone-rs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        freedomofpress/dangerzone-rs
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#websites" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Websites
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Websites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#statsdangerzonerocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        stats.dangerzone.rocks
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cvesdangerzonerocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        cves.dangerzone.rocks
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dangerzonerocks-and-this-site" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        dangerzone.rocks and this site
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+    
+    
+    
+      <li class="md-path__item">
+        <a href="../how-dangerzone-works/" class="md-path__link">
+          
+  
+  <span class="md-ellipsis">
+    Explanation
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+    <a href="https://github.com/freedomofpress/dangerzone/edit/main/docs/explanation/project-repositories.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/freedomofpress/dangerzone/raw/main/docs/explanation/project-repositories.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-code-2" viewBox="0 0 24 24"><path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/><path d="M14 2v5a1 1 0 0 0 1 1h5M5 16l-3 3 3 3M9 22l3-3-3-3"/></svg>
+    </a>
+  
+
+
+<h1 id="the-dangerzone-repositories">The Dangerzone repositories<a class="headerlink" href="#the-dangerzone-repositories" title="Permanent link">&para;</a></h1>
+<p>Dangerzone is more than one repository. The application, the sandbox image it runs, the packages users install and the signatures that tie them together, each live in their own place. This page gives contributors the bird's-eye view: what each repository or site is for, and how they fit together.</p>
+<h2 id="the-big-picture">The big picture<a class="headerlink" href="#the-big-picture" title="Permanent link">&para;</a></h2>
+<div class="mermaid-diagram"><svg id="mermaid-8d7b6f36" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width:700.543px;background-color:white" viewBox="0 0 700.54296875 730.3477783203125" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mermaid-8d7b6f36{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}#mermaid-8d7b6f36 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;stroke-linecap:round;}#mermaid-8d7b6f36 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;stroke-linecap:round;}#mermaid-8d7b6f36 .error-icon{fill:#552222;}#mermaid-8d7b6f36 .error-text{fill:#552222;stroke:#552222;}#mermaid-8d7b6f36 .edge-thickness-normal{stroke-width:1px;}#mermaid-8d7b6f36 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-8d7b6f36 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-8d7b6f36 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-8d7b6f36 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-8d7b6f36 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-8d7b6f36 .marker{fill:#333333;stroke:#333333;}#mermaid-8d7b6f36 .marker.cross{stroke:#333333;}#mermaid-8d7b6f36 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-8d7b6f36 p{margin:0;}#mermaid-8d7b6f36 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#mermaid-8d7b6f36 .cluster-label text{fill:#333;}#mermaid-8d7b6f36 .cluster-label span{color:#333;}#mermaid-8d7b6f36 .cluster-label span p{background-color:transparent;}#mermaid-8d7b6f36 .label text,#mermaid-8d7b6f36 span{fill:#333;color:#333;}#mermaid-8d7b6f36 .node rect,#mermaid-8d7b6f36 .node circle,#mermaid-8d7b6f36 .node ellipse,#mermaid-8d7b6f36 .node polygon,#mermaid-8d7b6f36 .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#mermaid-8d7b6f36 .rough-node .label text,#mermaid-8d7b6f36 .node .label text,#mermaid-8d7b6f36 .image-shape .label,#mermaid-8d7b6f36 .icon-shape .label{text-anchor:middle;}#mermaid-8d7b6f36 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-8d7b6f36 .rough-node .label,#mermaid-8d7b6f36 .node .label,#mermaid-8d7b6f36 .image-shape .label,#mermaid-8d7b6f36 .icon-shape .label{text-align:center;}#mermaid-8d7b6f36 .node.clickable{cursor:pointer;}#mermaid-8d7b6f36 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#mermaid-8d7b6f36 .arrowheadPath{fill:#333333;}#mermaid-8d7b6f36 .edgePath .path{stroke:#333333;stroke-width:1px;}#mermaid-8d7b6f36 .flowchart-link{stroke:#333333;fill:none;}#mermaid-8d7b6f36 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-8d7b6f36 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#mermaid-8d7b6f36 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-8d7b6f36 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#mermaid-8d7b6f36 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#mermaid-8d7b6f36 .cluster text{fill:#333;}#mermaid-8d7b6f36 .cluster span{color:#333;}#mermaid-8d7b6f36 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-8d7b6f36 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#mermaid-8d7b6f36 rect.text{fill:none;stroke-width:0;}#mermaid-8d7b6f36 .icon-shape,#mermaid-8d7b6f36 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-8d7b6f36 .icon-shape p,#mermaid-8d7b6f36 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#mermaid-8d7b6f36 .icon-shape .label rect,#mermaid-8d7b6f36 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-8d7b6f36 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mermaid-8d7b6f36 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}</style><defs><filter id="mermaid-8d7b6f36-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="mermaid-8d7b6f36-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><g><marker id="mermaid-8d7b6f36_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width:1;stroke-dasharray:1, 0"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width:1;stroke-dasharray:1, 0"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width:0;stroke-dasharray:1, 0"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width:0;stroke-dasharray:1, 0"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width:1;stroke-dasharray:1, 0"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width:1;stroke-dasharray:1, 0"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width:0;stroke-dasharray:1, 0"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width:0;stroke-dasharray:1, 0"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width:2;stroke-dasharray:1, 0"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width:2;stroke-dasharray:1, 0"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width:2.5"/></marker><marker id="mermaid-8d7b6f36_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width:2.5;stroke-dasharray:1, 0"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M494.465,86L494.465,90.167C494.465,94.333,494.465,102.667,494.465,110.333C494.465,118,494.465,125,494.465,128.5L494.465,132" id="mermaid-8d7b6f36-L_REPRO_IMG_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" data-edge="true" data-et="edge" data-id="L_REPRO_IMG_0" data-points="W3sieCI6NDk0LjQ2NDg0Mzc1LCJ5Ijo4Nn0seyJ4Ijo0OTQuNDY0ODQzNzUsInkiOjExMX0seyJ4Ijo0OTQuNDY0ODQzNzUsInkiOjEzNn1d" data-look="classic" marker-end="url(#mermaid-8d7b6f36_flowchart-v2-pointEnd)" /><path d="M439.747,214L428.29,222.167C416.832,230.333,393.916,246.667,373.411,263.295C352.906,279.923,334.813,296.846,325.766,305.307L316.719,313.768" id="mermaid-8d7b6f36-L_IMG_GHCR_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" data-edge="true" data-et="edge" data-id="L_IMG_GHCR_0" data-points="W3sieCI6NDM5Ljc0NzQ2OTgxNTM0MDksInkiOjIxNH0seyJ4IjozNzEsInkiOjI2M30seyJ4IjozMTMuNzk3NjEzNjczOTk1OTUsInkiOjMxNi41MDA4MDk5NTk0MjM1fV0=" data-look="classic" marker-end="url(#mermaid-8d7b6f36_flowchart-v2-pointEnd)" /><path d="M158.691,214L158.691,222.167C158.691,230.333,158.691,246.667,165.691,262.918C172.691,279.17,186.69,295.34,193.689,303.425L200.689,311.51" id="mermaid-8d7b6f36-L_SIGNER_GHCR_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" data-edge="true" data-et="edge" data-id="L_SIGNER_GHCR_0" data-points="W3sieCI6MTU4LjY5MTQwNjI1LCJ5IjoyMTR9LHsieCI6MTU4LjY5MTQwNjI1LCJ5IjoyNjN9LHsieCI6MjAzLjMwNjgzMjI0NDQzNjMsInkiOjMxNC41MzM3MDk3NDQ0ODh9XQ==" data-look="classic" marker-end="url(#mermaid-8d7b6f36_flowchart-v2-pointEnd)" /><path d="M532.907,214L540.957,222.167C549.007,230.333,565.107,246.667,573.157,266.696C581.207,286.725,581.207,310.449,581.207,322.312L581.207,334.174" id="mermaid-8d7b6f36-L_IMG_CVES_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" data-edge="true" data-et="edge" data-id="L_IMG_CVES_0" data-points="W3sieCI6NTMyLjkwNzQwNDExOTMxODEsInkiOjIxNH0seyJ4Ijo1ODEuMjA3MDMxMjUsInkiOjI2M30seyJ4Ijo1ODEuMjA3MDMxMjUsInkiOjMzOC4xNzM4ODE1MzA3NjE3fV0=" data-look="classic" marker-end="url(#mermaid-8d7b6f36_flowchart-v2-pointEnd)" /><path d="M251.723,418.348L251.723,426.514C251.723,434.681,251.723,451.014,251.723,466.681C251.723,482.348,251.723,497.348,251.723,504.848L251.723,512.348" id="mermaid-8d7b6f36-L_GHCR_DZ_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" data-edge="true" data-et="edge" data-id="L_GHCR_DZ_0" data-points="W3sieCI6MjUxLjcyMjY1NjI1LCJ5Ijo0MTguMzQ3NzYzMDYxNTIzNDR9LHsieCI6MjUxLjcyMjY1NjI1LCJ5Ijo0NjcuMzQ3NzYzMDYxNTIzNDR9LHsieCI6MjUxLjcyMjY1NjI1LCJ5Ijo1MTYuMzQ3NzYzMDYxNTIzNH1d" data-look="classic" marker-end="url(#mermaid-8d7b6f36_flowchart-v2-pointEnd)" /><path d="M186.67,594.348L176.384,600.514C166.098,606.681,145.525,619.014,135.239,630.681C124.953,642.348,124.953,653.348,124.953,658.848L124.953,664.348" id="mermaid-8d7b6f36-L_DZ_PKG_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" data-edge="true" data-et="edge" data-id="L_DZ_PKG_0" data-points="W3sieCI6MTg2LjY2OTg3MDQ3Njk3MzcsInkiOjU5NC4zNDc3NjMwNjE1MjM0fSx7IngiOjEyNC45NTMxMjUsInkiOjYzMS4zNDc3NjMwNjE1MjM0fSx7IngiOjEyNC45NTMxMjUsInkiOjY2OC4zNDc3NjMwNjE1MjM0fV0=" data-look="classic" marker-end="url(#mermaid-8d7b6f36_flowchart-v2-pointEnd)" /><path d="M316.775,594.348L327.062,600.514C337.348,606.681,357.92,619.014,368.206,630.681C378.492,642.348,378.492,653.348,378.492,658.848L378.492,664.348" id="mermaid-8d7b6f36-L_DZ_REL_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" data-edge="true" data-et="edge" data-id="L_DZ_REL_0" data-points="W3sieCI6MzE2Ljc3NTQ0MjAyMzAyNjMsInkiOjU5NC4zNDc3NjMwNjE1MjM0fSx7IngiOjM3OC40OTIxODc1LCJ5Ijo2MzEuMzQ3NzYzMDYxNTIzNH0seyJ4IjozNzguNDkyMTg3NSwieSI6NjY4LjM0Nzc2MzA2MTUyMzR9XQ==" data-look="classic" marker-end="url(#mermaid-8d7b6f36_flowchart-v2-pointEnd)" /></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_REPRO_IMG_0" transform="translate(0,0)"></g></g><g class="edgeLabel" transform="translate(371,263)"><g class="label" data-id="L_IMG_GHCR_0" transform="translate(-91.34375,-24)"></g></g><g class="edgeLabel" transform="translate(158.69140625,263)"><g class="label" data-id="L_SIGNER_GHCR_0" transform="translate(-74.71875,-24)"></g></g><g class="edgeLabel" transform="translate(581.20703125,263)"><g class="label" data-id="L_IMG_CVES_0" transform="translate(-62.140625,-12)"></g></g><g class="edgeLabel" transform="translate(251.72265625,467.34776306152344)"><g class="label" data-id="L_GHCR_DZ_0" transform="translate(-98.59375,-24)"></g></g><g class="edgeLabel" transform="translate(124.953125,631.3477630615234)"><g class="label" data-id="L_DZ_PKG_0" transform="translate(-51.21875,-12)"></g></g><g class="edgeLabel" transform="translate(378.4921875,631.3477630615234)"><g class="label" data-id="L_DZ_REL_0" transform="translate(-67.1875,-12)"></g></g></g><g class="nodes"><a xlink:href="https://github.com/freedomofpress/repro-build" transform="translate(494.46484375,47)" data-look="classic"><g class="node default clickable" id="mermaid-8d7b6f36-flowchart-REPRO-0" title="freedomofpress/repro-build on GitHub"><rect class="basic label-container" x="-100.2734375" y="-39" width="200.546875" height="78"/><g class="label" transform="translate(-70.2734375,-24)"></g></g></a><a xlink:href="https://github.com/freedomofpress/dangerzone-image" transform="translate(494.46484375,175)" data-look="classic"><g class="node default clickable" id="mermaid-8d7b6f36-flowchart-IMG-1" title="freedomofpress/dangerzone-image on GitHub"><rect class="basic label-container" x="-95.796875" y="-39" width="191.59375" height="78"/><g class="label" transform="translate(-65.796875,-24)"></g></g></a><g class="node default" id="mermaid-8d7b6f36-flowchart-GHCR-3" transform="translate(251.72265625,365.1738815307617)" data-look="classic"><path d="M0,14.449250896813673 a85.59375,14.449250896813673 0,0,0 171.1875,0 a85.59375,14.449250896813673 0,0,0 -171.1875,0 l0,77.44926126789609 a85.59375,14.449250896813673 0,0,0 171.1875,0 l0,-77.44926126789609" class="basic label-container outer-path" transform="translate(-85.59375,-53.17388153076172)"/><g class="label" transform="translate(-78.09375,-14)"></g></g><a xlink:href="https://github.com/freedomofpress/ghcr-signer" transform="translate(158.69140625,175)" data-look="classic"><g class="node default clickable" id="mermaid-8d7b6f36-flowchart-SIGNER-4" title="freedomofpress/ghcr-signer on GitHub"><rect class="basic label-container" x="-92.7578125" y="-39" width="185.515625" height="78"/><g class="label" transform="translate(-62.7578125,-24)"></g></g></a><g class="node default" id="mermaid-8d7b6f36-flowchart-CVES-7" transform="translate(581.20703125,365.1738815307617)" data-look="classic"><rect class="basic label-container" x="-111.3359375" y="-27" width="222.671875" height="54"/><g class="label" transform="translate(-81.3359375,-12)"></g></g><a xlink:href="https://github.com/freedomofpress/dangerzone" transform="translate(251.72265625,555.3477630615234)" data-look="classic"><g class="node default clickable" id="mermaid-8d7b6f36-flowchart-DZ-9" title="freedomofpress/dangerzone on GitHub"><rect class="basic label-container" x="-104.953125" y="-39" width="209.90625" height="78"/><g class="label" transform="translate(-74.953125,-24)"></g></g></a><g class="node default" id="mermaid-8d7b6f36-flowchart-PKG-11" transform="translate(124.953125,695.3477630615234)" data-look="classic"><rect class="basic label-container" x="-116.953125" y="-27" width="233.90625" height="54"/><g class="label" transform="translate(-86.953125,-12)"></g></g><g class="node default" id="mermaid-8d7b6f36-flowchart-REL-13" transform="translate(378.4921875,695.3477630615234)" data-look="classic"><rect class="basic label-container" x="-86.5859375" y="-27" width="173.171875" height="54"/><g class="label" transform="translate(-56.5859375,-12)"></g></g></g></g></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root edgeLabels edgeLabel label labelBkg"><rect x="279.65625" y="239" width="182.6875" height="48" fill="rgba(232, 232, 232, 0.5)"/><text x="371" y="251" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root edgeLabels edgeLabel labelBkg" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">nightly builds</text><text x="371" y="275" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root edgeLabels edgeLabel labelBkg" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">(images and attestations)</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root edgeLabels edgeLabel label labelBkg"><rect x="83.97265625" y="239" width="149.4375" height="48" fill="rgba(232, 232, 232, 0.5)"/><text x="158.69140625" y="251" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root edgeLabels edgeLabel labelBkg" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">monthly releases</text><text x="158.69140625" y="275" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root edgeLabels edgeLabel labelBkg" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">(tags and signatures)</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root edgeLabels edgeLabel label labelBkg"><rect x="519.06640625" y="251" width="124.28125" height="24" fill="rgba(232, 232, 232, 0.5)"/><text x="581.20703125" y="263" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root edgeLabels edgeLabel labelBkg" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">nightly CVE scans</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root edgeLabels edgeLabel label labelBkg"><rect x="153.12890625" y="443.34776306152344" width="197.1875" height="48" fill="rgba(232, 232, 232, 0.5)"/><text x="251.72265625" y="455.34776306152344" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root edgeLabels edgeLabel labelBkg" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">bundled in installers,</text><text x="251.72265625" y="479.34776306152344" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root edgeLabels edgeLabel labelBkg" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">or downloaded and verified</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root edgeLabels edgeLabel label labelBkg"><rect x="73.734375" y="619.3477630615234" width="102.4375" height="24" fill="rgba(232, 232, 232, 0.5)"/><text x="124.953125" y="631.3477630615234" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root edgeLabels edgeLabel labelBkg" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">.deb and .rpm</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root edgeLabels edgeLabel label labelBkg"><rect x="311.3046875" y="619.3477630615234" width="134.375" height="24" fill="rgba(232, 232, 232, 0.5)"/><text x="378.4921875" y="631.3477630615234" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root edgeLabels edgeLabel labelBkg" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">.dmg, .msi, source</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root nodes node default clickable label nodeLabel" transform="translate(494.46484375,47)" pointer-events="none"><text x="0" y="-12" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default clickable nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">repro-build</text><text x="0" y="12" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default clickable nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">reproducible builds</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root nodes node default clickable label nodeLabel" transform="translate(494.46484375,175)" pointer-events="none"><text x="0" y="-12" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default clickable nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">dangerzone-image</text><text x="0" y="12" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default clickable nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">sandbox image</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root nodes node default label nodeLabel"><text x="251.72265625" y="363.1738815307617" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">ghcr.io</text><text x="251.72265625" y="387.1738815307617" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">signed sandbox image</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root nodes node default clickable label nodeLabel" transform="translate(158.69140625,175)" pointer-events="none"><text x="0" y="-12" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default clickable nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">ghcr-signer</text><text x="0" y="12" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default clickable nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">Cosign signatures</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root nodes node default label nodeLabel"><text x="581.20703125" y="365.1738815307617" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">cves.dangerzone.rocks</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root nodes node default clickable label nodeLabel" transform="translate(251.72265625,555.3477630615234)" pointer-events="none"><text x="0" y="-12" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default clickable nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">dangerzone</text><text x="0" y="12" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default clickable nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">application and docs</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root nodes node default label nodeLabel"><text x="124.953125" y="695.3477630615234" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">packages.freedom.press</text></g><g data-merman-foreignobject="fallback" class="merman-foreignobject-fallback root nodes node default label nodeLabel"><text x="378.4921875" y="695.3477630615234" dominant-baseline="central" alignment-baseline="central" fill="#333" class="merman-foreignobject-fallback-text root nodes node default nodeLabel" style="text-anchor:middle;font-size:16px;font-family:&quot;trebuchet ms&quot;,verdana,arial,sans-serif">GitHub releases</text></g></svg>
+</div>
+<p>Every box in the graph is a link to the repository or site it stands for.</p>
+<h2 id="the-repositories">The repositories<a class="headerlink" href="#the-repositories" title="Permanent link">&para;</a></h2>
+<h3 id="freedomofpressdangerzone"><a href="https://github.com/freedomofpress/dangerzone">freedomofpress/dangerzone</a><a class="headerlink" href="#freedomofpressdangerzone" title="Permanent link">&para;</a></h3>
+<p>The main repository: the desktop application (in Qt), the CLI tools, the packaging for every platform and this documentation site. Releases are tagged here and their installers are published on the <a href="https://github.com/freedomofpress/dangerzone/releases">GitHub releases page</a>.</p>
+<h3 id="freedomofpressdangerzone-image"><a href="https://github.com/freedomofpress/dangerzone-image">freedomofpress/dangerzone-image</a><a class="headerlink" href="#freedomofpressdangerzone-image" title="Permanent link">&para;</a></h3>
+<p>The sandbox: the container image that performs the document-to-pixels conversion, and the Python package that runs inside it. Images built from the <code>main</code> branch are published nightly to <code>ghcr.io/freedomofpress/dangerzone/v1</code> (but are not tagged as <code>latest</code>), whereas images from feature branches are published under a testing namespace, <code>ghcr.io/freedomofpress/dangerzone-testing/v1</code>. The CI of this repo builds the image reproducibly, attaches provenance attestations, runs the daily CVE scans, and publishes the security dashboard. Problems with a document format, a bundled tool, or a CVE inside the sandbox belong here. The interface between the application and the image is described in <a href="../../reference/sandbox-protocol/">Sandbox protocol</a>, and the update mechanism in <a href="../sandbox-updates/">Independent sandbox updates</a>.</p>
+<h3 id="freedomofpresspackages"><a href="https://github.com/freedomofpress/packages">freedomofpress/packages</a><a class="headerlink" href="#freedomofpresspackages" title="Permanent link">&para;</a></h3>
+<p>Repository for the <code>.deb</code> and <code>.rpm</code> packages, served on <a href="https://packages.freedom.press">https://packages.freedom.press</a> (and on <a href="https://packages-qa.freedom.press">https://packages-qa.freedom.press</a> for release candidates).</p>
+<h3 id="freedomofpressghcr-signer"><a href="https://github.com/freedomofpress/ghcr-signer">freedomofpress/ghcr-signer</a><a class="headerlink" href="#freedomofpressghcr-signer" title="Permanent link">&para;</a></h3>
+<p>Utilities to publish our official container images on a monthly cadence. Candidate images from our nightly builds are signed privately with a hardware key and the signatures are submitted as a pull request. The CI verifies the signatures and once the pull request is merged, it pushes them to the GitHub Container Registry and tags the image as <code>latest</code>. The blog post <a href="https://dangerzone.rocks/news/2026-05-26-ghcr-signer/">The GHCR Signer</a> explains why this is needed and how it works. This is the step that lets Dangerzone <a href="../sandbox-updates/#why-you-can-trust-a-downloaded-image">trust a downloaded sandbox image</a>.</p>
+<h3 id="freedomofpressrepro-build"><a href="https://github.com/freedomofpress/repro-build">freedomofpress/repro-build</a><a class="headerlink" href="#freedomofpressrepro-build" title="Permanent link">&para;</a></h3>
+<p>A helper script to build bit-for-bit reproducible container images, by providing a build environment that is consistent across operating systems and container engines. <code>dangerzone-image</code> uses it so that anyone can rebuild the sandbox image and compare digests. The blog post <a href="https://dangerzone.rocks/news/2026-03-02-repro-build/">Reproducing the reproducible images</a> tells the story, and <a href="../reproducible-builds/">Reproducible builds</a> covers what is reproducible on the Dangerzone side.</p>
+<h3 id="freedomofpressdangerzone-rs"><a href="https://github.com/freedomofpress/dangerzone-rs">freedomofpress/dangerzone-rs</a><a class="headerlink" href="#freedomofpressdangerzone-rs" title="Permanent link">&para;</a></h3>
+<p>A rewrite of dangerzone in rust, currently in the works and not to be used yet.</p>
+<h2 id="websites">Websites<a class="headerlink" href="#websites" title="Permanent link">&para;</a></h2>
+<h3 id="statsdangerzonerocks"><a href="https://stats.dangerzone.rocks">stats.dangerzone.rocks</a><a class="headerlink" href="#statsdangerzonerocks" title="Permanent link">&para;</a></h3>
+<p>Release statistics for the project aggregating data from the GitHub releases and the container registry. Generated by <a href="https://github.com/freedomofpress/dangerzone-stats">freedomofpress/dangerzone-stats</a>.</p>
+<h3 id="cvesdangerzonerocks"><a href="https://cves.dangerzone.rocks">cves.dangerzone.rocks</a><a class="headerlink" href="#cvesdangerzonerocks" title="Permanent link">&para;</a></h3>
+<p>The security dashboard: the results of the nightly <a href="https://github.com/anchore/grype">grype</a> scans of the sandbox image, both for the development branch and the latest released image. This is the second line of defense described in the <a href="../security-model/">security model</a>. The dashboard is published from the <code>dangerzone-image</code> repository.</p>
+<h3 id="dangerzonerocks-and-this-site"><a href="https://dangerzone.rocks">dangerzone.rocks</a> and this site<a class="headerlink" href="#dangerzonerocks-and-this-site" title="Permanent link">&para;</a></h3>
+<p>The official website, with download links and the blog. Built from <a href="https://github.com/freedomofpress/dangerzone.rocks">freedomofpress/dangerzone.rocks</a>. This documentation site is built from the <code>docs/</code> directory of the main repository and published at <a href="https://docs.dangerzone.rocks">docs.dangerzone.rocks</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../development-environments/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Create Dangerzone environments">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Create Dangerzone environments
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../faq/" class="md-footer__link md-footer__link--next" aria-label="Next: FAQ">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                FAQ
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2022&ndash;2026 Freedom of the Press Foundation and Dangerzone contributors. Licensed under the AGPLv3.
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/freedomofpress/dangerzone" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+    </a>
+  
+    
+    
+      
+    
+    
+    
+      
+      
+    
+    <a href="https://social.freedom.press/@dangerzone" target="_blank" rel="noopener me" title="social.freedom.press" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M433 179.1c0-97.2-63.7-125.7-63.7-125.7-62.5-28.7-228.6-28.4-290.5 0 0 0-63.7 28.5-63.7 125.7 0 115.7-6.6 259.4 105.6 289.1 40.5 10.7 75.3 13 103.3 11.4 50.8-2.8 79.3-18.1 79.3-18.1l-1.7-36.9s-36.3 11.4-77.1 10.1c-40.4-1.4-83-4.4-89.6-54-.6-4.6-.9-9.3-.9-13.9 85.6 20.9 158.7 9.1 178.7 6.7 56.1-6.7 105-41.3 111.2-72.9 9.8-49.8 9-121.5 9-121.5zm-75.1 125.2h-46.6V190.1c0-49.7-64-51.6-64 6.9v62.5H201V197c0-58.5-64-56.6-64-6.9v114.2H90.3c0-122.1-5.2-147.9 18.4-175 25.9-28.9 79.8-30.8 103.8 6.1l11.6 19.5 11.6-19.5c24.1-37.1 78.1-34.8 103.8-6.1 23.7 27.3 18.4 53 18.4 175"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://dangerzone.rocks" target="_blank" rel="noopener" title="dangerzone.rocks" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M351.9 280H161c2.9 64.5 17.2 123.9 37.5 167.4 11.4 24.5 23.7 41.8 35.1 52.4 11.2 10.5 18.9 12.2 22.9 12.2s11.7-1.7 22.9-12.2c11.4-10.6 23.7-28 35.1-52.4 20.3-43.5 34.6-102.9 37.5-167.4zm-191-48h190.9c-2.8-64.5-17.1-123.9-37.4-167.4-11.4-24.4-23.7-41.8-35.1-52.4C268.1 1.7 260.4 0 256.4 0s-11.7 1.7-22.9 12.2c-11.4 10.6-23.7 28-35.1 52.4-20.3 43.5-34.6 102.9-37.5 167.4m-48 0c3.5-85.6 25.6-165.1 57.9-217.3C78.7 47.3 10.9 131.2 1.5 232zM1.5 280c9.4 100.8 77.2 184.7 169.3 217.3-32.3-52.2-54.4-131.7-57.9-217.3zm398.4 0c-3.5 85.6-25.6 165.1-57.9 217.3 92.1-32.7 159.9-116.5 169.3-217.3zm111.4-48C501.9 131.2 434.1 47.3 342 14.7c32.3 52.2 54.4 131.7 57.9 217.3z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tooltips","navigation.footer","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.tabs","navigation.tabs.sticky","navigation.top","navigation.tracking","search.highlight","search.suggest","toc.follow"],"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"provider":"mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.88ee1349.min.js"></script>
+      
+        <script src="../../javascripts/tabs.js"></script>
+      
+    
+  </body>
+</html>

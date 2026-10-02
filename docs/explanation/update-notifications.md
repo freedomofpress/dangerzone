@@ -2,7 +2,7 @@
 
 This design document explains how the notification mechanism for Dangerzone updates works, what its benefits and limitations are, and what other alternatives we have considered. It has been adapted from discussions on GitHub issue [#189](https://github.com/freedomofpress/dangerzone/issues/189), and has been updated to reflect the current design.
 
-A user-facing document on how update notifications work can be found in https://github.com/freedomofpress/dangerzone/wiki/Updates. The keys mentioned below are documented in the [settings reference](../reference/settings.md), and the independent sandbox update mechanism that this design was later extended with is described in [Independent sandbox updates](sandbox-updates.md).
+A user-facing document on how update notifications work can be found in [Update Dangerzone](../how-to/install/update-dangerzone.md). The keys mentioned below are documented in the [settings reference](../reference/settings.md), and the independent sandbox update mechanism that this design was later extended with is described in [Independent sandbox updates](sandbox-updates.md).
 
 ## Design overview
 
@@ -68,7 +68,7 @@ _We trigger error handling when the updater thread encounters an error (either d
 
          > Something went wrong while checking for Dangerzone updates:
          >
-         > You are strongly advised to visit our [downloads page](https://dangerzone.rocks#downloads) and check for new updates manually, or consult [this page](https://github.com/freedomofpress/dangerzone/wiki/Updates) for common causes of errors . Alternatively, you can uncheck "Check for updates", if you are in an air-gapped environment and have another way of learning about updates.
+         > You are strongly advised to visit our [downloads page](https://dangerzone.rocks#downloads) and check for new updates manually, or consult [this page](../how-to/install/update-dangerzone.md#update-check-errors) for common causes of errors. Alternatively, you can uncheck "Check for updates", if you are in an air-gapped environment and have another way of learning about updates.
          >
          > (Show the latest error message in a scrollable, copyable text box)
 

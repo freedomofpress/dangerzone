@@ -131,7 +131,7 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Sign the sandbox/container images and automatically upgrade them to their latest version
   ([#1006](https://github.com/freedomofpress/dangerzone/issues/1006)).
-  Read more about this feature [in our docs](https://github.com/freedomofpress/dangerzone/blob/main/docs/independent-container-updates.md).
+  Read more about this feature [in our docs](https://docs.dangerzone.rocks/latest/how-to/install/update-the-sandbox/).
 - Make Dangerzone use an embedded version of Podman under the hood
   ([#1145](https://github.com/freedomofpress/dangerzone/issues/1145))
 - Bundle Podman images for Windows and macOS alongside our application

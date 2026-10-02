@@ -24,7 +24,7 @@ new Dangerzone releases.</p>
 
 <p>This is recommended in most settings. For alternative methods to keep
 Dangerzone up-to-date and secure (e.g., in a networkless environment),
-see <a href=https://github.com/freedomofpress/dangerzone/wiki/Updates>our
+see <a href="https://docs.dangerzone.rocks/latest/how-to/install/update-dangerzone/">our
 documentation ↗️</a>.</p>
 """
 # FIXME: Add a link to the documentation.
@@ -41,7 +41,7 @@ MSG_CONFIRM_DOWNLOAD_CONTAINER = """\
 <p>If you enable this option, Dangerzone will download the sandbox now and
 periodically check for updates.</p>
 <p>This is <b>required</b> for this version of Dangerzone to work</p>
-<o>If you prefer, you can <a href="https://github.com/freedomofpress/dangerzone/blob/main/INSTALL.md#linux">install the dangerzone-full variant</a> (Linux only), which comes with a bundled sandbox.</p>
+<o>If you prefer, you can <a href="https://docs.dangerzone.rocks/latest/how-to/install/">install the dangerzone-full variant</a> (Linux only), which comes with a bundled sandbox.</p>
 """
 OK_TEXT_DOWNLOAD = "Yes, download sandbox and enable updates"
 CANCEL_TEXT_DOWNLOAD = "Quit Dangerzone"

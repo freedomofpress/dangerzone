@@ -58,3 +58,13 @@ If you're curious about how that works, have a look at the [update notifications
 ## Updating the sandbox without updating Dangerzone
 
 The sandbox image updates independently from the application. If you enabled automatic updates, Dangerzone fetches new sandbox images on its own. To trigger it by hand, or on an air-gapped machine, see [Update the sandbox image](update-the-sandbox.md).
+
+## Update check errors
+
+When update checks are enabled, Dangerzone contacts GitHub at most once every 12 hours to learn about new releases. If a check fails, a red dot shows up on the hamburger menu in the top-right corner. Click it and choose **Update error** to read the error message.
+
+Most of the time, this means that your computer is not connected to the Internet, or that GitHub is experiencing an outage. Dangerzone tries again on its own 12 hours later, and the error goes away after the next successful check. In the meantime, you can [check by hand](#check-whether-you-are-up-to-date) whether you are up to date.
+
+If the error keeps coming back, or if you are unsure about the message you see, please [report it](../contribute/report-an-issue.md).
+
+If your computer is never online, uncheck **Check for updates** in the hamburger menu to turn the checks off, and follow our releases some other way: on [Mastodon](https://social.freedom.press/@dangerzone), or with the **Watch** button of our [GitHub repository](https://github.com/freedomofpress/dangerzone). To update the sandbox on such a machine, see [Installing image updates to air-gapped environments](update-the-sandbox.md#installing-image-updates-to-air-gapped-environments).

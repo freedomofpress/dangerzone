@@ -48,7 +48,7 @@ UPDATE_ERROR_MSG_INTRO = """\
 <p>You are strongly advised to visit our
 <a href="https://dangerzone.rocks#downloads">downloads page</a> and check for new
 updates manually, or consult
-<a href=https://github.com/freedomofpress/dangerzone/wiki/Updates>this webpage</a> for
+<a href="https://docs.dangerzone.rocks/latest/how-to/install/update-dangerzone/#update-check-errors">this webpage</a> for
 common causes of errors. Alternatively, you can uncheck the "Check for updates" option
 in our menu, if you are in an air-gapped environment and have another way of learning
 about updates.</p>
@@ -97,7 +97,7 @@ troubleshooting tips ↗️
 </p>
 
 <p>If you feel stuck, don't hesitate to
-<a href="https://github.com/freedomofpress/dangerzone/wiki/Reporting-an-issue">
+<a href="https://docs.dangerzone.rocks/latest/how-to/contribute/report-an-issue/">
 report an issue ↗️
 </a>
 </p>
@@ -880,7 +880,7 @@ class StartupErrorWidget(QtWidgets.QWidget):
         self.traceback_widget.process_output(msg)
         self.footer.setText("""\
             <p>
-              <a href="https://github.com/freedomofpress/dangerzone/wiki/Reporting-an-issue">
+              <a href="https://docs.dangerzone.rocks/latest/how-to/contribute/report-an-issue/">
                  Report issue ↗️
               </a>
             </p>

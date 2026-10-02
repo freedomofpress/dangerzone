@@ -182,6 +182,8 @@ jobs:
             version: "26.04"
           - distro: ubuntu
             version: "25.10"
+          - distro: ubuntu
+            version: "26.10"
           - distro: debian
             version: bookworm
           - distro: debian
@@ -286,6 +288,9 @@ jobs:
             full: false
           - distro: ubuntu
             version: "26.04"
+            full: false
+          - distro: ubuntu
+            version: "26.10"
             full: false
           - distro: debian
             version: bookworm
@@ -464,6 +469,8 @@ jobs:
             version: "26.04"
           - distro: ubuntu
             version: "25.10"
+          - distro: ubuntu
+            version: "26.10"
           - distro: debian
             version: bookworm
           - distro: debian

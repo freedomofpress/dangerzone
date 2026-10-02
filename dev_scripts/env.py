@@ -637,6 +637,8 @@ class Env:
                 "resolute",
                 "25.10",
                 "questing",
+                "26.10",
+                "stonking",
             ):
                 install_deps = (
                     DOCKERFILE_UBUNTU_REM_USER + DOCKERFILE_BUILD_DEV_DEBIAN_DEPS

@@ -19,6 +19,8 @@ jobs:
       matrix:
         include:
           - distro: ubuntu
+            version: "26.10"  # stonking
+          - distro: ubuntu
             version: "25.10"  # questing
           - distro: ubuntu
             version: "26.04"  # resolute

@@ -33,6 +33,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Add support for Fedora 45
   ([#1568](https://github.com/freedomofpress/dangerzone/issues/1568))
+- Add support for Ubuntu 26.10 (Stonking Stingray)
+  ([#1569](https://github.com/freedomofpress/dangerzone/issues/1569))
 
 ### Development changes
 

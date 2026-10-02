@@ -51,6 +51,7 @@ Pick your operating system to see how to install Dangerzone:
     ??? info "See the list of supported Debian and Ubuntu versions"
         Dangerzone is available for:
     
+        - Ubuntu 26.10 (stonking)
         - Ubuntu 26.04 (resolute)
         - Ubuntu 25.10 (questing)
         - Ubuntu 24.04 (noble)

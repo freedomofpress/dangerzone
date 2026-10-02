@@ -182,6 +182,8 @@ jobs:
             version: "26.04"
           - distro: ubuntu
             version: "25.10"
+          - distro: ubuntu
+            version: "26.10"
           - distro: debian
             version: bookworm
           - distro: debian
@@ -287,6 +289,9 @@ jobs:
           - distro: ubuntu
             version: "26.04"
             full: false
+          - distro: ubuntu
+            version: "26.10"
+            full: false
           - distro: debian
             version: bookworm
             full: true
@@ -345,7 +350,7 @@ jobs:
     strategy:
       matrix:
         distro: ["fedora"]
-        version: ["43", "44"]
+        version: ["43", "44", "45"]
         full: [true, false]
     env:
       RPM_PREFIX: dangerzone${{ matrix.full && '-full' || '' }}
@@ -464,6 +469,8 @@ jobs:
             version: "26.04"
           - distro: ubuntu
             version: "25.10"
+          - distro: ubuntu
+            version: "26.10"
           - distro: debian
             version: bookworm
           - distro: debian
@@ -474,6 +481,8 @@ jobs:
             version: "43"
           - distro: fedora
             version: "44"
+          - distro: fedora
+            version: "45"
 
     steps:
       - name: Checkout

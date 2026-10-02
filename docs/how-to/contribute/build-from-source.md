@@ -98,6 +98,8 @@ Pick your platform to set up a development environment:
         pipx qt6-qtbase-gui
     ```
 
+    > **Note**: The default Python version that ships with Fedora 45 (3.15) is not compatible with PySide6 from PyPI, which requires Python 3.14 or earlier. If you are on Fedora 45, install Python 3.14 with `sudo dnf install -y python3.14`, and run `poetry env use python3.14` in the `dangerzone` folder, before running `poetry install`.
+
     Install Poetry using `pipx`:
 
     ```sh

@@ -11,7 +11,7 @@ VERSION = Path("share/version.txt").read_text().strip()
 VERSION_INSECURE_CONVERTER = (
     Path("share/version_insecure_converter.txt").read_text().strip()
 )
-FEDORA_VERSIONS = ["42", "43", "44"]
+FEDORA_VERSIONS = ["42", "43", "44", "45"]
 
 ### Global parameters
 

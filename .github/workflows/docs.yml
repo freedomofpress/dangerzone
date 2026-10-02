@@ -92,6 +92,14 @@ jobs:
         run: |
           pipx install poetry
           poetry install --only main,docs
+      # WeasyPrint needs Pango, and the fonts the PDF is typeset with.
+      - name: Install the PDF export dependencies
+        if: github.ref_type == 'tag'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 \
+            fonts-dejavu-core fonts-noto-color-emoji
       - name: Regenerate the CLI help embedded in the docs
         run: make docs-cog
       - name: Fetch the previously published versions
@@ -117,5 +125,16 @@ jobs:
           cd "$RUNNER_TEMP/gh-pages"
           git add _headers
           git diff --cached --quiet || git commit -m "Update the Cloudflare Pages headers"
+      - name: Commit the PDF export
+        if: github.ref_type == 'tag'
+        run: |
+          version="$(cat share/version.txt)"
+          poetry run python dev_scripts/docs_pdf.py
+          cd "$RUNNER_TEMP/gh-pages"
+          for folder in "$version" latest; do
+            cp "$GITHUB_WORKSPACE/site/dangerzone-docs.pdf" "$folder/"
+            git add "$folder/dangerzone-docs.pdf"
+          done
+          git commit -m "Add the PDF export of $version"
       - name: Push the gh-pages branch
         run: git push origin gh-pages

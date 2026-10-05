@@ -8,6 +8,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...HEAD)
 
+## [0.11.1](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...v0.11.1)
+
 ### Changes
 
 - We no longer render the Github release notes from Markdown to HTML within the

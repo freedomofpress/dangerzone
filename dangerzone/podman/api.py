@@ -3,7 +3,6 @@
 import contextlib
 import http.client
 import json
-import os
 import socket
 import subprocess
 import tempfile
@@ -12,6 +11,7 @@ import urllib.parse
 from collections.abc import Callable, Generator
 from pathlib import Path
 
+from ..util import get_cache_dir
 from . import errors
 from .command import PodmanCommand
 
@@ -57,8 +57,9 @@ def service(podman: PodmanCommand) -> Generator[Path]:
     so it cannot outlive Dangerzone for long.
     """
 
-    runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
-    with tempfile.TemporaryDirectory(prefix="dangerzone-", dir=runtime_dir) as tmpdir:
+    cache_dir = get_cache_dir()
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="dangerzone-", dir=cache_dir) as tmpdir:
         socket_path = Path(tmpdir) / "podman.sock"
         podman.start_service(uri=f"unix://{socket_path}")
         try:

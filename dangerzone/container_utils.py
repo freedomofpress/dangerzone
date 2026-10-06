@@ -400,7 +400,7 @@ def container_pull(
                 api.pull(socket_path, reference, progress_callback)
             return
         except (ServiceTerminated, ServiceTimeout) as e:
-            log.debug(f"Pulling without progress reporting: {e}")
+            log.warning(f"Pulling without progress reporting: {e}")
         except (PodmanError, OSError, HTTPException, ValueError) as e:
             raise errors.ContainerPullException(
                 f"Could not pull the container image: {e}"

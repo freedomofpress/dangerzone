@@ -122,7 +122,10 @@ def test_pull_interrupted(fake_service: FakePodmanService) -> None:
         pull(fake_service)
 
 
-def test_service(mocker: MockerFixture, fake_service: FakePodmanService) -> None:
+def test_service(
+    mocker: MockerFixture, fake_service: FakePodmanService, tmp_path: Path
+) -> None:
+    mocker.patch("dangerzone.podman.api.get_cache_dir", return_value=tmp_path)
     mocker.patch(
         "tempfile.TemporaryDirectory"
     ).return_value.__enter__.return_value = Path(

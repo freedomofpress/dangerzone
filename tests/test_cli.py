@@ -1,6 +1,7 @@
 import copy
 import os
 import platform
+import re
 import shutil
 import sys
 import tempfile
@@ -492,5 +493,13 @@ class TestCliIO(TestCli):
         # Try again with stdout as output
         result = self.run_cli_stdin(["-", "-o", "-"])
         result.assert_success()
-        assert len(data) == len(result.stdout_bytes)
-        assert data[:-100] == result.stdout_bytes[:-100]
+
+        # Strip the random /ID in the PDF because its lengh can vary,
+        # creating a flaky test.
+        pdf_string = rb"(?:<[0-9A-Fa-f]*>|\((?:\\.|[^\\)])*\))"
+        pdf_id = rb"/ID\[\s*" + pdf_string + rb"\s*" + pdf_string + rb"\s*\]"
+
+        def strip_pdf_id(pdf: bytes) -> bytes:
+            return re.sub(pdf_id, b"", pdf, flags=re.DOTALL)
+
+        assert strip_pdf_id(data) == strip_pdf_id(result.stdout_bytes)

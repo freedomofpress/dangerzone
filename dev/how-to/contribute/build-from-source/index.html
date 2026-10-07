@@ -2776,6 +2776,9 @@ instructions above for how to download or build it.</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>rpm-build<span class="w"> </span>podman<span class="w"> </span>python3<span class="w"> </span>python3-devel<span class="w"> </span>python3-poetry-core<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span>pipx<span class="w"> </span>qt6-qtbase-gui
 </span></code></pre></div>
+<blockquote>
+<p><strong>Note</strong>: The default Python version that ships with Fedora 45 (3.15) is not compatible with PySide6 from PyPI, which requires Python 3.14 or earlier. If you are on Fedora 45, install Python 3.14 with <code>sudo dnf install -y python3.14</code>, and run <code>poetry env use python3.14</code> in the <code>dangerzone</code> folder, before running <code>poetry install</code>.</p>
+</blockquote>
 <p>Install Poetry using <code>pipx</code>:</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>pipx<span class="w"> </span>install<span class="w"> </span>poetry
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>pipx<span class="w"> </span>inject<span class="w"> </span>poetry

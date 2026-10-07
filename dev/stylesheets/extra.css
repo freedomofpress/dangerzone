@@ -17,3 +17,12 @@
 .md-typeset .task-list-item input[type="checkbox"]:not(:disabled) {
   cursor: pointer;
 }
+
+/* OS-specific tabs: frame them, so that it's clear that their content only
+ * applies to the selected OS. */
+.md-typeset .os-specific {
+  border: 0.05rem solid var(--md-default-fg-color--lightest);
+  border-radius: 0.2rem;
+  padding: 0 0.8rem;
+  margin: 1em 0;
+}

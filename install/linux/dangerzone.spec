@@ -79,10 +79,6 @@ Conflicts:      dangerzone-full
 BuildRequires:  python3-devel
 
 %if 0%{?_qubes}
-# Qubes-only requirements (server-side)
-Requires:       python3-magic
-Requires:       libreoffice
-
 # Qubes-only dependency, to install a single RPM package in the Fedora template.
 Requires:       dangerzone-insecure-converter-qubes
 %else

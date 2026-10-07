@@ -106,8 +106,8 @@ report an issue ↗️
 DOWNLOAD_NEW_CONTAINER_IMAGE_MSG = """\
 <p>A new version of the secure sandbox is available and should be downloaded.</p>
 <p>The download size is usually about 500MiB.</p>
- <p>Should we proceed now? (If you skip, you will be asked the next time your run Dangerzone)</p>
-<p>Keeping the sandbox up to date helps avoiding security vulnerabilities.
+ <p>Should we proceed now? (If you skip, you will be asked the next time you run Dangerzone.)</p>
+<p>Keeping the sandbox up to date helps avoid security vulnerabilities.
  It's recommended to always apply updates.</p>
 """
 

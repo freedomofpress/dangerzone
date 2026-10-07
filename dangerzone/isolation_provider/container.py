@@ -66,6 +66,25 @@ class Container(IsolationProvider):
         security_args += ["--network=none"]
         security_args += ["-u", "dangerzone"]
 
+        # Disable cgroup support, since we are not making use of it and it fails in
+        # systems with restrictive umasks, like Tails.
+        #
+        # See https://github.com/freedomofpress/dangerzone/issues/1574
+        security_args += ["--cgroups=disabled"]
+        # NOTE: The above flag should disable cgroups, but at least on Tails, crun
+        # attempts to mount them. Over-mounting a tmpfs dir over /sys/fs/cgroup
+        # stops crun from doing so.
+        security_args += ["--mount=type=tmpfs,destination=/sys/fs/cgroup"]
+        # NOTE: This flag disables cgroups on the gVisor level. We have already merged a
+        # a fix in the dangerzone-image repo [1] but we also need to take into account
+        # users who have not upgraded their Dangerzone image yet. For users who have
+        # done the upgrade, specifying the same flag twice doesn't introduce any errors.
+        #
+        # This flag should be removed once we bump the dangerzone-image version to v2.
+        #
+        # [1] https://github.com/freedomofpress/dangerzone-image/pull/55
+        security_args += ["-e", "RUNSC_FLAGS=--ignore-cgroups"]
+
         return security_args
 
     @staticmethod

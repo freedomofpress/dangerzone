@@ -382,8 +382,7 @@ jobs:
               --version ${{ matrix.version }} \
               build-dev --sync
 
-      - if: matrix.full
-        name: Use the testing image and key
+      - name: Use the testing image and key
         run: |-
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt

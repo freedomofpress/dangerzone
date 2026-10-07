@@ -88,4 +88,4 @@ See [Update notifications](../explanation/update-notifications.md) for how these
 
 ## Related files
 
-Next to the settings, Dangerzone keeps the sandbox image signatures under the per-user data directory (`~/.local/share/dangerzone/signatures` on Linux, `~/Library/Application Support/dangerzone/signatures` on macOS, `%LOCALAPPDATA%\dangerzone\dangerzone\signatures` on Windows), including the `last_log_index` file that `dangerzone-image load-archive` checks before installing an archive.
+Next to the settings, Dangerzone keeps the sandbox image signatures under the per-user data directory (`~/.local/share/dangerzone/signatures` on Linux, `~/Library/Application Support/dangerzone/signatures` on macOS, `%LOCALAPPDATA%\dangerzone\dangerzone\signatures` on Windows), including the `last_log_index` file that `dangerzone-image load-archive` checks before installing an archive. See [Directories](directories.md) for all the data that Dangerzone stores.

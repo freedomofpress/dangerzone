@@ -68,6 +68,7 @@ nav = [
     { "Sandbox protocol" = "reference/sandbox-protocol.md" },
     { "Settings" = "reference/settings.md" },
     { "Environment variables" = "reference/environment-variables.md" },
+    { "Directories" = "reference/directories.md" },
     { "Signing keys" = "reference/signing-keys.md" },
     { "Security policy" = "reference/security-policy.md" },
     { "Security advisories" = [
@@ -109,6 +110,7 @@ features = [
   "content.code.copy",
   "content.code.select",
   "content.footnote.tooltips",
+  "content.tabs.link",
   "content.tooltips",
   "navigation.footer",
   "navigation.instant",

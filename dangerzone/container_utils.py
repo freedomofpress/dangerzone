@@ -6,14 +6,16 @@ import platform
 import shutil
 import subprocess
 import sys
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
+from http.client import HTTPException
 from pathlib import Path, PurePosixPath
 
 from dangerzone.podman.errors.exceptions import PodmanNotInstalled
 
 from . import errors
+from .podman import api
 from .podman.command import PodmanCommand
-from .podman.errors import CommandError
+from .podman.errors import CommandError, PodmanError, ServiceTerminated, ServiceTimeout
 from .settings import Settings
 from .util import (
     get_cache_dir,
@@ -375,11 +377,37 @@ def expected_image_name() -> str:
     return image_name_path.read_text().strip("\n")
 
 
-def container_pull(image: str, manifest_digest: str) -> None:
-    """Pull a container image from a registry."""
+def container_pull(
+    image: str,
+    manifest_digest: str,
+    progress_callback: Callable[[int, int], None] | None = None,
+) -> None:
+    """Pull a container image from a registry.
+
+    The progress callback receives the downloaded and total bytes. It is only
+    supported on Linux with the default Podman, and is ignored elsewhere.
+    """
     podman = init_podman_command()
+    reference = f"{image}@sha256:{manifest_digest}"
+
+    if (
+        progress_callback
+        and platform.system() == "Linux"
+        and not Settings().custom_runtime_specified()
+    ):
+        try:
+            with api.service(podman) as socket_path:
+                api.pull(socket_path, reference, progress_callback)
+            return
+        except (ServiceTerminated, ServiceTimeout) as e:
+            log.warning(f"Pulling without progress reporting: {e}")
+        except (PodmanError, OSError, HTTPException, ValueError) as e:
+            raise errors.ContainerPullException(
+                f"Could not pull the container image: {e}"
+            ) from e
+
     try:
-        podman.run(["pull", f"{image}@sha256:{manifest_digest}"], capture_output=False)
+        podman.run(["pull", reference], capture_output=False)
     except CommandError:
         raise errors.ContainerPullException("Could not pull the container image")
 

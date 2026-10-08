@@ -18,6 +18,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Accept documents from stdin, and write safe PDFs to stdout, by passing `-` as the input filename and `--output-filename -` for the output, enabling standard Unix pipe workflows like `cat file.pdf | dangerzone-cli - -o - > safe.pdf`
   ([#1522](https://github.com/freedomofpress/dangerzone/issues/1522))
+- (Linux) Show a progress bar when downloading the sandbox
+  ([#1164](https://github.com/freedomofpress/dangerzone/issues/1164))
 
 ### Fixed
 

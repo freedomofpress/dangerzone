@@ -238,6 +238,9 @@ class UpdateCheckTask(Task):
             return not releases.should_check_for_updates(settings.Settings())
         except updater_errors.NeedUserInputNoContainer:
             if self.prompt_user(download_required=True):
+                # The sandbox must be downloaded now, so a recent update check (e.g.,
+                # one that failed) must not postpone this one.
+                settings.Settings().set("updater_last_check", 0)
                 settings.Settings().set("updater_check_all", True, autosave=True)
                 return False
             else:

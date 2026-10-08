@@ -67,6 +67,9 @@ pytest-rerunfailures = "*"
 pymupdf = "*"
 
 # Dependencies required for building the documentation site.
+[tool.poetry.group.docs]
+optional = true
+
 [tool.poetry.group.docs.dependencies]
 cogapp = "*"
 zensical = "*"

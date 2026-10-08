@@ -524,6 +524,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dangerzone.app.exit(ret)
 
     def begin_shutdown(self, ret: int) -> None:
+        # Stop here if a shutdown has already been initiated.
+        shutdown_thread = getattr(self, "shutdown_thread", None)
+        if shutdown_thread is not None and shutdown_thread.isRunning():
+            return
+
         log.debug(f"Starting the shutdown process with exit code {ret}")
         if not self.dangerzone.isolation_provider.requires_install():
             return self.exit(ret)

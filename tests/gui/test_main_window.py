@@ -119,8 +119,12 @@ def create_main_window(
     dz = DangerzoneGui(mock_app, dummy)
 
     window = MainWindow(dz)
-    qtbot.addWidget(window)
+    qtbot.addWidget(window, before_close_func=disable_shutdown_sequence)
     return window
+
+
+def disable_shutdown_sequence(window: MainWindow) -> None:
+    window.dangerzone.isolation_provider.requires_install.return_value = False  # type: ignore [attr-defined]
 
 
 @fixture
@@ -129,13 +133,6 @@ def window(
 ) -> Generator[MainWindow, Any, Any]:
     window = create_main_window(qtbot, mocker, tmp_path)
     yield window
-
-    # Prevent shutdown thread creation during cleanup. When pytest-qt closes the
-    # widget, it triggers closeEvent which calls begin_shutdown. By setting
-    # requires_install to False, begin_shutdown exits immediately without
-    # creating the shutdown_thread, avoiding the "QThread: Destroyed while
-    # thread is still running" error.
-    window.dangerzone.isolation_provider.requires_install.return_value = False  # type: ignore [attr-defined]
 
     # Wait for any running threads to complete
     if hasattr(window, "shutdown_thread"):

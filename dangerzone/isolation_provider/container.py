@@ -66,6 +66,16 @@ class Container(IsolationProvider):
         security_args += ["--network=none"]
         security_args += ["-u", "dangerzone"]
 
+        # Disable cgroup support, since we are not making use of it and it fails in
+        # systems with restrictive umasks, like Tails.
+        #
+        # See https://github.com/freedomofpress/dangerzone/issues/1574
+        security_args += ["--cgroups=disabled"]
+        # NOTE: The above flag should disable cgroups, but at least on Tails, crun
+        # attempts to mount them. Over-mounting a tmpfs dir over /sys/fs/cgroup
+        # stops crun from doing so.
+        security_args += ["--mount=type=tmpfs,destination=/sys/fs/cgroup"]
+
         return security_args
 
     @staticmethod

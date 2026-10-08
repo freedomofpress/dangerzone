@@ -13,6 +13,8 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
   Dangerzone application. This unfortunately makes release notes less readable,
   but most importantly, it reduces our application's attack surface.
   ([1542](https://github.com/freedomofpress/dangerzone/pull/1542))
+- Disable cgroups to support systems with restrictive umasks
+  ([1574](https://github.com/freedomofpress/dangerzone/pull/1574))
 
 ### Added
 

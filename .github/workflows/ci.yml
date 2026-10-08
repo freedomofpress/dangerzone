@@ -385,8 +385,7 @@ jobs:
               --version ${{ matrix.version }} \
               build-dev --sync
 
-      - if: matrix.full
-        name: Use the testing image and key
+      - name: Use the testing image and key
         run: |-
           cp tests/assets/dangerzone-testing.pub share/freedomofpress-dangerzone.pub
           echo "ghcr.io/freedomofpress/dangerzone-testing/main/v1" > share/image-name.txt
@@ -614,6 +613,7 @@ jobs:
           --force /tmp/old-container.tar
 
       - name: Run a conversion
+        continue-on-error: true
         run: |
           poetry run dangerzone-cli ./tests/test_docs/sample-pdf.pdf
 

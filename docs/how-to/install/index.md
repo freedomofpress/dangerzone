@@ -105,6 +105,22 @@ Pick your operating system to see how to install Dangerzone:
 
         To mitigate a class of attacks against our APT repo (e.g., injecting packages signed with an attacker key), we add an additional step in our instructions to verify the downloaded GPG key against its fingerprint.
 
+    #### Kali Linux
+
+    !!! warning
+
+        This distribution is [not officially supported](../../reference/supported-platforms.md#note-on-unsupported-linux-distros) by the Dangerzone team. Please proceed at your own risk, and only if you know what you're doing.
+
+    Kali calls its own codename `kali-rolling`, and our repo has no distribution under that name, so the "Add the URL of the repo" step above fails with `The repository '... kali-rolling Release' does not have a Release file`. Kali is a Debian derivative, so you can instead add the repo for the newest Debian codename in the supported list above — as of writing this, that is `forky` — in place of `${VERSION_CODENAME?}`:
+
+    ```sh
+    echo "deb [signed-by=/etc/apt/keyrings/fpf-apt-tools-archive-keyring.gpg] \
+        https://packages.freedom.press/apt-tools-prod forky main" \
+        | sudo tee /etc/apt/sources.list.d/fpf-apt-tools.list
+    ```
+
+    Then continue with the "Install Dangerzone" step above. If we later add support for a newer Debian codename, update that line accordingly; if your Kali tracks a Debian release newer than the newest one we support, these instructions may not work until we do.
+
 === "Fedora"
 
     ??? info "See the list of supported Fedora versions"

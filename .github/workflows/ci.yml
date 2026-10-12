@@ -146,7 +146,7 @@ jobs:
         run: poetry run .\install\windows\build-app.bat
       - name: Upload MSI installer
         if: matrix.runner == 'windows-2025'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: Dangerzone.msi
           path: "dist/Dangerzone.msi"
@@ -252,7 +252,7 @@ jobs:
 
       - name: Upload Dangerzone .deb
         if: matrix.distro == 'debian' && matrix.version == 'bookworm'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dangerzone.deb
           path: "deb_dist/dangerzone_*_*.deb"
@@ -261,7 +261,7 @@ jobs:
 
       - name: Upload Dangerzone-full .deb
         if: matrix.distro == 'debian' && matrix.version == 'bookworm'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dangerzone-full.deb
           path: "deb_dist/dangerzone-full_*_*.deb"
@@ -419,7 +419,7 @@ jobs:
               run --dev --no-gui ./dangerzone/install/linux/build-rpm.py ${{ env.BUILD_FLAG }}
 
       - name: Upload ${{ env.RPM_PREFIX }}.rpm
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.RPM_PREFIX }}-${{ matrix.distro }}-${{ matrix.version }}.rpm
           path: dist/${{ env.RPM_PREFIX }}-*.x86_64.rpm

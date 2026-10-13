@@ -32,9 +32,9 @@ def test_user_installs_dangerzone_for_the_first_time(mocker: MockerFixture) -> N
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": False
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 10)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -59,9 +59,9 @@ def test_upgrades_disabled_detect_wrong_container_upgrade(
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": False
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=100)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
@@ -93,9 +93,9 @@ def test_building_dangerzone_from_source_first_time(mocker: MockerFixture) -> No
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": False
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 10)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -114,9 +114,9 @@ def test_building_dangerzone_from_source_nth_time(mocker: MockerFixture) -> None
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": False
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
@@ -139,10 +139,10 @@ def test_enable_updates_after_some_time(mocker: MockerFixture) -> None:
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": True,
         "updater_remote_log_index": 300,
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
@@ -183,10 +183,10 @@ def test_enable_updates_no_new_image_available(mocker: MockerFixture) -> None:
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": True,
         "updater_remote_log_index": 200,
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
@@ -206,9 +206,9 @@ def test_downgrade_dangerzone_application(mocker: MockerFixture) -> None:
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": False
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=300)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
@@ -228,9 +228,9 @@ def test_disable_updates(mocker: MockerFixture) -> None:
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": False
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=300)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
@@ -247,10 +247,10 @@ def test_podman_state_reset_updates_enabled(mocker: MockerFixture) -> None:
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": True,
         "updater_remote_log_index": 300,
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -266,9 +266,9 @@ def test_podman_state_reset_updates_disabled(mocker: MockerFixture) -> None:
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": False
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
     mocker.patch(f"{installer}.is_container_tar_bundled", return_value=True)
@@ -287,10 +287,10 @@ def test_upgrade_to_latest_container_via_cli(mocker: MockerFixture) -> None:
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": True,
         "updater_remote_log_index": 200,
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
@@ -310,10 +310,10 @@ def test_install_new_dangerzone_version_updates_enabled(mocker: MockerFixture) -
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": True,
         "updater_remote_log_index": 300,
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 200)
@@ -333,9 +333,9 @@ def test_airgapped_installation_container_tarball(mocker: MockerFixture) -> None
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": False
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=True)
     mocker.patch(f"{installer}.get_last_log_index", return_value=200)
     mocker.patch(f"{installer}.LAST_KNOWN_LOG_INDEX", 300)
@@ -356,10 +356,10 @@ def test_no_bundled_container_tar_first_install(mocker: MockerFixture) -> None:
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": True,
         "updater_remote_log_index": 300,
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     # No container.tar bundled, so is_container_tar_bundled returns False
     # making bundled_log_index effectively 0
@@ -383,9 +383,9 @@ def test_no_bundled_container_tar_updates_disabled(mocker: MockerFixture) -> Non
         f"{installer}.runtime.expected_image_name",
         return_value="ghcr.io/freedomofpress/dangerzone/v1",
     )
-    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = lambda key: {
+    mocker.patch(f"{installer}.Settings").return_value.get.side_effect = {
         "updater_check_all": False,
-    }.get(key)
+    }.get
     mocker.patch("dangerzone.updater.signatures.Path.exists", return_value=False)
     # No container.tar bundled, so is_container_tar_bundled returns False
     # making bundled_log_index effectively 0

@@ -9,7 +9,7 @@ import sys
 import threading
 from abc import ABC, abstractmethod
 from collections import deque
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Generator
 from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
 from typing import IO
@@ -421,7 +421,7 @@ class IsolationProvider(ABC):
         timeout_exception: int = TIMEOUT_EXCEPTION,
         timeout_grace: int = TIMEOUT_GRACE,
         timeout_force: int = TIMEOUT_FORCE,
-    ) -> Iterator[subprocess.Popen]:
+    ) -> Generator[subprocess.Popen, None, None]:
         """Start a conversion process, pass it to the caller, and then clean it up."""
         # Store the proc stderr in memory
         stderr = BytesIO()

@@ -187,10 +187,7 @@ class IsolationProviderTermination:
         terminate_proc_spy = mocker.spy(provider, "terminate_doc_to_pixels_proc")
         popen_kill_spy = mocker.spy(subprocess.Popen, "kill")
 
-        with (
-            pytest.raises(errors.DocFormatUnsupported),
-            provider.doc_to_pixels_proc(doc, timeout_exception=0) as proc,
-        ):
+        def send_invalid_document(proc: subprocess.Popen) -> None:
             assert proc.stdin
             # Sending an invalid file to the conversion process should report it as
             # an unsupported format.
@@ -198,6 +195,12 @@ class IsolationProviderTermination:
             proc.stdin.close()
             proc.wait(TIMEOUT_STARTUP)
             raise errors.ConverterProcException
+
+        with (
+            pytest.raises(errors.DocFormatUnsupported),
+            provider.doc_to_pixels_proc(doc, timeout_exception=0) as proc,
+        ):
+            send_invalid_document(proc)
 
         get_proc_exception_spy.assert_called()
         assert isinstance(

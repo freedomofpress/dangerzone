@@ -71,7 +71,7 @@ def unreadable_pdf(tmp_path: Path) -> str:
 
 @pytest.fixture
 def uncommon_text() -> str:
-    """Craft a string with Unicode characters that are considered not common.
+    r"""Craft a string with Unicode characters that are considered not common.
 
     Create a string that contains the following uncommon characters:
 
@@ -87,7 +87,7 @@ def uncommon_text() -> str:
 
 @pytest.fixture
 def uncommon_filename(uncommon_text: str) -> str:
-    """Craft a filename with Unicode characters that are considered not common.
+    r"""Craft a filename with Unicode characters that are considered not common.
 
     We reuse the same uncommon string as above, with a small exception for macOS and
     Windows.

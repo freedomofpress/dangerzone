@@ -42,8 +42,10 @@ class Dummy(IsolationProvider):
         cmd = [
             sys.executable,
             "-c",
-            "from dangerzone.isolation_provider.dummy import dummy_script;"
-            " dummy_script()",
+            (
+                "from dangerzone.isolation_provider.dummy import dummy_script;"
+                " dummy_script()"
+            ),
         ]
         return subprocess.Popen(
             cmd,

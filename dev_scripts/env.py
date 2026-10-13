@@ -299,7 +299,7 @@ def distro_build(distro, version):
 
 def get_current_date():
     # The local date is good enough for stamping build files.
-    return date.today().strftime("%Y-%m-%d")  # noqa: DTZ011
+    return date.today().strftime("%Y-%m-%d")
 
 
 def get_build_dir_sources(distro, version):

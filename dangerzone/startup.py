@@ -27,7 +27,8 @@ class Task(abc.ABC):
     def should_skip(self) -> bool:
         return False
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self) -> str:
         pass
 

@@ -72,10 +72,10 @@ class TestQubes(IsolationProviderTest):
             stderr=subprocess.PIPE,
             shell=True,
         )
+        doc = Document(sample_pdf)
         with pytest.raises(errors.ConverterProcException):
-            doc = Document(sample_pdf)
             provider.convert_with_proc(doc, None, proc)
-            assert provider.get_proc_exception(proc) == errors.QubesQrexecFailed
+        assert provider.get_proc_exception(proc) == errors.QubesQrexecFailed
 
 
 class TestQubesTermination(IsolationProviderTermination):

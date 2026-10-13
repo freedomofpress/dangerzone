@@ -221,5 +221,7 @@ class PodmanCommand:
             self.stop_service(timeout=stop_timeout)
             raise
 
-        yield
-        self.stop_service(timeout=stop_timeout)
+        try:
+            yield
+        finally:
+            self.stop_service(timeout=stop_timeout)

@@ -214,6 +214,6 @@ def test_wsl_install_task(mocker: MockerFixture) -> None:
     task = startup.WSLInstallTask()
 
     # Run the task and assert the outcome
-    with pytest.raises(Exception, match="We are about to reboot.."):
+    with pytest.raises(Exception, match=r"We are about to reboot.."):
         task.run()
     mock_subprocess_run.assert_called_once_with(["shutdown", "/r", "/t", "0"])

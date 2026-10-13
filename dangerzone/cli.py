@@ -149,7 +149,7 @@ def run(
         dangerzone-cli -o - in.pdf > out.pdf         # write to stdout and pipe to 'out.pdf'
         dangerzone-cli - -o out.pdf < in.pdf         # read from stdin and write to 'out.pdf'
         dangerzone-cli - -o - < in.pdf > out.pdf     # read from stdin, write to stdout and pipe to 'out.pdf'
-    """
+    """  # noqa: D301
     setup_logging()
     display_banner()
     settings = Settings(debug=debug)

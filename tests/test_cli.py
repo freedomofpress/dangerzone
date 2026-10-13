@@ -287,7 +287,7 @@ class TestCliConversion(TestCliBasic):
         result.assert_success()
 
     @pytest.mark.parametrize(
-        "filename,",
+        "filename",
         [
             "“Curly_Quotes”.pdf",  # issue 144
             "Оригинал.pdf",

@@ -270,5 +270,5 @@ class Document:
 
     def __str__(self) -> str:
         if self._input_filename is not None:
-            return self.input_filename
+            return self.sanitized_input_filename
         return "<stdin>"

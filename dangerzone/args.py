@@ -4,7 +4,7 @@ import sys
 
 import click
 
-from . import errors
+from . import errors, util
 from .document import Document
 
 STDIO_DESCRIPTOR = "-"
@@ -50,7 +50,7 @@ def check_suspicious_options(args: list[str]) -> None:
 
     intersection = options & files
     if intersection:
-        filenames_str = ", ".join(intersection)
+        filenames_str = util.replace_control_chars(", ".join(intersection))
         msg = (
             f"Security: Detected CLI options that are also present as files in the"
             f" current working directory: {filenames_str}"

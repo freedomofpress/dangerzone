@@ -14,7 +14,13 @@ from concurrent.futures import ProcessPoolExecutor
 from io import BytesIO
 from typing import IO
 
-import fitz
+try:
+    import pymupdf as fitz
+except ImportError:
+    # NOTE: This is a fallback for older PyMuPDF versions, such as the one in Ubuntu
+    # 22.04.
+    import fitz  # type: ignore[no-redef]
+
 from colorama import Fore, Style
 
 from .. import conversion_errors as errors

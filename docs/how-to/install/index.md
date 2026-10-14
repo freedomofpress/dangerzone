@@ -17,8 +17,8 @@ Pick your operating system to see how to install Dangerzone:
     cog.outl(f"    - Download [Dangerzone {version} for Mac (Intel CPU)]({release}/Dangerzone-{version}-i686.dmg)")
     ]]] -->
 
-    - Download [Dangerzone 0.11.0 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.11.0/Dangerzone-0.11.0-arm64.dmg)
-    - Download [Dangerzone 0.11.0 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.11.0/Dangerzone-0.11.0-i686.dmg)
+    - Download [Dangerzone 0.11.1 for Mac (Apple Silicon CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.11.1/Dangerzone-0.11.1-arm64.dmg)
+    - Download [Dangerzone 0.11.1 for Mac (Intel CPU)](https://github.com/freedomofpress/dangerzone/releases/download/v0.11.1/Dangerzone-0.11.1-i686.dmg)
     <!-- [[[end]]] -->
 
     You can also install Dangerzone for Mac using [Homebrew](https://brew.sh/): `brew install --cask dangerzone`
@@ -33,7 +33,7 @@ Pick your operating system to see how to install Dangerzone:
     cog.outl(f"    - Download [Dangerzone {version} for Windows]({release}/Dangerzone-{version}.msi)")
     ]]] -->
 
-    - Download [Dangerzone 0.11.0 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.11.0/Dangerzone-0.11.0.msi)
+    - Download [Dangerzone 0.11.1 for Windows](https://github.com/freedomofpress/dangerzone/releases/download/v0.11.1/Dangerzone-0.11.1.msi)
     <!-- [[[end]]] -->
 
     You can also install Dangerzone for Windows using [Winget](https://learn.microsoft.com/windows/package-manager/):

@@ -1,10 +1,10 @@
 import functools
-import os
+import pathlib
 import sys
 
 import click
 
-from . import errors
+from . import errors, util
 from .document import Document
 
 STDIO_DESCRIPTOR = "-"
@@ -38,25 +38,32 @@ def validate_output_filename(
     return filename
 
 
-def check_suspicious_options(args: list[str]) -> None:
-    options = {arg for arg in args if arg.startswith("-")}
-    try:
-        files = set(os.listdir())
-    except OSError:
-        # If we cannot list files in the current working directory, this means that
-        # we're probably in an unlinked directory. Dangerzone should still work in
-        # this case, so we should return here.
-        return
+def get_known_options(ctx: click.Context) -> set[str]:
+    """Collect every option name that the command being parsed accepts.
 
-    intersection = options & files
-    if intersection:
-        filenames_str = ", ".join(intersection)
-        msg = (
-            f"Security: Detected CLI options that are also present as files in the"
-            f" current working directory: {filenames_str}"
-        )
-        click.echo(msg)
-        sys.exit(1)
+    Instead of keeping a hardcoded list of our flags, we ask Click for them. Each
+    `click.Option` knows its own spellings through `opts` and `secondary_opts`
+    (e.g. `--archive`, `-o`).
+    """
+    return {
+        name
+        for param in ctx.command.params
+        for name in (*param.opts, *param.secondary_opts)
+    }
+
+
+def check_suspicious_options(args: list[str], known_options: set[str]) -> None:
+    for arg in args:
+        # Check if a provided argument matches our CLI command options, **and** a file
+        # in the current working directory. Take options like --opt=val into account as
+        # well.
+        if arg.split("=", 1)[0] in known_options and pathlib.Path(arg).exists():
+            msg = (
+                "Security: Detected CLI options that are also present as files in the"
+                f" current working directory: {util.replace_control_chars(arg)}"
+            )
+            click.echo(msg)
+            sys.exit(1)
 
 
 def override_parser_and_check_suspicious_options(click_main: click.Command) -> None:
@@ -66,13 +73,14 @@ def override_parser_and_check_suspicious_options(click_main: click.Command) -> N
     from sys.argv or from its testing module). To circumvent this, we can override its
     `Command.parse_args()` method, which is public and should be safe to do so.
 
-    We can use it to check for any suspicious options prior to arg parsing.
+    We can use it to check, prior to arg parsing, whether any of the received arguments
+    is a file impersonating one of the options that this command accepts.
     """
     orig_parse_fn = click_main.parse_args
 
     @functools.wraps(orig_parse_fn)
     def custom_parse_fn(ctx: click.Context, args: list[str]) -> list[str]:
-        check_suspicious_options(args)
+        check_suspicious_options(args, get_known_options(ctx))
         return orig_parse_fn(ctx, args)
 
     click_main.parse_args = custom_parse_fn  # type: ignore [method-assign]

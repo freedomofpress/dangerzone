@@ -385,6 +385,19 @@ class TestSecurity(TestCli):
         # TODO: Check that this applies for single dash arguments, and concatenated
         # single dash arguments, once Dangerzone supports them.
 
+    def test_nonsuspicious_unknown_option_file(self, tmp_path: Path) -> None:
+        """Files named after options that Dangerzone doesn't define are harmless.
+
+        Such an argument would be rejected by Click as an unknown option anyway, so
+        it must not be reported as a security issue.
+        """
+        file_path = tmp_path / "--not-an-option"
+        file_path.touch()
+        result = self.run_cli(["--not-an-option"], tmp_path)
+        result.assert_failure(message="No such option")
+        assert "--not-an-option" in result.output
+        assert "Security:" not in result.output
+
 
 class TestCliShutdown(TestCli):
     def test_cli_shutdown_normal(

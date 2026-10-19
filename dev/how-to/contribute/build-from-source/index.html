@@ -3000,7 +3000,7 @@ virtualenvs).</p>
 </div>
 </div>
 <div class="tabbed-block">
-<p>Install the latest version of Python 3.13 <a href="https://www.python.org/downloads/macos/">from python.org</a>, and make sure <code>/Library/Frameworks/Python.framework/Versions/3.13/bin</code> is in your <code>PATH</code>.</p>
+<p>Install the latest version of Python 3.14 <a href="https://www.python.org/downloads/macos/">from python.org</a>, and make sure <code>/Library/Frameworks/Python.framework/Versions/3.14/bin</code> is in your <code>PATH</code>.</p>
 <p>Clone this repository:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>git clone https://github.com/freedomofpress/dangerzone/
 </span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>cd dangerzone
@@ -3037,7 +3037,7 @@ virtualenvs).</p>
 <p>The output is in the <code>dist</code> folder.</p>
 </div>
 <div class="tabbed-block">
-<p>Install the latest version of Python 3.13 (64-bit) <a href="https://www.python.org/downloads/windows/">from python.org</a>. Make sure to check the "Add Python 3.13 to PATH" checkbox on the first page of the installer.</p>
+<p>Install the latest version of Python 3.14 (64-bit) <a href="https://www.python.org/downloads/windows/">from python.org</a>. Make sure to check the "Add Python 3.14 to PATH" checkbox on the first page of the installer.</p>
 <p>Install Microsoft Visual C++ 14.0 or greater. Get it with <a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/">"Microsoft C++ Build Tools"</a> and make sure to select "Desktop development with C++" when installing.</p>
 <p>Install git from <a href="https://git-scm.com/download/win">here</a>.</p>
 <p>Install <a href="https://python-poetry.org/">poetry</a>.</p>
@@ -3083,7 +3083,7 @@ virtualenvs).</p>
 <p>Open a command prompt, cd into the dangerzone directory, and run:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>poetry run python .\setup-windows.py build
 </span></code></pre></div>
-<p>In <code>build\exe.win32-3.13\</code> you will find <code>dangerzone.exe</code>, <code>dangerzone-cli.exe</code>, and all supporting files.</p>
+<p>In <code>build\exe.win-amd64-3.14\</code> you will find <code>dangerzone.exe</code>, <code>dangerzone-cli.exe</code>, and all supporting files.</p>
 <h3 id="to-build-the-installer">To build the installer<a class="headerlink" href="#to-build-the-installer" title="Permanent link">&para;</a></h3>
 <p>Note that you must have a codesigning certificate installed in order to use the <code>install\windows\build-app.bat</code> script, because it codesigns <code>dangerzone.exe</code>, <code>dangerzone-cli.exe</code> and <code>Dangerzone.msi</code>.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a>poetry run .\install\windows\build-app.bat

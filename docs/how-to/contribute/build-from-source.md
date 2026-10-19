@@ -298,7 +298,7 @@ Pick your platform to set up a development environment:
 
 === "macOS"
 
-    Install the latest version of Python 3.13 [from python.org](https://www.python.org/downloads/macos/), and make sure `/Library/Frameworks/Python.framework/Versions/3.13/bin` is in your `PATH`.
+    Install the latest version of Python 3.14 [from python.org](https://www.python.org/downloads/macos/), and make sure `/Library/Frameworks/Python.framework/Versions/3.14/bin` is in your `PATH`.
 
     Clone this repository:
 
@@ -364,7 +364,7 @@ Pick your platform to set up a development environment:
 
 === "Windows"
 
-    Install the latest version of Python 3.13 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.13 to PATH" checkbox on the first page of the installer.
+    Install the latest version of Python 3.14 (64-bit) [from python.org](https://www.python.org/downloads/windows/). Make sure to check the "Add Python 3.14 to PATH" checkbox on the first page of the installer.
 
     Install Microsoft Visual C++ 14.0 or greater. Get it with ["Microsoft C++ Build Tools"](https://visualstudio.microsoft.com/visual-cpp-build-tools/) and make sure to select "Desktop development with C++" when installing.
 
@@ -446,7 +446,7 @@ Pick your platform to set up a development environment:
     poetry run python .\setup-windows.py build
     ```
 
-    In `build\exe.win32-3.13\` you will find `dangerzone.exe`, `dangerzone-cli.exe`, and all supporting files.
+    In `build\exe.win-amd64-3.14\` you will find `dangerzone.exe`, `dangerzone-cli.exe`, and all supporting files.
 
     ### To build the installer
 

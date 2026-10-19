@@ -14,7 +14,7 @@
     export PATH
     ```
 
-    _(make sure to replace `<version>` with the version of the newly installed Python, e.g., `3.13`)_
+    _(make sure to replace `<version>` with the version of the newly installed Python, e.g., `3.14`)_
 
     > 🚨 When a user installs Python from python.org, it is installed by default
     > in a non-standard location
@@ -32,7 +32,7 @@
 
     ```
     % which python3
-    /Library/Frameworks/Python.framework/Versions/3.13/bin/python3
+    /Library/Frameworks/Python.framework/Versions/3.14/bin/python3
     ```
 
 - [ ] Install Poetry from an account with **admin** privileges, with `python3 -m pip install -U poetry`
@@ -41,7 +41,7 @@
 
     ```
     % which poetry
-    /Library/Frameworks/Python.framework/Versions/3.13/bin/poetry
+    /Library/Frameworks/Python.framework/Versions/3.14/bin/poetry
     ```
 
 - [ ] Ensure that Poetry picks the correct Python version with `poetry debug info`
@@ -51,10 +51,10 @@
     % poetry debug info
     Poetry
     Version: 2.1.3
-    Python:  3.13.5
+    Python:  3.14.8
 
     Virtualenv
-    Python:         3.13.5
+    Python:         3.14.8
     Implementation: CPython
     Path:           [...]
     Executable:     [...]
@@ -63,7 +63,7 @@
     Base
     Platform:   darwin
     OS:         posix
-    Python:     3.13.5
+    Python:     3.14.8
     Path:       [...]
     Executable: [...]
     ```
@@ -80,11 +80,11 @@
     C:\> cd dangerzone
     C:\> poetry debug info
     Poetry
-    Version: 2.1.3
-    Python:  3.13.5
+    Version: 2.5.1
+    Python:  3.14.8
 
     Virtualenv
-    Python:         3.13.5
+    Python:         3.14.8
     Implementation: CPython
     Path:           [...]
     Executable:     [...]
@@ -93,7 +93,7 @@
     Base
     Platform:   win32
     OS:         nt
-    Python:     3.13.5
+    Python:     3.14.8
     Path:       [...]
     Executable: [...]
     ```

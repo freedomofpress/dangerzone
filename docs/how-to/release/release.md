@@ -20,12 +20,7 @@ Once you are confident that the release doesn't need any more changes:
 
     _(This is covered by our automated build steps)_
 
-- [ ] Run container scan on the produced container images (some time may have passed since the artifacts were built)
-
-    ```bash
-    docker pull anchore/grype:latest
-    docker run --rm -v ./share/container.tar:/container.tar anchore/grype:latest /container.tar
-    ```
+- [ ] Ensure that https://cves.dangerzone.rocks does not report any serious vulnerabilities.
 
 - [ ] Collect the assets in a single directory, calculate their SHA-256 hashes, and sign them. There is an `./dev_scripts/sign-assets.py` script to automate this task.
 
@@ -42,9 +37,7 @@ Once you are confident that the release doesn't need any more changes:
 
 - [ ] Update the draft release to target the final git tag.
 
-- [ ] Send a PR to update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) to link to the new installers.
-
-- [ ] Send a PR that updates the Dangerzone version and the links to our [installation instructions](../install/index.md) in `README.md`.
+- [ ] Send a PR to update the [Dangerzone website](https://github.com/freedomofpress/dangerzone.rocks) with the new release announcement.
 
 ## 📣 Publish the release!
 

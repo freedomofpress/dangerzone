@@ -139,6 +139,15 @@ class Document:
         self._output_filename = filename
 
     @property
+    def writes_to_stdout(self) -> bool:
+        """Whether the safe PDF will be written to stdout.
+
+        This happens only for data-based documents (from stdin) with no output
+        filename.
+        """
+        return self._data is not None and self._output_filename is None
+
+    @property
     def sanitized_input_filename(self) -> str:
         return util.replace_control_chars(self.input_filename)
 
@@ -209,7 +218,7 @@ class Document:
         For data-based documents (from stdin) with no output filename,
         write to stdout. Otherwise, write to the output filename.
         """
-        if self._data is not None and self._output_filename is None:
+        if self.writes_to_stdout:
             sys.stdout.buffer.write(pdf_data)
         else:
             with open(self.output_filename, "wb") as f:

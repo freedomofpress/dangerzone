@@ -481,6 +481,13 @@ class TestCliIO(TestCli):
         result = self.run_cli_stdin(["-", "--archive"])
         result.assert_failure(message="--archive cannot be used with input from stdin")
 
+    def test_file_output_stdout(self, sample_pdf: str) -> None:
+        """dangerzone <file> -o - writes the safe PDF to stdout."""
+        result = self.run_cli_stdin([sample_pdf, "-o", "-"], input=b"")
+        result.assert_success()
+        assert result.stdout_bytes.startswith(b"%PDF")
+        assert "Safe PDF written successfully to stdout" in result.output
+
     def test_stdin_output(self, tmp_path: Path) -> None:
         """dangerzone - --output-filename writes safe PDF to that file."""
         output_filename = tmp_path / "safe-from-stdin.pdf"

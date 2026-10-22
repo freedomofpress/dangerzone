@@ -37,6 +37,7 @@ class Document:
         suffix: str = SAFE_EXTENSION,
         archive: bool = False,
         data: bytes | None = None,
+        stdout: bool = False,
     ) -> None:
         # NOTE: See https://github.com/freedomofpress/dangerzone/pull/216#discussion_r1015449418
         self.id = secrets.token_urlsafe(6)[0:6]
@@ -57,8 +58,11 @@ class Document:
         else:
             raise errors.NotSetInputFilenameException()
 
+        if stdout and output_filename is not None:
+            raise ValueError("Cannot provide both output_filename and stdout")
         if output_filename is not None:
             self.output_filename = output_filename
+        self._stdout = stdout
 
         self.state = Document.STATE_UNCONVERTED
         self.archive_after_conversion = archive
@@ -142,10 +146,12 @@ class Document:
     def writes_to_stdout(self) -> bool:
         """Whether the safe PDF will be written to stdout.
 
-        This happens only for data-based documents (from stdin) with no output
-        filename.
+        This happens if the caller explicitly asked for it, or for data-based
+        documents (from stdin) with no output filename.
         """
-        return self._data is not None and self._output_filename is None
+        return self._stdout or (
+            self._data is not None and self._output_filename is None
+        )
 
     @property
     def sanitized_input_filename(self) -> str:
@@ -215,8 +221,8 @@ class Document:
     def write(self, pdf_data: bytes) -> None:
         """Write the safe PDF data to the proper destination.
 
-        For data-based documents (from stdin) with no output filename,
-        write to stdout. Otherwise, write to the output filename.
+        If the document should be written to stdout, do so. Otherwise, write to
+        the output filename.
         """
         if self.writes_to_stdout:
             sys.stdout.buffer.write(pdf_data)

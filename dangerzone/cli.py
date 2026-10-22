@@ -57,6 +57,11 @@ def _initialize_documents(
         dangerzone.add_document(Document.from_stdin(output_filename))
         return
 
+    if output_filename == args.STDIO_DESCRIPTOR:
+        # We are writing a single file-based document to stdout.
+        dangerzone.add_document(Document(filenames[0], stdout=True, archive=archive))
+        return
+
     for filename in filenames:
         dangerzone.add_document(Document(filename, output_filename, archive=archive))
 

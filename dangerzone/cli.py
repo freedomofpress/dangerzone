@@ -230,7 +230,11 @@ def run(
     documents_failed = dangerzone.get_failed_documents()
 
     if documents_safe != []:
-        if len(documents_safe) == 1 and documents_safe[0]._output_filename is None:
+        if (
+            len(documents_safe) == 1
+            and documents_safe[0]._output_filename is None
+            and documents_safe[0]._input_filename is None
+        ):
             print_header("Safe PDF written successfully to stdout")
         else:
             print_header("Safe PDF(s) created successfully")

@@ -503,3 +503,33 @@ class TestCliIO(TestCli):
             return re.sub(pdf_id, b"", pdf, flags=re.DOTALL)
 
         assert strip_pdf_id(data) == strip_pdf_id(result.stdout_bytes)
+
+    def test_file_input_does_not_report_stdout(
+        self, tmp_path: Path, sample_pdf: str
+    ) -> None:
+        """A file input without -o is saved to a file, not written to stdout."""
+        doc_path = tmp_path / "doc.pdf"
+        shutil.copyfile(sample_pdf, doc_path)
+        safe_path = tmp_path / "doc-safe.pdf"
+
+        result = self.run_cli([str(doc_path), "--unsafe-dummy-conversion"])
+        result.assert_success()
+
+        assert safe_path.exists()
+        assert "written successfully to stdout" not in result.output
+        assert "Safe PDF(s) created successfully" in result.output
+
+    def test_stdin_to_stdout_reports_stdout(self) -> None:
+        """Input from stdin written to stdout still reports stdout."""
+        result = self.run_cli_stdin(["-", "-o", "-"])
+        result.assert_success()
+        assert "Safe PDF written successfully to stdout" in result.stderr
+
+    def test_stdin_to_file_does_not_report_stdout(self, tmp_path: Path) -> None:
+        """Input from stdin written to a file does not report stdout."""
+        output_filename = tmp_path / "safe-from-stdin.pdf"
+        result = self.run_cli_stdin(["-", "-o", str(output_filename)])
+        result.assert_success()
+        assert output_filename.exists()
+        assert "written successfully to stdout" not in result.stderr
+        assert "Safe PDF(s) created successfully" in result.stderr

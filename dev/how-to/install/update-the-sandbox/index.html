@@ -1917,6 +1917,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../advisories/2026-10-22/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  2026-10-22
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../advisories/2024-12-24/" class="md-nav__link">
         
   
@@ -2673,6 +2700,10 @@
 <p>On the airgapped machine, copy the file and run the following command:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>dangerzone-image<span class="w"> </span>load-archive<span class="w"> </span>dangerzone-amd64.tar
 </span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Don't load untrusted image archives</p>
+<p>Dangerzone tries to validate the signature of image archives before loading them, but this is still an inherently risky operation. Only load archives you have prepared with <code>dangerzone-image prepare-archive</code>.</p>
+</div>
 <h2 id="configuring-the-verification-material">Configuring the verification material<a class="headerlink" href="#configuring-the-verification-material" title="Permanent link">&para;</a></h2>
 <p>Dangerzone <a href="https://github.com/freedomofpress/dangerzone/issues/1280#issuecomment-3422977474">bundles and pins</a> the public key of the <a href="https://docs.sigstore.dev/logging/overview/">Rekor</a> service, which powers the transparency log of Sigstore signatures.</p>
 <p>If Sigstore maintainers decide to rotate this key, a new Dangerzone version will be released, bundled with the new key. Power users can specify an updated key in the meantime, by fetching the latest Rekor public key with:</p>

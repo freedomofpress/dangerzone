@@ -635,8 +635,6 @@ class Env:
                 "noble",
                 "26.04",
                 "resolute",
-                "25.10",
-                "questing",
                 "26.10",
                 "stonking",
             ):

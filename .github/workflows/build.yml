@@ -39,8 +39,6 @@ jobs:
           - distro: ubuntu
             version: "26.04"
           - distro: ubuntu
-            version: "25.10"
-          - distro: ubuntu
             version: "26.10"
           - distro: debian
             version: bookworm

@@ -1,156 +1,159 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/explanation/when-to-use-dangerzone/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/advisories/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/tutorials/convert-your-first-document/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/advisories/2023-10-25/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/tutorials/convert-from-the-command-line/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/advisories/2023-12-07/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/tutorials/run-dangerzone-from-source/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/advisories/2024-12-24/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/install/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/explanation/development-environments/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/install/verify-pgp-signatures/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/explanation/how-dangerzone-works/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/install/update-dangerzone/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/explanation/project-repositories/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/install/update-the-sandbox/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/explanation/qubes-integration/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/install/use-podman-desktop/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/explanation/reproducible-builds/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/contribute/report-an-issue/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/explanation/sandbox-updates/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/contribute/build-from-source/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/explanation/security-model/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/contribute/run-the-tests/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/explanation/update-notifications/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/contribute/dev-environments/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/explanation/when-to-use-dangerzone/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/contribute/debug-the-sandbox/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/faq/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/release/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/contribute/build-from-source/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/release/pre-release/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/contribute/debug-the-sandbox/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/release/prepare-build-envs/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/contribute/dev-environments/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/release/build/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/contribute/report-an-issue/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/release/qa/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/contribute/run-the-tests/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/release/release/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/install/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/release/release-notes-templates/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/install/update-dangerzone/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/release/manage-python-installations/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/install/update-the-sandbox/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/how-to/release/build-with-doit/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/install/use-podman-desktop/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/supported-formats/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/install/verify-pgp-signatures/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/supported-platforms/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/release/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/cli/dangerzone-cli/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/release/build-with-doit/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/cli/dangerzone-image/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/release/build/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/cli/dangerzone-machine/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/release/manage-python-installations/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/sandbox-protocol/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/release/pre-release/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/settings/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/release/prepare-build-envs/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/environment-variables/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/release/qa/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/signing-keys/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/release/release-notes-templates/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/security-policy/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/how-to/release/release/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/advisories/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/changelog/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/advisories/2024-12-24/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/cli/dangerzone-cli/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/advisories/2023-12-07/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/cli/dangerzone-image/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/advisories/2023-10-25/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/cli/dangerzone-machine/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/changelog/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/directories/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/third-party-notice/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/environment-variables/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/license/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/license/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/reference/roadmap/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/roadmap/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/explanation/how-dangerzone-works/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/sandbox-protocol/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/explanation/security-model/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/security-policy/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/explanation/sandbox-updates/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/settings/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/explanation/update-notifications/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/signing-keys/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/explanation/reproducible-builds/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/supported-formats/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/explanation/qubes-integration/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/supported-platforms/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/explanation/development-environments/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/reference/third-party-notice/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/explanation/project-repositories/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/tutorials/convert-from-the-command-line/</loc>
       </url>
       <url>
-        <loc>https://docs.dangerzone.rocks/0.11.0/faq/</loc>
+        <loc>https://docs.dangerzone.rocks/0.11.1/tutorials/convert-your-first-document/</loc>
+      </url>
+      <url>
+        <loc>https://docs.dangerzone.rocks/0.11.1/tutorials/run-dangerzone-from-source/</loc>
       </url>
 </urlset>

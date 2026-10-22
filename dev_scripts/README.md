@@ -3,4 +3,4 @@
 This directory holds some scripts that are helpful for developing on Dangerzone.
 Read the respective documentation for more details on some of the scripts.
 
-* [`env.py`](../docs/how-to/dev-environments.md)
+* [`env.py`](../docs/how-to/contribute/dev-environments.md)

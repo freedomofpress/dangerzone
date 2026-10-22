@@ -9,11 +9,12 @@ reporting vulnerabilities to us, what we expect, what you can expect from us.
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-Our preferred communication channels are:
+Our preferred communication channel is Signal.
 
-* **Signal:** Not yet publicly available. Please contact us via email and we
-  will provide you with Signal contact details for secure communication.
-* **Email:** support@dangerzone.rocks.
+You can securely message us by by scanning the QR code below, or by reaching out to
+[`@dangerzone.411`](https://signal.me/#eu/-mE8u5_WI5iMCkFHawZpAqoLRO7916GpKsAk8D8ya6V7tF7mIVlPTJAL6rDVDHpA).
+
+![Signal username QR code](assets/signal-username-qr-code.png)
 
 A member of our team should acknowledge your report **within 2 weeks**. If we
 fail to do so, please use a different communication channel.

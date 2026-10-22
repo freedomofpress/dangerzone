@@ -73,6 +73,10 @@ On the airgapped machine, copy the file and run the following command:
 dangerzone-image load-archive dangerzone-amd64.tar
 ```
 
+!!! warning "Don't load untrusted image archives"
+
+    Dangerzone tries to validate the signature of image archives before loading them, but this is still an inherently risky operation. Only load archives you have prepared with `dangerzone-image prepare-archive`.
+
 ## Configuring the verification material
 
 Dangerzone [bundles and pins](https://github.com/freedomofpress/dangerzone/issues/1280#issuecomment-3422977474) the public key of the [Rekor](https://docs.sigstore.dev/logging/overview/) service, which powers the transparency log of Sigstore signatures.

@@ -73,6 +73,7 @@ nav = [
     { "Security policy" = "reference/security-policy.md" },
     { "Security advisories" = [
       { "Overview" = "advisories/index.md" },
+      { "2026-10-22" = "advisories/2026-10-22.md" },
       { "2024-12-24" = "advisories/2024-12-24.md" },
       { "2023-12-07" = "advisories/2023-12-07.md" },
       { "2023-10-25" = "advisories/2023-10-25.md" },

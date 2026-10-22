@@ -6,6 +6,7 @@ Vulnerabilities in the tools inside the sandbox are expected. On their own they 
 
 | Date | Summary | Fixed in |
 | ---- | ------- | -------- |
+| [2026-10-22](2026-10-22.md) | Insufficient image archive validation | 0.11.1 |
 | [2024-12-24](2024-12-24.md) | gst-plugins-base vulnerabilities (CVE-2024-47538, CVE-2024-47607, CVE-2024-47615) inside the sandbox | 0.8.1 |
 | [2023-12-07](2023-12-07.md) | GhostScript vulnerability (CVE-2023-43115) inside the sandbox | 0.5.1 |
 | [2023-10-25](2023-10-25.md) | Missing `default_dispvm` setting in the Qubes OS installation instructions | 0.5.1 |

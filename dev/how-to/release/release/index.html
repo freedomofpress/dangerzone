@@ -2559,30 +2559,24 @@
 <p><em>(This is covered by our automated build steps)</em></p>
 </li>
 <li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Run container scan on the produced container images (some time may have passed since the artifacts were built)</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>anchore/grype:latest
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span>./share/container.tar:/container.tar<span class="w"> </span>anchore/grype:latest<span class="w"> </span>/container.tar
-</span></code></pre></div>
+<p><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Ensure that <a href="https://cves.dangerzone.rocks">https://cves.dangerzone.rocks</a> does not report any serious vulnerabilities.</p>
 </li>
 <li class="task-list-item">
 <p><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Collect the assets in a single directory, calculate their SHA-256 hashes, and sign them. There is an <code>./dev_scripts/sign-assets.py</code> script to automate this task.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Sign all the assets</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>./dev_scripts/sign-assets.py<span class="w"> </span>~/release-assets/<span class="nv">$VERSION</span>/github<span class="w"> </span>--version<span class="w"> </span><span class="nv">$VERSION</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Sign all the assets</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>./dev_scripts/sign-assets.py<span class="w"> </span>~/release-assets/<span class="nv">$VERSION</span>/github<span class="w"> </span>--version<span class="w"> </span><span class="nv">$VERSION</span>
 </span></code></pre></div>
 </li>
 <li class="task-list-item">
 <p><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Upload all the assets to the draft release on GitHub.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>find<span class="w"> </span>~/release-assets/<span class="nv">$VERSION</span>/github<span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span>-n1<span class="w"> </span>./dev_scripts/upload-asset.py<span class="w"> </span>--token<span class="w"> </span>~/token<span class="w"> </span>--draft
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>find<span class="w"> </span>~/release-assets/<span class="nv">$VERSION</span>/github<span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span>-n1<span class="w"> </span>./dev_scripts/upload-asset.py<span class="w"> </span>--token<span class="w"> </span>~/token<span class="w"> </span>--draft
 </span></code></pre></div>
 </li>
 <li class="task-list-item">
 <p><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update the draft release to target the final git tag.</p>
 </li>
 <li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Send a PR to update the <a href="https://github.com/freedomofpress/dangerzone.rocks">Dangerzone website</a> to link to the new installers.</p>
-</li>
-<li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Send a PR that updates the Dangerzone version and the links to our <a href="../../install/">installation instructions</a> in <code>README.md</code>.</p>
+<p><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Send a PR to update the <a href="https://github.com/freedomofpress/dangerzone.rocks">Dangerzone website</a> with the new release announcement.</p>
 </li>
 </ul>
 <h2 id="publish-the-release">📣 Publish the release!<a class="headerlink" href="#publish-the-release" title="Permanent link">&para;</a></h2>

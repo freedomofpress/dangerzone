@@ -12,6 +12,7 @@ from colorama import Fore
 
 from ..util import subprocess_run
 from . import Application
+from .widgets import ExternalLinkLabel
 
 # FIXME: See https://github.com/freedomofpress/dangerzone/issues/320 for more details.
 if typing.TYPE_CHECKING:
@@ -274,10 +275,9 @@ class Alert(Dialog):
             QtGui.QPixmap.fromImage(QtGui.QImage(str(get_resource_path(icon))))
         )
 
-        label = QtWidgets.QLabel()
+        label = ExternalLinkLabel()
         label.setText(self.message)
         label.setWordWrap(True)
-        label.setOpenExternalLinks(True)
 
         message_layout = QtWidgets.QHBoxLayout()
         message_layout.addWidget(logo)
@@ -311,11 +311,10 @@ class UpdateDialog(Dialog):
         message_layout = QtWidgets.QVBoxLayout()
 
         if self.intro_msg is not None:
-            intro = QtWidgets.QLabel()
+            intro = ExternalLinkLabel()
             intro.setText(self.intro_msg)
             intro.setWordWrap(True)
             intro.setAlignment(QtCore.Qt.AlignCenter)
-            intro.setOpenExternalLinks(True)
             message_layout.addWidget(intro)
             message_layout.addSpacing(10)
 
@@ -325,10 +324,9 @@ class UpdateDialog(Dialog):
             message_layout.addSpacing(10)
 
         if self.epilogue_msg is not None:
-            epilogue = QtWidgets.QLabel()
+            epilogue = ExternalLinkLabel()
             epilogue.setText(self.epilogue_msg)
             epilogue.setWordWrap(True)
-            epilogue.setOpenExternalLinks(True)
             message_layout.addWidget(epilogue)
             message_layout.addSpacing(10)
 

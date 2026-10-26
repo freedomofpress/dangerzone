@@ -15,7 +15,7 @@ There is also a large collection of documents that can be tested against the `ma
     - [ ] Build the container image and ensure the development environment uses the new image.
     - [ ] Download the necessary assets using `poetry run mazette install`
     - [ ] Run the Dangerzone tests.
-    - [ ] Build and run the Dangerzone .exe
+    - [ ] Build and run the Dangerzone .exe.
     - [ ] Test some QA scenarios (see [Scenarios](#scenarios) below).
 - [ ] Create a test build in macOS (Intel CPU) and make sure it works:
     - [ ] Check if the suggested Python version is still supported.

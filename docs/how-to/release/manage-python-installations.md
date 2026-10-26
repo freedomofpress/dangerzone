@@ -2,7 +2,7 @@
 
 ## macOS
 
-- [ ] Verify and install the latest supported Python version from [python.org](https://www.python.org/downloads/macos/)
+- [ ] Verify and install the latest supported Python version from [python.org](https://www.python.org/downloads/macos/).
 
     > 🚨 Do not use the one from Homebrew as it is known to
     > [cause issues](https://github.com/freedomofpress/dangerzone/issues/471)
@@ -28,7 +28,7 @@
 
     _(We can't just `source ~/.zshrc`, because it doesn't account for removals or changes in `~/.zprofile`)_
 
-- [ ] Ensure `which python3` returns the expected Python installation
+- [ ] Ensure `which python3` returns the expected Python installation.
 
     ```
     % which python3
@@ -37,7 +37,7 @@
 
 - [ ] Install Poetry from an account with **admin** privileges, with `python3 -m pip install -U poetry`
 
-- [ ] Ensure `which poetry` returns the expected Poetry installation
+- [ ] Ensure `which poetry` returns the expected Poetry installation.
 
     ```
     % which poetry
@@ -70,7 +70,7 @@
 
 ## Windows
 
-- [ ] Verify and install the latest supported Python version from [python.org](https://www.python.org/downloads/windows/)
+- [ ] Verify and install the latest supported Python version from [python.org](https://www.python.org/downloads/windows/).
 
 - [ ] Install Poetry with `python -m pip install -U poetry`
 

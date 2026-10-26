@@ -17,21 +17,23 @@ test: ## Run the tests
 poetry-install: ## Install project dependencies
 	poetry install
 
+# Extra arguments for the doit-based build targets, e.g. `make build-linux DOIT_ARGS="-n 8"`.
+
 .PHONY: build-clean
 build-clean:
 	DANGERZONE_DEV=1 poetry run doit clean
 
 .PHONY: build-macos-intel
 build-macos-intel: build-clean poetry-install ## Build macOS intel package (.dmg)
-	DANGERZONE_DEV=1 poetry run doit -n 8
+	DANGERZONE_DEV=1 poetry run doit $(DOIT_ARGS)
 
 .PHONY: build-macos-arm
 build-macos-arm: build-clean poetry-install ## Build macOS Apple Silicon package (.dmg)
-	DANGERZONE_DEV=1 poetry run doit -n 8 macos_build_dmg
+	DANGERZONE_DEV=1 poetry run doit $(DOIT_ARGS) macos_build_dmg
 
 .PHONY: build-linux
 build-linux: build-clean poetry-install ## Build linux packages (.rpm and .deb)
-	DANGERZONE_DEV=1 poetry run doit -n 8 fedora_rpm debian_deb
+	DANGERZONE_DEV=1 poetry run doit $(DOIT_ARGS) fedora_rpm debian_deb
 
 # The documentation needs the `docs` Poetry group: `poetry install --with docs`.
 COG = DANGERZONE_DEV=1 poetry run cog

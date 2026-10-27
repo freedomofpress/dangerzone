@@ -105,12 +105,15 @@ From your macOS terminal app:
 - [ ] Download the necessary assets with `poetry run mazette install`
 - [ ] Run `poetry run .\install\windows\build-app.bat`. After completion, the installer will be available at `dist\Dangerzone.msi`
 - [ ] Rename `Dangerzone.msi` to `Dangerzone-$VERSION.msi`.
+- [ ] Publish MSI to https://packages-qa.freedom.press.
+- [ ] Submit the draft MSI for package validation in the Microsoft Store.
 
 ## Linux
 
 ### Automated
 
 - [ ] Run `make build-linux` (not necessary if you've previously built artifacts for macOS).
+- [ ] Publish packages to https://packages-qa.freedom.press.
 
 ### Manual steps
 

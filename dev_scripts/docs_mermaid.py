@@ -18,10 +18,13 @@ from pymdownx.superfences import SuperFencesException
 
 # A linked node (`click NODE "https://..."`) is wrapped in an <a> that carries
 # its position, and the label of such a node is a group of <text> at the end of
-# the SVG, positioned relatively to the node (hence the x="0").
+# the SVG, positioned relatively to the node (hence the x="0"). Newer merman
+# versions keep the node classes (incl. "clickable") in a separate
+# `data-merman-source-classes` attribute, older ones in `class`.
 LINK_RE = re.compile(r'<a [^>]*\btransform="([^"]+)"')
 LINK_LABEL_RE = re.compile(
-    r'<g data-merman-foreignobject="fallback" class="[^"]*\bclickable\b[^"]*"'
+    r'<g data-merman-foreignobject="fallback"(?: [\w-]+="[^"]*")*?'
+    r' (?:class|data-merman-source-classes)="[^"]*\bclickable\b[^"]*"'
     r'(?=><text x="0" )'
 )
 

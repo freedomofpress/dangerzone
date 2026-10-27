@@ -44,6 +44,7 @@ Once you are confident that the release doesn't need any more changes:
 To actually publish the release:
 
 - [ ] Merge the PR(s) in the [`packages`](https://github.com/freedomofpress/packages/pulls) repository.
+- [ ] Submit the final MSI in https://packages.freedom.press to the Microsoft Store.
 - [ ] Make the GitHub draft release public.
 - [ ] Merge the PRs in [`dangerzone.rocks`](https://github.com/freedomofpress/dangerzone.rocks/pulls) and [`dangerzone`](https://github.com/freedomofpress/dangerzone/pulls).
 - [ ] Toot release announcement on our mastodon account https://social.freedom.press/@dangerzone

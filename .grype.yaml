@@ -2,3 +2,28 @@
 # latest release of the Dangerzone application, and offer our analysis.
 
 ignore:
+  # CVE-2026-112398, CVE-2026-112900, CVE-2026-112393, CVE-2026-112403, CVE-2026-96639
+  # ================================================================================
+  #
+  # GitHub advisories:
+  # * https://github.com/advisories/GHSA-5x8w-8jj5-q52h
+  # * https://github.com/advisories/GHSA-w889-685w-c8fh
+  # * https://github.com/advisories/GHSA-332p-7hrc-92wf
+  # * https://github.com/advisories/GHSA-8g5g-8vmr-9782
+  # * https://github.com/advisories/GHSA-v9pv-5gc8-w2m6
+  #
+  # Verdict: Dangerzone is not affected because we use Pillow only for docs
+  # generation, and it's not shipped with the final software.
+  - vulnerability: CVE-2026-112398
+  - vulnerability: CVE-2026-112900
+  - vulnerability: CVE-2026-112393
+  - vulnerability: CVE-2026-112403
+  - vulnerability: CVE-2026-96639
+
+  # Brotli (Node2Shell)
+  # =====================
+  #
+  # GitHub advisory: https://github.com/advisories/GHSA-9v8h-qqgm-4m35
+  # Verdict: Dangerzone is not affected because Brotli is not installed, since
+  # it's an extra dependency of urllib3 / fonttools.
+  - vulnerability: GHSA-9v8h-qqgm-4m35

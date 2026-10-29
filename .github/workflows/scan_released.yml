@@ -29,7 +29,7 @@ jobs:
           # Grab the scan code for the GitHub action.
           cp -r .github/actions/scan-app .github/actions/scan-app.new
           VERSION=$(curl https://api.github.com/repos/freedomofpress/dangerzone/releases/latest | jq -r '.tag_name')
-          git checkout $VERSION
+          git checkout "$VERSION"
           # Restore the newest Grype ignore list.
           mv .grype.yaml.new .grype.yaml
           # Restore the GHA action.

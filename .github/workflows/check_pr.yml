@@ -17,7 +17,9 @@ jobs:
           run: |
             git fetch origin
             git status
-            git log --pretty=format:%s origin/main..HEAD | grep -ie '^fixup\|^wip' && exit 1 || true
+            if git log --pretty=format:%s origin/main..HEAD | grep -ie '^fixup\|^wip'; then
+              exit 1
+            fi
 
   check-changelog:
     runs-on: ubuntu-latest

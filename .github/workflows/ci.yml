@@ -100,7 +100,7 @@ jobs:
       - name: Get the digest of the latest image
         id: image-digest
         shell: bash
-        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
+        run: echo "digest=$(crane digest "$(cat share/image-name.txt):latest")" >> "$GITHUB_OUTPUT"
 
       - name: Cache container image archive
         id: cache-container
@@ -232,7 +232,7 @@ jobs:
 
       - name: Get the digest of the latest image
         id: image-digest
-        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
+        run: echo "digest=$(crane digest "$(cat share/image-name.txt):latest")" >> "$GITHUB_OUTPUT"
 
       - name: Cache container image archive
         id: cache-container
@@ -398,7 +398,7 @@ jobs:
       - if: matrix.full
         name: Get the digest of the latest image
         id: image-digest
-        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
+        run: echo "digest=$(crane digest "$(cat share/image-name.txt):latest")" >> "$GITHUB_OUTPUT"
 
       - if: matrix.full
         name: Cache container image archive
@@ -513,7 +513,7 @@ jobs:
 
       - name: Get current date
         id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
 
       - name: Get the dev environment
         run: |
@@ -531,7 +531,7 @@ jobs:
 
       - name: Get the digest of the latest image
         id: image-digest
-        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
+        run: echo "digest=$(crane digest "$(cat share/image-name.txt):latest")" >> "$GITHUB_OUTPUT"
 
       - name: Cache container image archive
         id: cache-container
@@ -604,7 +604,7 @@ jobs:
       - name: Download the old container image as an archive
         run: >-
           poetry run dangerzone-image prepare-archive
-          --image $(cat share/image-name.txt):old-latest
+          --image "$(cat share/image-name.txt):old-latest"
           --output /tmp/old-container.tar
 
       - name: Load the old container image
@@ -624,7 +624,7 @@ jobs:
 
       - name: Get the digest of the latest image
         id: latest
-        run: echo "digest=$(crane digest $(cat share/image-name.txt):latest)" >> $GITHUB_OUTPUT
+        run: echo "digest=$(crane digest "$(cat share/image-name.txt):latest")" >> "$GITHUB_OUTPUT"
 
       - name: Run another conversion
         run: |
@@ -632,8 +632,8 @@ jobs:
 
       - name: Ensure the container has been upgraded
         run: |
-          DIGEST=$(podman images $(cat share/image-name.txt | head -1) --format "{{.Digest}}")
+          DIGEST=$(podman images "$(head -1 share/image-name.txt)" --format "{{.Digest}}")
           EXPECTED_DIGEST=${{ steps.latest.outputs.digest }}
-          if [[ $DIGEST != $EXPECTED_DIGEST ]]; then
+          if [[ "$DIGEST" != "$EXPECTED_DIGEST" ]]; then
               exit 1
           fi

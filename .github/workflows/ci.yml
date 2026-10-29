@@ -42,6 +42,10 @@ jobs:
 
   windows:
     runs-on: ${{ matrix.runner }}
+    # Explicit, since actionlint cannot infer the OS from the matrix runner.
+    defaults:
+      run:
+        shell: pwsh
     strategy:
       fail-fast: false
       matrix:

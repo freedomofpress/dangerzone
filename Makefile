@@ -1,8 +1,9 @@
 .PHONY: lint
-lint: ## Check the code for linting, formatting, and typing issues with ruff and mypy
+lint: ## Check the code for linting, formatting, and typing issues with ruff and mypy. Also lint the GHA workflows with actionlint.
 	ruff check
 	ruff format --check
 	mypy dangerzone tests
+	actionlint
 
 .PHONY: fix
 fix: ## apply all the suggestions from ruff

@@ -34,3 +34,7 @@ doit <task>
     - `CONTAINER_RUNTIME`: The container runtime to use. Either `podman` (default) or `docker`.
     - `RELEASE_DIR`: Where to store the release artifacts. Default path is `~/release-assets/<version>`
     - `APPLE_ID`: The Apple ID to use when signing/notarizing the macOS DMG.
+* You can run multiple `doit` tasks concurrently with the `-n` argument. For
+  example, to run 8 jobs in parallel:
+    - `poetry run doit -n 4`
+    - `make build-linux DOIT_ARGS="-n 4"`

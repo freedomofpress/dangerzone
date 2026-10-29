@@ -38,7 +38,7 @@ flowchart TD
 
 * **You need to keep editing the document.** Dangerzone rasterizes the file: the result is a picture of each page. This will remove formulas in a spreadsheet or macros in a Word document (that's actually the whole point!). If you must edit a document you don't trust, your best chance is probably to do it in a disposable environment instead.
 * **The file is video or audio.** Dangerzone only handles documents and images (see [supported formats](../reference/supported-formats.md)). For removing metadata from media files, use [Metadata Cleaner](https://gitlab.com/metadatacleaner/metadatacleaner) or [mat2](https://github.com/jvoisin/mat2). For opening untrusted media, there is no Dangerzone equivalent. Your best chance is probably to do it in a disposable environment instead.
-* **You want to know whether a file is malicious.** Dangerzone can't tell you if a file is safe. It just creates a copy that is. (Sorry, malware detection is another story)
+* **You want to know whether a file is malicious.** Dangerzone can't tell you if a file is safe. It just creates a copy that is. (Sorry, malware detection is another story).
 * **You need to protect a source from fingerprinting of the document's content.** Dangerzone removes metadata and the file's structure, but doesn't change what is visible on the page: printer tracking dots, watermarks, unique wording, or steganography all survive because they are part of the picture. See the [FAQ](../faq.md#does-dangerzone-remove-watermarks-and-tracking-information).
 
 ## Examples

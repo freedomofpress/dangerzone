@@ -29,8 +29,8 @@ You can read more about ["How Dangerzone works"](./explanation/how-dangerzone-wo
 
 ## Features
 
-- Sandboxes don't have network access, so if a malicious document can compromise one, it can't phone home
-- Dangerzone can optionally do character recognition on the safe PDFs it creates, so they are searchable
+- Sandboxes don't have network access, so if a malicious document can compromise one, it can't phone home.
+- Dangerzone can optionally do character recognition on the safe PDFs it creates, so they are searchable.
 - Dangerzone can convert [many types of documents](reference/supported-formats.md) into safe PDFs.
 
 ---

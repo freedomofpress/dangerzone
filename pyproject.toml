@@ -20,7 +20,7 @@ include = [
 python = ">=3.10,<3.15"
 click = "*"
 platformdirs = "*"
-PySide6 = "^6.7.1"
+PySide6 = ">=6.7.1,<6.12.0"  # FIXME: Remove the restriction once PySide6 works on our CI again.
 PyMuPDF = "^1.25.3" # The version in Fedora 42
 colorama = "*"
 pyxdg = { version = "*", platform = "linux" }
@@ -52,6 +52,7 @@ types-colorama = "*"
 types-PySide2 = "*"
 types-pygments = "*"
 types-requests = "*"
+actionlint-py = "*"
 
 # Dependencies required for testing the code.
 [tool.poetry.group.test.dependencies]

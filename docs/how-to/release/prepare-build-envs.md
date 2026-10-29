@@ -27,7 +27,7 @@
 - [ ] Upgrade "Command Line Tools" from "System Settings -> Software Update", from an account with admin privileges.
 - [ ] Upgrade Xcode from the App Store, from an account with admin privileges.
 - [ ] Update Docker Desktop and Podman Desktop to the latest versions.
-- [ ] Update Python to the latest supported version, following our [instructions](manage-python-installations.md)
+- [ ] Update Python to the latest supported version, following our [instructions](manage-python-installations.md).
 
 ## Windows
 
@@ -37,13 +37,13 @@ The Windows release is performed in a Windows 11 virtual machine (as opposed to 
 
 - Download a VirtualBox VM image for Windows from here: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/ and import it into VirtualBox. Also install the Oracle VM VirtualBox Extension Pack.
 - Install updates
-- Install git for Windows from https://git-scm.com/download/win, and clone the dangerzone repo
+- Install git for Windows from https://git-scm.com/download/win, and clone the dangerzone repo.
 - Follow the [Windows build instructions](../contribute/build-from-source.md#windows), except:
-    - Don't install Docker Desktop (it won't work without nested virtualization)
-    - Install the Windows SDK from here: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/ and add `C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool` to the path (you'll need it for `signtool.exe`)
-    - You'll also need the Windows codesigning certificate installed on the VM
+    - Don't install Docker Desktop (it won't work without nested virtualization).
+    - Install the Windows SDK from here: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/ and add `C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool` to the path (you'll need it for `signtool.exe`).
+    - You'll also need the Windows codesigning certificate installed on the VM.
 
 ### On each release
 
-- [ ] Update WiX, if necessary
-- [ ] Update Python to the latest supported version, following our [instructions](manage-python-installations.md)
+- [ ] Update WiX, if necessary.
+- [ ] Update Python to the latest supported version, following our [instructions](manage-python-installations.md).

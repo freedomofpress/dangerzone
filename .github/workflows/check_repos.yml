@@ -58,7 +58,7 @@ jobs:
               --qa
 
   install-qubes:
-    name: "Install dangerzone-qubes on ${{ matrix.distro}} ${{ matrix.version }} from ${{ matrix.repo }} repo"
+    name: "Install dangerzone-qubes on Fedora ${{ matrix.version }} from ${{ matrix.repo }} repo"
     runs-on: ubuntu-latest
     container:
       image: "fedora:${{ matrix.version }}"

@@ -1,8 +1,9 @@
 .PHONY: lint
-lint: ## Check the code for linting, formatting, and typing issues with ruff and mypy
+lint: ## Check the code for linting, formatting, and typing issues with ruff and mypy. Also lint the GHA workflows with actionlint.
 	ruff check
 	ruff format --check
 	mypy dangerzone tests
+	actionlint
 
 .PHONY: fix
 fix: ## apply all the suggestions from ruff
@@ -23,15 +24,15 @@ build-clean:
 
 .PHONY: build-macos-intel
 build-macos-intel: build-clean poetry-install ## Build macOS intel package (.dmg)
-	DANGERZONE_DEV=1 poetry run doit -n 8
+	DANGERZONE_DEV=1 poetry run doit $(DOIT_ARGS)
 
 .PHONY: build-macos-arm
 build-macos-arm: build-clean poetry-install ## Build macOS Apple Silicon package (.dmg)
-	DANGERZONE_DEV=1 poetry run doit -n 8 macos_build_dmg
+	DANGERZONE_DEV=1 poetry run doit $(DOIT_ARGS) macos_build_dmg
 
 .PHONY: build-linux
 build-linux: build-clean poetry-install ## Build linux packages (.rpm and .deb)
-	DANGERZONE_DEV=1 poetry run doit -n 8 fedora_rpm debian_deb
+	DANGERZONE_DEV=1 poetry run doit $(DOIT_ARGS) fedora_rpm debian_deb
 
 # The documentation needs the `docs` Poetry group: `poetry install --with docs`.
 COG = DANGERZONE_DEV=1 poetry run cog

@@ -2,23 +2,23 @@
 
 Here is a list of tasks that should be done before issuing the release. They can run from the developer's laptop and are not tied to any build environment.
 
-- [ ] Create a new issue named **QA and Release for version \<VERSION\>**, to track the general progress. You can generate its content with the `poetry run ./dev_scripts/generate-release-tasks.py` command.
+- [ ] Create a new issue named **QA and Release for version `X.Y.Z`**, to track the general progress. You can generate its content with the `poetry run ./dev_scripts/generate-release-tasks.py` command.
 - [ ] [Add new Linux platforms and remove obsolete ones](#add-new-linux-platforms-and-remove-obsolete-ones)
 - [ ] Bump the Python dependencies using `poetry lock --regenerate`
 - [ ] Bump the GitHub asset dependencies using `poetry run mazette lock`
 - [ ] [Bump the version of the `dangerzone-image` repo](https://github.com/freedomofpress/dangerzone-image#updates), in case of code changes.
-- [ ] Check for new [WiX releases](https://github.com/wixtoolset/wix/releases) and update it if needed (see [#1200](https://github.com/freedomofpress/dangerzone/issues/1200))
+- [ ] Check for new [WiX releases](https://github.com/wixtoolset/wix/releases) and update it if needed (see [#1200](https://github.com/freedomofpress/dangerzone/issues/1200)).
 - [ ] Update `version` in `pyproject.toml`
 - [ ] Update `share/version.txt`
-- [ ] Update `share/version_insecure_converter.txt`, if necessary
+- [ ] Update `share/version_insecure_converter.txt`, if necessary.
 - [ ] Update the "Version" field in `install/linux/dangerzone.spec`
 - [ ] (optional) Bump image version from `v1` to `v2`, if the API has changed.
 - [ ] Bump the Debian version by adding a new changelog entry in `debian/changelog`
-- [ ] Run `make docs-cog` to refresh the generated parts of the docs, including the download links in `docs/how-to/install/index.md` (the links will start working once the release assets are published)
-- [ ] Update screenshot in `README.md`, if necessary
-- [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release
-- [ ] A draft release should be created. Copy the release notes text from the [release notes templates](release-notes-templates.md)
-- [ ] Send the release notes to editorial for review
+- [ ] Run `make docs-cog` to refresh the generated parts of the docs, including the download links in `docs/how-to/install/index.md` (the links will start working once the release assets are published).
+- [ ] Update screenshot in `README.md`, if necessary.
+- [ ] CHANGELOG.md should be updated to include a list of all major changes since the last release.
+- [ ] A draft release should be created. Copy the release notes text from the [release notes templates](release-notes-templates.md).
+- [ ] Send the release notes to editorial for review.
 - [ ] Tag the tip of the `main` branch as `v<version>-rc1`. E.g. `git tag -s v0.9.1-rc1`.
 
 ## Add new Linux platforms and remove obsolete ones

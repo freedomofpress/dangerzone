@@ -9,6 +9,6 @@ updates:
       - "dependencies"
       - "github_actions"
     groups:
-    actions-updates:
-      patterns:
-        - "*" # Create a single PR for all action dependencies
+      actions-updates:
+        patterns:
+          - "*" # Create a single PR for all action dependencies

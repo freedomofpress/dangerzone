@@ -17,8 +17,6 @@ test: ## Run the tests
 poetry-install: ## Install project dependencies
 	poetry install
 
-# Extra arguments for the doit-based build targets, e.g. `make build-linux DOIT_ARGS="-n 8"`.
-
 .PHONY: build-clean
 build-clean:
 	DANGERZONE_DEV=1 poetry run doit clean

@@ -96,7 +96,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 RUN apt-get update \
     && apt-get install -y --no-install-recommends adduser dh-python make build-essential \
-        git {qt_deps} pipx python3 python3-pip python3-venv dpkg-dev debhelper python3-setuptools \
+        git {qt_deps} shellcheck pipx python3 python3-pip python3-venv dpkg-dev debhelper python3-setuptools \
         python3-dev \
     && rm -rf /var/lib/apt/lists/*
 RUN pipx install poetry
@@ -111,7 +111,7 @@ RUN apt-get update \
 # packages are needed for building the dangerzone-insecure-converter-qubes RPM
 # from the dangerzone-image repo (https://github.com/freedomofpress/dangerzone-image).
 DOCKERFILE_BUILD_DEV_FEDORA_DEPS = r"""
-RUN dnf install -y git rpm-build podman python3 python3-devel python3-poetry-core \
+RUN dnf install -y git shellcheck rpm-build podman python3 python3-devel python3-poetry-core \
     pipx make qt6-qtbase-gui gcc gcc-c++ \
     pyproject-rpm-macros python3-uv-build python3-pymupdf python3-magic \
     && dnf clean all

@@ -28,13 +28,16 @@ jobs:
     container:
       image: debian:bookworm
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # NOTE: Install Git before checking out the repo, else actions/checkout
+      # falls back to the REST API and creates no .git directory, which
+      # actionlint needs to detect the project.
       - name: Install dev. dependencies
         run: |-
           apt-get update
           apt-get install -y git make python3 pipx --no-install-recommends
           pipx install poetry
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install Python dependencies
         run: poetry install
       - name: Run linters to enforce code style

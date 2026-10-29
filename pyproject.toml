@@ -52,6 +52,7 @@ types-colorama = "*"
 types-PySide2 = "*"
 types-pygments = "*"
 types-requests = "*"
+actionlint-py = "*"
 
 # Dependencies required for testing the code.
 [tool.poetry.group.test.dependencies]

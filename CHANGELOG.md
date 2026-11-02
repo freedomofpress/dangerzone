@@ -11,6 +11,13 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 - Drop support for Ubuntu Questing (25.10) as it reached end of life
 
+### Changes
+
+- Mention the Python runtime and dependencies that Dangerzone bundles in
+  `THIRD_PARTY_NOTICE.md`, list the ones with restrictive licenses, and
+  explain the licensing of the sandbox container image
+  ([#1554](https://github.com/freedomofpress/dangerzone/issues/1554))
+
 ## [0.11.1](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...v0.11.1)
 
 ### Changes

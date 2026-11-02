@@ -15,6 +15,7 @@
         <link rel="canonical" href="https://docs.dangerzone.rocks/dev/how-to/release/prepare-build-envs/">
       
       
+      
         <link rel="prev" href="../pre-release/">
       
       
@@ -25,7 +26,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="zensical-0.0.68">
+      <meta name="generator" content="zensical-0.0.71">
     
     
       
@@ -36,12 +37,12 @@
       
         
       
-      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.595f2bf5.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.e442bf79.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/modern/palette.b27955a4.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/modern/palette.b60ce83d.min.css">
       
       
 
@@ -2729,7 +2730,7 @@
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Upgrade "Command Line Tools" from "System Settings -&gt; Software Update", from an account with admin privileges.</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Upgrade Xcode from the App Store, from an account with admin privileges.</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update Docker Desktop and Podman Desktop to the latest versions.</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update Python to the latest supported version, following our <a href="../manage-python-installations/">instructions</a></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update Python to the latest supported version, following our <a href="../manage-python-installations/">instructions</a>.</li>
 </ul>
 <h2 id="windows">Windows<a class="headerlink" href="#windows" title="Permanent link">&para;</a></h2>
 <p>The Windows release is performed in a Windows 11 virtual machine (as opposed to a physical one).</p>
@@ -2737,18 +2738,18 @@
 <ul>
 <li>Download a VirtualBox VM image for Windows from here: <a href="https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/">https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/</a> and import it into VirtualBox. Also install the Oracle VM VirtualBox Extension Pack.</li>
 <li>Install updates</li>
-<li>Install git for Windows from <a href="https://git-scm.com/download/win">https://git-scm.com/download/win</a>, and clone the dangerzone repo</li>
+<li>Install git for Windows from <a href="https://git-scm.com/download/win">https://git-scm.com/download/win</a>, and clone the dangerzone repo.</li>
 <li>Follow the <a href="../../contribute/build-from-source/#windows">Windows build instructions</a>, except:<ul>
-<li>Don't install Docker Desktop (it won't work without nested virtualization)</li>
-<li>Install the Windows SDK from here: <a href="https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/">https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/</a> and add <code>C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool</code> to the path (you'll need it for <code>signtool.exe</code>)</li>
-<li>You'll also need the Windows codesigning certificate installed on the VM</li>
+<li>Don't install Docker Desktop (it won't work without nested virtualization).</li>
+<li>Install the Windows SDK from here: <a href="https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/">https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/</a> and add <code>C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool</code> to the path (you'll need it for <code>signtool.exe</code>).</li>
+<li>You'll also need the Windows codesigning certificate installed on the VM.</li>
 </ul>
 </li>
 </ul>
 <h3 id="on-each-release_1">On each release<a class="headerlink" href="#on-each-release_1" title="Permanent link">&para;</a></h3>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update WiX, if necessary</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update Python to the latest supported version, following our <a href="../manage-python-installations/">instructions</a></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update WiX, if necessary.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update Python to the latest supported version, following our <a href="../manage-python-installations/">instructions</a>.</li>
 </ul>
 
 
@@ -2897,10 +2898,10 @@
       
         
         
-      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.tabs","navigation.tabs.sticky","navigation.top","navigation.tracking","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"provider":"mike"}}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.tabs","navigation.tabs.sticky","navigation.top","navigation.tracking","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"provider":"mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.3c842f4c.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a2388154.min.js"></script>
       
         <script src="../../../javascripts/tabs.js"></script>
       

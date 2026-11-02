@@ -15,6 +15,7 @@
         <link rel="canonical" href="https://docs.dangerzone.rocks/dev/how-to/release/pre-release/">
       
       
+      
         <link rel="prev" href="../">
       
       
@@ -25,7 +26,7 @@
       
       
       <link rel="icon" href="../../../assets/logo.png">
-      <meta name="generator" content="zensical-0.0.68">
+      <meta name="generator" content="zensical-0.0.71">
     
     
       
@@ -36,12 +37,12 @@
       
         
       
-      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.595f2bf5.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.e442bf79.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/modern/palette.b27955a4.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/modern/palette.b60ce83d.min.css">
       
       
 
@@ -2571,23 +2572,23 @@
 <h1 id="pre-release">Pre-release<a class="headerlink" href="#pre-release" title="Permanent link">&para;</a></h1>
 <p>Here is a list of tasks that should be done before issuing the release. They can run from the developer's laptop and are not tied to any build environment.</p>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Create a new issue named <strong>QA and Release for version \&lt;VERSION&gt;</strong>, to track the general progress. You can generate its content with the <code>poetry run ./dev_scripts/generate-release-tasks.py</code> command.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Create a new issue named <strong>QA and Release for version <code>X.Y.Z</code></strong>, to track the general progress. You can generate its content with the <code>poetry run ./dev_scripts/generate-release-tasks.py</code> command.</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> <a href="#add-new-linux-platforms-and-remove-obsolete-ones">Add new Linux platforms and remove obsolete ones</a></li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Bump the Python dependencies using <code>poetry lock --regenerate</code></li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Bump the GitHub asset dependencies using <code>poetry run mazette lock</code></li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> <a href="https://github.com/freedomofpress/dangerzone-image#updates">Bump the version of the <code>dangerzone-image</code> repo</a>, in case of code changes.</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Check for new <a href="https://github.com/wixtoolset/wix/releases">WiX releases</a> and update it if needed (see <a href="https://github.com/freedomofpress/dangerzone/issues/1200">#1200</a>)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Check for new <a href="https://github.com/wixtoolset/wix/releases">WiX releases</a> and update it if needed (see <a href="https://github.com/freedomofpress/dangerzone/issues/1200">#1200</a>).</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update <code>version</code> in <code>pyproject.toml</code></li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update <code>share/version.txt</code></li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update <code>share/version_insecure_converter.txt</code>, if necessary</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update <code>share/version_insecure_converter.txt</code>, if necessary.</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update the "Version" field in <code>install/linux/dangerzone.spec</code></li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> (optional) Bump image version from <code>v1</code> to <code>v2</code>, if the API has changed.</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Bump the Debian version by adding a new changelog entry in <code>debian/changelog</code></li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Run <code>make docs-cog</code> to refresh the generated parts of the docs, including the download links in <code>docs/how-to/install/index.md</code> (the links will start working once the release assets are published)</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update screenshot in <code>README.md</code>, if necessary</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> CHANGELOG.md should be updated to include a list of all major changes since the last release</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> A draft release should be created. Copy the release notes text from the <a href="../release-notes-templates/">release notes templates</a></li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Send the release notes to editorial for review</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Run <code>make docs-cog</code> to refresh the generated parts of the docs, including the download links in <code>docs/how-to/install/index.md</code> (the links will start working once the release assets are published).</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Update screenshot in <code>README.md</code>, if necessary.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> CHANGELOG.md should be updated to include a list of all major changes since the last release.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> A draft release should be created. Copy the release notes text from the <a href="../release-notes-templates/">release notes templates</a>.</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Send the release notes to editorial for review.</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox"/><span class="task-list-indicator"></span></label> Tag the tip of the <code>main</code> branch as <code>v&lt;version&gt;-rc1</code>. E.g. <code>git tag -s v0.9.1-rc1</code>.</li>
 </ul>
 <h2 id="add-new-linux-platforms-and-remove-obsolete-ones">Add new Linux platforms and remove obsolete ones<a class="headerlink" href="#add-new-linux-platforms-and-remove-obsolete-ones" title="Permanent link">&para;</a></h2>
@@ -2758,10 +2759,10 @@
       
         
         
-      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.tabs","navigation.tabs.sticky","navigation.top","navigation.tracking","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"provider":"mike"}}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.tabs","navigation.tabs.sticky","navigation.top","navigation.tracking","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"provider":"mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.3c842f4c.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.a2388154.min.js"></script>
       
         <script src="../../../javascripts/tabs.js"></script>
       

@@ -25,7 +25,7 @@ new Dangerzone releases.</p>
 <p>This is recommended in most settings. For alternative methods to keep
 Dangerzone up-to-date and secure (e.g., in a networkless environment),
 see <a href="https://docs.dangerzone.rocks/latest/how-to/install/update-dangerzone/">our
-documentation ↗️</a>.</p>
+documentation</a>.</p>
 """
 # FIXME: Add a link to the documentation.
 OK_TEXT = "Yes, enable sandbox updates"

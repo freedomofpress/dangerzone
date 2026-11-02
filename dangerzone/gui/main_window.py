@@ -31,7 +31,7 @@ from ..isolation_provider.qubes import is_qubes_native_conversion
 from ..util import get_resource_path, get_version
 from .log_window import LogHandler, LogWindow
 from .logic import Alert, CollapsibleBox, DangerzoneGui, Dialog, Question, UpdateDialog
-from .widgets import TracebackWidget
+from .widgets import ExternalLinkLabel, TracebackWidget
 
 log = logging.getLogger(__name__)
 
@@ -89,16 +89,16 @@ your installation.</p>
 
 <p>You can also take a look at some
 <a href="https://learn.microsoft.com/en-us/windows/wsl/troubleshooting#common-issues">
-common WSL issues ↗️
+common WSL issues
 </a>, some
 <a href="https://podman-desktop.io/docs/troubleshooting/troubleshooting-podman-on-windows#older-wsl-versions-might-lead-to-networking-issues">
-troubleshooting tips ↗️
+troubleshooting tips
 </a> from Podman, or our logs from the <i>"View logs"</i> menu option.
 </p>
 
 <p>If you feel stuck, don't hesitate to
 <a href="https://docs.dangerzone.rocks/latest/how-to/contribute/report-an-issue/">
-report an issue ↗️
+report an issue
 </a>
 </p>
 """
@@ -880,10 +880,9 @@ class StartupErrorWidget(QtWidgets.QWidget):
         super().__init__()
         self.header = QtWidgets.QLabel()
         self.header.setAlignment(QtCore.Qt.AlignCenter)
-        self.footer = QtWidgets.QLabel()
+        self.footer = ExternalLinkLabel()
         self.footer.setAlignment(QtCore.Qt.AlignRight)
         self.footer.setTextFormat(QtCore.Qt.RichText)
-        self.footer.setOpenExternalLinks(True)
         self.footer.setWordWrap(True)
         self.traceback_widget = TracebackWidget()
         self.traceback_widget.setVisible(False)
@@ -901,7 +900,7 @@ class StartupErrorWidget(QtWidgets.QWidget):
         self.footer.setText("""\
             <p>
               <a href="https://docs.dangerzone.rocks/latest/how-to/contribute/report-an-issue/">
-                 Report issue ↗️
+                 Report issue
               </a>
             </p>
         """)
@@ -916,12 +915,11 @@ class WSLErrorWidget(QtWidgets.QWidget):
         )
         self.header.setStyleSheet("QLabel { font-size: 20px; }")
         self.header.setAlignment(QtCore.Qt.AlignCenter)
-        self.explanation = QtWidgets.QLabel()
+        self.explanation = ExternalLinkLabel()
         self.explanation.setText(WSL_INSTALL_FAILED_MSG)
         self.explanation.setStyleSheet("QLabel { font-size: 14px; }")
         self.explanation.setAlignment(QtCore.Qt.AlignCenter)
         self.explanation.setTextFormat(QtCore.Qt.RichText)
-        self.explanation.setOpenExternalLinks(True)
         self.explanation.setWordWrap(True)
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.header)

@@ -9,7 +9,6 @@ import pytest
 from pytest_subprocess import FakeProcess
 
 from dangerzone.updater import errors
-from dangerzone.updater.cosign import _COSIGN_BINARY
 from dangerzone.updater.signatures import (
     Signature,
     get_log_index_from_signatures,
@@ -154,7 +153,7 @@ def test_get_remote_signatures_error(fp: FakeProcess, mocker: Any) -> None:
     image = "ghcr.io/freedomofpress/dangerzone/v1"
     digest = "123456"
     fp.register_subprocess(
-        [_COSIGN_BINARY, "download", "signature", f"{image}@sha256:{digest}"],
+        [fp.any(min=1, max=1), "download", "signature", f"{image}@sha256:{digest}"],
         returncode=1,
     )
     with pytest.raises(errors.NoRemoteSignatures):
@@ -165,7 +164,7 @@ def test_get_remote_signatures_empty(fp: FakeProcess, mocker: Any) -> None:
     image = "ghcr.io/freedomofpress/dangerzone/v1"
     digest = "123456"
     fp.register_subprocess(
-        [_COSIGN_BINARY, "download", "signature", f"{image}@sha256:{digest}"],
+        [fp.any(min=1, max=1), "download", "signature", f"{image}@sha256:{digest}"],
         stdout=json.dumps({}),
     )
     with pytest.raises(errors.NoRemoteSignatures):
@@ -177,7 +176,7 @@ def test_get_remote_signatures_cosign_error(mocker: Any, fp: FakeProcess) -> Non
     digest = "123456"
 
     fp.register_subprocess(
-        [_COSIGN_BINARY, "download", "signature", f"{image}@sha256:{digest}"],
+        [fp.any(min=1, max=1), "download", "signature", f"{image}@sha256:{digest}"],
         returncode=1,
         stderr="Error: no signatures associated",
     )

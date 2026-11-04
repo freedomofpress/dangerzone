@@ -75,7 +75,8 @@ optional = true
 cogapp = "*"
 zensical = "*"
 mike = {git = "https://github.com/squidfunk/mike.git"}
-weasyprint = ">=70.0"
+# Python >= 3.11 is required in order to use Pillow >= 13.0.0
+weasyprint = {version = ">=70.0", python = ">=3.11"}
 beautifulsoup4 = "^4.15.0"
 mermaidx = {extras = ["rust"], version = "^0.9.5"}
 

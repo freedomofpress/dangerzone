@@ -282,9 +282,95 @@ def test_error_report_is_returned_on_exception(
         side_effect=RuntimeError("Network error"),
     )
 
+    # Mock container image check: no new sandbox image
+    mocker.patch(
+        "dangerzone.updater.releases.get_remote_digest_and_logindex",
+        return_value=("digest123", 0, []),
+    )
+    mocker.patch(
+        "dangerzone.updater.releases.container_utils.expected_image_name",
+        return_value="dangerzone/container",
+    )
+
     # Check for updates
     report = check_for_updates(mock_settings)
 
     # Should return ErrorReport
     assert isinstance(report, ErrorReport)
     assert "Network error" in report.error
+
+
+def _mock_platform(mocker: MockerFixture, platform_system: str) -> None:
+    mocker.patch(
+        "dangerzone.updater.releases.platform.system", return_value=platform_system
+    )
+    mocker.patch.object(sys, "dangerzone_dev", False, create=True)
+    mocker.patch("dangerzone.util.get_version", return_value="0.1.0")
+    mocker.patch(
+        "dangerzone.updater.releases.container_utils.expected_image_name",
+        return_value="dangerzone/container",
+    )
+
+
+@pytest.mark.parametrize("platform_system", ["Darwin", "Windows"])
+@pytest.mark.parametrize(
+    "gh_error",
+    [
+        RuntimeError("Encountered an HTTP 403 error"),
+        ValueError("Invalid version: 'bad_version'"),
+    ],
+)
+def test_sandbox_is_checked_when_github_check_fails(
+    mocker: MockerFixture,
+    mock_settings: Settings,
+    platform_system: str,
+    gh_error: Exception,
+) -> None:
+    """A failed GitHub release check must not skip the sandbox image check.
+
+    The unauthenticated GitHub API allows 60 requests per hour per IP, so users
+    behind a shared VPN or Tor exit often get an HTTP 403. The sandbox image is
+    checked against the container registry, which is not affected by that limit,
+    and the installer reads the log index stored here. The GitHub error is still
+    reported.
+    """
+    _mock_platform(mocker, platform_system)
+    mocker.patch(
+        "dangerzone.updater.releases.fetch_github_release_info",
+        side_effect=gh_error,
+    )
+    mock_container_check = mocker.patch(
+        "dangerzone.updater.releases.get_remote_digest_and_logindex",
+        return_value=("digest123", 100, []),
+    )
+    mock_settings.set("updater_remote_log_index", 50, autosave=True)
+
+    report = check_for_updates(mock_settings)
+
+    mock_container_check.assert_called_once()
+    assert mock_settings.get("updater_remote_log_index") == 100
+    assert isinstance(report, ErrorReport)
+    assert str(gh_error) in report.error
+
+
+def test_both_update_checks_fail(
+    mocker: MockerFixture, mock_settings: Settings
+) -> None:
+    """If both checks fail, the error report mentions both."""
+    _mock_platform(mocker, "Darwin")
+    mocker.patch(
+        "dangerzone.updater.releases.fetch_github_release_info",
+        side_effect=RuntimeError("Encountered an HTTP 403 error"),
+    )
+    mocker.patch(
+        "dangerzone.updater.releases.get_remote_digest_and_logindex",
+        side_effect=RuntimeError("registry unreachable"),
+    )
+    mock_settings.set("updater_remote_log_index", 50, autosave=True)
+
+    report = check_for_updates(mock_settings)
+
+    assert isinstance(report, ErrorReport)
+    assert "Encountered an HTTP 403 error" in report.error
+    assert "registry unreachable" in report.error
+    assert mock_settings.get("updater_remote_log_index") == 50

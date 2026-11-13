@@ -214,28 +214,45 @@ def check_for_updates(
             settings.set("updater_last_check", _get_now_timestamp(), autosave=True)
 
         report = ReleaseReport()
+        gh_error: Exception | None = None
 
         # On Linux, skip GitHub release checks (users get updates from package manager)
         if not is_linux:
-            gh_version, gh_changelog = fetch_github_release_info()
-            latest_version = settings.get("updater_latest_version")
-
-            if gh_version and ensure_sane_update(latest_version, gh_version):
-                log.debug(
-                    f"New GitHub release detected: {latest_version} < {gh_version}"
-                )
-                report.version = gh_version
-                report.changelog = gh_changelog
+            # A failed GitHub lookup (e.g., HTTP 403 when a shared VPN or Tor exit
+            # has spent the unauthenticated API quota) must not skip the sandbox
+            # image check below: it talks to the container registry, and the
+            # installer reads the remote log index that it stores.
+            try:
+                gh_version, gh_changelog = fetch_github_release_info()
+                latest_version = settings.get("updater_latest_version")
+                if gh_version and ensure_sane_update(latest_version, gh_version):
+                    log.debug(
+                        f"New GitHub release detected: {latest_version} < {gh_version}"
+                    )
+                    report.version = gh_version
+                    report.changelog = gh_changelog
+            except Exception as e:  # noqa: BLE001
+                gh_error = e
 
         # Check for container image updates (on all platforms)
-        container_name = container_utils.expected_image_name()
-        previous_remote_log_index = settings.get("updater_remote_log_index")
-        _, remote_log_index, _ = get_remote_digest_and_logindex(container_name)
+        try:
+            container_name = container_utils.expected_image_name()
+            previous_remote_log_index = settings.get("updater_remote_log_index")
+            _, remote_log_index, _ = get_remote_digest_and_logindex(container_name)
+        except Exception as e:
+            if gh_error is None:
+                raise
+            raise RuntimeError(f"{gh_error}; sandbox image check: {e}") from e
 
         settings.set("updater_remote_log_index", remote_log_index, autosave=True)
 
         if previous_remote_log_index < remote_log_index:
             report.container_image_bump = True
+
+        # Still report the GitHub error, so that update error notifications work as
+        # before. A newer sandbox image is installed from the log index stored above.
+        if gh_error is not None:
+            raise gh_error
 
         if report.is_empty:
             return EmptyReport()

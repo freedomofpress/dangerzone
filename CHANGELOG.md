@@ -7,6 +7,11 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...HEAD)
 
+### Added
+
+- Show the estimated time remaining next to the progress bar of each document
+  ([#1477](https://github.com/freedomofpress/dangerzone/issues/1477))
+
 ### Support
 
 - Drop support for Ubuntu Questing (25.10) as it reached end of life

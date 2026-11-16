@@ -30,9 +30,12 @@ from dangerzone.gui.logic import DangerzoneGui
 # import Pyside related objects from here to avoid duplicating import logic.
 from dangerzone.gui.main_window import (
     ConversionWidget,
+    DocumentWidget,
     MainWindow,
     QtCore,
     QtGui,
+    estimate_eta,
+    format_eta,
 )
 from dangerzone.isolation_provider.container import Container
 from dangerzone.isolation_provider.dummy import Dummy
@@ -1584,3 +1587,86 @@ def test_unreadable_document_is_rechecked_before_conversion(
         has_cancel=False,
     )
     mock_alert.return_value.launch.assert_called_once()
+
+
+class TestEta:
+    """Tests for the estimated time remaining, shown next to the progress bar."""
+
+    def test_eta_is_unknown_if_nothing_is_converted_yet(self) -> None:
+        """Without any progress, there is nothing to base an estimate on."""
+        assert estimate_eta(elapsed=10, percentage=0) is None
+
+    def test_eta_is_unknown_if_the_conversion_is_over(self) -> None:
+        """A finished conversion has no time left."""
+        assert estimate_eta(elapsed=10, percentage=100) is None
+
+    def test_eta_scales_with_the_time_spent_so_far(self) -> None:
+        """A quarter of the document took 30 seconds, so 90 seconds are left."""
+        assert estimate_eta(elapsed=30, percentage=25) == 90
+
+    def test_eta_is_formatted_in_seconds(self) -> None:
+        assert format_eta(45) == "~45s left"
+
+    def test_eta_is_formatted_in_minutes(self) -> None:
+        assert format_eta(80) == "~1m 20s left"
+
+    def test_eta_is_formatted_in_whole_minutes(self) -> None:
+        assert format_eta(120) == "~2m left"
+
+    def test_eta_is_formatted_in_hours(self) -> None:
+        assert format_eta(3900) == "~1h 5m left"
+
+    def test_document_widget_shows_the_eta_while_converting(
+        self,
+        dangerzone_gui: DangerzoneGui,
+        qtbot: QtBot,
+        sample_pdf: str,
+    ) -> None:
+        """The estimated time remaining is shown next to the progress bar."""
+        widget = DocumentWidget(dangerzone_gui, Document(sample_pdf))
+        qtbot.addWidget(widget)
+
+        assert widget.eta_label.isHidden()
+
+        widget.start_conversion()
+        widget.start_time = time.monotonic() - 30
+        widget.update_progress(False, "Converted page 1/4", 25)
+
+        assert not widget.eta_label.isHidden()
+        assert widget.eta_label.text() == "~1m 30s left"
+
+    def test_document_widget_clears_the_eta_when_the_conversion_is_over(
+        self,
+        dangerzone_gui: DangerzoneGui,
+        qtbot: QtBot,
+        sample_pdf: str,
+    ) -> None:
+        """No estimated time is left to show once the document is converted."""
+        widget = DocumentWidget(dangerzone_gui, Document(sample_pdf))
+        qtbot.addWidget(widget)
+
+        widget.start_conversion()
+        widget.start_time = time.monotonic() - 30
+        widget.update_progress(False, "Converted page 1/4", 25)
+        widget.update_progress(False, "Successfully converted document", 100)
+
+        assert widget.eta_label.isHidden()
+        assert widget.eta_label.text() == ""
+
+    def test_document_widget_clears_the_eta_when_the_conversion_fails(
+        self,
+        dangerzone_gui: DangerzoneGui,
+        qtbot: QtBot,
+        sample_pdf: str,
+    ) -> None:
+        """A failed conversion has no estimated time to show."""
+        widget = DocumentWidget(dangerzone_gui, Document(sample_pdf))
+        qtbot.addWidget(widget)
+
+        widget.start_conversion()
+        widget.start_time = time.monotonic() - 30
+        widget.update_progress(False, "Converted page 1/4", 25)
+        widget.update_progress(True, "Conversion failed", 25)
+
+        assert widget.eta_label.isHidden()
+        assert widget.eta_label.text() == ""

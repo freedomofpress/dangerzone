@@ -1624,6 +1624,7 @@ class SettingsWidget(QtWidgets.QWidget):
 
 
 class ConvertTask(QtCore.QObject):
+    started = QtCore.Signal()
     finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
@@ -1640,6 +1641,9 @@ class ConvertTask(QtCore.QObject):
         self.dangerzone = dangerzone
 
     def convert_document(self) -> None:
+        # Documents wait in the thread pool until a worker is free, so the
+        # conversion only starts here.
+        self.started.emit()
         self.dangerzone.isolation_provider.convert(
             self.document,
             self.ocr_lang,
@@ -1706,7 +1710,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
             self.submitted_docs.add(doc)
             task = ConvertTask(self.dangerzone, doc, self.get_ocr_lang())
             doc_widget = self.docs_list_widget_map[doc]
-            doc_widget.start_conversion()
+            task.started.connect(doc_widget.start_conversion)
             task.update.connect(doc_widget.update_progress)
             task.finished.connect(doc_widget.all_done)
             task.finished.connect(self._on_doc_done)

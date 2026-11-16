@@ -30,6 +30,7 @@ from dangerzone.gui.logic import DangerzoneGui
 # import Pyside related objects from here to avoid duplicating import logic.
 from dangerzone.gui.main_window import (
     ConversionWidget,
+    ConvertTask,
     DocumentWidget,
     MainWindow,
     QtCore,
@@ -1634,6 +1635,31 @@ class TestEta:
 
         assert not widget.eta_label.isHidden()
         assert widget.eta_label.text() == "~1m 30s left"
+
+    def test_queued_document_does_not_count_its_waiting_time(
+        self,
+        dangerzone_gui: DangerzoneGui,
+        qtbot: QtBot,
+        sample_pdf: str,
+    ) -> None:
+        """Documents are converted one at a time, so the time a document spends
+        waiting for its turn must not count towards its estimate."""
+        doc = Document(sample_pdf)
+        widget = DocumentWidget(dangerzone_gui, doc)
+        qtbot.addWidget(widget)
+        task = ConvertTask(dangerzone_gui, doc)
+        task.started.connect(widget.start_conversion)
+
+        # Still waiting in the queue: no clock is running yet.
+        waiting_since = widget.start_time
+        assert waiting_since is None
+
+        with qtbot.waitSignal(task.started):
+            task.convert_document()
+
+        started_at = widget.start_time
+        assert started_at is not None
+        assert time.monotonic() - started_at < 5
 
     def test_document_widget_clears_the_eta_when_the_conversion_is_over(
         self,

@@ -7,6 +7,12 @@ since 0.4.1, and this project adheres to [Semantic Versioning](https://semver.or
 
 ## [Unreleased](https://github.com/freedomofpress/dangerzone/compare/v0.11.0...HEAD)
 
+### Fixed
+
+- Check for sandbox image updates on macOS and Windows even when the GitHub
+  release check fails, e.g., when a shared VPN or Tor exit has hit GitHub's API
+  rate limit ([#1533](https://github.com/freedomofpress/dangerzone/issues/1533))
+
 ### Support
 
 - Drop support for Ubuntu Questing (25.10) as it reached end of life

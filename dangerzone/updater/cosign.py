@@ -1,4 +1,7 @@
+import errno
 import os
+import platform
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -14,7 +17,7 @@ from . import errors, log
 This module exposes functions to interact with the embedded cosign binary.
 """
 
-_COSIGN_BINARY = str(get_resource_path("vendor/cosign").absolute())
+_COSIGN_BINARY = "cosign"
 
 
 def _cosign_run(
@@ -44,8 +47,22 @@ def _cosign_run(
     # the environment variables we have set above will be passed to the command,
     # provided that they don't override the ones that the user has set.
     env = custom_env | os.environ.copy()
+    vendor = str(get_resource_path("vendor").absolute())
+    env["PATH"] = vendor + os.pathsep + env.get("PATH", os.defpath)
 
-    cmd = [_COSIGN_BINARY] + cmd
+    # Resolve qualified paths in order: Windows bare-name lookup can search the
+    # current directory before PATH, and subprocess does not use env's PATH there.
+    # Python 3.10/3.11 do not expand PATHEXT for a qualified command path.
+    binary_name = "cosign.exe" if platform.system() == "Windows" else _COSIGN_BINARY
+    binary = None
+    for directory in env["PATH"].split(os.pathsep):
+        candidate = Path(directory or os.curdir).absolute() / binary_name
+        binary = shutil.which(str(candidate))
+        if binary is not None:
+            break
+    if binary is None:
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), _COSIGN_BINARY)
+    cmd = [binary] + cmd
     return subprocess_run(cmd, capture_output=True, check=True, env=env)
 
 

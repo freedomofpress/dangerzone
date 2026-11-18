@@ -49,6 +49,22 @@ QLabel.version {
     padding-bottom: 5px;  /* align with 'dangerzone' font */
 }
 
+/*
+ * Estimated time remaining, shown next to the progress bar of each document
+ */
+
+QLabel[style="eta"] {
+    font-size: 12px;
+}
+
+MainWindow[OSColorMode="light"] QLabel[style="eta"] {
+    color: #606060;
+}
+
+MainWindow[OSColorMode="dark"] QLabel[style="eta"] {
+    color: #b0b0b0;
+}
+
 QTextEdit[style="traceback"] {
     font-family: Consolas, Monospace;
     font-size: 12px;

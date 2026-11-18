@@ -3,6 +3,7 @@ import logging
 import os
 import platform
 import tempfile
+import time
 import typing
 from multiprocessing.pool import ThreadPool
 
@@ -1623,6 +1624,7 @@ class SettingsWidget(QtWidgets.QWidget):
 
 
 class ConvertTask(QtCore.QObject):
+    started = QtCore.Signal()
     finished = QtCore.Signal(bool)
     update = QtCore.Signal(bool, str, int)
 
@@ -1639,6 +1641,9 @@ class ConvertTask(QtCore.QObject):
         self.dangerzone = dangerzone
 
     def convert_document(self) -> None:
+        # Documents wait in the thread pool until a worker is free, so the
+        # conversion only starts here.
+        self.started.emit()
         self.dangerzone.isolation_provider.convert(
             self.document,
             self.ocr_lang,
@@ -1705,6 +1710,7 @@ class DocumentsListWidget(QtWidgets.QListWidget):
             self.submitted_docs.add(doc)
             task = ConvertTask(self.dangerzone, doc, self.get_ocr_lang())
             doc_widget = self.docs_list_widget_map[doc]
+            task.started.connect(doc_widget.start_conversion)
             task.update.connect(doc_widget.update_progress)
             task.finished.connect(doc_widget.all_done)
             task.finished.connect(self._on_doc_done)
@@ -1723,6 +1729,37 @@ class DocumentsListWidget(QtWidgets.QListWidget):
         return ocr_lang
 
 
+def estimate_eta(elapsed: float, percentage: int) -> float | None:
+    """Estimate how many seconds are left for a conversion.
+
+    The estimate is based on how long it took to convert the part of the
+    document that is already done, assuming that the rest of it will take the
+    same amount of time per percent.
+
+    It returns None if there is not enough information yet, i.e. if the
+    conversion has not started or has already finished.
+    """
+    if percentage <= 0 or percentage >= 100:
+        return None
+
+    return elapsed * (100 - percentage) / percentage
+
+
+def format_eta(seconds: float) -> str:
+    """Format an estimated duration in a short, human-readable way."""
+    total_seconds = max(0, round(seconds))
+    minutes, secs = divmod(total_seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+
+    if hours:
+        return f"~{hours}h {minutes}m left"
+    if minutes:
+        if secs:
+            return f"~{minutes}m {secs}s left"
+        return f"~{minutes}m left"
+    return f"~{secs}s left"
+
+
 class DocumentWidget(QtWidgets.QWidget):
     def __init__(
         self,
@@ -1734,6 +1771,9 @@ class DocumentWidget(QtWidgets.QWidget):
         self.document = document
 
         self.error = False
+
+        # When the conversion of this document started, if it has started
+        self.start_time: float | None = None
 
         # Dangerous document label
         self.dangerous_doc_label = QtWidgets.QLabel()
@@ -1770,13 +1810,25 @@ class DocumentWidget(QtWidgets.QWidget):
         self.progress.setRange(0, 100)
         self.progress.setValue(0)
 
+        # Estimated time remaining label
+        self.eta_label = QtWidgets.QLabel()
+        self.eta_label.setProperty("style", "eta")
+        self.eta_label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+        self.eta_label.setFixedWidth(85)
+        self.eta_label.hide()
+
         # Layout
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.status_image)
         layout.addWidget(self.dangerous_doc_label)
         layout.addWidget(self.progress)
+        layout.addWidget(self.eta_label)
         layout.addWidget(self.error_label)
         self.setLayout(layout)
+
+    def start_conversion(self) -> None:
+        """Record when the conversion of this document started."""
+        self.start_time = time.monotonic()
 
     def update_progress(self, error: bool, text: str, percentage: int) -> None:
         self.update_status_image()
@@ -1786,9 +1838,30 @@ class DocumentWidget(QtWidgets.QWidget):
             self.error_label.setToolTip(text)
             self.error_label.show()
             self.progress.hide()
+            self.clear_eta()
         else:
             self.progress.setToolTip(text)
             self.progress.setValue(percentage)
+            self.update_eta(percentage)
+
+    def update_eta(self, percentage: int) -> None:
+        """Show how long the conversion of this document is expected to take."""
+        if self.start_time is None:
+            return
+
+        elapsed = time.monotonic() - self.start_time
+        remaining = estimate_eta(elapsed, percentage)
+        if remaining is None:
+            self.clear_eta()
+            return
+
+        self.eta_label.setText(format_eta(remaining))
+        self.eta_label.show()
+
+    def clear_eta(self) -> None:
+        """Hide the estimated time remaining of this document."""
+        self.eta_label.setText("")
+        self.eta_label.hide()
 
     def load_status_image(self, filename: str) -> QtGui.QPixmap:
         path = get_resource_path(filename)
@@ -1808,6 +1881,7 @@ class DocumentWidget(QtWidgets.QWidget):
 
     def all_done(self) -> None:
         self.update_status_image()
+        self.clear_eta()
 
         if self.error:
             return

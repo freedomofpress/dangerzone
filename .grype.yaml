@@ -14,6 +14,11 @@ ignore:
   #
   # Verdict: Dangerzone is not affected because we use Pillow only for docs
   # generation, and it's not shipped with the final software.
+  - vulnerability: GHSA-5x8w-8jj5-q52h
+  - vulnerability: GHSA-w889-685w-c8fh
+  - vulnerability: GHSA-332p-7hrc-92wf
+  - vulnerability: GHSA-8g5g-8vmr-9782
+  - vulnerability: GHSA-v9pv-5gc8-w2m6
   - vulnerability: CVE-2026-112398
   - vulnerability: CVE-2026-112900
   - vulnerability: CVE-2026-112393

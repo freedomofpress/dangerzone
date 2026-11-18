@@ -9,7 +9,7 @@ else:
     except ImportError:
         from PySide2 import QtCore, QtWidgets
 
-from dangerzone.gui.widgets import TracebackWidget
+from dangerzone.gui.widgets import ExternalLinkLabel, TracebackWidget
 
 
 class LogSignal(QtCore.QObject):
@@ -49,10 +49,9 @@ class LogWindow(QtWidgets.QDialog):
         self.setWindowTitle("Dangerzone Logs")
         self.setMinimumSize(600, 400)
 
-        self.label = QtWidgets.QLabel()
+        self.label = ExternalLinkLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setTextFormat(QtCore.Qt.RichText)
-        self.label.setOpenExternalLinks(True)
         self.label.setWordWrap(True)
 
         self.traceback_widget = TracebackWidget()

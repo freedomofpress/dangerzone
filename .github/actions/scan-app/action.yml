@@ -12,7 +12,7 @@ inputs:
   upload-sarif:
     description: Whether to upload the SARIF report
     required: false
-    default: false
+    default: 'false'
   sarif-category:
     description: Category for the SARIF report
     required: false
@@ -29,7 +29,7 @@ runs:
         severity-cutoff: ${{ inputs.severity-cutoff }}
 
     - name: Upload application scan report
-      if: ${{ inputs.upload-sarif && !cancelled() }}
+      if: ${{ inputs.upload-sarif == 'true' && !cancelled() }}
       uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
